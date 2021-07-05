@@ -31,7 +31,6 @@ import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.util.Timestamps;
-import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import java.util.Collections;
@@ -71,7 +70,7 @@ public final class BatchClientImplTest {
     when(spannerOptions.getRetrySettings()).thenReturn(RetrySettings.newBuilder().build());
     when(spannerOptions.getClock()).thenReturn(NanoClock.getDefaultClock());
     when(spannerOptions.getSpannerRpcV1()).thenReturn(gapicRpc);
-    when(spannerOptions.getSessionLabels()).thenReturn(Collections.<String, String>emptyMap());
+    when(spannerOptions.getSessionLabels()).thenReturn(Collections.emptyMap());
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(mock(ExecutorFactory.class));
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);
@@ -89,8 +88,7 @@ public final class BatchClientImplTest {
     com.google.protobuf.Timestamp timestamp = Timestamps.parse(TIMESTAMP);
     Transaction txnMetadata =
         Transaction.newBuilder().setId(TXN_ID).setReadTimestamp(timestamp).build();
-    when(gapicRpc.beginTransaction(Mockito.<BeginTransactionRequest>any(), optionsCaptor.capture()))
-        .thenReturn(txnMetadata);
+    when(gapicRpc.beginTransaction(Mockito.any(), optionsCaptor.capture())).thenReturn(txnMetadata);
 
     BatchReadOnlyTransaction batchTxn = client.batchReadOnlyTransaction(TimestampBound.strong());
     assertThat(batchTxn.getBatchTransactionId().getSessionId()).isEqualTo(SESSION_NAME);

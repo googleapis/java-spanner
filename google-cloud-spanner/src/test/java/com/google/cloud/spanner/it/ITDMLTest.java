@@ -34,10 +34,9 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
-import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -81,7 +80,7 @@ public final class ITDMLTest {
 
   @Before
   public void increaseTestIdAndDeleteTestData() {
-    client.writeAtLeastOnce(Arrays.asList(Mutation.delete("T", KeySet.all())));
+    client.writeAtLeastOnce(Collections.singletonList(Mutation.delete("T", KeySet.all())));
     id++;
   }
 
@@ -103,21 +102,17 @@ public final class ITDMLTest {
 
   private void executeUpdate(long expectedCount, final String... stmts) {
     final TransactionCallable<Long> callable =
-        new TransactionCallable<Long>() {
-          @Override
-          public Long run(TransactionContext transaction) {
-            long rowCount = 0;
-            for (String stmt : stmts) {
-              if (throwAbortOnce) {
-                throwAbortOnce = false;
-                throw SpannerExceptionFactory.newSpannerException(
-                    ErrorCode.ABORTED, "Abort in test");
-              }
-
-              rowCount += transaction.executeUpdate(Statement.of(stmt));
+        transaction -> {
+          long rowCount = 0;
+          for (String stmt : stmts) {
+            if (throwAbortOnce) {
+              throwAbortOnce = false;
+              throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "Abort in test");
             }
-            return rowCount;
+
+            rowCount += transaction.executeUpdate(Statement.of(stmt));
           }
+          return rowCount;
         };
     TransactionRunner runner = client.readWriteTransaction();
     Long rowCount = runner.run(callable);
@@ -141,7 +136,7 @@ public final class ITDMLTest {
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(1);
 
@@ -152,7 +147,7 @@ public final class ITDMLTest {
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(100);
 
@@ -161,7 +156,7 @@ public final class ITDMLTest {
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V")))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V")))
         .isNull();
   }
 
@@ -171,21 +166,21 @@ public final class ITDMLTest {
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(1);
     executeUpdate(DML_COUNT, updateDml());
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(100);
     executeUpdate(DML_COUNT, deleteDml());
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V")))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V")))
         .isNull();
   }
 
@@ -215,7 +210,7 @@ public final class ITDMLTest {
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(500);
 
@@ -227,20 +222,18 @@ public final class ITDMLTest {
     executeUpdate(DML_COUNT, insertDml());
 
     final TransactionCallable<Void> callable =
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) {
-            long rowCount =
-                transaction.executeUpdate(
-                    Statement.of(String.format("UPDATE T SET v = v * 2 WHERE k = '%d-boo2';", id)));
-            assertThat(rowCount).isEqualTo(1);
-            assertThat(
-                    transaction
-                        .readRow("T", Key.of(String.format("%d-boo2", id)), Arrays.asList("v"))
-                        .getLong(0))
-                .isEqualTo(2 * 2);
-            return null;
-          }
+        transaction -> {
+          long rowCount =
+              transaction.executeUpdate(
+                  Statement.of(String.format("UPDATE T SET v = v * 2 WHERE k = '%d-boo2';", id)));
+          assertThat(rowCount).isEqualTo(1);
+          assertThat(
+                  transaction
+                      .readRow(
+                          "T", Key.of(String.format("%d-boo2", id)), Collections.singletonList("v"))
+                      .getLong(0))
+              .isEqualTo(2 * 2);
+          return null;
         };
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(callable);
@@ -256,13 +249,10 @@ public final class ITDMLTest {
       }
     }
     final TransactionCallable<Void> callable =
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws UserException {
-            long rowCount = transaction.executeUpdate(Statement.of(insertDml()));
-            assertThat(rowCount).isEqualTo(DML_COUNT);
-            throw new UserException("failing to commit");
-          }
+        transaction -> {
+          long rowCount = transaction.executeUpdate(Statement.of(insertDml()));
+          assertThat(rowCount).isEqualTo(DML_COUNT);
+          throw new UserException("failing to commit");
         };
 
     try {
@@ -281,7 +271,7 @@ public final class ITDMLTest {
             .read(
                 "T",
                 KeySet.range(KeyRange.prefix(Key.of(String.format("%d-boo", id)))),
-                Arrays.asList("K"));
+                Collections.singletonList("K"));
     assertThat(resultSet.next()).isFalse();
   }
 
@@ -290,20 +280,17 @@ public final class ITDMLTest {
     final String key1 = uniqueKey();
     final String key2 = uniqueKey();
     final TransactionCallable<Void> callable =
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) {
-            // DML
-            long rowCount =
-                transaction.executeUpdate(
-                    Statement.of("INSERT INTO T (k, v) VALUES ('" + key1 + "', 1)"));
-            assertThat(rowCount).isEqualTo(1);
+        transaction -> {
+          // DML
+          long rowCount =
+              transaction.executeUpdate(
+                  Statement.of("INSERT INTO T (k, v) VALUES ('" + key1 + "', 1)"));
+          assertThat(rowCount).isEqualTo(1);
 
-            // Mutations
-            transaction.buffer(
-                Mutation.newInsertOrUpdateBuilder("T").set("K").to(key2).set("V").to(2).build());
-            return null;
-          }
+          // Mutations
+          transaction.buffer(
+              Mutation.newInsertOrUpdateBuilder("T").set("K").to(key2).set("V").to(2).build());
+          return null;
         };
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(callable);
@@ -311,7 +298,9 @@ public final class ITDMLTest {
     KeySet.Builder keys = KeySet.newBuilder();
     keys.addKey(Key.of(key1)).addKey(Key.of(key2));
     ResultSet resultSet =
-        client.singleUse(TimestampBound.strong()).read("T", keys.build(), Arrays.asList("K"));
+        client
+            .singleUse(TimestampBound.strong())
+            .read("T", keys.build(), Collections.singletonList("K"));
     int rowCount = 0;
     while (resultSet.next()) {
       rowCount++;
@@ -321,18 +310,15 @@ public final class ITDMLTest {
 
   private void executeQuery(long expectedCount, final String... stmts) {
     final TransactionCallable<Long> callable =
-        new TransactionCallable<Long>() {
-          @Override
-          public Long run(TransactionContext transaction) {
-            long rowCount = 0;
-            for (final String stmt : stmts) {
-              ResultSet resultSet = transaction.executeQuery(Statement.of(stmt));
-              assertThat(resultSet.next()).isFalse();
-              assertThat(resultSet.getStats()).isNotNull();
-              rowCount += resultSet.getStats().getRowCountExact();
-            }
-            return rowCount;
+        transaction -> {
+          long rowCount = 0;
+          for (final String stmt : stmts) {
+            ResultSet resultSet = transaction.executeQuery(Statement.of(stmt));
+            assertThat(resultSet.next()).isFalse();
+            assertThat(resultSet.getStats()).isNotNull();
+            rowCount += resultSet.getStats().getRowCountExact();
           }
+          return rowCount;
         };
     TransactionRunner runner = client.readWriteTransaction();
     Long rowCount = runner.run(callable);

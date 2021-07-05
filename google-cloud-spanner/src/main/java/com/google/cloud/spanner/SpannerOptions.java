@@ -29,10 +29,9 @@ import com.google.cloud.ServiceDefaults;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.TransportOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.Options.QueryOption;
-import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
-import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
@@ -103,7 +102,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final InstanceAdminStubSettings instanceAdminStubSettings;
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final Duration partitionedDmlTimeout;
+  private final boolean grpcGcpExtensionEnabled;
+  private final GcpManagedChannelOptions grpcGcpOptions;
   private final boolean autoThrottleAdministrativeRequests;
+  private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
   /**
    * These are the default {@link QueryOptions} defined by the user on this {@link SpannerOptions}.
@@ -127,7 +129,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * Interface that can be used to provide {@link CallCredentials} instead of {@link Credentials} to
    * {@link SpannerOptions}.
    */
-  public static interface CallCredentialsProvider {
+  public interface CallCredentialsProvider {
     /** Return the {@link CallCredentials} to use for a gRPC call. */
     CallCredentials getCallCredentials();
   }
@@ -162,28 +164,26 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * Context context =
    *     Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
    * context.run(
-   *     new Runnable() {
-   *       public void run() {
-   *         try {
-   *           client
-   *               .readWriteTransaction()
-   *               .run(
-   *                   new TransactionCallable<long[]>() {
-   *                     public long[] run(TransactionContext transaction) throws Exception {
-   *                       return transaction.batchUpdate(
-   *                           ImmutableList.of(statement1, statement2));
-   *                     }
-   *                   });
-   *         } catch (SpannerException e) {
-   *           if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
-   *             // handle timeout exception.
-   *           }
+   *     () -> {
+   *       try {
+   *         client
+   *             .readWriteTransaction()
+   *             .run(
+   *                 new TransactionCallable<long[]>() {
+   *                   public long[] run(TransactionContext transaction) throws Exception {
+   *                     return transaction.batchUpdate(
+   *                         ImmutableList.of(statement1, statement2));
+   *                   }
+   *                 });
+   *       } catch (SpannerException e) {
+   *         if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
+   *           // handle timeout exception.
    *         }
    *       }
-   *     });
+   *     }
    * }</pre>
    */
-  public static interface CallContextConfigurator {
+  public interface CallContextConfigurator {
     /**
      * Configure a {@link ApiCallContext} for a specific RPC call.
      *
@@ -285,24 +285,22 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    *             SpannerCallContextTimeoutConfigurator.create()
    *                 .withExecuteQueryTimeout(Duration.ofSeconds(10L)));
    * context.run(
-   *     new Runnable() {
-   *       public void run() {
-   *         try (ResultSet rs =
-   *             client
-   *                 .singleUse()
-   *                 .executeQuery(
-   *                     Statement.of(
-   *                         "SELECT SingerId, FirstName, LastName FROM Singers ORDER BY LastName"))) {
-   *           while (rs.next()) {
-   *             System.out.printf("%d %s %s%n", rs.getLong(0), rs.getString(1), rs.getString(2));
-   *           }
-   *         } catch (SpannerException e) {
-   *           if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
-   *             // Handle timeout.
-   *           }
+   *     () -> {
+   *       try (ResultSet rs =
+   *           client
+   *               .singleUse()
+   *               .executeQuery(
+   *                   Statement.of(
+   *                       "SELECT SingerId, FirstName, LastName FROM Singers ORDER BY LastName"))) {
+   *         while (rs.next()) {
+   *           System.out.printf("%d %s %s%n", rs.getLong(0), rs.getString(1), rs.getString(2));
+   *         }
+   *       } catch (SpannerException e) {
+   *         if (e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
+   *           // Handle timeout.
    *         }
    *       }
-   *     });
+   *     }
    * }</pre>
    */
   public static class SpannerCallContextTimeoutConfigurator implements CallContextConfigurator {
@@ -473,13 +471,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static final AtomicInteger DEFAULT_POOL_COUNT = new AtomicInteger();
 
   /** {@link ExecutorProvider} that is used for {@link AsyncResultSet}. */
-  interface CloseableExecutorProvider extends ExecutorProvider, AutoCloseable {
+  public interface CloseableExecutorProvider extends ExecutorProvider, AutoCloseable {
     /** Overridden to suppress the throws declaration of the super interface. */
     @Override
-    public void close();
+    void close();
   }
 
-  static class FixedCloseableExecutorProvider implements CloseableExecutorProvider {
+  /**
+   * Implementation of {@link CloseableExecutorProvider} that uses a fixed single {@link
+   * ScheduledExecutorService}.
+   */
+  public static class FixedCloseableExecutorProvider implements CloseableExecutorProvider {
     private final ScheduledExecutorService executor;
 
     private FixedCloseableExecutorProvider(ScheduledExecutorService executor) {
@@ -502,7 +504,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /** Creates a FixedCloseableExecutorProvider. */
-    static FixedCloseableExecutorProvider create(ScheduledExecutorService executor) {
+    public static FixedCloseableExecutorProvider create(ScheduledExecutorService executor) {
       return new FixedCloseableExecutorProvider(executor);
     }
   }
@@ -518,8 +520,19 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return createAsyncExecutorProvider(8, 60L, TimeUnit.SECONDS);
   }
 
-  @VisibleForTesting
-  static CloseableExecutorProvider createAsyncExecutorProvider(
+  /**
+   * Creates a {@link CloseableExecutorProvider} that can be used as an {@link ExecutorProvider} for
+   * the async API. The {@link ExecutorProvider} will lazily create up to poolSize threads. The
+   * backing threads will automatically be shutdown if they have not been used during the keep-alive
+   * time. The backing threads are created as daemon threads.
+   *
+   * @param poolSize the maximum number of threads to create in the pool
+   * @param keepAliveTime the time that an unused thread in the pool should be kept alive
+   * @param unit the time unit used for the keepAliveTime
+   * @return a {@link CloseableExecutorProvider} that can be used for {@link
+   *     SpannerOptions.Builder#setAsyncExecutorProvider(CloseableExecutorProvider)}
+   */
+  public static CloseableExecutorProvider createAsyncExecutorProvider(
       int poolSize, long keepAliveTime, TimeUnit unit) {
     String format =
         String.format("spanner-async-pool-%d-thread-%%d", DEFAULT_POOL_COUNT.incrementAndGet());
@@ -557,7 +570,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
     partitionedDmlTimeout = builder.partitionedDmlTimeout;
+    grpcGcpExtensionEnabled = builder.grpcGcpExtensionEnabled;
+    grpcGcpOptions = builder.grpcGcpOptions;
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
+    retryAdministrativeRequestsSettings = builder.retryAdministrativeRequestsSettings;
     trackTransactionStarter = builder.trackTransactionStarter;
     defaultQueryOptions = builder.defaultQueryOptions;
     envQueryOptions = builder.getEnvironmentQueryOptions();
@@ -580,13 +596,22 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * The environment to read configuration values from. The default implementation uses environment
    * variables.
    */
-  public static interface SpannerEnvironment {
+  public interface SpannerEnvironment {
     /**
      * The optimizer version to use. Must return an empty string to indicate that no value has been
      * set.
      */
     @Nonnull
     String getOptimizerVersion();
+
+    /**
+     * The optimizer statistics package to use. Must return an empty string to indicate that no
+     * value has been set.
+     */
+    @Nonnull
+    default String getOptimizerStatisticsPackage() {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
   }
 
   /**
@@ -596,12 +621,20 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static class SpannerEnvironmentImpl implements SpannerEnvironment {
     private static final SpannerEnvironmentImpl INSTANCE = new SpannerEnvironmentImpl();
     private static final String SPANNER_OPTIMIZER_VERSION_ENV_VAR = "SPANNER_OPTIMIZER_VERSION";
+    private static final String SPANNER_OPTIMIZER_STATISTICS_PACKAGE_ENV_VAR =
+        "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
 
     private SpannerEnvironmentImpl() {}
 
     @Override
     public String getOptimizerVersion() {
       return MoreObjects.firstNonNull(System.getenv(SPANNER_OPTIMIZER_VERSION_ENV_VAR), "");
+    }
+
+    @Override
+    public String getOptimizerStatisticsPackage() {
+      return MoreObjects.firstNonNull(
+          System.getenv(SPANNER_OPTIMIZER_STATISTICS_PACKAGE_ENV_VAR), "");
     }
   }
 
@@ -610,6 +643,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       extends ServiceOptions.Builder<Spanner, SpannerOptions, SpannerOptions.Builder> {
     static final int DEFAULT_PREFETCH_CHUNKS = 4;
     static final QueryOptions DEFAULT_QUERY_OPTIONS = QueryOptions.getDefaultInstance();
+    static final RetrySettings DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
+        RetrySettings.newBuilder()
+            .setInitialRetryDelay(Duration.ofSeconds(5L))
+            .setRetryDelayMultiplier(2.0)
+            .setMaxRetryDelay(Duration.ofSeconds(60L))
+            .setMaxAttempts(10)
+            .build();
     private final ImmutableSet<String> allowedClientLibTokens =
         ImmutableSet.of(
             ServiceOptions.getGoogApiClientLibName(),
@@ -636,6 +676,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private DatabaseAdminStubSettings.Builder databaseAdminStubSettingsBuilder =
         DatabaseAdminStubSettings.newBuilder();
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
+    private boolean grpcGcpExtensionEnabled = false;
+    private GcpManagedChannelOptions grpcGcpOptions;
+    private RetrySettings retryAdministrativeRequestsSettings =
+        DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS;
     private boolean autoThrottleAdministrativeRequests = false;
     private boolean trackTransactionStarter = false;
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
@@ -683,7 +727,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.instanceAdminStubSettingsBuilder = options.instanceAdminStubSettings.toBuilder();
       this.databaseAdminStubSettingsBuilder = options.databaseAdminStubSettings.toBuilder();
       this.partitionedDmlTimeout = options.partitionedDmlTimeout;
+      this.grpcGcpExtensionEnabled = options.grpcGcpExtensionEnabled;
+      this.grpcGcpOptions = options.grpcGcpOptions;
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
+      this.retryAdministrativeRequestsSettings = options.retryAdministrativeRequestsSettings;
       this.trackTransactionStarter = options.trackTransactionStarter;
       this.defaultQueryOptions = options.defaultQueryOptions;
       this.callCredentialsProvider = options.callCredentialsProvider;
@@ -897,6 +944,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets the retry settings for retrying administrative requests when the quote of administrative
+     * requests per minute has been exceeded.
+     */
+    Builder setRetryAdministrativeRequestsSettings(
+        RetrySettings retryAdministrativeRequestsSettings) {
+      this.retryAdministrativeRequestsSettings = retryAdministrativeRequestsSettings;
+      return this;
+    }
+
+    /**
      * Instructs the client library to track the first request of each read/write transaction. This
      * statement will include a BeginTransaction option and will return a transaction id as part of
      * its result. All other statements in the same transaction must wait for this first statement
@@ -939,6 +996,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     QueryOptions getEnvironmentQueryOptions() {
       return QueryOptions.newBuilder()
           .setOptimizerVersion(environment.getOptimizerVersion())
+          .setOptimizerStatisticsPackage(environment.getOptimizerStatisticsPackage())
           .build();
     }
 
@@ -976,6 +1034,26 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets the {@link ExecutorProvider} to use for high-level async calls that need an executor,
+     * such as fetching results for an {@link AsyncResultSet}.
+     *
+     * <p>Async methods will use a sensible default if no custom {@link ExecutorProvider} has been
+     * set. The default {@link ExecutorProvider} uses a cached thread pool containing a maximum of 8
+     * threads. The pool is lazily initialized and will not create any threads if the user
+     * application does not use any async methods. It will also scale down the thread usage if the
+     * async load allows for that.
+     *
+     * <p>Call {@link SpannerOptions#createAsyncExecutorProvider(int, long, TimeUnit)} to create a
+     * provider with a custom pool size or call {@link
+     * FixedCloseableExecutorProvider#create(ScheduledExecutorService)} to create a {@link
+     * CloseableExecutorProvider} from a standard Java {@link ScheduledExecutorService}.
+     */
+    public Builder setAsyncExecutorProvider(CloseableExecutorProvider provider) {
+      this.asyncExecutorProvider = provider;
+      return this;
+    }
+
+    /**
      * Specifying this will allow the client to prefetch up to {@code prefetchChunks} {@code
      * PartialResultSet} chunks for each read and query. The data size of each chunk depends on the
      * server implementation but a good rule of thumb is that each chunk will be up to 1 MiB. Larger
@@ -983,7 +1061,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * memory consumption. {@code prefetchChunks} should be greater than 0. To get good performance
      * choose a value that is large enough to allow buffering of chunks for an entire row. Apart
      * from the buffered chunks, there can be at most one more row buffered in the client. This can
-     * be overriden on a per read/query basis by {@link Options#prefetchChunks()}. If unspecified,
+     * be overridden on a per read/query basis by {@link Options#prefetchChunks()}. If unspecified,
      * we will use a default value (currently 4).
      */
     public Builder setPrefetchChunks(int prefetchChunks) {
@@ -999,6 +1077,28 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /** Enables gRPC-GCP extension with the default settings. */
+    public Builder enableGrpcGcpExtension() {
+      this.grpcGcpExtensionEnabled = true;
+      return this;
+    }
+
+    /**
+     * Enables gRPC-GCP extension and uses provided options for configuration. The metric registry
+     * and default Spanner metric labels will be added automatically.
+     */
+    public Builder enableGrpcGcpExtension(GcpManagedChannelOptions options) {
+      this.grpcGcpExtensionEnabled = true;
+      this.grpcGcpOptions = options;
+      return this;
+    }
+
+    /** Disables gRPC-GCP extension. */
+    public Builder disableGrpcGcpExtension() {
+      this.grpcGcpExtensionEnabled = false;
+      return this;
+    }
+
     /**
      * Sets the host of an emulator to use. By default the value is read from an environment
      * variable. If the environment variable is not set, this will be <code>null</code>.
@@ -1008,7 +1108,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
       // Set the host of emulator has been set.
@@ -1019,13 +1118,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setHost(emulatorHost);
         // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
         // needing certificates.
-        this.setChannelConfigurator(
-            new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
-              @Override
-              public ManagedChannelBuilder apply(ManagedChannelBuilder builder) {
-                return builder.usePlaintext();
-              }
-            });
+        this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
       }
@@ -1099,8 +1192,20 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return partitionedDmlTimeout;
   }
 
+  public boolean isGrpcGcpExtensionEnabled() {
+    return grpcGcpExtensionEnabled;
+  }
+
+  public GcpManagedChannelOptions getGrpcGcpOptions() {
+    return grpcGcpOptions;
+  }
+
   public boolean isAutoThrottleAdministrativeRequests() {
     return autoThrottleAdministrativeRequests;
+  }
+
+  public RetrySettings getRetryAdministrativeRequestsSettings() {
+    return retryAdministrativeRequestsSettings;
   }
 
   public boolean isTrackTransactionStarter() {
@@ -1128,7 +1233,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return options;
   }
 
-  CloseableExecutorProvider getAsyncExecutorProvider() {
+  public CloseableExecutorProvider getAsyncExecutorProvider() {
     return asyncExecutorProvider;
   }
 

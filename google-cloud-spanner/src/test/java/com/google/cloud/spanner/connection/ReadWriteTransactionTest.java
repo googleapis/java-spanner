@@ -62,8 +62,6 @@ import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
 public class ReadWriteTransactionTest {
@@ -71,7 +69,7 @@ public class ReadWriteTransactionTest {
   private enum CommitBehavior {
     SUCCEED,
     FAIL,
-    ABORT;
+    ABORT
   }
 
   private static class SimpleTransactionManager implements TransactionManager {
@@ -156,24 +154,20 @@ public class ReadWriteTransactionTest {
     DatabaseClient client = mock(DatabaseClient.class);
     when(client.transactionManager())
         .thenAnswer(
-            new Answer<TransactionManager>() {
-              @Override
-              public TransactionManager answer(InvocationOnMock invocation) {
-                TransactionContext txContext = mock(TransactionContext.class);
-                when(txContext.executeQuery(any(Statement.class)))
-                    .thenReturn(mock(ResultSet.class));
-                ResultSet rsWithStats = mock(ResultSet.class);
-                when(rsWithStats.getStats()).thenReturn(ResultSetStats.getDefaultInstance());
-                when(txContext.analyzeQuery(any(Statement.class), any(QueryAnalyzeMode.class)))
-                    .thenReturn(rsWithStats);
-                when(txContext.executeUpdate(any(Statement.class))).thenReturn(1L);
-                return new SimpleTransactionManager(txContext, commitBehavior);
-              }
+            invocation -> {
+              TransactionContext txContext = mock(TransactionContext.class);
+              when(txContext.executeQuery(any(Statement.class))).thenReturn(mock(ResultSet.class));
+              ResultSet rsWithStats = mock(ResultSet.class);
+              when(rsWithStats.getStats()).thenReturn(ResultSetStats.getDefaultInstance());
+              when(txContext.analyzeQuery(any(Statement.class), any(QueryAnalyzeMode.class)))
+                  .thenReturn(rsWithStats);
+              when(txContext.executeUpdate(any(Statement.class))).thenReturn(1L);
+              return new SimpleTransactionManager(txContext, commitBehavior);
             });
     return ReadWriteTransaction.newBuilder()
         .setDatabaseClient(client)
         .setRetryAbortsInternally(withRetry)
-        .setTransactionRetryListeners(Collections.<TransactionRetryListener>emptyList())
+        .setTransactionRetryListeners(Collections.emptyList())
         .withStatementExecutor(new StatementExecutor())
         .build();
   }
@@ -417,7 +411,7 @@ public class ReadWriteTransactionTest {
 
   private enum RetryResults {
     SAME,
-    DIFFERENT;
+    DIFFERENT
   }
 
   @Test
@@ -465,7 +459,7 @@ public class ReadWriteTransactionTest {
       ReadWriteTransaction subject =
           ReadWriteTransaction.newBuilder()
               .setRetryAbortsInternally(true)
-              .setTransactionRetryListeners(Collections.<TransactionRetryListener>emptyList())
+              .setTransactionRetryListeners(Collections.emptyList())
               .setDatabaseClient(client)
               .withStatementExecutor(new StatementExecutor())
               .build();
@@ -492,7 +486,7 @@ public class ReadWriteTransactionTest {
     ReadWriteTransaction transaction =
         ReadWriteTransaction.newBuilder()
             .setRetryAbortsInternally(true)
-            .setTransactionRetryListeners(Collections.<TransactionRetryListener>emptyList())
+            .setTransactionRetryListeners(Collections.emptyList())
             .setDatabaseClient(client)
             .withStatementExecutor(new StatementExecutor())
             .build();
@@ -508,7 +502,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -516,7 +510,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -533,7 +527,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -541,7 +535,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -559,7 +553,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -567,7 +561,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -586,7 +580,7 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
@@ -594,7 +588,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
@@ -602,7 +596,7 @@ public class ReadWriteTransactionTest {
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(3l)
+                    .to(3L)
                     .set("NAME")
                     .to("TEST 3")
                     .set("AMOUNT")
@@ -631,7 +625,7 @@ public class ReadWriteTransactionTest {
     ReadWriteTransaction transaction =
         ReadWriteTransaction.newBuilder()
             .setRetryAbortsInternally(true)
-            .setTransactionRetryListeners(Collections.<TransactionRetryListener>emptyList())
+            .setTransactionRetryListeners(Collections.emptyList())
             .setDatabaseClient(client)
             .withStatementExecutor(new StatementExecutor())
             .build();
@@ -646,13 +640,13 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("PRICES")
                     .toInt64Array(new long[] {1L, 2L})
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("PRICES")
                     .toInt64Array(new long[] {3L, 4L})
                     .build()));
@@ -666,13 +660,13 @@ public class ReadWriteTransactionTest {
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
-                    .to(1l)
+                    .to(1L)
                     .set("PRICES")
                     .toInt64Array(new long[] {1L, 2L})
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
-                    .to(2l)
+                    .to(2L)
                     .set("PRICES")
                     .toInt64Array(new long[] {3L, 5L})
                     .build()));

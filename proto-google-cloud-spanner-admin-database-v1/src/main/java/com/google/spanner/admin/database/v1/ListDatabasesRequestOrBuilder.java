@@ -73,9 +73,8 @@ public interface ListDatabasesRequestOrBuilder
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token]
-   * from a previous
-   * [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
+   * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token] from a
+   * previous [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
    * </pre>
    *
    * <code>string page_token = 4;</code>
@@ -88,9 +87,8 @@ public interface ListDatabasesRequestOrBuilder
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token]
-   * from a previous
-   * [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
+   * [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token] from a
+   * previous [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
    * </pre>
    *
    * <code>string page_token = 4;</code>

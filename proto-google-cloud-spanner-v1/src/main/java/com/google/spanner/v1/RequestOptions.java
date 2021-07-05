@@ -367,8 +367,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    * that belongs to a transaction.
    * This field is ignored for requests where it's not applicable (e.g.
    * CommitRequest).
-   * `request_tag` must be a valid identifier of the form:
-   * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+   * Legal characters for `request_tag` values are all printable characters
+   * (ASCII 32 - 126) and the length of a request_tag is limited to 50
+   * characters. Values that exceed this limit are truncated.
    * </pre>
    *
    * <code>string request_tag = 2;</code>
@@ -397,8 +398,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    * that belongs to a transaction.
    * This field is ignored for requests where it's not applicable (e.g.
    * CommitRequest).
-   * `request_tag` must be a valid identifier of the form:
-   * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+   * Legal characters for `request_tag` values are all printable characters
+   * (ASCII 32 - 126) and the length of a request_tag is limited to 50
+   * characters. Values that exceed this limit are truncated.
    * </pre>
    *
    * <code>string request_tag = 2;</code>
@@ -431,8 +433,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    * to the same transaction.
    * If this request doesn’t belong to any transaction, transaction_tag will be
    * ignored.
-   * `transaction_tag` must be a valid identifier of the format:
-   * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+   * Legal characters for `transaction_tag` values are all printable characters
+   * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
+   * characters. Values that exceed this limit are truncated.
    * </pre>
    *
    * <code>string transaction_tag = 3;</code>
@@ -462,8 +465,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    * to the same transaction.
    * If this request doesn’t belong to any transaction, transaction_tag will be
    * ignored.
-   * `transaction_tag` must be a valid identifier of the format:
-   * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+   * Legal characters for `transaction_tag` values are all printable characters
+   * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
+   * characters. Values that exceed this limit are truncated.
    * </pre>
    *
    * <code>string transaction_tag = 3;</code>
@@ -931,8 +935,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * that belongs to a transaction.
      * This field is ignored for requests where it's not applicable (e.g.
      * CommitRequest).
-     * `request_tag` must be a valid identifier of the form:
-     * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+     * Legal characters for `request_tag` values are all printable characters
+     * (ASCII 32 - 126) and the length of a request_tag is limited to 50
+     * characters. Values that exceed this limit are truncated.
      * </pre>
      *
      * <code>string request_tag = 2;</code>
@@ -960,8 +965,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * that belongs to a transaction.
      * This field is ignored for requests where it's not applicable (e.g.
      * CommitRequest).
-     * `request_tag` must be a valid identifier of the form:
-     * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+     * Legal characters for `request_tag` values are all printable characters
+     * (ASCII 32 - 126) and the length of a request_tag is limited to 50
+     * characters. Values that exceed this limit are truncated.
      * </pre>
      *
      * <code>string request_tag = 2;</code>
@@ -989,8 +995,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * that belongs to a transaction.
      * This field is ignored for requests where it's not applicable (e.g.
      * CommitRequest).
-     * `request_tag` must be a valid identifier of the form:
-     * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+     * Legal characters for `request_tag` values are all printable characters
+     * (ASCII 32 - 126) and the length of a request_tag is limited to 50
+     * characters. Values that exceed this limit are truncated.
      * </pre>
      *
      * <code>string request_tag = 2;</code>
@@ -1017,8 +1024,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * that belongs to a transaction.
      * This field is ignored for requests where it's not applicable (e.g.
      * CommitRequest).
-     * `request_tag` must be a valid identifier of the form:
-     * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+     * Legal characters for `request_tag` values are all printable characters
+     * (ASCII 32 - 126) and the length of a request_tag is limited to 50
+     * characters. Values that exceed this limit are truncated.
      * </pre>
      *
      * <code>string request_tag = 2;</code>
@@ -1041,8 +1049,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * that belongs to a transaction.
      * This field is ignored for requests where it's not applicable (e.g.
      * CommitRequest).
-     * `request_tag` must be a valid identifier of the form:
-     * `[a-zA-Z][a-zA-Z0-9_&#92;-]` between 2 and 64 characters in length
+     * Legal characters for `request_tag` values are all printable characters
+     * (ASCII 32 - 126) and the length of a request_tag is limited to 50
+     * characters. Values that exceed this limit are truncated.
      * </pre>
      *
      * <code>string request_tag = 2;</code>
@@ -1073,8 +1082,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * to the same transaction.
      * If this request doesn’t belong to any transaction, transaction_tag will be
      * ignored.
-     * `transaction_tag` must be a valid identifier of the format:
-     * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+     * Legal characters for `transaction_tag` values are all printable characters
+     * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
+     * characters. Values that exceed this limit are truncated.
      * </pre>
      *
      * <code>string transaction_tag = 3;</code>
@@ -1103,8 +1113,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * to the same transaction.
      * If this request doesn’t belong to any transaction, transaction_tag will be
      * ignored.
-     * `transaction_tag` must be a valid identifier of the format:
-     * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+     * Legal characters for `transaction_tag` values are all printable characters
+     * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
+     * characters. Values that exceed this limit are truncated.
      * </pre>
      *
      * <code>string transaction_tag = 3;</code>
@@ -1133,8 +1144,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * to the same transaction.
      * If this request doesn’t belong to any transaction, transaction_tag will be
      * ignored.
-     * `transaction_tag` must be a valid identifier of the format:
-     * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+     * Legal characters for `transaction_tag` values are all printable characters
+     * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
+     * characters. Values that exceed this limit are truncated.
      * </pre>
      *
      * <code>string transaction_tag = 3;</code>
@@ -1162,8 +1174,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * to the same transaction.
      * If this request doesn’t belong to any transaction, transaction_tag will be
      * ignored.
-     * `transaction_tag` must be a valid identifier of the format:
-     * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+     * Legal characters for `transaction_tag` values are all printable characters
+     * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
+     * characters. Values that exceed this limit are truncated.
      * </pre>
      *
      * <code>string transaction_tag = 3;</code>
@@ -1187,8 +1200,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * to the same transaction.
      * If this request doesn’t belong to any transaction, transaction_tag will be
      * ignored.
-     * `transaction_tag` must be a valid identifier of the format:
-     * `[a-zA-Z][a-zA-Z0-9_&#92;-]{0,49}`
+     * Legal characters for `transaction_tag` values are all printable characters
+     * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
+     * characters. Values that exceed this limit are truncated.
      * </pre>
      *
      * <code>string transaction_tag = 3;</code>

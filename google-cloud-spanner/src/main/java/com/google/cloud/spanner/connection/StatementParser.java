@@ -50,7 +50,7 @@ public class StatementParser {
     DDL,
     QUERY,
     UPDATE,
-    UNKNOWN;
+    UNKNOWN
   }
 
   /** A statement that has been parsed */
@@ -360,7 +360,7 @@ public class StatementParser {
     final char HYPHEN = '-';
     final char DASH = '#';
     final char SLASH = '/';
-    final char ASTERIKS = '*';
+    final char ASTERISK = '*';
     boolean isInQuoted = false;
     boolean isInSingleLineComment = false;
     boolean isInMultiLineComment = false;
@@ -407,7 +407,7 @@ public class StatementParser {
             res.append(c);
           }
         } else if (isInMultiLineComment) {
-          if (sql.length() > index + 1 && c == ASTERIKS && sql.charAt(index + 1) == SLASH) {
+          if (sql.length() > index + 1 && c == ASTERISK && sql.charAt(index + 1) == SLASH) {
             isInMultiLineComment = false;
             index++;
           }
@@ -416,7 +416,7 @@ public class StatementParser {
               || (sql.length() > index + 1 && c == HYPHEN && sql.charAt(index + 1) == HYPHEN)) {
             // This is a single line comment.
             isInSingleLineComment = true;
-          } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERIKS) {
+          } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
             isInMultiLineComment = true;
             index++;
           } else {

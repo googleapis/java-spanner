@@ -51,7 +51,7 @@ import org.threeten.bp.Duration;
 @RunWith(JUnit4.class)
 public class ITPitrUpdateDatabaseTest {
 
-  private static final Duration OPERATION_TIMEOUT = Duration.ofMinutes(2);
+  private static final Duration OPERATION_TIMEOUT = Duration.ofMinutes(5);
   private static final String VERSION_RETENTION_PERIOD = "7d";
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
@@ -71,7 +71,7 @@ public class ITPitrUpdateDatabaseTest {
     databaseId = testHelper.getUniqueDatabaseId();
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
 
-    createDatabase(dbAdminClient, instanceId, databaseId, Collections.<String>emptyList());
+    createDatabase(dbAdminClient, instanceId, databaseId, Collections.emptyList());
     metadata =
         updateVersionRetentionPeriod(
             dbAdminClient, instanceId, databaseId, VERSION_RETENTION_PERIOD);

@@ -38,7 +38,7 @@ interface UnitOfWork {
   /** A unit of work can be either a transaction or a DDL/DML batch. */
   enum Type {
     TRANSACTION,
-    BATCH;
+    BATCH
   }
 
   enum UnitOfWorkState {
@@ -146,7 +146,7 @@ interface UnitOfWork {
 
   /**
    * @return the {@link CommitResponse} of this transaction
-   * @throws {@link SpannerException} if there is no {@link CommitResponse}
+   * @throws SpannerException if there is no {@link CommitResponse}
    */
   CommitResponse getCommitResponse();
 

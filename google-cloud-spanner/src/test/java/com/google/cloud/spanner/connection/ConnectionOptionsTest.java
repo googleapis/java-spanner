@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -27,7 +28,12 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.common.io.BaseEncoding;
+import com.google.common.io.Files;
+import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -250,6 +256,7 @@ public class ConnectionOptionsTest {
       builder.setUri(uri);
       fail(uri + " should be considered an invalid uri");
     } catch (IllegalArgumentException e) {
+      // Expected exception
     }
   }
 
@@ -325,7 +332,7 @@ public class ConnectionOptionsTest {
     final String baseUri =
         "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database";
     assertThat(ConnectionOptions.parseProperties(baseUri + "?autocommit=true"))
-        .isEqualTo(Arrays.asList("autocommit"));
+        .isEqualTo(Collections.singletonList("autocommit"));
     assertThat(ConnectionOptions.parseProperties(baseUri + "?autocommit=true;readonly=false"))
         .isEqualTo(Arrays.asList("autocommit", "readonly"));
     assertThat(ConnectionOptions.parseProperties(baseUri + "?autocommit=true;READONLY=false"))
@@ -443,12 +450,11 @@ public class ConnectionOptionsTest {
     assertThat(options.getWarnings()).doesNotContain("lenient");
 
     try {
-      options =
-          ConnectionOptions.newBuilder()
-              .setUri(
-                  "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?bar=foo")
-              .setCredentialsUrl(FILE_TEST_PATH)
-              .build();
+      ConnectionOptions.newBuilder()
+          .setUri(
+              "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?bar=foo")
+          .setCredentialsUrl(FILE_TEST_PATH)
+          .build();
       fail("missing expected exception");
     } catch (IllegalArgumentException e) {
       assertThat(e.getMessage()).contains("bar");
@@ -507,5 +513,64 @@ public class ConnectionOptionsTest {
       assertThat(e.getMessage())
           .contains("Invalid credentials path specified: /some/non/existing/path");
     }
+  }
+
+  @Test
+  public void testNonBase64EncodedCredentials() {
+    String uri =
+        "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?encodedCredentials=not-a-base64-string/";
+    SpannerException e =
+        assertThrows(
+            SpannerException.class, () -> ConnectionOptions.newBuilder().setUri(uri).build());
+    assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+    assertThat(e.getMessage())
+        .contains("The encoded credentials could not be decoded as a base64 string.");
+  }
+
+  @Test
+  public void testInvalidEncodedCredentials() throws UnsupportedEncodingException {
+    String uri =
+        String.format(
+            "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?encodedCredentials=%s",
+            BaseEncoding.base64Url().encode("not-a-credentials-JSON-string".getBytes("UTF-8")));
+    SpannerException e =
+        assertThrows(
+            SpannerException.class, () -> ConnectionOptions.newBuilder().setUri(uri).build());
+    assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+    assertThat(e.getMessage())
+        .contains(
+            "The encoded credentials do not contain a valid Google Cloud credentials JSON string.");
+  }
+
+  @Test
+  public void testValidEncodedCredentials() throws Exception {
+    String encoded =
+        BaseEncoding.base64Url().encode(Files.asByteSource(new File(FILE_TEST_PATH)).read());
+    String uri =
+        String.format(
+            "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?encodedCredentials=%s",
+            encoded);
+
+    ConnectionOptions options = ConnectionOptions.newBuilder().setUri(uri).build();
+    assertEquals(
+        new CredentialsService().createCredentials(FILE_TEST_PATH), options.getCredentials());
+  }
+
+  @Test
+  public void testSetCredentialsAndEncodedCredentials() throws Exception {
+    String encoded =
+        BaseEncoding.base64Url().encode(Files.asByteSource(new File(FILE_TEST_PATH)).read());
+    String uri =
+        String.format(
+            "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?credentials=%s;encodedCredentials=%s",
+            FILE_TEST_PATH, encoded);
+
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> ConnectionOptions.newBuilder().setUri(uri).build());
+    assertThat(e.getMessage())
+        .contains(
+            "Cannot specify both a credentials URL and encoded credentials. Only set one of the properties.");
   }
 }

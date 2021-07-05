@@ -66,7 +66,7 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
         // create tables
         SqlScriptVerifier verifier = new SqlScriptVerifier(new ITConnectionProvider());
         verifier.verifyStatementsInFile(
-            "ITReadOnlySpannerTest_CreateTables.sql", SqlScriptVerifier.class);
+            "ITReadOnlySpannerTest_CreateTables.sql", SqlScriptVerifier.class, false);
 
         // fill tables with data
         connection.setAutocommit(false);
@@ -101,7 +101,7 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
     // Wait 100ms to ensure that staleness tests in the script succeed.
     Thread.sleep(100L);
     SqlScriptVerifier verifier = new SqlScriptVerifier(new ITConnectionProvider());
-    verifier.verifyStatementsInFile("ITReadOnlySpannerTest.sql", SqlScriptVerifier.class);
+    verifier.verifyStatementsInFile("ITReadOnlySpannerTest.sql", SqlScriptVerifier.class, false);
   }
 
   @Test
@@ -200,18 +200,12 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
       final ResultSet rs2 = connection.executeQuery(Statement.of("SELECT * FROM NUMBERS"));
       ExecutorService exec = Executors.newFixedThreadPool(2);
       exec.submit(
-          new Runnable() {
-            @Override
-            public void run() {
-              while (rs1.next()) {}
-            }
+          () -> {
+            while (rs1.next()) {}
           });
       exec.submit(
-          new Runnable() {
-            @Override
-            public void run() {
-              while (rs2.next()) {}
-            }
+          () -> {
+            while (rs2.next()) {}
           });
       exec.shutdown();
       exec.awaitTermination(1000L, TimeUnit.SECONDS);

@@ -174,14 +174,9 @@ import org.threeten.bp.Instant;
  * long updateCount =
  *     dbClient
  *         .readWriteTransaction()
- *         .run(
- *             new TransactionCallable<Long>() {
- *               @Override
- *               public Long run(TransactionContext transaction) throws Exception {
- *                 return transaction.executeUpdate(
- *                     Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2"));
- *               }
- *             });
+ *         .run(transaction ->
+ *             transaction.executeUpdate(Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2"))
+ *          );
  * System.out.println("Update count: " + updateCount);
  * spannerClient.close();
  * }</pre>
@@ -235,7 +230,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     private enum StatementResultType {
       RESULT_SET,
       UPDATE_COUNT,
-      EXCEPTION;
+      EXCEPTION
     }
 
     private final StatementResultType type;
@@ -276,11 +271,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
     private static class KeepLastElementDeque<E> extends LinkedList<E> {
       private static <E> KeepLastElementDeque<E> singleton(E item) {
-        return new KeepLastElementDeque<E>(Collections.singleton(item));
+        return new KeepLastElementDeque<>(Collections.singleton(item));
       }
 
       private static <E> KeepLastElementDeque<E> of(E first, E second) {
-        return new KeepLastElementDeque<E>(Arrays.asList(first, second));
+        return new KeepLastElementDeque<>(Arrays.asList(first, second));
       }
 
       private KeepLastElementDeque(Collection<E> coll) {
@@ -437,17 +432,17 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
     public static SimulatedExecutionTime ofException(Exception exception) {
       return new SimulatedExecutionTime(
-          0, 0, Arrays.asList(exception), false, Collections.<Long>emptySet());
+          0, 0, Collections.singletonList(exception), false, Collections.emptySet());
     }
 
     public static SimulatedExecutionTime ofStickyException(Exception exception) {
       return new SimulatedExecutionTime(
-          0, 0, Arrays.asList(exception), true, Collections.<Long>emptySet());
+          0, 0, Collections.singletonList(exception), true, Collections.emptySet());
     }
 
     public static SimulatedExecutionTime ofStreamException(Exception exception, long streamIndex) {
       return new SimulatedExecutionTime(
-          0, 0, Arrays.asList(exception), false, Collections.singleton(streamIndex));
+          0, 0, Collections.singletonList(exception), false, Collections.singleton(streamIndex));
     }
 
     public static SimulatedExecutionTime stickyDatabaseNotFoundException(String name) {
@@ -456,7 +451,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
 
     public static SimulatedExecutionTime ofExceptions(Collection<? extends Exception> exceptions) {
-      return new SimulatedExecutionTime(0, 0, exceptions, false, Collections.<Long>emptySet());
+      return new SimulatedExecutionTime(0, 0, exceptions, false, Collections.emptySet());
     }
 
     public static SimulatedExecutionTime ofMinimumAndRandomTimeAndExceptions(
@@ -464,16 +459,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         int randomExecutionTime,
         Collection<? extends Exception> exceptions) {
       return new SimulatedExecutionTime(
-          minimumExecutionTime,
-          randomExecutionTime,
-          exceptions,
-          false,
-          Collections.<Long>emptySet());
+          minimumExecutionTime, randomExecutionTime, exceptions, false, Collections.emptySet());
     }
 
     private SimulatedExecutionTime(int minimum, int random) {
-      this(
-          minimum, random, Collections.<Exception>emptyList(), false, Collections.<Long>emptySet());
+      this(minimum, random, Collections.emptyList(), false, Collections.emptySet());
     }
 
     private SimulatedExecutionTime(
@@ -593,11 +583,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private ByteString generatePartitionToken(String session, ByteString transactionId) {
     ByteString token = ByteString.copyFromUtf8(UUID.randomUUID().toString());
     String key = partitionKey(session, transactionId);
-    List<ByteString> tokens = partitionTokens.get(key);
-    if (tokens == null) {
-      tokens = new ArrayList<>(5);
-      partitionTokens.put(key, tokens);
-    }
+    List<ByteString> tokens = partitionTokens.computeIfAbsent(key, k -> new ArrayList<>(5));
     tokens.add(token);
     return token;
   }
@@ -889,14 +875,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               session.toBuilder().setApproximateLastUseTime(getCurrentGoogleTimestamp()).build());
         }
       }
-      Collections.sort(
-          res,
-          new Comparator<Session>() {
-            @Override
-            public int compare(Session o1, Session o2) {
-              return o1.getName().compareTo(o2.getName());
-            }
-          });
+      res.sort(Comparator.comparing(Session::getName));
       responseObserver.onNext(ListSessionsResponse.newBuilder().addAllSessions(res).build());
       responseObserver.onCompleted();
     } catch (StatusRuntimeException e) {
@@ -1152,7 +1131,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         if (tokens == null || !tokens.contains(request.getPartitionToken())) {
           throw Status.INVALID_ARGUMENT
               .withDescription(
-                  String.format("Partition token %s is not a valid token for this transaction"))
+                  String.format(
+                      "Partition token %s is not a valid token for this transaction",
+                      request.getPartitionToken()))
               .asRuntimeException();
         }
       }
@@ -1427,13 +1408,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       // Get or start transaction
       ByteString transactionId = getTransactionId(session, request.getTransaction());
       simulateAbort(session, transactionId);
-      Iterable<String> cols =
-          new Iterable<String>() {
-            @Override
-            public Iterator<String> iterator() {
-              return request.getColumnsList().iterator();
-            }
-          };
+      Iterable<String> cols = () -> request.getColumnsList().iterator();
       Statement statement =
           StatementResult.createReadStatement(
               request.getTable(),
@@ -1472,18 +1447,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         if (tokens == null || !tokens.contains(request.getPartitionToken())) {
           throw Status.INVALID_ARGUMENT
               .withDescription(
-                  String.format("Partition token %s is not a valid token for this transaction"))
+                  String.format(
+                      "Partition token %s is not a valid token for this transaction",
+                      request.getPartitionToken()))
               .asRuntimeException();
         }
       }
       simulateAbort(session, transactionId);
-      Iterable<String> cols =
-          new Iterable<String>() {
-            @Override
-            public Iterator<String> iterator() {
-              return request.getColumnsList().iterator();
-            }
-          };
+      Iterable<String> cols = () -> request.getColumnsList().iterator();
       Statement statement =
           StatementResult.createReadStatement(
               request.getTable(),
@@ -1596,7 +1567,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private boolean isPartitionedDmlTransaction(ByteString transactionId) {
     return transactionId != null
         && isPartitionedDmlTransaction.get(transactionId) != null
-        && isPartitionedDmlTransaction.get(transactionId).booleanValue();
+        && isPartitionedDmlTransaction.get(transactionId);
   }
 
   private boolean isReadWriteTransaction(ByteString transactionId) {
@@ -1750,7 +1721,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     if (transactionId != null && transactionId.toStringUtf8() != null && counter != null) {
       int index = transactionId.toStringUtf8().lastIndexOf('/');
       if (index > -1) {
-        long id = Long.valueOf(transactionId.toStringUtf8().substring(index + 1));
+        long id = Long.parseLong(transactionId.toStringUtf8().substring(index + 1));
         if (id != counter.get()) {
           throw Status.FAILED_PRECONDITION
               .withDescription(

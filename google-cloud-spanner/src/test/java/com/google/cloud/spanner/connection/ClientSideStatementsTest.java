@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,7 +49,7 @@ public class ClientSideStatementsTest {
   @Test
   public void testExecuteClientSideStatementsScript() throws Exception {
     SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider());
-    verifier.verifyStatementsInFile("ClientSideStatementsTest.sql", getClass());
+    verifier.verifyStatementsInFile("ClientSideStatementsTest.sql", getClass(), true);
   }
 
   private static final String SCRIPT_FILE =
@@ -94,7 +95,9 @@ public class ClientSideStatementsTest {
     try {
       writer =
           new PrintWriter(
-              new OutputStreamWriter(new FileOutputStream(SCRIPT_FILE, false), "UTF8"), true);
+              new OutputStreamWriter(
+                  new FileOutputStream(SCRIPT_FILE, false), StandardCharsets.UTF_8),
+              true);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

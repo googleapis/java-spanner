@@ -133,6 +133,21 @@ public interface InstanceOrBuilder
    *
    *
    * <pre>
+   * The number of processing units allocated to this instance. At most one of
+   * processing_units or node_count should be present in the message. This may
+   * be zero in API responses for instances that are not yet in state `READY`.
+   * </pre>
+   *
+   * <code>int32 processing_units = 9;</code>
+   *
+   * @return The processingUnits.
+   */
+  int getProcessingUnits();
+
+  /**
+   *
+   *
+   * <pre>
    * Output only. The current instance state. For
    * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
    * either omitted or set to `CREATING`. For

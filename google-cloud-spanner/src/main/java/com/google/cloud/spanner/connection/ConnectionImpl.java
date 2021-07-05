@@ -18,7 +18,6 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
@@ -54,7 +53,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -123,7 +121,7 @@ class ConnectionImpl implements Connection {
   enum BatchMode {
     NONE,
     DDL,
-    DML;
+    DML
   }
 
   /**
@@ -192,8 +190,8 @@ class ConnectionImpl implements Connection {
 
   private UnitOfWork currentUnitOfWork = null;
   /**
-   * The {@link ConnectionImpl#inTransaction} field is only used in autocommit mode to indicate that
-   * the user has explicitly started a transaction.
+   * This field is only used in autocommit mode to indicate that the user has explicitly started a
+   * transaction.
    */
   private boolean inTransaction = false;
   /**
@@ -245,8 +243,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(spannerPool);
     Preconditions.checkNotNull(ddlClient);
     Preconditions.checkNotNull(dbClient);
-    this.statementExecutor =
-        new StatementExecutor(Collections.<StatementExecutionInterceptor>emptyList());
+    this.statementExecutor = new StatementExecutor(Collections.emptyList());
     this.spannerPool = spannerPool;
     this.options = options;
     this.spanner = spannerPool.getSpanner(options, this);
@@ -287,28 +284,14 @@ class ConnectionImpl implements Connection {
       // connection.
       this.closed = true;
       // Add a no-op statement to the execute. Once this has been executed, we know that all
-      // preceeding statements have also been executed, as the executor is single-threaded and
+      // preceding statements have also been executed, as the executor is single-threaded and
       // executes all statements in order of submitting.
-      futures.add(
-          statementExecutor.submit(
-              new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                  return null;
-                }
-              }));
+      futures.add(statementExecutor.submit(() -> null));
       statementExecutor.shutdown();
       leakedException = null;
       spannerPool.removeConnection(options, this);
       return ApiFutures.transform(
-          ApiFutures.allAsList(futures),
-          new ApiFunction<List<Void>, Void>() {
-            @Override
-            public Void apply(List<Void> input) {
-              return null;
-            }
-          },
-          MoreExecutors.directExecutor());
+          ApiFutures.allAsList(futures), ignored -> null, MoreExecutors.directExecutor());
     }
     return ApiFutures.immediateFuture(null);
   }
@@ -454,6 +437,20 @@ class ConnectionImpl implements Connection {
   public String getOptimizerVersion() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     return this.queryOptions.getOptimizerVersion();
+  }
+
+  @Override
+  public void setOptimizerStatisticsPackage(String optimizerStatisticsPackage) {
+    Preconditions.checkNotNull(optimizerStatisticsPackage);
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    this.queryOptions =
+        queryOptions.toBuilder().setOptimizerStatisticsPackage(optimizerStatisticsPackage).build();
+  }
+
+  @Override
+  public String getOptimizerStatisticsPackage() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.queryOptions.getOptimizerStatisticsPackage();
   }
 
   @Override
@@ -723,8 +720,8 @@ class ConnectionImpl implements Connection {
   }
 
   /** Internal interface for ending a transaction (commit/rollback). */
-  private static interface EndTransactionMethod {
-    public ApiFuture<Void> endAsync(UnitOfWork t);
+  private interface EndTransactionMethod {
+    ApiFuture<Void> endAsync(UnitOfWork t);
   }
 
   private static final class Commit implements EndTransactionMethod {

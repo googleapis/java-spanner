@@ -18,7 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -121,22 +121,20 @@ public class MutationTest {
 
   @Test
   public void duplicateColumn() {
-    try {
-      Mutation.newInsertBuilder("T1").set("C1").to(true).set("C1").to(false).build();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("Duplicate column");
-    }
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> Mutation.newInsertBuilder("T1").set("C1").to(true).set("C1").to(false).build());
+    assertThat(e.getMessage()).contains("Duplicate column");
   }
 
   @Test
   public void duplicateColumnCaseInsensitive() {
-    try {
-      Mutation.newInsertBuilder("T1").set("C1").to(true).set("c1").to(false).build();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("Duplicate column");
-    }
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> Mutation.newInsertBuilder("T1").set("C1").to(true).set("c1").to(false).build());
+    assertThat(e.getMessage()).contains("Duplicate column");
   }
 
   @Test
@@ -153,36 +151,24 @@ public class MutationTest {
   public void unfinishedBindingV1() {
     Mutation.WriteBuilder b = Mutation.newInsertBuilder("T1");
     b.set("C1");
-    try {
-      b.build();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("Incomplete binding for column C1");
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> b.build());
+    assertThat(e.getMessage()).contains("Incomplete binding for column C1");
   }
 
   @Test
   public void unfinishedBindingV2() {
     Mutation.WriteBuilder b = Mutation.newInsertBuilder("T1");
     b.set("C1");
-    try {
-      b.set("C2");
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("Incomplete binding for column C1");
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> b.set("C2"));
+    assertThat(e.getMessage()).contains("Incomplete binding for column C1");
   }
 
   @Test
   public void notInBinding() {
     ValueBinder<Mutation.WriteBuilder> binder = Mutation.newInsertBuilder("T1").set("C1");
     binder.to(1234);
-    try {
-      binder.to(5678);
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("No binding currently active");
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> binder.to(5678));
+    assertThat(e.getMessage()).contains("No binding currently active");
   }
 
   @Test
@@ -430,7 +416,7 @@ public class MutationTest {
                 2.3,
                 ByteArray.fromBase64("abcd"),
                 Timestamp.ofTimeSecondsAndNanos(1, 2),
-                Date.fromYearMonthDay(2017, 04, 17))));
+                Date.fromYearMonthDay(2017, 4, 17))));
     reserializeAndAssert(Mutation.delete("test", KeySet.all()));
     reserializeAndAssert(
         Mutation.delete(
@@ -495,7 +481,7 @@ public class MutationTest {
         .set("timestampNull")
         .to((Timestamp) null)
         .set("date")
-        .to(Date.fromYearMonthDay(2017, 04, 17))
+        .to(Date.fromYearMonthDay(2017, 4, 17))
         .set("dateNull")
         .to((Date) null)
         .set("stringArr")
@@ -509,7 +495,7 @@ public class MutationTest {
         .set("dateArr")
         .toDateArray(
             ImmutableList.of(
-                Date.fromYearMonthDay(2017, 04, 17), Date.fromYearMonthDay(2017, 04, 18)))
+                Date.fromYearMonthDay(2017, 4, 17), Date.fromYearMonthDay(2017, 4, 18)))
         .set("dateArrNull")
         .toDateArray(null);
   }

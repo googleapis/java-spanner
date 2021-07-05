@@ -125,7 +125,7 @@ class SessionClient implements AutoCloseable {
 
     @Override
     public void run() {
-      List<SessionImpl> sessions = null;
+      List<SessionImpl> sessions;
       int remainingSessionsToCreate = sessionCount;
       Span span = SpannerImpl.tracer.spanBuilder(SpannerImpl.BATCH_CREATE_SESSIONS).startSpan();
       try (Scope s = SpannerImpl.tracer.withSpan(span)) {
@@ -155,7 +155,7 @@ class SessionClient implements AutoCloseable {
    * Callback interface to be used for BatchCreateSessions. When sessions become available or
    * session creation fails, one of the callback methods will be called.
    */
-  static interface SessionConsumer {
+  interface SessionConsumer {
     /** Called when a session has been created and is ready for use. */
     void onSessionReady(SessionImpl session);
 

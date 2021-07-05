@@ -398,21 +398,18 @@ public interface DatabaseClient {
    * AsyncRunner runner = client.runAsync();
    * ApiFuture<Long> rowCount =
    *     runner.runAsync(
-   *         new AsyncWork<Long>() {
-   *           @Override
-   *           public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-   *             String column = "FirstName";
-   *             Struct row =
-   *                 txn.readRow("Singers", Key.of(singerId), Collections.singleton("Name"));
-   *             String name = row.getString("Name");
-   *             return txn.executeUpdateAsync(
-   *                 Statement.newBuilder("UPDATE Singers SET Name=@name WHERE SingerId=@id")
-   *                     .bind("id")
-   *                     .to(singerId)
-   *                     .bind("name")
-   *                     .to(name.toUpperCase())
-   *                     .build());
-   *           }
+   *         () -> {
+   *           String column = "FirstName";
+   *           Struct row =
+   *               txn.readRow("Singers", Key.of(singerId), Collections.singleton("Name"));
+   *           String name = row.getString("Name");
+   *           return txn.executeUpdateAsync(
+   *               Statement.newBuilder("UPDATE Singers SET Name=@name WHERE SingerId=@id")
+   *                   .bind("id")
+   *                   .to(singerId)
+   *                   .bind("name")
+   *                   .to(name.toUpperCase())
+   *                   .build());
    *         },
    *         executor);
    * </code></pre>
@@ -434,8 +431,7 @@ public interface DatabaseClient {
    * lifecycle. This API is meant for advanced users. Most users should instead use the {@link
    * #runAsync()} API instead.
    *
-   * <p>Example of using {@link AsyncTransactionManager} with lambda expressions (Java 8 and
-   * higher).
+   * <p>Example of using {@link AsyncTransactionManager}.
    *
    * <pre>{@code
    * long singerId = 1L;
@@ -452,56 +448,11 @@ public interface DatabaseClient {
    *             .then(
    *                 (transaction, row) -> {
    *                   String name = row.getString(column);
-   *                   transaction.buffer(
+   *                   return transaction.bufferAsync(
    *                       Mutation.newUpdateBuilder("Singers")
    *                           .set(column)
    *                           .to(name.toUpperCase())
    *                           .build());
-   *                   return ApiFutures.immediateFuture(null);
-   *                 })
-   *             .commitAsync();
-   *     try {
-   *       commitTimestamp.get();
-   *       break;
-   *     } catch (AbortedException e) {
-   *       Thread.sleep(e.getRetryDelayInMillis());
-   *       transactionFuture = manager.resetForRetryAsync();
-   *     }
-   *   }
-   * }
-   * }</pre>
-   *
-   * <p>Example of using {@link AsyncTransactionManager} (Java 7).
-   *
-   * <pre>{@code
-   * final long singerId = 1L;
-   * try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
-   *   TransactionContextFuture transactionFuture = manager.beginAsync();
-   *   while (true) {
-   *     final String column = "FirstName";
-   *     CommitTimestampFuture commitTimestamp =
-   *         transactionFuture.then(
-   *                 new AsyncTransactionFunction<Void, Struct>() {
-   *                   @Override
-   *                   public ApiFuture<Struct> apply(TransactionContext transaction, Void input)
-   *                       throws Exception {
-   *                     return transaction.readRowAsync(
-   *                         "Singers", Key.of(singerId), Collections.singleton(column));
-   *                   }
-   *                 })
-   *             .then(
-   *                 new AsyncTransactionFunction<Struct, Void>() {
-   *                   @Override
-   *                   public ApiFuture<Void> apply(TransactionContext transaction, Struct input)
-   *                       throws Exception {
-   *                     String name = input.getString(column);
-   *                     transaction.buffer(
-   *                         Mutation.newUpdateBuilder("Singers")
-   *                             .set(column)
-   *                             .to(name.toUpperCase())
-   *                             .build());
-   *                     return ApiFutures.immediateFuture(null);
-   *                   }
    *                 })
    *             .commitAsync();
    *     try {
@@ -533,9 +484,9 @@ public interface DatabaseClient {
    * Returns the lower bound of rows modified by this DML statement.
    *
    * <p>The method will block until the update is complete. Running a DML statement with this method
-   * does not offer exactly once semantics, and therfore the DML statement should be idempotent. The
-   * DML statement must be fully-partitionable. Specifically, the statement must be expressible as
-   * the union of many statements which each access only a single row of the table. This is a
+   * does not offer exactly once semantics, and therefore the DML statement should be idempotent.
+   * The DML statement must be fully-partitionable. Specifically, the statement must be expressible
+   * as the union of many statements which each access only a single row of the table. This is a
    * Partitioned DML transaction in which a single Partitioned DML statement is executed.
    * Partitioned DML partitions the key space and runs the DML statement over each partition in
    * parallel using separate, internal transactions that commit independently. Partitioned DML

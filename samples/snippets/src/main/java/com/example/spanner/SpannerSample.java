@@ -16,7 +16,6 @@
 
 package com.example.spanner;
 
-import static com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import static com.google.cloud.spanner.Type.StructField;
 
 import com.google.api.gax.longrunning.OperationFuture;
@@ -52,7 +51,6 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
 import com.google.common.io.BaseEncoding;
@@ -490,48 +488,44 @@ public class SpannerSample {
   static void writeWithTransaction(DatabaseClient dbClient) {
     dbClient
         .readWriteTransaction()
-        .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws Exception {
-                // Transfer marketing budget from one album to another. We do it in a transaction to
-                // ensure that the transfer is atomic.
-                Struct row =
-                    transaction.readRow("Albums", Key.of(2, 2), Arrays.asList("MarketingBudget"));
-                long album2Budget = row.getLong(0);
-                // Transaction will only be committed if this condition still holds at the time of
-                // commit. Otherwise it will be aborted and the callable will be rerun by the
-                // client library.
-                long transfer = 200000;
-                if (album2Budget >= transfer) {
-                  long album1Budget =
-                      transaction
-                          .readRow("Albums", Key.of(1, 1), Arrays.asList("MarketingBudget"))
-                          .getLong(0);
-                  album1Budget += transfer;
-                  album2Budget -= transfer;
-                  transaction.buffer(
-                      Mutation.newUpdateBuilder("Albums")
-                          .set("SingerId")
-                          .to(1)
-                          .set("AlbumId")
-                          .to(1)
-                          .set("MarketingBudget")
-                          .to(album1Budget)
-                          .build());
-                  transaction.buffer(
-                      Mutation.newUpdateBuilder("Albums")
-                          .set("SingerId")
-                          .to(2)
-                          .set("AlbumId")
-                          .to(2)
-                          .set("MarketingBudget")
-                          .to(album2Budget)
-                          .build());
-                }
-                return null;
-              }
-            });
+        .run(transaction -> {
+          // Transfer marketing budget from one album to another. We do it in a transaction to
+          // ensure that the transfer is atomic.
+          Struct row =
+              transaction.readRow("Albums", Key.of(2, 2), Arrays.asList("MarketingBudget"));
+          long album2Budget = row.getLong(0);
+          // Transaction will only be committed if this condition still holds at the time of
+          // commit. Otherwise it will be aborted and the callable will be rerun by the
+          // client library.
+          long transfer = 200000;
+          if (album2Budget >= transfer) {
+            long album1Budget =
+                transaction
+                    .readRow("Albums", Key.of(1, 1), Arrays.asList("MarketingBudget"))
+                    .getLong(0);
+            album1Budget += transfer;
+            album2Budget -= transfer;
+            transaction.buffer(
+                Mutation.newUpdateBuilder("Albums")
+                    .set("SingerId")
+                    .to(1)
+                    .set("AlbumId")
+                    .to(1)
+                    .set("MarketingBudget")
+                    .to(album1Budget)
+                    .build());
+            transaction.buffer(
+                Mutation.newUpdateBuilder("Albums")
+                    .set("SingerId")
+                    .to(2)
+                    .set("AlbumId")
+                    .to(2)
+                    .set("MarketingBudget")
+                    .to(album2Budget)
+                    .build());
+          }
+          return null;
+        });
   }
   // [END spanner_read_write_transaction]
 
@@ -1004,18 +998,14 @@ public class SpannerSample {
   static void insertUsingDml(DatabaseClient dbClient) {
     dbClient
         .readWriteTransaction()
-        .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws Exception {
-                String sql =
-                    "INSERT INTO Singers (SingerId, FirstName, LastName) "
-                        + " VALUES (10, 'Virginia', 'Watson')";
-                long rowCount = transaction.executeUpdate(Statement.of(sql));
-                System.out.printf("%d record inserted.\n", rowCount);
-                return null;
-              }
-            });
+        .run(transaction -> {
+          String sql =
+              "INSERT INTO Singers (SingerId, FirstName, LastName) "
+                  + " VALUES (10, 'Virginia', 'Watson')";
+          long rowCount = transaction.executeUpdate(Statement.of(sql));
+          System.out.printf("%d record inserted.\n", rowCount);
+          return null;
+        });
   }
   // [END spanner_dml_standard_insert]
 
@@ -1023,19 +1013,15 @@ public class SpannerSample {
   static void updateUsingDml(DatabaseClient dbClient) {
     dbClient
         .readWriteTransaction()
-        .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws Exception {
-                String sql =
-                    "UPDATE Albums "
-                        + "SET MarketingBudget = MarketingBudget * 2 "
-                        + "WHERE SingerId = 1 and AlbumId = 1";
-                long rowCount = transaction.executeUpdate(Statement.of(sql));
-                System.out.printf("%d record updated.\n", rowCount);
-                return null;
-              }
-            });
+        .run(transaction -> {
+          String sql =
+              "UPDATE Albums "
+                  + "SET MarketingBudget = MarketingBudget * 2 "
+                  + "WHERE SingerId = 1 and AlbumId = 1";
+          long rowCount = transaction.executeUpdate(Statement.of(sql));
+          System.out.printf("%d record updated.\n", rowCount);
+          return null;
+        });
   }
   // [END spanner_dml_standard_update]
 
@@ -1043,16 +1029,12 @@ public class SpannerSample {
   static void deleteUsingDml(DatabaseClient dbClient) {
     dbClient
         .readWriteTransaction()
-        .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws Exception {
-                String sql = "DELETE FROM Singers WHERE FirstName = 'Alice'";
-                long rowCount = transaction.executeUpdate(Statement.of(sql));
-                System.out.printf("%d record deleted.\n", rowCount);
-                return null;
-              }
-            });
+        .run(transaction -> {
+          String sql = "DELETE FROM Singers WHERE FirstName = 'Alice'";
+          long rowCount = transaction.executeUpdate(Statement.of(sql));
+          System.out.printf("%d record deleted.\n", rowCount);
+          return null;
+        });
   }
   // [END spanner_dml_standard_delete]
 
@@ -1060,18 +1042,14 @@ public class SpannerSample {
   static void updateUsingDmlWithTimestamp(DatabaseClient dbClient) {
     dbClient
         .readWriteTransaction()
-        .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws Exception {
-                String sql =
-                    "UPDATE Albums "
-                        + "SET LastUpdateTime = PENDING_COMMIT_TIMESTAMP() WHERE SingerId = 1";
-                long rowCount = transaction.executeUpdate(Statement.of(sql));
-                System.out.printf("%d records updated.\n", rowCount);
-                return null;
-              }
-            });
+        .run(transaction -> {
+          String sql =
+              "UPDATE Albums "
+                  + "SET LastUpdateTime = PENDING_COMMIT_TIMESTAMP() WHERE SingerId = 1";
+          long rowCount = transaction.executeUpdate(Statement.of(sql));
+          System.out.printf("%d records updated.\n", rowCount);
+          return null;
+        });
   }
   // [END spanner_dml_standard_update_with_timestamp]
 
@@ -1079,30 +1057,26 @@ public class SpannerSample {
   static void writeAndReadUsingDml(DatabaseClient dbClient) {
     dbClient
         .readWriteTransaction()
-        .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws Exception {
-                // Insert record.
-                String sql =
-                    "INSERT INTO Singers (SingerId, FirstName, LastName) "
-                        + " VALUES (11, 'Timothy', 'Campbell')";
-                long rowCount = transaction.executeUpdate(Statement.of(sql));
-                System.out.printf("%d record inserted.\n", rowCount);
-                // Read newly inserted record.
-                sql = "SELECT FirstName, LastName FROM Singers WHERE SingerId = 11";
-                // We use a try-with-resource block to automatically release resources held by
-                // ResultSet.
-                try (ResultSet resultSet = transaction.executeQuery(Statement.of(sql))) {
-                  while (resultSet.next()) {
-                    System.out.printf(
-                        "%s %s\n",
-                        resultSet.getString("FirstName"), resultSet.getString("LastName"));
-                  }
-                }
-                return null;
-              }
-            });
+        .run(transaction -> {
+          // Insert record.
+          String sql =
+              "INSERT INTO Singers (SingerId, FirstName, LastName) "
+                  + " VALUES (11, 'Timothy', 'Campbell')";
+          long rowCount = transaction.executeUpdate(Statement.of(sql));
+          System.out.printf("%d record inserted.\n", rowCount);
+          // Read newly inserted record.
+          sql = "SELECT FirstName, LastName FROM Singers WHERE SingerId = 11";
+          // We use a try-with-resource block to automatically release resources held by
+          // ResultSet.
+          try (ResultSet resultSet = transaction.executeQuery(Statement.of(sql))) {
+            while (resultSet.next()) {
+              System.out.printf(
+                  "%s %s\n",
+                  resultSet.getString("FirstName"), resultSet.getString("LastName"));
+            }
+          }
+          return null;
+        });
   }
   // [END spanner_dml_write_then_read]
 
@@ -1120,15 +1094,11 @@ public class SpannerSample {
             .build();
     dbClient
         .readWriteTransaction()
-        .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws Exception {
-                long rowCount = transaction.executeUpdate(s);
-                System.out.printf("%d record updated.\n", rowCount);
-                return null;
-              }
-            });
+        .run(transaction -> {
+          long rowCount = transaction.executeUpdate(s);
+          System.out.printf("%d record updated.\n", rowCount);
+          return null;
+        });
   }
   // [END spanner_dml_structs]
 
@@ -1137,21 +1107,17 @@ public class SpannerSample {
     // Insert 4 singer records
     dbClient
         .readWriteTransaction()
-        .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws Exception {
-                String sql =
-                    "INSERT INTO Singers (SingerId, FirstName, LastName) VALUES "
-                        + "(12, 'Melissa', 'Garcia'), "
-                        + "(13, 'Russell', 'Morales'), "
-                        + "(14, 'Jacqueline', 'Long'), "
-                        + "(15, 'Dylan', 'Shaw')";
-                long rowCount = transaction.executeUpdate(Statement.of(sql));
-                System.out.printf("%d records inserted.\n", rowCount);
-                return null;
-              }
-            });
+        .run(transaction -> {
+          String sql =
+              "INSERT INTO Singers (SingerId, FirstName, LastName) VALUES "
+                  + "(12, 'Melissa', 'Garcia'), "
+                  + "(13, 'Russell', 'Morales'), "
+                  + "(14, 'Jacqueline', 'Long'), "
+                  + "(15, 'Dylan', 'Shaw')";
+          long rowCount = transaction.executeUpdate(Statement.of(sql));
+          System.out.printf("%d records inserted.\n", rowCount);
+          return null;
+        });
   }
   // [END spanner_dml_getting_started_insert]
 
@@ -1181,55 +1147,51 @@ public class SpannerSample {
   static void writeWithTransactionUsingDml(DatabaseClient dbClient) {
     dbClient
         .readWriteTransaction()
-        .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws Exception {
-                // Transfer marketing budget from one album to another. We do it in a transaction to
-                // ensure that the transfer is atomic.
-                String sql1 =
-                    "SELECT MarketingBudget from Albums WHERE SingerId = 2 and AlbumId = 2";
-                ResultSet resultSet = transaction.executeQuery(Statement.of(sql1));
-                long album2Budget = 0;
-                while (resultSet.next()) {
-                  album2Budget = resultSet.getLong("MarketingBudget");
-                }
-                // Transaction will only be committed if this condition still holds at the time of
-                // commit. Otherwise it will be aborted and the callable will be rerun by the
-                // client library.
-                long transfer = 200000;
-                if (album2Budget >= transfer) {
-                  String sql2 =
-                      "SELECT MarketingBudget from Albums WHERE SingerId = 1 and AlbumId = 1";
-                  ResultSet resultSet2 = transaction.executeQuery(Statement.of(sql2));
-                  long album1Budget = 0;
-                  while (resultSet2.next()) {
-                    album1Budget = resultSet2.getLong("MarketingBudget");
-                  }
-                  album1Budget += transfer;
-                  album2Budget -= transfer;
-                  Statement updateStatement =
-                      Statement.newBuilder(
-                              "UPDATE Albums "
-                                  + "SET MarketingBudget = @AlbumBudget "
-                                  + "WHERE SingerId = 1 and AlbumId = 1")
-                          .bind("AlbumBudget")
-                          .to(album1Budget)
-                          .build();
-                  transaction.executeUpdate(updateStatement);
-                  Statement updateStatement2 =
-                      Statement.newBuilder(
-                              "UPDATE Albums "
-                                  + "SET MarketingBudget = @AlbumBudget "
-                                  + "WHERE SingerId = 2 and AlbumId = 2")
-                          .bind("AlbumBudget")
-                          .to(album2Budget)
-                          .build();
-                  transaction.executeUpdate(updateStatement2);
-                }
-                return null;
-              }
-            });
+        .run(transaction -> {
+          // Transfer marketing budget from one album to another. We do it in a transaction to
+          // ensure that the transfer is atomic.
+          String sql1 =
+              "SELECT MarketingBudget from Albums WHERE SingerId = 2 and AlbumId = 2";
+          ResultSet resultSet = transaction.executeQuery(Statement.of(sql1));
+          long album2Budget = 0;
+          while (resultSet.next()) {
+            album2Budget = resultSet.getLong("MarketingBudget");
+          }
+          // Transaction will only be committed if this condition still holds at the time of
+          // commit. Otherwise it will be aborted and the callable will be rerun by the
+          // client library.
+          long transfer = 200000;
+          if (album2Budget >= transfer) {
+            String sql2 =
+                "SELECT MarketingBudget from Albums WHERE SingerId = 1 and AlbumId = 1";
+            ResultSet resultSet2 = transaction.executeQuery(Statement.of(sql2));
+            long album1Budget = 0;
+            while (resultSet2.next()) {
+              album1Budget = resultSet2.getLong("MarketingBudget");
+            }
+            album1Budget += transfer;
+            album2Budget -= transfer;
+            Statement updateStatement =
+                Statement.newBuilder(
+                    "UPDATE Albums "
+                        + "SET MarketingBudget = @AlbumBudget "
+                        + "WHERE SingerId = 1 and AlbumId = 1")
+                    .bind("AlbumBudget")
+                    .to(album1Budget)
+                    .build();
+            transaction.executeUpdate(updateStatement);
+            Statement updateStatement2 =
+                Statement.newBuilder(
+                    "UPDATE Albums "
+                        + "SET MarketingBudget = @AlbumBudget "
+                        + "WHERE SingerId = 2 and AlbumId = 2")
+                    .bind("AlbumBudget")
+                    .to(album2Budget)
+                    .build();
+            transaction.executeUpdate(updateStatement2);
+          }
+          return null;
+        });
   }
   // [END spanner_dml_getting_started_update]
 
@@ -1253,33 +1215,29 @@ public class SpannerSample {
   static void updateUsingBatchDml(DatabaseClient dbClient) {
     dbClient
         .readWriteTransaction()
-        .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws Exception {
-                List<Statement> stmts = new ArrayList<Statement>();
-                String sql =
-                    "INSERT INTO Albums "
-                        + "(SingerId, AlbumId, AlbumTitle, MarketingBudget) "
-                        + "VALUES (1, 3, 'Test Album Title', 10000) ";
-                stmts.add(Statement.of(sql));
-                sql =
-                    "UPDATE Albums "
-                        + "SET MarketingBudget = MarketingBudget * 2 "
-                        + "WHERE SingerId = 1 and AlbumId = 3";
-                stmts.add(Statement.of(sql));
-                long[] rowCounts;
-                try {
-                  rowCounts = transaction.batchUpdate(stmts);
-                } catch (SpannerBatchUpdateException e) {
-                  rowCounts = e.getUpdateCounts();
-                }
-                for (int i = 0; i < rowCounts.length; i++) {
-                  System.out.printf("%d record updated by stmt %d.\n", rowCounts[i], i);
-                }
-                return null;
-              }
-            });
+        .run(transaction -> {
+          List<Statement> stmts = new ArrayList<Statement>();
+          String sql =
+              "INSERT INTO Albums "
+                  + "(SingerId, AlbumId, AlbumTitle, MarketingBudget) "
+                  + "VALUES (1, 3, 'Test Album Title', 10000) ";
+          stmts.add(Statement.of(sql));
+          sql =
+              "UPDATE Albums "
+                  + "SET MarketingBudget = MarketingBudget * 2 "
+                  + "WHERE SingerId = 1 and AlbumId = 3";
+          stmts.add(Statement.of(sql));
+          long[] rowCounts;
+          try {
+            rowCounts = transaction.batchUpdate(stmts);
+          } catch (SpannerBatchUpdateException e) {
+            rowCounts = e.getUpdateCounts();
+          }
+          for (int i = 0; i < rowCounts.length; i++) {
+            System.out.printf("%d record updated by stmt %d.\n", rowCounts[i], i);
+          }
+          return null;
+        });
   }
   // [END spanner_dml_batch_update]
 
@@ -1549,7 +1507,11 @@ public class SpannerSample {
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setDefaultQueryOptions(
-                db, QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                db, QueryOptions
+                    .newBuilder()
+                    .setOptimizerVersion("1")
+                    .setOptimizerStatisticsPackage("auto_20191128_14_47_22UTC")
+                    .build())
             .build();
     Spanner spanner = options.getService();
     DatabaseClient dbClient = spanner.getDatabaseClient(db);
@@ -1573,7 +1535,11 @@ public class SpannerSample {
             .executeQuery(
                 Statement
                     .newBuilder("SELECT SingerId, AlbumId, AlbumTitle FROM Albums")
-                    .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                    .withQueryOptions(QueryOptions
+                        .newBuilder()
+                        .setOptimizerVersion("1")
+                        .setOptimizerStatisticsPackage("latest")
+                        .build())
                     .build())) {
       while (resultSet.next()) {
         System.out.printf(
@@ -1662,6 +1628,8 @@ public class SpannerSample {
       if (pollingFuture.get().getErrorCode() == null) {
         // Backup was created before it could be cancelled. Delete the backup.
         backup.delete();
+        System.out.println("Backup operation for [" + backup.getId()
+            + "] successfully finished before it could be cancelled");
       } else if (pollingFuture.get().getErrorCode().getCode() == StatusCode.Code.CANCELLED) {
         System.out.println("Backup operation for [" + backup.getId() + "] successfully cancelled");
       }

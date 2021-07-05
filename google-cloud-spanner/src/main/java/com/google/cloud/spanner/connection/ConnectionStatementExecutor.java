@@ -66,6 +66,10 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowOptimizerVersion();
 
+  StatementResult statementSetOptimizerStatisticsPackage(String optimizerStatisticsPackage);
+
+  StatementResult statementShowOptimizerStatisticsPackage();
+
   StatementResult statementSetReturnCommitStats(Boolean returnCommitStats);
 
   StatementResult statementShowReturnCommitStats();

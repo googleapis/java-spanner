@@ -39,6 +39,7 @@ import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -160,12 +161,12 @@ public class ITTransactionManagerTest {
   @Test
   public void abortAndRetry() throws InterruptedException {
     assumeFalse(
-        "Emulator does not support more than 1 simultanous transaction. "
-            + "This test would therefore loop indefinetly on the emulator.",
+        "Emulator does not support more than 1 simultaneous transaction. "
+            + "This test would therefore loop indefinitely on the emulator.",
         isUsingEmulator());
 
     client.write(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertBuilder("T").set("K").to("Key3").set("BoolValue").to(true).build()));
     try (TransactionManager manager1 = client.transactionManager()) {
       TransactionContext txn1 = manager1.begin();

@@ -149,7 +149,7 @@ public class SpannerExceptionFactoryTest {
     SpannerException e =
         SpannerExceptionFactory.newSpannerException(new StatusRuntimeException(status, trailers));
     assertThat(e).isInstanceOf(AbortedException.class);
-    assertThat(((AbortedException) e).getRetryDelayInMillis()).isEqualTo(1001L);
+    assertThat(e.getRetryDelayInMillis()).isEqualTo(1001L);
   }
 
   @Test
@@ -158,7 +158,7 @@ public class SpannerExceptionFactoryTest {
     SpannerException e =
         SpannerExceptionFactory.newSpannerException(new StatusRuntimeException(status));
     assertThat(e).isInstanceOf(AbortedException.class);
-    assertThat(((AbortedException) e).getRetryDelayInMillis()).isEqualTo(-1L);
+    assertThat(e.getRetryDelayInMillis()).isEqualTo(-1L);
   }
 
   @Test
@@ -170,7 +170,7 @@ public class SpannerExceptionFactoryTest {
     SpannerException e =
         SpannerExceptionFactory.newSpannerException(new StatusRuntimeException(status, trailers));
     assertThat(e).isInstanceOf(AbortedException.class);
-    assertThat(((AbortedException) e).getRetryDelayInMillis()).isEqualTo(-1L);
+    assertThat(e.getRetryDelayInMillis()).isEqualTo(-1L);
   }
 
   @Test

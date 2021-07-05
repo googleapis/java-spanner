@@ -18,7 +18,8 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -39,12 +40,7 @@ public class SpannerApiFuturesTest {
 
   @Test
   public void testGetNull() {
-    try {
-      get(null);
-      fail("Missing expected exception");
-    } catch (NullPointerException e) {
-      // Ignore, this is the expected exception.
-    }
+    assertThrows(NullPointerException.class, () -> get(null));
   }
 
   @Test
@@ -58,61 +54,45 @@ public class SpannerApiFuturesTest {
         ApiFutures.immediateFailedFuture(
             SpannerExceptionFactory.newSpannerException(
                 ErrorCode.FAILED_PRECONDITION, "test exception"));
-    try {
-      get(fut);
-      fail("Missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-      assertThat(e.getMessage()).contains("test exception");
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> get(fut));
+    assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    assertThat(e.getMessage()).contains("test exception");
   }
 
   @Test
   public void testGetOtherException() {
     ApiFuture<Void> fut =
         ApiFutures.immediateFailedFuture(new RuntimeException("test runtime exception"));
-    try {
-      get(fut);
-      fail("Missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
-      assertThat(e.getMessage()).contains("test runtime exception");
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> get(fut));
+    assertEquals(ErrorCode.UNKNOWN, e.getErrorCode());
+    assertThat(e.getMessage()).contains("test runtime exception");
   }
 
   @Test
   public void testGetInterruptedException() {
     ApiFuture<Void> fut =
-        new ForwardingApiFuture<Void>(ApiFutures.<Void>immediateFuture(null)) {
+        new ForwardingApiFuture<Void>(ApiFutures.immediateFuture(null)) {
           public Void get() throws InterruptedException {
             throw new InterruptedException("test interrupted exception");
           }
         };
-    try {
-      get(fut);
-      fail("Missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.CANCELLED);
-      // The message of an interrupted exception is not included in the SpannerException.
-      assertThat(e.getMessage()).doesNotContain("test interrupted exception");
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> get(fut));
+    assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
+    // The message of an interrupted exception is not included in the SpannerException.
+    assertThat(e.getMessage()).doesNotContain("test interrupted exception");
   }
 
   @Test
   public void testGetCancellationException() {
     ApiFuture<Void> fut =
-        new ForwardingApiFuture<Void>(ApiFutures.<Void>immediateFuture(null)) {
-          public Void get() throws InterruptedException {
+        new ForwardingApiFuture<Void>(ApiFutures.immediateFuture(null)) {
+          public Void get() {
             throw new CancellationException("test cancellation exception");
           }
         };
-    try {
-      get(fut);
-      fail("Missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.CANCELLED);
-      // The message of an cancellation exception is included in the SpannerException.
-      assertThat(e.getMessage()).contains("test cancellation exception");
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> get(fut));
+    assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
+    // The message of an cancellation exception is included in the SpannerException.
+    assertThat(e.getMessage()).contains("test cancellation exception");
   }
 }

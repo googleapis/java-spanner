@@ -30,6 +30,7 @@ import javax.annotation.Nullable;
  */
 public interface TransactionRunner {
   /** A unit of work to be performed in the context of a transaction. */
+  @FunctionalInterface
   interface TransactionCallable<T> {
     /**
      * Invoked by the library framework to perform a single attempt of a transaction. This method

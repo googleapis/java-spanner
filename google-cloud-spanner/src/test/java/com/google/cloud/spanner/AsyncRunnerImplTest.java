@@ -19,15 +19,14 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
-import com.google.cloud.spanner.AsyncRunner.AsyncWork;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -57,14 +56,7 @@ public class AsyncRunnerImplTest {
 
     AsyncRunnerImpl runner = new AsyncRunnerImpl(delegate);
     ApiFuture<Object> result =
-        runner.runAsync(
-            new AsyncWork<Object>() {
-              @Override
-              public ApiFuture<Object> doWorkAsync(TransactionContext txn) {
-                return ApiFutures.immediateFuture(expectedResult);
-              }
-            },
-            executor);
+        runner.runAsync(txn -> ApiFutures.immediateFuture(expectedResult), executor);
 
     assertSame(expectedResult, get(result));
     assertSame(expectedCommitResponse, get(runner.getCommitResponse()));
@@ -76,24 +68,18 @@ public class AsyncRunnerImplTest {
   public void testGetCommitTimestampReturnsErrorBeforeRun() {
     TransactionRunnerImpl delegate = mock(TransactionRunnerImpl.class);
     AsyncRunnerImpl runner = new AsyncRunnerImpl(delegate);
-    try {
-      runner.getCommitTimestamp();
-      fail("missing expected exception");
-    } catch (IllegalStateException e) {
-      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> runner.getCommitTimestamp());
+    assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
   }
 
   @Test
   public void testGetCommitResponseReturnsErrorBeforeRun() {
     TransactionRunnerImpl delegate = mock(TransactionRunnerImpl.class);
     AsyncRunnerImpl runner = new AsyncRunnerImpl(delegate);
-    try {
-      runner.getCommitResponse();
-      fail("missing expected exception");
-    } catch (IllegalStateException e) {
-      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> runner.getCommitResponse());
+    assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
   }
 
   @Test
@@ -105,52 +91,27 @@ public class AsyncRunnerImplTest {
     when(delegate.getCommitResponse()).thenThrow(expectedException);
 
     AsyncRunnerImpl runner = new AsyncRunnerImpl(delegate);
-    runner.runAsync(
-        new AsyncWork<Void>() {
-          @Override
-          public ApiFuture<Void> doWorkAsync(TransactionContext txn) {
-            return ApiFutures.immediateFailedFuture(expectedException);
-          }
-        },
-        executor);
+    runner.runAsync(txn -> ApiFutures.immediateFailedFuture(expectedException), executor);
 
-    try {
-      get(runner.getCommitResponse());
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertSame(expectedException, e);
-    }
+    SpannerException e =
+        assertThrows(SpannerException.class, () -> get(runner.getCommitResponse()));
+    assertSame(expectedException, e);
   }
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testRunAyncFailsIfCalledMultipleTimes() {
+  public void testRunAsyncFailsIfCalledMultipleTimes() {
     final Object result = new Object();
     TransactionRunnerImpl delegate = mock(TransactionRunnerImpl.class);
     when(delegate.run(any(TransactionCallable.class))).thenReturn(result);
 
     AsyncRunnerImpl runner = new AsyncRunnerImpl(delegate);
-    runner.runAsync(
-        new AsyncWork<Object>() {
-          @Override
-          public ApiFuture<Object> doWorkAsync(TransactionContext txn) {
-            return ApiFutures.immediateFuture(result);
-          }
-        },
-        executor);
+    runner.runAsync(txn -> ApiFutures.immediateFuture(result), executor);
 
-    try {
-      runner.runAsync(
-          new AsyncWork<Object>() {
-            @Override
-            public ApiFuture<Object> doWorkAsync(TransactionContext txn) {
-              return ApiFutures.immediateFuture(null);
-            }
-          },
-          executor);
-      fail("missing expected exception");
-    } catch (IllegalStateException e) {
-      assertTrue(e.getMessage().contains("runAsync() can only be called once"));
-    }
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> runner.runAsync(txn -> ApiFutures.immediateFuture(null), executor));
+    assertTrue(e.getMessage().contains("runAsync() can only be called once"));
   }
 }

@@ -42,6 +42,6 @@ public class SetStatementTimeoutSqlScriptTest {
   @Test
   public void testSetStatementTimeoutScript() throws Exception {
     SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider());
-    verifier.verifyStatementsInFile("SetStatementTimeoutTest.sql", getClass());
+    verifier.verifyStatementsInFile("SetStatementTimeoutTest.sql", getClass(), true);
   }
 }

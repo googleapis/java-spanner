@@ -593,6 +593,7 @@
     <method>java.lang.Object get()</method>
   </difference>
   <!-- Support for tagging in Connection API -->
+  <!-- These are not breaking changes, since we provide default interface implementation -->
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/connection/Connection</className>
@@ -613,4 +614,49 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>void setTransactionTag(java.lang.String)</method>
   </difference>
+
+  <!-- Adds getValue to ResultSet -->
+  <!-- These are not breaking changes, since we provide default interface implementation -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.cloud.spanner.Value getValue(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.cloud.spanner.Value getValue(java.lang.String)</method>
+  </difference>
+
+  <!-- Adds bufferAsync to DatabaseClient -->
+  <!-- These are not breaking changes, since we provide default interface implementation -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionContext</className>
+    <method>com.google.api.core.ApiFuture bufferAsync(com.google.cloud.spanner.Mutation)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionContext</className>
+    <method>com.google.api.core.ApiFuture bufferAsync(java.lang.Iterable)</method>
+  </difference>
+
+  <!-- Query stats optimiser statistics package -->
+  <!-- These are not breaking changes, since we provide default interface implementation -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>java.lang.String getOptimizerStatisticsPackage()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>java.lang.String getOptimizerStatisticsPackage()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setOptimizerStatisticsPackage(java.lang.String)</method>
+  </difference>
+
 </differences>

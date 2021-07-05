@@ -18,12 +18,10 @@ package com.google.cloud.spanner;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.concurrent.ExecutionException;
@@ -43,16 +41,13 @@ class AsyncRunnerImpl implements AsyncRunner {
     commitResponse = SettableApiFuture.create();
     final SettableApiFuture<R> res = SettableApiFuture.create();
     executor.execute(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              res.set(runTransaction(work));
-            } catch (Throwable t) {
-              res.setException(t);
-            } finally {
-              setCommitResponse();
-            }
+        () -> {
+          try {
+            res.set(runTransaction(work));
+          } catch (Throwable t) {
+            res.setException(t);
+          } finally {
+            setCommitResponse();
           }
         });
     return res;
@@ -60,16 +55,13 @@ class AsyncRunnerImpl implements AsyncRunner {
 
   private <R> R runTransaction(final AsyncWork<R> work) {
     return delegate.run(
-        new TransactionCallable<R>() {
-          @Override
-          public R run(TransactionContext transaction) throws Exception {
-            try {
-              return work.doWorkAsync(transaction).get();
-            } catch (ExecutionException e) {
-              throw SpannerExceptionFactory.newSpannerException(e.getCause());
-            } catch (InterruptedException e) {
-              throw SpannerExceptionFactory.propagateInterrupt(e);
-            }
+        transaction -> {
+          try {
+            return work.doWorkAsync(transaction).get();
+          } catch (ExecutionException e) {
+            throw SpannerExceptionFactory.newSpannerException(e.getCause());
+          } catch (InterruptedException e) {
+            throw SpannerExceptionFactory.propagateInterrupt(e);
           }
         });
   }
@@ -86,14 +78,7 @@ class AsyncRunnerImpl implements AsyncRunner {
   public ApiFuture<Timestamp> getCommitTimestamp() {
     checkState(commitResponse != null, "runAsync() has not yet been called");
     return ApiFutures.transform(
-        commitResponse,
-        new ApiFunction<CommitResponse, Timestamp>() {
-          @Override
-          public Timestamp apply(CommitResponse input) {
-            return input.getCommitTimestamp();
-          }
-        },
-        MoreExecutors.directExecutor());
+        commitResponse, CommitResponse::getCommitTimestamp, MoreExecutors.directExecutor());
   }
 
   public ApiFuture<CommitResponse> getCommitResponse() {

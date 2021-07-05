@@ -97,6 +97,11 @@ import java.util.concurrent.TimeUnit;
  *   <li><code>
  *       SET OPTIMIZER_VERSION='&lt;version&gt;' | 'LATEST'
  *       </code>: Sets the value of <code>OPTIMIZER_VERSION</code> for this connection.
+ *   <li><code>SHOW OPTIMIZER_STATISTICS_PACKAGE</code>: Returns the current value of <code>
+ *       OPTIMIZER_STATISTICS_PACKAGE</code> of this connection as a {@link ResultSet}
+ *   <li><code>
+ *       SET OPTIMIZER_STATISTICS_PACKAGE='&lt;package&gt;' | ''
+ *       </code>: Sets the value of <code>OPTIMIZER_STATISTICS_PACKAGE</code> for this connection.
  *   <li><code>BEGIN [TRANSACTION]</code>: Begins a new transaction. This statement is optional when
  *       the connection is not in autocommit mode, as a new transaction will automatically be
  *       started when a query or update statement is issued. In autocommit mode, this statement will
@@ -496,6 +501,29 @@ public interface Connection extends AutoCloseable {
   String getOptimizerVersion();
 
   /**
+   * Sets the query optimizer statistics package
+   *
+   * @param optimizerStatisticsPackage The query optimizer statistics package to use. Must be a
+   *     string composed of letters, numbers, dashes and underscores or an empty string. The empty
+   *     string will instruct the connection to use the optimizer statistics package that is defined
+   *     the environment variable <code>SPANNER_OPTIMIZER_STATISTICS_PACKAGE</code>. If no value is
+   *     specified in the environment variable, the client level query optimizer is used. If none is
+   *     set, the default query optimizer of Cloud Spanner is used.
+   */
+  default void setOptimizerStatisticsPackage(String optimizerStatisticsPackage) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
+   * Gets the current query optimizer statistics package of this connection.
+   *
+   * @return The query optimizer statistics package that is currently used by this connection.
+   */
+  default String getOptimizerStatisticsPackage() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
    * Sets whether this connection should request commit statistics from Cloud Spanner for read/write
    * transactions and DML statements in autocommit mode.
    */
@@ -847,13 +875,6 @@ public interface Connection extends AutoCloseable {
   ResultSet executeQuery(Statement query, QueryOption... options);
 
   /**
-   * Same as {@link #executeQuery(Statement, QueryOption...)}, but is guaranteed to be non-blocking
-   * and returns the query result as an {@link AsyncResultSet}. See {@link
-   * AsyncResultSet#setCallback(java.util.concurrent.Executor,
-   * com.google.cloud.spanner.AsyncResultSet.ReadyCallback)} for more information on how to consume
-   * the results of the query asynchronously.
-   */
-  /**
    * Executes the given statement asynchronously as a query and returns the result as an {@link
    * AsyncResultSet}. This method is guaranteed to be non-blocking. If the statement does not
    * contain a valid query, the method will throw a {@link SpannerException}.
@@ -1058,7 +1079,7 @@ public interface Connection extends AutoCloseable {
    * <p>NOT INTENDED FOR EXTERNAL USE!
    */
   @InternalApi
-  public static final class InternalMetadataQuery implements QueryOption {
+  final class InternalMetadataQuery implements QueryOption {
     @InternalApi public static final InternalMetadataQuery INSTANCE = new InternalMetadataQuery();
 
     private InternalMetadataQuery() {}

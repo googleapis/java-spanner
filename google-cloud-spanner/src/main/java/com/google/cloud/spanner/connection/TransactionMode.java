@@ -23,7 +23,7 @@ public enum TransactionMode {
 
   private final String statementString;
 
-  private TransactionMode(String statement) {
+  TransactionMode(String statement) {
     this.statementString = statement;
   }
 

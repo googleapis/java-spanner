@@ -4,22 +4,22 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "a04d619e7be870371272738c2ddfdcddb0332830"
+        "sha": "ffc190ca55c57cee675515ca364d1b1f116c7b29"
       }
     },
     {
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "94c6e8461bc03382ee475c7b93e954f288c1d1f4",
-        "internalRef": "367675548"
+        "sha": "2c6e4dd22260e34403b468cc6d19aa43a9c684ed",
+        "internalRef": "382409094"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "082e1ca0863b13ada8594fe91845380765da5b70"
+        "sha": "87254ac89a9559864c0a245d6b150406439ce3d8"
       }
     }
   ],
@@ -57,7 +57,6 @@
     ".github/ISSUE_TEMPLATE/feature_request.md",
     ".github/ISSUE_TEMPLATE/support_request.md",
     ".github/PULL_REQUEST_TEMPLATE.md",
-    ".github/blunderbuss.yml",
     ".github/generated-files-bot.yml",
     ".github/readme/synth.py",
     ".github/snippet-bot.yml",
@@ -111,6 +110,7 @@
     "CODE_OF_CONDUCT.md",
     "CONTRIBUTING.md",
     "LICENSE",
+    "SECURITY.md",
     "codecov.yaml",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/DatabaseAdminClient.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/DatabaseAdminSettings.java",
@@ -271,6 +271,7 @@
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitRequestOrBuilder.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitResponse.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitResponseOrBuilder.java",
+    "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CommitResponseProto.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CreateSessionRequest.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/CreateSessionRequestOrBuilder.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/DatabaseName.java",
@@ -343,6 +344,7 @@
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TypeCode.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TypeOrBuilder.java",
     "proto-google-cloud-spanner-v1/src/main/java/com/google/spanner/v1/TypeProto.java",
+    "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/commit_response.proto",
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/keys.proto",
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/mutation.proto",
     "proto-google-cloud-spanner-v1/src/main/proto/google/spanner/v1/query_plan.proto",

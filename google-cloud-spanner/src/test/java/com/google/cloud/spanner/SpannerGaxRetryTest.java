@@ -20,17 +20,13 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
-import com.google.api.gax.rpc.UnaryCallSettings;
-import com.google.api.gax.rpc.UnaryCallSettings.Builder;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -134,8 +130,7 @@ public class SpannerGaxRetryTest {
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
     // Make sure the session pool is empty by default.
-    builder.setSessionPoolOption(
-        SessionPoolOptions.newBuilder().setMinSessions(0).setWriteSessionsFraction(0.0f).build());
+    builder.setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build());
     // Create one client with default timeout values and one with short timeout values specifically
     // for the test cases that expect a DEADLINE_EXCEEDED.
     spanner = builder.build().getService();
@@ -145,8 +140,8 @@ public class SpannerGaxRetryTest {
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofMillis(1L))
             .setMaxRetryDelay(Duration.ofMillis(1L))
-            .setInitialRpcTimeout(Duration.ofMillis(75L))
-            .setMaxRpcTimeout(Duration.ofMillis(75L))
+            .setInitialRpcTimeout(Duration.ofMillis(175L))
+            .setMaxRpcTimeout(Duration.ofMillis(175L))
             .setMaxAttempts(3)
             .setTotalTimeout(Duration.ofMillis(200L))
             .build();
@@ -162,12 +157,9 @@ public class SpannerGaxRetryTest {
     builder
         .getSpannerStubSettingsBuilder()
         .applyToAllUnaryMethods(
-            new ApiFunction<UnaryCallSettings.Builder<?, ?>, Void>() {
-              @Override
-              public Void apply(Builder<?, ?> input) {
-                input.setRetrySettings(retrySettings);
-                return null;
-              }
+            input -> {
+              input.setRetrySettings(retrySettings);
+              return null;
             });
     builder
         .getSpannerStubSettingsBuilder()
@@ -197,14 +189,7 @@ public class SpannerGaxRetryTest {
       while (true) {
         try {
           TransactionRunner runner = client.readWriteTransaction();
-          long updateCount =
-              runner.run(
-                  new TransactionCallable<Long>() {
-                    @Override
-                    public Long run(TransactionContext transaction) {
-                      return transaction.executeUpdate(UPDATE_STATEMENT);
-                    }
-                  });
+          long updateCount = runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
           assertThat(updateCount, is(equalTo(UPDATE_COUNT)));
           break;
         } catch (SpannerException e) {
@@ -223,11 +208,8 @@ public class SpannerGaxRetryTest {
   public void singleUseTimeout() {
     mockSpanner.setBatchCreateSessionsExecutionTime(ONE_SECOND);
     try (ResultSet rs = clientWithTimeout.singleUse().executeQuery(SELECT1AND2)) {
-      while (rs.next()) {
-        fail("Expected exception");
-      }
-    } catch (SpannerException ex) {
-      assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
     }
   }
 
@@ -243,11 +225,8 @@ public class SpannerGaxRetryTest {
   public void singleUseNonRetryableError() {
     mockSpanner.addException(FAILED_PRECONDITION);
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1AND2)) {
-      while (rs.next()) {
-        fail("Expected exception");
-      }
-    } catch (SpannerException ex) {
-      assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
   }
 
@@ -255,11 +234,8 @@ public class SpannerGaxRetryTest {
   public void singleUseNonRetryableErrorOnNext() {
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1AND2)) {
       mockSpanner.addException(FAILED_PRECONDITION);
-      while (rs.next()) {
-        fail("Expected exception");
-      }
-    } catch (SpannerException ex) {
-      assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
   }
 
@@ -267,11 +243,8 @@ public class SpannerGaxRetryTest {
   public void singleUseInternal() {
     mockSpanner.addException(new IllegalArgumentException());
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1AND2)) {
-      while (rs.next()) {
-        fail("Expected exception");
-      }
-    } catch (SpannerException ex) {
-      assertEquals(ErrorCode.INTERNAL, ex.getErrorCode());
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
     }
   }
 
@@ -280,11 +253,8 @@ public class SpannerGaxRetryTest {
     mockSpanner.setBatchCreateSessionsExecutionTime(ONE_SECOND);
     try (ResultSet rs =
         clientWithTimeout.singleUseReadOnlyTransaction().executeQuery(SELECT1AND2)) {
-      while (rs.next()) {
-        fail("Expected exception");
-      }
-    } catch (SpannerException ex) {
-      assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
     }
   }
 
@@ -300,11 +270,8 @@ public class SpannerGaxRetryTest {
   public void singleUseExecuteStreamingSqlTimeout() {
     try (ResultSet rs = clientWithTimeout.singleUse().executeQuery(SELECT1AND2)) {
       mockSpanner.setExecuteStreamingSqlExecutionTime(ONE_SECOND);
-      while (rs.next()) {
-        fail("Expected exception");
-      }
-    } catch (SpannerException ex) {
-      assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
     }
   }
 
@@ -319,19 +286,11 @@ public class SpannerGaxRetryTest {
   @Test
   public void readWriteTransactionTimeout() {
     mockSpanner.setBeginTransactionExecutionTime(ONE_SECOND);
-    try {
-      TransactionRunner runner = clientWithTimeout.readWriteTransaction();
-      runner.run(
-          new TransactionCallable<Void>() {
-            @Override
-            public Void run(TransactionContext transaction) throws Exception {
-              return null;
-            }
-          });
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertEquals(ErrorCode.DEADLINE_EXCEEDED, ex.getErrorCode());
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> clientWithTimeout.readWriteTransaction().run(transaction -> null));
+    assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
   }
 
   @Test
@@ -339,14 +298,7 @@ public class SpannerGaxRetryTest {
     warmUpSessionPool(client);
     mockSpanner.addException(UNAVAILABLE);
     TransactionRunner runner = client.readWriteTransaction();
-    long updateCount =
-        runner.run(
-            new TransactionCallable<Long>() {
-              @Override
-              public Long run(TransactionContext transaction) {
-                return transaction.executeUpdate(UPDATE_STATEMENT);
-              }
-            });
+    long updateCount = runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
     assertThat(updateCount, is(equalTo(UPDATE_COUNT)));
   }
 
@@ -356,14 +308,11 @@ public class SpannerGaxRetryTest {
     final AtomicInteger attempts = new AtomicInteger();
     long updateCount =
         runner.run(
-            new TransactionCallable<Long>() {
-              @Override
-              public Long run(TransactionContext transaction) {
-                if (attempts.getAndIncrement() == 0) {
-                  mockSpanner.abortNextStatement();
-                }
-                return transaction.executeUpdate(UPDATE_STATEMENT);
+            transaction -> {
+              if (attempts.getAndIncrement() == 0) {
+                mockSpanner.abortNextStatement();
               }
+              return transaction.executeUpdate(UPDATE_STATEMENT);
             });
     assertThat(updateCount, is(equalTo(UPDATE_COUNT)));
     assertThat(attempts.get(), is(equalTo(2)));
@@ -375,15 +324,12 @@ public class SpannerGaxRetryTest {
     final AtomicInteger attempts = new AtomicInteger();
     long updateCount =
         runner.run(
-            new TransactionCallable<Long>() {
-              @Override
-              public Long run(TransactionContext transaction) {
-                long res = transaction.executeUpdate(UPDATE_STATEMENT);
-                if (attempts.getAndIncrement() == 0) {
-                  mockSpanner.abortTransaction(transaction);
-                }
-                return res;
+            transaction -> {
+              long res = transaction.executeUpdate(UPDATE_STATEMENT);
+              if (attempts.getAndIncrement() == 0) {
+                mockSpanner.abortTransaction(transaction);
               }
+              return res;
             });
     assertThat(updateCount, is(equalTo(UPDATE_COUNT)));
     assertThat(attempts.get(), is(equalTo(2)));
@@ -393,12 +339,9 @@ public class SpannerGaxRetryTest {
   public void readWriteTransactionCheckedException() {
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<Long>() {
-          @Override
-          public Long run(TransactionContext transaction) throws Exception {
-            transaction.executeUpdate(UPDATE_STATEMENT);
-            throw new Exception("test");
-          }
+        transaction -> {
+          transaction.executeUpdate(UPDATE_STATEMENT);
+          throw new Exception("test");
         });
   }
 
@@ -406,33 +349,20 @@ public class SpannerGaxRetryTest {
   public void readWriteTransactionUncheckedException() {
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
-        new TransactionCallable<Long>() {
-          @Override
-          public Long run(TransactionContext transaction) {
-            transaction.executeUpdate(UPDATE_STATEMENT);
-            throw SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "test");
-          }
+        transaction -> {
+          transaction.executeUpdate(UPDATE_STATEMENT);
+          throw SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "test");
         });
   }
 
-  @SuppressWarnings("resource")
   @Test
   public void transactionManagerTimeout() {
     mockSpanner.setExecuteSqlExecutionTime(ONE_SECOND);
     try (TransactionManager txManager = clientWithTimeout.transactionManager()) {
       TransactionContext tx = txManager.begin();
-      while (true) {
-        try {
-          assertThat(tx.executeUpdate(UPDATE_STATEMENT), is(equalTo(UPDATE_COUNT)));
-          txManager.commit();
-          break;
-        } catch (AbortedException e) {
-          tx = txManager.resetForRetry();
-        }
-      }
-      fail("missing DEADLINE_EXCEEDED exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode(), is(equalTo(ErrorCode.DEADLINE_EXCEEDED)));
+      SpannerException e =
+          assertThrows(SpannerException.class, () -> tx.executeUpdate(UPDATE_STATEMENT));
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
     }
   }
 
