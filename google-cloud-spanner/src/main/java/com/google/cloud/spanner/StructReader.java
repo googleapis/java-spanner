@@ -117,7 +117,7 @@ public interface StructReader {
   };
 
   /** Returns the value of a non-{@code NULL} column with type {@link Type#string()}. */
-  default String getJson(int columnIndex){
+  default String getJson(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
   };
 
@@ -239,12 +239,12 @@ public interface StructReader {
   List<String> getStringList(String columnName);
 
   /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. */
-  default List<String> getJsonList(int columnIndex){
+  default List<String> getJsonList(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
   };
 
   /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. */
-  default List<String> getJsonList(String columnName){
+  default List<String> getJsonList(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
   };
 
