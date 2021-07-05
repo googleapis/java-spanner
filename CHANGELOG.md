@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.9.0](https://www.github.com/googleapis/java-spanner/compare/v6.8.0...v6.9.0) (2021-07-05)
+
+
+### Features
+
+* add support for tagging to Connection API ([#623](https://www.github.com/googleapis/java-spanner/issues/623)) ([5722372](https://www.github.com/googleapis/java-spanner/commit/5722372b7869828e372dec06e80e5b0e7280af61))
+* **spanner:** add leader_options to InstanceConfig and default_leader to Database ([#1271](https://www.github.com/googleapis/java-spanner/issues/1271)) ([f257671](https://www.github.com/googleapis/java-spanner/commit/f25767144344f0df67662f1b3ef662902384599a))
+* support setting an async executor provider ([#1263](https://www.github.com/googleapis/java-spanner/issues/1263)) ([369c8a7](https://www.github.com/googleapis/java-spanner/commit/369c8a771ec48fa1476236f800b0e8eb5982a33c))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v1.4.0 ([#1269](https://www.github.com/googleapis/java-spanner/issues/1269)) ([025e162](https://www.github.com/googleapis/java-spanner/commit/025e162813d6321dabe49e32f00934f9ae334e24))
+
 ## [6.8.0](https://www.github.com/googleapis/java-spanner/compare/v6.7.0...v6.8.0) (2021-06-29)
 
 
