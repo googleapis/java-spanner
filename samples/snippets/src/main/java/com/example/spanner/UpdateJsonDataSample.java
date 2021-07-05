@@ -17,6 +17,7 @@
 package main.java.com.example.spanner;
 
 // [START spanner_update_data_with_json_column]
+
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Mutation;
@@ -49,7 +50,8 @@ class UpdateJsonDataSample {
                 .set("RevenueDetails")
                 .to(
                     Value.json(
-                        "[{\"name\":\"room 1\",\"open\":true},{\"name\":\"room 2\",\"open\":false}]"))
+                        "[{\"name\":\"room 1\",\"open\":true},"
+                            + "{\"name\":\"room 2\",\"open\":false}]"))
                 .build(),
             Mutation.newInsertOrUpdateBuilder("Venues")
                 .set("VenueId")
@@ -63,7 +65,9 @@ class UpdateJsonDataSample {
                 .set("RevenueDetails")
                 .to(
                     Value.json(
-                        "{\"name\":null,\"open\":{\"Monday\":true,\"Tuesday\":false},\"tags\":[\"large\",\"airy\"]}"))
+                        "{\"name\":null,"
+                            + "\"open\":{\"Monday\":true,\"Tuesday\":false},"
+                            + "\"tags\":[\"large\",\"airy\"]}"))
                 .build()));
     System.out.println("Venues successfully updated");
   }

@@ -46,7 +46,8 @@ class QueryWithJsonParameterSample {
         Statement.newBuilder(
                 "SELECT VenueId, VenueDetails\n"
                     + "FROM Venues\n"
-                    + "WHERE JSON_VALUE(VenueDetails, '$.rating') = JSON_VALUE(@details, '$.rating')")
+                    + "WHERE JSON_VALUE(VenueDetails, '$.rating') = "
+                    + "JSON_VALUE(@details, '$.rating')")
             .bind("details")
             .to(Value.json(exampleJson))
             .build();

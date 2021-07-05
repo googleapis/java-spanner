@@ -265,7 +265,9 @@ public class SpannerSample {
               0.72598f,
               new BigDecimal("390650.99"),
               Value.json(
-                  "{\"name\":null,\"open\":{\"Monday\":true,\"Tuesday\":false},\"tags\":[\"large\",\"airy\"]}")));
+                  "{\"name\":null,"
+                      + "\"open\":{\"Monday\":true,\"Tuesday\":false},"
+                      + "\"tags\":[\"large\",\"airy\"]}")));
   // [END spanner_insert_datatypes_data]
 
   // [START spanner_create_database]
@@ -1528,7 +1530,8 @@ public class SpannerSample {
         Statement.newBuilder(
                 "SELECT VenueId, VenueDetails\n"
                     + "FROM Venues\n"
-                    + "WHERE JSON_VALUE(VenueDetails, '$.rating') = JSON_VALUE(@details, '$.rating')")
+                    + "WHERE JSON_VALUE(VenueDetails, '$.rating') = "
+                    + "JSON_VALUE(@details, '$.rating')")
             .bind("details")
             .to(Value.json(exampleJson))
             .build();
