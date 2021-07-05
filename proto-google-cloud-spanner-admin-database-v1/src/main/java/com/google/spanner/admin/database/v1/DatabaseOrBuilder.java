@@ -395,4 +395,37 @@ public interface DatabaseOrBuilder
    * </code>
    */
   com.google.protobuf.TimestampOrBuilder getEarliestVersionTimeOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The read-write region which contains the database's leader
+   * replicas.
+   * This is the same as the value of default_leader
+   * database option set using DatabaseAdmin.CreateDatabase or
+   * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+   * </pre>
+   *
+   * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The defaultLeader.
+   */
+  java.lang.String getDefaultLeader();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The read-write region which contains the database's leader
+   * replicas.
+   * This is the same as the value of default_leader
+   * database option set using DatabaseAdmin.CreateDatabase or
+   * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+   * </pre>
+   *
+   * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The bytes for defaultLeader.
+   */
+  com.google.protobuf.ByteString getDefaultLeaderBytes();
 }
