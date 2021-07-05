@@ -24,7 +24,10 @@ import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.InstanceAdminClient;
+import com.google.cloud.spanner.InstanceConfigId;
 import com.google.cloud.spanner.InstanceId;
+import com.google.cloud.spanner.InstanceInfo;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -402,40 +405,51 @@ public class SpannerSampleIT {
 
     out = runSample("deletebackup");
     assertThat(out).contains("Deleted backup [" + backupId + "]");
-    
+  }
+  
+  @Test
+  public void testEncryptedDatabaseAndBackupSamples() throws Exception {
     String projectId = spanner.getOptions().getProjectId();
-    out = SampleRunner
-        .runSample(() -> CreateDatabaseWithEncryptionKey.createDatabaseWithEncryptionKey(
-            dbClient,
-            projectId,
-            instanceId,
-            encryptedDatabaseId,
-            key));
-    assertThat(out).contains(String.format(
-        "Database projects/%s/instances/%s/databases/%s created with encryption key %s",
-        projectId, instanceId, encryptedDatabaseId, key));
+    // Create a separate instance for this test to prevent multiple parallel backup operations on
+    // the same instance that need to wait for each other.
+    String instanceId = String.format("encrypted-test-%s", UUID.randomUUID());
+    InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
+    instanceAdminClient
+        .createInstance(InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
+            .setDisplayName("Encrypted Databases and Backups test instance")
+            .setInstanceConfigId(InstanceConfigId.of(projectId, "regional-us-central1"))
+            .setNodeCount(1).build())
+        .get();
+    try {
+      String out = SampleRunner
+          .runSample(() -> CreateDatabaseWithEncryptionKey.createDatabaseWithEncryptionKey(dbClient,
+              projectId, instanceId, encryptedDatabaseId, key));
+      assertThat(out).contains(String.format(
+          "Database projects/%s/instances/%s/databases/%s created with encryption key %s",
+          projectId, instanceId, encryptedDatabaseId, key));
 
-    out = SampleRunner.runSampleWithRetry(
-        () -> CreateBackupWithEncryptionKey.createBackupWithEncryptionKey(dbClient, projectId,
-            instanceId, encryptedDatabaseId, encryptedBackupId, key),
-        new ShouldRetryBackupOperation());
-    assertThat(out).containsMatch(String.format(
-        "Backup projects/%s/instances/%s/backups/%s of size \\d+ bytes "
-        + "was created at (.*) using encryption key %s",
-        projectId, instanceId, encryptedBackupId, key));
+      out = SampleRunner.runSampleWithRetry(
+          () -> CreateBackupWithEncryptionKey.createBackupWithEncryptionKey(dbClient, projectId,
+              instanceId, encryptedDatabaseId, encryptedBackupId, key),
+          new ShouldRetryBackupOperation());
+      assertThat(out).containsMatch(String.format(
+          "Backup projects/%s/instances/%s/backups/%s of size \\d+ bytes "
+              + "was created at (.*) using encryption key %s",
+          projectId, instanceId, encryptedBackupId, key));
 
-    out = SampleRunner.runSampleWithRetry(
-        () -> RestoreBackupWithEncryptionKey.restoreBackupWithEncryptionKey(dbClient, projectId,
-            instanceId, encryptedBackupId, encryptedRestoreId, key),
-        new ShouldRetryBackupOperation());
-    assertThat(out).contains(String.format(
-        "Database projects/%s/instances/%s/databases/%s"
-        + " restored to projects/%s/instances/%s/databases/%s" 
-        + " from backup projects/%s/instances/%s/backups/%s" 
-        + " using encryption key %s",
-        projectId, instanceId, encryptedDatabaseId,
-        projectId, instanceId, encryptedRestoreId,
-        projectId, instanceId, encryptedBackupId, key));
+      out = SampleRunner.runSampleWithRetry(
+          () -> RestoreBackupWithEncryptionKey.restoreBackupWithEncryptionKey(dbClient, projectId,
+              instanceId, encryptedBackupId, encryptedRestoreId, key),
+          new ShouldRetryBackupOperation());
+      assertThat(out).contains(String.format(
+          "Database projects/%s/instances/%s/databases/%s"
+              + " restored to projects/%s/instances/%s/databases/%s"
+              + " from backup projects/%s/instances/%s/backups/%s" + " using encryption key %s",
+          projectId, instanceId, encryptedDatabaseId, projectId, instanceId, encryptedRestoreId,
+          projectId, instanceId, encryptedBackupId, key));
+    } finally {
+      instanceAdminClient.deleteInstance(instanceId);
+    }
   }
 
   private String runSampleRunnable(Runnable sample) {
