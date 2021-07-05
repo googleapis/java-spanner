@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /** Represents a Cloud Spanner instance config resource. */
@@ -23,10 +25,16 @@ public class InstanceConfigInfo {
 
   private final InstanceConfigId id;
   private final String displayName;
+  private final List<String> leaderOptions;
 
   public InstanceConfigInfo(InstanceConfigId id, String displayName) {
+    this(id, displayName, Collections.emptyList());
+  }
+
+  public InstanceConfigInfo(InstanceConfigId id, String displayName, List<String> leaderOptions) {
     this.id = id;
     this.displayName = displayName;
+    this.leaderOptions = leaderOptions;
   }
 
   /*
@@ -41,9 +49,12 @@ public class InstanceConfigInfo {
     return displayName;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, displayName);
+  /**
+   * Allowed values of the default leader schema option for databases in instances that use this
+   * instance configuration.
+   */
+  public List<String> getLeaderOptions() {
+    return leaderOptions;
   }
 
   @Override
@@ -51,15 +62,22 @@ public class InstanceConfigInfo {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof InstanceConfigInfo)) {
       return false;
     }
     InstanceConfigInfo that = (InstanceConfigInfo) o;
-    return that.id.equals(id) && that.displayName.equals(displayName);
+    return Objects.equals(id, that.id)
+        && Objects.equals(displayName, that.displayName)
+        && Objects.equals(leaderOptions, that.leaderOptions);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, displayName, leaderOptions);
   }
 
   @Override
   public String toString() {
-    return String.format("Instance Config[%s, %s]", id, displayName);
+    return String.format("Instance Config[%s, %s, %s]", id, displayName, leaderOptions);
   }
 }
