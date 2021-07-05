@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
 
 /** Represents a Cloud Spanner database. */
 public class DatabaseInfo {
+
   public abstract static class Builder {
     abstract Builder setState(State state);
 
@@ -44,6 +45,11 @@ public class DatabaseInfo {
      */
     public abstract Builder setEncryptionConfig(CustomerManagedEncryption encryptionConfig);
 
+    /** The read-write region which will be used for the database's leader replicas. */
+    public Builder setDefaultLeader(String defaultLeader) {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
+
     abstract Builder setProto(com.google.spanner.admin.database.v1.Database proto);
 
     /** Builds the database from this builder. */
@@ -58,6 +64,7 @@ public class DatabaseInfo {
     private String versionRetentionPeriod;
     private Timestamp earliestVersionTime;
     private CustomerManagedEncryption encryptionConfig;
+    private String defaultLeader;
     private com.google.spanner.admin.database.v1.Database proto;
 
     BuilderImpl(DatabaseId id) {
@@ -72,6 +79,7 @@ public class DatabaseInfo {
       this.versionRetentionPeriod = other.versionRetentionPeriod;
       this.earliestVersionTime = other.earliestVersionTime;
       this.encryptionConfig = other.encryptionConfig;
+      this.defaultLeader = other.defaultLeader;
       this.proto = other.proto;
     }
 
@@ -112,6 +120,12 @@ public class DatabaseInfo {
     }
 
     @Override
+    public Builder setDefaultLeader(String defaultLeader) {
+      this.defaultLeader = defaultLeader;
+      return this;
+    }
+
+    @Override
     Builder setProto(@Nullable com.google.spanner.admin.database.v1.Database proto) {
       this.proto = proto;
       return this;
@@ -137,6 +151,7 @@ public class DatabaseInfo {
   private final String versionRetentionPeriod;
   private final Timestamp earliestVersionTime;
   private final CustomerManagedEncryption encryptionConfig;
+  private final String defaultLeader;
   private final com.google.spanner.admin.database.v1.Database proto;
 
   public DatabaseInfo(DatabaseId id, State state) {
@@ -147,6 +162,7 @@ public class DatabaseInfo {
     this.versionRetentionPeriod = null;
     this.earliestVersionTime = null;
     this.encryptionConfig = null;
+    this.defaultLeader = null;
     this.proto = null;
   }
 
@@ -158,6 +174,7 @@ public class DatabaseInfo {
     this.versionRetentionPeriod = builder.versionRetentionPeriod;
     this.earliestVersionTime = builder.earliestVersionTime;
     this.encryptionConfig = builder.encryptionConfig;
+    this.defaultLeader = builder.defaultLeader;
     this.proto = builder.proto;
   }
 
@@ -209,6 +226,15 @@ public class DatabaseInfo {
     return encryptionConfig;
   }
 
+  /**
+   * The read-write region which contains the database's leader replicas. If this value was not
+   * explicitly set during a create database or update database ddl operations, it will be {@code
+   * NULL}.
+   */
+  public @Nullable String getDefaultLeader() {
+    return defaultLeader;
+  }
+
   /** Returns the raw proto instance that was used to construct this {@link Database}. */
   public @Nullable com.google.spanner.admin.database.v1.Database getProto() {
     return proto;
@@ -229,7 +255,8 @@ public class DatabaseInfo {
         && Objects.equals(restoreInfo, that.restoreInfo)
         && Objects.equals(versionRetentionPeriod, that.versionRetentionPeriod)
         && Objects.equals(earliestVersionTime, that.earliestVersionTime)
-        && Objects.equals(encryptionConfig, that.encryptionConfig);
+        && Objects.equals(encryptionConfig, that.encryptionConfig)
+        && Objects.equals(defaultLeader, that.defaultLeader);
   }
 
   @Override
@@ -241,19 +268,21 @@ public class DatabaseInfo {
         restoreInfo,
         versionRetentionPeriod,
         earliestVersionTime,
-        encryptionConfig);
+        encryptionConfig,
+        defaultLeader);
   }
 
   @Override
   public String toString() {
     return String.format(
-        "Database[%s, %s, %s, %s, %s, %s, %s]",
+        "Database[%s, %s, %s, %s, %s, %s, %s, %s]",
         id.getName(),
         state,
         createTime,
         restoreInfo,
         versionRetentionPeriod,
         earliestVersionTime,
-        encryptionConfig);
+        encryptionConfig,
+        defaultLeader);
   }
 }
