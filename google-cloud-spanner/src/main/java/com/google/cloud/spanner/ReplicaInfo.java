@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 
+/** Represents a Cloud Spanner replica information. */
 public class ReplicaInfo {
 
   abstract static class Builder {

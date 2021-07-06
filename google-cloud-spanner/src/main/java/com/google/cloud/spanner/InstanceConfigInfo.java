@@ -25,21 +25,25 @@ public class InstanceConfigInfo {
 
   private final InstanceConfigId id;
   private final String displayName;
+  private final List<ReplicaInfo> replicas;
   private final List<String> leaderOptions;
 
   public InstanceConfigInfo(InstanceConfigId id, String displayName) {
-    this(id, displayName, Collections.emptyList());
+    this(id, displayName, Collections.emptyList(), Collections.emptyList());
   }
 
-  public InstanceConfigInfo(InstanceConfigId id, String displayName, List<String> leaderOptions) {
+  public InstanceConfigInfo(
+      InstanceConfigId id,
+      String displayName,
+      List<ReplicaInfo> replicas,
+      List<String> leaderOptions) {
     this.id = id;
     this.displayName = displayName;
+    this.replicas = replicas;
     this.leaderOptions = leaderOptions;
   }
 
-  /*
-   * Returns the id of this instance config.
-   */
+  /** Returns the id of this instance config. */
   public InstanceConfigId getId() {
     return id;
   }
@@ -47,6 +51,14 @@ public class InstanceConfigInfo {
   /** Returns the display name of this instance config. */
   public String getDisplayName() {
     return displayName;
+  }
+
+  /**
+   * The geographic placement of nodes in this instance configuration and their replication
+   * properties.
+   */
+  public List<ReplicaInfo> getReplicas() {
+    return replicas;
   }
 
   /**
@@ -68,16 +80,18 @@ public class InstanceConfigInfo {
     InstanceConfigInfo that = (InstanceConfigInfo) o;
     return Objects.equals(id, that.id)
         && Objects.equals(displayName, that.displayName)
+        && Objects.equals(replicas, that.replicas)
         && Objects.equals(leaderOptions, that.leaderOptions);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, displayName, leaderOptions);
+    return Objects.hash(id, displayName, replicas, leaderOptions);
   }
 
   @Override
   public String toString() {
-    return String.format("Instance Config[%s, %s, %s]", id, displayName, leaderOptions);
+    return String.format(
+        "Instance Config[%s, %s, %s, %s]", id, displayName, replicas, leaderOptions);
   }
 }
