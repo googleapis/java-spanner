@@ -58,10 +58,12 @@ public class ITInstanceAdminTest {
     Iterators.addAll(configs, instanceClient.listInstanceConfigs().iterateAll().iterator());
     assertThat(configs.isEmpty()).isFalse();
     configs.forEach(config -> assertThat(config.getLeaderOptions()).isNotEmpty());
+    configs.forEach(config -> assertThat(config.getReplicas()).isNotEmpty());
     InstanceConfig config =
         instanceClient.getInstanceConfig(configs.get(0).getId().getInstanceConfig());
     assertThat(config.getId()).isEqualTo(configs.get(0).getId());
     assertThat(config.getLeaderOptions()).isNotEmpty();
+    assertThat(config.getReplicas()).isNotEmpty();
     config = config.reload();
     assertThat(config.getId()).isEqualTo(configs.get(0).getId());
   }
