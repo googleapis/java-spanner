@@ -416,7 +416,7 @@ public class SpannerSampleIT {
     InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
     instanceAdminClient
         .createInstance(InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
-            .setDisplayName("Encrypted Databases and Backups test instance")
+            .setDisplayName("Encrypted test instance")
             .setInstanceConfigId(InstanceConfigId.of(projectId, "regional-us-central1"))
             .setNodeCount(1).build())
         .get();
