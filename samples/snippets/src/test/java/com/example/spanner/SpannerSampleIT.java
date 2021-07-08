@@ -19,6 +19,7 @@ package com.example.spanner;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Backup;
 import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -448,6 +449,11 @@ public class SpannerSampleIT {
           projectId, instanceId, encryptedDatabaseId, projectId, instanceId, encryptedRestoreId,
           projectId, instanceId, encryptedBackupId, key));
     } finally {
+      // Delete the backups from the test instance first, as the instance can only be deleted once
+      // all backups have been deleted.
+      for (Backup backup : dbClient.listBackups(instanceId).iterateAll()) {
+        backup.delete();
+      }
       instanceAdminClient.deleteInstance(instanceId);
     }
   }
