@@ -465,8 +465,9 @@ public class SpannerSampleIT {
           backup.delete();
           break;
         } catch (SpannerException e) {
-          if (e.getErrorCode() == ErrorCode.FAILED_PRECONDITION && e.getMessage().contains(
-              "Please try deleting the backup once the restore or post-restore optimize operations have completed on these databases.")) {
+          if (e.getErrorCode() == ErrorCode.FAILED_PRECONDITION && e.getMessage()
+              .contains("Please try deleting the backup once the restore or post-restore optimize "
+                  + "operations have completed on these databases.")) {
             // Wait 30 seconds and then retry.
             Thread.sleep(30_000L);
           } else {
