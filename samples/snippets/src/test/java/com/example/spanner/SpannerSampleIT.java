@@ -451,10 +451,30 @@ public class SpannerSampleIT {
     } finally {
       // Delete the backups from the test instance first, as the instance can only be deleted once
       // all backups have been deleted.
-      for (Backup backup : dbClient.listBackups(instanceId).iterateAll()) {
-        backup.delete();
-      }
+      deleteAllBackups(instanceId);
       instanceAdminClient.deleteInstance(instanceId);
+    }
+  }
+
+  private void deleteAllBackups(String instanceId) throws InterruptedException {
+    for (Backup backup : dbClient.listBackups(instanceId).iterateAll()) {
+      int attempts = 0;
+      while (attempts < 30) {
+        try {
+          attempts++;
+          backup.delete();
+          break;
+        } catch (SpannerException e) {
+          if (e.getErrorCode() == ErrorCode.FAILED_PRECONDITION && e.getMessage()
+              .contains("Please try deleting the backup once the restore or post-restore optimize "
+                  + "operations have completed on these databases.")) {
+            // Wait 30 seconds and then retry.
+            Thread.sleep(30_000L);
+          } else {
+            throw e;
+          }
+        }
+      }
     }
   }
 
