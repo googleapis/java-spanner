@@ -16,7 +16,9 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.paging.Page;
 import com.google.cloud.spanner.Database;
@@ -36,6 +38,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -53,6 +56,11 @@ public class ITDatabaseLeaderTest {
   private DatabaseAdminClient databaseAdminClient;
   private String instanceId;
   private String databaseId;
+
+  @BeforeClass
+  public static void beforeClass() {
+    assumeFalse("leader options are not supported in the emulator", isUsingEmulator());
+  }
 
   @Before
   public void setUp() {
