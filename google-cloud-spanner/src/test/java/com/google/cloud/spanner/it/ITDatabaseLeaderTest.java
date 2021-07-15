@@ -59,7 +59,7 @@ public class ITDatabaseLeaderTest {
 
   @BeforeClass
   public static void beforeClass() {
-    assumeFalse("leader options are not supported in the emulator", isUsingEmulator());
+    assumeFalse("The emulator does not support leader options", isUsingEmulator());
   }
 
   @Before
