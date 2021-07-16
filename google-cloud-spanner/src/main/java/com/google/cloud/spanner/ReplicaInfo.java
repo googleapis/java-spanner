@@ -41,7 +41,10 @@ public class ReplicaInfo {
     private boolean defaultLeaderLocation;
     private com.google.spanner.admin.instance.v1.ReplicaInfo proto;
 
-    /** The location of the serving resources. */
+    /**
+     * The location of the serving resources. This can be one of the values as specified in
+     * https://cloud.google.com/spanner/docs/instances#available-configurations-multi-region.
+     */
     @Override
     Builder setLocation(String location) {
       this.location = location;

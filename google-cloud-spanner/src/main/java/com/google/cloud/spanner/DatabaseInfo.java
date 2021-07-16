@@ -45,7 +45,11 @@ public class DatabaseInfo {
      */
     public abstract Builder setEncryptionConfig(CustomerManagedEncryption encryptionConfig);
 
-    /** The read-write region which will be used for the database's leader replicas. */
+    /**
+     * The read-write region which will be used for the database's leader replicas. This can be one
+     * of the values as specified in
+     * https://cloud.google.com/spanner/docs/instances#available-configurations-multi-region.
+     */
     public Builder setDefaultLeader(String defaultLeader) {
       throw new UnsupportedOperationException("Unimplemented");
     }
