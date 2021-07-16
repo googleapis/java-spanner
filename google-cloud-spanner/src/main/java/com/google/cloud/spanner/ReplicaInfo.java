@@ -43,7 +43,7 @@ public class ReplicaInfo {
 
     /**
      * The location of the serving resources. This can be one of the values as specified in
-     * https://cloud.google.com/spanner/docs/instances#available-configurations-multi-region.
+     * https://cloud.google.com/spanner/docs/instances#available-configurations-regional.
      */
     @Override
     Builder setLocation(String location) {
