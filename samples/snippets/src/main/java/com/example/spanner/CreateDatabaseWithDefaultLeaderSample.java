@@ -69,18 +69,16 @@ public class CreateDatabaseWithDefaultLeaderSample {
                       + " SET OPTIONS ( default_leader = '" + defaultLeader + "' )"
               )
           );
-      try {
-        final Database database = operation.get();
-        System.out.println("Created database [" + database.getId() + "]");
-        System.out.println("\tDefault leader: " + database.getDefaultLeader());
-      } catch (ExecutionException e) {
-        // If the operation failed during execution, expose the cause.
-        throw (SpannerException) e.getCause();
-      } catch (InterruptedException e) {
-        // Throw when a thread is waiting, sleeping, or otherwise occupied,
-        // and the thread is interrupted, either before or during the activity.
-        throw SpannerExceptionFactory.propagateInterrupt(e);
-      }
+      final Database database = operation.get();
+      System.out.println("Created database [" + database.getId() + "]");
+      System.out.println("\tDefault leader: " + database.getDefaultLeader());
+    } catch (ExecutionException e) {
+      // If the operation failed during execution, expose the cause.
+      throw (SpannerException) e.getCause();
+    } catch (InterruptedException e) {
+      // Throw when a thread is waiting, sleeping, or otherwise occupied,
+      // and the thread is interrupted, either before or during the activity.
+      throw SpannerExceptionFactory.propagateInterrupt(e);
     }
   }
 }
