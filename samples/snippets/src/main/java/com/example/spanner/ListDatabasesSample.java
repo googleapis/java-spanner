@@ -44,8 +44,8 @@ public class ListDatabasesSample {
       System.out.println("Databases for projects/" + projectId + "/instances/" + instanceId);
       while (page != null) {
         for (Database database : page.iterateAll()) {
-          final String defaultLeader = database.getDefaultLeader().equals("") ?
-              "" : "(default leader = " + database.getDefaultLeader() + ")";
+          final String defaultLeader = database.getDefaultLeader().equals("")
+              ? "" : "(default leader = " + database.getDefaultLeader() + ")";
           System.out.println("\t" + database.getId() + " " + defaultLeader);
         }
         page = page.getNextPage();
