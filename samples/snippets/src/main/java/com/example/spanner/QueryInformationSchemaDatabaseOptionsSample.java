@@ -42,24 +42,23 @@ public class QueryInformationSchemaDatabaseOptionsSample {
         .setProjectId(projectId)
         .build()
         .getService()) {
-      final DatabaseClient databaseClient = spanner
-          .getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+      final DatabaseId id = DatabaseId.of(projectId, instanceId, databaseId);
+      final DatabaseClient databaseClient = spanner.getDatabaseClient(id);
 
       try (ResultSet resultSet = databaseClient
           .singleUse()
           .executeQuery(Statement.of(
               "SELECT OPTION_NAME, OPTION_VALUE"
-                  + "FROM INFORMATION_SCHEMA.DATABASE_OPTIONS"
-                  + "WHERE OPTION_NAME = 'default_leader'")
+                  + " FROM INFORMATION_SCHEMA.DATABASE_OPTIONS"
+                  + " WHERE OPTION_NAME = 'default_leader'")
           )) {
         if (resultSet.next()) {
           final String optionName = resultSet.getString("OPTION_NAME");
           final String optionValue = resultSet.getString("OPTION_VALUE");
 
-          System.out.println("The " + optionName + " for " + databaseId + " is " + optionValue);
+          System.out.println("The " + optionName + " for " + id + " is " + optionValue);
         } else {
-          throw new RuntimeException(
-              "Could not retrieve the default_leader option for " + databaseId);
+          System.out.println("Could not retrieve the default_leader option for " + id);
         }
       }
     }
