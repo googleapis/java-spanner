@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Random;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -62,6 +63,17 @@ public class ITInstanceAdminTest {
     assertThat(config.getId()).isEqualTo(configs.get(0).getId());
     config = config.reload();
     assertThat(config.getId()).isEqualTo(configs.get(0).getId());
+  }
+
+  @Ignore("Feature is not yet enabled in production")
+  @Test
+  public void instanceConfigLeaderOptions() {
+    assumeFalse("The emulator does not support leader options", isUsingEmulator());
+    List<InstanceConfig> configs = new ArrayList<>();
+    Iterators.addAll(configs, instanceClient.listInstanceConfigs().iterateAll().iterator());
+
+    configs.forEach(config -> assertThat(config.getReplicas()).isNotEmpty());
+    configs.forEach(config -> assertThat(config.getLeaderOptions()).isNotEmpty());
   }
 
   @Test
