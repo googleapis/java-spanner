@@ -230,6 +230,36 @@ public class ITQueryTest {
   }
 
   @Test
+  public void bindJson() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder("SELECT @v")
+                .bind("v")
+                .to(Value.json("{\"rating\":9,\"open\":true}")),
+            Type.json());
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJson(0)).isEqualTo("{\"open\":true,\"rating\":9}");
+  }
+
+  @Test
+  public void bindJsonEmpty() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(Statement.newBuilder("SELECT @v").bind("v").to(Value.json("{}")), Type.json());
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJson(0)).isEqualTo("{}");
+  }
+
+  @Test
+  public void bindJsonNull() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(Statement.newBuilder("SELECT @v").bind("v").to(Value.json(null)), Type.json());
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
   public void bindBytes() {
     Struct row =
         execute(
@@ -428,6 +458,41 @@ public class ITQueryTest {
         execute(
             Statement.newBuilder("SELECT @v").bind("v").toStringArray(null),
             Type.array(Type.string()));
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindJsonArray() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder("SELECT @v")
+                .bind("v")
+                .toJsonArray(asList("{}", "[]", "{\"rating\":9,\"open\":true}", null)),
+            Type.array(Type.json()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJsonList(0))
+        .containsExactly("{}", "[]", "{\"open\":true,\"rating\":9}", null)
+        .inOrder();
+  }
+
+  @Test
+  public void bindJsonArrayEmpty() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder("SELECT @v").bind("v").toJsonArray(Collections.emptyList()),
+            Type.array(Type.json()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJsonList(0)).isEqualTo(Collections.emptyList());
+  }
+
+  @Test
+  public void bindJsonArrayNull() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder("SELECT @v").bind("v").toJsonArray(null), Type.array(Type.json()));
     assertThat(row.isNull(0)).isTrue();
   }
 

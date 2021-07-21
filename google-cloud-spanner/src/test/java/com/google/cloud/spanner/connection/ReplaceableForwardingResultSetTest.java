@@ -284,6 +284,15 @@ public class ReplaceableForwardingResultSetTest {
       subject.getStringList("test2");
       verify(delegate).getStringList("test2");
 
+      subject.getJson(0);
+      verify(delegate).getJson(0);
+      subject.getJson("test0");
+      verify(delegate).getJson("test0");
+      subject.getJsonList(2);
+      verify(delegate).getJsonList(2);
+      subject.getJsonList("test2");
+      verify(delegate).getJsonList("test2");
+
       subject.getStructList(0);
       subject.getStructList("test0");
 

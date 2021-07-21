@@ -242,6 +242,9 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             case STRING:
               funnelValue(type, row.getString(i), into);
               break;
+            case JSON:
+              funnelValue(type, row.getJson(i), into);
+              break;
             case TIMESTAMP:
               funnelValue(type, row.getTimestamp(i), into);
               break;
@@ -300,6 +303,12 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             funnelValue(Code.STRING, value, into);
           }
           break;
+        case JSON:
+          into.putInt(row.getJsonList(columnIndex).size());
+          for (String value : row.getJsonList(columnIndex)) {
+            funnelValue(Code.JSON, value, into);
+          }
+          break;
         case TIMESTAMP:
           into.putInt(row.getTimestampList(columnIndex).size());
           for (Timestamp value : row.getTimestampList(columnIndex)) {
@@ -350,6 +359,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             into.putLong((Long) value);
             break;
           case STRING:
+          case JSON:
             String stringValue = (String) value;
             into.putInt(stringValue.length());
             into.putUnencodedChars(stringValue);

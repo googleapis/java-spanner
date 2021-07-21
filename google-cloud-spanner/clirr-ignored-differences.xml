@@ -659,4 +659,46 @@
     <method>void setOptimizerStatisticsPackage(java.lang.String)</method>
   </difference>
 
+  <!-- Add support for JSON data type -->
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/AbstractStructReader</className>
+    <method>java.lang.String getJsonInternal(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/AbstractStructReader</className>
+    <method>java.util.List getJsonListInternal(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.String getJson(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.String getJson(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getJsonList(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getJsonList(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/Value</className>
+    <method>java.lang.String getJson()</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/Value</className>
+    <method>java.util.List getJsonArray()</method>
+  </difference>
+
 </differences>

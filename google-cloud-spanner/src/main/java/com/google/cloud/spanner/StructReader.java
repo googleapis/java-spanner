@@ -114,6 +114,16 @@ public interface StructReader {
   /** Returns the value of a non-{@code NULL} column with type {@link Type#string()}. */
   String getString(String columnName);
 
+  /** Returns the value of a non-{@code NULL} column with type {@link Type#string()}. */
+  default String getJson(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /** Returns the value of a non-{@code NULL} column with type {@link Type#string()}. */
+  default String getJson(String columnName) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
   /** Returns the value of a non-{@code NULL} column with type {@link Type#bytes()}. */
   ByteArray getBytes(int columnIndex);
 
@@ -227,6 +237,16 @@ public interface StructReader {
 
   /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. */
   List<String> getStringList(String columnName);
+
+  /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. */
+  default List<String> getJsonList(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  };
+
+  /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. */
+  default List<String> getJsonList(String columnName) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  };
 
   /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bytes())}. */
   List<ByteArray> getBytesList(int columnIndex);

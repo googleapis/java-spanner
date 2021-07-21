@@ -44,6 +44,7 @@ public class RandomResultSetGenerator {
         Type.newBuilder().setCode(TypeCode.FLOAT64).build(),
         Type.newBuilder().setCode(TypeCode.NUMERIC).build(),
         Type.newBuilder().setCode(TypeCode.STRING).build(),
+        Type.newBuilder().setCode(TypeCode.JSON).build(),
         Type.newBuilder().setCode(TypeCode.BYTES).build(),
         Type.newBuilder().setCode(TypeCode.DATE).build(),
         Type.newBuilder().setCode(TypeCode.TIMESTAMP).build(),
@@ -66,6 +67,10 @@ public class RandomResultSetGenerator {
         Type.newBuilder()
             .setCode(TypeCode.ARRAY)
             .setArrayElementType(Type.newBuilder().setCode(TypeCode.STRING))
+            .build(),
+        Type.newBuilder()
+            .setCode(TypeCode.ARRAY)
+            .setArrayElementType(Type.newBuilder().setCode(TypeCode.JSON))
             .build(),
         Type.newBuilder()
             .setCode(TypeCode.ARRAY)
@@ -138,6 +143,9 @@ public class RandomResultSetGenerator {
           byte[] bytes = new byte[random.nextInt(200)];
           random.nextBytes(bytes);
           builder.setStringValue(Base64.encodeBase64String(bytes));
+          break;
+        case JSON:
+          builder.setStringValue("\"" + random.nextInt(200) + "\":\"" + random.nextInt(200) + "\"");
           break;
         case DATE:
           Date date =

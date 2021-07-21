@@ -22,6 +22,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
+import com.google.cloud.spanner.Type.Code;
 import com.google.spanner.v1.TypeCode;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
@@ -110,6 +111,16 @@ public class TypeTest {
       @Override
       Type newType() {
         return Type.string();
+      }
+    }.test();
+  }
+
+  @Test
+  public void json() {
+    new ScalarTypeTester(Code.JSON, TypeCode.JSON) {
+      @Override
+      Type newType() {
+        return Type.json();
       }
     }.test();
   }
@@ -229,6 +240,16 @@ public class TypeTest {
       @Override
       Type newElementType() {
         return Type.string();
+      }
+    }.test();
+  }
+
+  @Test
+  public void jsonArray() {
+    new ArrayTypeTester(Code.JSON, TypeCode.JSON, true) {
+      @Override
+      Type newElementType() {
+        return Type.json();
       }
     }.test();
   }

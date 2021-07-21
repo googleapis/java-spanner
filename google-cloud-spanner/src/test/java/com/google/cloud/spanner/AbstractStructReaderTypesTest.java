@@ -71,6 +71,11 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
+    protected String getJsonInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
     protected ByteArray getBytesInternal(int columnIndex) {
       return null;
     }
@@ -127,6 +132,11 @@ public class AbstractStructReaderTypesTest {
 
     @Override
     protected List<String> getStringListInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected List<String> getJsonListInternal(int columnIndex) {
       return null;
     }
 
@@ -205,6 +215,13 @@ public class AbstractStructReaderTypesTest {
             Collections.singletonList("getValue")
           },
           {
+            Type.json(),
+            "getJsonInternal",
+            "{\"color\":\"red\",\"value\":\"#f00\"}",
+            "getJson",
+            Collections.singletonList("getValue")
+          },
+          {
             Type.timestamp(),
             "getTimestampInternal",
             Timestamp.parseTimestamp("2015-09-15T00:00:00Z"),
@@ -272,6 +289,13 @@ public class AbstractStructReaderTypesTest {
             "getStringListInternal",
             Arrays.asList("a", "b", "c"),
             "getStringList",
+            Collections.singletonList("getValue")
+          },
+          {
+            Type.array(Type.json()),
+            "getJsonListInternal",
+            Arrays.asList("{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"),
+            "getJsonList",
             Collections.singletonList("getValue")
           },
           {
