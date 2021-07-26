@@ -61,7 +61,7 @@ public class UpdateDatabaseWithDefaultLeaderSample {
               null
           );
       operation.get();
-      System.out.println("Updated default leader");
+      System.out.println("Updated default leader to " + defaultLeader);
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
       throw (SpannerException) e.getCause();
