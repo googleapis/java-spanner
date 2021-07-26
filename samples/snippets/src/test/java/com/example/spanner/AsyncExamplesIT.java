@@ -16,79 +16,40 @@
 
 package com.example.spanner;
 
+import static com.example.spanner.SampleRunner.runSample;
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.Spanner;
-import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.collect.ImmutableList;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Integration tests for Cloud Spanner Async API examples. */
+/**
+ * Integration tests for Cloud Spanner Async API examples.
+ */
 @RunWith(JUnit4.class)
 @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
-public class AsyncExamplesIT {
-  // The instance needs to exist for tests to pass.
-  private static String instanceId = System.getProperty("spanner.test.instance");
-  private static String databaseId =
-      formatForTest(System.getProperty("spanner.sample.database", "mysample"));
-  private static DatabaseId dbId;
-  private static DatabaseAdminClient dbClient;
-  private static Spanner spanner;
+public class AsyncExamplesIT extends SampleTestBase {
 
-  private interface AsyncRunnable {
-    public void run() throws InterruptedException, ExecutionException, TimeoutException;
-  }
-
-  private String runExample(AsyncRunnable example)
-      throws InterruptedException, ExecutionException, TimeoutException {
-    PrintStream stdOut = System.out;
-    ByteArrayOutputStream bout = new ByteArrayOutputStream();
-    PrintStream out = new PrintStream(bout);
-    System.setOut(out);
-    example.run();
-    System.setOut(stdOut);
-    return bout.toString();
-  }
+  private static DatabaseId databaseId;
 
   @BeforeClass
   public static void createTestDatabase() throws Exception {
-    SpannerOptions options =
-        SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests().build();
-    spanner = options.getService();
-    dbClient = spanner.getDatabaseAdminClient();
-    if (instanceId == null) {
-      Iterator<Instance> iterator =
-          spanner.getInstanceAdminClient().listInstances().iterateAll().iterator();
-      if (iterator.hasNext()) {
-        instanceId = iterator.next().getId().getInstance();
-      }
-    }
-    dbId = DatabaseId.of(options.getProjectId(), instanceId, databaseId);
-    dbClient.dropDatabase(dbId.getInstanceId().getInstance(), dbId.getDatabase());
-    dbClient
+    final String database = idGenerator.generateDatabaseId();
+    databaseId = DatabaseId.of(projectId, instanceId, database);
+    databaseAdminClient
         .createDatabase(
             instanceId,
-            databaseId,
+            database,
             ImmutableList.of(
                 "CREATE TABLE Singers ("
                     + "  SingerId   INT64 NOT NULL,"
@@ -107,13 +68,8 @@ public class AsyncExamplesIT {
         .get();
   }
 
-  @AfterClass
-  public static void dropTestDatabase() throws Exception {
-    dbClient.dropDatabase(dbId.getInstanceId().getInstance(), dbId.getDatabase());
-    spanner.close();
-  }
-
   static class Singer {
+
     final long singerId;
     final String firstName;
     final String lastName;
@@ -126,6 +82,7 @@ public class AsyncExamplesIT {
   }
 
   static class Album {
+
     final long singerId;
     final long albumId;
     final String albumTitle;
@@ -156,7 +113,7 @@ public class AsyncExamplesIT {
 
   @Before
   public void insertTestData() {
-    DatabaseClient client = spanner.getDatabaseClient(dbId);
+    DatabaseClient client = spanner.getDatabaseClient(databaseId);
     ImmutableList.Builder<Mutation> mutations =
         ImmutableList.builderWithExpectedSize(TEST_SINGERS.size());
     for (Singer singer : TEST_SINGERS) {
@@ -204,39 +161,36 @@ public class AsyncExamplesIT {
 
   @After
   public void removeTestData() {
-    DatabaseClient client = spanner.getDatabaseClient(dbId);
+    DatabaseClient client = spanner.getDatabaseClient(databaseId);
     client.write(Arrays.asList(Mutation.delete("Singers", KeySet.all())));
   }
 
   @Test
-  public void asyncQuery_shouldReturnData()
-      throws InterruptedException, ExecutionException, TimeoutException {
-    String out = runExample(() -> AsyncQueryExample.asyncQuery(spanner.getDatabaseClient(dbId)));
+  public void asyncQuery_shouldReturnData() throws Exception {
+    String out = runSample(
+        () -> AsyncQueryExample.asyncQuery(spanner.getDatabaseClient(databaseId)));
     assertAlbumsOutput(out);
   }
 
   @Test
   public void asyncQueryToListAsync_shouldReturnData()
-      throws InterruptedException, ExecutionException, TimeoutException {
-    String out =
-        runExample(
-            () -> AsyncQueryToListAsyncExample.asyncQueryToList(spanner.getDatabaseClient(dbId)));
+      throws Exception {
+    String out = runSample(
+        () -> AsyncQueryToListAsyncExample.asyncQueryToList(spanner.getDatabaseClient(databaseId)));
     assertAlbumsOutput(out);
   }
 
   @Test
   public void asyncRead_shouldReturnData()
-      throws InterruptedException, ExecutionException, TimeoutException {
-    String out = runExample(() -> AsyncReadExample.asyncRead(spanner.getDatabaseClient(dbId)));
+      throws Exception {
+    String out = runSample(() -> AsyncReadExample.asyncRead(spanner.getDatabaseClient(databaseId)));
     assertAlbumsOutput(out);
   }
 
   @Test
-  public void asyncReadUsingIndex_shouldReturnDataInCorrectOrder()
-      throws InterruptedException, ExecutionException, TimeoutException {
-    String out =
-        runExample(
-            () -> AsyncReadUsingIndexExample.asyncReadUsingIndex(spanner.getDatabaseClient(dbId)));
+  public void asyncReadUsingIndex_shouldReturnDataInCorrectOrder() throws Exception {
+    String out = runSample(() -> AsyncReadUsingIndexExample
+        .asyncReadUsingIndex(spanner.getDatabaseClient(databaseId)));
     assertThat(out)
         .contains(
             "2 Forever Hold Your Peace\n"
@@ -247,55 +201,41 @@ public class AsyncExamplesIT {
   }
 
   @Test
-  public void asyncReadOnlyTransaction_shouldReturnData()
-      throws InterruptedException, ExecutionException, TimeoutException {
-    String out =
-        runExample(
-            () ->
-                AsyncReadOnlyTransactionExample.asyncReadOnlyTransaction(
-                    spanner.getDatabaseClient(dbId)));
+  public void asyncReadOnlyTransaction_shouldReturnData() throws Exception {
+    String out = runSample(() -> AsyncReadOnlyTransactionExample
+        .asyncReadOnlyTransaction(spanner.getDatabaseClient(databaseId)));
     assertAlbumsOutput(out);
     assertSingersOutput(out);
   }
 
   @Test
-  public void asyncDml_shouldInsertRows()
-      throws InterruptedException, ExecutionException, TimeoutException {
-    String out = runExample(() -> AsyncDmlExample.asyncDml(spanner.getDatabaseClient(dbId)));
+  public void asyncDml_shouldInsertRows() throws Exception {
+    String out = runSample(() -> AsyncDmlExample.asyncDml(spanner.getDatabaseClient(databaseId)));
     assertThat(out).contains("4 records inserted.");
   }
 
   @Test
-  public void asyncRunner_shouldUpdateRows()
-      throws InterruptedException, ExecutionException, TimeoutException {
-    String out = runExample(() -> AsyncRunnerExample.asyncRunner(spanner.getDatabaseClient(dbId)));
+  public void asyncRunner_shouldUpdateRows() throws Exception {
+    String out = runSample(
+        () -> AsyncRunnerExample.asyncRunner(spanner.getDatabaseClient(databaseId)));
     assertThat(out).contains("2 records updated.");
   }
 
   @Test
-  public void asyncTransactionManager_shouldUpdateRows()
-      throws InterruptedException, ExecutionException, TimeoutException {
-    String out =
-        runExample(
-            () ->
-                AsyncTransactionManagerExample.asyncTransactionManager(
-                    spanner.getDatabaseClient(dbId)));
+  public void asyncTransactionManager_shouldUpdateRows() throws Exception {
+    String out = runSample(() -> AsyncTransactionManagerExample
+        .asyncTransactionManager(spanner.getDatabaseClient(databaseId)));
     assertThat(out).contains("2 records updated.");
   }
 
   @Test
-  public void asyncReadRow_shouldPrintRow()
-      throws InterruptedException, ExecutionException, TimeoutException {
-    String out =
-        runExample(() -> AsyncReadRowExample.asyncReadRow(spanner.getDatabaseClient(dbId)));
+  public void asyncReadRow_shouldPrintRow() throws Exception {
+    String out = runSample(
+        () -> AsyncReadRowExample.asyncReadRow(spanner.getDatabaseClient(databaseId)));
     assertThat(out).contains("1 1 Total Junk");
     assertThat(out).doesNotContain("1 2 Go, Go, Go");
     assertThat(out).doesNotContain("2 1 Green");
     assertThat(out).doesNotContain("2 2 Forever Hold Your Peace");
     assertThat(out).doesNotContain("2 3 Terrified");
-  }
-
-  static String formatForTest(String name) {
-    return name + "-" + UUID.randomUUID().toString().substring(0, 20);
   }
 }
