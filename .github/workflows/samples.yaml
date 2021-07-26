@@ -12,3 +12,12 @@ jobs:
       - name: Run checkstyle
         run: mvn -P lint --quiet --batch-mode checkstyle:check
         working-directory: samples/snippets
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-java@v1
+      with:
+        java-version: 8
+    - name: Compile samples
+      run: mvn -Penable-samples compile
