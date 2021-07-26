@@ -219,8 +219,7 @@ dependency to collect the data and exporter dependency to export to backend.
 
 ## Samples
 
-Samples are in the [`samples/`](https://github.com/googleapis/java-spanner/tree/master/samples) directory. The samples' `README.md`
-has instructions for running the samples.
+Samples are in the [`samples/`](https://github.com/googleapis/java-spanner/tree/master/samples) directory.
 
 | Sample                      | Source Code                       | Try it |
 | --------------------------- | --------------------------------- | ------ |
