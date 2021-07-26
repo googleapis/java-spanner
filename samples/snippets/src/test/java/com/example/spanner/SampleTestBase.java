@@ -37,9 +37,6 @@ public class SampleTestBase {
   protected static DatabaseAdminClient databaseAdminClient;
   protected static String projectId;
   protected static final String instanceId = System.getProperty("spanner.test.instance");
-  protected static final String multiRegionalInstanceId = System.getProperty(
-      "spanner.test.instance.multiregional"
-  );
   protected static SampleIdGenerator idGenerator;
 
   @BeforeClass
