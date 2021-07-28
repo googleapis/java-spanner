@@ -191,6 +191,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
               break;
             }
+          case 96:
+            {
+              autocommit_ = input.readBool();
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -2116,6 +2121,18 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     return getRequestOptions();
   }
 
+  public static final int AUTOCOMMIT_FIELD_NUMBER = 12;
+  private boolean autocommit_;
+  /**
+   * <code>bool autocommit = 12;</code>
+   *
+   * @return The autocommit.
+   */
+  @java.lang.Override
+  public boolean getAutocommit() {
+    return autocommit_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -2161,6 +2178,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
     if (requestOptions_ != null) {
       output.writeMessage(11, getRequestOptions());
+    }
+    if (autocommit_ != false) {
+      output.writeBool(12, autocommit_);
     }
     unknownFields.writeTo(output);
   }
@@ -2211,6 +2231,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     if (requestOptions_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(11, getRequestOptions());
     }
+    if (autocommit_ != false) {
+      size += com.google.protobuf.CodedOutputStream.computeBoolSize(12, autocommit_);
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -2249,6 +2272,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     if (hasRequestOptions()) {
       if (!getRequestOptions().equals(other.getRequestOptions())) return false;
     }
+    if (getAutocommit() != other.getAutocommit()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -2292,6 +2316,8 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       hash = (37 * hash) + REQUEST_OPTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getRequestOptions().hashCode();
     }
+    hash = (37 * hash) + AUTOCOMMIT_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getAutocommit());
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -2495,6 +2521,8 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         requestOptions_ = null;
         requestOptionsBuilder_ = null;
       }
+      autocommit_ = false;
+
       return this;
     }
 
@@ -2551,6 +2579,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       } else {
         result.requestOptions_ = requestOptionsBuilder_.build();
       }
+      result.autocommit_ = autocommit_;
       onBuilt();
       return result;
     }
@@ -2632,6 +2661,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
       if (other.hasRequestOptions()) {
         mergeRequestOptions(other.getRequestOptions());
+      }
+      if (other.getAutocommit() != false) {
+        setAutocommit(other.getAutocommit());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -4261,6 +4293,40 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         requestOptions_ = null;
       }
       return requestOptionsBuilder_;
+    }
+
+    private boolean autocommit_;
+    /**
+     * <code>bool autocommit = 12;</code>
+     *
+     * @return The autocommit.
+     */
+    @java.lang.Override
+    public boolean getAutocommit() {
+      return autocommit_;
+    }
+    /**
+     * <code>bool autocommit = 12;</code>
+     *
+     * @param value The autocommit to set.
+     * @return This builder for chaining.
+     */
+    public Builder setAutocommit(boolean value) {
+
+      autocommit_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>bool autocommit = 12;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearAutocommit() {
+
+      autocommit_ = false;
+      onChanged();
+      return this;
     }
 
     @java.lang.Override

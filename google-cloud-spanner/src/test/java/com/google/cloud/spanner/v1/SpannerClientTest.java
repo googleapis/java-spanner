@@ -534,6 +534,7 @@ public class SpannerClientTest {
             .setMetadata(ResultSetMetadata.newBuilder().build())
             .addAllRows(new ArrayList<ListValue>())
             .setStats(ResultSetStats.newBuilder().build())
+            .setCommitResponse(CommitResponse.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -550,6 +551,7 @@ public class SpannerClientTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setAutocommit(true)
             .build();
 
     ResultSet actualResponse = client.executeSql(request);
@@ -570,6 +572,7 @@ public class SpannerClientTest {
     Assert.assertEquals(request.getSeqno(), actualRequest.getSeqno());
     Assert.assertEquals(request.getQueryOptions(), actualRequest.getQueryOptions());
     Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
+    Assert.assertEquals(request.getAutocommit(), actualRequest.getAutocommit());
     Assert.assertTrue(
         channelProvider.isHeaderSent(
             ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
@@ -595,6 +598,7 @@ public class SpannerClientTest {
               .setSeqno(109325920)
               .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
               .setRequestOptions(RequestOptions.newBuilder().build())
+              .setAutocommit(true)
               .build();
       client.executeSql(request);
       Assert.fail("No exception raised");
@@ -612,6 +616,7 @@ public class SpannerClientTest {
             .setChunkedValue(true)
             .setResumeToken(ByteString.EMPTY)
             .setStats(ResultSetStats.newBuilder().build())
+            .setCommitResponse(CommitResponse.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
     ExecuteSqlRequest request =
@@ -627,6 +632,7 @@ public class SpannerClientTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setAutocommit(true)
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
@@ -657,6 +663,7 @@ public class SpannerClientTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setAutocommit(true)
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
@@ -741,6 +748,7 @@ public class SpannerClientTest {
             .setMetadata(ResultSetMetadata.newBuilder().build())
             .addAllRows(new ArrayList<ListValue>())
             .setStats(ResultSetStats.newBuilder().build())
+            .setCommitResponse(CommitResponse.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -818,6 +826,7 @@ public class SpannerClientTest {
             .setChunkedValue(true)
             .setResumeToken(ByteString.EMPTY)
             .setStats(ResultSetStats.newBuilder().build())
+            .setCommitResponse(CommitResponse.newBuilder().build())
             .build();
     mockSpanner.addResponse(expectedResponse);
     ReadRequest request =

@@ -483,4 +483,19 @@ public interface PartialResultSetOrBuilder
    * <code>.google.spanner.v1.ResultSetStats stats = 5;</code>
    */
   com.google.spanner.v1.ResultSetStatsOrBuilder getStatsOrBuilder();
+
+  /**
+   * <code>.google.spanner.v1.CommitResponse commit_response = 6;</code>
+   *
+   * @return Whether the commitResponse field is set.
+   */
+  boolean hasCommitResponse();
+  /**
+   * <code>.google.spanner.v1.CommitResponse commit_response = 6;</code>
+   *
+   * @return The commitResponse.
+   */
+  com.google.spanner.v1.CommitResponse getCommitResponse();
+  /** <code>.google.spanner.v1.CommitResponse commit_response = 6;</code> */
+  com.google.spanner.v1.CommitResponseOrBuilder getCommitResponseOrBuilder();
 }

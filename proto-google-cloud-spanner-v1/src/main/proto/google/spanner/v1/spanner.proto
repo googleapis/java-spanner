@@ -638,6 +638,8 @@ message ExecuteSqlRequest {
 
   // Common options for this request.
   RequestOptions request_options = 11;
+
+  bool autocommit = 12;
 }
 
 // The request for [ExecuteBatchDml][google.spanner.v1.Spanner.ExecuteBatchDml].

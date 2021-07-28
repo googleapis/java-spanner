@@ -17,6 +17,7 @@ syntax = "proto3";
 package google.spanner.v1;
 
 import "google/protobuf/struct.proto";
+import "google/spanner/v1/commit_response.proto";
 import "google/spanner/v1/query_plan.proto";
 import "google/spanner/v1/transaction.proto";
 import "google/spanner/v1/type.proto";
@@ -54,6 +55,8 @@ message ResultSet {
   // Other fields may or may not be populated, based on the
   // [ExecuteSqlRequest.query_mode][google.spanner.v1.ExecuteSqlRequest.query_mode].
   ResultSetStats stats = 3;
+
+  CommitResponse commit_response = 4;
 }
 
 // Partial results from a streaming read or SQL query. Streaming reads and
@@ -158,6 +161,8 @@ message PartialResultSet {
   // This field will also be present in the last response for DML
   // statements.
   ResultSetStats stats = 5;
+
+  CommitResponse commit_response = 6;
 }
 
 // Metadata about a [ResultSet][google.spanner.v1.ResultSet] or [PartialResultSet][google.spanner.v1.PartialResultSet].

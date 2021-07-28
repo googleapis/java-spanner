@@ -189,4 +189,19 @@ public interface ResultSetOrBuilder
    * <code>.google.spanner.v1.ResultSetStats stats = 3;</code>
    */
   com.google.spanner.v1.ResultSetStatsOrBuilder getStatsOrBuilder();
+
+  /**
+   * <code>.google.spanner.v1.CommitResponse commit_response = 4;</code>
+   *
+   * @return Whether the commitResponse field is set.
+   */
+  boolean hasCommitResponse();
+  /**
+   * <code>.google.spanner.v1.CommitResponse commit_response = 4;</code>
+   *
+   * @return The commitResponse.
+   */
+  com.google.spanner.v1.CommitResponse getCommitResponse();
+  /** <code>.google.spanner.v1.CommitResponse commit_response = 4;</code> */
+  com.google.spanner.v1.CommitResponseOrBuilder getCommitResponseOrBuilder();
 }
