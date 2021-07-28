@@ -17,6 +17,8 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
+import static com.google.cloud.spanner.Type.array;
+import static com.google.cloud.spanner.Type.json;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -326,9 +328,20 @@ public class ITWriteTest {
   @Test
   public void writeJson() {
     assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    write(baseInsert().set("JsonValue").to(Value.json("{\"rating\":9,\"open\":true}")).build());
+    Struct row = readLastRow("JsonValue");
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getColumnType("JsonValue")).isEqualTo(json());
+    assertThat(row.getJson(0)).isEqualTo("{\"open\":true,\"rating\":9}");
+  }
+
+  @Test
+  public void writeJsonEmpty() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
     write(baseInsert().set("JsonValue").to(Value.json("{}")).build());
     Struct row = readLastRow("JsonValue");
     assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getColumnType("JsonValue")).isEqualTo(json());
     assertThat(row.getJson(0)).isEqualTo("{}");
   }
 
@@ -338,6 +351,7 @@ public class ITWriteTest {
     write(baseInsert().set("JsonValue").to(Value.json(null)).build());
     Struct row = readLastRow("JsonValue");
     assertThat(row.isNull(0)).isTrue();
+    assertThat(row.getColumnType("JsonValue")).isEqualTo(json());
   }
 
   @Test
@@ -611,6 +625,7 @@ public class ITWriteTest {
     write(baseInsert().set("JsonArrayValue").toJsonArray(null).build());
     Struct row = readLastRow("JsonArrayValue");
     assertThat(row.isNull(0)).isTrue();
+    assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
   }
 
   @Test
@@ -619,6 +634,7 @@ public class ITWriteTest {
     write(baseInsert().set("JsonArrayValue").toJsonArray(Collections.emptyList()).build());
     Struct row = readLastRow("JsonArrayValue");
     assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
     assertThat(row.getJsonList(0)).containsExactly();
   }
 
@@ -628,6 +644,7 @@ public class ITWriteTest {
     write(baseInsert().set("JsonArrayValue").toJsonArray(Arrays.asList("[]", null, "{}")).build());
     Struct row = readLastRow("JsonArrayValue");
     assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
     assertThat(row.getJsonList(0)).containsExactly("[]", null, "{}").inOrder();
   }
 
@@ -641,6 +658,7 @@ public class ITWriteTest {
             .build());
     Struct row = readLastRow("JsonArrayValue");
     assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
     assertThat(row.getJsonList(0))
         .containsExactly("[]", "{\"color\":\"red\",\"value\":\"#f00\"}", "{}")
         .inOrder();
