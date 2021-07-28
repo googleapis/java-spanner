@@ -16,11 +16,7 @@
 
 package com.google.cloud.spanner.it;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
@@ -32,9 +28,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.io.Resources;
-import io.grpc.StatusRuntimeException;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,7 +42,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import sun.text.normalizer.UTF16;
 
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
@@ -107,6 +100,7 @@ public class ITJsonWriteReadTest {
         id++;
       } catch (Exception e) {
         System.out.println("Failed to insert JSON: " + jsonStr + ". From: " + resource);
+        e.printStackTrace();
       }
     }
   }
