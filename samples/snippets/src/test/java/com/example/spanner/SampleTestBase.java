@@ -57,14 +57,18 @@ public class SampleTestBase {
       try {
         databaseAdminClient.dropDatabase(instanceId, databaseId);
       } catch (Exception e) {
-        System.out.println("Failed to drop database " + databaseId + ", skipping...");
+        System.out.println(
+            "Failed to drop database " + databaseId + " due to " + e.getMessage() + ", skipping..."
+        );
       }
     }
     for (String backupId : idGenerator.getBackupIds()) {
       try {
         databaseAdminClient.deleteBackup(instanceId, backupId);
       } catch (Exception e) {
-        System.out.println("Failed to delete backup " + backupId + ", skipping...");
+        System.out.println(
+            "Failed to delete backup " + backupId + " due to " + e.getMessage() + ", skipping..."
+        );
       }
     }
     spanner.close();
