@@ -17,6 +17,9 @@ branchProtectionRules:
       - units (11)
       - 'Kokoro - Test: Integration'
       - cla/google
+      - samples/checkstyle
+      - samples/compile (8)
+      - samples/compile (11)
   - pattern: 3.1.x
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
@@ -31,6 +34,9 @@ branchProtectionRules:
       - units (11)
       - 'Kokoro - Test: Integration'
       - cla/google
+      - samples/checkstyle
+      - samples/compile (8)
+      - samples/compile (11)
   - pattern: 3.3.x
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
@@ -45,6 +51,9 @@ branchProtectionRules:
       - units (11)
       - 'Kokoro - Test: Integration'
       - cla/google
+      - samples/checkstyle
+      - samples/compile (8)
+      - samples/compile (11)
   - pattern: 4.0.x
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
@@ -59,6 +68,9 @@ branchProtectionRules:
       - units (11)
       - 'Kokoro - Test: Integration'
       - cla/google
+      - samples/checkstyle
+      - samples/compile (8)
+      - samples/compile (11)
   - pattern: 5.2.x
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
@@ -73,6 +85,9 @@ branchProtectionRules:
       - units (11)
       - 'Kokoro - Test: Integration'
       - cla/google
+      - samples/checkstyle
+      - samples/compile (8)
+      - samples/compile (11)
   - pattern: 3.3.3-sp
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
@@ -86,6 +101,9 @@ branchProtectionRules:
       - units (11)
       - 'Kokoro - Test: Integration'
       - cla/google
+      - samples/checkstyle
+      - samples/compile (8)
+      - samples/compile (11)
 permissionRules:
   - team: yoshi-admins
     permission: admin
