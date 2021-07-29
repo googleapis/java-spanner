@@ -18,16 +18,6 @@ package com.example.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.Spanner;
-import com.google.cloud.spanner.SpannerOptions;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -36,80 +26,21 @@ import org.junit.runners.JUnit4;
  * Integration tests for {@link CreateDatabaseWithVersionRetentionPeriodSample}
  */
 @RunWith(JUnit4.class)
-public class CreateDatabaseWithVersionRetentionPeriodSampleIT {
-
-  private static String projectId;
-  private static final String instanceId = System.getProperty("spanner.test.instance");
-  private static final String baseDatabaseId = System.getProperty(
-      "spanner.sample.database",
-      "pitrsample"
-  );
-  private static DatabaseAdminClient databaseAdminClient;
-  private static List<String> databasesToDrop;
-  private static Spanner spanner;
-
-  private String runSample(
-      String databaseId,
-      String versionRetentionPeriod
-  ) {
-    final PrintStream stdOut = System.out;
-    final ByteArrayOutputStream bout = new ByteArrayOutputStream();
-    final PrintStream out = new PrintStream(bout);
-    System.setOut(out);
-    CreateDatabaseWithVersionRetentionPeriodSample.createDatabaseWithVersionRetentionPeriod(
-        databaseAdminClient,
-        instanceId,
-        databaseId,
-        versionRetentionPeriod
-    );
-    System.setOut(stdOut);
-    return bout.toString();
-  }
-
-  @BeforeClass
-  public static void setUp() {
-    final SpannerOptions options = SpannerOptions
-        .newBuilder()
-        .setAutoThrottleAdministrativeRequests()
-        .build();
-    projectId = options.getProjectId();
-    spanner = options.getService();
-    databaseAdminClient = spanner.getDatabaseAdminClient();
-    databasesToDrop = new ArrayList<>();
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    for (String databaseId : databasesToDrop) {
-      try {
-        databaseAdminClient.dropDatabase(instanceId, databaseId);
-      } catch (Exception e) {
-        System.out.println("Failed to drop database " + databaseId + ", skipping...");
-      }
-    }
-    spanner.close();
-  }
+public class CreateDatabaseWithVersionRetentionPeriodSampleIT extends SampleTestBase {
 
   @Test
-  public void createsDatabaseWithVersionRetentionPeriod() {
-    final String databaseId = generateDatabaseId();
+  public void createsDatabaseWithVersionRetentionPeriod() throws Exception {
+    final String databaseId = idGenerator.generateDatabaseId();
     final String versionRetentionPeriod = "7d";
 
-    final String out = runSample(databaseId, versionRetentionPeriod);
+    final String out = SampleRunner.runSample(() -> CreateDatabaseWithVersionRetentionPeriodSample
+        .createDatabaseWithVersionRetentionPeriod(
+            databaseAdminClient, instanceId, databaseId, versionRetentionPeriod
+        ));
 
     assertThat(out).contains(
         "Created database [projects/" + projectId + "/instances/" + instanceId + "/databases/"
             + databaseId + "]");
     assertThat(out).contains("Version retention period: " + versionRetentionPeriod);
-  }
-
-  static String generateDatabaseId() {
-    final String databaseId = (
-        baseDatabaseId
-            + "-"
-            + UUID.randomUUID().toString().replaceAll("-", "")
-    ).substring(0, 30);
-    databasesToDrop.add(databaseId);
-    return databaseId;
   }
 }
