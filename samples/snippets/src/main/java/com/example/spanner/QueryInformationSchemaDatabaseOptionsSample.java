@@ -58,7 +58,9 @@ public class QueryInformationSchemaDatabaseOptionsSample {
 
           System.out.println("The " + optionName + " for " + id + " is " + optionValue);
         } else {
-          System.out.println("Database " + id + " does not have a value for option 'default_leader'");
+          System.out.println(
+              "Database " + id + " does not have a value for option 'default_leader'"
+          );
         }
       }
     }
