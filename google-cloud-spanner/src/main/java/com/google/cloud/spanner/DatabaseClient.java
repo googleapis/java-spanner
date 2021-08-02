@@ -347,6 +347,32 @@ public interface DatabaseClient {
   TransactionRunner readWriteTransaction(TransactionOption... options);
 
   /**
+   * Returns a transaction for executing a single DML statement with retries. While a single DML
+   * statement can also be executed using {@link #readWriteTransaction()}, using
+   * SingleDmlTransaction tends to have better performance.
+   *
+   * <p>Example of using SingleDmlTransaction.
+   *
+   * <pre> <code>
+   * long rowCount = dbClient.singleDmlTransaction().executeUpdate(
+   *     Statement.of("INSERT INTO Singers (SingerId) VALUES (999)"));
+   * </code></pre>
+   *
+   * Options for a transaction can include:
+   *
+   * <ul>
+   *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not be
+   *       applied to any other requests on the transaction.
+   *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
+   *       {@link CommitResponse}.
+   * </ul>
+   */
+  default SingleDmlTransaction singleDmlTransaction(TransactionOption... options) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
    * Returns a transaction manager which allows manual management of transaction lifecycle. This API
    * is meant for advanced users. Most users should instead use the {@link #readWriteTransaction()}
    * API instead.

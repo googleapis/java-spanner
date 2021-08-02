@@ -42,6 +42,7 @@ import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SingleDmlTransactionTest;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
@@ -64,8 +65,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import org.mockito.Matchers;
 
 @RunWith(JUnit4.class)
 public class SingleUseTransactionTest {
@@ -368,14 +368,18 @@ public class SingleUseTransactionTest {
     when(dbClient.singleUseReadOnlyTransaction(staleness)).thenReturn(singleUse);
 
     final TransactionContext txContext = mock(TransactionContext.class);
-    when(txContext.executeUpdate(Statement.of(VALID_UPDATE))).thenReturn(VALID_UPDATE_COUNT);
-    when(txContext.executeUpdate(Statement.of(SLOW_UPDATE)))
+    when(txContext.executeUpdate(
+            Matchers.eq(Statement.of(VALID_UPDATE)), Matchers.any(Options.UpdateOption.class)))
+        .thenReturn(VALID_UPDATE_COUNT);
+    when(txContext.executeUpdate(
+            Matchers.eq(Statement.of(SLOW_UPDATE)), Matchers.any(Options.UpdateOption.class)))
         .thenAnswer(
             invocation -> {
               Thread.sleep(1000L);
               return VALID_UPDATE_COUNT;
             });
-    when(txContext.executeUpdate(Statement.of(INVALID_UPDATE)))
+    when(txContext.executeUpdate(
+            Matchers.eq(Statement.of(INVALID_UPDATE)), Matchers.any(Options.UpdateOption.class)))
         .thenThrow(
             SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, "invalid update"));
     SimpleTransactionManager txManager = new SimpleTransactionManager(txContext, commitBehavior);
@@ -387,56 +391,53 @@ public class SingleUseTransactionTest {
         .thenThrow(
             SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, "invalid update"));
 
-    when(dbClient.readWriteTransaction())
-        .thenAnswer(
-            new Answer<TransactionRunner>() {
-              @Override
-              public TransactionRunner answer(InvocationOnMock invocation) {
-                return new TransactionRunner() {
-                  private CommitResponse commitResponse;
+    TransactionRunner txnRunner =
+        new TransactionRunner() {
+          private CommitResponse commitResponse;
 
-                  @Override
-                  public <T> T run(TransactionCallable<T> callable) {
-                    if (commitBehavior == CommitBehavior.SUCCEED) {
-                      T res;
-                      try {
-                        res = callable.run(txContext);
-                      } catch (Exception e) {
-                        throw SpannerExceptionFactory.newSpannerException(e);
-                      }
-                      commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
-                      return res;
-                    } else if (commitBehavior == CommitBehavior.FAIL) {
-                      throw SpannerExceptionFactory.newSpannerException(
-                          ErrorCode.UNKNOWN, "commit failed");
-                    } else {
-                      throw SpannerExceptionFactory.newSpannerException(
-                          ErrorCode.ABORTED, "commit aborted");
-                    }
-                  }
-
-                  @Override
-                  public Timestamp getCommitTimestamp() {
-                    if (commitResponse == null) {
-                      throw new IllegalStateException("no commit timestamp");
-                    }
-                    return commitResponse.getCommitTimestamp();
-                  }
-
-                  public CommitResponse getCommitResponse() {
-                    if (commitResponse == null) {
-                      throw new IllegalStateException("no commit response");
-                    }
-                    return commitResponse;
-                  }
-
-                  @Override
-                  public TransactionRunner allowNestedTransaction() {
-                    return this;
-                  }
-                };
+          @Override
+          public <T> T run(TransactionCallable<T> callable) {
+            if (commitBehavior == CommitBehavior.SUCCEED) {
+              T res;
+              try {
+                res = callable.run(txContext);
+              } catch (Exception e) {
+                throw SpannerExceptionFactory.newSpannerException(e);
               }
-            });
+              commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
+              return res;
+            } else if (commitBehavior == CommitBehavior.FAIL) {
+              throw SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, "commit failed");
+            } else {
+              throw SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.ABORTED, "commit aborted");
+            }
+          }
+
+          @Override
+          public Timestamp getCommitTimestamp() {
+            if (commitResponse == null) {
+              throw new IllegalStateException("no commit timestamp");
+            }
+            return commitResponse.getCommitTimestamp();
+          }
+
+          public CommitResponse getCommitResponse() {
+            if (commitResponse == null) {
+              throw new IllegalStateException("no commit response");
+            }
+            return commitResponse;
+          }
+
+          @Override
+          public TransactionRunner allowNestedTransaction() {
+            return this;
+          }
+        };
+
+    when(dbClient.readWriteTransaction()).thenAnswer(invocation -> txnRunner);
+    when(dbClient.singleDmlTransaction())
+        .thenAnswer(invocation -> SingleDmlTransactionTest.newSingleDmlTransaction(txnRunner));
 
     return SingleUseTransaction.newBuilder()
         .setDatabaseClient(dbClient)

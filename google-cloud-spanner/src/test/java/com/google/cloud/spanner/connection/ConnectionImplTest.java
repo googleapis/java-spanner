@@ -52,6 +52,7 @@ import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SingleDmlTransactionTest;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -81,8 +82,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
 public class ConnectionImplTest {
@@ -311,43 +310,41 @@ public class ConnectionImplTest {
               return tx;
             });
 
-    when(dbClient.readWriteTransaction())
-        .thenAnswer(
-            new Answer<TransactionRunner>() {
-              @Override
-              public TransactionRunner answer(InvocationOnMock invocation) {
-                return new TransactionRunner() {
-                  private CommitResponse commitResponse;
+    TransactionRunner txnRunner =
+        new TransactionRunner() {
+          private CommitResponse commitResponse;
 
-                  @Override
-                  public <T> T run(TransactionCallable<T> callable) {
-                    commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
-                    TransactionContext transaction = mock(TransactionContext.class);
-                    when(transaction.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
-                    try {
-                      return callable.run(transaction);
-                    } catch (Exception e) {
-                      throw SpannerExceptionFactory.newSpannerException(e);
-                    }
-                  }
+          @Override
+          public <T> T run(TransactionCallable<T> callable) {
+            commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
+            TransactionContext transaction = mock(TransactionContext.class);
+            when(transaction.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
+            try {
+              return callable.run(transaction);
+            } catch (Exception e) {
+              throw SpannerExceptionFactory.newSpannerException(e);
+            }
+          }
 
-                  @Override
-                  public Timestamp getCommitTimestamp() {
-                    return commitResponse == null ? null : commitResponse.getCommitTimestamp();
-                  }
+          @Override
+          public Timestamp getCommitTimestamp() {
+            return commitResponse == null ? null : commitResponse.getCommitTimestamp();
+          }
 
-                  @Override
-                  public CommitResponse getCommitResponse() {
-                    return commitResponse;
-                  }
+          @Override
+          public CommitResponse getCommitResponse() {
+            return commitResponse;
+          }
 
-                  @Override
-                  public TransactionRunner allowNestedTransaction() {
-                    return this;
-                  }
-                };
-              }
-            });
+          @Override
+          public TransactionRunner allowNestedTransaction() {
+            return this;
+          }
+        };
+
+    when(dbClient.readWriteTransaction()).thenAnswer(invocation -> txnRunner);
+    when(dbClient.singleDmlTransaction())
+        .thenAnswer(invocation -> SingleDmlTransactionTest.newSingleDmlTransaction(txnRunner));
     return new ConnectionImpl(options, spannerPool, ddlClient, dbClient);
   }
 

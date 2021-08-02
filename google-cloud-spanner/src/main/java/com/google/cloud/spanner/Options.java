@@ -215,6 +215,20 @@ public final class Options implements Serializable {
     }
   }
 
+  /**
+   * Option that typically is used for internal use, that enables Connection to inform
+   * DatabaseClient that the connection is in inlineCommit mode.
+   */
+  static final class InlineCommitOption extends InternalOption
+      implements TransactionOption, UpdateOption {
+    @Override
+    void appendToOptions(Options options) {
+      options.inlineCommit = true;
+    }
+  }
+
+  static final InlineCommitOption INLINE_COMMIT_OPTION = new InlineCommitOption();
+
   private boolean withCommitStats;
   private Long limit;
   private Integer prefetchChunks;
@@ -224,6 +238,7 @@ public final class Options implements Serializable {
   private String filter;
   private RpcPriority priority;
   private String tag;
+  private boolean inlineCommit;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -296,6 +311,10 @@ public final class Options implements Serializable {
     return tag;
   }
 
+  boolean inlineCommit() {
+    return inlineCommit;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -322,6 +341,9 @@ public final class Options implements Serializable {
     }
     if (tag != null) {
       b.append("tag: ").append(tag).append(' ');
+    }
+    if (inlineCommit) {
+      b.append("inlineCommit: ").append(inlineCommit).append(' ');
     }
     return b.toString();
   }
@@ -354,7 +376,8 @@ public final class Options implements Serializable {
         && Objects.equals(pageToken(), that.pageToken())
         && Objects.equals(filter(), that.filter())
         && Objects.equals(priority(), that.priority())
-        && Objects.equals(tag(), that.tag());
+        && Objects.equals(tag(), that.tag())
+        && Objects.equals(inlineCommit, that.inlineCommit);
   }
 
   @Override
@@ -386,6 +409,9 @@ public final class Options implements Serializable {
     }
     if (tag != null) {
       result = 31 * result + tag.hashCode();
+    }
+    if (inlineCommit) {
+      result = 31 * result + 17;
     }
     return result;
   }

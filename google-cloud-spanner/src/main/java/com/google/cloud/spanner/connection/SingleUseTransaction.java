@@ -29,6 +29,7 @@ import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SingleDmlTransaction;
 import com.google.cloud.spanner.SpannerApiFutures;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
@@ -71,6 +72,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   private final boolean returnCommitStats;
   private volatile SettableApiFuture<Timestamp> readTimestamp = null;
   private volatile TransactionRunner writeTransaction;
+  private volatile SingleDmlTransaction singleDmlTransaction;
   private boolean used = false;
   private volatile UnitOfWorkState state = UnitOfWorkState.STARTED;
 
@@ -221,7 +223,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   private boolean hasCommitResponse() {
-    return state == UnitOfWorkState.COMMITTED && writeTransaction != null;
+    return state == UnitOfWorkState.COMMITTED
+        && (writeTransaction != null || singleDmlTransaction != null);
   }
 
   @Override
@@ -241,6 +244,9 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   public CommitResponse getCommitResponse() {
     ConnectionPreconditions.checkState(
         hasCommitResponse(), "There is no commit response available for this transaction.");
+    if (singleDmlTransaction != null) {
+      return singleDmlTransaction.getCommitResponse();
+    }
     return writeTransaction.getCommitResponse();
   }
 
@@ -248,6 +254,9 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   public CommitResponse getCommitResponseOrNull() {
     if (hasCommitResponse()) {
       try {
+        if (singleDmlTransaction != null) {
+          return singleDmlTransaction.getCommitResponse();
+        }
         return writeTransaction.getCommitResponse();
       } catch (SpannerException e) {
         // ignore
@@ -343,10 +352,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     Callable<Long> callable =
         () -> {
           try {
-            writeTransaction = createWriteTransaction();
-            Long res =
-                writeTransaction.run(
-                    transaction -> transaction.executeUpdate(update.getStatement(), options));
+            singleDmlTransaction = dbClient.singleDmlTransaction();
+            Long res = singleDmlTransaction.executeUpdate(update.getStatement(), options);
             state = UnitOfWorkState.COMMITTED;
             return res;
           } catch (Throwable t) {

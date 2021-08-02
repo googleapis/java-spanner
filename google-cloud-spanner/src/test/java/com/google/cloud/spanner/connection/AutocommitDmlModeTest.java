@@ -26,6 +26,8 @@ import static org.mockito.Mockito.when;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.SingleDmlTransactionTest;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
@@ -35,6 +37,7 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.Matchers;
 
 @RunWith(JUnit4.class)
 public class AutocommitDmlModeTest {
@@ -55,7 +58,8 @@ public class AutocommitDmlModeTest {
         .thenReturn(spanner);
     DdlClient ddlClient = mock(DdlClient.class);
     TransactionRunner txRunner = mock(TransactionRunner.class);
-    when(dbClient.readWriteTransaction()).thenReturn(txRunner);
+    when(dbClient.singleDmlTransaction())
+        .thenAnswer(invocation -> SingleDmlTransactionTest.newSingleDmlTransaction(txRunner));
     when(txRunner.run(any(TransactionCallable.class)))
         .thenAnswer(
             invocation -> {
@@ -84,7 +88,8 @@ public class AutocommitDmlModeTest {
       assertThat(connection.getAutocommitDmlMode(), is(AutocommitDmlMode.TRANSACTIONAL));
 
       connection.execute(Statement.of(UPDATE));
-      verify(txContext).executeUpdate(Statement.of(UPDATE));
+      verify(txContext)
+          .executeUpdate(Matchers.eq(Statement.of(UPDATE)), any(Options.UpdateOption.class));
       verify(dbClient, never()).executePartitionedUpdate(Statement.of(UPDATE));
     }
   }

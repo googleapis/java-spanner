@@ -188,6 +188,16 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     private CommitResponse commitResponse;
 
+    private enum InlineCommitState {
+      NOT_STARTED,
+      COMMITTING,
+      SUCCEEDED,
+      MISSING_COMMIT_RESPONSE,
+      FAILED
+    }
+
+    private InlineCommitState inlineCommitState = InlineCommitState.NOT_STARTED;
+
     private TransactionContextImpl(Builder builder) {
       super(builder);
       this.transactionId = builder.transactionId;
@@ -271,6 +281,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     void commit() {
+      if (inlineCommitState == InlineCommitState.SUCCEEDED) {
+        return;
+      }
       try {
         commitResponse = commitAsync().get();
       } catch (InterruptedException e) {
@@ -286,6 +299,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     volatile ApiFuture<CommitResponse> commitFuture;
 
     ApiFuture<CommitResponse> commitAsync() {
+      checkState(
+          inlineCommitState != InlineCommitState.SUCCEEDED,
+          "The transaction was already committed.");
+
       List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
       synchronized (committingLock) {
         if (committing) {
@@ -456,6 +473,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       // has already been prepared by the session pool, or if this transaction has been marked
       // withInlineBegin and an earlier statement has already started a transaction.
       if (transactionId == null) {
+        checkState(!options.inlineCommit(), "InlineCommit requires a transactionId.");
         try {
           ApiFuture<ByteString> tx = null;
           synchronized (lock) {
@@ -661,6 +679,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               Options.fromUpdateOptions(options),
               /* withTransactionSelector = */ true);
       try {
+        if (builder.getAutocommit()) {
+          inlineCommitState = InlineCommitState.COMMITTING;
+        }
         com.google.spanner.v1.ResultSet resultSet =
             rpc.executeQuery(builder.build(), session.getOptions());
         if (resultSet.getMetadata().hasTransaction()) {
@@ -671,9 +692,22 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           throw new IllegalArgumentException(
               "DML response missing stats possibly due to non-DML statement as input");
         }
+        if (inlineCommitState == InlineCommitState.COMMITTING) {
+          if (resultSet.hasCommitResponse()) {
+            inlineCommitState = InlineCommitState.SUCCEEDED;
+            commitResponse = new CommitResponse(resultSet.getCommitResponse());
+          } else {
+            // TODO: Throw an exception here, after AbstractMockServerTest is extended to return a
+            // commit reponse in the case of autocommit.
+            inlineCommitState = InlineCommitState.MISSING_COMMIT_RESPONSE;
+          }
+        }
         // For standard DML, using the exact row count.
         return resultSet.getStats().getRowCountExact();
       } catch (Throwable t) {
+        if (inlineCommitState != InlineCommitState.NOT_STARTED) {
+          inlineCommitState = InlineCommitState.FAILED;
+        }
         throw onError(
             SpannerExceptionFactory.asSpannerException(t), builder.getTransaction().hasBegin());
       }
@@ -688,6 +722,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               QueryMode.NORMAL,
               Options.fromUpdateOptions(options),
               /* withTransactionSelector = */ true);
+      if (builder.getAutocommit()) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.UNIMPLEMENTED,
+            "TransactionRunner.executeUpdateAsync() does not support inline commit.");
+      }
       final ApiFuture<com.google.spanner.v1.ResultSet> resultSet;
       try {
         // Register the update as an async operation that must finish before the transaction may
@@ -917,11 +956,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     final AtomicInteger attempt = new AtomicInteger();
     Callable<T> retryCallable =
         () -> {
-          boolean useInlinedBegin = true;
+          boolean useInlinedBegin = !options.inlineCommit();
           if (attempt.get() > 0) {
             // Do not inline the BeginTransaction during a retry if the initial attempt did not
             // actually start a transaction.
-            useInlinedBegin = txn.transactionId != null;
+            useInlinedBegin = txn.transactionId != null && !options.inlineCommit();
             txn = session.newTransaction(options);
           }
           checkState(

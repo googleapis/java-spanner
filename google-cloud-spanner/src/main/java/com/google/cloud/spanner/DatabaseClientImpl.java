@@ -174,6 +174,11 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
+  public SingleDmlTransaction singleDmlTransaction(TransactionOption... options) {
+    return new SingleDmlTransaction(getSession(), options);
+  }
+
+  @Override
   public TransactionManager transactionManager(TransactionOption... options) {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {

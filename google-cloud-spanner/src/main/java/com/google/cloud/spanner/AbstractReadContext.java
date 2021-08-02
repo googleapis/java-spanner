@@ -591,6 +591,9 @@ abstract class AbstractReadContext
       TransactionSelector selector = getTransactionSelector();
       if (selector != null) {
         builder.setTransaction(selector);
+        if (selector.hasId() && options.inlineCommit()) {
+          builder.setAutocommit(true);
+        }
       }
     }
     builder.setSeqno(getSeqNo());
