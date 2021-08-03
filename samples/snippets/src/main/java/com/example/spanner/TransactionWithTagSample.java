@@ -75,7 +75,7 @@ public class TransactionWithTagSample {
   }
   // [END spanner_set_transaction_tag]
 
-  // [START spanner_query_tags]
+  // [START spanner_set_request_tag]
   static void setRequestTag(DatabaseClient databaseClient) {
     // Sets the request tag to "app=concert,env=dev,action=select".
     // This request tag will only be set on this request.
@@ -88,5 +88,5 @@ public class TransactionWithTagSample {
       }
     }
   }
-  // [END spanner_query_tags]
+  // [END spanner_set_request_tag]
 }
