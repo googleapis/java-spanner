@@ -28,37 +28,63 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
  */
 public class TransactionWithTagSample {
 
-  // [START spanner_set_transaction_and_request_tags]
-  static void taggedTransaction(DatabaseClient databaseClient) {
-    // The request below would have transaction_tag set as "app=cart,env=dev".
+  // [START spanner_set_transaction_tag]
+  static void setTransactionTag(DatabaseClient databaseClient) {
+    // Sets the transaction tag to "app=concert,env=dev".
+    // This transaction tag will be applied to all the individual operations inside this
+    // transaction.
     databaseClient
-        .readWriteTransaction(Options.tag("app=cart,env=dev"))
+        .readWriteTransaction(Options.tag("app=concert,env=dev"))
         .run(
             new TransactionCallable<Void>() {
               @Override
               public Void run(TransactionContext transaction) throws Exception {
-                transaction.executeQuery(Statement.of("SELECT 1"),
-                    Options.tag("app=cart,env=dev,action=list"));
-                transaction.executeUpdate(
-                    Statement.of("UPDATE foo SET bar='baz' WHERE TRUE"),
-                    Options.tag("app=cart,env=dev,action=update"));
+                Statement selectStatement = Statement.newBuilder(
+                    "SELECT VenueId, VenueName, Capacity FROM Venues "
+                        + "WHERE OutdoorVenue = @outdoorVenue")
+                    .bind("outdoorVenue")
+                    .to(false)
+                    .build();
+
+                // Sets the request tag to "app=concert,env=dev,action=select".
+                // This request tag will only be set on this request.
+                ResultSet resultSet = transaction.executeQuery(
+                    selectStatement, Options.tag("app=concert,env=dev,action=select"));
+
+                while (resultSet.next()) {
+                  long newCapacity = resultSet.getLong(2) / 4;
+                  Statement updateStatement = Statement.newBuilder(
+                      "UPDATE Venues SET Capacity = @capacity WHERE VenueId = @venueId")
+                      .bind("capacity")
+                      .to(newCapacity)
+                      .bind("venueId")
+                      .to(resultSet.getLong(0))
+                      .build();
+
+                  // Sets the request tag to "app=concert,env=dev,action=update".
+                  // This request tag will only be set on this request.
+                  transaction.executeUpdate(
+                      updateStatement, Options.tag("app=concert,env=dev,action=update"));
+                  System.out.printf(
+                      "Capacity of %s updated to %d\n", resultSet.getString(1), newCapacity);
+                }
+
                 return null;
               }
             });
   }
-  // [END spanner_set_transaction_and_request_tags]
+  // [END spanner_set_transaction_tag]
 
   // [START spanner_query_tags]
-  static void queryStats(DatabaseClient databaseClient) {
-    // Execute query on Query statistics
-    // see: https://cloud.google.com/spanner/docs/introspection/query-statistics, for more details.
-    String sql =
-        "SELECT t.REQUEST_TAG, t.AVG_LATENCY_SECONDS, t.AVG_CPU_SECONDS "
-            + "FROM SPANNER_SYS.QUERY_STATS_TOP_MINUTE as t";
-    try (ResultSet resultSet = databaseClient.singleUse().executeQuery(Statement.of(sql))) {
+  static void setRequestTag(DatabaseClient databaseClient) {
+    // Sets the request tag to "app=concert,env=dev,action=select".
+    // This request tag will only be set on this request.
+    try (ResultSet resultSet = dbClient.singleUse().executeQuery(
+        Statement.of("SELECT SingerId, AlbumId, AlbumTitle FROM Albums"),
+        Options.tag("app=concert,env=dev,action=select"))) {
       while (resultSet.next()) {
         System.out.printf(
-            "%s %d %d\n", resultSet.getString(0), resultSet.getLong(1), resultSet.getLong(2));
+            "%d %d %s\n", resultSet.getString(0), resultSet.getLong(1), resultSet.getLong(2));
       }
     }
   }
