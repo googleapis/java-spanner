@@ -11,8 +11,8 @@
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "bb0a090d9204110042ab5dee2ce9e06e8071ce54",
-        "internalRef": "388499329"
+        "sha": "d9eaf41de44d953458b18712a3f240bb4c564e48",
+        "internalRef": "388535346"
       }
     },
     {
@@ -166,8 +166,6 @@
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseMetadataOrBuilder.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseRequest.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseRequestOrBuilder.java",
-    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CryptoKeyName.java",
-    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CryptoKeyVersionName.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/Database.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DatabaseName.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DatabaseOrBuilder.java",
