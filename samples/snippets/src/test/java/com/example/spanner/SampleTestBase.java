@@ -39,7 +39,8 @@ public class SampleTestBase {
   protected static InstanceAdminClient instanceAdminClient;
   protected static String projectId;
   protected static final String instanceId = System.getProperty("spanner.test.instance");
-  protected static final String instanceConfigName = System.getProperty("spanner.test.instance.config");
+  protected static final String instanceConfigName = System
+      .getProperty("spanner.test.instance.config");
   protected static SampleIdGenerator idGenerator;
 
   @BeforeClass
