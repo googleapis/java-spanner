@@ -17,6 +17,7 @@
 package com.example.spanner;
 
 import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import org.junit.AfterClass;
@@ -35,12 +36,15 @@ public class SampleTestBase {
 
   protected static Spanner spanner;
   protected static DatabaseAdminClient databaseAdminClient;
+  protected static InstanceAdminClient instanceAdminClient;
   protected static String projectId;
   protected static final String instanceId = System.getProperty("spanner.test.instance");
+  protected static final String instanceConfigName = System
+      .getProperty("spanner.test.instance.config");
   protected static SampleIdGenerator idGenerator;
 
   @BeforeClass
-  public static void setUp() {
+  public static void beforeClass() {
     final SpannerOptions options = SpannerOptions
         .newBuilder()
         .setAutoThrottleAdministrativeRequests()
@@ -48,11 +52,12 @@ public class SampleTestBase {
     projectId = options.getProjectId();
     spanner = options.getService();
     databaseAdminClient = spanner.getDatabaseAdminClient();
+    instanceAdminClient = spanner.getInstanceAdminClient();
     idGenerator = new SampleIdGenerator(BASE_DATABASE_ID, BASE_BACKUP_ID);
   }
 
   @AfterClass
-  public static void tearDown() {
+  public static void afterClass() {
     for (String databaseId : idGenerator.getDatabaseIds()) {
       try {
         databaseAdminClient.dropDatabase(instanceId, databaseId);
