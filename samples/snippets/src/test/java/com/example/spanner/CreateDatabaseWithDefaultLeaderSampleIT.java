@@ -19,10 +19,12 @@ package com.example.spanner;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.InstanceConfig;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class CreateDatabaseWithDefaultLeaderSampleIT extends SampleTestBase {
 
+  @Ignore("Skipping until we have a MR instance to run this on")
   @Test
   public void testCreateDatabaseWithDefaultLeader() throws Exception {
     final String databaseId = idGenerator.generateDatabaseId();

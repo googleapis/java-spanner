@@ -22,10 +22,12 @@ import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.InstanceConfig;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class UpdateDatabaseWithDefaultLeaderSampleIT extends SampleTestBase {
 
+  @Ignore("Skipping until we have a MR instance to run this on")
   @Test
   public void testUpdateDatabaseWithDefaultLeader() throws Exception {
     // Create database

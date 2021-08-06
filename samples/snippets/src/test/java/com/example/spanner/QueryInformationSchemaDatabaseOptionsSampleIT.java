@@ -21,10 +21,12 @@ import static org.junit.Assert.assertTrue;
 import com.google.cloud.spanner.InstanceConfig;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class QueryInformationSchemaDatabaseOptionsSampleIT extends SampleTestBase {
 
+  @Ignore("Skipping until we have a MR instance to run this on")
   @Test
   public void testQueryInformationSchemaDatabaseOptions() throws Exception {
     // Finds a possible new leader option
