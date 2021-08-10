@@ -69,8 +69,9 @@
         <configuration>
           <systemPropertyVariables>
             <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
-            <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing</spanner.testenv.instance>
-            <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
+            <spanner.testenv.instance>projects/span-cloud-testing/instances/donghuiz-instance</spanner.testenv.instance>
+            <spanner.gce.config.server_url>https://staging-wrenchworks.sandbox.googleapis.com</spanner.gce.config.server_url>
+            <spanner.gce.config.project_id>span-cloud-testing</spanner.gce.config.project_id>
             <spanner.testenv.kms_key.name>projects/gcloud-devel/locations/us-central1/keyRings/spanner-test-keyring/cryptoKeys/spanner-test-key</spanner.testenv.kms_key.name>
           </systemPropertyVariables>
           <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
