@@ -111,8 +111,10 @@ public class SpannerThreadsTest {
 
   @AfterClass
   public static void stopServer() throws InterruptedException {
-    server.shutdown();
-    server.awaitTermination();
+    if (server != null) {
+      server.shutdown();
+      server.awaitTermination();
+    }
   }
 
   @After
