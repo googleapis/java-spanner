@@ -343,7 +343,7 @@ public class GapicSpannerRpc implements SpannerRpc {
           new ManagedInstantiatingExecutorProvider(
               new ThreadFactoryBuilder()
                   .setDaemon(true)
-                  .setNameFormat("Cloud-Spanner-TransportChannel-%d")
+                  .setNameFormat(options.getTransportChannelExecutorThreadNameFormat())
                   .build());
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
       // with information gathered from SpannerOptions if none is provided
