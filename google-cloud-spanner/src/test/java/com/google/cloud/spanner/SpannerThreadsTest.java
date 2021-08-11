@@ -22,6 +22,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeTrue;
 
+import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.cloud.spanner.admin.instance.v1.MockInstanceAdminImpl;
@@ -258,6 +259,7 @@ public class SpannerThreadsTest {
               return input;
             })
         .setHost("http://" + endpoint)
+        .setCredentials(NoCredentials.getInstance())
         .setTransportChannelExecutorThreadNameFormat(threadNameFormat)
         .build();
   }
