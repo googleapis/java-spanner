@@ -979,7 +979,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Policy policy = Policy.newBuilder().build();
    *   Policy response = databaseAdminClient.setIamPolicy(resource, policy);
    * }
@@ -1014,7 +1014,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   String resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   String resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   Policy policy = Policy.newBuilder().build();
    *   Policy response = databaseAdminClient.setIamPolicy(resource, policy);
    * }
@@ -1048,7 +1048,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   SetIamPolicyRequest request =
    *       SetIamPolicyRequest.newBuilder()
-   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .setPolicy(Policy.newBuilder().build())
    *           .build();
    *   Policy response = databaseAdminClient.setIamPolicy(request);
@@ -1077,7 +1077,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   SetIamPolicyRequest request =
    *       SetIamPolicyRequest.newBuilder()
-   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .setPolicy(Policy.newBuilder().build())
    *           .build();
    *   ApiFuture<Policy> future = databaseAdminClient.setIamPolicyCallable().futureCall(request);
@@ -1104,7 +1104,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Policy response = databaseAdminClient.getIamPolicy(resource);
    * }
    * }</pre>
@@ -1135,7 +1135,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   String resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   String resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   Policy response = databaseAdminClient.getIamPolicy(resource);
    * }
    * }</pre>
@@ -1165,7 +1165,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetIamPolicyRequest request =
    *       GetIamPolicyRequest.newBuilder()
-   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .setOptions(GetPolicyOptions.newBuilder().build())
    *           .build();
    *   Policy response = databaseAdminClient.getIamPolicy(request);
@@ -1195,7 +1195,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetIamPolicyRequest request =
    *       GetIamPolicyRequest.newBuilder()
-   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .setOptions(GetPolicyOptions.newBuilder().build())
    *           .build();
    *   ApiFuture<Policy> future = databaseAdminClient.getIamPolicyCallable().futureCall(request);
@@ -1222,7 +1222,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   List<String> permissions = new ArrayList<>();
    *   TestIamPermissionsResponse response =
    *       databaseAdminClient.testIamPermissions(resource, permissions);
@@ -1260,7 +1260,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   String resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   String resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   List<String> permissions = new ArrayList<>();
    *   TestIamPermissionsResponse response =
    *       databaseAdminClient.testIamPermissions(resource, permissions);
@@ -1300,7 +1300,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   TestIamPermissionsRequest request =
    *       TestIamPermissionsRequest.newBuilder()
-   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .addAllPermissions(new ArrayList<String>())
    *           .build();
    *   TestIamPermissionsResponse response = databaseAdminClient.testIamPermissions(request);
@@ -1330,7 +1330,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   TestIamPermissionsRequest request =
    *       TestIamPermissionsRequest.newBuilder()
-   *           .setResource(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .addAllPermissions(new ArrayList<String>())
    *           .build();
    *   ApiFuture<TestIamPermissionsResponse> future =
