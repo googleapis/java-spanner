@@ -1137,8 +1137,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         // Default project id resolution might fail, but in emulator case
         // any project id would work, one from credentials or filesystem isn't
         // strictly needed
-        if (super.getProjectId() == null) {
-          super.setProjetcId("your-project-id");
+        if (this.getProjectId() == null) {
+          this.setProjetcId("your-project-id");
         }
       }
       return new SpannerOptions(this);
