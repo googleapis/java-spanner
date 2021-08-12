@@ -4,15 +4,15 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "b23e59a102dd8f4ac2184a496821f478cba11b64"
+        "sha": "5a2c787d0212b31efdfc573f1e2440ffd2209653"
       }
     },
     {
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "8bdca74d266ac366bc2096d39668ab9b6000468e",
-        "internalRef": "382806066"
+        "sha": "d9eaf41de44d953458b18712a3f240bb4c564e48",
+        "internalRef": "388535346"
       }
     },
     {
@@ -64,7 +64,6 @@
     ".github/workflows/approve-readme.yaml",
     ".github/workflows/auto-release.yaml",
     ".github/workflows/ci.yaml",
-    ".github/workflows/samples.yaml",
     ".kokoro/build.bat",
     ".kokoro/build.sh",
     ".kokoro/coerce_logs.sh",
@@ -167,8 +166,6 @@
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseMetadataOrBuilder.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseRequest.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseRequestOrBuilder.java",
-    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CryptoKeyName.java",
-    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CryptoKeyVersionName.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/Database.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DatabaseName.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DatabaseOrBuilder.java",
