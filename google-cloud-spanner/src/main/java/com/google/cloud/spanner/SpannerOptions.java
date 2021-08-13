@@ -1134,9 +1134,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
-        // Default project id resolution might fail, but in emulator case
-        // any project id would work, one from credentials or filesystem isn't
-        // strictly needed
+        // Default project id resolution might fail, but the emulator accepts any
+        // project id, so we can safely use a dummy id.
         if (this.getProjectId() == null) {
           this.setProjetcId("your-project-id");
         }
