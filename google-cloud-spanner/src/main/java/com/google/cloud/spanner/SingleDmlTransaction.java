@@ -87,7 +87,7 @@ public class SingleDmlTransaction {
 
   /**
    * Returns the {@link CommitResponse} of this transaction. It may only be called after a
-   * successfully call of executeUpdate.
+   * successful call of executeUpdate.
    */
   public CommitResponse getCommitResponse() {
     return runner.getCommitResponse();
