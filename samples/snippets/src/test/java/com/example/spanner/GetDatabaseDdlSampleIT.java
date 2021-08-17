@@ -33,44 +33,45 @@ public class GetDatabaseDdlSampleIT extends SampleTestBase {
     final InstanceConfig config = instanceAdminClient.getInstanceConfig(instanceConfigName);
     assertTrue(
         "Expected instance config " + instanceConfigName + " to have at least one leader option",
-        config.getLeaderOptions().size() > 1
-    );
+        config.getLeaderOptions().size() > 1);
     final String defaultLeader = config.getLeaderOptions().get(0);
 
     // Creates database
     final String databaseId = idGenerator.generateDatabaseId();
-    databaseAdminClient.createDatabase(
-        instanceId,
-        databaseId,
-        Arrays.asList(
-            "CREATE TABLE Singers (Id INT64 NOT NULL) PRIMARY KEY (Id)",
-            "ALTER DATABASE `"
-                + databaseId
-                + "` SET OPTIONS ( default_leader = '"
-                + defaultLeader
-                + "')"
-        )
-    ).get(5, TimeUnit.MINUTES);
+    databaseAdminClient
+        .createDatabase(
+            instanceId,
+            databaseId,
+            Arrays.asList(
+                "CREATE TABLE Singers (Id INT64 NOT NULL) PRIMARY KEY (Id)",
+                "ALTER DATABASE `"
+                    + databaseId
+                    + "` SET OPTIONS ( default_leader = '"
+                    + defaultLeader
+                    + "')"))
+        .get(5, TimeUnit.MINUTES);
 
     // Runs sample
-    final String out = SampleRunner.runSample(() -> GetDatabaseDdlSample
-        .getDatabaseDdl(projectId, instanceId, databaseId)
-    );
+    final String out =
+        SampleRunner.runSample(
+            () -> GetDatabaseDdlSample.getDatabaseDdl(projectId, instanceId, databaseId));
 
     assertTrue(
-        "Expected to have retrieved database DDL for " + databaseId + "."
-            + " Output received was " + out,
-        out.contains("Retrieved database DDL for " + databaseId)
-    );
+        "Expected to have retrieved database DDL for "
+            + databaseId
+            + "."
+            + " Output received was "
+            + out,
+        out.contains("Retrieved database DDL for " + databaseId));
     assertTrue(
-        "Expected leader to be set to " + defaultLeader + "."
-            + " Output received was " + out,
-        out.contains("default_leader = '" + defaultLeader + "'")
-    );
+        "Expected leader to be set to " + defaultLeader + "." + " Output received was " + out,
+        out.contains("default_leader = '" + defaultLeader + "'"));
     assertTrue(
-        "Expected table to have been created in " + databaseId + "."
-            + " Output received was " + out,
-        out.contains("CREATE TABLE Singers")
-    );
+        "Expected table to have been created in "
+            + databaseId
+            + "."
+            + " Output received was "
+            + out,
+        out.contains("CREATE TABLE Singers"));
   }
 }

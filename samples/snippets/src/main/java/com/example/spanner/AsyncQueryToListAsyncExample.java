@@ -85,4 +85,4 @@ class AsyncQueryToListAsyncExample {
     executor.shutdown();
   }
 }
-//[END spanner_async_query_to_list]
+// [END spanner_async_query_to_list]

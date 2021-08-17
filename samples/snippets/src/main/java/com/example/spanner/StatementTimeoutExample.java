@@ -47,30 +47,35 @@ class StatementTimeoutExample {
   }
 
   static void executeSqlWithTimeout(DatabaseClient client) {
-    CallContextConfigurator configurator = new CallContextConfigurator() {
-      public <ReqT, RespT> ApiCallContext configure(ApiCallContext context, ReqT request,
-          MethodDescriptor<ReqT, RespT> method) {
-        // DML uses the ExecuteSql RPC.
-        if (method == SpannerGrpc.getExecuteSqlMethod()) {
-          return GrpcCallContext.createDefault()
-              .withCallOptions(CallOptions.DEFAULT.withDeadlineAfter(60L, TimeUnit.SECONDS));
-        }
-        // Return null to indicate that the default should be used for other methods.
-        return null;
-      }
-    };
+    CallContextConfigurator configurator =
+        new CallContextConfigurator() {
+          public <ReqT, RespT> ApiCallContext configure(
+              ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
+            // DML uses the ExecuteSql RPC.
+            if (method == SpannerGrpc.getExecuteSqlMethod()) {
+              return GrpcCallContext.createDefault()
+                  .withCallOptions(CallOptions.DEFAULT.withDeadlineAfter(60L, TimeUnit.SECONDS));
+            }
+            // Return null to indicate that the default should be used for other methods.
+            return null;
+          }
+        };
     // Create a context that uses the custom call configuration.
     Context context =
         Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
     // Run the transaction in the custom context.
-    context.run(() ->
-        client.readWriteTransaction().<long[]>run(transaction -> {
-          String sql = "INSERT Singers (SingerId, FirstName, LastName)\n"
-              + "VALUES (20, 'George', 'Washington')";
-          long rowCount = transaction.executeUpdate(Statement.of(sql));
-          System.out.printf("%d record inserted.%n", rowCount);
-          return null;
-        })
-    );
+    context.run(
+        () ->
+            client
+                .readWriteTransaction()
+                .<long[]>run(
+                    transaction -> {
+                      String sql =
+                          "INSERT Singers (SingerId, FirstName, LastName)\n"
+                              + "VALUES (20, 'George', 'Washington')";
+                      long rowCount = transaction.executeUpdate(Statement.of(sql));
+                      System.out.printf("%d record inserted.%n", rowCount);
+                      return null;
+                    }));
   }
 }

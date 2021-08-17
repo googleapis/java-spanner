@@ -23,15 +23,11 @@ import com.google.cloud.spanner.SpannerOptions;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-/**
- * Base class for sample integration tests.
- */
+/** Base class for sample integration tests. */
 public class SampleTestBase {
 
-  private static final String BASE_DATABASE_ID = System.getProperty(
-      "spanner.sample.database",
-      "sampledb"
-  );
+  private static final String BASE_DATABASE_ID =
+      System.getProperty("spanner.sample.database", "sampledb");
   private static final String BASE_BACKUP_ID = "samplebk";
 
   protected static Spanner spanner;
@@ -39,16 +35,14 @@ public class SampleTestBase {
   protected static InstanceAdminClient instanceAdminClient;
   protected static String projectId;
   protected static final String instanceId = System.getProperty("spanner.test.instance");
-  protected static final String instanceConfigName = System
-      .getProperty("spanner.test.instance.config");
+  protected static final String instanceConfigName =
+      System.getProperty("spanner.test.instance.config");
   protected static SampleIdGenerator idGenerator;
 
   @BeforeClass
   public static void beforeClass() {
-    final SpannerOptions options = SpannerOptions
-        .newBuilder()
-        .setAutoThrottleAdministrativeRequests()
-        .build();
+    final SpannerOptions options =
+        SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests().build();
     projectId = options.getProjectId();
     spanner = options.getService();
     databaseAdminClient = spanner.getDatabaseAdminClient();
@@ -63,8 +57,11 @@ public class SampleTestBase {
         databaseAdminClient.dropDatabase(instanceId, databaseId);
       } catch (Exception e) {
         System.out.println(
-            "Failed to drop database " + databaseId + " due to " + e.getMessage() + ", skipping..."
-        );
+            "Failed to drop database "
+                + databaseId
+                + " due to "
+                + e.getMessage()
+                + ", skipping...");
       }
     }
     for (String backupId : idGenerator.getBackupIds()) {
@@ -72,8 +69,7 @@ public class SampleTestBase {
         databaseAdminClient.deleteBackup(instanceId, backupId);
       } catch (Exception e) {
         System.out.println(
-            "Failed to delete backup " + backupId + " due to " + e.getMessage() + ", skipping..."
-        );
+            "Failed to delete backup " + backupId + " due to " + e.getMessage() + ", skipping...");
       }
     }
     spanner.close();

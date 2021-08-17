@@ -41,22 +41,18 @@ public class SampleIdGenerator {
   }
 
   public String generateDatabaseId() {
-    final String databaseId = (
-        baseDatabaseId
-            + "-"
-            + UUID.randomUUID().toString().replaceAll("-", "")
-    ).substring(0, DATABASE_NAME_MAX_LENGTH);
+    final String databaseId =
+        (baseDatabaseId + "-" + UUID.randomUUID().toString().replaceAll("-", ""))
+            .substring(0, DATABASE_NAME_MAX_LENGTH);
 
     databaseIds.add(databaseId);
     return databaseId;
   }
 
   public String generateBackupId() {
-    final String databaseId = (
-        baseBackupId
-            + "-"
-            + UUID.randomUUID().toString().replaceAll("-", "")
-    ).substring(0, BACKUP_NAME_MAX_LENGTH);
+    final String databaseId =
+        (baseBackupId + "-" + UUID.randomUUID().toString().replaceAll("-", ""))
+            .substring(0, BACKUP_NAME_MAX_LENGTH);
 
     backupIds.add(databaseId);
     return databaseId;
