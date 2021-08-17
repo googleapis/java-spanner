@@ -87,12 +87,18 @@ class SessionImpl implements Session {
   ByteString readyTransactionId;
   private final Map<SpannerRpc.Option, ?> options;
   private Span currentSpan;
+  ByteString nextRwTxnId;
+  Timestamp timeToExpire;
 
   SessionImpl(SpannerImpl spanner, String name, Map<SpannerRpc.Option, ?> options) {
     this.spanner = spanner;
     this.options = options;
     this.name = checkNotNull(name);
     this.databaseId = SessionId.of(name).getDatabaseId();
+  }
+
+  boolean hasNonExpiredRwTxnId() {
+    return nextRwTxnId != null && timeToExpire.compareTo(Timestamp.now()) > 0;
   }
 
   @Override
@@ -340,6 +346,10 @@ class SessionImpl implements Session {
   }
 
   TransactionContextImpl newTransaction(Options options) {
+    if (readyTransactionId == null && hasNonExpiredRwTxnId()) {
+      readyTransactionId = nextRwTxnId;
+      nextRwTxnId = null;
+    }
     return TransactionContextImpl.newBuilder()
         .setSession(this)
         .setOptions(options)

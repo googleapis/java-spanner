@@ -82,10 +82,12 @@ import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -1750,6 +1752,16 @@ class SessionPool {
   @GuardedBy("lock")
   private final LinkedList<PooledSession> sessions = new LinkedList<>();
 
+  class SortByTimeToExpire implements Comparator<PooledSession> {
+    public int compare(PooledSession a, PooledSession b) {
+      return a.delegate.timeToExpire.compareTo(b.delegate.timeToExpire);
+    }
+  }
+
+  @GuardedBy("lock")
+  private final PriorityQueue<PooledSession> writeSessions =
+      new PriorityQueue<>(10, new SortByTimeToExpire());
+
   @GuardedBy("lock")
   private final Queue<WaiterFuture> waiters = new LinkedList<>();
 
@@ -1972,6 +1984,22 @@ class SessionPool {
     }
   }
 
+  /*
+   * Removes from writeSessions those sessions that do not have a valid txnId.
+   * Must be called under lock.
+   */
+  private void moveExpiredWriteSessionsToSessions() {
+    while (true) {
+      PooledSession head = writeSessions.peek();
+      if (head == null || head.delegate.timeToExpire.compareTo(Timestamp.now()) > 0) {
+        break;
+      }
+      writeSessions.poll();
+      head.delegate.nextRwTxnId = null;
+      sessions.add(head);
+    }
+  }
+
   /**
    * Returns a session to be used for requests to spanner. This method is always non-blocking and
    * returns a {@link PooledSessionFuture}. In case the pool is exhausted and {@link
@@ -1987,7 +2015,7 @@ class SessionPool {
    *       session being returned to the pool or a new session being created.
    * </ol>
    */
-  PooledSessionFuture getSession() throws SpannerException {
+  PooledSessionFuture getSession(boolean wantRwTxnId) throws SpannerException {
     Span span = Tracing.getTracer().getCurrentSpan();
     span.addAnnotation("Acquiring session");
     WaiterFuture waiter = null;
@@ -2006,7 +2034,19 @@ class SessionPool {
                 resourceNotFoundException.getMessage()),
             resourceNotFoundException);
       }
-      sess = sessions.poll();
+      moveExpiredWriteSessionsToSessions();
+      if (wantRwTxnId) {
+        sess = writeSessions.poll();
+        if (sess != null) {
+          System.out.println("SessionPool.getSession() polled from writeSessions.");
+        }
+      }
+      if (sess == null) {
+        sess = sessions.poll();
+        if (sess != null) {
+          System.out.println("SessionPool.getSession() polled from sessions (w/o nextRwTxnId).");
+        }
+      }
       if (sess == null) {
         span.addAnnotation("No session available");
         maybeCreateSession();
@@ -2017,6 +2057,10 @@ class SessionPool {
       }
       return checkoutSession(span, sess, waiter);
     }
+  }
+
+  PooledSessionFuture getSession() throws SpannerException {
+    return getSession(false);
   }
 
   private PooledSessionFuture checkoutSession(
@@ -2096,6 +2140,10 @@ class SessionPool {
       }
       if (waiters.size() == 0) {
         // No pending waiters
+        if (session.delegate.hasNonExpiredRwTxnId()) {
+          writeSessions.add(session);
+          return;
+        }
         switch (position) {
           case RANDOM:
             if (!sessions.isEmpty()) {

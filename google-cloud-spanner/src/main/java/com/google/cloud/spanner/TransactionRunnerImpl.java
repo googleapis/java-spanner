@@ -227,8 +227,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     ApiFuture<Void> ensureTxnAsync() {
       final SettableApiFuture<Void> res = SettableApiFuture.create();
       if (transactionId == null || isAborted()) {
+        System.out.println("In ensureTxnAsync(): call createTxnAsync() to get a new txnId.");
         createTxnAsync(res);
       } else {
+        System.out.println("In ensureTxnAsync(), use the stored nextTxnId.");
         span.addAnnotation(
             "Transaction Initialized",
             ImmutableMap.of(
@@ -273,6 +275,34 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     void commit() {
       try {
         commitResponse = commitAsync().get();
+
+        // TODO(autocommit v2): Right now the SpanFEs have not been expanded to return
+        //  nextRwTxnId+timeToExpire in a CommitResponse. Fake it by calling BeginTransaction.
+        /*
+        if (commitResponse.hasNextRwTxnId()) {
+          session.nextRwTxnId = commitResponse.nextRwTxnId();
+          session.timeToExpire = commitResponse.timeToExpire();
+        }
+        */
+        final SettableApiFuture<Void> res = SettableApiFuture.create();
+        final ApiFuture<ByteString> fut = session.beginTransactionAsync();
+        fut.addListener(
+            () -> {
+              try {
+                System.out.println("In commit(), store nextTxnId received from CommitResponse.");
+                session.nextRwTxnId = fut.get();
+                Timestamp now = Timestamp.now();
+                session.timeToExpire =
+                    Timestamp.ofTimeSecondsAndNanos(now.getSeconds() + 10, now.getNanos());
+                res.set(null);
+              } catch (ExecutionException e) {
+                res.setException(e.getCause() == null ? e : e.getCause());
+              } catch (InterruptedException e) {
+                res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+              }
+            },
+            MoreExecutors.directExecutor());
+        res.get();
       } catch (InterruptedException e) {
         if (commitFuture != null) {
           commitFuture.cancel(true);
@@ -917,7 +947,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     final AtomicInteger attempt = new AtomicInteger();
     Callable<T> retryCallable =
         () -> {
-          boolean useInlinedBegin = true;
+          boolean useInlinedBegin = false;
           if (attempt.get() > 0) {
             // Do not inline the BeginTransaction during a retry if the initial attempt did not
             // actually start a transaction.
