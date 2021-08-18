@@ -148,7 +148,7 @@ public class SpannerSample {
     final boolean outdoorVenue;
     final float popularityScore;
     final BigDecimal revenue;
-    final String revenueDetails;
+    final String venueDetails;
 
     Venue(
         long venueId,
@@ -160,7 +160,7 @@ public class SpannerSample {
         boolean outdoorVenue,
         float popularityScore,
         BigDecimal revenue,
-        String revenueDetails) {
+        String venueDetails) {
       this.venueId = venueId;
       this.venueName = venueName;
       this.venueInfo = venueInfo;
@@ -170,7 +170,7 @@ public class SpannerSample {
       this.outdoorVenue = outdoorVenue;
       this.popularityScore = popularityScore;
       this.revenue = revenue;
-      this.revenueDetails = revenueDetails;
+      this.venueDetails = venueDetails;
     }
   }
 
@@ -1276,7 +1276,7 @@ public class SpannerSample {
                     + "  OutdoorVenue    BOOL, "
                     + "  PopularityScore FLOAT64, "
                     + "  Revenue         NUMERIC, "
-                    + "  RevenueDetails  JSON, "
+                    + "  VenueDetails  JSON, "
                     + "  LastUpdateTime  TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true)"
                     + ") PRIMARY KEY (VenueId)"),
             null);
@@ -1319,8 +1319,8 @@ public class SpannerSample {
               .to(venue.popularityScore)
               .set("Revenue")
               .to(venue.revenue)
-              .set("RevenueDetails")
-              .to(venue.revenueDetails)
+              .set("VenueDetails")
+              .to(venue.venueDetails)
               .set("LastUpdateTime")
               .to(Value.COMMIT_TIMESTAMP)
               .build());

@@ -46,12 +46,12 @@ class AddJsonColumnSample {
         adminClient.updateDatabaseDdl(
             instanceId,
             databaseId,
-            ImmutableList.of("ALTER TABLE Venues ADD COLUMN RevenueDetails JSON"),
+            ImmutableList.of("ALTER TABLE Venues ADD COLUMN VenueDetails JSON"),
             null);
     // Wait for the operation to finish.
     // This will throw an ExecutionException if the operation fails.
     operation.get();
-    System.out.printf("Successfully added column `RevenueDetails`%n");
+    System.out.printf("Successfully added column `VenueDetails`%n");
   }
 }
 // [END spanner_add_json_column]

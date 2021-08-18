@@ -47,7 +47,7 @@ class UpdateJsonDataSample {
             Mutation.newInsertOrUpdateBuilder("Venues")
                 .set("VenueId")
                 .to(4L)
-                .set("RevenueDetails")
+                .set("VenueDetails")
                 .to(
                     Value.json(
                         "[{\"name\":\"room 1\",\"open\":true},"
@@ -56,13 +56,13 @@ class UpdateJsonDataSample {
             Mutation.newInsertOrUpdateBuilder("Venues")
                 .set("VenueId")
                 .to(19L)
-                .set("RevenueDetails")
+                .set("VenueDetails")
                 .to(Value.json("{\"rating\":9,\"open\":true}"))
                 .build(),
             Mutation.newInsertOrUpdateBuilder("Venues")
                 .set("VenueId")
                 .to(42L)
-                .set("RevenueDetails")
+                .set("VenueDetails")
                 .to(
                     Value.json(
                         "{\"name\":null,"
