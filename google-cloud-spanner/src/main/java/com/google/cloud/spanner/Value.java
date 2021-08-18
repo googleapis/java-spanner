@@ -465,7 +465,9 @@ public abstract class Value implements Serializable {
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
-  public abstract String getJson();
+  public String getJson() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   /**
    * Returns the value of a {@code BYTES}-typed instance.
@@ -545,7 +547,9 @@ public abstract class Value implements Serializable {
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
-  public abstract List<String> getJsonArray();
+  public List<String> getJsonArray() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   /**
    * Returns the value of an {@code ARRAY<BYTES>}-typed instance. While the returned list itself

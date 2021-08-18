@@ -43,7 +43,9 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract String getStringInternal(int columnIndex);
 
-  protected abstract String getJsonInternal(int columnIndex);
+  protected String getJsonInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected abstract ByteArray getBytesInternal(int columnIndex);
 
@@ -71,7 +73,9 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract List<String> getStringListInternal(int columnIndex);
 
-  protected abstract List<String> getJsonListInternal(int columnIndex);
+  protected List<String> getJsonListInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected abstract List<ByteArray> getBytesListInternal(int columnIndex);
 
