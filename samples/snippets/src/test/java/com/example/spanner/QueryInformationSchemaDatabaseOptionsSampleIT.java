@@ -19,20 +19,23 @@ package com.example.spanner;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.InstanceConfig;
+import com.google.cloud.spanner.InstanceConfigId;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class QueryInformationSchemaDatabaseOptionsSampleIT extends SampleTestBase {
 
-  @Ignore("Skipping until we have a MR instance to run this on")
   @Test
   public void testQueryInformationSchemaDatabaseOptions() throws Exception {
     // Finds a possible new leader option
-    final InstanceConfig config = instanceAdminClient.getInstanceConfig(instanceConfigName);
+    final InstanceConfigId instanceConfigId = instanceAdminClient
+        .getInstance(multiRegionalInstanceId)
+        .getInstanceConfigId();
+    final InstanceConfig config = instanceAdminClient
+        .getInstanceConfig(instanceConfigId.getInstanceConfig());
     assertTrue(
-        "Expected instance config " + instanceConfigName + " to have at least one leader option",
+        "Expected instance config " + instanceConfigId + " to have at least one leader option",
         config.getLeaderOptions().size() > 0
     );
     final String defaultLeader = config.getLeaderOptions().get(0);
@@ -40,7 +43,7 @@ public class QueryInformationSchemaDatabaseOptionsSampleIT extends SampleTestBas
     // Creates database
     final String databaseId = idGenerator.generateDatabaseId();
     databaseAdminClient.createDatabase(
-        instanceId,
+        multiRegionalInstanceId,
         databaseId,
         Arrays.asList(
             "CREATE TABLE Singers (Id INT64 NOT NULL) PRIMARY KEY (Id)",
@@ -54,7 +57,7 @@ public class QueryInformationSchemaDatabaseOptionsSampleIT extends SampleTestBas
 
     // Runs sample
     final String out = SampleRunner.runSample(() -> QueryInformationSchemaDatabaseOptionsSample
-        .queryInformationSchemaDatabaseOptions(projectId, instanceId, databaseId)
+        .queryInformationSchemaDatabaseOptions(projectId, multiRegionalInstanceId, databaseId)
     );
 
     assertTrue(
@@ -62,7 +65,7 @@ public class QueryInformationSchemaDatabaseOptionsSampleIT extends SampleTestBas
             + " Output received was " + out,
         out.contains(
             "The default_leader for projects/"
-                + projectId + "/instances/" + instanceId + "/databases/" + databaseId
+                + projectId + "/instances/" + multiRegionalInstanceId + "/databases/" + databaseId
                 + " is " + defaultLeader
         )
     );

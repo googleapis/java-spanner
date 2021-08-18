@@ -19,28 +19,31 @@ package com.example.spanner;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.InstanceConfig;
+import com.google.cloud.spanner.InstanceConfigId;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class GetDatabaseDdlSampleIT extends SampleTestBase {
 
-  @Ignore("Skipping until we have a MR instance to run this on")
   @Test
   public void testGetDatabaseDdl() throws Exception {
     // Finds a possible new leader option
-    final InstanceConfig config = instanceAdminClient.getInstanceConfig(instanceConfigName);
+    final InstanceConfigId instanceConfigId = instanceAdminClient
+        .getInstance(multiRegionalInstanceId)
+        .getInstanceConfigId();
+    final InstanceConfig config = instanceAdminClient
+        .getInstanceConfig(instanceConfigId.getInstanceConfig());
     assertTrue(
-        "Expected instance config " + instanceConfigName + " to have at least one leader option",
-        config.getLeaderOptions().size() > 1
+        "Expected instance config " + instanceConfigId + " to have at least one leader option",
+        config.getLeaderOptions().size() > 0
     );
     final String defaultLeader = config.getLeaderOptions().get(0);
 
     // Creates database
     final String databaseId = idGenerator.generateDatabaseId();
     databaseAdminClient.createDatabase(
-        instanceId,
+        multiRegionalInstanceId,
         databaseId,
         Arrays.asList(
             "CREATE TABLE Singers (Id INT64 NOT NULL) PRIMARY KEY (Id)",
@@ -54,7 +57,7 @@ public class GetDatabaseDdlSampleIT extends SampleTestBase {
 
     // Runs sample
     final String out = SampleRunner.runSample(() -> GetDatabaseDdlSample
-        .getDatabaseDdl(projectId, instanceId, databaseId)
+        .getDatabaseDdl(projectId, multiRegionalInstanceId, databaseId)
     );
 
     assertTrue(
