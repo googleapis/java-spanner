@@ -71,18 +71,18 @@ class AsyncQueryExample {
                   try {
                     while (true) {
                       switch (resultSet.tryNext()) {
-                          // OK: There is a row ready.
+                        // OK: There is a row ready.
                         case OK:
                           System.out.printf(
                               "%d %d %s%n",
                               resultSet.getLong(0), resultSet.getLong(1), resultSet.getString(2));
                           break;
 
-                          // DONE: There are no more rows in the result set.
+                        // DONE: There are no more rows in the result set.
                         case DONE:
                           return CallbackResponse.DONE;
 
-                          // NOT_READY: There are currently no more rows in the buffer.
+                        // NOT_READY: There are currently no more rows in the buffer.
                         case NOT_READY:
                           return CallbackResponse.CONTINUE;
 
