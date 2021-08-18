@@ -39,6 +39,8 @@ public class SampleTestBase {
   protected static InstanceAdminClient instanceAdminClient;
   protected static String projectId;
   protected static final String instanceId = System.getProperty("spanner.test.instance");
+  protected static final String multiRegionalInstanceId =
+      System.getProperty("spanner.test.instance.mr");
   protected static final String instanceConfigName = System
       .getProperty("spanner.test.instance.config");
   protected static SampleIdGenerator idGenerator;
@@ -61,19 +63,28 @@ public class SampleTestBase {
     for (String databaseId : idGenerator.getDatabaseIds()) {
       try {
         databaseAdminClient.dropDatabase(instanceId, databaseId);
-      } catch (Exception e) {
-        System.out.println(
-            "Failed to drop database " + databaseId + " due to " + e.getMessage() + ", skipping..."
-        );
+      } catch (Exception e1) {
+        try {
+          databaseAdminClient.dropDatabase(multiRegionalInstanceId, databaseId);
+        } catch (Exception e2) {
+          System.out.println(
+              "Failed to drop database " + databaseId + " due to " + e2.getMessage()
+                  + ", skipping..."
+          );
+        }
       }
     }
     for (String backupId : idGenerator.getBackupIds()) {
       try {
         databaseAdminClient.deleteBackup(instanceId, backupId);
-      } catch (Exception e) {
-        System.out.println(
-            "Failed to delete backup " + backupId + " due to " + e.getMessage() + ", skipping..."
-        );
+      } catch (Exception e1) {
+        try {
+          databaseAdminClient.deleteBackup(multiRegionalInstanceId, backupId);
+        } catch (Exception e2) {
+          System.out.println(
+              "Failed to delete backup " + backupId + " due to " + e2.getMessage() + ", skipping..."
+          );
+        }
       }
     }
     spanner.close();

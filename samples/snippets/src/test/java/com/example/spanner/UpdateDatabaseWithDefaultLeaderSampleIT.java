@@ -20,26 +20,29 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.InstanceConfig;
+import com.google.cloud.spanner.InstanceConfigId;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class UpdateDatabaseWithDefaultLeaderSampleIT extends SampleTestBase {
 
-  @Ignore("Skipping until we have a MR instance to run this on")
   @Test
   public void testUpdateDatabaseWithDefaultLeader() throws Exception {
     // Create database
     final String databaseId = idGenerator.generateDatabaseId();
     final Database createdDatabase = databaseAdminClient
-        .createDatabase(instanceId, databaseId, Collections.emptyList())
+        .createDatabase(multiRegionalInstanceId, databaseId, Collections.emptyList())
         .get(5, TimeUnit.MINUTES);
     final String defaultLeader = createdDatabase.getDefaultLeader();
 
     // Finds a possible new leader option
-    final InstanceConfig instanceConfig = instanceAdminClient.getInstanceConfig(instanceConfigName);
-    final String newLeader = instanceConfig
+    final InstanceConfigId instanceConfigId = instanceAdminClient
+        .getInstance(multiRegionalInstanceId)
+        .getInstanceConfigId();
+    final InstanceConfig config = instanceAdminClient
+        .getInstanceConfig(instanceConfigId.getInstanceConfig());
+    final String newLeader = config
         .getLeaderOptions()
         .stream()
         .filter(leader -> !leader.equals(defaultLeader))
@@ -50,7 +53,7 @@ public class UpdateDatabaseWithDefaultLeaderSampleIT extends SampleTestBase {
 
     // Runs sample
     final String out = SampleRunner.runSample(() -> UpdateDatabaseWithDefaultLeaderSample
-        .updateDatabaseWithDefaultLeader(projectId, instanceId, databaseId, newLeader)
+        .updateDatabaseWithDefaultLeader(projectId, multiRegionalInstanceId, databaseId, newLeader)
     );
 
     assertTrue(
