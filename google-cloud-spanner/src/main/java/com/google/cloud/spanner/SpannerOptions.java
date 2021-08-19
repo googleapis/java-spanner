@@ -1164,6 +1164,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     SpannerOptions.environment = SpannerEnvironmentImpl.INSTANCE;
   }
 
+  @Override
+  protected String getDefaultProject() {
+    String projectId = getDefaultProjectId();
+    // The project id does not matter if we are using the emulator.
+    if (projectId == null && System.getenv("SPANNER_EMULATOR_HOST") != null) {
+      return "emulator-project";
+    }
+    return projectId;
+  }
+
   public TransportChannelProvider getChannelProvider() {
     return channelProvider;
   }
