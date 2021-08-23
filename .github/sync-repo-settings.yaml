@@ -110,9 +110,6 @@ branchProtectionRules:
     requiresCodeOwnerReviews: true
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
-      - dependencies (8)
-      - dependencies (11)
-      - linkage-monitor
       - lint
       - clirr
       - units (8)
