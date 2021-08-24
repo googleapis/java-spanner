@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.12.0](https://www.github.com/googleapis/java-spanner/compare/v6.11.1...v6.12.0) (2021-08-24)
+
+
+### Features
+
+* add support for JSON data type ([#872](https://www.github.com/googleapis/java-spanner/issues/872)) ([d7ff940](https://www.github.com/googleapis/java-spanner/commit/d7ff9409e974602dc9b18f82d6dbd11d96c956bf))
+* use dummy emulator-project when no project is set ([#1363](https://www.github.com/googleapis/java-spanner/issues/1363)) ([673855e](https://www.github.com/googleapis/java-spanner/commit/673855eea8c244457ad4c8ac5abe3ad3a0a0cdde)), closes [#1345](https://www.github.com/googleapis/java-spanner/issues/1345)
+
 ### [6.11.1](https://www.github.com/googleapis/java-spanner/compare/v6.11.0...v6.11.1) (2021-08-17)
 
 
