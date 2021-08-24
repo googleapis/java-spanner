@@ -771,52 +771,6 @@ public class ValueTest {
   }
 
   @Test
-  public void jsonArray() {
-    String one = "{}";
-    String two = null;
-    String three = "{\"color\":\"red\",\"value\":\"#f00\"}";
-    Value v = Value.jsonArray(Arrays.asList(one, two, three));
-    assertFalse(v.isNull());
-    assertThat(v.getJsonArray()).containsExactly(one, two, three).inOrder();
-    assertEquals("[{},NULL,{\"color\":\"red\",\"value\":\"#f00\"}]", v.toString());
-  }
-
-  @Test
-  public void jsonArrayNull() {
-    Value v = Value.jsonArray(null);
-    assertTrue(v.isNull());
-    assertEquals(NULL_STRING, v.toString());
-    try {
-      v.getJsonArray();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
-  }
-
-  @Test
-  public void jsonArrayTryGetBytesArray() {
-    Value value = Value.jsonArray(Arrays.asList("{}"));
-    try {
-      value.getBytesArray();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("Expected: ARRAY<BYTES> actual: ARRAY<JSON>"));
-    }
-  }
-
-  @Test
-  public void jsonArrayTryGetStringArray() {
-    Value value = Value.jsonArray(Arrays.asList("{}"));
-    try {
-      value.getStringArray();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("Expected: ARRAY<STRING> actual: ARRAY<JSON>"));
-    }
-  }
-
-  @Test
   public void bytesArray() {
     ByteArray a = newByteArray("a");
     ByteArray c = newByteArray("c");
