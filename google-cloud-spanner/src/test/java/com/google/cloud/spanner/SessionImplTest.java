@@ -17,7 +17,9 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -38,14 +40,12 @@ import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.Mutation.Write;
 import com.google.spanner.v1.PartialResultSet;
-import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import io.opencensus.trace.Span;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
@@ -62,8 +62,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 /** Unit tests for {@link com.google.cloud.spanner.SessionImpl}. */
 @RunWith(JUnit4.class)
@@ -82,7 +80,7 @@ public class SessionImplTest {
     when(spannerOptions.getPrefetchChunks()).thenReturn(1);
     when(spannerOptions.getRetrySettings()).thenReturn(RetrySettings.newBuilder().build());
     when(spannerOptions.getClock()).thenReturn(NanoClock.getDefaultClock());
-    when(spannerOptions.getSessionLabels()).thenReturn(Collections.<String, String>emptyMap());
+    when(spannerOptions.getSessionLabels()).thenReturn(Collections.emptyMap());
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(mock(ExecutorFactory.class));
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);
@@ -132,48 +130,43 @@ public class SessionImplTest {
 
   @Test
   public void nestedReadWriteTxnThrows() {
-    try {
-      doNestedRwTransaction();
-      fail("Expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-      assertThat(e.getMessage()).contains("not supported");
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> doNestedRwTransaction());
+    assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
+    assertThat(e.getMessage()).contains("not supported");
   }
 
   @Test
   public void nestedReadOnlyTxnThrows() {
-    try {
-      session
-          .readWriteTransaction()
-          .run(
-              transaction -> {
-                session.readOnlyTransaction().getReadTimestamp();
-
-                return null;
-              });
-      fail("Expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-      assertThat(e.getMessage()).contains("not supported");
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                session
+                    .readWriteTransaction()
+                    .run(
+                        transaction -> {
+                          session.readOnlyTransaction().getReadTimestamp();
+                          return null;
+                        }));
+    assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
+    assertThat(e.getMessage()).contains("not supported");
   }
 
   @Test
   public void nestedSingleUseReadTxnThrows() {
-    try {
-      session
-          .readWriteTransaction()
-          .run(
-              transaction -> {
-                session.singleUseReadOnlyTransaction();
-                return null;
-              });
-      fail("Expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-      assertThat(e.getMessage()).contains("not supported");
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                session
+                    .readWriteTransaction()
+                    .run(
+                        transaction -> {
+                          session.singleUseReadOnlyTransaction();
+                          return null;
+                        }));
+    assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
+    assertThat(e.getMessage()).contains("not supported");
   }
 
   @Test
@@ -198,7 +191,7 @@ public class SessionImplTest {
 
     Timestamp timestamp =
         session.writeAtLeastOnce(
-            Arrays.asList(Mutation.newInsertBuilder("T").set("C").to("x").build()));
+            Collections.singletonList(Mutation.newInsertBuilder("T").set("C").to("x").build()));
     assertThat(timestamp.getSeconds())
         .isEqualTo(utcTimeSeconds(2015, Calendar.OCTOBER, 1, 10, 54, 20));
     assertThat(timestamp.getNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(21));
@@ -228,7 +221,8 @@ public class SessionImplTest {
         CommitResponse.newBuilder().setCommitTimestamp(Timestamps.parse(timestampString)).build();
     Mockito.when(rpc.commit(commit.capture(), Mockito.eq(options))).thenReturn(response);
     session.writeAtLeastOnceWithOptions(
-        Arrays.asList(Mutation.newInsertBuilder("T").set("C").to("x").build()), Options.tag(tag));
+        Collections.singletonList(Mutation.newInsertBuilder("T").set("C").to("x").build()),
+        Options.tag(tag));
 
     CommitRequest request = commit.getValue();
     assertThat(request.getRequestOptions().getTransactionTag()).isEqualTo(tag);
@@ -255,78 +249,72 @@ public class SessionImplTest {
   public void newSingleUseContextClosesOldSingleUseContext() {
     ReadContext ctx = session.singleUse(TimestampBound.strong());
     session.singleUse(TimestampBound.strong());
-    try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("invalidated");
-    }
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> ctx.read("Dummy", KeySet.all(), Collections.singletonList("C")));
+    assertThat(e.getMessage()).contains("invalidated");
   }
 
   @Test
   public void newSingleUseContextClosesOldSingleUseReadOnlyTransactionContext() {
     ReadContext ctx = session.singleUseReadOnlyTransaction(TimestampBound.strong());
     session.singleUse(TimestampBound.strong());
-    try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("invalidated");
-    }
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> ctx.read("Dummy", KeySet.all(), Collections.singletonList("C")));
+    assertThat(e.getMessage()).contains("invalidated");
   }
 
   @Test
   public void newSingleUseContextClosesOldMultiUseReadOnlyTransactionContext() {
     ReadContext ctx = session.singleUseReadOnlyTransaction(TimestampBound.strong());
     session.singleUse(TimestampBound.strong());
-    try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("invalidated");
-    }
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> ctx.read("Dummy", KeySet.all(), Collections.singletonList("C")));
+    assertThat(e.getMessage()).contains("invalidated");
   }
 
   @Test
   public void newSingleUseReadOnlyTransactionContextClosesOldSingleUseContext() {
     ReadContext ctx = session.singleUse(TimestampBound.strong());
     session.singleUseReadOnlyTransaction(TimestampBound.strong());
-    try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("invalidated");
-    }
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> ctx.read("Dummy", KeySet.all(), Collections.singletonList("C")));
+    assertThat(e.getMessage()).contains("invalidated");
   }
 
   @Test
   public void newMultiUseReadOnlyTransactionContextClosesOldSingleUseContext() {
     ReadContext ctx = session.singleUse(TimestampBound.strong());
     session.readOnlyTransaction(TimestampBound.strong());
-    try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("invalidated");
-    }
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> ctx.read("Dummy", KeySet.all(), Collections.singletonList("C")));
+    assertThat(e.getMessage()).contains("invalidated");
   }
 
   @Test
   public void writeClosesOldSingleUseContext() throws ParseException {
     ReadContext ctx = session.singleUse(TimestampBound.strong());
 
-    Mockito.when(rpc.commit(Mockito.<CommitRequest>any(), Mockito.eq(options)))
+    Mockito.when(rpc.commit(Mockito.any(), Mockito.eq(options)))
         .thenReturn(
             CommitResponse.newBuilder()
                 .setCommitTimestamp(Timestamps.parse("2015-10-01T10:54:20.021Z"))
                 .build());
-    session.writeAtLeastOnce(Arrays.<Mutation>asList());
-    try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("invalidated");
-    }
+    session.writeAtLeastOnce(Collections.emptyList());
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> ctx.read("Dummy", KeySet.all(), Collections.singletonList("C")));
+    assertThat(e.getMessage()).contains("invalidated");
   }
 
   @Test
@@ -335,12 +323,11 @@ public class SessionImplTest {
 
     // Note that we don't even run the transaction - just preparing the runner is sufficient.
     session.readWriteTransaction();
-    try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("invalidated");
-    }
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> ctx.read("Dummy", KeySet.all(), Collections.singletonList("C")));
+    assertThat(e.getMessage()).contains("invalidated");
   }
 
   @Test
@@ -348,31 +335,30 @@ public class SessionImplTest {
     TransactionRunner runner = session.readWriteTransaction();
 
     session.singleUse(TimestampBound.strong());
-    try {
-      runner.run(
-          transaction -> {
-            fail("Unexpected call to transaction body");
-            return null;
-          });
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("invalidated");
-    }
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () ->
+                runner.run(
+                    transaction -> {
+                      fail("Unexpected call to transaction body");
+                      return null;
+                    }));
+    assertThat(e.getMessage()).contains("invalidated");
   }
 
   @Test
   public void prepareClosesOldSingleUseContext() {
     ReadContext ctx = session.singleUse(TimestampBound.strong());
 
-    Mockito.when(rpc.beginTransaction(Mockito.<BeginTransactionRequest>any(), Mockito.eq(options)))
+    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options)))
         .thenReturn(Transaction.newBuilder().setId(ByteString.copyFromUtf8("t1")).build());
     session.prepareReadWriteTransaction();
-    try {
-      ctx.read("Dummy", KeySet.all(), Arrays.asList("C"));
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("invalidated");
-    }
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> ctx.read("Dummy", KeySet.all(), Collections.singletonList("C")));
+    assertThat(e.getMessage()).contains("invalidated");
   }
 
   private static ResultSetMetadata newMetadata(Type type) {
@@ -388,18 +374,15 @@ public class SessionImplTest {
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.singleUseReadOnlyTransaction(TimestampBound.strong());
-    assertThat(txn.readRow("Dummy", Key.of(), Arrays.asList("C"))).isNull();
+    assertThat(txn.readRow("Dummy", Key.of(), Collections.singletonList("C"))).isNull();
 
     // For now, getReadTimestamp() will raise an ISE because it hasn't seen a timestamp.  It would
     // be better for the read to fail with an INTERNAL error, but we can't do that until txn
     // metadata is returned for failed reads (e.g., table-not-found) as well as successful ones.
     // TODO(user): Fix this.
-    try {
-      txn.getReadTimestamp();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> txn.getReadTimestamp());
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -414,12 +397,11 @@ public class SessionImplTest {
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.singleUseReadOnlyTransaction(TimestampBound.strong());
-    try {
-      txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> txn.readRow("Dummy", Key.of(), Collections.singletonList("C")));
+    assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
   }
 
   private static class NoOpStreamingCall implements SpannerRpc.StreamingCall {
@@ -433,15 +415,12 @@ public class SessionImplTest {
   private void mockRead(final PartialResultSet myResultSet) {
     final ArgumentCaptor<SpannerRpc.ResultStreamConsumer> consumer =
         ArgumentCaptor.forClass(SpannerRpc.ResultStreamConsumer.class);
-    Mockito.when(rpc.read(Mockito.<ReadRequest>any(), consumer.capture(), Mockito.eq(options)))
+    Mockito.when(rpc.read(Mockito.any(), consumer.capture(), Mockito.eq(options)))
         .then(
-            new Answer<SpannerRpc.StreamingCall>() {
-              @Override
-              public SpannerRpc.StreamingCall answer(InvocationOnMock invocation) {
-                consumer.getValue().onPartialResultSet(myResultSet);
-                consumer.getValue().onCompleted();
-                return new NoOpStreamingCall();
-              }
+            invocation -> {
+              consumer.getValue().onPartialResultSet(myResultSet);
+              consumer.getValue().onCompleted();
+              return new NoOpStreamingCall();
             });
   }
 
@@ -452,17 +431,15 @@ public class SessionImplTest {
         PartialResultSet.newBuilder()
             .setMetadata(newMetadata(Type.struct(Type.StructField.of("C", Type.string()))))
             .build();
-    Mockito.when(rpc.beginTransaction(Mockito.<BeginTransactionRequest>any(), Mockito.eq(options)))
-        .thenReturn(txnMetadata);
+    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options))).thenReturn(txnMetadata);
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
-    try {
-      txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
-      fail("Expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> txn.readRow("Dummy", Key.of(), Collections.singletonList("C")));
+    assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
   }
 
   @Test
@@ -472,17 +449,15 @@ public class SessionImplTest {
         PartialResultSet.newBuilder()
             .setMetadata(newMetadata(Type.struct(Type.StructField.of("C", Type.string()))))
             .build();
-    Mockito.when(rpc.beginTransaction(Mockito.<BeginTransactionRequest>any(), Mockito.eq(options)))
-        .thenReturn(txnMetadata);
+    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options))).thenReturn(txnMetadata);
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
-    try {
-      txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
-      fail("Expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> txn.readRow("Dummy", Key.of(), Collections.singletonList("C")));
+    assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
   }
 
   @Test
@@ -493,16 +468,14 @@ public class SessionImplTest {
         PartialResultSet.newBuilder()
             .setMetadata(newMetadata(Type.struct(Type.StructField.of("C", Type.string()))))
             .build();
-    Mockito.when(rpc.beginTransaction(Mockito.<BeginTransactionRequest>any(), Mockito.eq(options)))
-        .thenReturn(txnMetadata);
+    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options))).thenReturn(txnMetadata);
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
-    try {
-      txn.readRow("Dummy", Key.of(), Arrays.asList("C"));
-      fail("Expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> txn.readRow("Dummy", Key.of(), Collections.singletonList("C")));
+    assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
   }
 }

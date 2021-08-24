@@ -21,7 +21,6 @@ import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExcepti
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
@@ -44,7 +43,6 @@ import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.RequestOptions;
-import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
@@ -56,7 +54,9 @@ import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -76,6 +76,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
    * because it was invalidated by a later transaction in the same session.
    */
   private static final String TRANSACTION_CANCELLED_MESSAGE = "invalidated by a later transaction";
+
+  private static final String TRANSACTION_ALREADY_COMMITTED_MESSAGE =
+      "Transaction has already committed";
 
   @VisibleForTesting
   static class TransactionContextImpl extends AbstractReadContext implements TransactionContext {
@@ -148,7 +151,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
     }
 
-    @GuardedBy("lock")
+    private final Object committingLock = new Object();
+
+    @GuardedBy("committingLock")
     private volatile boolean committing;
 
     @GuardedBy("lock")
@@ -157,8 +162,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     @GuardedBy("lock")
     private volatile int runningAsyncOperations;
 
-    @GuardedBy("lock")
-    private List<Mutation> mutations = new ArrayList<>();
+    private final Queue<Mutation> mutations = new ConcurrentLinkedQueue<>();
 
     @GuardedBy("lock")
     private boolean aborted;
@@ -282,6 +286,16 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     volatile ApiFuture<CommitResponse> commitFuture;
 
     ApiFuture<CommitResponse> commitAsync() {
+      List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
+      synchronized (committingLock) {
+        if (committing) {
+          throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+        }
+        committing = true;
+        if (!mutations.isEmpty()) {
+          Mutation.toProto(mutations, mutationsProto);
+        }
+      }
       final SettableApiFuture<CommitResponse> res = SettableApiFuture.create();
       final SettableApiFuture<Void> finishOps;
       CommitRequest.Builder builder =
@@ -305,14 +319,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         } else {
           finishOps = finishedAsyncOperations;
         }
-        if (!mutations.isEmpty()) {
-          List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-          Mutation.toProto(mutations, mutationsProto);
-          builder.addAllMutations(mutationsProto);
-        }
-        // Ensure that no call to buffer mutations that would be lost can succeed.
-        mutations = null;
       }
+      builder.addAllMutations(mutationsProto);
       finishOps.addListener(
           new CommitRunnable(res, finishOps, builder), MoreExecutors.directExecutor());
       return res;
@@ -575,7 +583,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       if (exceptionToThrow.getErrorCode() == ErrorCode.ABORTED) {
         long delay = -1L;
         if (exceptionToThrow instanceof AbortedException) {
-          delay = ((AbortedException) exceptionToThrow).getRetryDelayInMillis();
+          delay = exceptionToThrow.getRetryDelayInMillis();
         }
         if (delay == -1L) {
           txnLogger.log(
@@ -605,20 +613,42 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public void buffer(Mutation mutation) {
-      synchronized (lock) {
-        checkNotNull(mutations, "Context is closed");
+      synchronized (committingLock) {
+        if (committing) {
+          throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+        }
         mutations.add(checkNotNull(mutation));
       }
     }
 
     @Override
+    public ApiFuture<Void> bufferAsync(Mutation mutation) {
+      // Normally, we would call the async method from the sync method, but this is also safe as
+      // both are non-blocking anyways, and this prevents the creation of an ApiFuture that is not
+      // really used when the sync method is called.
+      buffer(mutation);
+      return ApiFutures.immediateFuture(null);
+    }
+
+    @Override
     public void buffer(Iterable<Mutation> mutations) {
-      synchronized (lock) {
-        checkNotNull(this.mutations, "Context is closed");
+      synchronized (committingLock) {
+        if (committing) {
+          throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+        }
         for (Mutation mutation : mutations) {
           this.mutations.add(checkNotNull(mutation));
         }
       }
+    }
+
+    @Override
+    public ApiFuture<Void> bufferAsync(Iterable<Mutation> mutations) {
+      // Normally, we would call the async method from the sync method, but this is also safe as
+      // both are non-blocking anyways, and this prevents the creation of an ApiFuture that is not
+      // really used when the sync method is called.
+      buffer(mutations);
+      return ApiFutures.immediateFuture(null);
     }
 
     @Override
@@ -671,35 +701,29 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       ApiFuture<Long> updateCount =
           ApiFutures.transform(
               resultSet,
-              new ApiFunction<com.google.spanner.v1.ResultSet, Long>() {
-                @Override
-                public Long apply(ResultSet input) {
-                  if (!input.hasStats()) {
-                    throw SpannerExceptionFactory.newSpannerException(
-                        ErrorCode.INVALID_ARGUMENT,
-                        "DML response missing stats possibly due to non-DML statement as input");
-                  }
-                  if (builder.getTransaction().hasBegin()
-                      && !(input.getMetadata().hasTransaction()
-                          && input.getMetadata().getTransaction().getId() != ByteString.EMPTY)) {
-                    throw SpannerExceptionFactory.newSpannerException(
-                        ErrorCode.FAILED_PRECONDITION, NO_TRANSACTION_RETURNED_MSG);
-                  }
-                  // For standard DML, using the exact row count.
-                  return input.getStats().getRowCountExact();
+              input -> {
+                if (!input.hasStats()) {
+                  throw SpannerExceptionFactory.newSpannerException(
+                      ErrorCode.INVALID_ARGUMENT,
+                      "DML response missing stats possibly due to non-DML statement as input");
                 }
+                if (builder.getTransaction().hasBegin()
+                    && !(input.getMetadata().hasTransaction()
+                        && input.getMetadata().getTransaction().getId() != ByteString.EMPTY)) {
+                  throw SpannerExceptionFactory.newSpannerException(
+                      ErrorCode.FAILED_PRECONDITION, NO_TRANSACTION_RETURNED_MSG);
+                }
+                // For standard DML, using the exact row count.
+                return input.getStats().getRowCountExact();
               },
               MoreExecutors.directExecutor());
       updateCount =
           ApiFutures.catching(
               updateCount,
               Throwable.class,
-              new ApiFunction<Throwable, Long>() {
-                @Override
-                public Long apply(Throwable input) {
-                  SpannerException e = SpannerExceptionFactory.asSpannerException(input);
-                  throw onError(e, builder.getTransaction().hasBegin());
-                }
+              input -> {
+                SpannerException e = SpannerExceptionFactory.asSpannerException(input);
+                throw onError(e, builder.getTransaction().hasBegin());
               },
               MoreExecutors.directExecutor());
       updateCount.addListener(
@@ -787,42 +811,36 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       ApiFuture<long[]> updateCounts =
           ApiFutures.transform(
               response,
-              new ApiFunction<ExecuteBatchDmlResponse, long[]>() {
-                @Override
-                public long[] apply(ExecuteBatchDmlResponse batchDmlResponse) {
-                  long[] results = new long[batchDmlResponse.getResultSetsCount()];
-                  for (int i = 0; i < batchDmlResponse.getResultSetsCount(); ++i) {
-                    results[i] = batchDmlResponse.getResultSets(i).getStats().getRowCountExact();
-                    if (batchDmlResponse.getResultSets(i).getMetadata().hasTransaction()) {
-                      onTransactionMetadata(
-                          batchDmlResponse.getResultSets(i).getMetadata().getTransaction(),
-                          builder.getTransaction().hasBegin());
-                    }
+              batchDmlResponse -> {
+                long[] results = new long[batchDmlResponse.getResultSetsCount()];
+                for (int i = 0; i < batchDmlResponse.getResultSetsCount(); ++i) {
+                  results[i] = batchDmlResponse.getResultSets(i).getStats().getRowCountExact();
+                  if (batchDmlResponse.getResultSets(i).getMetadata().hasTransaction()) {
+                    onTransactionMetadata(
+                        batchDmlResponse.getResultSets(i).getMetadata().getTransaction(),
+                        builder.getTransaction().hasBegin());
                   }
-                  // If one of the DML statements was aborted, we should throw an aborted exception.
-                  // In all other cases, we should throw a BatchUpdateException.
-                  if (batchDmlResponse.getStatus().getCode() == Code.ABORTED_VALUE) {
-                    throw createAbortedExceptionForBatchDml(batchDmlResponse);
-                  } else if (batchDmlResponse.getStatus().getCode() != 0) {
-                    throw newSpannerBatchUpdateException(
-                        ErrorCode.fromRpcStatus(batchDmlResponse.getStatus()),
-                        batchDmlResponse.getStatus().getMessage(),
-                        results);
-                  }
-                  return results;
                 }
+                // If one of the DML statements was aborted, we should throw an aborted exception.
+                // In all other cases, we should throw a BatchUpdateException.
+                if (batchDmlResponse.getStatus().getCode() == Code.ABORTED_VALUE) {
+                  throw createAbortedExceptionForBatchDml(batchDmlResponse);
+                } else if (batchDmlResponse.getStatus().getCode() != 0) {
+                  throw newSpannerBatchUpdateException(
+                      ErrorCode.fromRpcStatus(batchDmlResponse.getStatus()),
+                      batchDmlResponse.getStatus().getMessage(),
+                      results);
+                }
+                return results;
               },
               MoreExecutors.directExecutor());
       updateCounts =
           ApiFutures.catching(
               updateCounts,
               Throwable.class,
-              new ApiFunction<Throwable, long[]>() {
-                @Override
-                public long[] apply(Throwable input) {
-                  SpannerException e = SpannerExceptionFactory.asSpannerException(input);
-                  throw onError(e, builder.getTransaction().hasBegin());
-                }
+              input -> {
+                SpannerException e = SpannerExceptionFactory.asSpannerException(input);
+                throw onError(e, builder.getTransaction().hasBegin());
               },
               MoreExecutors.directExecutor());
       updateCounts.addListener(this::decreaseAsyncOperations, MoreExecutors.directExecutor());
@@ -932,7 +950,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                       "Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
               shouldRollback = false;
               if (e instanceof AbortedException) {
-                throw (AbortedException) e;
+                throw e;
               }
               throw SpannerExceptionFactory.newSpannerException(
                   ErrorCode.ABORTED, e.getMessage(), e);

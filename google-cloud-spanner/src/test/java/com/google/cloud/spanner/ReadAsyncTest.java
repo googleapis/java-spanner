@@ -17,20 +17,19 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.MockSpannerTestUtil.*;
+import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
-import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.common.base.Function;
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -46,7 +45,6 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -128,23 +126,14 @@ public class ReadAsyncTest {
       result =
           resultSet.setCallback(
               executor,
-              new ReadyCallback() {
-                @Override
-                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                  throw SpannerExceptionFactory.newSpannerException(
-                      ErrorCode.CANCELLED, "Don't want the data");
-                }
+              ignored -> {
+                throw SpannerExceptionFactory.newSpannerException(
+                    ErrorCode.CANCELLED, "Don't want the data");
               });
     }
-    try {
-      result.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.CANCELLED);
-      assertThat(se.getMessage()).contains("Don't want the data");
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> get(result));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.CANCELLED);
+    assertThat(e.getMessage()).contains("Don't want the data");
   }
 
   @Test
@@ -157,19 +146,16 @@ public class ReadAsyncTest {
       result =
           resultSet.setCallback(
               executor,
-              new ReadyCallback() {
-                @Override
-                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case OK:
-                        fail("received unexpected data");
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                      case DONE:
-                        assertThat(resultSet.getType()).isEqualTo(READ_TABLE_TYPE);
-                        return CallbackResponse.DONE;
-                    }
+              rs -> {
+                while (true) {
+                  switch (rs.tryNext()) {
+                    case OK:
+                      fail("received unexpected data");
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case DONE:
+                      assertThat(rs.getType()).isEqualTo(READ_TABLE_TYPE);
+                      return CallbackResponse.DONE;
                   }
                 }
               });
@@ -207,12 +193,7 @@ public class ReadAsyncTest {
         invalidClient
             .singleUse(TimestampBound.strong())
             .readRowAsync(READ_TABLE_NAME, Key.of("k99"), READ_COLUMN_NAMES);
-    try {
-      row.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(DatabaseNotFoundException.class);
-    }
+    assertThrows(DatabaseNotFoundException.class, () -> get(row));
   }
 
   @Test
@@ -226,15 +207,9 @@ public class ReadAsyncTest {
         client
             .singleUse(TimestampBound.strong())
             .readRowAsync("BadTableName", Key.of("k1"), READ_COLUMN_NAMES);
-    try {
-      row.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
-      assertThat(se.getMessage()).contains("BadTableName");
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> get(row));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    assertThat(e.getMessage()).contains("BadTableName");
   }
 
   /**
@@ -260,26 +235,23 @@ public class ReadAsyncTest {
         closed =
             rs.setCallback(
                 executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    try {
-                      while (true) {
-                        switch (resultSet.tryNext()) {
-                          case DONE:
-                            finished.set(true);
-                            return CallbackResponse.DONE;
-                          case NOT_READY:
-                            return CallbackResponse.CONTINUE;
-                          case OK:
-                            dataReceived.countDown();
-                            results.put(resultSet.getString(0));
-                        }
+                resultSet -> {
+                  try {
+                    while (true) {
+                      switch (resultSet.tryNext()) {
+                        case DONE:
+                          finished.set(true);
+                          return CallbackResponse.DONE;
+                        case NOT_READY:
+                          return CallbackResponse.CONTINUE;
+                        case OK:
+                          dataReceived.countDown();
+                          results.put(resultSet.getString(0));
                       }
-                    } catch (Throwable t) {
-                      finished.setException(t);
-                      return CallbackResponse.DONE;
                     }
+                  } catch (Throwable t) {
+                    finished.setException(t);
+                    return CallbackResponse.DONE;
                   }
                 });
       }
@@ -320,46 +292,20 @@ public class ReadAsyncTest {
     ApiFuture<List<String>> values2;
     try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
       try (AsyncResultSet rs = tx.executeQueryAsync(statement1)) {
-        values1 =
-            rs.toListAsync(
-                new Function<StructReader, String>() {
-                  @Override
-                  public String apply(StructReader input) {
-                    return input.getString("Value");
-                  }
-                },
-                executor);
+        values1 = rs.toListAsync(input -> input.getString("Value"), executor);
       }
       try (AsyncResultSet rs = tx.executeQueryAsync(statement2)) {
-        values2 =
-            rs.toListAsync(
-                new Function<StructReader, String>() {
-                  @Override
-                  public String apply(StructReader input) {
-                    return input.getString("Value");
-                  }
-                },
-                executor);
+        values2 = rs.toListAsync(input -> input.getString("Value"), executor);
       }
     }
     ApiFuture<Iterable<String>> allValues =
         ApiFutures.transform(
             ApiFutures.allAsList(Arrays.asList(values1, values2)),
-            new ApiFunction<List<List<String>>, Iterable<String>>() {
-              @Override
-              public Iterable<String> apply(List<List<String>> input) {
-                return Iterables.mergeSorted(
+            input ->
+                Iterables.mergeSorted(
                     input,
-                    new Comparator<String>() {
-                      @Override
-                      public int compare(String o1, String o2) {
-                        // Return in numerical order (i.e. without the preceding 'v').
-                        return Integer.valueOf(o1.substring(1))
-                            .compareTo(Integer.valueOf(o2.substring(1)));
-                      }
-                    });
-              }
-            },
+                    // Return in numerical order (i.e. without the preceding 'v').
+                    Comparator.comparing(o -> Integer.valueOf(o.substring(1)))),
             executor);
     assertThat(allValues.get()).containsExactly("v1", "v2", "v3", "v10", "v11", "v12");
   }
@@ -388,9 +334,30 @@ public class ReadAsyncTest {
         unevenFinished =
             unevenRs.setCallback(
                 executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
+                resultSet -> {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case DONE:
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      case OK:
+                        synchronized (lock) {
+                          allValues.add(resultSet.getString("Value"));
+                        }
+                        unevenReturnedFirstRow.countDown();
+                        return CallbackResponse.PAUSE;
+                    }
+                  }
+                });
+        evenFinished =
+            evenRs.setCallback(
+                executor,
+                resultSet -> {
+                  try {
+                    // Make sure the uneven result set has returned the first before we start the
+                    // even results.
+                    unevenReturnedFirstRow.await();
                     while (true) {
                       switch (resultSet.tryNext()) {
                         case DONE:
@@ -401,39 +368,11 @@ public class ReadAsyncTest {
                           synchronized (lock) {
                             allValues.add(resultSet.getString("Value"));
                           }
-                          unevenReturnedFirstRow.countDown();
                           return CallbackResponse.PAUSE;
                       }
                     }
-                  }
-                });
-        evenFinished =
-            evenRs.setCallback(
-                executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    try {
-                      // Make sure the uneven result set has returned the first before we start the
-                      // even
-                      // results.
-                      unevenReturnedFirstRow.await();
-                      while (true) {
-                        switch (resultSet.tryNext()) {
-                          case DONE:
-                            return CallbackResponse.DONE;
-                          case NOT_READY:
-                            return CallbackResponse.CONTINUE;
-                          case OK:
-                            synchronized (lock) {
-                              allValues.add(resultSet.getString("Value"));
-                            }
-                            return CallbackResponse.PAUSE;
-                        }
-                      }
-                    } catch (InterruptedException e) {
-                      throw SpannerExceptionFactory.propagateInterrupt(e);
-                    }
+                  } catch (InterruptedException e) {
+                    throw SpannerExceptionFactory.propagateInterrupt(e);
                   }
                 });
         while (!(evenFinished.isDone() && unevenFinished.isDone())) {
@@ -470,40 +409,31 @@ public class ReadAsyncTest {
       res =
           rs.setCallback(
               executor,
-              new ReadyCallback() {
-                @Override
-                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                  try {
-                    while (true) {
-                      switch (resultSet.tryNext()) {
-                        case DONE:
-                          return CallbackResponse.DONE;
-                        case NOT_READY:
-                          return CallbackResponse.CONTINUE;
-                        case OK:
-                          values.add(resultSet.getString("Value"));
-                          receivedFirstRow.countDown();
-                          cancelled.await();
-                          break;
-                      }
+              resultSet -> {
+                try {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case DONE:
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      case OK:
+                        values.add(resultSet.getString("Value"));
+                        receivedFirstRow.countDown();
+                        cancelled.await();
+                        break;
                     }
-                  } catch (Throwable t) {
-                    return CallbackResponse.DONE;
                   }
+                } catch (Throwable t) {
+                  return CallbackResponse.DONE;
                 }
               });
       receivedFirstRow.await();
       rs.cancel();
     }
     cancelled.countDown();
-    try {
-      res.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.CANCELLED);
-      assertThat(values).containsExactly("v1");
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> get(res));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.CANCELLED);
+    assertThat(values).containsExactly("v1");
   }
 }

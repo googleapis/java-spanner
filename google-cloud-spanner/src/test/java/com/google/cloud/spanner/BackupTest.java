@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -34,15 +34,13 @@ import com.google.cloud.spanner.BackupInfo.State;
 import com.google.cloud.spanner.encryption.EncryptionInfo;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
 public class BackupTest {
@@ -67,13 +65,7 @@ public class BackupTest {
   public void setUp() {
     initMocks(this);
     when(dbClient.newBackupBuilder(Mockito.any(BackupId.class)))
-        .thenAnswer(
-            new Answer<Backup.Builder>() {
-              @Override
-              public Builder answer(InvocationOnMock invocation) {
-                return new Backup.Builder(dbClient, (BackupId) invocation.getArguments()[0]);
-              }
-            });
+        .thenAnswer(invocation -> new Builder(dbClient, (BackupId) invocation.getArguments()[0]));
   }
 
   @Test
@@ -216,12 +208,9 @@ public class BackupTest {
         dbClient
             .newBackupBuilder(BackupId.of("test-project", "test-instance", "test-backup"))
             .build();
-    try {
-      backup.updateExpireTime();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertNotNull(e.getMessage());
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> backup.updateExpireTime());
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -241,12 +230,8 @@ public class BackupTest {
         dbClient
             .newBackupBuilder(BackupId.of("test-project", "test-instance", "test-backup"))
             .build();
-    try {
-      backup.restore(null);
-      fail("Expected exception");
-    } catch (NullPointerException e) {
-      assertNull(e.getMessage());
-    }
+    NullPointerException e = assertThrows(NullPointerException.class, () -> backup.restore(null));
+    assertNull(e.getMessage());
   }
 
   @Test
@@ -288,7 +273,7 @@ public class BackupTest {
         dbClient
             .newBackupBuilder(BackupId.of("test-project", "test-instance", "test-backup"))
             .build();
-    Iterable<String> permissions = Arrays.asList("read");
+    Iterable<String> permissions = Collections.singletonList("read");
     backup.testIAMPermissions(permissions);
     verify(dbClient).testBackupIAMPermissions("test-instance", "test-backup", permissions);
   }

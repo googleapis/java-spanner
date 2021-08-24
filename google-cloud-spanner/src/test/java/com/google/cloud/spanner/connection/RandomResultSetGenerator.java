@@ -86,7 +86,7 @@ public class RandomResultSetGenerator {
             .build(),
       };
 
-  private static final ResultSetMetadata generateMetadata() {
+  private static ResultSetMetadata generateMetadata() {
     StructType.Builder rowTypeBuilder = StructType.newBuilder();
     for (int col = 0; col < TYPES.length; col++) {
       rowTypeBuilder.addFields(Field.newBuilder().setName("COL" + col).setType(TYPES[col])).build();

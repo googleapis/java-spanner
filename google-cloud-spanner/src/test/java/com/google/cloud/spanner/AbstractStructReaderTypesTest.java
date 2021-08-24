@@ -20,7 +20,7 @@ import static com.google.cloud.spanner.Type.StructField;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.junit.runners.Parameterized.Parameter;
 
 import com.google.cloud.ByteArray;
@@ -432,22 +432,24 @@ public class AbstractStructReaderTypesTest {
         // Skip allowed getters.
         continue;
       }
-      try {
-        getterByIndex(method.getName(), columnIndex);
-        fail("Expected " + IllegalStateException.class.getSimpleName() + " for " + method);
-      } catch (IllegalStateException e) {
-        assertWithMessage("Exception for " + method).that(e.getMessage()).contains("was " + type);
-        assertWithMessage("Exception for " + method)
-            .that(e.getMessage())
-            .contains("Column " + columnIndex);
-      }
-      try {
-        getterByName(method.getName(), "F1");
-        fail("Expected ISE for " + method);
-      } catch (IllegalStateException e) {
-        assertWithMessage("Exception for " + method).that(e.getMessage()).contains("was " + type);
-        assertWithMessage("Exception for " + method).that(e.getMessage()).contains("Column F1");
-      }
+      IllegalStateException getterByIndexException =
+          assertThrows(
+              IllegalStateException.class, () -> getterByIndex(method.getName(), columnIndex));
+      assertWithMessage("Exception for " + method)
+          .that(getterByIndexException.getMessage())
+          .contains("was " + type);
+      assertWithMessage("Exception for " + method)
+          .that(getterByIndexException.getMessage())
+          .contains("Column " + columnIndex);
+
+      IllegalStateException getterByNameException =
+          assertThrows(IllegalStateException.class, () -> getterByName(method.getName(), "F1"));
+      assertWithMessage("Exception for " + method)
+          .that(getterByNameException.getMessage())
+          .contains("was " + type);
+      assertWithMessage("Exception for " + method)
+          .that(getterByNameException.getMessage())
+          .contains("Column F1");
     }
   }
 
@@ -455,23 +457,15 @@ public class AbstractStructReaderTypesTest {
   public void getterWhenNull() {
     Mockito.when(reader.getType()).thenReturn(Type.struct(StructField.of("F1", type)));
     Mockito.when(reader.isNull(0)).thenReturn(true);
-    try {
-      getterByIndex(0);
-      fail("Expected exception");
-    } catch (NullPointerException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    NullPointerException ex = assertThrows(NullPointerException.class, () -> getterByIndex(0));
+    assertNotNull(ex.getMessage());
   }
 
   @Test
   public void getterByNameWhenNull() {
     Mockito.when(reader.getType()).thenReturn(Type.struct(StructField.of("F1", type)));
     Mockito.when(reader.isNull(0)).thenReturn(true);
-    try {
-      getterByName("F1");
-      fail("Expected exception");
-    } catch (NullPointerException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    NullPointerException ex = assertThrows(NullPointerException.class, () -> getterByName("F1"));
+    assertNotNull(ex.getMessage());
   }
 }

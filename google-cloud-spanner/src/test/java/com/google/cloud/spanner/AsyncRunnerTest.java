@@ -18,19 +18,16 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.MockSpannerTestUtil.*;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
-import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
@@ -57,23 +54,17 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   @Test
   public void testAsyncRunner_doesNotReturnCommitTimestampBeforeCommit() {
     AsyncRunner runner = client().runAsync();
-    try {
-      runner.getCommitTimestamp();
-      fail("missing expected exception");
-    } catch (IllegalStateException e) {
-      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> runner.getCommitTimestamp());
+    assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
   }
 
   @Test
   public void testAsyncRunner_doesNotReturnCommitResponseBeforeCommit() {
     AsyncRunner runner = client().runAsync();
-    try {
-      runner.getCommitResponse();
-      fail("missing expected exception");
-    } catch (IllegalStateException e) {
-      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> runner.getCommitResponse());
+    assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
   }
 
   @Test
@@ -106,15 +97,11 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     AsyncRunner runner = client().runAsync();
     ApiFuture<Long> updateCount =
         runner.runAsync(txn -> txn.executeUpdateAsync(INVALID_UPDATE_STATEMENT), executor);
-    try {
-      updateCount.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-      assertThat(se.getMessage()).contains("invalid statement");
-    }
+    ExecutionException e = assertThrows(ExecutionException.class, () -> updateCount.get());
+    assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+    SpannerException se = (SpannerException) e.getCause();
+    assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(se.getMessage()).contains("invalid statement");
   }
 
   @Test
@@ -236,15 +223,11 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
               return txn.executeUpdateAsync(UPDATE_STATEMENT);
             },
             executor);
-    try {
-      updateCount.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
-      assertThat(se.getMessage()).contains("mutation limit exceeded");
-    }
+    ExecutionException e = assertThrows(ExecutionException.class, () -> updateCount.get());
+    assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+    SpannerException se = (SpannerException) e.getCause();
+    assertThat(se.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+    assertThat(se.getMessage()).contains("mutation limit exceeded");
   }
 
   @Test
@@ -298,15 +281,11 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
             txn ->
                 txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT)),
             executor);
-    try {
-      updateCount.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-      assertThat(se.getMessage()).contains("invalid statement");
-    }
+    ExecutionException e = assertThrows(ExecutionException.class, () -> updateCount.get());
+    assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+    SpannerException se = (SpannerException) e.getCause();
+    assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(se.getMessage()).contains("invalid statement");
   }
 
   @Test
@@ -426,15 +405,11 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
               return txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
             },
             executor);
-    try {
-      updateCount.get();
-      fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
-      assertThat(se.getMessage()).contains("mutation limit exceeded");
-    }
+    ExecutionException e = assertThrows(ExecutionException.class, () -> updateCount.get());
+    assertThat(e.getCause()).isInstanceOf(SpannerException.class);
+    SpannerException se = (SpannerException) e.getCause();
+    assertThat(se.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+    assertThat(se.getMessage()).contains("mutation limit exceeded");
   }
 
   @Test
@@ -473,27 +448,24 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
                       READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES, Options.bufferRows(1))) {
                 rs.setCallback(
                     Executors.newSingleThreadExecutor(),
-                    new ReadyCallback() {
-                      @Override
-                      public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                        dataReceived.countDown();
-                        try {
-                          while (true) {
-                            switch (resultSet.tryNext()) {
-                              case DONE:
-                                finished.set(true);
-                                return CallbackResponse.DONE;
-                              case NOT_READY:
-                                return CallbackResponse.CONTINUE;
-                              case OK:
-                                dataChecked.await();
-                                results.put(resultSet.getString(0));
-                            }
+                    resultSet -> {
+                      dataReceived.countDown();
+                      try {
+                        while (true) {
+                          switch (resultSet.tryNext()) {
+                            case DONE:
+                              finished.set(true);
+                              return CallbackResponse.DONE;
+                            case NOT_READY:
+                              return CallbackResponse.CONTINUE;
+                            case OK:
+                              dataChecked.await();
+                              results.put(resultSet.getString(0));
                           }
-                        } catch (Throwable t) {
-                          finished.setException(t);
-                          return CallbackResponse.DONE;
                         }
+                      } catch (Throwable t) {
+                        finished.setException(t);
+                        return CallbackResponse.DONE;
                       }
                     });
               }
@@ -531,12 +503,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
             txn ->
                 ApiFutures.transform(
                     txn.readRowAsync(READ_TABLE_NAME, Key.of(1L), READ_COLUMN_NAMES),
-                    new ApiFunction<Struct, String>() {
-                      @Override
-                      public String apply(Struct input) {
-                        return input.getString("Value");
-                      }
-                    },
+                    input -> input.getString("Value"),
                     MoreExecutors.directExecutor()),
             executor);
     assertThat(val.get()).isEqualTo("v1");
@@ -549,14 +516,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
         runner.runAsync(
             txn ->
                 txn.readAsync(READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES)
-                    .toListAsync(
-                        new Function<StructReader, String>() {
-                          @Override
-                          public String apply(StructReader input) {
-                            return input.getString("Value");
-                          }
-                        },
-                        MoreExecutors.directExecutor()),
+                    .toListAsync(input -> input.getString("Value"), MoreExecutors.directExecutor()),
             executor);
     assertThat(val.get()).containsExactly("v1", "v2", "v3");
   }

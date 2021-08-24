@@ -49,7 +49,7 @@ public class ClientSideStatementsTest {
   @Test
   public void testExecuteClientSideStatementsScript() throws Exception {
     SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider());
-    verifier.verifyStatementsInFile("ClientSideStatementsTest.sql", getClass());
+    verifier.verifyStatementsInFile("ClientSideStatementsTest.sql", getClass(), true);
   }
 
   private static final String SCRIPT_FILE =

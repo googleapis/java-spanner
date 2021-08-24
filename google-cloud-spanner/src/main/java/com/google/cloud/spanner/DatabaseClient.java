@@ -431,8 +431,7 @@ public interface DatabaseClient {
    * lifecycle. This API is meant for advanced users. Most users should instead use the {@link
    * #runAsync()} API instead.
    *
-   * <p>Example of using {@link AsyncTransactionManager} with lambda expressions (Java 8 and
-   * higher).
+   * <p>Example of using {@link AsyncTransactionManager}.
    *
    * <pre>{@code
    * long singerId = 1L;
@@ -449,56 +448,11 @@ public interface DatabaseClient {
    *             .then(
    *                 (transaction, row) -> {
    *                   String name = row.getString(column);
-   *                   transaction.buffer(
+   *                   return transaction.bufferAsync(
    *                       Mutation.newUpdateBuilder("Singers")
    *                           .set(column)
    *                           .to(name.toUpperCase())
    *                           .build());
-   *                   return ApiFutures.immediateFuture(null);
-   *                 })
-   *             .commitAsync();
-   *     try {
-   *       commitTimestamp.get();
-   *       break;
-   *     } catch (AbortedException e) {
-   *       Thread.sleep(e.getRetryDelayInMillis());
-   *       transactionFuture = manager.resetForRetryAsync();
-   *     }
-   *   }
-   * }
-   * }</pre>
-   *
-   * <p>Example of using {@link AsyncTransactionManager} (Java 7).
-   *
-   * <pre>{@code
-   * final long singerId = 1L;
-   * try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
-   *   TransactionContextFuture transactionFuture = manager.beginAsync();
-   *   while (true) {
-   *     final String column = "FirstName";
-   *     CommitTimestampFuture commitTimestamp =
-   *         transactionFuture.then(
-   *                 new AsyncTransactionFunction<Void, Struct>() {
-   *                   @Override
-   *                   public ApiFuture<Struct> apply(TransactionContext transaction, Void input)
-   *                       throws Exception {
-   *                     return transaction.readRowAsync(
-   *                         "Singers", Key.of(singerId), Collections.singleton(column));
-   *                   }
-   *                 })
-   *             .then(
-   *                 new AsyncTransactionFunction<Struct, Void>() {
-   *                   @Override
-   *                   public ApiFuture<Void> apply(TransactionContext transaction, Struct input)
-   *                       throws Exception {
-   *                     String name = input.getString(column);
-   *                     transaction.buffer(
-   *                         Mutation.newUpdateBuilder("Singers")
-   *                             .set(column)
-   *                             .to(name.toUpperCase())
-   *                             .build());
-   *                     return ApiFutures.immediateFuture(null);
-   *                   }
    *                 })
    *             .commitAsync();
    *     try {

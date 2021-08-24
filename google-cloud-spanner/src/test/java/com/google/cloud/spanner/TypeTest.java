@@ -20,7 +20,7 @@ import static com.google.cloud.spanner.Type.StructField;
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.spanner.Type.Code;
 import com.google.spanner.v1.TypeCode;
@@ -329,46 +329,34 @@ public class TypeTest {
   @Test
   public void structFieldIndexNotFound() {
     Type t = Type.struct(StructField.of("f1", Type.int64()));
-    try {
-      t.getFieldIndex("f2");
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertThat(ex.getMessage().contains("Field not found: f2"));
-    }
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> t.getFieldIndex("f2"));
+    assertThat(e.getMessage().contains("Field not found: f2"));
   }
 
   @Test
   public void structFieldIndexAmbiguous() {
     Type t = Type.struct(StructField.of("f1", Type.int64()), StructField.of("f1", Type.string()));
-    try {
-      t.getFieldIndex("f1");
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertThat(ex.getMessage().contains("Ambiguous field name: f1"));
-    }
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> t.getFieldIndex("f1"));
+    assertThat(e.getMessage().contains("Ambiguous field name: f1"));
   }
 
   @Test
   public void parseErrorMissingTypeCode() {
     com.google.spanner.v1.Type proto = com.google.spanner.v1.Type.newBuilder().build();
-    try {
-      Type.fromProto(proto);
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> Type.fromProto(proto));
+    assertNotNull(e.getMessage());
   }
 
   @Test
   public void parseErrorMissingArrayElementTypeProto() {
     com.google.spanner.v1.Type proto =
         com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.ARRAY).build();
-    try {
-      Type.fromProto(proto);
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> Type.fromProto(proto));
+    assertNotNull(e.getMessage());
   }
 
   private static void assertProtoEquals(com.google.spanner.v1.Type proto, String expected) {

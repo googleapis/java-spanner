@@ -16,8 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.ApiAsyncFunction;
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
@@ -30,7 +28,6 @@ import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.google.protobuf.Empty;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
@@ -73,7 +70,7 @@ final class AsyncTransactionManagerImpl
     if (txn != null) {
       txn.close();
     }
-    return MoreObjects.firstNonNull(res, ApiFutures.<Void>immediateFuture(null));
+    return MoreObjects.firstNonNull(res, ApiFutures.immediateFuture(null));
   }
 
   @Override
@@ -154,14 +151,7 @@ final class AsyncTransactionManagerImpl
         },
         MoreExecutors.directExecutor());
     return ApiFutures.transform(
-        commitResponseFuture,
-        new ApiFunction<CommitResponse, Timestamp>() {
-          @Override
-          public Timestamp apply(CommitResponse input) {
-            return input.getCommitTimestamp();
-          }
-        },
-        MoreExecutors.directExecutor());
+        commitResponseFuture, CommitResponse::getCommitTimestamp, MoreExecutors.directExecutor());
   }
 
   @Override
@@ -172,12 +162,7 @@ final class AsyncTransactionManagerImpl
     try {
       return ApiFutures.transformAsync(
           txn.rollbackAsync(),
-          new ApiAsyncFunction<Empty, Void>() {
-            @Override
-            public ApiFuture<Void> apply(Empty input) throws Exception {
-              return ApiFutures.immediateFuture(null);
-            }
-          },
+          ignored -> ApiFutures.immediateFuture(null),
           MoreExecutors.directExecutor());
     } finally {
       txnState = TransactionState.ROLLED_BACK;

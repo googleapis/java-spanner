@@ -18,13 +18,10 @@ package com.google.cloud.spanner;
 
 import static org.junit.Assert.fail;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.api.gax.retrying.RetrySettings;
-import com.google.api.gax.rpc.UnaryCallSettings;
-import com.google.api.gax.rpc.UnaryCallSettings.Builder;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.admin.instance.v1.MockInstanceAdminImpl;
 import com.google.common.base.Throwables;
@@ -50,6 +47,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -253,12 +251,9 @@ public class InstanceAdminGaxTest {
     builder
         .getInstanceAdminStubSettingsBuilder()
         .applyToAllUnaryMethods(
-            new ApiFunction<UnaryCallSettings.Builder<?, ?>, Void>() {
-              @Override
-              public Void apply(Builder<?, ?> input) {
-                input.setRetrySettings(retrySettingsToUse);
-                return null;
-              }
+            input -> {
+              input.setRetrySettings(retrySettingsToUse);
+              return null;
             });
     if (!builder
         .getInstanceAdminStubSettingsBuilder()
@@ -331,7 +326,7 @@ public class InstanceAdminGaxTest {
     for (int i = 0; i < 2; i++) {
       ListInstanceConfigsResponse.Builder builder =
           ListInstanceConfigsResponse.newBuilder()
-              .addAllInstanceConfigs(Arrays.asList(configs.get(i)));
+              .addAllInstanceConfigs(Collections.singletonList(configs.get(i)));
       if (i < (configs.size() - 1)) {
         builder.setNextPageToken(String.format(nextPageToken, i));
       }
@@ -359,8 +354,13 @@ public class InstanceAdminGaxTest {
     for (int i = 0; i < 2; i++) {
       InstanceConfigName name2 = InstanceConfigName.of(PROJECT, "INSTANCE_CONFIG");
       String displayName = "displayName1615086568";
+      List<String> leaderOptions = Arrays.asList("leader option 1", "leader option 2");
       InstanceConfig expectedResponse =
-          InstanceConfig.newBuilder().setName(name2.toString()).setDisplayName(displayName).build();
+          InstanceConfig.newBuilder()
+              .setName(name2.toString())
+              .setDisplayName(displayName)
+              .addAllLeaderOptions(leaderOptions)
+              .build();
       if (exceptionAtCall == 0) {
         mockInstanceAdmin.addException(exception);
       }
@@ -374,6 +374,7 @@ public class InstanceAdminGaxTest {
           client.getInstanceConfig(name.toString());
 
       Assert.assertEquals(displayName, actualResponse.getDisplayName());
+      Assert.assertEquals(leaderOptions, actualResponse.getLeaderOptions());
       List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
       Assert.assertEquals(i + 1, actualRequests.size());
     }
@@ -397,7 +398,8 @@ public class InstanceAdminGaxTest {
     }
     for (int i = 0; i < 2; i++) {
       ListInstancesResponse.Builder builder =
-          ListInstancesResponse.newBuilder().addAllInstances(Arrays.asList(instances.get(i)));
+          ListInstancesResponse.newBuilder()
+              .addAllInstances(Collections.singletonList(instances.get(i)));
       if (i < (instances.size() - 1)) {
         builder.setNextPageToken(String.format(nextPageToken, i));
       }

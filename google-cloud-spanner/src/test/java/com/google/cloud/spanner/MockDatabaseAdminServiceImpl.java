@@ -18,7 +18,6 @@ package com.google.cloud.spanner;
 
 import com.google.api.gax.grpc.testing.MockGrpcService;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.iam.v1.GetIamPolicyRequest;
@@ -448,6 +447,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   private SimulatedExecutionTime createDatabaseStartupExecutionTime = SimulatedExecutionTime.none();
   private SimulatedExecutionTime createDatabaseResponseExecutionTime =
       SimulatedExecutionTime.none();
+  private SimulatedExecutionTime getDatabaseExecutionTime = SimulatedExecutionTime.none();
   private SimulatedExecutionTime restoreDatabaseStartupExecutionTime =
       SimulatedExecutionTime.none();
   private SimulatedExecutionTime restoreDatabaseResponseExecutionTime =
@@ -510,17 +510,22 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   @Override
   public void getDatabase(GetDatabaseRequest request, StreamObserver<Database> responseObserver) {
     requests.add(request);
-    MockDatabase db = databases.get(request.getName());
-    if (db != null) {
-      responseObserver.onNext(
-          Database.newBuilder()
-              .setName(request.getName())
-              .setCreateTime(db.createTime)
-              .setState(State.READY)
-              .build());
-      responseObserver.onCompleted();
-    } else {
-      responseObserver.onError(Status.NOT_FOUND.asRuntimeException());
+    try {
+      getDatabaseExecutionTime.simulateExecutionTime(exceptions, false, freezeLock);
+      MockDatabase db = databases.get(request.getName());
+      if (db != null) {
+        responseObserver.onNext(
+            Database.newBuilder()
+                .setName(request.getName())
+                .setCreateTime(db.createTime)
+                .setState(State.READY)
+                .build());
+        responseObserver.onCompleted();
+      } else {
+        responseObserver.onError(Status.NOT_FOUND.asRuntimeException());
+      }
+    } catch (Throwable t) {
+      responseObserver.onError(t);
     }
   }
 
@@ -913,16 +918,12 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
     return new ArrayList<>(requests);
   }
 
+  public void clearRequests() {
+    requests.clear();
+  }
+
   public int countRequestsOfType(final Class<? extends AbstractMessage> type) {
-    return Collections2.filter(
-            getRequests(),
-            new Predicate<AbstractMessage>() {
-              @Override
-              public boolean apply(AbstractMessage input) {
-                return input.getClass().equals(type);
-              }
-            })
-        .size();
+    return Collections2.filter(getRequests(), input -> input.getClass().equals(type)).size();
   }
 
   @Override

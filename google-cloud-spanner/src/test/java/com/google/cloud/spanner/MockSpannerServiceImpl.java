@@ -432,17 +432,17 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
     public static SimulatedExecutionTime ofException(Exception exception) {
       return new SimulatedExecutionTime(
-          0, 0, Arrays.asList(exception), false, Collections.<Long>emptySet());
+          0, 0, Collections.singletonList(exception), false, Collections.emptySet());
     }
 
     public static SimulatedExecutionTime ofStickyException(Exception exception) {
       return new SimulatedExecutionTime(
-          0, 0, Arrays.asList(exception), true, Collections.<Long>emptySet());
+          0, 0, Collections.singletonList(exception), true, Collections.emptySet());
     }
 
     public static SimulatedExecutionTime ofStreamException(Exception exception, long streamIndex) {
       return new SimulatedExecutionTime(
-          0, 0, Arrays.asList(exception), false, Collections.singleton(streamIndex));
+          0, 0, Collections.singletonList(exception), false, Collections.singleton(streamIndex));
     }
 
     public static SimulatedExecutionTime stickyDatabaseNotFoundException(String name) {
@@ -451,7 +451,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
 
     public static SimulatedExecutionTime ofExceptions(Collection<? extends Exception> exceptions) {
-      return new SimulatedExecutionTime(0, 0, exceptions, false, Collections.<Long>emptySet());
+      return new SimulatedExecutionTime(0, 0, exceptions, false, Collections.emptySet());
     }
 
     public static SimulatedExecutionTime ofMinimumAndRandomTimeAndExceptions(
@@ -459,16 +459,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         int randomExecutionTime,
         Collection<? extends Exception> exceptions) {
       return new SimulatedExecutionTime(
-          minimumExecutionTime,
-          randomExecutionTime,
-          exceptions,
-          false,
-          Collections.<Long>emptySet());
+          minimumExecutionTime, randomExecutionTime, exceptions, false, Collections.emptySet());
     }
 
     private SimulatedExecutionTime(int minimum, int random) {
-      this(
-          minimum, random, Collections.<Exception>emptyList(), false, Collections.<Long>emptySet());
+      this(minimum, random, Collections.emptyList(), false, Collections.emptySet());
     }
 
     private SimulatedExecutionTime(
@@ -880,14 +875,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               session.toBuilder().setApproximateLastUseTime(getCurrentGoogleTimestamp()).build());
         }
       }
-      Collections.sort(
-          res,
-          new Comparator<Session>() {
-            @Override
-            public int compare(Session o1, Session o2) {
-              return o1.getName().compareTo(o2.getName());
-            }
-          });
+      res.sort(Comparator.comparing(Session::getName));
       responseObserver.onNext(ListSessionsResponse.newBuilder().addAllSessions(res).build());
       responseObserver.onCompleted();
     } catch (StatusRuntimeException e) {
@@ -1214,6 +1202,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               case TIMESTAMP:
                 builder.bind(entry.getKey()).toTimestampArray(null);
                 break;
+              case JSON:
+                builder.bind(entry.getKey()).toJsonArray(null);
+                break;
               case STRUCT:
               case TYPE_CODE_UNSPECIFIED:
               case UNRECOGNIZED:
@@ -1246,6 +1237,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             break;
           case TIMESTAMP:
             builder.bind(entry.getKey()).to((com.google.cloud.Timestamp) null);
+            break;
+          case JSON:
+            builder.bind(entry.getKey()).to(Value.json((String) null));
             break;
           case TYPE_CODE_UNSPECIFIED:
           case UNRECOGNIZED:
@@ -1313,6 +1307,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                             GrpcStruct.decodeArrayValue(
                                 com.google.cloud.spanner.Type.timestamp(), value.getListValue()));
                 break;
+              case JSON:
+                builder
+                    .bind(entry.getKey())
+                    .toJsonArray(
+                        (Iterable<String>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.json(), value.getListValue()));
+                break;
               case STRUCT:
               case TYPE_CODE_UNSPECIFIED:
               case UNRECOGNIZED:
@@ -1346,6 +1348,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             builder
                 .bind(entry.getKey())
                 .to(com.google.cloud.Timestamp.parseTimestamp(value.getStringValue()));
+            break;
+          case JSON:
+            builder.bind(entry.getKey()).to(Value.json(value.getStringValue()));
             break;
           case TYPE_CODE_UNSPECIFIED:
           case UNRECOGNIZED:
@@ -1420,13 +1425,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       // Get or start transaction
       ByteString transactionId = getTransactionId(session, request.getTransaction());
       simulateAbort(session, transactionId);
-      Iterable<String> cols =
-          new Iterable<String>() {
-            @Override
-            public Iterator<String> iterator() {
-              return request.getColumnsList().iterator();
-            }
-          };
+      Iterable<String> cols = () -> request.getColumnsList().iterator();
       Statement statement =
           StatementResult.createReadStatement(
               request.getTable(),
@@ -1472,13 +1471,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         }
       }
       simulateAbort(session, transactionId);
-      Iterable<String> cols =
-          new Iterable<String>() {
-            @Override
-            public Iterator<String> iterator() {
-              return request.getColumnsList().iterator();
-            }
-          };
+      Iterable<String> cols = () -> request.getColumnsList().iterator();
       Statement statement =
           StatementResult.createReadStatement(
               request.getTable(),

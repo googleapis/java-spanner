@@ -27,7 +27,6 @@ import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
-import com.google.common.base.Function;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,8 +40,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
 public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
@@ -77,20 +74,17 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
 
   private void setupMockSessionCreation() {
     doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(final InvocationOnMock invocation) {
-                executor.submit(
-                    () -> {
-                      int sessionCount = invocation.getArgumentAt(0, Integer.class);
-                      SessionConsumerImpl consumer =
-                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
-                      for (int i = 0; i < sessionCount; i++) {
-                        consumer.onSessionReady(setupMockSession(mockSession()));
-                      }
-                    });
-                return null;
-              }
+            invocation -> {
+              executor.submit(
+                  () -> {
+                    int sessionCount = invocation.getArgumentAt(0, Integer.class);
+                    SessionConsumerImpl consumer =
+                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                    for (int i = 0; i < sessionCount; i++) {
+                      consumer.onSessionReady(setupMockSession(mockSession()));
+                    }
+                  });
+              return null;
             })
         .when(sessionClient)
         .asyncBatchCreateSessions(
@@ -103,16 +97,13 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     when(session.singleUse(any(TimestampBound.class))).thenReturn(mockContext);
     when(mockContext.executeQuery(any(Statement.class)))
         .thenAnswer(
-            new Answer<ResultSet>() {
-              @Override
-              public ResultSet answer(InvocationOnMock invocation) {
-                Integer currentValue = pingedSessions.get(session.getName());
-                if (currentValue == null) {
-                  currentValue = 0;
-                }
-                pingedSessions.put(session.getName(), ++currentValue);
-                return mockResult;
+            invocation -> {
+              Integer currentValue = pingedSessions.get(session.getName());
+              if (currentValue == null) {
+                currentValue = 0;
               }
+              pingedSessions.put(session.getName(), ++currentValue);
+              return mockResult;
             });
     when(mockResult.next()).thenReturn(true);
     return session;
@@ -123,12 +114,9 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
         SessionPool.createPool(
             options, new TestExecutorFactory(), client.getSessionClient(db), clock);
     pool.idleSessionRemovedListener =
-        new Function<PooledSession, Void>() {
-          @Override
-          public Void apply(PooledSession input) {
-            idledSessions.add(input);
-            return null;
-          }
+        input -> {
+          idledSessions.add(input);
+          return null;
         };
     // Wait until pool has initialized.
     while (pool.totalSessions() < options.getMinSessions()) {

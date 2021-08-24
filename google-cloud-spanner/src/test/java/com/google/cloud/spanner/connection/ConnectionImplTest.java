@@ -27,6 +27,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -48,7 +49,6 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ForwardingResultSet;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
-import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
@@ -62,12 +62,12 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.Type;
-import com.google.cloud.spanner.connection.AbstractConnectionImplTest.ConnectionConsumer;
 import com.google.cloud.spanner.connection.ConnectionImpl.UnitOfWorkType;
 import com.google.cloud.spanner.connection.ConnectionStatementExecutorImpl.StatementTimeoutGetter;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.GetExactStaleness;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
+import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
@@ -236,15 +236,12 @@ public class ConnectionImplTest {
     final SimpleResultSet select1ResultSetWithStats = new SimpleResultSet(mockResultSetWithStats);
     when(singleUseReadOnlyTx.executeQuery(Statement.of(SELECT)))
         .thenAnswer(
-            new Answer<ResultSet>() {
-              @Override
-              public ResultSet answer(InvocationOnMock invocation) {
-                if (select1ResultSet.nextCalled) {
-                  // create a new mock
-                  return new SimpleResultSet(createSelect1MockResultSet());
-                }
-                return select1ResultSet;
+            invocation -> {
+              if (select1ResultSet.nextCalled) {
+                // create a new mock
+                return new SimpleResultSet(createSelect1MockResultSet());
               }
+              return select1ResultSet;
             });
     when(singleUseReadOnlyTx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
         .thenReturn(select1ResultSetWithStats);
@@ -252,84 +249,66 @@ public class ConnectionImplTest {
         .thenReturn(select1ResultSetWithStats);
     when(singleUseReadOnlyTx.getReadTimestamp())
         .then(
-            new Answer<Timestamp>() {
-              @Override
-              public Timestamp answer(InvocationOnMock invocation) {
-                if (select1ResultSet.isNextCalled() || select1ResultSetWithStats.isNextCalled()) {
-                  return Timestamp.now();
-                }
-                throw SpannerExceptionFactory.newSpannerException(
-                    ErrorCode.FAILED_PRECONDITION, "No query has returned with any data yet");
+            invocation -> {
+              if (select1ResultSet.isNextCalled() || select1ResultSetWithStats.isNextCalled()) {
+                return Timestamp.now();
               }
+              throw SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.FAILED_PRECONDITION, "No query has returned with any data yet");
             });
     when(dbClient.singleUseReadOnlyTransaction(Matchers.any(TimestampBound.class)))
         .thenReturn(singleUseReadOnlyTx);
 
-    when(dbClient.transactionManager((TransactionOption[]) Mockito.anyVararg()))
+    when(dbClient.transactionManager(Mockito.anyVararg()))
         .thenAnswer(
-            new Answer<TransactionManager>() {
-              @Override
-              public TransactionManager answer(InvocationOnMock invocation) {
-                TransactionContext txContext = mock(TransactionContext.class);
-                when(txContext.executeQuery(Statement.of(SELECT)))
-                    .thenAnswer(
-                        new Answer<ResultSet>() {
-                          @Override
-                          public ResultSet answer(InvocationOnMock invocation) {
-                            if (select1ResultSet.nextCalled) {
-                              // create a new mock
-                              return new SimpleResultSet(createSelect1MockResultSet());
-                            }
-                            return select1ResultSet;
-                          }
-                        });
-                when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
-                    .thenReturn(select1ResultSetWithStats);
-                when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
-                    .thenReturn(select1ResultSetWithStats);
-                when(txContext.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
-                return new SimpleTransactionManager(txContext, options.isReturnCommitStats());
-              }
+            invocation -> {
+              TransactionContext txContext = mock(TransactionContext.class);
+              when(txContext.executeQuery(Statement.of(SELECT)))
+                  .thenAnswer(
+                      ignored -> {
+                        if (select1ResultSet.nextCalled) {
+                          // create a new mock
+                          return new SimpleResultSet(createSelect1MockResultSet());
+                        }
+                        return select1ResultSet;
+                      });
+              when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
+                  .thenReturn(select1ResultSetWithStats);
+              when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
+                  .thenReturn(select1ResultSetWithStats);
+              when(txContext.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
+              return new SimpleTransactionManager(txContext, options.isReturnCommitStats());
             });
 
     when(dbClient.readOnlyTransaction(Matchers.any(TimestampBound.class)))
         .thenAnswer(
-            new Answer<ReadOnlyTransaction>() {
-              @Override
-              public ReadOnlyTransaction answer(InvocationOnMock invocation) {
-                ReadOnlyTransaction tx = mock(ReadOnlyTransaction.class);
-                when(tx.executeQuery(Statement.of(SELECT)))
-                    .thenAnswer(
-                        new Answer<ResultSet>() {
-                          @Override
-                          public ResultSet answer(InvocationOnMock invocation) {
-                            if (select1ResultSet.nextCalled) {
-                              // create a new mock
-                              return new SimpleResultSet(createSelect1MockResultSet());
-                            }
-                            return select1ResultSet;
-                          }
-                        });
-                when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
-                    .thenReturn(select1ResultSetWithStats);
-                when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
-                    .thenReturn(select1ResultSetWithStats);
-                when(tx.getReadTimestamp())
-                    .then(
-                        new Answer<Timestamp>() {
-                          @Override
-                          public Timestamp answer(InvocationOnMock invocation) {
-                            if (select1ResultSet.isNextCalled()
-                                || select1ResultSetWithStats.isNextCalled()) {
-                              return Timestamp.now();
-                            }
-                            throw SpannerExceptionFactory.newSpannerException(
-                                ErrorCode.FAILED_PRECONDITION,
-                                "No query has returned with any data yet");
-                          }
-                        });
-                return tx;
-              }
+            invocation -> {
+              ReadOnlyTransaction tx = mock(ReadOnlyTransaction.class);
+              when(tx.executeQuery(Statement.of(SELECT)))
+                  .thenAnswer(
+                      ignored -> {
+                        if (select1ResultSet.nextCalled) {
+                          // create a new mock
+                          return new SimpleResultSet(createSelect1MockResultSet());
+                        }
+                        return select1ResultSet;
+                      });
+              when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
+                  .thenReturn(select1ResultSetWithStats);
+              when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
+                  .thenReturn(select1ResultSetWithStats);
+              when(tx.getReadTimestamp())
+                  .then(
+                      ignored -> {
+                        if (select1ResultSet.isNextCalled()
+                            || select1ResultSetWithStats.isNextCalled()) {
+                          return Timestamp.now();
+                        }
+                        throw SpannerExceptionFactory.newSpannerException(
+                            ErrorCode.FAILED_PRECONDITION,
+                            "No query has returned with any data yet");
+                      });
+              return tx;
             });
 
     when(dbClient.readWriteTransaction())
@@ -421,7 +400,7 @@ public class ConnectionImplTest {
       assertThat(res.getResultSet().getBoolean("AUTOCOMMIT"), is(true));
 
       // set autocommit to false and assert that autocommit is false
-      res = subject.execute(Statement.of("set autocommit = false"));
+      subject.execute(Statement.of("set autocommit = false"));
       assertThat(subject.isAutocommit(), is(false));
       res = subject.execute(Statement.of("show variable autocommit"));
       assertThat(res.getResultType(), is(equalTo(ResultType.RESULT_SET)));
@@ -479,7 +458,7 @@ public class ConnectionImplTest {
       assertThat(res.getResultSet().getBoolean("READONLY"), is(false));
 
       // set read only to true and assert that read only is true
-      res = subject.execute(Statement.of("set readonly = true"));
+      subject.execute(Statement.of("set readonly = true"));
       assertThat(subject.isReadOnly(), is(true));
       res = subject.execute(Statement.of("show variable readonly"));
       assertThat(res.getResultType(), is(equalTo(ResultType.RESULT_SET)));
@@ -627,6 +606,72 @@ public class ConnectionImplTest {
       assertThat(res.getResultType(), is(equalTo(ResultType.RESULT_SET)));
       assertThat(res.getResultSet().next(), is(true));
       assertThat(res.getResultSet().getString("OPTIMIZER_VERSION"), is(equalTo("1")));
+    }
+  }
+
+  @Test
+  public void testExecuteSetOptimizerStatisticsPackage() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.getOptimizerStatisticsPackage(), is(equalTo("")));
+
+      StatementResult res =
+          subject.execute(Statement.of("set optimizer_statistics_package='custom-package'"));
+      assertThat(res.getResultType(), is(equalTo(ResultType.NO_RESULT)));
+      assertThat(subject.getOptimizerStatisticsPackage(), is(equalTo("custom-package")));
+
+      res = subject.execute(Statement.of("set optimizer_statistics_package=''"));
+      assertThat(res.getResultType(), is(equalTo(ResultType.NO_RESULT)));
+      assertThat(subject.getOptimizerStatisticsPackage(), is(equalTo("")));
+    }
+  }
+
+  @Test
+  public void testExecuteSetOptimizerStatisticsPackageInvalidValue() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.getOptimizerVersion(), is(equalTo("")));
+
+      try {
+        subject.execute(Statement.of("set optimizer_statistics_package='   '"));
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode(), is(equalTo(ErrorCode.INVALID_ARGUMENT)));
+      }
+    }
+  }
+
+  @Test
+  public void testExecuteGetOptimizerStatisticsPackage() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.getOptimizerStatisticsPackage(), is(equalTo("")));
+
+      StatementResult res =
+          subject.execute(Statement.of("show variable optimizer_statistics_package"));
+      assertThat(res.getResultType(), is(equalTo(ResultType.RESULT_SET)));
+      assertThat(res.getResultSet().next(), is(true));
+      assertThat(res.getResultSet().getString("OPTIMIZER_STATISTICS_PACKAGE"), is(equalTo("")));
+
+      subject.execute(Statement.of("set optimizer_statistics_package='custom-package'"));
+      res = subject.execute(Statement.of("show variable optimizer_statistics_package"));
+      assertThat(res.getResultType(), is(equalTo(ResultType.RESULT_SET)));
+      assertThat(res.getResultSet().next(), is(true));
+      assertThat(
+          res.getResultSet().getString("OPTIMIZER_STATISTICS_PACKAGE"),
+          is(equalTo("custom-package")));
     }
   }
 
@@ -1227,12 +1272,7 @@ public class ConnectionImplTest {
       subject.setReadOnly(true);
       expectSpannerException(
           "Updates should not be allowed in read-only mode",
-          new ConnectionConsumer() {
-            @Override
-            public void accept(Connection t) {
-              t.execute(Statement.of(UPDATE));
-            }
-          },
+          connection -> connection.execute(Statement.of(UPDATE)),
           subject);
       assertThat(subject.executeQuery(Statement.of(SELECT)), is(notNullValue()));
 
@@ -1245,12 +1285,7 @@ public class ConnectionImplTest {
       subject.setReadOnly(true);
       expectSpannerException(
           "DDL should not be allowed in read-only mode",
-          new ConnectionConsumer() {
-            @Override
-            public void accept(Connection t) {
-              t.execute(Statement.of(DDL));
-            }
-          },
+          connection -> connection.execute(Statement.of(DDL)),
           subject);
       assertThat(subject.executeQuery(Statement.of(SELECT)), is(notNullValue()));
     }
@@ -1274,12 +1309,7 @@ public class ConnectionImplTest {
       subject.setReadOnly(true);
       expectSpannerException(
           "Updates should not be allowed in read-only mode",
-          new ConnectionConsumer() {
-            @Override
-            public void accept(Connection t) {
-              t.execute(Statement.of(UPDATE));
-            }
-          },
+          connection -> connection.execute(Statement.of(UPDATE)),
           subject);
       assertThat(subject.executeQuery(Statement.of(SELECT)), is(notNullValue()));
       subject.commit();
@@ -1294,12 +1324,7 @@ public class ConnectionImplTest {
       subject.setReadOnly(true);
       expectSpannerException(
           "DDL should not be allowed in read-only mode",
-          new ConnectionConsumer() {
-            @Override
-            public void accept(Connection t) {
-              t.execute(Statement.of(DDL));
-            }
-          },
+          connection -> connection.execute(Statement.of(DDL)),
           subject);
       assertThat(subject.executeQuery(Statement.of(SELECT)), is(notNullValue()));
     }
@@ -1340,58 +1365,219 @@ public class ConnectionImplTest {
             return unitOfWork;
           }
         }) {
-      // Execute query with an optimizer version set on the connection.
+      // Execute query with an optimizer version and statistics package set on the connection.
       impl.setOptimizerVersion("1");
+      impl.setOptimizerStatisticsPackage("custom-package-1");
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"));
       verify(unitOfWork)
           .executeQueryAsync(
               StatementParser.INSTANCE.parse(
                   Statement.newBuilder("SELECT FOO FROM BAR")
-                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                      .withQueryOptions(
+                          QueryOptions.newBuilder()
+                              .setOptimizerVersion("1")
+                              .setOptimizerStatisticsPackage("custom-package-1")
+                              .build())
                       .build()),
               AnalyzeMode.NONE);
 
-      // Execute query with an optimizer version set on the connection.
+      // Execute query with an optimizer version and statistics package set on the connection.
       impl.setOptimizerVersion("2");
+      impl.setOptimizerStatisticsPackage("custom-package-2");
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"));
       verify(unitOfWork)
           .executeQueryAsync(
               StatementParser.INSTANCE.parse(
                   Statement.newBuilder("SELECT FOO FROM BAR")
-                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("2").build())
+                      .withQueryOptions(
+                          QueryOptions.newBuilder()
+                              .setOptimizerVersion("2")
+                              .setOptimizerStatisticsPackage("custom-package-2")
+                              .build())
                       .build()),
               AnalyzeMode.NONE);
 
-      // Execute query with an optimizer version set on the connection and PrefetchChunks query
+      // Execute query with an optimizer version and statistics package set on the connection and
+      // PrefetchChunks query
       // option specified for the query.
       QueryOption prefetchOption = Options.prefetchChunks(100);
       impl.setOptimizerVersion("3");
+      impl.setOptimizerStatisticsPackage("custom-package-3");
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"), prefetchOption);
       verify(unitOfWork)
           .executeQueryAsync(
               StatementParser.INSTANCE.parse(
                   Statement.newBuilder("SELECT FOO FROM BAR")
-                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("3").build())
+                      .withQueryOptions(
+                          QueryOptions.newBuilder()
+                              .setOptimizerVersion("3")
+                              .setOptimizerStatisticsPackage("custom-package-3")
+                              .build())
                       .build()),
               AnalyzeMode.NONE,
               prefetchOption);
 
-      // Execute query with an optimizer version set on the connection, and the same options also
+      // Execute query with an optimizer version and statistics package set on the connection, and
+      // the same options also
       // passed in to the query. The specific options passed in to the query should take precedence.
       impl.setOptimizerVersion("4");
+      impl.setOptimizerStatisticsPackage("custom-package-4");
       impl.executeQuery(
           Statement.newBuilder("SELECT FOO FROM BAR")
-              .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("5").build())
+              .withQueryOptions(
+                  QueryOptions.newBuilder()
+                      .setOptimizerVersion("5")
+                      .setOptimizerStatisticsPackage("custom-package-5")
+                      .build())
               .build(),
           prefetchOption);
       verify(unitOfWork)
           .executeQueryAsync(
               StatementParser.INSTANCE.parse(
                   Statement.newBuilder("SELECT FOO FROM BAR")
-                      .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("5").build())
+                      .withQueryOptions(
+                          QueryOptions.newBuilder()
+                              .setOptimizerVersion("5")
+                              .setOptimizerStatisticsPackage("custom-package-5")
+                              .build())
                       .build()),
               AnalyzeMode.NONE,
               prefetchOption);
+    }
+  }
+
+  @Test
+  public void testStatementTagAlwaysAllowed() {
+    ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
+    when(connectionOptions.isAutocommit()).thenReturn(true);
+    SpannerPool spannerPool = mock(SpannerPool.class);
+    DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    final UnitOfWork unitOfWork = mock(UnitOfWork.class);
+    when(unitOfWork.executeQueryAsync(
+            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>anyVararg()))
+        .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
+    try (ConnectionImpl connection =
+        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
+          @Override
+          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
+            return unitOfWork;
+          }
+        }) {
+      assertTrue(connection.isAutocommit());
+
+      assertNull(connection.getStatementTag());
+      connection.setStatementTag("tag");
+      assertEquals("tag", connection.getStatementTag());
+      connection.setStatementTag(null);
+      assertNull(connection.getStatementTag());
+
+      connection.setAutocommit(false);
+
+      connection.setStatementTag("tag");
+      assertEquals("tag", connection.getStatementTag());
+      connection.setStatementTag(null);
+      assertNull(connection.getStatementTag());
+
+      // Start a transaction
+      connection.execute(Statement.of("SELECT FOO FROM BAR"));
+      connection.setStatementTag("tag");
+      assertEquals("tag", connection.getStatementTag());
+      connection.setStatementTag(null);
+      assertNull(connection.getStatementTag());
+    }
+  }
+
+  @Test
+  public void testTransactionTagAllowedInTransaction() {
+    ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
+    when(connectionOptions.isAutocommit()).thenReturn(false);
+    SpannerPool spannerPool = mock(SpannerPool.class);
+    DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    try (ConnectionImpl connection =
+        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
+      assertFalse(connection.isAutocommit());
+
+      assertNull(connection.getTransactionTag());
+      connection.setTransactionTag("tag");
+      assertEquals("tag", connection.getTransactionTag());
+      connection.setTransactionTag(null);
+      assertNull(connection.getTransactionTag());
+
+      // Committing or rolling back a transaction should clear the transaction tag for the next
+      // transaction.
+      connection.setTransactionTag("tag");
+      assertEquals("tag", connection.getTransactionTag());
+      connection.commit();
+      assertNull(connection.getTransactionTag());
+
+      connection.setTransactionTag("tag");
+      assertEquals("tag", connection.getTransactionTag());
+      connection.rollback();
+      assertNull(connection.getTransactionTag());
+
+      // Temporary transactions should also allow transaction tags.
+      connection.setAutocommit(false);
+      connection.beginTransaction();
+      assertNull(connection.getTransactionTag());
+      connection.setTransactionTag("tag");
+      assertEquals("tag", connection.getTransactionTag());
+      connection.commit();
+      assertNull(connection.getTransactionTag());
+    }
+  }
+
+  @Test
+  public void testTransactionTagNotAllowedWithoutTransaction() {
+    ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
+    when(connectionOptions.isAutocommit()).thenReturn(true);
+    SpannerPool spannerPool = mock(SpannerPool.class);
+    DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    try (ConnectionImpl connection =
+        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
+      assertTrue(connection.isAutocommit());
+
+      try {
+        connection.setTransactionTag("tag");
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+      }
+    }
+  }
+
+  @Test
+  public void testTransactionTagNotAllowedAfterTransactionStarted() {
+    ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
+    when(connectionOptions.isAutocommit()).thenReturn(false);
+    SpannerPool spannerPool = mock(SpannerPool.class);
+    DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    final UnitOfWork unitOfWork = mock(UnitOfWork.class);
+    // Indicate that a transaction has been started.
+    when(unitOfWork.getState()).thenReturn(UnitOfWorkState.STARTED);
+    when(unitOfWork.executeQueryAsync(
+            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>anyVararg()))
+        .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
+    when(unitOfWork.rollbackAsync()).thenReturn(ApiFutures.immediateFuture(null));
+    try (ConnectionImpl connection =
+        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
+          @Override
+          UnitOfWork createNewUnitOfWork() {
+            return unitOfWork;
+          }
+        }) {
+      // Start a transaction
+      connection.execute(Statement.of("SELECT FOO FROM BAR"));
+      try {
+        connection.setTransactionTag("tag");
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+      }
+      assertNull(connection.getTransactionTag());
     }
   }
 }

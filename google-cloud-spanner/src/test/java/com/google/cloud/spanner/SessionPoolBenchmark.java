@@ -245,7 +245,7 @@ public class SessionPoolBenchmark {
 
   /** Measures the time needed to acquire MaxSessions session sequentially. */
   @Benchmark
-  public void steadyIncrease(BenchmarkState server) throws Exception {
+  public void steadyIncrease(BenchmarkState server) {
     final DatabaseClient client =
         server.spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     SessionPool pool = ((DatabaseClientImpl) client).pool;

@@ -19,7 +19,8 @@ package com.google.cloud.spanner;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
@@ -113,16 +114,13 @@ public class SessionPoolLeakTest {
 
   private void readWriteTransactionTest(
       Runnable setup, int expectedNumberOfSessionsAfterExecution) {
-    assertThat(pool.getNumberOfSessionsInPool(), is(equalTo(0)));
+    assertEquals(0, pool.getNumberOfSessionsInPool());
     setup.run();
-    try {
-      client.readWriteTransaction().run(transaction -> null);
-      fail("missing FAILED_PRECONDITION exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode(), is(equalTo(ErrorCode.FAILED_PRECONDITION)));
-    }
-    assertThat(
-        pool.getNumberOfSessionsInPool(), is(equalTo(expectedNumberOfSessionsAfterExecution)));
+    SpannerException e =
+        assertThrows(
+            SpannerException.class, () -> client.readWriteTransaction().run(transaction -> null));
+    assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    assertEquals(expectedNumberOfSessionsAfterExecution, pool.getNumberOfSessionsInPool());
   }
 
   @Test
@@ -148,15 +146,12 @@ public class SessionPoolLeakTest {
   }
 
   private void transactionManagerTest(Runnable setup, int expectedNumberOfSessionsAfterExecution) {
-    assertThat(pool.getNumberOfSessionsInPool(), is(equalTo(0)));
+    assertEquals(0, pool.getNumberOfSessionsInPool());
     setup.run();
     try (TransactionManager txManager = client.transactionManager()) {
-      txManager.begin();
-      fail("missing FAILED_PRECONDITION exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode(), is(equalTo(ErrorCode.FAILED_PRECONDITION)));
+      SpannerException e = assertThrows(SpannerException.class, () -> txManager.begin());
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
-    assertThat(
-        pool.getNumberOfSessionsInPool(), is(equalTo(expectedNumberOfSessionsAfterExecution)));
+    assertEquals(expectedNumberOfSessionsAfterExecution, pool.getNumberOfSessionsInPool());
   }
 }

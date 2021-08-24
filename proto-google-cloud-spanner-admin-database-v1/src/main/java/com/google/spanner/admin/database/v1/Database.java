@@ -42,6 +42,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     state_ = 0;
     encryptionInfo_ = java.util.Collections.emptyList();
     versionRetentionPeriod_ = "";
+    defaultLeader_ = "";
   }
 
   @java.lang.Override
@@ -169,6 +170,13 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
                   input.readMessage(
                       com.google.spanner.admin.database.v1.EncryptionInfo.parser(),
                       extensionRegistry));
+              break;
+            }
+          case 74:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              defaultLeader_ = s;
               break;
             }
           default:
@@ -904,6 +912,63 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     return getEarliestVersionTime();
   }
 
+  public static final int DEFAULT_LEADER_FIELD_NUMBER = 9;
+  private volatile java.lang.Object defaultLeader_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The read-write region which contains the database's leader
+   * replicas.
+   * This is the same as the value of default_leader
+   * database option set using DatabaseAdmin.CreateDatabase or
+   * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+   * </pre>
+   *
+   * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The defaultLeader.
+   */
+  @java.lang.Override
+  public java.lang.String getDefaultLeader() {
+    java.lang.Object ref = defaultLeader_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      defaultLeader_ = s;
+      return s;
+    }
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The read-write region which contains the database's leader
+   * replicas.
+   * This is the same as the value of default_leader
+   * database option set using DatabaseAdmin.CreateDatabase or
+   * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+   * </pre>
+   *
+   * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The bytes for defaultLeader.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString getDefaultLeaderBytes() {
+    java.lang.Object ref = defaultLeader_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+      defaultLeader_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -943,6 +1008,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     for (int i = 0; i < encryptionInfo_.size(); i++) {
       output.writeMessage(8, encryptionInfo_.get(i));
     }
+    if (!getDefaultLeaderBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 9, defaultLeader_);
+    }
     unknownFields.writeTo(output);
   }
 
@@ -976,6 +1044,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     }
     for (int i = 0; i < encryptionInfo_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(8, encryptionInfo_.get(i));
+    }
+    if (!getDefaultLeaderBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, defaultLeader_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -1013,6 +1084,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     if (hasEarliestVersionTime()) {
       if (!getEarliestVersionTime().equals(other.getEarliestVersionTime())) return false;
     }
+    if (!getDefaultLeader().equals(other.getDefaultLeader())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -1050,6 +1122,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       hash = (37 * hash) + EARLIEST_VERSION_TIME_FIELD_NUMBER;
       hash = (53 * hash) + getEarliestVersionTime().hashCode();
     }
+    hash = (37 * hash) + DEFAULT_LEADER_FIELD_NUMBER;
+    hash = (53 * hash) + getDefaultLeader().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1233,6 +1307,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         earliestVersionTime_ = null;
         earliestVersionTimeBuilder_ = null;
       }
+      defaultLeader_ = "";
+
       return this;
     }
 
@@ -1293,6 +1369,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       } else {
         result.earliestVersionTime_ = earliestVersionTimeBuilder_.build();
       }
+      result.defaultLeader_ = defaultLeader_;
       onBuilt();
       return result;
     }
@@ -1391,6 +1468,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       }
       if (other.hasEarliestVersionTime()) {
         mergeEarliestVersionTime(other.getEarliestVersionTime());
+      }
+      if (!other.getDefaultLeader().isEmpty()) {
+        defaultLeader_ = other.defaultLeader_;
+        onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -3175,6 +3256,132 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         earliestVersionTime_ = null;
       }
       return earliestVersionTimeBuilder_;
+    }
+
+    private java.lang.Object defaultLeader_ = "";
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The read-write region which contains the database's leader
+     * replicas.
+     * This is the same as the value of default_leader
+     * database option set using DatabaseAdmin.CreateDatabase or
+     * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+     * </pre>
+     *
+     * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @return The defaultLeader.
+     */
+    public java.lang.String getDefaultLeader() {
+      java.lang.Object ref = defaultLeader_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        defaultLeader_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The read-write region which contains the database's leader
+     * replicas.
+     * This is the same as the value of default_leader
+     * database option set using DatabaseAdmin.CreateDatabase or
+     * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+     * </pre>
+     *
+     * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @return The bytes for defaultLeader.
+     */
+    public com.google.protobuf.ByteString getDefaultLeaderBytes() {
+      java.lang.Object ref = defaultLeader_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        defaultLeader_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The read-write region which contains the database's leader
+     * replicas.
+     * This is the same as the value of default_leader
+     * database option set using DatabaseAdmin.CreateDatabase or
+     * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+     * </pre>
+     *
+     * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @param value The defaultLeader to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDefaultLeader(java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+
+      defaultLeader_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The read-write region which contains the database's leader
+     * replicas.
+     * This is the same as the value of default_leader
+     * database option set using DatabaseAdmin.CreateDatabase or
+     * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+     * </pre>
+     *
+     * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearDefaultLeader() {
+
+      defaultLeader_ = getDefaultInstance().getDefaultLeader();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The read-write region which contains the database's leader
+     * replicas.
+     * This is the same as the value of default_leader
+     * database option set using DatabaseAdmin.CreateDatabase or
+     * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+     * </pre>
+     *
+     * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @param value The bytes for defaultLeader to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDefaultLeaderBytes(com.google.protobuf.ByteString value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+
+      defaultLeader_ = value;
+      onChanged();
+      return this;
     }
 
     @java.lang.Override

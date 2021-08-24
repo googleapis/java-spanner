@@ -16,6 +16,10 @@
 
 package com.google.cloud.spanner;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Represents a Cloud Spanner instance config.{@code InstanceConfig} adds a layer of service related
  * functionality over {@code InstanceConfigInfo}.
@@ -25,7 +29,16 @@ public class InstanceConfig extends InstanceConfigInfo {
   private final InstanceAdminClient client;
 
   public InstanceConfig(InstanceConfigId id, String displayName, InstanceAdminClient client) {
-    super(id, displayName);
+    this(id, displayName, Collections.emptyList(), Collections.emptyList(), client);
+  }
+
+  public InstanceConfig(
+      InstanceConfigId id,
+      String displayName,
+      List<ReplicaInfo> replicas,
+      List<String> leaderOptions,
+      InstanceAdminClient client) {
+    super(id, displayName, replicas, leaderOptions);
     this.client = client;
   }
 
@@ -36,6 +49,11 @@ public class InstanceConfig extends InstanceConfigInfo {
 
   static InstanceConfig fromProto(
       com.google.spanner.admin.instance.v1.InstanceConfig proto, InstanceAdminClient client) {
-    return new InstanceConfig(InstanceConfigId.of(proto.getName()), proto.getDisplayName(), client);
+    return new InstanceConfig(
+        InstanceConfigId.of(proto.getName()),
+        proto.getDisplayName(),
+        proto.getReplicasList().stream().map(ReplicaInfo::fromProto).collect(Collectors.toList()),
+        proto.getLeaderOptionsList(),
+        client);
   }
 }

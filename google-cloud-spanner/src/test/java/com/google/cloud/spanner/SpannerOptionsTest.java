@@ -19,7 +19,9 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
 
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.retrying.RetrySettings;
@@ -29,6 +31,7 @@ import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.TransportOptions;
+import com.google.cloud.spanner.SpannerOptions.FixedCloseableExecutorProvider;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
@@ -50,9 +53,12 @@ import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.SpannerGrpc;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -140,7 +146,7 @@ public class SpannerOptionsTest {
     List<? extends UnaryCallSettings<?, ?>> callsWithRetry1 =
         Arrays.asList(stubSettings.listSessionsSettings(), stubSettings.commitSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetry2 =
-        Arrays.asList(stubSettings.batchCreateSessionsSettings());
+        Collections.singletonList(stubSettings.batchCreateSessionsSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetry3 =
         Arrays.asList(
             stubSettings.createSessionSettings(),
@@ -276,7 +282,7 @@ public class SpannerOptionsTest {
             stubSettings.getDatabaseSettings(),
             stubSettings.getDatabaseDdlSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy2 =
-        Arrays.asList(stubSettings.getIamPolicySettings());
+        Collections.singletonList(stubSettings.getIamPolicySettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithNoRetry2 =
         Arrays.asList(
             stubSettings.setIamPolicySettings(), stubSettings.testIamPermissionsSettings());
@@ -375,7 +381,7 @@ public class SpannerOptionsTest {
             stubSettings.getInstanceSettings(),
             stubSettings.listInstancesSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithRetryPolicy2 =
-        Arrays.asList(stubSettings.getIamPolicySettings());
+        Collections.singletonList(stubSettings.getIamPolicySettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithNoRetryPolicy1 =
         Arrays.asList(stubSettings.createInstanceSettings(), stubSettings.updateInstanceSettings());
     List<? extends UnaryCallSettings<?, ?>> callsWithNoRetryPolicy2 =
@@ -439,34 +445,31 @@ public class SpannerOptionsTest {
 
   @Test
   public void testInvalidTransport() {
-    try {
-      SpannerOptions.newBuilder().setTransportOptions(Mockito.mock(TransportOptions.class));
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertThat(ex.getMessage()).isNotNull();
-    }
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                SpannerOptions.newBuilder()
+                    .setTransportOptions(Mockito.mock(TransportOptions.class)));
+    assertThat(e.getMessage()).isNotNull();
   }
 
   @Test
   public void testInvalidSessionLabels() {
     Map<String, String> labels = new HashMap<>();
     labels.put("env", null);
-    try {
-      SpannerOptions.newBuilder().setSessionLabels(labels);
-      fail("Expected exception");
-    } catch (NullPointerException ex) {
-      assertThat(ex.getMessage()).isNotNull();
-    }
+    NullPointerException e =
+        assertThrows(
+            NullPointerException.class, () -> SpannerOptions.newBuilder().setSessionLabels(labels));
+    assertThat(e.getMessage()).isNotNull();
   }
 
   @Test
   public void testNullSessionLabels() {
-    try {
-      SpannerOptions.newBuilder().setSessionLabels(null);
-      fail("Expected exception");
-    } catch (NullPointerException ex) {
-      assertThat(ex.getMessage()).isNotNull();
-    }
+    NullPointerException e =
+        assertThrows(
+            NullPointerException.class, () -> SpannerOptions.newBuilder().setSessionLabels(null));
+    assertThat(e.getMessage()).isNotNull();
   }
 
   @Test
@@ -564,42 +567,74 @@ public class SpannerOptionsTest {
           public String getOptimizerVersion() {
             return "";
           }
+
+          @Nonnull
+          @Override
+          public String getOptimizerStatisticsPackage() {
+            return "";
+          }
         });
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setDefaultQueryOptions(
                 DatabaseId.of("p", "i", "d"),
-                QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                QueryOptions.newBuilder()
+                    .setOptimizerVersion("1")
+                    .setOptimizerStatisticsPackage("custom-package")
+                    .build())
             .setProjectId("p")
             .setCredentials(NoCredentials.getInstance())
             .build();
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "d")))
-        .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("1").build());
+        .isEqualTo(
+            QueryOptions.newBuilder()
+                .setOptimizerVersion("1")
+                .setOptimizerStatisticsPackage("custom-package")
+                .build());
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "o")))
         .isEqualTo(QueryOptions.getDefaultInstance());
 
-    // Now simulate that the user has set an environment variable for the query optimizer version.
+    // Now simulate that the user has set an environment variable for the query optimizer version
+    // and statistics package.
     SpannerOptions.useEnvironment(
         new SpannerOptions.SpannerEnvironment() {
           @Override
           public String getOptimizerVersion() {
             return "2";
           }
+
+          @Nonnull
+          @Override
+          public String getOptimizerStatisticsPackage() {
+            return "env-package";
+          }
         });
-    // Create options with '1' as the default query optimizer version. This should be overridden by
+    // Create options with '1' as the default query optimizer version and 'custom-package' as the
+    // default query optimizer statistics package. These values should be overridden by
     // the environment variable.
     options =
         SpannerOptions.newBuilder()
             .setDefaultQueryOptions(
                 DatabaseId.of("p", "i", "d"),
-                QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                QueryOptions.newBuilder()
+                    .setOptimizerVersion("1")
+                    .setOptimizerStatisticsPackage("custom-package")
+                    .build())
             .setProjectId("p")
             .setCredentials(NoCredentials.getInstance())
             .build();
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "d")))
-        .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("2").build());
+        .isEqualTo(
+            QueryOptions.newBuilder()
+                .setOptimizerVersion("2")
+                .setOptimizerStatisticsPackage("env-package")
+                .build());
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "o")))
-        .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("2").build());
+        .isEqualTo(
+            QueryOptions.newBuilder()
+                .setOptimizerVersion("2")
+                .setOptimizerStatisticsPackage("env-package")
+                .build());
   }
 
   @Test
@@ -625,12 +660,8 @@ public class SpannerOptionsTest {
                 .build()
                 .getCompressorName())
         .isNull();
-    try {
-      SpannerOptions.newBuilder().setCompressorName("foo");
-      fail("missing expected exception");
-    } catch (IllegalArgumentException e) {
-      // ignore, this is the expected exception.
-    }
+    assertThrows(
+        IllegalArgumentException.class, () -> SpannerOptions.newBuilder().setCompressorName("foo"));
   }
 
   @Test
@@ -864,5 +895,17 @@ public class SpannerOptionsTest {
                     SpannerGrpc.getPartitionReadMethod())
                 .getTimeout())
         .isEqualTo(Duration.ofSeconds(6L));
+  }
+
+  @Test
+  public void testCustomAsyncExecutorProvider() {
+    ScheduledExecutorService service = mock(ScheduledExecutorService.class);
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .setAsyncExecutorProvider(FixedCloseableExecutorProvider.create(service))
+            .build();
+    assertSame(service, options.getAsyncExecutorProvider().getExecutor());
   }
 }

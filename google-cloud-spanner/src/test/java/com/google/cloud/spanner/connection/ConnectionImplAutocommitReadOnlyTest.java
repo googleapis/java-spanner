@@ -86,6 +86,10 @@ public class ConnectionImplAutocommitReadOnlyTest {
       return false;
     }
 
+    boolean isSetTransactionTagAllowed() {
+      return false;
+    }
+
     @Override
     boolean isGetTransactionModeAllowed() {
       return false;
@@ -229,6 +233,10 @@ public class ConnectionImplAutocommitReadOnlyTest {
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       // there is no transaction
+      return false;
+    }
+
+    boolean isSetTransactionTagAllowed() {
       return false;
     }
 
@@ -378,6 +386,10 @@ public class ConnectionImplAutocommitReadOnlyTest {
       return false;
     }
 
+    boolean isSetTransactionTagAllowed() {
+      return false;
+    }
+
     @Override
     boolean isGetTransactionModeAllowed() {
       return false;
@@ -521,6 +533,10 @@ public class ConnectionImplAutocommitReadOnlyTest {
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       // connection is in read-only mode
       return mode == TransactionMode.READ_ONLY_TRANSACTION;
+    }
+
+    boolean isSetTransactionTagAllowed() {
+      return false;
     }
 
     @Override
@@ -673,6 +689,10 @@ public class ConnectionImplAutocommitReadOnlyTest {
       return false;
     }
 
+    boolean isSetTransactionTagAllowed() {
+      return false;
+    }
+
     @Override
     boolean isGetTransactionModeAllowed() {
       return false;
@@ -820,6 +840,10 @@ public class ConnectionImplAutocommitReadOnlyTest {
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       // there is no transaction
+      return false;
+    }
+
+    boolean isSetTransactionTagAllowed() {
       return false;
     }
 

@@ -338,6 +338,11 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     return "spanner.googleapis.com:443";
   }
 
+  /** Returns the default mTLS service endpoint. */
+  public static String getDefaultMtlsEndpoint() {
+    return "spanner.mtls.googleapis.com:443";
+  }
+
   /** Returns the default service scopes. */
   public static List<String> getDefaultServiceScopes() {
     return DEFAULT_SERVICE_SCOPES;
@@ -570,6 +575,8 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
       builder.setCredentialsProvider(defaultCredentialsProviderBuilder().build());
       builder.setInternalHeaderProvider(defaultApiClientHeaderProviderBuilder().build());
       builder.setEndpoint(getDefaultEndpoint());
+      builder.setMtlsEndpoint(getDefaultMtlsEndpoint());
+      builder.setSwitchToMtlsEndpointAllowed(true);
 
       return initDefaults(builder);
     }
@@ -676,14 +683,13 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
       return builder;
     }
 
-    // NEXT_MAJOR_VER: remove 'throws Exception'.
     /**
      * Applies the given settings updater function to all of the unary API methods in this service.
      *
      * <p>Note: This method does not support applying settings to streaming methods.
      */
     public Builder applyToAllUnaryMethods(
-        ApiFunction<UnaryCallSettings.Builder<?, ?>, Void> settingsUpdater) throws Exception {
+        ApiFunction<UnaryCallSettings.Builder<?, ?>, Void> settingsUpdater) {
       super.applyToAllUnaryMethods(unaryMethodSettingsBuilders, settingsUpdater);
       return this;
     }

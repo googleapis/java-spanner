@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.GrpcCallContext;
@@ -52,6 +51,7 @@ import javax.annotation.concurrent.GuardedBy;
 abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   private final StatementExecutor statementExecutor;
   private final StatementTimeout statementTimeout;
+  protected final String transactionTag;
 
   /** Class for keeping track of the stacktrace of the caller of an async statement. */
   static final class SpannerAsyncExecutionException extends RuntimeException {
@@ -83,6 +83,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   abstract static class Builder<B extends Builder<?, T>, T extends AbstractBaseUnitOfWork> {
     private StatementExecutor statementExecutor;
     private StatementTimeout statementTimeout = new StatementTimeout();
+    private String transactionTag;
 
     Builder() {}
 
@@ -103,6 +104,11 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
       return self();
     }
 
+    B setTransactionTag(@Nullable String tag) {
+      this.transactionTag = tag;
+      return self();
+    }
+
     abstract T build();
   }
 
@@ -110,6 +116,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     Preconditions.checkState(builder.statementExecutor != null, "No statement executor specified");
     this.statementExecutor = builder.statementExecutor;
     this.statementTimeout = builder.statementTimeout;
+    this.transactionTag = builder.transactionTag;
   }
 
   StatementExecutor getStatementExecutor() {
@@ -140,8 +147,8 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
         callable,
         InterceptorsUsage.INVOKE_INTERCEPTORS,
         applyStatementTimeoutToMethod == null
-            ? Collections.<MethodDescriptor<?, ?>>emptySet()
-            : ImmutableList.<MethodDescriptor<?, ?>>of(applyStatementTimeoutToMethod));
+            ? Collections.emptySet()
+            : ImmutableList.of(applyStatementTimeoutToMethod));
   }
 
   <T> ApiFuture<T> executeStatementAsync(
@@ -228,12 +235,9 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
         ApiFutures.catching(
             f,
             Throwable.class,
-            new ApiFunction<Throwable, T>() {
-              @Override
-              public T apply(Throwable input) {
-                input.addSuppressed(caller);
-                throw SpannerExceptionFactory.asSpannerException(input);
-              }
+            input -> {
+              input.addSuppressed(caller);
+              throw SpannerExceptionFactory.asSpannerException(input);
             },
             MoreExecutors.directExecutor());
     synchronized (this) {

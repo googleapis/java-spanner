@@ -92,4 +92,5 @@ java.common_templates(excludes=[
     '.github/sync-repo-settings.yaml',
     '.github/release-please.yml',
     '.github/blunderbuss.yml',
+    '.github/workflows/samples.yaml',
 ])

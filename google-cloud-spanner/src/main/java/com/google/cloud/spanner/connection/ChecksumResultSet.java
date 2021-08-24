@@ -93,7 +93,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
   /** Simple {@link Callable} for calling {@link ResultSet#next()} */
   private final class NextCallable implements Callable<Boolean> {
     @Override
-    public Boolean call() throws Exception {
+    public Boolean call() {
       transaction
           .getStatementExecutor()
           .invokeInterceptors(
@@ -351,7 +351,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             into.putDouble((Double) value);
             break;
           case NUMERIC:
-            String stringRepresentation = ((BigDecimal) value).toString();
+            String stringRepresentation = value.toString();
             into.putInt(stringRepresentation.length());
             into.putUnencodedChars(stringRepresentation);
             break;

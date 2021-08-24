@@ -54,7 +54,7 @@ public class ITSqlMusicScriptTest extends ITAbstractSpannerTest {
   public void test01_RunScript() throws Exception {
     SqlScriptVerifier verifier = new SqlScriptVerifier();
     try (GenericConnection connection = SpannerGenericConnection.of(createConnection())) {
-      verifier.verifyStatementsInFile(connection, SCRIPT_FILE, SqlScriptVerifier.class);
+      verifier.verifyStatementsInFile(connection, SCRIPT_FILE, SqlScriptVerifier.class, false);
     }
   }
 

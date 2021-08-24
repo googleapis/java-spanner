@@ -91,7 +91,7 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
         ApiFuture<I> input,
         final AsyncTransactionFunction<I, O> function,
         Executor executor) {
-      this(SettableApiFuture.<O>create(), txnFuture, input, function, executor);
+      this(SettableApiFuture.create(), txnFuture, input, function, executor);
     }
 
     AsyncTransactionStatementImpl(

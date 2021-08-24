@@ -34,6 +34,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,7 +47,7 @@ public class ReplaceableForwardingResultSetTest {
     ResultSet delegate =
         ResultSets.forRows(
             Type.struct(StructField.of("test", Type.int64())),
-            Arrays.asList(Struct.newBuilder().set("test").to(1L).build()));
+            Collections.singletonList(Struct.newBuilder().set("test").to(1L).build()));
     return new ReplaceableForwardingResultSet(delegate);
   }
 

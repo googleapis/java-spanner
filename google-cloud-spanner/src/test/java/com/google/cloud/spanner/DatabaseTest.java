@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.DatabaseInfo.State.CREATING;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
@@ -31,7 +32,6 @@ import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
@@ -40,8 +40,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 /** Unit tests for {@link com.google.cloud.spanner.Database}. */
 @RunWith(JUnit4.class)
@@ -64,6 +62,7 @@ public class DatabaseTest {
               .setEncryptionStatus(Status.newBuilder().setCode(Code.OK.getNumber()))
               .setKmsKeyVersion(KMS_KEY_VERSION)
               .build());
+  private static final String DEFAULT_LEADER = "default-leader";
 
   @Mock DatabaseAdminClient dbClient;
 
@@ -72,20 +71,11 @@ public class DatabaseTest {
     initMocks(this);
     when(dbClient.newBackupBuilder(Mockito.any(BackupId.class)))
         .thenAnswer(
-            new Answer<Backup.Builder>() {
-              @Override
-              public Backup.Builder answer(InvocationOnMock invocation) {
-                return new Backup.Builder(dbClient, (BackupId) invocation.getArguments()[0]);
-              }
-            });
+            invocation -> new Backup.Builder(dbClient, (BackupId) invocation.getArguments()[0]));
     when(dbClient.newDatabaseBuilder(Mockito.any(DatabaseId.class)))
         .thenAnswer(
-            new Answer<Database.Builder>() {
-              @Override
-              public Database.Builder answer(InvocationOnMock invocation) throws Throwable {
-                return new Database.Builder(dbClient, (DatabaseId) invocation.getArguments()[0]);
-              }
-            });
+            invocation ->
+                new Database.Builder(dbClient, (DatabaseId) invocation.getArguments()[0]));
   }
 
   @Test
@@ -112,27 +102,13 @@ public class DatabaseTest {
   @Test
   public void fromProto() {
     Database db = createDatabase();
-    assertThat(db.getId().getName()).isEqualTo(NAME);
-    assertThat(db.getState()).isEqualTo(DatabaseInfo.State.CREATING);
-    assertThat(db.getVersionRetentionPeriod()).isEqualTo(VERSION_RETENTION_PERIOD);
-    assertThat(db.getEarliestVersionTime()).isEqualTo(EARLIEST_VERSION_TIME);
-    assertThat(db.getEncryptionConfig())
-        .isEqualTo(EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME));
-  }
-
-  @Test
-  public void testFromProtoWithEncryptionConfig() {
-    com.google.spanner.admin.database.v1.Database proto =
-        com.google.spanner.admin.database.v1.Database.newBuilder()
-            .setName(NAME)
-            .setEncryptionConfig(
-                com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder()
-                    .setKmsKeyName("some-key")
-                    .build())
-            .build();
-    Database db = Database.fromProto(proto, dbClient);
-    assertThat(db.getEncryptionConfig()).isNotNull();
-    assertThat(db.getEncryptionConfig().getKmsKeyName()).isEqualTo("some-key");
+    assertEquals(NAME, db.getId().getName());
+    assertEquals(CREATING, db.getState());
+    assertEquals(VERSION_RETENTION_PERIOD, db.getVersionRetentionPeriod());
+    assertEquals(EARLIEST_VERSION_TIME, db.getEarliestVersionTime());
+    assertEquals(
+        EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME), db.getEncryptionConfig());
+    assertEquals(DEFAULT_LEADER, db.getDefaultLeader());
   }
 
   @Test
@@ -148,6 +124,17 @@ public class DatabaseTest {
     assertThat(db.getEncryptionConfig().getKmsKeyName())
         .isEqualTo(
             "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key");
+  }
+
+  @Test
+  public void testBuildWithDefaultLeader() {
+    Database db =
+        dbClient
+            .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+            .setDefaultLeader(DEFAULT_LEADER)
+            .build();
+
+    assertEquals(DEFAULT_LEADER, db.getDefaultLeader());
   }
 
   @Test
@@ -175,7 +162,7 @@ public class DatabaseTest {
     Database database =
         new Database(
             DatabaseId.of("test-project", "test-instance", "test-database"), State.READY, dbClient);
-    Iterable<String> permissions = Arrays.asList("read");
+    Iterable<String> permissions = Collections.singletonList("read");
     database.testIAMPermissions(permissions);
     verify(dbClient).testDatabaseIAMPermissions("test-instance", "test-database", permissions);
   }
@@ -198,6 +185,7 @@ public class DatabaseTest {
             .setVersionRetentionPeriod(VERSION_RETENTION_PERIOD)
             .setEncryptionConfig(ENCRYPTION_CONFIG)
             .addAllEncryptionInfo(ENCRYPTION_INFOS)
+            .setDefaultLeader(DEFAULT_LEADER)
             .build();
     return Database.fromProto(proto, dbClient);
   }

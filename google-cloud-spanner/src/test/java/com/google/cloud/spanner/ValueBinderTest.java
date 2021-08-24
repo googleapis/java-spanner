@@ -28,6 +28,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -71,8 +72,9 @@ public class ValueBinderTest {
           // Array of structs.
           assertThat(binderMethod.getParameterTypes()).hasLength(2);
 
-          Value expected = (Value) method.invoke(Value.class, structType, Arrays.asList(struct));
-          assertThat(binderMethod.invoke(binder, structType, Arrays.asList(struct)))
+          Value expected =
+              (Value) method.invoke(Value.class, structType, Collections.singletonList(struct));
+          assertThat(binderMethod.invoke(binder, structType, Collections.singletonList(struct)))
               .isEqualTo(lastReturnValue);
           assertThat(lastValue).isEqualTo(expected);
 
@@ -113,7 +115,7 @@ public class ValueBinderTest {
       } else if (binderMethod.getParameterTypes().length == 1) {
         // Test unary null.
         if (!binderMethod.getParameterTypes()[0].isPrimitive()) {
-          if (method.getName().toLowerCase().equals(JSON_METHOD_NAME)) {
+          if (method.getName().equalsIgnoreCase(JSON_METHOD_NAME)) {
             // Special case for json to change the method from ValueBinder.to(String) to
             // ValueBinder.to(Value)
             binderMethod = ValueBinder.class.getMethod("to", Value.class);
@@ -129,7 +131,7 @@ public class ValueBinderTest {
         }
         // Test unary non-null.
         Object defaultObject;
-        if (method.getName().toLowerCase().equals(JSON_METHOD_NAME)) {
+        if (method.getName().equalsIgnoreCase(JSON_METHOD_NAME)) {
           defaultObject = defaultJson();
           binderMethod = ValueBinder.class.getMethod("to", Value.class);
           assertThat(binderMethod.invoke(binder, Value.json(defaultJson())))

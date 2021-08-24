@@ -165,7 +165,13 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    *
    *
    * <pre>
-   * Encoded as `string`, in JSON format.
+   * Encoded as a JSON-formatted 'string' as described in RFC 7159. The
+   * following rules will be applied when parsing JSON input:
+   * - Whitespace will be stripped from the document.
+   * - If a JSON object has duplicate keys, only the first key will be
+   *   preserved.
+   * - Members of a JSON object are not guaranteed to have their order
+   *   preserved. JSON array elements will have their order preserved.
    * </pre>
    *
    * <code>JSON = 11;</code>
@@ -306,7 +312,13 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    *
    *
    * <pre>
-   * Encoded as `string`, in JSON format.
+   * Encoded as a JSON-formatted 'string' as described in RFC 7159. The
+   * following rules will be applied when parsing JSON input:
+   * - Whitespace will be stripped from the document.
+   * - If a JSON object has duplicate keys, only the first key will be
+   *   preserved.
+   * - Members of a JSON object are not guaranteed to have their order
+   *   preserved. JSON array elements will have their order preserved.
    * </pre>
    *
    * <code>JSON = 11;</code>

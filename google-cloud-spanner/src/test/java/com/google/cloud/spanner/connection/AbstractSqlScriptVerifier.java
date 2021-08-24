@@ -28,6 +28,7 @@ import static org.junit.Assert.fail;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * Base class for SQL Script verifiers for both the generic Connection API and JDBC connections
@@ -180,8 +182,6 @@ public abstract class AbstractSqlScriptVerifier {
 
   private final GenericConnectionProvider connectionProvider;
 
-  private final Map<String, Object> variables = new HashMap<>();
-
   private final boolean logStatements;
 
   /**
@@ -212,9 +212,12 @@ public abstract class AbstractSqlScriptVerifier {
    *     semicolon (;)
    * @param resourceClass The class that should be used to locate the resource specified by the file
    *     name
+   * @param allowParallel indicates whether the batches in the given script may be executed in
+   *     parallel
    */
-  public void verifyStatementsInFile(String filename, Class<?> resourceClass) throws Exception {
-    verifyStatementsInFile(connectionProvider.getConnection(), filename, resourceClass);
+  public void verifyStatementsInFile(String filename, Class<?> resourceClass, boolean allowParallel)
+      throws Exception {
+    verifyStatementsInFile(null, filename, resourceClass, allowParallel);
   }
 
   /**
@@ -223,42 +226,122 @@ public abstract class AbstractSqlScriptVerifier {
    * Statements without an @EXPECT statement will be executed and its result will be ignored, unless
    * the statement throws an exception, which will fail the test case.
    *
-   * @param connection The {@link com.google.cloud.spanner.jdbc.Connection} to execute the
+   * <p>The {@link com.google.cloud.spanner.jdbc.Connection}s that the statements are executed on
+   * must be created by a {@link GenericConnectionProvider}
+   *
+   * @param filename The file name containing the statements. Statements must be separated by a
+   *     semicolon (;)
+   * @param resourceClass The class that should be used to locate the resource specified by the file
+   *     name
+   * @deprecated use {@link AbstractSqlScriptVerifier#verifyStatementsInFile(String, Class,
+   *     boolean)} instead. This method does not allow parallel batch execution.
+   */
+  @Deprecated
+  public void verifyStatementsInFile(String filename, Class<?> resourceClass) throws Exception {
+    this.verifyStatementsInFile(filename, resourceClass, false);
+  }
+
+  /**
+   * Reads sql statements from the specified file name and executes and verifies these. Statements
+   * that are preceded by an @EXPECT statement are verified against the @EXPECT specification.
+   * Statements without an @EXPECT statement will be executed and its result will be ignored, unless
+   * the statement throws an exception, which will fail the test case.
+   *
+   * @param providedConnection The {@link com.google.cloud.spanner.jdbc.Connection} to execute the
    *     statements against
    * @param filename The file name containing the statements. Statements must be separated by a
    *     semicolon (;)
    * @param resourceClass The class that defines the package where to find the input file
+   * @deprecated use {@link AbstractSqlScriptVerifier#verifyStatementsInFile(GenericConnection,
+   *     String, Class)})} instead. This method does not allow parallel batch execution.
    */
+  @Deprecated
   public void verifyStatementsInFile(
-      GenericConnection connection, String filename, Class<?> resourceClass) throws Exception {
-    try {
-      List<String> statements = readStatementsFromFile(filename, resourceClass);
-      for (String statement : statements) {
-        String sql = statement.trim();
-        if (logStatements) {
-          System.out.println(
-              "\n------------------------------------------------------\n"
-                  + new Date()
-                  + " ---- verifying statement:");
-          System.out.println(sql);
-        }
-        if (sql.equalsIgnoreCase("NEW_CONNECTION")) {
-          connection.close();
-          connection = connectionProvider.getConnection();
-          variables.clear();
-        } else {
-          verifyStatement(connection, sql);
-        }
-      }
-    } finally {
-      if (connection != null) {
-        connection.close();
-      }
-    }
+      GenericConnection providedConnection, String filename, Class<?> resourceClass)
+      throws Exception {
+    this.verifyStatementsInFile(providedConnection, filename, resourceClass, false);
   }
 
-  private void verifyStatement(GenericConnection connection, String statement) throws Exception {
-    statement = replaceVariables(statement);
+  /**
+   * Reads sql statements from the specified file name and executes and verifies these. Statements
+   * that are preceded by an @EXPECT statement are verified against the @EXPECT specification.
+   * Statements without an @EXPECT statement will be executed and its result will be ignored, unless
+   * the statement throws an exception, which will fail the test case.
+   *
+   * @param providedConnection The {@link com.google.cloud.spanner.jdbc.Connection} to execute the
+   *     statements against
+   * @param filename The file name containing the statements. Statements must be separated by a
+   *     semicolon (;)
+   * @param resourceClass The class that defines the package where to find the input file
+   * @param allowParallel indicates whether the batches in the given script may be executed in
+   *     parallel
+   */
+  public void verifyStatementsInFile(
+      GenericConnection providedConnection,
+      String filename,
+      Class<?> resourceClass,
+      boolean allowParallel)
+      throws Exception {
+    List<String> statements = readStatementsFromFile(filename, resourceClass);
+    List<List<String>> batches = toBatches(statements);
+
+    Stream<List<String>> stream;
+    if (!allowParallel || logStatements) {
+      stream = batches.stream();
+    } else {
+      stream = batches.parallelStream();
+    }
+    stream.forEach(
+        batch -> {
+          try {
+            Map<String, Object> variables = new HashMap<>();
+            GenericConnection connection;
+            if (providedConnection == null) {
+              connection = connectionProvider.getConnection();
+            } else {
+              connection = providedConnection;
+            }
+            for (String sql : batch) {
+              if (logStatements) {
+                System.out.println(
+                    "\n------------------------------------------------------\n"
+                        + new Date()
+                        + " ---- verifying statement:");
+                System.out.println(sql);
+              }
+              verifyStatement(variables, connection, sql);
+            }
+            connection.close();
+          } catch (Exception e) {
+            throw SpannerExceptionFactory.asSpannerException(e);
+          }
+        });
+  }
+
+  private List<List<String>> toBatches(List<String> statements) {
+    List<List<String>> batches = new ArrayList<>();
+    List<String> currentBatch = new ArrayList<>();
+    for (String statement : statements) {
+      String sql = statement.trim();
+      if (sql.equalsIgnoreCase("NEW_CONNECTION")) {
+        if (!currentBatch.isEmpty()) {
+          batches.add(currentBatch);
+        }
+        currentBatch = new ArrayList<>();
+      } else {
+        currentBatch.add(sql);
+      }
+    }
+    if (!currentBatch.isEmpty()) {
+      batches.add(currentBatch);
+    }
+    return batches;
+  }
+
+  private void verifyStatement(
+      Map<String, Object> variables, GenericConnection connection, String statement)
+      throws Exception {
+    statement = replaceVariables(variables, statement);
     String statementWithoutComments = StatementParser.removeCommentsAndTrim(statement);
     Matcher verifyMatcher = VERIFY_PATTERN.matcher(statementWithoutComments);
     Matcher putMatcher = PUT_PATTERN.matcher(statementWithoutComments);
@@ -350,7 +433,7 @@ public abstract class AbstractSqlScriptVerifier {
     }
   }
 
-  private String replaceVariables(String sql) {
+  private String replaceVariables(Map<String, Object> variables, String sql) {
     for (String key : variables.keySet()) {
       sql = sql.replaceAll("%%" + key + "%%", variables.get(key).toString());
     }

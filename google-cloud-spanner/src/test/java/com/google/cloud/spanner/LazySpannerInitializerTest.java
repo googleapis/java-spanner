@@ -17,7 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.util.concurrent.Futures;
@@ -62,20 +62,8 @@ public class LazySpannerInitializerTest {
             throw new IOException("Could not find credentials file");
           }
         };
-    Throwable t1 = null;
-    try {
-      initializer.get();
-      fail("Missing expected exception");
-    } catch (Throwable t) {
-      t1 = t;
-    }
-    Throwable t2 = null;
-    try {
-      initializer.get();
-      fail("Missing expected exception");
-    } catch (Throwable t) {
-      t2 = t;
-    }
+    Throwable t1 = assertThrows(Throwable.class, () -> initializer.get());
+    Throwable t2 = assertThrows(Throwable.class, () -> initializer.get());
     assertThat(t1).isSameInstanceAs(t2);
   }
 

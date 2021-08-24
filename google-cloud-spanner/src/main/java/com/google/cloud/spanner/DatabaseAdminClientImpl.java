@@ -16,11 +16,9 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.ProtoOperationTransformers;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.longrunning.OperationFutureImpl;
-import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.cloud.Policy.DefaultMarshaller;
@@ -108,22 +106,15 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
     return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
-        new ApiFunction<OperationSnapshot, Database>() {
-          @Override
-          public Database apply(OperationSnapshot snapshot) {
-            return Database.fromProto(
+        snapshot ->
+            Database.fromProto(
                 ProtoOperationTransformers.ResponseTransformer.create(
                         com.google.spanner.admin.database.v1.Database.class)
                     .apply(snapshot),
-                DatabaseAdminClientImpl.this);
-          }
-        },
+                DatabaseAdminClientImpl.this),
         ProtoOperationTransformers.MetadataTransformer.create(RestoreDatabaseMetadata.class),
-        new ApiFunction<Exception, Database>() {
-          @Override
-          public Database apply(Exception e) {
-            throw SpannerExceptionFactory.newSpannerException(e);
-          }
+        e -> {
+          throw SpannerExceptionFactory.newSpannerException(e);
         });
   }
 
@@ -154,30 +145,24 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
     return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
-        new ApiFunction<OperationSnapshot, Backup>() {
-          @Override
-          public Backup apply(OperationSnapshot snapshot) {
-            com.google.spanner.admin.database.v1.Backup proto =
-                ProtoOperationTransformers.ResponseTransformer.create(
-                        com.google.spanner.admin.database.v1.Backup.class)
-                    .apply(snapshot);
-            return Backup.fromProto(
-                com.google.spanner.admin.database.v1.Backup.newBuilder(proto)
-                    .setName(proto.getName())
-                    .setExpireTime(proto.getExpireTime())
-                    .setVersionTime(proto.getVersionTime())
-                    .setState(proto.getState())
-                    .setEncryptionInfo(proto.getEncryptionInfo())
-                    .build(),
-                DatabaseAdminClientImpl.this);
-          }
+        snapshot -> {
+          com.google.spanner.admin.database.v1.Backup proto =
+              ProtoOperationTransformers.ResponseTransformer.create(
+                      com.google.spanner.admin.database.v1.Backup.class)
+                  .apply(snapshot);
+          return Backup.fromProto(
+              com.google.spanner.admin.database.v1.Backup.newBuilder(proto)
+                  .setName(proto.getName())
+                  .setExpireTime(proto.getExpireTime())
+                  .setVersionTime(proto.getVersionTime())
+                  .setState(proto.getState())
+                  .setEncryptionInfo(proto.getEncryptionInfo())
+                  .build(),
+              DatabaseAdminClientImpl.this);
         },
         ProtoOperationTransformers.MetadataTransformer.create(CreateBackupMetadata.class),
-        new ApiFunction<Exception, Backup>() {
-          @Override
-          public Backup apply(Exception e) {
-            throw SpannerExceptionFactory.newSpannerException(e);
-          }
+        e -> {
+          throw SpannerExceptionFactory.newSpannerException(e);
         });
   }
 
@@ -311,22 +296,15 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
     return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
-        new ApiFunction<OperationSnapshot, Database>() {
-          @Override
-          public Database apply(OperationSnapshot snapshot) {
-            return Database.fromProto(
+        snapshot ->
+            Database.fromProto(
                 ProtoOperationTransformers.ResponseTransformer.create(
                         com.google.spanner.admin.database.v1.Database.class)
                     .apply(snapshot),
-                DatabaseAdminClientImpl.this);
-          }
-        },
+                DatabaseAdminClientImpl.this),
         ProtoOperationTransformers.MetadataTransformer.create(CreateDatabaseMetadata.class),
-        new ApiFunction<Exception, Database>() {
-          @Override
-          public Database apply(Exception e) {
-            throw SpannerExceptionFactory.newSpannerException(e);
-          }
+        e -> {
+          throw SpannerExceptionFactory.newSpannerException(e);
         });
   }
 
@@ -350,19 +328,13 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
     return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
-        new ApiFunction<OperationSnapshot, Void>() {
-          @Override
-          public Void apply(OperationSnapshot snapshot) {
-            ProtoOperationTransformers.ResponseTransformer.create(Empty.class).apply(snapshot);
-            return null;
-          }
+        snapshot -> {
+          ProtoOperationTransformers.ResponseTransformer.create(Empty.class).apply(snapshot);
+          return null;
         },
         ProtoOperationTransformers.MetadataTransformer.create(UpdateDatabaseDdlMetadata.class),
-        new ApiFunction<Exception, Void>() {
-          @Override
-          public Void apply(Exception e) {
-            throw SpannerExceptionFactory.newSpannerException(e);
-          }
+        e -> {
+          throw SpannerExceptionFactory.newSpannerException(e);
         });
   }
 

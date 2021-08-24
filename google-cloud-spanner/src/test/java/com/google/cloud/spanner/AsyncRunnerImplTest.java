@@ -19,8 +19,8 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -68,24 +68,18 @@ public class AsyncRunnerImplTest {
   public void testGetCommitTimestampReturnsErrorBeforeRun() {
     TransactionRunnerImpl delegate = mock(TransactionRunnerImpl.class);
     AsyncRunnerImpl runner = new AsyncRunnerImpl(delegate);
-    try {
-      runner.getCommitTimestamp();
-      fail("missing expected exception");
-    } catch (IllegalStateException e) {
-      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> runner.getCommitTimestamp());
+    assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
   }
 
   @Test
   public void testGetCommitResponseReturnsErrorBeforeRun() {
     TransactionRunnerImpl delegate = mock(TransactionRunnerImpl.class);
     AsyncRunnerImpl runner = new AsyncRunnerImpl(delegate);
-    try {
-      runner.getCommitResponse();
-      fail("missing expected exception");
-    } catch (IllegalStateException e) {
-      assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> runner.getCommitResponse());
+    assertTrue(e.getMessage().contains("runAsync() has not yet been called"));
   }
 
   @Test
@@ -99,12 +93,9 @@ public class AsyncRunnerImplTest {
     AsyncRunnerImpl runner = new AsyncRunnerImpl(delegate);
     runner.runAsync(txn -> ApiFutures.immediateFailedFuture(expectedException), executor);
 
-    try {
-      get(runner.getCommitResponse());
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertSame(expectedException, e);
-    }
+    SpannerException e =
+        assertThrows(SpannerException.class, () -> get(runner.getCommitResponse()));
+    assertSame(expectedException, e);
   }
 
   @SuppressWarnings("unchecked")
@@ -117,11 +108,10 @@ public class AsyncRunnerImplTest {
     AsyncRunnerImpl runner = new AsyncRunnerImpl(delegate);
     runner.runAsync(txn -> ApiFutures.immediateFuture(result), executor);
 
-    try {
-      runner.runAsync(txn -> ApiFutures.immediateFuture(null), executor);
-      fail("missing expected exception");
-    } catch (IllegalStateException e) {
-      assertTrue(e.getMessage().contains("runAsync() can only be called once"));
-    }
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> runner.runAsync(txn -> ApiFutures.immediateFuture(null), executor));
+    assertTrue(e.getMessage().contains("runAsync() can only be called once"));
   }
 }

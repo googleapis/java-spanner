@@ -100,7 +100,7 @@ public class Operation<R, M> {
 
   static <R, M> Operation<R, M> create(
       SpannerRpc rpc, com.google.longrunning.Operation proto, Parser<R, M> parser) {
-    return Operation.<R, M>create(rpc, proto, parser, CurrentMillisClock.getDefaultClock());
+    return Operation.create(rpc, proto, parser, CurrentMillisClock.getDefaultClock());
   }
 
   static <R, M> Operation<R, M> create(
@@ -109,13 +109,13 @@ public class Operation<R, M> {
     String name = proto.getName();
     if (proto.getDone()) {
       if (proto.getResultCase() == ResultCase.ERROR) {
-        return Operation.<R, M>failed(rpc, name, proto.getError(), metadata, parser, clock);
+        return Operation.failed(rpc, name, proto.getError(), metadata, parser, clock);
       } else {
-        return Operation.<R, M>successful(
+        return Operation.successful(
             rpc, name, metadata, parser.parseResult(proto.getResponse()), parser, clock);
       }
     } else {
-      return Operation.<R, M>pending(rpc, name, metadata, parser, clock);
+      return Operation.pending(rpc, name, metadata, parser, clock);
     }
   }
 
@@ -125,7 +125,7 @@ public class Operation<R, M> {
       return this;
     }
     com.google.longrunning.Operation proto = rpc.getOperation(name);
-    return Operation.<R, M>create(rpc, proto, parser);
+    return Operation.create(rpc, proto, parser);
   }
 
   /**

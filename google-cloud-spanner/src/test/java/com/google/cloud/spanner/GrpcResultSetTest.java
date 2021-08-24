@@ -20,7 +20,9 @@ import static com.google.common.testing.SerializableTester.reserialize;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -40,6 +42,7 @@ import com.google.spanner.v1.Transaction;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -112,24 +115,16 @@ public class GrpcResultSetTest {
     SpannerException t =
         SpannerExceptionFactory.newSpannerException(ErrorCode.DEADLINE_EXCEEDED, "outatime");
     consumer.onError(t);
-    try {
-      resultSet.next();
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
-      assertThat(ex.getMessage()).contains("outatime");
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> resultSet.next());
+    assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
+    assertThat(e.getMessage()).contains("outatime");
   }
 
   @Test
   public void noMetadata() {
     consumer.onCompleted();
-    try {
-      resultSet.next();
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> resultSet.next());
+    assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
   }
 
   @Test
@@ -208,12 +203,8 @@ public class GrpcResultSetTest {
             .setChunkedValue(true)
             .build());
     consumer.onCompleted();
-    try {
-      resultSet.next();
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-    }
+    SpannerException e = assertThrows(SpannerException.class, () -> resultSet.next());
+    assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
   }
 
   @Test
@@ -279,98 +270,58 @@ public class GrpcResultSetTest {
 
   @Test
   public void multiResponseChunkingBoolArray() {
-    List<Boolean> beforeValue = Arrays.asList(true);
+    List<Boolean> beforeValue = Collections.singletonList(true);
     List<Boolean> chunkedValue = Arrays.asList(false, null, true, true, true, null, null, false);
-    List<Boolean> afterValue = Arrays.asList(true);
+    List<Boolean> afterValue = Collections.singletonList(true);
     doArrayTest(
         beforeValue,
         chunkedValue,
         afterValue,
         Type.bool(),
-        new Function<List<Boolean>, com.google.protobuf.Value>() {
-          @Override
-          public com.google.protobuf.Value apply(List<Boolean> input) {
-            return Value.boolArray(input).toProto();
-          }
-        },
-        new Function<StructReader, List<Boolean>>() {
-          @Override
-          public List<Boolean> apply(StructReader input) {
-            return input.getBooleanList(0);
-          }
-        });
+        input -> Value.boolArray(input).toProto(),
+        input -> input.getBooleanList(0));
   }
 
   @Test
   public void multiResponseChunkingInt64Array() {
-    List<Long> beforeValue = Arrays.asList(10L);
+    List<Long> beforeValue = Collections.singletonList(10L);
     List<Long> chunkedValue = Arrays.asList(1L, 2L, null, null, 5L, null, 7L, 8L);
-    List<Long> afterValue = Arrays.asList(20L);
+    List<Long> afterValue = Collections.singletonList(20L);
     doArrayTest(
         beforeValue,
         chunkedValue,
         afterValue,
         Type.int64(),
-        new Function<List<Long>, com.google.protobuf.Value>() {
-          @Override
-          public com.google.protobuf.Value apply(List<Long> input) {
-            return Value.int64Array(input).toProto();
-          }
-        },
-        new Function<StructReader, List<Long>>() {
-          @Override
-          public List<Long> apply(StructReader input) {
-            return input.getLongList(0);
-          }
-        });
+        input -> Value.int64Array(input).toProto(),
+        input -> input.getLongList(0));
   }
 
   @Test
   public void multiResponseChunkingFloat64Array() {
-    List<Double> beforeValue = Arrays.asList(10.0);
+    List<Double> beforeValue = Collections.singletonList(10.0);
     List<Double> chunkedValue = Arrays.asList(null, 2.0, 3.0, 4.0, null, 6.0, 7.0, null);
-    List<Double> afterValue = Arrays.asList(20.0);
+    List<Double> afterValue = Collections.singletonList(20.0);
     doArrayTest(
         beforeValue,
         chunkedValue,
         afterValue,
         Type.float64(),
-        new Function<List<Double>, com.google.protobuf.Value>() {
-          @Override
-          public com.google.protobuf.Value apply(List<Double> input) {
-            return Value.float64Array(input).toProto();
-          }
-        },
-        new Function<StructReader, List<Double>>() {
-          @Override
-          public List<Double> apply(StructReader input) {
-            return input.getDoubleList(0);
-          }
-        });
+        input -> Value.float64Array(input).toProto(),
+        input -> input.getDoubleList(0));
   }
 
   @Test
   public void multiResponseChunkingStringArray() {
-    List<String> beforeValue = Arrays.asList("before");
+    List<String> beforeValue = Collections.singletonList("before");
     List<String> chunkedValue = Arrays.asList("a", "b", null, "d", null, "f", null, "h");
-    List<String> afterValue = Arrays.asList("after");
+    List<String> afterValue = Collections.singletonList("after");
     doArrayTest(
         beforeValue,
         chunkedValue,
         afterValue,
         Type.string(),
-        new Function<List<String>, com.google.protobuf.Value>() {
-          @Override
-          public com.google.protobuf.Value apply(List<String> input) {
-            return Value.stringArray(input).toProto();
-          }
-        },
-        new Function<StructReader, List<String>>() {
-          @Override
-          public List<String> apply(StructReader input) {
-            return input.getStringList(0);
-          }
-        });
+        input -> Value.stringArray(input).toProto(),
+        input -> input.getStringList(0));
   }
 
   private static ByteArray b(String data) {
@@ -379,27 +330,17 @@ public class GrpcResultSetTest {
 
   @Test
   public void multiResponseChunkingBytesArray() {
-    List<ByteArray> beforeValue = Arrays.asList(b("before"));
+    List<ByteArray> beforeValue = Collections.singletonList(b("before"));
     List<ByteArray> chunkedValue =
         Arrays.asList(b("a"), b("b"), null, b("d"), null, b("f"), null, b("h"));
-    List<ByteArray> afterValue = Arrays.asList(b("after"));
+    List<ByteArray> afterValue = Collections.singletonList(b("after"));
     doArrayTest(
         beforeValue,
         chunkedValue,
         afterValue,
         Type.bytes(),
-        new Function<List<ByteArray>, com.google.protobuf.Value>() {
-          @Override
-          public com.google.protobuf.Value apply(List<ByteArray> input) {
-            return Value.bytesArray(input).toProto();
-          }
-        },
-        new Function<StructReader, List<ByteArray>>() {
-          @Override
-          public List<ByteArray> apply(StructReader input) {
-            return input.getBytesList(0);
-          }
-        });
+        input -> Value.bytesArray(input).toProto(),
+        input -> input.getBytesList(0));
   }
 
   private static Struct s(String a, long b) {
@@ -411,28 +352,18 @@ public class GrpcResultSetTest {
     final Type elementType =
         Type.struct(
             Type.StructField.of("a", Type.string()), Type.StructField.of("b", Type.int64()));
-    List<Struct> beforeValue = Arrays.asList(s("before", 10));
+    List<Struct> beforeValue = Collections.singletonList(s("before", 10));
     List<Struct> chunkedValue =
         Arrays.asList(
             s("a", 1), s("b", 2), s("c", 3), null, s(null, 5), null, s("g", 7), s("h", 8));
-    List<Struct> afterValue = Arrays.asList(s("after", 20));
+    List<Struct> afterValue = Collections.singletonList(s("after", 20));
     doArrayTest(
         beforeValue,
         chunkedValue,
         afterValue,
         elementType,
-        new Function<List<Struct>, com.google.protobuf.Value>() {
-          @Override
-          public com.google.protobuf.Value apply(List<Struct> input) {
-            return Value.structArray(elementType, input).toProto();
-          }
-        },
-        new Function<StructReader, List<Struct>>() {
-          @Override
-          public List<Struct> apply(StructReader input) {
-            return input.getStructList(0);
-          }
-        });
+        input -> Value.structArray(elementType, input).toProto(),
+        input -> input.getStructList(0));
   }
 
   @Test
@@ -608,7 +539,7 @@ public class GrpcResultSetTest {
         Value.struct(s(null, 30)),
         Value.struct(structType, null),
         Value.structArray(structType, Arrays.asList(s("def", 10), null)),
-        Value.structArray(structType, Arrays.asList((Struct) null)),
+        Value.structArray(structType, Collections.singletonList(null)),
         Value.structArray(structType, null));
   }
 
@@ -620,7 +551,7 @@ public class GrpcResultSetTest {
                 Type.StructField.of("a", Type.string()), Type.StructField.of("b", Type.int64())));
 
     Struct nestedStruct = s("1", 2L);
-    Value struct = Value.structArray(structType, Arrays.asList(nestedStruct));
+    Value struct = Value.structArray(structType, Collections.singletonList(nestedStruct));
     verifySerialization(
         new Function<Value, com.google.protobuf.Value>() {
 

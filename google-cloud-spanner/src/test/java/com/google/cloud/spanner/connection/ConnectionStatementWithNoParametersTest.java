@@ -127,6 +127,21 @@ public class ConnectionStatementWithNoParametersTest {
   }
 
   @Test
+  public void testExecuteGetOptimizerStatisticsPackage() {
+    ParsedStatement statement =
+        parser.parse(Statement.of("show variable optimizer_statistics_package"));
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
+    when(executor.getConnection()).thenReturn(connection);
+    when(executor.statementShowOptimizerStatisticsPackage()).thenCallRealMethod();
+    when(connection.getOptimizerStatisticsPackage()).thenReturn("custom-package");
+    statement
+        .getClientSideStatement()
+        .execute(executor, "show variable optimizer_statistics_package");
+    verify(connection, times(1)).getOptimizerStatisticsPackage();
+  }
+
+  @Test
   public void testExecuteBegin() {
     ParsedStatement subject = parser.parse(Statement.of("begin"));
     for (String statement : subject.getClientSideStatement().getExampleStatements()) {

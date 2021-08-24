@@ -125,7 +125,7 @@ class SessionClient implements AutoCloseable {
 
     @Override
     public void run() {
-      List<SessionImpl> sessions = null;
+      List<SessionImpl> sessions;
       int remainingSessionsToCreate = sessionCount;
       Span span = SpannerImpl.tracer.spanBuilder(SpannerImpl.BATCH_CREATE_SESSIONS).startSpan();
       try (Scope s = SpannerImpl.tracer.withSpan(span)) {

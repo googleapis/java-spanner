@@ -18,7 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Mockito.mock;
@@ -226,16 +226,15 @@ public class PartitionedDmlTransactionTest {
         .thenReturn(stream1);
     when(ticker.read()).thenReturn(0L, 1L, TimeUnit.NANOSECONDS.convert(10L, TimeUnit.MINUTES));
 
-    try {
-      tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10));
-      fail("missing expected DEADLINE_EXCEEDED exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
-      verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap());
-      verify(rpc)
-          .executeStreamingPartitionedDml(
-              Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10)));
+    assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
+    verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap());
+    verify(rpc)
+        .executeStreamingPartitionedDml(
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
   }
 
   @Test
@@ -255,16 +254,15 @@ public class PartitionedDmlTransactionTest {
         .thenReturn(stream1);
     when(ticker.read()).thenReturn(0L, 1L, TimeUnit.NANOSECONDS.convert(10L, TimeUnit.MINUTES));
 
-    try {
-      tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10));
-      fail("missing expected DEADLINE_EXCEEDED exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
-      verify(rpc, times(2)).beginTransaction(any(BeginTransactionRequest.class), anyMap());
-      verify(rpc)
-          .executeStreamingPartitionedDml(
-              Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10)));
+    assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
+    verify(rpc, times(2)).beginTransaction(any(BeginTransactionRequest.class), anyMap());
+    verify(rpc)
+        .executeStreamingPartitionedDml(
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
   }
 
   @Test
@@ -288,24 +286,23 @@ public class PartitionedDmlTransactionTest {
               long ticks = 0L;
 
               @Override
-              public Long answer(InvocationOnMock invocation) throws Throwable {
+              public Long answer(InvocationOnMock invocation) {
                 return TimeUnit.NANOSECONDS.convert(++ticks, TimeUnit.MINUTES);
               }
             });
 
-    try {
-      tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10));
-      fail("missing expected DEADLINE_EXCEEDED exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
-      // It should start a transaction exactly 10 times (10 ticks == 10 minutes).
-      verify(rpc, times(10)).beginTransaction(any(BeginTransactionRequest.class), anyMap());
-      // The last transaction should timeout before it starts the actual statement execution, which
-      // means that the execute method is only executed 9 times.
-      verify(rpc, times(9))
-          .executeStreamingPartitionedDml(
-              Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10)));
+    assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
+    // It should start a transaction exactly 10 times (10 ticks == 10 minutes).
+    verify(rpc, times(10)).beginTransaction(any(BeginTransactionRequest.class), anyMap());
+    // The last transaction should timeout before it starts the actual statement execution, which
+    // means that the execute method is only executed 9 times.
+    verify(rpc, times(9))
+        .executeStreamingPartitionedDml(
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
   }
 
   @Test
@@ -363,17 +360,16 @@ public class PartitionedDmlTransactionTest {
             Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class)))
         .thenReturn(stream1);
 
-    try {
-      PartitionedDmlTransaction tx = new PartitionedDmlTransaction(session, rpc, ticker);
-      tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10));
-      fail("missing expected INTERNAL exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INTERNAL);
-      verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap());
-      verify(rpc)
-          .executeStreamingPartitionedDml(
-              Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
-    }
+    PartitionedDmlTransaction tx = new PartitionedDmlTransaction(session, rpc, ticker);
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10)));
+    assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
+    verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap());
+    verify(rpc)
+        .executeStreamingPartitionedDml(
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
   }
 
   @Test

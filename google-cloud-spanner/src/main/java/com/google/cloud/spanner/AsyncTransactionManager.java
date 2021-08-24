@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -98,31 +99,21 @@ public interface AsyncTransactionManager extends AutoCloseable {
    * <p>Example usage:
    *
    * <pre>{@code
-   * TransactionContextFuture txnFuture = manager.beginAsync();
    * final String column = "FirstName";
-   * txnFuture.then(
-   *         new AsyncTransactionFunction<Void, Struct>() {
-   *           @Override
-   *           public ApiFuture<Struct> apply(TransactionContext txn, Void input)
-   *               throws Exception {
-   *             return txn.readRowAsync(
-   *                 "Singers", Key.of(singerId), Collections.singleton(column));
-   *           }
-   *         })
-   *     .then(
-   *         new AsyncTransactionFunction<Struct, Void>() {
-   *           @Override
-   *           public ApiFuture<Void> apply(TransactionContext txn, Struct input)
-   *               throws Exception {
-   *             String name = input.getString(column);
-   *             txn.buffer(
-   *                 Mutation.newUpdateBuilder("Singers")
-   *                     .set(column)
-   *                     .to(name.toUpperCase())
-   *                     .build());
-   *             return ApiFutures.immediateFuture(null);
-   *           }
-   *         })
+   * final long singerId = 1L;
+   * AsyncTransactionManager manager = client.transactionManagerAsync();
+   * TransactionContextFuture txnFuture = manager.beginAsync();
+   * txnFuture
+   *   .then((transaction, ignored) ->
+   *     transaction.readRowAsync("Singers", Key.of(singerId), Collections.singleton(column)),
+   *     executor)
+   *   .then((transaction, row) ->
+   *     transaction.bufferAsync(
+   *         Mutation.newUpdateBuilder("Singers")
+   *           .set(column).to(row.getString(column).toUpperCase())
+   *           .build()),
+   *     executor)
+   *   .commitAsync();
    * }</pre>
    */
   interface AsyncTransactionStep<I, O> extends ApiFuture<O> {

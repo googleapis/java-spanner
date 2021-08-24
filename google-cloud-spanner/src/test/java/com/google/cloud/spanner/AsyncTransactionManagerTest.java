@@ -22,10 +22,11 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.READ_TABLE_NAME;
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_ABORTED_STATEMENT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_COUNT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_STATEMENT;
+import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
@@ -40,8 +41,6 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionPool.SessionPoolTransactionContext;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
@@ -59,6 +58,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -97,22 +97,13 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         final KeySet keys,
         final Iterable<String> columns,
         final ReadOption... options) {
-      return new AsyncTransactionFunction<I, AsyncResultSet>() {
-        @Override
-        public ApiFuture<AsyncResultSet> apply(TransactionContext txn, I input) throws Exception {
-          return ApiFutures.immediateFuture(txn.readAsync(table, keys, columns, options));
-        }
-      };
+      return (transaction, ignored) ->
+          ApiFutures.immediateFuture(transaction.readAsync(table, keys, columns, options));
     }
 
     public static <I> AsyncTransactionFunction<I, Struct> readRowAsync(
         final String table, final Key key, final Iterable<String> columns) {
-      return new AsyncTransactionFunction<I, Struct>() {
-        @Override
-        public ApiFuture<Struct> apply(TransactionContext txn, I input) throws Exception {
-          return txn.readRowAsync(table, key, columns);
-        }
-      };
+      return (transaction, ignored) -> transaction.readRowAsync(table, key, columns);
     }
 
     public static <I> AsyncTransactionFunction<I, Void> buffer(Mutation mutation) {
@@ -120,71 +111,62 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     }
 
     public static <I> AsyncTransactionFunction<I, Void> buffer(final Iterable<Mutation> mutations) {
-      return new AsyncTransactionFunction<I, Void>() {
-        @Override
-        public ApiFuture<Void> apply(TransactionContext txn, I input) throws Exception {
-          txn.buffer(mutations);
-          return ApiFutures.immediateFuture(null);
-        }
+      return (transaction, ignored) -> {
+        transaction.buffer(mutations);
+        return ApiFutures.immediateFuture(null);
       };
     }
 
     public static <I> AsyncTransactionFunction<I, Long> executeUpdateAsync(Statement statement) {
-      return executeUpdateAsync(SettableApiFuture.<Long>create(), statement);
+      return executeUpdateAsync(SettableApiFuture.create(), statement);
     }
 
     public static <I> AsyncTransactionFunction<I, Long> executeUpdateAsync(
         final SettableApiFuture<Long> result, final Statement statement) {
-      return new AsyncTransactionFunction<I, Long>() {
-        @Override
-        public ApiFuture<Long> apply(TransactionContext txn, I input) throws Exception {
-          ApiFuture<Long> updateCount = txn.executeUpdateAsync(statement);
-          ApiFutures.addCallback(
-              updateCount,
-              new ApiFutureCallback<Long>() {
-                @Override
-                public void onFailure(Throwable t) {
-                  result.setException(t);
-                }
+      return (transaction, ignored) -> {
+        ApiFuture<Long> updateCount = transaction.executeUpdateAsync(statement);
+        ApiFutures.addCallback(
+            updateCount,
+            new ApiFutureCallback<Long>() {
+              @Override
+              public void onFailure(Throwable t) {
+                result.setException(t);
+              }
 
-                @Override
-                public void onSuccess(Long input) {
-                  result.set(input);
-                }
-              },
-              MoreExecutors.directExecutor());
-          return updateCount;
-        }
+              @Override
+              public void onSuccess(Long input) {
+                result.set(input);
+              }
+            },
+            MoreExecutors.directExecutor());
+        return updateCount;
       };
     }
 
     public static <I> AsyncTransactionFunction<I, long[]> batchUpdateAsync(
         final Statement... statements) {
-      return batchUpdateAsync(SettableApiFuture.<long[]>create(), statements);
+      return batchUpdateAsync(SettableApiFuture.create(), statements);
     }
 
     public static <I> AsyncTransactionFunction<I, long[]> batchUpdateAsync(
         final SettableApiFuture<long[]> result, final Statement... statements) {
-      return new AsyncTransactionFunction<I, long[]>() {
-        @Override
-        public ApiFuture<long[]> apply(TransactionContext txn, I input) throws Exception {
-          ApiFuture<long[]> updateCounts = txn.batchUpdateAsync(Arrays.asList(statements));
-          ApiFutures.addCallback(
-              updateCounts,
-              new ApiFutureCallback<long[]>() {
-                @Override
-                public void onFailure(Throwable t) {
-                  result.setException(t);
-                }
+      return (transaction, ignored) -> {
+        ApiFuture<long[]> updateCounts = transaction.batchUpdateAsync(Arrays.asList(statements));
+        ApiFutures.addCallback(
+            updateCounts,
+            new ApiFutureCallback<long[]>() {
+              @Override
+              public void onFailure(Throwable t) {
+                result.setException(t);
+              }
 
-                @Override
-                public void onSuccess(long[] input) {
-                  result.set(input);
-                }
-              },
-              MoreExecutors.directExecutor());
-          return updateCounts;
-        }
+              @Override
+              public void onSuccess(long[] input) {
+                result.set(input);
+              }
+            },
+            MoreExecutors.directExecutor());
+        return updateCounts;
       };
     }
   }
@@ -202,15 +184,12 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     // The mock server should already have the Rollback request, as we are waiting for the returned
     // ApiFuture to be done.
     mockSpanner.waitForRequestsToContain(
-        new Predicate<AbstractMessage>() {
-          @Override
-          public boolean apply(AbstractMessage input) {
-            if (input instanceof RollbackRequest) {
-              RollbackRequest request = (RollbackRequest) input;
-              return request.getTransactionId().equals(selector.getId());
-            }
-            return false;
+        input -> {
+          if (input instanceof RollbackRequest) {
+            RollbackRequest request = (RollbackRequest) input;
+            return request.getTransactionId().equals(selector.getId());
           }
+          return false;
         },
         0L);
   }
@@ -219,14 +198,15 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   public void testAsyncTransactionManager_returnsCommitStats() throws Exception {
     try (AsyncTransactionManager manager =
         client().transactionManagerAsync(Options.commitStats())) {
-      TransactionContextFuture transaction = manager.beginAsync();
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
           CommitTimestampFuture commitTimestamp =
-              transaction
+              transactionContextFuture
                   .then(
-                      AsyncTransactionManagerHelper.<Void>buffer(
-                          Mutation.delete("FOO", Key.of("foo"))),
+                      (transactionContext, ignored) ->
+                          transactionContext.bufferAsync(
+                              Collections.singleton(Mutation.delete("FOO", Key.of("foo")))),
                       executor)
                   .commitAsync();
           assertNotNull(commitTimestamp.get());
@@ -235,7 +215,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           assertEquals(1L, manager.getCommitResponse().get().getCommitStats().getMutationCount());
           break;
         } catch (AbortedException e) {
-          transaction = manager.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
@@ -243,23 +223,21 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerUpdate() throws Exception {
-    final SettableApiFuture<Long> updateCount = SettableApiFuture.create();
-
     try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
-      TransactionContextFuture txn = manager.beginAsync();
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          CommitTimestampFuture commitTimestamp =
-              txn.then(
-                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(
-                          updateCount, UPDATE_STATEMENT),
-                      executor)
-                  .commitAsync();
+          AsyncTransactionStep<Void, Long> updateCount =
+              transactionContextFuture.then(
+                  (transactionContext, ignored) ->
+                      transactionContext.executeUpdateAsync(UPDATE_STATEMENT),
+                  executor);
+          CommitTimestampFuture commitTimestamp = updateCount.commitAsync();
           assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
           assertThat(commitTimestamp.get()).isNotNull();
           break;
         } catch (AbortedException e) {
-          txn = manager.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
@@ -267,25 +245,23 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerIsNonBlocking() throws Exception {
-    SettableApiFuture<Long> updateCount = SettableApiFuture.create();
-
     mockSpanner.freeze();
     try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
-      TransactionContextFuture txn = manager.beginAsync();
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          CommitTimestampFuture commitTimestamp =
-              txn.then(
-                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(
-                          updateCount, UPDATE_STATEMENT),
-                      executor)
-                  .commitAsync();
+          AsyncTransactionStep<Void, Long> updateCount =
+              transactionContextFuture.then(
+                  (transactionContext, ignored) ->
+                      transactionContext.executeUpdateAsync(UPDATE_STATEMENT),
+                  executor);
+          CommitTimestampFuture commitTimestamp = updateCount.commitAsync();
           mockSpanner.unfreeze();
           assertThat(updateCount.get(10L, TimeUnit.SECONDS)).isEqualTo(UPDATE_COUNT);
           assertThat(commitTimestamp.get(10L, TimeUnit.SECONDS)).isNotNull();
           break;
         } catch (AbortedException e) {
-          txn = manager.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
@@ -294,64 +270,50 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncTransactionManagerInvalidUpdate() throws Exception {
     try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
-      TransactionContextFuture txn = manager.beginAsync();
-      while (true) {
-        try {
-          CommitTimestampFuture commitTimestamp =
-              txn.then(
-                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(
-                          INVALID_UPDATE_STATEMENT),
-                      executor)
-                  .commitAsync();
-          commitTimestamp.get();
-          fail("missing expected exception");
-        } catch (AbortedException e) {
-          txn = manager.resetForRetryAsync();
-        } catch (ExecutionException e) {
-          manager.rollbackAsync();
-          assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-          SpannerException se = (SpannerException) e.getCause();
-          assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-          assertThat(se.getMessage()).contains("invalid statement");
-          break;
-        }
-      }
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
+      CommitTimestampFuture commitTimestamp =
+          transactionContextFuture
+              .then(
+                  (transaction, ignored) ->
+                      transaction.executeUpdateAsync(INVALID_UPDATE_STATEMENT),
+                  executor)
+              .commitAsync();
+      SpannerException e = assertThrows(SpannerException.class, () -> get(commitTimestamp));
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      assertThat(e.getMessage()).contains("invalid statement");
     }
   }
 
   @Test
   public void asyncTransactionManagerCommitAborted() throws Exception {
-    SettableApiFuture<Long> updateCount = SettableApiFuture.create();
     final AtomicInteger attempt = new AtomicInteger();
+    CountDownLatch abortedLatch = new CountDownLatch(1);
     try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
-      TransactionContextFuture txn = manager.beginAsync();
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
           attempt.incrementAndGet();
-          CommitTimestampFuture commitTimestamp =
-              txn.then(
-                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(
-                          updateCount, UPDATE_STATEMENT),
-                      executor)
-                  .then(
-                      new AsyncTransactionFunction<Long, Void>() {
-                        @Override
-                        public ApiFuture<Void> apply(TransactionContext txn, Long input)
-                            throws Exception {
-                          if (attempt.get() == 1) {
-                            mockSpanner.abortTransaction(txn);
-                          }
-                          return ApiFutures.immediateFuture(null);
-                        }
-                      },
-                      executor)
-                  .commitAsync();
+          AsyncTransactionStep<Void, Long> updateCount =
+              transactionContextFuture.then(
+                  (transaction, ignored) -> transaction.executeUpdateAsync(UPDATE_STATEMENT),
+                  executor);
+          updateCount.then(
+              (transaction, ignored) -> {
+                if (attempt.get() == 1) {
+                  mockSpanner.abortTransaction(transaction);
+                  abortedLatch.countDown();
+                }
+                return ApiFutures.immediateFuture(null);
+              },
+              executor);
+          abortedLatch.await(10L, TimeUnit.SECONDS);
+          CommitTimestampFuture commitTimestamp = updateCount.commitAsync();
           assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
           assertThat(commitTimestamp.get()).isNotNull();
           assertThat(attempt.get()).isEqualTo(2);
           break;
         } catch (AbortedException e) {
-          txn = manager.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
@@ -359,46 +321,26 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerFireAndForgetInvalidUpdate() throws Exception {
-    final SettableApiFuture<Long> updateCount = SettableApiFuture.create();
-
-    try (AsyncTransactionManager mgr = clientWithEmptySessionPool().transactionManagerAsync()) {
-      TransactionContextFuture txn = mgr.beginAsync();
+    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          CommitTimestampFuture ts =
-              txn.then(
-                      new AsyncTransactionFunction<Void, Long>() {
-                        @Override
-                        public ApiFuture<Long> apply(TransactionContext txn, Void input)
-                            throws Exception {
-                          // This fire-and-forget update statement should not fail the transaction.
-                          // The exception will however cause the transaction to be retried, as the
-                          // statement will not return a transaction id.
-                          txn.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
-                          ApiFutures.addCallback(
-                              txn.executeUpdateAsync(UPDATE_STATEMENT),
-                              new ApiFutureCallback<Long>() {
-                                @Override
-                                public void onFailure(Throwable t) {
-                                  updateCount.setException(t);
-                                }
-
-                                @Override
-                                public void onSuccess(Long result) {
-                                  updateCount.set(result);
-                                }
-                              },
-                              MoreExecutors.directExecutor());
-                          return updateCount;
-                        }
-                      },
-                      executor)
-                  .commitAsync();
-          assertThat(ts.get()).isNotNull();
-          assertThat(updateCount.get()).isEqualTo(UPDATE_COUNT);
+          AsyncTransactionStep<Void, Long> transaction =
+              transactionContextFuture.then(
+                  (transactionContext, ignored) -> {
+                    // This fire-and-forget update statement should not fail the transaction.
+                    // The exception will however cause the transaction to be retried, as the
+                    // statement will not return a transaction id.
+                    transactionContext.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
+                    return transactionContext.executeUpdateAsync(UPDATE_STATEMENT);
+                  },
+                  executor);
+          CommitTimestampFuture commitTimestamp = transaction.commitAsync();
+          assertThat(commitTimestamp.get()).isNotNull();
+          assertThat(transaction.get()).isEqualTo(UPDATE_COUNT);
           break;
         } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
@@ -418,42 +360,34 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerChain() throws Exception {
-    try (AsyncTransactionManager mgr = client().transactionManagerAsync()) {
-      TransactionContextFuture txn = mgr.beginAsync();
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          CommitTimestampFuture ts =
-              txn.then(
-                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(UPDATE_STATEMENT),
+          CommitTimestampFuture commitTimestamp =
+              transactionContextFuture
+                  .then(
+                      (transaction, ignored) -> transaction.executeUpdateAsync(UPDATE_STATEMENT),
                       executor)
                   .then(
-                      AsyncTransactionManagerHelper.<Long>readRowAsync(
-                          READ_TABLE_NAME, Key.of(1L), READ_COLUMN_NAMES),
+                      (transactionContext, ignored) ->
+                          transactionContext.readRowAsync(
+                              READ_TABLE_NAME, Key.of(1L), READ_COLUMN_NAMES),
                       executor)
                   .then(
-                      new AsyncTransactionFunction<Struct, String>() {
-                        @Override
-                        public ApiFuture<String> apply(TransactionContext txn, Struct input)
-                            throws Exception {
-                          return ApiFutures.immediateFuture(input.getString("Value"));
-                        }
-                      },
+                      (ignored, input) -> ApiFutures.immediateFuture(input.getString("Value")),
                       executor)
                   .then(
-                      new AsyncTransactionFunction<String, Void>() {
-                        @Override
-                        public ApiFuture<Void> apply(TransactionContext txn, String input)
-                            throws Exception {
-                          assertThat(input).isEqualTo("v1");
-                          return ApiFutures.immediateFuture(null);
-                        }
+                      (ignored, input) -> {
+                        assertThat(input).isEqualTo("v1");
+                        return ApiFutures.immediateFuture(null);
                       },
                       executor)
                   .commitAsync();
-          assertThat(ts.get()).isNotNull();
+          assertThat(commitTimestamp.get()).isNotNull();
           break;
         } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
@@ -461,35 +395,28 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerChainWithErrorInTheMiddle() throws Exception {
-    try (AsyncTransactionManager mgr = client().transactionManagerAsync()) {
-      TransactionContextFuture txn = mgr.beginAsync();
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          CommitTimestampFuture ts =
-              txn.then(
-                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(
-                          INVALID_UPDATE_STATEMENT),
+          CommitTimestampFuture commitTimestampFuture =
+              transactionContextFuture
+                  .then(
+                      (transactionContext, ignored) ->
+                          transactionContext.executeUpdateAsync(INVALID_UPDATE_STATEMENT),
                       executor)
                   .then(
-                      new AsyncTransactionFunction<Long, Void>() {
-                        @Override
-                        public ApiFuture<Void> apply(TransactionContext txn, Long input)
-                            throws Exception {
-                          throw new IllegalStateException("this should not be executed");
-                        }
+                      (ignored1, ignored2) -> {
+                        throw new IllegalStateException("this should not be executed");
                       },
                       executor)
                   .commitAsync();
-          ts.get();
+          SpannerException e =
+              assertThrows(SpannerException.class, () -> get(commitTimestampFuture));
+          assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
           break;
         } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
-        } catch (ExecutionException e) {
-          mgr.rollbackAsync();
-          assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-          SpannerException se = (SpannerException) e.getCause();
-          assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-          break;
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
@@ -497,40 +424,38 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerUpdateAborted() throws Exception {
-    try (AsyncTransactionManager mgr = client().transactionManagerAsync()) {
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
       // Temporarily set the result of the update to 2 rows.
       mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT + 1L));
       final AtomicInteger attempt = new AtomicInteger();
 
-      TransactionContextFuture txn = mgr.beginAsync();
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          CommitTimestampFuture ts =
-              txn.then(
-                      new AsyncTransactionFunction<Void, Void>() {
-                        @Override
-                        public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                            throws Exception {
-                          if (attempt.incrementAndGet() == 1) {
-                            // Abort the first attempt.
-                            mockSpanner.abortNextStatement();
-                          } else {
-                            // Set the result of the update statement back to 1 row.
-                            mockSpanner.putStatementResult(
-                                StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
-                          }
-                          return ApiFutures.immediateFuture(null);
+          CommitTimestampFuture commitTimestampFuture =
+              transactionContextFuture
+                  .then(
+                      (ignored1, ignored2) -> {
+                        if (attempt.incrementAndGet() == 1) {
+                          // Abort the first attempt.
+                          mockSpanner.abortNextStatement();
+                        } else {
+                          // Set the result of the update statement back to 1 row.
+                          mockSpanner.putStatementResult(
+                              StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
                         }
+                        return ApiFutures.immediateFuture(null);
                       },
                       executor)
                   .then(
-                      AsyncTransactionManagerHelper.<Void>executeUpdateAsync(UPDATE_STATEMENT),
+                      (transactionContext, ignored) ->
+                          transactionContext.executeUpdateAsync(UPDATE_STATEMENT),
                       executor)
                   .commitAsync();
-          assertThat(ts.get()).isNotNull();
+          assertThat(commitTimestampFuture.get()).isNotNull();
           break;
         } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
       assertThat(attempt.get()).isEqualTo(2);
@@ -542,32 +467,29 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncTransactionManagerUpdateAbortedWithoutGettingResult() throws Exception {
     final AtomicInteger attempt = new AtomicInteger();
-    try (AsyncTransactionManager mgr = clientWithEmptySessionPool().transactionManagerAsync()) {
-      TransactionContextFuture txn = mgr.beginAsync();
+    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          CommitTimestampFuture ts =
-              txn.then(
-                      new AsyncTransactionFunction<Void, Void>() {
-                        @Override
-                        public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                            throws Exception {
-                          if (attempt.incrementAndGet() == 1) {
-                            mockSpanner.abortNextStatement();
-                          }
-                          // This update statement will be aborted, but the error will not
-                          // propagated to the transaction runner and cause the transaction to
-                          // retry. Instead, the commit call will do that.
-                          txn.executeUpdateAsync(UPDATE_STATEMENT);
-                          // Resolving this future will not resolve the result of the entire
-                          // transaction. The transaction result will be resolved when the commit
-                          // has actually finished successfully.
-                          return ApiFutures.immediateFuture(null);
+          CommitTimestampFuture commitTimestampFuture =
+              transactionContextFuture
+                  .then(
+                      (transaction, ignored) -> {
+                        if (attempt.incrementAndGet() == 1) {
+                          mockSpanner.abortNextStatement();
                         }
+                        // This update statement will be aborted, but the error will not
+                        // propagated to the transaction runner and cause the transaction to
+                        // retry. Instead, the commit call will do that.
+                        transaction.executeUpdateAsync(UPDATE_STATEMENT);
+                        // Resolving this future will not resolve the result of the entire
+                        // transaction. The transaction result will be resolved when the commit
+                        // has actually finished successfully.
+                        return ApiFutures.immediateFuture(null);
                       },
                       executor)
                   .commitAsync();
-          assertThat(ts.get()).isNotNull();
+          assertThat(commitTimestampFuture.get()).isNotNull();
           assertThat(attempt.get()).isEqualTo(2);
           // The server may receive 1 or 2 commit requests depending on whether the call to
           // commitAsync() already knows that the transaction has aborted. If it does, it will not
@@ -582,7 +504,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                   CommitRequest.class);
           break;
         } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
@@ -597,24 +519,17 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                 .asRuntimeException()));
     try (AsyncTransactionManager mgr = client().transactionManagerAsync()) {
       TransactionContextFuture txn = mgr.beginAsync();
-      while (true) {
-        try {
-          txn.then(
-                  AsyncTransactionManagerHelper.<Void>executeUpdateAsync(UPDATE_STATEMENT),
-                  executor)
-              .commitAsync()
-              .get();
-          fail("missing expected exception");
-        } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
-        } catch (ExecutionException e) {
-          assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-          SpannerException se = (SpannerException) e.getCause();
-          assertThat(se.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
-          assertThat(se.getMessage()).contains("mutation limit exceeded");
-          break;
-        }
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  get(
+                      txn.then(
+                              AsyncTransactionManagerHelper.executeUpdateAsync(UPDATE_STATEMENT),
+                              executor)
+                          .commitAsync()));
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+      assertThat(e.getMessage()).contains("mutation limit exceeded");
     }
   }
 
@@ -625,15 +540,11 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       while (true) {
         try {
           txn.then(
-                  new AsyncTransactionFunction<Void, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
-                      // Shoot-and-forget update. The commit will still wait for this request to
-                      // finish.
-                      txn.executeUpdateAsync(UPDATE_STATEMENT);
-                      return ApiFutures.immediateFuture(null);
-                    }
+                  (transaction, input) -> {
+                    // Shoot-and-forget update. The commit will still wait for this request to
+                    // finish.
+                    transaction.executeUpdateAsync(UPDATE_STATEMENT);
+                    return ApiFutures.immediateFuture(null);
                   },
                   executor)
               .commitAsync()
@@ -651,45 +562,45 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerBatchUpdate() throws Exception {
-    final SettableApiFuture<long[]> result = SettableApiFuture.create();
-    try (AsyncTransactionManager mgr = client().transactionManagerAsync()) {
-      TransactionContextFuture txn = mgr.beginAsync();
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          txn.then(
-                  AsyncTransactionManagerHelper.<Void>batchUpdateAsync(
-                      result, UPDATE_STATEMENT, UPDATE_STATEMENT),
-                  executor)
-              .commitAsync()
-              .get();
+          AsyncTransactionStep<Void, long[]> updateCounts =
+              transactionContextFuture.then(
+                  (transaction, ignored) ->
+                      transaction.batchUpdateAsync(
+                          ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT)),
+                  executor);
+          get(updateCounts.commitAsync());
+          assertThat(get(updateCounts)).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
           break;
         } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
-    assertThat(result.get()).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
   }
 
   @Test
   public void asyncTransactionManagerIsNonBlockingWithBatchUpdate() throws Exception {
-    SettableApiFuture<long[]> res = SettableApiFuture.create();
     mockSpanner.freeze();
-    try (AsyncTransactionManager mgr = clientWithEmptySessionPool().transactionManagerAsync()) {
-      TransactionContextFuture txn = mgr.beginAsync();
+    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          CommitTimestampFuture ts =
-              txn.then(
-                      AsyncTransactionManagerHelper.<Void>batchUpdateAsync(res, UPDATE_STATEMENT),
-                      executor)
-                  .commitAsync();
+          AsyncTransactionStep<Void, long[]> updateCounts =
+              transactionContextFuture.then(
+                  (transactionContext, ignored) ->
+                      transactionContext.batchUpdateAsync(Collections.singleton(UPDATE_STATEMENT)),
+                  executor);
+          CommitTimestampFuture commitTimestampFuture = updateCounts.commitAsync();
           mockSpanner.unfreeze();
-          assertThat(ts.get()).isNotNull();
-          assertThat(res.get()).asList().containsExactly(UPDATE_COUNT);
+          assertThat(commitTimestampFuture.get()).isNotNull();
+          assertThat(updateCounts.get()).asList().containsExactly(UPDATE_COUNT);
           break;
         } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
@@ -697,62 +608,53 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerInvalidBatchUpdate() throws Exception {
-    SettableApiFuture<long[]> result = SettableApiFuture.create();
-    try (AsyncTransactionManager mgr = client().transactionManagerAsync()) {
-      TransactionContextFuture txn = mgr.beginAsync();
-      while (true) {
-        try {
-          txn.then(
-                  AsyncTransactionManagerHelper.<Void>batchUpdateAsync(
-                      result, UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT),
-                  executor)
-              .commitAsync()
-              .get();
-          fail("missing expected exception");
-        } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
-        } catch (ExecutionException e) {
-          assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-          SpannerException se = (SpannerException) e.getCause();
-          assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-          assertThat(se.getMessage()).contains("invalid statement");
-          break;
-        }
-      }
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  get(
+                      transactionContextFuture
+                          .then(
+                              (transactionContext, ignored) ->
+                                  transactionContext.batchUpdateAsync(
+                                      ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT)),
+                              executor)
+                          .commitAsync()));
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      assertThat(e.getMessage()).contains("invalid statement");
     }
   }
 
   @Test
   public void asyncTransactionManagerFireAndForgetInvalidBatchUpdate() throws Exception {
-    SettableApiFuture<long[]> result = SettableApiFuture.create();
-    try (AsyncTransactionManager mgr = clientWithEmptySessionPool().transactionManagerAsync()) {
-      TransactionContextFuture txn = mgr.beginAsync();
+    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          txn.then(
-                  new AsyncTransactionFunction<Void, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
-                      txn.batchUpdateAsync(
-                          ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT));
-                      return ApiFutures.immediateFuture(null);
-                    }
-                  },
-                  executor)
-              .then(
-                  AsyncTransactionManagerHelper.<Void>batchUpdateAsync(
-                      result, UPDATE_STATEMENT, UPDATE_STATEMENT),
-                  executor)
-              .commitAsync()
-              .get();
+          AsyncTransactionStep<Void, long[]> updateCounts =
+              transactionContextFuture
+                  .then(
+                      (transactionContext, ignored) -> {
+                        transactionContext.batchUpdateAsync(
+                            ImmutableList.of(UPDATE_STATEMENT, INVALID_UPDATE_STATEMENT));
+                        return ApiFutures.<Void>immediateFuture(null);
+                      },
+                      executor)
+                  .then(
+                      (transactionContext, ignored) ->
+                          transactionContext.batchUpdateAsync(
+                              ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT)),
+                      executor);
+          updateCounts.commitAsync().get();
+          assertThat(updateCounts.get()).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
           break;
         } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
-    assertThat(result.get()).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
     assertThat(mockSpanner.getRequestTypes())
         .containsExactly(
             BatchCreateSessionsRequest.class,
@@ -764,22 +666,19 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncTransactionManagerBatchUpdateAborted() throws Exception {
     final AtomicInteger attempt = new AtomicInteger();
-    try (AsyncTransactionManager mgr = clientWithEmptySessionPool().transactionManagerAsync()) {
-      TransactionContextFuture txn = mgr.beginAsync();
+    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          txn.then(
-                  new AsyncTransactionFunction<Void, long[]>() {
-                    @Override
-                    public ApiFuture<long[]> apply(TransactionContext txn, Void input)
-                        throws Exception {
-                      if (attempt.incrementAndGet() == 1) {
-                        return txn.batchUpdateAsync(
-                            ImmutableList.of(UPDATE_STATEMENT, UPDATE_ABORTED_STATEMENT));
-                      } else {
-                        return txn.batchUpdateAsync(
-                            ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
-                      }
+          transactionContextFuture
+              .then(
+                  (transaction, ignored) -> {
+                    if (attempt.incrementAndGet() == 1) {
+                      return transaction.batchUpdateAsync(
+                          ImmutableList.of(UPDATE_STATEMENT, UPDATE_ABORTED_STATEMENT));
+                    } else {
+                      return transaction.batchUpdateAsync(
+                          ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
                     }
                   },
                   executor)
@@ -787,7 +686,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
               .get();
           break;
         } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
@@ -806,28 +705,25 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncTransactionManagerBatchUpdateAbortedBeforeFirstStatement() throws Exception {
     final AtomicInteger attempt = new AtomicInteger();
-    try (AsyncTransactionManager mgr = clientWithEmptySessionPool().transactionManagerAsync()) {
-      TransactionContextFuture txn = mgr.beginAsync();
+    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          txn.then(
-                  new AsyncTransactionFunction<Void, long[]>() {
-                    @Override
-                    public ApiFuture<long[]> apply(TransactionContext txn, Void input)
-                        throws Exception {
-                      if (attempt.incrementAndGet() == 1) {
-                        mockSpanner.abortNextStatement();
-                      }
-                      return txn.batchUpdateAsync(
-                          ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
+          transactionContextFuture
+              .then(
+                  (transactionContext, ignored) -> {
+                    if (attempt.incrementAndGet() == 1) {
+                      mockSpanner.abortNextStatement();
                     }
+                    return transactionContext.batchUpdateAsync(
+                        ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
                   },
                   executor)
               .commitAsync()
               .get();
           break;
         } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
@@ -845,51 +741,45 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerWithBatchUpdateCommitAborted() throws Exception {
-    try (AsyncTransactionManager mgr = clientWithEmptySessionPool().transactionManagerAsync()) {
+    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
       // Temporarily set the result of the update to 2 rows.
       mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT + 1L));
       final AtomicInteger attempt = new AtomicInteger();
-      TransactionContextFuture txn = mgr.beginAsync();
+      TransactionContextFuture txn = manager.beginAsync();
       while (true) {
-        final SettableApiFuture<long[]> result = SettableApiFuture.create();
         try {
-          txn.then(
-                  new AsyncTransactionFunction<Void, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
-                      if (attempt.get() > 0) {
-                        // Set the result of the update statement back to 1 row.
-                        mockSpanner.putStatementResult(
-                            StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
-                      }
-                      return ApiFutures.immediateFuture(null);
-                    }
-                  },
-                  executor)
+          AsyncTransactionStep<Void, long[]> updateCounts =
+              txn.then(
+                      (ignored1, ignored2) -> {
+                        if (attempt.get() > 0) {
+                          // Set the result of the update statement back to 1 row.
+                          mockSpanner.putStatementResult(
+                              StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
+                        }
+                        return ApiFutures.<Void>immediateFuture(null);
+                      },
+                      executor)
+                  .then(
+                      (transactionContext, ignored) ->
+                          transactionContext.batchUpdateAsync(
+                              ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT)),
+                      executor);
+          updateCounts
               .then(
-                  AsyncTransactionManagerHelper.<Void>batchUpdateAsync(
-                      result, UPDATE_STATEMENT, UPDATE_STATEMENT),
-                  executor)
-              .then(
-                  new AsyncTransactionFunction<long[], Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, long[] input)
-                        throws Exception {
-                      if (attempt.incrementAndGet() == 1) {
-                        mockSpanner.abortTransaction(txn);
-                      }
-                      return ApiFutures.immediateFuture(null);
+                  (transaction, ignored) -> {
+                    if (attempt.incrementAndGet() == 1) {
+                      mockSpanner.abortTransaction(transaction);
                     }
+                    return ApiFutures.immediateFuture(null);
                   },
                   executor)
               .commitAsync()
               .get();
-          assertThat(result.get()).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
+          assertThat(updateCounts.get()).asList().containsExactly(UPDATE_COUNT, UPDATE_COUNT);
           assertThat(attempt.get()).isEqualTo(2);
           break;
         } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
+          txn = manager.resetForRetryAsync();
         }
       }
     } finally {
@@ -908,34 +798,32 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   @Test
   public void asyncTransactionManagerBatchUpdateAbortedWithoutGettingResult() throws Exception {
     final AtomicInteger attempt = new AtomicInteger();
-    try (AsyncTransactionManager mgr = clientWithEmptySessionPool().transactionManagerAsync()) {
-      TransactionContextFuture txn = mgr.beginAsync();
+    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          txn.then(
-                  new AsyncTransactionFunction<Void, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
-                      if (attempt.incrementAndGet() == 1) {
-                        mockSpanner.abortNextStatement();
-                      }
-                      // This update statement will be aborted, but the error will not propagated to
-                      // the transaction manager and cause the transaction to retry. Instead, the
-                      // commit call will do that. Depending on the timing, that will happen
-                      // directly in the transaction manager if the ABORTED error has already been
-                      // returned by the batch update call before the commit call starts. Otherwise,
-                      // the backend will return an ABORTED error for the commit call.
-                      txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
-                      return ApiFutures.immediateFuture(null);
+          transactionContextFuture
+              .then(
+                  (transactionContext, ignored) -> {
+                    if (attempt.incrementAndGet() == 1) {
+                      mockSpanner.abortNextStatement();
                     }
+                    // This update statement will be aborted, but the error will not propagated
+                    // to the transaction manager and cause the transaction to retry. Instead,
+                    // the commit call will do that. Depending on the timing, that will happen
+                    // directly in the transaction manager if the ABORTED error has already been
+                    // returned by the batch update call before the commit call starts.
+                    // Otherwise, the backend will return an ABORTED error for the commit call.
+                    transactionContext.batchUpdateAsync(
+                        ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT));
+                    return ApiFutures.immediateFuture(null);
                   },
                   executor)
               .commitAsync()
               .get();
           break;
         } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
@@ -970,27 +858,22 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             Status.RESOURCE_EXHAUSTED
                 .withDescription("mutation limit exceeded")
                 .asRuntimeException()));
-    try (AsyncTransactionManager mgr = clientWithEmptySessionPool().transactionManagerAsync()) {
-      TransactionContextFuture txn = mgr.beginAsync();
-      while (true) {
-        try {
-          txn.then(
-                  AsyncTransactionManagerHelper.<Void>batchUpdateAsync(
-                      UPDATE_STATEMENT, UPDATE_STATEMENT),
-                  executor)
-              .commitAsync()
-              .get();
-          fail("missing expected exception");
-        } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
-        } catch (ExecutionException e) {
-          assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-          SpannerException se = (SpannerException) e.getCause();
-          assertThat(se.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
-          assertThat(se.getMessage()).contains("mutation limit exceeded");
-          break;
-        }
-      }
+    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  get(
+                      transactionContextFuture
+                          .then(
+                              (transactionContext, ignored) ->
+                                  transactionContext.batchUpdateAsync(
+                                      ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT)),
+                              executor)
+                          .commitAsync()));
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+      assertThat(e.getMessage()).contains("mutation limit exceeded");
     }
     assertThat(mockSpanner.getRequestTypes())
         .containsExactly(
@@ -999,25 +882,22 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerWaitsUntilAsyncBatchUpdateHasFinished() throws Exception {
-    try (AsyncTransactionManager mgr = clientWithEmptySessionPool().transactionManagerAsync()) {
-      TransactionContextFuture txn = mgr.beginAsync();
+    try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          txn.then(
-                  new AsyncTransactionFunction<Void, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
-                      txn.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT));
-                      return ApiFutures.immediateFuture(null);
-                    }
+          transactionContextFuture
+              .then(
+                  (transactionContext, ignored) -> {
+                    transactionContext.batchUpdateAsync(ImmutableList.of(UPDATE_STATEMENT));
+                    return ApiFutures.immediateFuture(null);
                   },
                   executor)
               .commitAsync()
               .get();
           break;
         } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
@@ -1028,71 +908,53 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
   @Test
   public void asyncTransactionManagerReadRow() throws Exception {
-    ApiFuture<String> val;
-    try (AsyncTransactionManager mgr = client().transactionManagerAsync()) {
-      TransactionContextFuture txn = mgr.beginAsync();
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          AsyncTransactionStep<Struct, String> step;
-          val =
-              step =
-                  txn.then(
-                          AsyncTransactionManagerHelper.<Void>readRowAsync(
+          AsyncTransactionStep<Struct, String> value =
+              transactionContextFuture
+                  .then(
+                      (transactionContext, ignored) ->
+                          transactionContext.readRowAsync(
                               READ_TABLE_NAME, Key.of(1L), READ_COLUMN_NAMES),
-                          executor)
-                      .then(
-                          new AsyncTransactionFunction<Struct, String>() {
-                            @Override
-                            public ApiFuture<String> apply(TransactionContext txn, Struct input)
-                                throws Exception {
-                              return ApiFutures.immediateFuture(input.getString("Value"));
-                            }
-                          },
-                          executor);
-          step.commitAsync().get();
+                      executor)
+                  .then(
+                      (ignored, input) -> ApiFutures.immediateFuture(input.getString("Value")),
+                      executor);
+          value.commitAsync().get();
+          assertThat(value.get()).isEqualTo("v1");
           break;
         } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
-    assertThat(val.get()).isEqualTo("v1");
   }
 
   @Test
   public void asyncTransactionManagerRead() throws Exception {
-    AsyncTransactionStep<Void, List<String>> res;
-    try (AsyncTransactionManager mgr = client().transactionManagerAsync()) {
-      TransactionContextFuture txn = mgr.beginAsync();
+    try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         try {
-          res =
-              txn.then(
-                  new AsyncTransactionFunction<Void, List<String>>() {
-                    @Override
-                    public ApiFuture<List<String>> apply(TransactionContext txn, Void input)
-                        throws Exception {
-                      return txn.readAsync(READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES)
+          AsyncTransactionStep<Void, List<String>> values =
+              transactionContextFuture.then(
+                  (transactionContext, ignored) ->
+                      transactionContext
+                          .readAsync(READ_TABLE_NAME, KeySet.all(), READ_COLUMN_NAMES)
                           .toListAsync(
-                              new Function<StructReader, String>() {
-                                @Override
-                                public String apply(StructReader input) {
-                                  return input.getString("Value");
-                                }
-                              },
-                              MoreExecutors.directExecutor());
-                    }
-                  },
+                              input -> input.getString("Value"), MoreExecutors.directExecutor()),
                   executor);
           // Commit the transaction.
-          res.commitAsync().get();
+          values.commitAsync().get();
+          assertThat(values.get()).containsExactly("v1", "v2", "v3");
           break;
         } catch (AbortedException e) {
-          txn = mgr.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
-    assertThat(res.get()).containsExactly("v1", "v2", "v3");
   }
 
   @Test
@@ -1103,33 +965,24 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
             MockSpannerTestUtil.READ_FIRST_NAME_SINGERS_RESULTSET));
     final long singerId = 1L;
     try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
-      TransactionContextFuture txn = manager.beginAsync();
+      TransactionContextFuture transactionContextFuture = manager.beginAsync();
       while (true) {
         final String column = "FirstName";
         CommitTimestampFuture commitTimestamp =
-            txn.then(
-                    new AsyncTransactionFunction<Void, Struct>() {
-                      @Override
-                      public ApiFuture<Struct> apply(TransactionContext txn, Void input)
-                          throws Exception {
-                        return txn.readRowAsync(
-                            "Singers", Key.of(singerId), Collections.singleton(column));
-                      }
-                    },
+            transactionContextFuture
+                .then(
+                    (transactionContext, ignored) ->
+                        transactionContext.readRowAsync(
+                            "Singers", Key.of(singerId), Collections.singleton(column)),
                     executor)
                 .then(
-                    new AsyncTransactionFunction<Struct, Void>() {
-                      @Override
-                      public ApiFuture<Void> apply(TransactionContext txn, Struct input)
-                          throws Exception {
-                        String name = input.getString(column);
-                        txn.buffer(
-                            Mutation.newUpdateBuilder("Singers")
-                                .set(column)
-                                .to(name.toUpperCase())
-                                .build());
-                        return ApiFutures.immediateFuture(null);
-                      }
+                    (transaction, input) -> {
+                      String name = input.getString(column);
+                      return transaction.bufferAsync(
+                          Mutation.newUpdateBuilder("Singers")
+                              .set(column)
+                              .to(name.toUpperCase())
+                              .build());
                     },
                     executor)
                 .commitAsync();
@@ -1137,8 +990,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
           commitTimestamp.get();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis());
-          txn = manager.resetForRetryAsync();
+          transactionContextFuture = manager.resetForRetryAsync();
         }
       }
     }
@@ -1152,12 +1004,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       TransactionContextFuture txnContextFuture = transactionManager.beginAsync();
       AsyncTransactionStep<Void, Long> updateFuture =
           txnContextFuture.then(
-              new AsyncTransactionFunction<Void, Long>() {
-                @Override
-                public ApiFuture<Long> apply(TransactionContext txn, Void input) throws Exception {
-                  return txn.executeUpdateAsync(INVALID_UPDATE_STATEMENT);
-                }
-              },
+              (transaction, ignored) -> transaction.executeUpdateAsync(INVALID_UPDATE_STATEMENT),
               executor);
       final SettableApiFuture<Void> res = SettableApiFuture.create();
       ApiFutures.addCallback(

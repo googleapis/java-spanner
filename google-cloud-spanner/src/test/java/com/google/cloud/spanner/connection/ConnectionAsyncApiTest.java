@@ -18,6 +18,9 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFuture;
@@ -26,19 +29,21 @@ import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.ForceCloseSpannerFunction;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerApiFutures;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.SpannerPool.CheckAndCloseSpannersMode;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.protobuf.AbstractMessage;
+import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import java.util.List;
@@ -55,30 +60,18 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class ConnectionAsyncApiTest extends AbstractMockServerTest {
-  private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+  private static ExecutorService executor = Executors.newSingleThreadExecutor();
   private static final Function<Connection, Void> AUTOCOMMIT =
-      new Function<Connection, Void>() {
-        @Override
-        public Void apply(Connection input) {
-          input.setAutocommit(true);
-          return null;
-        }
+      input -> {
+        input.setAutocommit(true);
+        return null;
       };
   private static final Function<Connection, Void> READ_ONLY =
-      new Function<Connection, Void>() {
-        @Override
-        public Void apply(Connection input) {
-          input.setReadOnly(true);
-          return null;
-        }
+      input -> {
+        input.setReadOnly(true);
+        return null;
       };
-  private static final Function<Connection, Void> READ_WRITE =
-      new Function<Connection, Void>() {
-        @Override
-        public Void apply(Connection input) {
-          return null;
-        }
-      };
+  private static final Function<Connection, Void> READ_WRITE = input -> null;
 
   @AfterClass
   public static void stopExecutor() {
@@ -88,6 +81,8 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   @After
   public void reset() {
     mockSpanner.removeAllExecutionTimes();
+    executor.shutdownNow();
+    executor = Executors.newSingleThreadExecutor();
   }
 
   @Test
@@ -271,24 +266,32 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
               }
             });
       }
-      connection.commitAsync();
+      ApiFuture<Void> commit = connection.commitAsync();
       assertThat(get(update1)).isEqualTo(UPDATE_COUNT);
       assertThat(get(update2)).isEqualTo(UPDATE_COUNT);
       assertThat(get(batch)).asList().containsExactly(1L, 1L);
       assertThat(get(rowCount)).isEqualTo(RANDOM_RESULT_SET_ROW_COUNT);
+      assertNull(get(commit));
 
+      // Get the last commit request.
+      CommitRequest commitRequest =
+          mockSpanner.getRequestsOfType(CommitRequest.class).stream()
+              .reduce((first, second) -> second)
+              .get();
       // Verify the order of the statements on the server.
       List<? extends AbstractMessage> requests =
           Lists.newArrayList(
               Collections2.filter(
                   mockSpanner.getRequests(),
-                  new Predicate<AbstractMessage>() {
-                    @Override
-                    public boolean apply(AbstractMessage input) {
-                      return input instanceof ExecuteSqlRequest
-                          || input instanceof ExecuteBatchDmlRequest;
-                    }
-                  }));
+                  input ->
+                      (input instanceof ExecuteSqlRequest
+                              && ((ExecuteSqlRequest) input)
+                                  .getSession()
+                                  .equals(commitRequest.getSession()))
+                          || (input instanceof ExecuteBatchDmlRequest
+                              && ((ExecuteBatchDmlRequest) input)
+                                  .getSession()
+                                  .equals(commitRequest.getSession()))));
       assertThat(requests).hasSize(4);
       assertThat(requests.get(0)).isInstanceOf(ExecuteSqlRequest.class);
       assertThat(((ExecuteSqlRequest) requests.get(0)).getSeqno()).isEqualTo(1L);
@@ -343,12 +346,13 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   @Test
   public void testExecuteInvalidStatementAsync() {
     try (Connection connection = createConnection()) {
-      try {
-        connection.executeAsync(Statement.of("UPSERT INTO FOO (ID, VAL) VALUES (1, 'foo')"));
-        fail("Missing expected exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  connection.executeAsync(
+                      Statement.of("UPSERT INTO FOO (ID, VAL) VALUES (1, 'foo')")));
+      assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
     }
   }
 
@@ -361,18 +365,15 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
           connection.executeQueryAsync(Statement.of("SHOW VARIABLE AUTOCOMMIT"))) {
         rs.setCallback(
             executor,
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                while (true) {
-                  switch (resultSet.tryNext()) {
-                    case DONE:
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case OK:
-                      autocommit.set(resultSet.getBoolean("AUTOCOMMIT"));
-                  }
+            resultSet -> {
+              while (true) {
+                switch (resultSet.tryNext()) {
+                  case DONE:
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  case OK:
+                    autocommit.set(resultSet.getBoolean("AUTOCOMMIT"));
                 }
               }
             });
@@ -453,25 +454,22 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
           res =
               rs.setCallback(
                   executor,
-                  new ReadyCallback() {
-                    @Override
-                    public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                      try {
-                        while (true) {
-                          switch (resultSet.tryNext()) {
-                            case OK:
-                              rowCount.incrementAndGet();
-                              break;
-                            case DONE:
-                              return CallbackResponse.DONE;
-                            case NOT_READY:
-                              return CallbackResponse.CONTINUE;
-                          }
+                  resultSet -> {
+                    try {
+                      while (true) {
+                        switch (resultSet.tryNext()) {
+                          case OK:
+                            rowCount.incrementAndGet();
+                            break;
+                          case DONE:
+                            return CallbackResponse.DONE;
+                          case NOT_READY:
+                            return CallbackResponse.CONTINUE;
                         }
-                      } catch (SpannerException e) {
-                        receivedTimeout.set(e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED);
-                        throw e;
                       }
+                    } catch (SpannerException e) {
+                      receivedTimeout.set(e.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED);
+                      throw e;
                     }
                   });
         }
@@ -680,6 +678,10 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
         }
       }
     }
+    // Close the Spanner pool to prevent requests from this test from interfering with other tests.
+    SpannerPool.INSTANCE.checkAndCloseSpanners(
+        CheckAndCloseSpannersMode.ERROR,
+        new ForceCloseSpannerFunction(100L, TimeUnit.MILLISECONDS));
   }
 
   private void testWriteAsync(Function<Connection, Void> connectionConfigurator) {
@@ -777,19 +779,16 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
         res =
             rs.setCallback(
                 executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    while (true) {
-                      switch (resultSet.tryNext()) {
-                        case OK:
-                          rowCount.incrementAndGet();
-                          break;
-                        case DONE:
-                          return CallbackResponse.DONE;
-                        case NOT_READY:
-                          return CallbackResponse.CONTINUE;
-                      }
+                resultSet -> {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case OK:
+                        rowCount.incrementAndGet();
+                        break;
+                      case DONE:
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
                     }
                   }
                 });

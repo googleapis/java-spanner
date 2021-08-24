@@ -71,7 +71,7 @@ class EmulatorUtil {
           .createDatabase(
               databaseId.getInstanceId().getInstance(),
               databaseId.getDatabase(),
-              ImmutableList.<String>of())
+              ImmutableList.of())
           .get();
     } catch (ExecutionException executionException) {
       SpannerException spannerException = (SpannerException) executionException.getCause();

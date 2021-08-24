@@ -95,7 +95,7 @@ class MetricRegistryTestUtils {
       this.record
           .metrics
           .get(this.name)
-          .add(new PointWithFunction(t, toLongFunction, labelKeys, labelValues));
+          .add(new PointWithFunction<>(t, toLongFunction, labelKeys, labelValues));
     }
 
     @Override
@@ -126,7 +126,7 @@ class MetricRegistryTestUtils {
       this.record
           .metrics
           .get(this.name)
-          .add(new PointWithFunction(t, toLongFunction, labelKeys, labelValues));
+          .add(new PointWithFunction<>(t, toLongFunction, labelKeys, labelValues));
     }
 
     @Override

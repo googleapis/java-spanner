@@ -101,7 +101,7 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
     }
   }
 
-  private class TestCaseRunner {
+  private static class TestCaseRunner {
     private AbstractResultSet.GrpcResultSet resultSet;
     private SpannerRpc.ResultStreamConsumer consumer;
     private AbstractResultSet.GrpcStreamIterator stream;
@@ -184,7 +184,7 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
       }
     }
 
-    private List<?> getRawList(Struct actualRow, int index, Type elementType) throws Exception {
+    private List<?> getRawList(Struct actualRow, int index, Type elementType) {
       List<?> rawList = null;
       switch (elementType.getCode()) {
         case BOOL:

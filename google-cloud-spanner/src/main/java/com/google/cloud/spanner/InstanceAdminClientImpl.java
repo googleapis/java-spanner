@@ -16,11 +16,9 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.ProtoOperationTransformers;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.longrunning.OperationFutureImpl;
-import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.api.gax.paging.Page;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.Policy;
@@ -98,6 +96,9 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
   @Override
   public OperationFuture<Instance, CreateInstanceMetadata> createInstance(InstanceInfo instance)
       throws SpannerException {
+    Preconditions.checkArgument(
+        instance.getNodeCount() == 0 || instance.getProcessingUnits() == 0,
+        "Only one of nodeCount and processingUnits can be set when creating a new instance");
     String projectName = PROJECT_NAME_TEMPLATE.instantiate("project", projectId);
     OperationFuture<com.google.spanner.admin.instance.v1.Instance, CreateInstanceMetadata>
         rawOperationFuture =
@@ -106,23 +107,16 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
     return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
-        new ApiFunction<OperationSnapshot, Instance>() {
-          @Override
-          public Instance apply(OperationSnapshot snapshot) {
-            return Instance.fromProto(
+        snapshot ->
+            Instance.fromProto(
                 ProtoOperationTransformers.ResponseTransformer.create(
                         com.google.spanner.admin.instance.v1.Instance.class)
                     .apply(snapshot),
                 InstanceAdminClientImpl.this,
-                dbClient);
-          }
-        },
+                dbClient),
         ProtoOperationTransformers.MetadataTransformer.create(CreateInstanceMetadata.class),
-        new ApiFunction<Exception, Instance>() {
-          @Override
-          public Instance apply(Exception e) {
-            throw SpannerExceptionFactory.newSpannerException(e);
-          }
+        e -> {
+          throw SpannerExceptionFactory.newSpannerException(e);
         });
   }
 
@@ -167,7 +161,8 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
       InstanceInfo instance, InstanceInfo.InstanceField... fieldsToUpdate) {
     FieldMask fieldMask =
         fieldsToUpdate.length == 0
-            ? InstanceInfo.InstanceField.toFieldMask(InstanceInfo.InstanceField.values())
+            ? InstanceInfo.InstanceField.toFieldMask(
+                InstanceInfo.InstanceField.defaultFieldsToUpdate(instance))
             : InstanceInfo.InstanceField.toFieldMask(fieldsToUpdate);
 
     OperationFuture<com.google.spanner.admin.instance.v1.Instance, UpdateInstanceMetadata>
@@ -175,23 +170,16 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
     return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
-        new ApiFunction<OperationSnapshot, Instance>() {
-          @Override
-          public Instance apply(OperationSnapshot snapshot) {
-            return Instance.fromProto(
+        snapshot ->
+            Instance.fromProto(
                 ProtoOperationTransformers.ResponseTransformer.create(
                         com.google.spanner.admin.instance.v1.Instance.class)
                     .apply(snapshot),
                 InstanceAdminClientImpl.this,
-                dbClient);
-          }
-        },
+                dbClient),
         ProtoOperationTransformers.MetadataTransformer.create(UpdateInstanceMetadata.class),
-        new ApiFunction<Exception, Instance>() {
-          @Override
-          public Instance apply(Exception e) {
-            throw SpannerExceptionFactory.newSpannerException(e);
-          }
+        e -> {
+          throw SpannerExceptionFactory.newSpannerException(e);
         });
   }
 

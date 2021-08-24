@@ -16,13 +16,10 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.api.gax.retrying.RetrySettings;
-import com.google.api.gax.rpc.UnaryCallSettings;
-import com.google.api.gax.rpc.UnaryCallSettings.Builder;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.common.base.Throwables;
@@ -41,8 +38,8 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -246,12 +243,9 @@ public class DatabaseAdminGaxTest {
     builder
         .getDatabaseAdminStubSettingsBuilder()
         .applyToAllUnaryMethods(
-            new ApiFunction<UnaryCallSettings.Builder<?, ?>, Void>() {
-              @Override
-              public Void apply(Builder<?, ?> input) {
-                input.setRetrySettings(retrySettingsToUse);
-                return null;
-              }
+            input -> {
+              input.setRetrySettings(retrySettingsToUse);
+              return null;
             });
     if (!builder
         .getDatabaseAdminStubSettingsBuilder()
@@ -323,7 +317,8 @@ public class DatabaseAdminGaxTest {
     }
     for (int i = 0; i < 2; i++) {
       ListDatabasesResponse.Builder builder =
-          ListDatabasesResponse.newBuilder().addAllDatabases(Arrays.asList(databases.get(i)));
+          ListDatabasesResponse.newBuilder()
+              .addAllDatabases(Collections.singletonList(databases.get(i)));
       if (i < (databases.size() - 1)) {
         builder.setNextPageToken(String.format(nextPageToken, i));
       }
@@ -393,7 +388,10 @@ public class DatabaseAdminGaxTest {
     for (int i = 0; i < 2; i++) {
       OperationFuture<Void, UpdateDatabaseDdlMetadata> actualResponse =
           client.updateDatabaseDdl(
-              INSTANCE, "DATABASE", Arrays.asList("CREATE TABLE FOO"), "updateDatabaseDdlTest");
+              INSTANCE,
+              "DATABASE",
+              Collections.singletonList("CREATE TABLE FOO"),
+              "updateDatabaseDdlTest");
       try {
         actualResponse.get();
       } catch (ExecutionException e) {

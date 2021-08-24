@@ -18,7 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -27,7 +27,6 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
-import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -186,12 +185,8 @@ public class ResultSetsTest {
             .build();
     ResultSet rs = ResultSets.forRows(type, Arrays.asList(struct1, struct2));
 
-    try {
-      rs.getType();
-      fail("Exception expected");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("Must be preceded by a next() call");
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> rs.getType());
+    assertThat(e.getMessage()).contains("Must be preceded by a next() call");
 
     int columnIndex = 0;
     assertThat(rs.next()).isTrue();
@@ -300,13 +295,10 @@ public class ResultSetsTest {
     assertThat(rs.isNull(2)).isTrue();
     assertThat(rs.next()).isFalse();
 
-    try {
-      rs.getStats();
-      fail("Exception expected");
-    } catch (UnsupportedOperationException e) {
-      assertThat(e.getMessage())
-          .contains("ResultSetStats are available only for results returned from analyzeQuery");
-    }
+    UnsupportedOperationException unsupported =
+        assertThrows(UnsupportedOperationException.class, () -> rs.getStats());
+    assertThat(unsupported.getMessage())
+        .contains("ResultSetStats are available only for results returned from analyzeQuery");
   }
 
   @Test
@@ -319,13 +311,12 @@ public class ResultSetsTest {
     Struct value1 = Struct.newBuilder().set("g1").to("abc").build();
 
     Struct struct1 = Struct.newBuilder().set("f1").to(value1).set("f2").to((Long) null).build();
-    try {
-      ResultSets.forRows(type, Collections.singletonList(struct1));
-      fail("Expected exception");
-    } catch (UnsupportedOperationException ex) {
-      assertThat(ex.getMessage())
-          .contains("STRUCT-typed columns are not supported inside ResultSets.");
-    }
+    UnsupportedOperationException e =
+        assertThrows(
+            UnsupportedOperationException.class,
+            () -> ResultSets.forRows(type, Collections.singletonList(struct1)));
+    assertThat(e.getMessage())
+        .contains("STRUCT-typed columns are not supported inside ResultSets.");
   }
 
   @Test
@@ -396,14 +387,11 @@ public class ResultSetsTest {
     ResultSet rs =
         ResultSets.forRows(
             Type.struct(Type.StructField.of("f1", Type.string())),
-            Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
+            Collections.singletonList(Struct.newBuilder().set("f1").to("x").build()));
     rs.close();
-    try {
-      rs.getCurrentRowAsStruct();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> rs.getCurrentRowAsStruct());
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -411,13 +399,10 @@ public class ResultSetsTest {
     ResultSet rs =
         ResultSets.forRows(
             Type.struct(Type.StructField.of("f1", Type.string())),
-            Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
-    try {
-      rs.getCurrentRowAsStruct();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertNotNull(ex.getMessage());
-    }
+            Collections.singletonList(Struct.newBuilder().set("f1").to("x").build()));
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> rs.getCurrentRowAsStruct());
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -425,26 +410,23 @@ public class ResultSetsTest {
     ResultSet delegate =
         ResultSets.forRows(
             Type.struct(Type.StructField.of("f1", Type.string())),
-            Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
+            Collections.singletonList(Struct.newBuilder().set("f1").to("x").build()));
 
     final AtomicInteger count = new AtomicInteger();
     AsyncResultSet rs = ResultSets.toAsyncResultSet(delegate);
     ApiFuture<Void> fut =
         rs.setCallback(
             MoreExecutors.directExecutor(),
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                while (true) {
-                  switch (resultSet.tryNext()) {
-                    case DONE:
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case OK:
-                      count.incrementAndGet();
-                      assertThat(resultSet.getString("f1")).isEqualTo("x");
-                  }
+            resultSet -> {
+              while (true) {
+                switch (resultSet.tryNext()) {
+                  case DONE:
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  case OK:
+                    count.incrementAndGet();
+                    assertThat(resultSet.getString("f1")).isEqualTo("x");
                 }
               }
             });
@@ -457,7 +439,7 @@ public class ResultSetsTest {
     ResultSet delegate =
         ResultSets.forRows(
             Type.struct(Type.StructField.of("f1", Type.string())),
-            Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
+            Collections.singletonList(Struct.newBuilder().set("f1").to("x").build()));
 
     ExecutorProvider provider =
         new ExecutorProvider() {
@@ -478,19 +460,16 @@ public class ResultSetsTest {
     ApiFuture<Void> fut =
         rs.setCallback(
             MoreExecutors.directExecutor(),
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                while (true) {
-                  switch (resultSet.tryNext()) {
-                    case DONE:
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case OK:
-                      count.incrementAndGet();
-                      assertThat(resultSet.getString("f1")).isEqualTo("x");
-                  }
+            resultSet -> {
+              while (true) {
+                switch (resultSet.tryNext()) {
+                  case DONE:
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  case OK:
+                    count.incrementAndGet();
+                    assertThat(resultSet.getString("f1")).isEqualTo("x");
                 }
               }
             });
@@ -505,7 +484,7 @@ public class ResultSetsTest {
         ApiFutures.immediateFuture(
             ResultSets.forRows(
                 Type.struct(Type.StructField.of("f1", Type.string())),
-                Arrays.asList(Struct.newBuilder().set("f1").to("x").build())));
+                Collections.singletonList(Struct.newBuilder().set("f1").to("x").build())));
 
     ExecutorProvider provider =
         new ExecutorProvider() {
@@ -526,19 +505,16 @@ public class ResultSetsTest {
     ApiFuture<Void> fut =
         rs.setCallback(
             MoreExecutors.directExecutor(),
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                while (true) {
-                  switch (resultSet.tryNext()) {
-                    case DONE:
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case OK:
-                      count.incrementAndGet();
-                      assertThat(resultSet.getString("f1")).isEqualTo("x");
-                  }
+            resultSet -> {
+              while (true) {
+                switch (resultSet.tryNext()) {
+                  case DONE:
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  case OK:
+                    count.incrementAndGet();
+                    assertThat(resultSet.getString("f1")).isEqualTo("x");
                 }
               }
             });

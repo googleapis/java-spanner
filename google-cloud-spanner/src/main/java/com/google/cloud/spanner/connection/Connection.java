@@ -33,6 +33,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -96,6 +97,11 @@ import java.util.concurrent.TimeUnit;
  *   <li><code>
  *       SET OPTIMIZER_VERSION='&lt;version&gt;' | 'LATEST'
  *       </code>: Sets the value of <code>OPTIMIZER_VERSION</code> for this connection.
+ *   <li><code>SHOW OPTIMIZER_STATISTICS_PACKAGE</code>: Returns the current value of <code>
+ *       OPTIMIZER_STATISTICS_PACKAGE</code> of this connection as a {@link ResultSet}
+ *   <li><code>
+ *       SET OPTIMIZER_STATISTICS_PACKAGE='&lt;package&gt;' | ''
+ *       </code>: Sets the value of <code>OPTIMIZER_STATISTICS_PACKAGE</code> for this connection.
  *   <li><code>BEGIN [TRANSACTION]</code>: Begins a new transaction. This statement is optional when
  *       the connection is not in autocommit mode, as a new transaction will automatically be
  *       started when a query or update statement is issued. In autocommit mode, this statement will
@@ -326,6 +332,52 @@ public interface Connection extends AutoCloseable {
   TransactionMode getTransactionMode();
 
   /**
+   * Sets the transaction tag to use for the current transaction. This method may only be called
+   * when in a transaction and before any statements have been executed in the transaction.
+   *
+   * <p>The tag will be set as the transaction tag of all statements during the transaction, and as
+   * the transaction tag of the commit.
+   *
+   * <p>The transaction tag will automatically be cleared after the transaction has ended.
+   *
+   * @param tag The tag to use.
+   */
+  default void setTransactionTag(String tag) {
+    throw new UnsupportedOperationException();
+  }
+
+  /** @return The transaction tag of the current transaction. */
+  default String getTransactionTag() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Sets the statement tag to use for the next statement that is executed. The tag is automatically
+   * cleared after the statement is executed. Statement tags can be used both with autocommit=true
+   * and autocommit=false, and can be used for partitioned DML.
+   *
+   * <p>Statement tags are not allowed before COMMIT and ROLLBACK statements.
+   *
+   * <p>Statement tags are allowed before START BATCH DML statements and will be included in the
+   * {@link ExecuteBatchDmlRequest} that is sent to Spanner. Statement tags are not allowed inside a
+   * batch.
+   *
+   * @param tag The statement tag to use with the next statement that will be executed on this
+   *     connection.
+   */
+  default void setStatementTag(String tag) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * @return The statement tag that will be used with the next statement that is executed on this
+   *     connection.
+   */
+  default String getStatementTag() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
    * @return <code>true</code> if this connection will automatically retry read/write transactions
    *     that abort. This method may only be called when the connection is in read/write
    *     transactional mode and no transaction has been started yet.
@@ -447,6 +499,29 @@ public interface Connection extends AutoCloseable {
    * @return The query optimizer version that is currently used by this connection.
    */
   String getOptimizerVersion();
+
+  /**
+   * Sets the query optimizer statistics package
+   *
+   * @param optimizerStatisticsPackage The query optimizer statistics package to use. Must be a
+   *     string composed of letters, numbers, dashes and underscores or an empty string. The empty
+   *     string will instruct the connection to use the optimizer statistics package that is defined
+   *     the environment variable <code>SPANNER_OPTIMIZER_STATISTICS_PACKAGE</code>. If no value is
+   *     specified in the environment variable, the client level query optimizer is used. If none is
+   *     set, the default query optimizer of Cloud Spanner is used.
+   */
+  default void setOptimizerStatisticsPackage(String optimizerStatisticsPackage) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
+   * Gets the current query optimizer statistics package of this connection.
+   *
+   * @return The query optimizer statistics package that is currently used by this connection.
+   */
+  default String getOptimizerStatisticsPackage() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
 
   /**
    * Sets whether this connection should request commit statistics from Cloud Spanner for read/write

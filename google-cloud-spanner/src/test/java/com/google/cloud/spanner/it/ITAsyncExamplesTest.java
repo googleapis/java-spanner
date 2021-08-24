@@ -19,7 +19,6 @@ package com.google.cloud.spanner.it;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
@@ -39,8 +38,6 @@ import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
-import com.google.cloud.spanner.StructReader;
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
@@ -336,15 +333,7 @@ public class ITAsyncExamplesTest {
                   .bind("keys")
                   .toStringArray(keys1)
                   .build())) {
-        values1 =
-            rs.toListAsync(
-                new Function<StructReader, String>() {
-                  @Override
-                  public String apply(StructReader input) {
-                    return input.getString("StringValue");
-                  }
-                },
-                executor);
+        values1 = rs.toListAsync(input -> input.getString("StringValue"), executor);
       }
       try (AsyncResultSet rs =
           tx.executeQueryAsync(
@@ -352,35 +341,15 @@ public class ITAsyncExamplesTest {
                   .bind("keys")
                   .toStringArray(keys2)
                   .build())) {
-        values2 =
-            rs.toListAsync(
-                new Function<StructReader, String>() {
-                  @Override
-                  public String apply(StructReader input) {
-                    return input.getString("StringValue");
-                  }
-                },
-                executor);
+        values2 = rs.toListAsync(input -> input.getString("StringValue"), executor);
       }
     }
     ApiFuture<Iterable<String>> allValues =
         ApiFutures.transform(
             ApiFutures.allAsList(Arrays.asList(values1, values2)),
-            new ApiFunction<List<List<String>>, Iterable<String>>() {
-              @Override
-              public Iterable<String> apply(List<List<String>> input) {
-                return Iterables.mergeSorted(
-                    input,
-                    new Comparator<String>() {
-                      @Override
-                      public int compare(String o1, String o2) {
-                        // Compare based on numerical order (i.e. without the preceding 'v').
-                        return Integer.valueOf(o1.substring(1))
-                            .compareTo(Integer.valueOf(o2.substring(1)));
-                      }
-                    });
-              }
-            },
+            input ->
+                Iterables.mergeSorted(
+                    input, Comparator.comparing(o -> Integer.valueOf(o.substring(1)))),
             executor);
     assertThat(allValues.get()).containsExactly("v1", "v2", "v3", "v10", "v11", "v12");
   }
@@ -404,59 +373,53 @@ public class ITAsyncExamplesTest {
           AsyncResultSet unevenRs = tx.executeQueryAsync(unevenStatement)) {
         evenRs.setCallback(
             executor,
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                try {
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case DONE:
-                        evenFinished.set(true);
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                      case OK:
-                        synchronized (lock) {
-                          allValues.add(resultSet.getString("StringValue"));
-                        }
-                        evenReturnedFirstRow.countDown();
-                        return CallbackResponse.PAUSE;
-                    }
+            resultSet -> {
+              try {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case DONE:
+                      evenFinished.set(true);
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case OK:
+                      synchronized (lock) {
+                        allValues.add(resultSet.getString("StringValue"));
+                      }
+                      evenReturnedFirstRow.countDown();
+                      return CallbackResponse.PAUSE;
                   }
-                } catch (Throwable t) {
-                  evenFinished.setException(t);
-                  return CallbackResponse.DONE;
                 }
+              } catch (Throwable t) {
+                evenFinished.setException(t);
+                return CallbackResponse.DONE;
               }
             });
 
         unevenRs.setCallback(
             executor,
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                try {
-                  // Make sure the even result set has returned the first before we start the uneven
-                  // results.
-                  evenReturnedFirstRow.await();
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case DONE:
-                        unevenFinished.set(true);
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                      case OK:
-                        synchronized (lock) {
-                          allValues.add(resultSet.getString("StringValue"));
-                        }
-                        return CallbackResponse.PAUSE;
-                    }
+            resultSet -> {
+              try {
+                // Make sure the even result set has returned the first before we start the uneven
+                // results.
+                evenReturnedFirstRow.await();
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case DONE:
+                      unevenFinished.set(true);
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case OK:
+                      synchronized (lock) {
+                        allValues.add(resultSet.getString("StringValue"));
+                      }
+                      return CallbackResponse.PAUSE;
                   }
-                } catch (Throwable t) {
-                  unevenFinished.setException(t);
-                  return CallbackResponse.DONE;
                 }
+              } catch (Throwable t) {
+                unevenFinished.setException(t);
+                return CallbackResponse.DONE;
               }
             });
         while (!(evenFinished.isDone() && unevenFinished.isDone())) {
@@ -493,28 +456,25 @@ public class ITAsyncExamplesTest {
     try (AsyncResultSet rs = client.singleUse().readAsync(TABLE_NAME, KeySet.all(), ALL_COLUMNS)) {
       rs.setCallback(
           executor,
-          new ReadyCallback() {
-            @Override
-            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-              try {
-                while (true) {
-                  switch (resultSet.tryNext()) {
-                    case DONE:
-                      finished.set(true);
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case OK:
-                      values.add(resultSet.getString("StringValue"));
-                      receivedFirstRow.countDown();
-                      cancelled.await();
-                      break;
-                  }
+          resultSet -> {
+            try {
+              while (true) {
+                switch (resultSet.tryNext()) {
+                  case DONE:
+                    finished.set(true);
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  case OK:
+                    values.add(resultSet.getString("StringValue"));
+                    receivedFirstRow.countDown();
+                    cancelled.await();
+                    break;
                 }
-              } catch (Throwable t) {
-                finished.setException(t);
-                return CallbackResponse.DONE;
               }
+            } catch (Throwable t) {
+              finished.setException(t);
+              return CallbackResponse.DONE;
             }
           });
       receivedFirstRow.await();

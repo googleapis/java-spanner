@@ -18,7 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.google.api.core.ApiClock;
 import com.google.common.base.Stopwatch;
@@ -89,14 +89,14 @@ public class SpannerRetryHelperTest {
           }
           return 1 + 1;
         };
-    try {
-      SpannerRetryHelper.runTxWithRetriesOnAborted(
-          callable, SpannerRetryHelper.txRetrySettings, clock);
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertEquals(ErrorCode.ABORTED, e.getErrorCode());
-      assertEquals(1, attempts.get());
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                SpannerRetryHelper.runTxWithRetriesOnAborted(
+                    callable, SpannerRetryHelper.txRetrySettings, clock));
+    assertEquals(ErrorCode.ABORTED, e.getErrorCode());
+    assertEquals(1, attempts.get());
   }
 
   @Test
@@ -115,17 +115,12 @@ public class SpannerRetryHelperTest {
           withCancellation.cancel(new InterruptedException());
           return null;
         });
-    try {
-      withCancellation.run(() -> SpannerRetryHelper.runTxWithRetriesOnAborted(callable));
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      if (e.getErrorCode() != ErrorCode.CANCELLED) {
-        fail(
-            String.format(
-                "unexpected error %s, expected %s",
-                e.getErrorCode().name(), ErrorCode.CANCELLED.name()));
-      }
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                withCancellation.run(() -> SpannerRetryHelper.runTxWithRetriesOnAborted(callable)));
+    assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
   }
 
   @Test
@@ -135,19 +130,13 @@ public class SpannerRetryHelperTest {
         () -> {
           throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "test");
         };
-    try {
-      final CancellableContext withDeadline =
-          Context.current().withDeadline(Deadline.after(1L, TimeUnit.MILLISECONDS), service);
-      withDeadline.run(() -> SpannerRetryHelper.runTxWithRetriesOnAborted(callable));
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      if (e.getErrorCode() != ErrorCode.DEADLINE_EXCEEDED) {
-        fail(
-            String.format(
-                "unexpected error %s, expected %s",
-                e.getErrorCode().name(), ErrorCode.DEADLINE_EXCEEDED.name()));
-      }
-    }
+    final CancellableContext withDeadline =
+        Context.current().withDeadline(Deadline.after(1L, TimeUnit.MILLISECONDS), service);
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> withDeadline.run(() -> SpannerRetryHelper.runTxWithRetriesOnAborted(callable)));
+    assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
   }
 
   @Test
@@ -218,6 +207,7 @@ public class SpannerRetryHelperTest {
                 try {
                   Thread.sleep(Long.MAX_VALUE);
                 } catch (InterruptedException e) {
+                  // Ignored exception
                 }
               }
             });

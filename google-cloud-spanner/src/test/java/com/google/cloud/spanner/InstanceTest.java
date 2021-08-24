@@ -24,7 +24,7 @@ import com.google.cloud.Identity;
 import com.google.cloud.Policy;
 import com.google.cloud.Role;
 import com.google.common.testing.EqualsTester;
-import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,6 +52,7 @@ public class InstanceTest {
             .setInstanceConfigId(configId)
             .setDisplayName("test instance")
             .setNodeCount(1)
+            .setProcessingUnits(2000)
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
             .addLabel("region", "us")
@@ -60,6 +61,7 @@ public class InstanceTest {
     assertThat(instance.getInstanceConfigId()).isEqualTo(configId);
     assertThat(instance.getDisplayName()).isEqualTo("test instance");
     assertThat(instance.getNodeCount()).isEqualTo(1);
+    assertThat(instance.getProcessingUnits()).isEqualTo(2000);
     assertThat(instance.getState()).isEqualTo(InstanceInfo.State.READY);
     assertThat(instance.getLabels()).containsExactly("env", "prod", "region", "us");
 
@@ -68,6 +70,7 @@ public class InstanceTest {
     assertThat(instance.getInstanceConfigId()).isEqualTo(configId);
     assertThat(instance.getDisplayName()).isEqualTo("new test instance");
     assertThat(instance.getNodeCount()).isEqualTo(1);
+    assertThat(instance.getProcessingUnits()).isEqualTo(2000);
     assertThat(instance.getState()).isEqualTo(InstanceInfo.State.READY);
     assertThat(instance.getLabels()).containsExactly("env", "prod", "region", "us");
   }
@@ -82,6 +85,7 @@ public class InstanceTest {
             .setInstanceConfigId(configId)
             .setDisplayName("test instance")
             .setNodeCount(1)
+            .setProcessingUnits(2000)
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
             .addLabel("region", "us")
@@ -91,6 +95,7 @@ public class InstanceTest {
             .setInstanceConfigId(configId)
             .setDisplayName("test instance")
             .setNodeCount(1)
+            .setProcessingUnits(2000)
             .setState(InstanceInfo.State.READY)
             .addLabel("region", "us")
             .addLabel("env", "prod")
@@ -100,6 +105,7 @@ public class InstanceTest {
             .setInstanceConfigId(configId)
             .setDisplayName("test instance")
             .setNodeCount(1)
+            .setProcessingUnits(2000)
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
             .build();
@@ -163,7 +169,7 @@ public class InstanceTest {
   public void testIAMPermissions() {
     InstanceId id = new InstanceId("test-project", "test-instance");
     Instance instance = new Instance.Builder(instanceClient, dbClient, id).build();
-    Iterable<String> permissions = Arrays.asList("read");
+    Iterable<String> permissions = Collections.singletonList("read");
     instance.testIAMPermissions(permissions);
     verify(instanceClient).testInstanceIAMPermissions("test-instance", permissions);
   }

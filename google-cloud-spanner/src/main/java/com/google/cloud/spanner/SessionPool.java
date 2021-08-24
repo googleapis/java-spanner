@@ -39,7 +39,6 @@ import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEY
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
@@ -69,7 +68,6 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.Empty;
 import io.opencensus.common.Scope;
-import io.opencensus.common.ToLongFunction;
 import io.opencensus.metrics.DerivedLongCumulative;
 import io.opencensus.metrics.DerivedLongGauge;
 import io.opencensus.metrics.LabelValue;
@@ -579,14 +577,11 @@ class SessionPool {
     public ApiFuture<Void> setCallback(Executor executor, final ReadyCallback callback) {
       return super.setCallback(
           executor,
-          new ReadyCallback() {
-            @Override
-            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-              try {
-                return callback.cursorReady(resultSet);
-              } catch (SessionNotFoundException e) {
-                throw handler.handleSessionNotFound(e);
-              }
+          resultSet -> {
+            try {
+              return callback.cursorReady(resultSet);
+            } catch (SessionNotFoundException e) {
+              throw handler.handleSessionNotFound(e);
             }
           });
     }
@@ -668,11 +663,8 @@ class SessionPool {
         return ApiFutures.catching(
             AbstractReadContext.consumeSingleRowAsync(rs),
             SessionNotFoundException.class,
-            new ApiFunction<SessionNotFoundException, Struct>() {
-              @Override
-              public Struct apply(SessionNotFoundException input) {
-                throw handler.handleSessionNotFound(input);
-              }
+            input -> {
+              throw handler.handleSessionNotFound(input);
             },
             MoreExecutors.directExecutor());
       }
@@ -681,6 +673,11 @@ class SessionPool {
     @Override
     public void buffer(Mutation mutation) {
       delegate.buffer(mutation);
+    }
+
+    @Override
+    public ApiFuture<Void> bufferAsync(Mutation mutation) {
+      return delegate.bufferAsync(mutation);
     }
 
     @Override
@@ -699,11 +696,8 @@ class SessionPool {
         return ApiFutures.catching(
             AbstractReadContext.consumeSingleRowAsync(rs),
             SessionNotFoundException.class,
-            new ApiFunction<SessionNotFoundException, Struct>() {
-              @Override
-              public Struct apply(SessionNotFoundException input) {
-                throw handler.handleSessionNotFound(input);
-              }
+            input -> {
+              throw handler.handleSessionNotFound(input);
             },
             MoreExecutors.directExecutor());
       }
@@ -712,6 +706,11 @@ class SessionPool {
     @Override
     public void buffer(Iterable<Mutation> mutations) {
       delegate.buffer(mutations);
+    }
+
+    @Override
+    public ApiFuture<Void> bufferAsync(Iterable<Mutation> mutations) {
+      return delegate.bufferAsync(mutations);
     }
 
     @Override
@@ -728,11 +727,8 @@ class SessionPool {
       return ApiFutures.catching(
           delegate.executeUpdateAsync(statement, options),
           SessionNotFoundException.class,
-          new ApiFunction<SessionNotFoundException, Long>() {
-            @Override
-            public Long apply(SessionNotFoundException input) {
-              throw handler.handleSessionNotFound(input);
-            }
+          input -> {
+            throw handler.handleSessionNotFound(input);
           },
           MoreExecutors.directExecutor());
     }
@@ -752,11 +748,8 @@ class SessionPool {
       return ApiFutures.catching(
           delegate.batchUpdateAsync(statements, options),
           SessionNotFoundException.class,
-          new ApiFunction<SessionNotFoundException, long[]>() {
-            @Override
-            public long[] apply(SessionNotFoundException input) {
-              throw handler.handleSessionNotFound(input);
-            }
+          input -> {
+            throw handler.handleSessionNotFound(input);
           },
           MoreExecutors.directExecutor());
     }
@@ -1047,14 +1040,7 @@ class SessionPool {
     public ApiFuture<Timestamp> getCommitTimestamp() {
       checkState(commitResponse != null, "runAsync() has not yet been called");
       return ApiFutures.transform(
-          commitResponse,
-          new ApiFunction<CommitResponse, Timestamp>() {
-            @Override
-            public Timestamp apply(CommitResponse input) {
-              return input.getCommitTimestamp();
-            }
-          },
-          MoreExecutors.directExecutor());
+          commitResponse, CommitResponse::getCommitTimestamp, MoreExecutors.directExecutor());
     }
 
     @Override
@@ -1141,12 +1127,9 @@ class SessionPool {
     public ReadContext singleUse() {
       try {
         return new AutoClosingReadContext<>(
-            new Function<PooledSessionFuture, ReadContext>() {
-              @Override
-              public ReadContext apply(PooledSessionFuture session) {
-                PooledSession ps = session.get();
-                return ps.delegate.singleUse();
-              }
+            session -> {
+              PooledSession ps = session.get();
+              return ps.delegate.singleUse();
             },
             SessionPool.this,
             this,
@@ -1161,12 +1144,9 @@ class SessionPool {
     public ReadContext singleUse(final TimestampBound bound) {
       try {
         return new AutoClosingReadContext<>(
-            new Function<PooledSessionFuture, ReadContext>() {
-              @Override
-              public ReadContext apply(PooledSessionFuture session) {
-                PooledSession ps = session.get();
-                return ps.delegate.singleUse(bound);
-              }
+            session -> {
+              PooledSession ps = session.get();
+              return ps.delegate.singleUse(bound);
             },
             SessionPool.this,
             this,
@@ -1180,12 +1160,9 @@ class SessionPool {
     @Override
     public ReadOnlyTransaction singleUseReadOnlyTransaction() {
       return internalReadOnlyTransaction(
-          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
-            @Override
-            public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              PooledSession ps = session.get();
-              return ps.delegate.singleUseReadOnlyTransaction();
-            }
+          session -> {
+            PooledSession ps = session.get();
+            return ps.delegate.singleUseReadOnlyTransaction();
           },
           true);
     }
@@ -1193,12 +1170,9 @@ class SessionPool {
     @Override
     public ReadOnlyTransaction singleUseReadOnlyTransaction(final TimestampBound bound) {
       return internalReadOnlyTransaction(
-          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
-            @Override
-            public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              PooledSession ps = session.get();
-              return ps.delegate.singleUseReadOnlyTransaction(bound);
-            }
+          session -> {
+            PooledSession ps = session.get();
+            return ps.delegate.singleUseReadOnlyTransaction(bound);
           },
           true);
     }
@@ -1206,12 +1180,9 @@ class SessionPool {
     @Override
     public ReadOnlyTransaction readOnlyTransaction() {
       return internalReadOnlyTransaction(
-          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
-            @Override
-            public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              PooledSession ps = session.get();
-              return ps.delegate.readOnlyTransaction();
-            }
+          session -> {
+            PooledSession ps = session.get();
+            return ps.delegate.readOnlyTransaction();
           },
           false);
     }
@@ -1219,12 +1190,9 @@ class SessionPool {
     @Override
     public ReadOnlyTransaction readOnlyTransaction(final TimestampBound bound) {
       return internalReadOnlyTransaction(
-          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
-            @Override
-            public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              PooledSession ps = session.get();
-              return ps.delegate.readOnlyTransaction(bound);
-            }
+          session -> {
+            PooledSession ps = session.get();
+            return ps.delegate.readOnlyTransaction(bound);
           },
           false);
     }
@@ -2409,62 +2377,26 @@ class SessionPool {
     // invoked whenever metrics are collected.
     maxInUseSessionsMetric.removeTimeSeries(labelValues);
     maxInUseSessionsMetric.createTimeSeries(
-        labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.maxSessionsInUse;
-          }
-        });
+        labelValues, this, sessionPool -> sessionPool.maxSessionsInUse);
 
     // The value of a maxSessions is observed from a callback function. This function is invoked
     // whenever metrics are collected.
     maxAllowedSessionsMetric.removeTimeSeries(labelValues);
     maxAllowedSessionsMetric.createTimeSeries(
-        labelValues,
-        options,
-        new ToLongFunction<SessionPoolOptions>() {
-          @Override
-          public long applyAsLong(SessionPoolOptions options) {
-            return options.getMaxSessions();
-          }
-        });
+        labelValues, options, SessionPoolOptions::getMaxSessions);
 
     // The value of a numWaiterTimeouts is observed from a callback function. This function is
     // invoked whenever metrics are collected.
     sessionsTimeouts.removeTimeSeries(labelValues);
-    sessionsTimeouts.createTimeSeries(
-        labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.getNumWaiterTimeouts();
-          }
-        });
+    sessionsTimeouts.createTimeSeries(labelValues, this, SessionPool::getNumWaiterTimeouts);
 
     numAcquiredSessionsMetric.removeTimeSeries(labelValues);
     numAcquiredSessionsMetric.createTimeSeries(
-        labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.numSessionsAcquired;
-          }
-        });
+        labelValues, this, sessionPool -> sessionPool.numSessionsAcquired);
 
     numReleasedSessionsMetric.removeTimeSeries(labelValues);
     numReleasedSessionsMetric.createTimeSeries(
-        labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.numSessionsReleased;
-          }
-        });
+        labelValues, this, sessionPool -> sessionPool.numSessionsReleased);
 
     List<LabelValue> labelValuesWithBeingPreparedType = new ArrayList<>(labelValues);
     labelValuesWithBeingPreparedType.add(NUM_SESSIONS_BEING_PREPARED);
@@ -2472,39 +2404,20 @@ class SessionPool {
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithBeingPreparedType,
         this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            // TODO: Remove metric.
-            return 0L;
-          }
-        });
+        // TODO: Remove metric.
+        ignored -> 0L);
 
     List<LabelValue> labelValuesWithInUseType = new ArrayList<>(labelValues);
     labelValuesWithInUseType.add(NUM_IN_USE_SESSIONS);
     numSessionsInPoolMetric.removeTimeSeries(labelValuesWithInUseType);
     numSessionsInPoolMetric.createTimeSeries(
-        labelValuesWithInUseType,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.numSessionsInUse;
-          }
-        });
+        labelValuesWithInUseType, this, sessionPool -> sessionPool.numSessionsInUse);
 
     List<LabelValue> labelValuesWithReadType = new ArrayList<>(labelValues);
     labelValuesWithReadType.add(NUM_READ_SESSIONS);
     numSessionsInPoolMetric.removeTimeSeries(labelValuesWithReadType);
     numSessionsInPoolMetric.createTimeSeries(
-        labelValuesWithReadType,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.sessions.size();
-          }
-        });
+        labelValuesWithReadType, this, sessionPool -> sessionPool.sessions.size());
 
     List<LabelValue> labelValuesWithWriteType = new ArrayList<>(labelValues);
     labelValuesWithWriteType.add(NUM_WRITE_SESSIONS);
@@ -2512,12 +2425,7 @@ class SessionPool {
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithWriteType,
         this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            // TODO: Remove metric.
-            return 0L;
-          }
-        });
+        // TODO: Remove metric.
+        ignored -> 0L);
   }
 }

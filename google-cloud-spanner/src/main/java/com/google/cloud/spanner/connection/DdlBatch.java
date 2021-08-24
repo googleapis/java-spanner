@@ -25,6 +25,7 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -191,13 +192,14 @@ class DdlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update) {
+  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing updates is not allowed for DDL batches.");
   }
 
   @Override
-  public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
+  public ApiFuture<long[]> executeBatchUpdateAsync(
+      Iterable<ParsedStatement> updates, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing batch updates is not allowed for DDL batches.");
   }

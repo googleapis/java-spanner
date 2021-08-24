@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
@@ -32,19 +33,24 @@ final class RetriableBatchUpdate implements RetriableStatement {
   private final ReadWriteTransaction transaction;
   private final Iterable<Statement> statements;
   private final long[] updateCounts;
+  private final UpdateOption[] options;
 
   RetriableBatchUpdate(
-      ReadWriteTransaction transaction, Iterable<Statement> statements, long[] updateCounts) {
+      ReadWriteTransaction transaction,
+      Iterable<Statement> statements,
+      long[] updateCounts,
+      UpdateOption... options) {
     Preconditions.checkNotNull(transaction);
     Preconditions.checkNotNull(statements);
     this.transaction = transaction;
     this.statements = statements;
     this.updateCounts = updateCounts;
+    this.options = options;
   }
 
   @Override
   public void retry(AbortedException aborted) throws AbortedException {
-    long[] newCount = null;
+    long[] newCount;
     try {
       transaction
           .getStatementExecutor()
@@ -52,7 +58,7 @@ final class RetriableBatchUpdate implements RetriableStatement {
               ReadWriteTransaction.EXECUTE_BATCH_UPDATE_STATEMENT,
               StatementExecutionStep.RETRY_STATEMENT,
               transaction);
-      newCount = transaction.getReadContext().batchUpdate(statements);
+      newCount = transaction.getReadContext().batchUpdate(statements, options);
     } catch (AbortedException e) {
       // Just re-throw the AbortedException and let the retry logic determine whether another try
       // should be executed or not.

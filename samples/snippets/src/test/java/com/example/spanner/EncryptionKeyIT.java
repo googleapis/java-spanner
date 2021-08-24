@@ -18,20 +18,15 @@ package com.example.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -41,26 +36,13 @@ import org.junit.runners.JUnit4;
  * CreateBackupWithEncryptionKey} and {@link RestoreBackupWithEncryptionKey}
  */
 @RunWith(JUnit4.class)
-public class EncryptionKeyIT {
+@Ignore
+public class EncryptionKeyIT extends SampleTestBase {
 
-  private static String projectId;
-  private static final String instanceId = System.getProperty("spanner.test.instance");
-  private static final List<String> databasesToDrop = new ArrayList<>();
-  private static final List<String> backupsToDrop = new ArrayList<>();
-  private static DatabaseAdminClient databaseAdminClient;
-  private static Spanner spanner;
   private static String key;
 
   @BeforeClass
   public static void setUp() {
-    final SpannerOptions options = SpannerOptions
-        .newBuilder()
-        .setAutoThrottleAdministrativeRequests()
-        .build();
-    projectId = options.getProjectId();
-    spanner = options.getService();
-    databaseAdminClient = spanner.getDatabaseAdminClient();
-
     String keyLocation = Preconditions
         .checkNotNull(System.getProperty("spanner.test.key.location"));
     String keyRing = Preconditions.checkNotNull(System.getProperty("spanner.test.key.ring"));
@@ -69,34 +51,11 @@ public class EncryptionKeyIT {
         + "/cryptoKeys/" + keyName;
   }
 
-  @AfterClass
-  public static void tearDown() {
-    for (String databaseId : databasesToDrop) {
-      try {
-        databaseAdminClient.dropDatabase(instanceId, databaseId);
-      } catch (Exception e) {
-        System.out.println("Failed to drop database " + databaseId + ", skipping...");
-      }
-    }
-    for (String backupId : backupsToDrop) {
-      try {
-        databaseAdminClient.deleteBackup(instanceId, backupId);
-      } catch (Exception e) {
-        System.out.println("Failed to drop backup " + backupId + ", skipping...");
-      }
-    }
-    spanner.close();
-  }
-
   @Test
   public void testEncryptedDatabaseAndBackupAndRestore() throws Exception {
-    final String databaseId = DatabaseIdGenerator.generateDatabaseId();
-    final String backupId = DatabaseIdGenerator.generateDatabaseId();
-    final String restoreId = DatabaseIdGenerator.generateDatabaseId();
-
-    databasesToDrop.add(databaseId);
-    backupsToDrop.add(backupId);
-    databasesToDrop.add(restoreId);
+    final String databaseId = idGenerator.generateDatabaseId();
+    final String backupId = idGenerator.generateBackupId();
+    final String restoreId = idGenerator.generateDatabaseId();
 
     String out = SampleRunner.runSample(() ->
         CreateDatabaseWithEncryptionKey.createDatabaseWithEncryptionKey(
@@ -140,6 +99,7 @@ public class EncryptionKeyIT {
   }
 
   static class ShouldRetryBackupOperation implements Predicate<SpannerException> {
+
     private static final int MAX_ATTEMPTS = 20;
     private int attempts = 0;
 
