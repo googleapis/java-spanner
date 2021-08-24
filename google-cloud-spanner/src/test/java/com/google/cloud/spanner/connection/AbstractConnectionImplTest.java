@@ -23,6 +23,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
@@ -428,6 +429,32 @@ public abstract class AbstractConnectionImplTest {
       log("BEGIN TRANSACTION;");
       exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
       connection.beginTransaction();
+    }
+  }
+
+  abstract boolean isSetTransactionTagAllowed();
+
+  @Test
+  public void testSetTransactionTag() {
+    try (Connection connection = getConnection()) {
+      String tag = "some-tag";
+      if (isSetTransactionTagAllowed()) {
+        log(String.format("SET TRANSACTION_TAG = '%s';", tag));
+        connection.setTransactionTag(tag);
+        assertEquals(tag, connection.getTransactionTag());
+      } else {
+        expectSpannerException(
+            "SET TRANSACTION_TAG should not be allowed",
+            new ConnectionConsumer() {
+              @Override
+              public void accept(Connection t) {
+                log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+                log(String.format("SET TRANSACTION_TAG = '%s';", tag));
+                t.setTransactionTag(tag);
+              }
+            },
+            connection);
+      }
     }
   }
 

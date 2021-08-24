@@ -205,6 +205,7 @@ public class InstanceAdminClientTest {
             .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .addAllReplicas(new ArrayList<ReplicaInfo>())
+            .addAllLeaderOptions(new ArrayList<String>())
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
@@ -245,6 +246,7 @@ public class InstanceAdminClientTest {
             .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .addAllReplicas(new ArrayList<ReplicaInfo>())
+            .addAllLeaderOptions(new ArrayList<String>())
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 

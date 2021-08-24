@@ -97,6 +97,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final SessionPoolOptions sessionPoolOptions;
   private final int prefetchChunks;
   private final int numChannels;
+  private final String transportChannelExecutorThreadNameFormat;
   private final ImmutableMap<String, String> sessionLabels;
   private final SpannerStubSettings spannerStubSettings;
   private final InstanceAdminStubSettings instanceAdminStubSettings;
@@ -553,6 +554,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         MAX_CHANNELS,
         numChannels);
 
+    transportChannelExecutorThreadNameFormat = builder.transportChannelExecutorThreadNameFormat;
     channelProvider = builder.channelProvider;
     channelConfigurator = builder.channelConfigurator;
     interceptorProvider = builder.interceptorProvider;
@@ -666,6 +668,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     /** By default, we create 4 channels per {@link SpannerOptions} */
     private int numChannels = 4;
 
+    private String transportChannelExecutorThreadNameFormat = "Cloud-Spanner-TransportChannel-%d";
+
     private int prefetchChunks = DEFAULT_PREFETCH_CHUNKS;
     private SessionPoolOptions sessionPoolOptions;
     private ImmutableMap<String, String> sessionLabels;
@@ -720,6 +724,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.emulatorHost = null;
       }
       this.numChannels = options.numChannels;
+      this.transportChannelExecutorThreadNameFormat =
+          options.transportChannelExecutorThreadNameFormat;
       this.sessionPoolOptions = options.sessionPoolOptions;
       this.prefetchChunks = options.prefetchChunks;
       this.sessionLabels = options.sessionLabels;
@@ -790,6 +796,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setNumChannels(int numChannels) {
       this.numChannels = numChannels;
+      return this;
+    }
+
+    /** Sets the name format for transport channel threads that should be used by this instance. */
+    Builder setTransportChannelExecutorThreadNameFormat(
+        String transportChannelExecutorThreadNameFormat) {
+      this.transportChannelExecutorThreadNameFormat = transportChannelExecutorThreadNameFormat;
       return this;
     }
 
@@ -1151,6 +1164,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     SpannerOptions.environment = SpannerEnvironmentImpl.INSTANCE;
   }
 
+  @Override
+  protected String getDefaultProject() {
+    String projectId = getDefaultProjectId();
+    // The project id does not matter if we are using the emulator.
+    if (projectId == null && System.getenv("SPANNER_EMULATOR_HOST") != null) {
+      return "emulator-project";
+    }
+    return projectId;
+  }
+
   public TransportChannelProvider getChannelProvider() {
     return channelProvider;
   }
@@ -1166,6 +1189,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public int getNumChannels() {
     return numChannels;
+  }
+
+  public String getTransportChannelExecutorThreadNameFormat() {
+    return transportChannelExecutorThreadNameFormat;
   }
 
   public SessionPoolOptions getSessionPoolOptions() {

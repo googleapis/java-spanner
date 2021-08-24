@@ -27,6 +27,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -66,6 +67,7 @@ import com.google.cloud.spanner.connection.ConnectionStatementExecutorImpl.State
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.GetExactStaleness;
 import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
+import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
@@ -1441,6 +1443,141 @@ public class ConnectionImplTest {
                       .build()),
               AnalyzeMode.NONE,
               prefetchOption);
+    }
+  }
+
+  @Test
+  public void testStatementTagAlwaysAllowed() {
+    ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
+    when(connectionOptions.isAutocommit()).thenReturn(true);
+    SpannerPool spannerPool = mock(SpannerPool.class);
+    DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    final UnitOfWork unitOfWork = mock(UnitOfWork.class);
+    when(unitOfWork.executeQueryAsync(
+            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>anyVararg()))
+        .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
+    try (ConnectionImpl connection =
+        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
+          @Override
+          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
+            return unitOfWork;
+          }
+        }) {
+      assertTrue(connection.isAutocommit());
+
+      assertNull(connection.getStatementTag());
+      connection.setStatementTag("tag");
+      assertEquals("tag", connection.getStatementTag());
+      connection.setStatementTag(null);
+      assertNull(connection.getStatementTag());
+
+      connection.setAutocommit(false);
+
+      connection.setStatementTag("tag");
+      assertEquals("tag", connection.getStatementTag());
+      connection.setStatementTag(null);
+      assertNull(connection.getStatementTag());
+
+      // Start a transaction
+      connection.execute(Statement.of("SELECT FOO FROM BAR"));
+      connection.setStatementTag("tag");
+      assertEquals("tag", connection.getStatementTag());
+      connection.setStatementTag(null);
+      assertNull(connection.getStatementTag());
+    }
+  }
+
+  @Test
+  public void testTransactionTagAllowedInTransaction() {
+    ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
+    when(connectionOptions.isAutocommit()).thenReturn(false);
+    SpannerPool spannerPool = mock(SpannerPool.class);
+    DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    try (ConnectionImpl connection =
+        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
+      assertFalse(connection.isAutocommit());
+
+      assertNull(connection.getTransactionTag());
+      connection.setTransactionTag("tag");
+      assertEquals("tag", connection.getTransactionTag());
+      connection.setTransactionTag(null);
+      assertNull(connection.getTransactionTag());
+
+      // Committing or rolling back a transaction should clear the transaction tag for the next
+      // transaction.
+      connection.setTransactionTag("tag");
+      assertEquals("tag", connection.getTransactionTag());
+      connection.commit();
+      assertNull(connection.getTransactionTag());
+
+      connection.setTransactionTag("tag");
+      assertEquals("tag", connection.getTransactionTag());
+      connection.rollback();
+      assertNull(connection.getTransactionTag());
+
+      // Temporary transactions should also allow transaction tags.
+      connection.setAutocommit(false);
+      connection.beginTransaction();
+      assertNull(connection.getTransactionTag());
+      connection.setTransactionTag("tag");
+      assertEquals("tag", connection.getTransactionTag());
+      connection.commit();
+      assertNull(connection.getTransactionTag());
+    }
+  }
+
+  @Test
+  public void testTransactionTagNotAllowedWithoutTransaction() {
+    ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
+    when(connectionOptions.isAutocommit()).thenReturn(true);
+    SpannerPool spannerPool = mock(SpannerPool.class);
+    DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    try (ConnectionImpl connection =
+        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
+      assertTrue(connection.isAutocommit());
+
+      try {
+        connection.setTransactionTag("tag");
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+      }
+    }
+  }
+
+  @Test
+  public void testTransactionTagNotAllowedAfterTransactionStarted() {
+    ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
+    when(connectionOptions.isAutocommit()).thenReturn(false);
+    SpannerPool spannerPool = mock(SpannerPool.class);
+    DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    final UnitOfWork unitOfWork = mock(UnitOfWork.class);
+    // Indicate that a transaction has been started.
+    when(unitOfWork.getState()).thenReturn(UnitOfWorkState.STARTED);
+    when(unitOfWork.executeQueryAsync(
+            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>anyVararg()))
+        .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
+    when(unitOfWork.rollbackAsync()).thenReturn(ApiFutures.immediateFuture(null));
+    try (ConnectionImpl connection =
+        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
+          @Override
+          UnitOfWork createNewUnitOfWork() {
+            return unitOfWork;
+          }
+        }) {
+      // Start a transaction
+      connection.execute(Statement.of("SELECT FOO FROM BAR"));
+      try {
+        connection.setTransactionTag("tag");
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+      }
+      assertNull(connection.getTransactionTag());
     }
   }
 }

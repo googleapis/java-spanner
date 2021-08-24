@@ -1553,7 +1553,9 @@ public class SpannerSample {
                 db,
                 QueryOptions.newBuilder()
                     .setOptimizerVersion("1")
-                    .setOptimizerStatisticsPackage("auto_20191128_14_47_22UTC")
+                    // The list of available statistics packages can be found by querying the
+                    // "INFORMATION_SCHEMA.SPANNER_STATISTICS" table.
+                    .setOptimizerStatisticsPackage("latest")
                     .build())
             .build();
     Spanner spanner = options.getService();
@@ -1580,7 +1582,8 @@ public class SpannerSample {
                     .withQueryOptions(
                         QueryOptions.newBuilder()
                             .setOptimizerVersion("1")
-                            .setOptimizerStatisticsPackage("latest")
+                            // The list of available statistics packages can be found by querying the
+                        // "INFORMATION_SCHEMA.SPANNER_STATISTICS" table..setOptimizerStatisticsPackage("latest")
                             .build())
                     .build())) {
       while (resultSet.next()) {

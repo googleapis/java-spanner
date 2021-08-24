@@ -102,6 +102,22 @@
 	  "examplePrerequisiteStatements": ["update foo set bar=1"]
 	},
 	{
+	  "name": "SHOW VARIABLE STATEMENT_TAG",
+	  "executorName": "ClientSideStatementNoParamExecutor",
+	  "resultType": "RESULT_SET",
+	  "regex": "(?is)\\A\\s*show\\s+variable\\s+statement_tag\\s*\\z",
+	  "method": "statementShowStatementTag",
+	  "exampleStatements": ["show variable statement_tag"]
+	},
+	{
+	  "name": "SHOW VARIABLE TRANSACTION_TAG",
+	  "executorName": "ClientSideStatementNoParamExecutor",
+	  "resultType": "RESULT_SET",
+	  "regex": "(?is)\\A\\s*show\\s+variable\\s+transaction_tag\\s*\\z",
+	  "method": "statementShowTransactionTag",
+	  "exampleStatements": ["show variable transaction_tag"]
+	},
+	{
 	  "name": "BEGIN TRANSACTION",
 	  "executorName": "ClientSideStatementNoParamExecutor",
 	  "resultType": "NO_RESULT",
@@ -315,6 +331,35 @@
 	    "separator": "=",
 	    "allowedValues": "(TRUE|FALSE)",
 	    "converterName": "ClientSideStatementValueConverters$BooleanConverter"
+	  }
+	},
+	{
+	  "name": "SET STATEMENT_TAG = '<tag>'",
+	  "executorName": "ClientSideStatementSetExecutor",
+	  "resultType": "NO_RESULT",
+	  "regex": "(?is)\\A\\s*set\\s+statement_tag\\s*(?:=)\\s*(.*)\\z",
+	  "method": "statementSetStatementTag",
+	  "exampleStatements": ["set statement_tag='tag1'", "set statement_tag='tag2'", "set statement_tag=''"],
+	  "setStatement": {
+	    "propertyName": "STATEMENT_TAG",
+	    "separator": "=",
+	    "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
+	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
+	  }
+	},
+	{
+	  "name": "SET TRANSACTION_TAG = '<tag>'",
+	  "executorName": "ClientSideStatementSetExecutor",
+	  "resultType": "NO_RESULT",
+	  "regex": "(?is)\\A\\s*set\\s+transaction_tag\\s*(?:=)\\s*(.*)\\z",
+	  "method": "statementSetTransactionTag",
+	  "exampleStatements": ["set transaction_tag='tag1'", "set transaction_tag='tag2'", "set transaction_tag=''"],
+	  "examplePrerequisiteStatements": ["set autocommit = false"],
+	  "setStatement": {
+	    "propertyName": "TRANSACTION_TAG",
+	    "separator": "=",
+	    "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
+	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
 	  }
 	}
 	]

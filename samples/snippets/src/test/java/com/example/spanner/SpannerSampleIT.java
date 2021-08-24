@@ -19,12 +19,16 @@ package com.example.spanner;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Backup;
 import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.InstanceAdminClient;
+import com.google.cloud.spanner.InstanceConfigId;
 import com.google.cloud.spanner.InstanceId;
+import com.google.cloud.spanner.InstanceInfo;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -402,9 +406,23 @@ public class SpannerSampleIT {
 
     out = runSample("deletebackup");
     assertThat(out).contains("Deleted backup [" + backupId + "]");
+}
 
+  @Test
+  public void testEncryptedDatabaseAndBackupSamples() throws Exception {
     String projectId = spanner.getOptions().getProjectId();
-    out =
+    // Create a separate instance for this test to prevent multiple parallel backup operations on
+    // the same instance that need to wait for each other.
+    String instanceId = String.format("encrypted-test-%s", UUID.randomUUID());
+    InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
+    instanceAdminClient
+        .createInstance(InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
+            .setDisplayName("Encrypted test instance")
+            .setInstanceConfigId(InstanceConfigId.of(projectId, "regional-us-central1"))
+            .setNodeCount(1).build())
+        .get();
+    try {
+      Stringout =
         SampleRunner.runSample(
             () ->
                 CreateDatabaseWithEncryptionKey.createDatabaseWithEncryptionKey(
@@ -450,7 +468,34 @@ public class SpannerSampleIT {
                 projectId,
                 instanceId,
                 encryptedBackupId,
-                key));
+                key));} finally {
+      // Delete the backups from the test instance first, as the instance can only be deleted once
+      // all backups have been deleted.
+      deleteAllBackups(instanceId);
+      instanceAdminClient.deleteInstance(instanceId);
+    }
+  }
+
+  private void deleteAllBackups(String instanceId) throws InterruptedException {
+    for (Backup backup : dbClient.listBackups(instanceId).iterateAll()) {
+      int attempts = 0;
+      while (attempts < 30) {
+        try {
+          attempts++;
+          backup.delete();
+          break;
+        } catch (SpannerException e) {
+          if (e.getErrorCode() == ErrorCode.FAILED_PRECONDITION && e.getMessage()
+              .contains("Please try deleting the backup once the restore or post-restore optimize "
+                  + "operations have completed on these databases.")) {
+            // Wait 30 seconds and then retry.
+            Thread.sleep(30_000L);
+          } else {
+            throw e;
+          }
+        }
+      }
+    }
   }
 
   private String runSampleRunnable(Runnable sample) {

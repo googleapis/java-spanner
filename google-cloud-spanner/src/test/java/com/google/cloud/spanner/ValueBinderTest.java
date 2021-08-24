@@ -115,7 +115,7 @@ public class ValueBinderTest {
       } else if (binderMethod.getParameterTypes().length == 1) {
         // Test unary null.
         if (!binderMethod.getParameterTypes()[0].isPrimitive()) {
-          if (method.getName().toLowerCase().equals(JSON_METHOD_NAME)) {
+          if (method.getName().equalsIgnoreCase(JSON_METHOD_NAME)) {
             // Special case for json to change the method from ValueBinder.to(String) to
             // ValueBinder.to(Value)
             binderMethod = ValueBinder.class.getMethod("to", Value.class);
@@ -131,7 +131,7 @@ public class ValueBinderTest {
         }
         // Test unary non-null.
         Object defaultObject;
-        if (method.getName().toLowerCase().equals(JSON_METHOD_NAME)) {
+        if (method.getName().equalsIgnoreCase(JSON_METHOD_NAME)) {
           defaultObject = defaultJson();
           binderMethod = ValueBinder.class.getMethod("to", Value.class);
           assertThat(binderMethod.invoke(binder, Value.json(defaultJson())))

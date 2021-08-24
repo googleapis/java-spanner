@@ -223,6 +223,7 @@ public class DatabaseAdminClientTest {
             .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
+            .setDefaultLeader("defaultLeader759009962")
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -278,6 +279,7 @@ public class DatabaseAdminClientTest {
             .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
+            .setDefaultLeader("defaultLeader759009962")
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -333,6 +335,7 @@ public class DatabaseAdminClientTest {
             .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
+            .setDefaultLeader("defaultLeader759009962")
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -377,6 +380,7 @@ public class DatabaseAdminClientTest {
             .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
+            .setDefaultLeader("defaultLeader759009962")
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1307,6 +1311,7 @@ public class DatabaseAdminClientTest {
             .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
+            .setDefaultLeader("defaultLeader759009962")
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1365,6 +1370,7 @@ public class DatabaseAdminClientTest {
             .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
+            .setDefaultLeader("defaultLeader759009962")
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1423,6 +1429,7 @@ public class DatabaseAdminClientTest {
             .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
+            .setDefaultLeader("defaultLeader759009962")
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1481,6 +1488,7 @@ public class DatabaseAdminClientTest {
             .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
+            .setDefaultLeader("defaultLeader759009962")
             .build();
     Operation resultOperation =
         Operation.newBuilder()

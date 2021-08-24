@@ -17,8 +17,6 @@
 package com.google.cloud.spanner.spi.v1;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -29,11 +27,9 @@ import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
-import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -44,18 +40,10 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
-import com.google.cloud.spanner.admin.instance.v1.MockInstanceAdminImpl;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc.AdminRequestsLimitExceededRetryAlgorithm;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
-import com.google.common.base.Stopwatch;
 import com.google.protobuf.ListValue;
 import com.google.rpc.ErrorInfo;
-import com.google.spanner.admin.database.v1.Database;
-import com.google.spanner.admin.database.v1.DatabaseName;
-import com.google.spanner.admin.instance.v1.Instance;
-import com.google.spanner.admin.instance.v1.InstanceConfigName;
-import com.google.spanner.admin.instance.v1.InstanceName;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.GetSessionRequest;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -78,12 +66,9 @@ import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -92,7 +77,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.threeten.bp.Duration;
 
-/** Tests that opening and closing multiple Spanner instances does not leak any threads. */
 @RunWith(JUnit4.class)
 public class GapicSpannerRpcTest {
 
@@ -143,8 +127,6 @@ public class GapicSpannerRpcTest {
                   System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(1L, TimeUnit.DAYS))));
 
   private static MockSpannerServiceImpl mockSpanner;
-  private static MockInstanceAdminImpl mockInstanceAdmin;
-  private static MockDatabaseAdminImpl mockDatabaseAdmin;
   private static Server server;
   private static InetSocketAddress address;
   private static final Map<SpannerRpc.Option, Object> optionsMap = new HashMap<>();
@@ -164,14 +146,10 @@ public class GapicSpannerRpcTest {
     mockSpanner.putStatementResult(StatementResult.query(SELECT1AND2, SELECT1_RESULTSET));
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_FOO_STATEMENT, 1L));
 
-    mockInstanceAdmin = new MockInstanceAdminImpl();
-    mockDatabaseAdmin = new MockDatabaseAdminImpl();
     address = new InetSocketAddress("localhost", 0);
     server =
         NettyServerBuilder.forAddress(address)
             .addService(mockSpanner)
-            .addService(mockInstanceAdmin)
-            .addService(mockDatabaseAdmin)
             // Add a server interceptor that will check that we receive the variable OAuth token
             // from the CallCredentials, and not the one set as static credentials.
             .intercept(
@@ -206,122 +184,6 @@ public class GapicSpannerRpcTest {
   @After
   public void reset() {
     mockSpanner.reset();
-  }
-
-  private static final int NUMBER_OF_TEST_RUNS = 2;
-  private static final int NUM_THREADS_PER_CHANNEL = 4;
-  private static final String SPANNER_THREAD_NAME = "Cloud-Spanner-TransportChannel";
-  private static final String THREAD_PATTERN = "%s-[0-9]+";
-
-  @Test
-  public void testCloseAllThreadsWhenClosingSpanner() throws InterruptedException {
-    int initialNumberOfThreads = getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false, 0);
-    for (int i = 0; i < NUMBER_OF_TEST_RUNS; i++) {
-      // Create Spanner instance.
-      SpannerOptions options = createSpannerOptions();
-      Spanner spanner = options.getService();
-      // Get a database client and do a query. This should initiate threads for the Spanner service.
-      DatabaseClient client =
-          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-      List<ResultSet> resultSets = new ArrayList<>();
-      // SpannerStub affiliates a channel with a session, so we need to use multiple sessions
-      // to ensure we also hit multiple channels.
-      for (int i2 = 0; i2 < options.getSessionPoolOptions().getMaxSessions(); i2++) {
-        ResultSet rs = client.singleUse().executeQuery(SELECT1AND2);
-        // Execute ResultSet#next() to send the query to Spanner.
-        rs.next();
-        // Delay closing the result set in order to force the use of multiple sessions.
-        // As each session is linked to one transport channel, using multiple different
-        // sessions should initialize multiple transport channels.
-        resultSets.add(rs);
-        // Check whether the number of expected threads has been reached.
-        if (getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false, initialNumberOfThreads)
-            == options.getNumChannels() * NUM_THREADS_PER_CHANNEL + initialNumberOfThreads) {
-          break;
-        }
-      }
-      for (ResultSet rs : resultSets) {
-        rs.close();
-      }
-      // Then do a request to the InstanceAdmin service and check the number of threads.
-      // Doing a request should initialize a thread pool for the underlying InstanceAdminClient.
-      for (int i2 = 0; i2 < options.getNumChannels() * 2; i2++) {
-        mockGetInstanceResponse();
-        InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
-        instanceAdminClient.getInstance("projects/[PROJECT]/instances/[INSTANCE]");
-      }
-      // Then do a request to the DatabaseAdmin service and check the number of threads.
-      // Doing a request should initialize a thread pool for the underlying DatabaseAdminClient.
-      for (int i2 = 0; i2 < options.getNumChannels() * 2; i2++) {
-        mockGetDatabaseResponse();
-        DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
-        databaseAdminClient.getDatabase("projects/[PROJECT]/instances/[INSTANCE]", "[DATABASE]");
-      }
-      // Now close the Spanner instance and check whether the threads are shutdown or not.
-      spanner.close();
-      // Wait for up to two seconds to allow the threads to actually shutdown.
-      Stopwatch watch = Stopwatch.createStarted();
-      while (getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false, initialNumberOfThreads)
-              > initialNumberOfThreads
-          && watch.elapsed(TimeUnit.SECONDS) < 2) {
-        Thread.sleep(10L);
-      }
-      assertThat(
-          getNumberOfThreadsWithName(SPANNER_THREAD_NAME, true, initialNumberOfThreads),
-          is(equalTo(initialNumberOfThreads)));
-    }
-  }
-
-  /**
-   * Tests that multiple open {@link Spanner} objects at the same time does not share any executors
-   * or worker threads, and that all of them are shutdown when the {@link Spanner} object is closed.
-   */
-  @Test
-  public void testMultipleOpenSpanners() throws InterruptedException {
-    List<Spanner> spanners = new ArrayList<>();
-    int initialNumberOfThreads = getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false, 0);
-    for (int openSpanners = 1; openSpanners <= 3; openSpanners++) {
-      // Create Spanner instance.
-      SpannerOptions options = createSpannerOptions();
-      Spanner spanner = options.getService();
-      spanners.add(spanner);
-      // Get a database client and do a query. This should initiate threads for the Spanner service.
-      DatabaseClient client =
-          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-      List<ResultSet> resultSets = new ArrayList<>();
-      // SpannerStub affiliates a channel with a session, so we need to use multiple sessions
-      // to ensure we also hit multiple channels.
-      for (int sessionCount = 0;
-          sessionCount < options.getSessionPoolOptions().getMaxSessions()
-              && getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false, initialNumberOfThreads)
-                  < options.getNumChannels() * NUM_THREADS_PER_CHANNEL * openSpanners
-                      + initialNumberOfThreads;
-          sessionCount++) {
-        ResultSet resultSet = client.singleUse().executeQuery(SELECT1AND2);
-        // Execute ResultSet#next() to send the query to Spanner.
-        resultSet.next();
-        // Delay closing the result set in order to force the use of multiple sessions.
-        // As each session is linked to one transport channel, using multiple different
-        // sessions should initialize multiple transport channels.
-        resultSets.add(resultSet);
-      }
-      for (ResultSet resultSet : resultSets) {
-        resultSet.close();
-      }
-    }
-    for (Spanner spanner : spanners) {
-      spanner.close();
-    }
-    // Wait a little to allow the threads to actually shutdown.
-    Stopwatch watch = Stopwatch.createStarted();
-    while (getNumberOfThreadsWithName(SPANNER_THREAD_NAME, false, initialNumberOfThreads)
-            > initialNumberOfThreads
-        && watch.elapsed(TimeUnit.SECONDS) < 5) {
-      Thread.sleep(10L);
-    }
-    assertEquals(
-        initialNumberOfThreads,
-        getNumberOfThreadsWithName(SPANNER_THREAD_NAME, true, initialNumberOfThreads));
   }
 
   @Test
@@ -542,67 +404,5 @@ public class GapicSpannerRpcTest {
         // the static credentials.
         .setCallCredentialsProvider(() -> MoreCallCredentials.from(VARIABLE_CREDENTIALS))
         .build();
-  }
-
-  private int getNumberOfThreadsWithName(String serviceName, boolean dumpStack, int expected) {
-    Pattern pattern = Pattern.compile(String.format(THREAD_PATTERN, serviceName));
-    ThreadGroup group = Thread.currentThread().getThreadGroup();
-    while (group.getParent() != null) {
-      group = group.getParent();
-    }
-    Thread[] threads = new Thread[100 * NUMBER_OF_TEST_RUNS];
-    int numberOfThreads = group.enumerate(threads);
-    int res = 0;
-    List<Thread> found = new ArrayList<>();
-    for (int i = 0; i < numberOfThreads; i++) {
-      if (pattern.matcher(threads[i].getName()).matches()) {
-        if (dumpStack) {
-          found.add(threads[i]);
-        }
-        res++;
-      }
-    }
-    if (dumpStack && res > expected) {
-      found.stream().forEach(t -> dumpThread(t));
-    }
-    return res;
-  }
-
-  private void dumpThread(Thread thread) {
-    StringBuilder dump = new StringBuilder();
-    dump.append('"');
-    dump.append(thread.getName());
-    dump.append("\" ");
-    final Thread.State state = thread.getState();
-    dump.append("\n   java.lang.Thread.State: ");
-    dump.append(state);
-    final StackTraceElement[] stackTraceElements = thread.getStackTrace();
-    for (final StackTraceElement stackTraceElement : stackTraceElements) {
-      dump.append("\n        at ");
-      dump.append(stackTraceElement);
-    }
-    dump.append("\n\n");
-    System.out.print(dump.toString());
-  }
-
-  private void mockGetInstanceResponse() {
-    InstanceName name2 = InstanceName.of("[PROJECT]", "[INSTANCE]");
-    InstanceConfigName config = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
-    String displayName = "displayName1615086568";
-    int nodeCount = 1539922066;
-    Instance expectedResponse =
-        Instance.newBuilder()
-            .setName(name2.toString())
-            .setConfig(config.toString())
-            .setDisplayName(displayName)
-            .setNodeCount(nodeCount)
-            .build();
-    mockInstanceAdmin.addResponse(expectedResponse);
-  }
-
-  private void mockGetDatabaseResponse() {
-    DatabaseName name2 = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
-    Database expectedResponse = Database.newBuilder().setName(name2.toString()).build();
-    mockDatabaseAdmin.addResponse(expectedResponse);
   }
 }

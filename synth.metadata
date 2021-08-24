@@ -4,22 +4,22 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "b2a56c68695b6209e20f9f86d83d7c5a0f39c7a8"
+        "sha": "2d605e405c9efad5b18f66eff9e5c9942413404f"
       }
     },
     {
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "fb5c4fbc1ded09e6958d6be7ca36a9221dc7e52f",
-        "internalRef": "381156241"
+        "sha": "a739464cacb3aa6d375683aefe16b79c21da1bb0",
+        "internalRef": "389657692"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "87254ac89a9559864c0a245d6b150406439ce3d8"
+        "sha": "ff01716e16d2c6e87eaf87197b753ac9fcbbed5d"
       }
     }
   ],
@@ -64,7 +64,6 @@
     ".github/workflows/approve-readme.yaml",
     ".github/workflows/auto-release.yaml",
     ".github/workflows/ci.yaml",
-    ".github/workflows/samples.yaml",
     ".kokoro/build.bat",
     ".kokoro/build.sh",
     ".kokoro/coerce_logs.sh",
@@ -167,8 +166,6 @@
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseMetadataOrBuilder.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseRequest.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CreateDatabaseRequestOrBuilder.java",
-    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CryptoKeyName.java",
-    "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/CryptoKeyVersionName.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/Database.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DatabaseName.java",
     "proto-google-cloud-spanner-admin-database-v1/src/main/java/com/google/spanner/admin/database/v1/DatabaseOrBuilder.java",

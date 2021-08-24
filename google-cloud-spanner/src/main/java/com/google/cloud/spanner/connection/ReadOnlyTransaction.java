@@ -23,6 +23,7 @@ import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -156,14 +157,15 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update) {
+  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "Update statements are not allowed for read-only transactions");
   }
 
   @Override
-  public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
+  public ApiFuture<long[]> executeBatchUpdateAsync(
+      Iterable<ParsedStatement> updates, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Batch updates are not allowed for read-only transactions.");
   }

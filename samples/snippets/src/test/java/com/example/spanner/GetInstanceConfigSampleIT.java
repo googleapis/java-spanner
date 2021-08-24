@@ -16,21 +16,22 @@
 
 package com.example.spanner;
 
-import java.util.UUID;
+import static org.junit.Assert.assertTrue;
 
-public class DatabaseIdGenerator {
+import org.junit.Test;
 
-  private static final int DATABASE_NAME_MAX_SIZE = 30;
-  private static final String BASE_DATABASE_ID = System.getProperty(
-      "spanner.sample.database",
-      "sampletest"
-  );
+public class GetInstanceConfigSampleIT extends SampleTestBase {
 
-  static String generateDatabaseId() {
-    return (
-        BASE_DATABASE_ID
-            + "-"
-            + UUID.randomUUID().toString().replaceAll("-", "")
-    ).substring(0, DATABASE_NAME_MAX_SIZE);
+  @Test
+  public void testGetInstanceConfig() throws Exception {
+    final String out = SampleRunner.runSample(() ->
+        GetInstanceConfigSample.getInstanceConfig(projectId, instanceConfigName)
+    );
+
+    assertTrue(
+        "Expected instance config " + instanceConfigName + " to contain at least one leader option."
+            + " Output received was " + out,
+        out.matches("(?s:.*\\[.+\\].*)")
+    );
   }
 }

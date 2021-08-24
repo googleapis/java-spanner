@@ -1,5 +1,78 @@
 # Changelog
 
+### [6.11.1](https://www.github.com/googleapis/java-spanner/compare/v6.11.0...v6.11.1) (2021-08-17)
+
+
+### Dependencies
+
+* update dependency org.openjdk.jmh:jmh-core to v1.33 ([#1338](https://www.github.com/googleapis/java-spanner/issues/1338)) ([fa88b73](https://www.github.com/googleapis/java-spanner/commit/fa88b73e6535d5754e5b10493d76ddb0a33033b1))
+* update dependency org.openjdk.jmh:jmh-generator-annprocess to v1.33 ([#1339](https://www.github.com/googleapis/java-spanner/issues/1339)) ([94cfecc](https://www.github.com/googleapis/java-spanner/commit/94cfeccc336e2e56c9eb296b5c7096f575863147))
+
+## [6.11.0](https://www.github.com/googleapis/java-spanner/compare/v6.10.1...v6.11.0) (2021-08-12)
+
+
+### Features
+
+* release gapic-generator-java v2.0.0 ([#1334](https://www.github.com/googleapis/java-spanner/issues/1334)) ([368fb80](https://www.github.com/googleapis/java-spanner/commit/368fb80e8ae9fd9bee7af81c13bef32b26361877))
+
+
+### Documentation
+
+* use 'latest' stats package in samples to prevent build failures ([#1313](https://www.github.com/googleapis/java-spanner/issues/1313)) ([6a8351c](https://www.github.com/googleapis/java-spanner/commit/6a8351c9d2cf0fe805b87a611ff1d94d4dba3f87)), closes [#1273](https://www.github.com/googleapis/java-spanner/issues/1273)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3 ([#1341](https://www.github.com/googleapis/java-spanner/issues/1341)) ([de7b540](https://www.github.com/googleapis/java-spanner/commit/de7b54094b6bb2928616e2e04215f4ba5b8bc750))
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v2 ([#1331](https://www.github.com/googleapis/java-spanner/issues/1331)) ([cd1ad7b](https://www.github.com/googleapis/java-spanner/commit/cd1ad7b4cd1716b60f3f96ee953f76c126742788))
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v2.0.1 ([#1344](https://www.github.com/googleapis/java-spanner/issues/1344)) ([300837f](https://www.github.com/googleapis/java-spanner/commit/300837f0a27dab89285895f753aececb8d641da9))
+* update dependency com.google.cloud:google-cloud-trace to v2 ([#1342](https://www.github.com/googleapis/java-spanner/issues/1342)) ([d24886b](https://www.github.com/googleapis/java-spanner/commit/d24886b058fd87ea744a4f375fb6affd8f9398d9))
+
+### [6.10.1](https://www.github.com/googleapis/java-spanner/compare/v6.10.0...v6.10.1) (2021-07-21)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:grpc-gcp to v1.1.0 ([#1306](https://www.github.com/googleapis/java-spanner/issues/1306)) ([fa0c65d](https://www.github.com/googleapis/java-spanner/commit/fa0c65dc31236e05e6b10508281cf58e82ee87ef))
+
+## [6.10.0](https://www.github.com/googleapis/java-spanner/compare/v6.9.1...v6.10.0) (2021-07-19)
+
+
+### Features
+
+* exposes default leader in database, and leader options / replicas in instance config ([#1283](https://www.github.com/googleapis/java-spanner/issues/1283)) ([d72c2f7](https://www.github.com/googleapis/java-spanner/commit/d72c2f79f8cf0b83da00060587a079ce859c87a2))
+
+
+### Bug Fixes
+
+* shorten the test instance name ([#1284](https://www.github.com/googleapis/java-spanner/issues/1284)) ([07c3eae](https://www.github.com/googleapis/java-spanner/commit/07c3eae134df0a0a3814e0e7225e14741a269771))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-trace to v1.4.2 ([#1291](https://www.github.com/googleapis/java-spanner/issues/1291)) ([c4208ed](https://www.github.com/googleapis/java-spanner/commit/c4208ed5992ba5d1525df488a9eff64471fb0030))
+
+### [6.9.1](https://www.github.com/googleapis/java-spanner/compare/v6.9.0...v6.9.1) (2021-07-05)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v2.3.4 ([#1278](https://www.github.com/googleapis/java-spanner/issues/1278)) ([c692336](https://www.github.com/googleapis/java-spanner/commit/c6923366bc407b45a6bbf736b4a1d8efad8b67b7))
+
+## [6.9.0](https://www.github.com/googleapis/java-spanner/compare/v6.8.0...v6.9.0) (2021-07-05)
+
+
+### Features
+
+* add support for tagging to Connection API ([#623](https://www.github.com/googleapis/java-spanner/issues/623)) ([5722372](https://www.github.com/googleapis/java-spanner/commit/5722372b7869828e372dec06e80e5b0e7280af61))
+* **spanner:** add leader_options to InstanceConfig and default_leader to Database ([#1271](https://www.github.com/googleapis/java-spanner/issues/1271)) ([f257671](https://www.github.com/googleapis/java-spanner/commit/f25767144344f0df67662f1b3ef662902384599a))
+* support setting an async executor provider ([#1263](https://www.github.com/googleapis/java-spanner/issues/1263)) ([369c8a7](https://www.github.com/googleapis/java-spanner/commit/369c8a771ec48fa1476236f800b0e8eb5982a33c))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v1.4.0 ([#1269](https://www.github.com/googleapis/java-spanner/issues/1269)) ([025e162](https://www.github.com/googleapis/java-spanner/commit/025e162813d6321dabe49e32f00934f9ae334e24))
+
 ## [6.8.0](https://www.github.com/googleapis/java-spanner/compare/v6.7.0...v6.8.0) (2021-06-29)
 
 
