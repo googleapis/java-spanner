@@ -197,6 +197,18 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
+  public String getJson(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getJson(columnIndex);
+  }
+
+  @Override
+  public String getJson(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getJson(columnName);
+  }
+
+  @Override
   public ByteArray getBytes(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getBytes(columnIndex);
@@ -338,6 +350,18 @@ class DirectExecuteResultSet implements ResultSet {
   public List<String> getStringList(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getStringList(columnName);
+  }
+
+  @Override
+  public List<String> getJsonList(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getJsonList(columnIndex);
+  }
+
+  @Override
+  public List<String> getJsonList(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getJsonList(columnName);
   }
 
   @Override

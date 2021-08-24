@@ -65,6 +65,7 @@ public final class Key implements Serializable {
    *   <li>{@code Float}, {@code Double} for the {@code FLOAT64} Cloud Spanner type
    *   <li>{@code BigDecimal} for the {@code NUMERIC} Cloud Spanner type
    *   <li>{@code String} for the {@code STRING} Cloud Spanner type
+   *   <li>{@code String} for the {@code JSON} Cloud Spanner type
    *   <li>{@link ByteArray} for the {@code BYTES} Cloud Spanner type
    *   <li>{@link Timestamp} for the {@code TIMESTAMP} Cloud Spanner type
    *   <li>{@link Date} for the {@code DATE} Cloud Spanner type
@@ -228,6 +229,7 @@ public final class Key implements Serializable {
    *   <li>{@code FLOAT64} is represented by {@code Double}
    *   <li>{@code NUMERIC} is represented by {@code BigDecimal}
    *   <li>{@code STRING} is represented by {@code String}
+   *   <li>{@code JSON} is represented by {@code String}
    *   <li>{@code BYTES} is represented by {@link ByteArray}
    *   <li>{@code TIMESTAMP} is represented by {@link Timestamp}
    *   <li>{@code DATE} is represented by {@link Date}

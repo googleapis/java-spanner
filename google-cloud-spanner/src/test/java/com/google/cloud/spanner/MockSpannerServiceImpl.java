@@ -1202,6 +1202,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               case TIMESTAMP:
                 builder.bind(entry.getKey()).toTimestampArray(null);
                 break;
+              case JSON:
+                builder.bind(entry.getKey()).toJsonArray(null);
+                break;
               case STRUCT:
               case TYPE_CODE_UNSPECIFIED:
               case UNRECOGNIZED:
@@ -1234,6 +1237,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             break;
           case TIMESTAMP:
             builder.bind(entry.getKey()).to((com.google.cloud.Timestamp) null);
+            break;
+          case JSON:
+            builder.bind(entry.getKey()).to(Value.json((String) null));
             break;
           case TYPE_CODE_UNSPECIFIED:
           case UNRECOGNIZED:
@@ -1301,6 +1307,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                             GrpcStruct.decodeArrayValue(
                                 com.google.cloud.spanner.Type.timestamp(), value.getListValue()));
                 break;
+              case JSON:
+                builder
+                    .bind(entry.getKey())
+                    .toJsonArray(
+                        (Iterable<String>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.json(), value.getListValue()));
+                break;
               case STRUCT:
               case TYPE_CODE_UNSPECIFIED:
               case UNRECOGNIZED:
@@ -1334,6 +1348,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             builder
                 .bind(entry.getKey())
                 .to(com.google.cloud.Timestamp.parseTimestamp(value.getStringValue()));
+            break;
+          case JSON:
+            builder.bind(entry.getKey()).to(Value.json(value.getStringValue()));
             break;
           case TYPE_CODE_UNSPECIFIED:
           case UNRECOGNIZED:
