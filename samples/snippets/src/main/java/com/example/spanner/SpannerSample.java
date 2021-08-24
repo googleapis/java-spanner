@@ -1582,8 +1582,10 @@ public class SpannerSample {
                     .withQueryOptions(
                         QueryOptions.newBuilder()
                             .setOptimizerVersion("1")
-                            // The list of available statistics packages can be found by querying the
-                        // "INFORMATION_SCHEMA.SPANNER_STATISTICS" table..setOptimizerStatisticsPackage("latest")
+                            // The list of available statistics packages can be found by querying
+                            // the
+                            // "INFORMATION_SCHEMA.SPANNER_STATISTICS"
+                            // table..setOptimizerStatisticsPackage("latest")
                             .build())
                     .build())) {
       while (resultSet.next()) {
