@@ -1,5 +1,12 @@
 # Changelog
 
+### [6.4.4-sp.1](https://www.github.com/googleapis/java-spanner/compare/6.4.4...v6.4.4-sp.1) (2021-08-24)
+
+
+### Features
+
+* configure initial sp version ([#1366](https://www.github.com/googleapis/java-spanner/issues/1366)) ([830277c](https://www.github.com/googleapis/java-spanner/commit/830277c3d1b50f32b1250f54c0d17c03abbaaa67))
+
 ### [6.4.4](https://www.github.com/googleapis/java-spanner/compare/v6.4.3...v6.4.4) (2021-05-17)
 
 
