@@ -95,7 +95,7 @@ public class SpannerSampleIT {
     key = String.format("projects/%s/locations/%s/keyRings/%s/cryptoKeys/%s",
         options.getProjectId(), keyLocation, keyRing, keyName);
   }
-
+  
   static void deleteStaleTestDatabases(String instanceId, String baseDbId) {
     Timestamp now = Timestamp.now();
     Pattern samplePattern = getTestDbIdPattern(baseDbId);
@@ -407,7 +407,7 @@ public class SpannerSampleIT {
     out = runSample("deletebackup");
     assertThat(out).contains("Deleted backup [" + backupId + "]");
   }
-
+  
   @Test
   public void testEncryptedDatabaseAndBackupSamples() throws Exception {
     String projectId = spanner.getOptions().getProjectId();
@@ -510,7 +510,7 @@ public class SpannerSampleIT {
   private static int countOccurrences(String input, String search) {
     return input.split(search).length - 1;
   }
-
+  
   private static String toComparableId(String baseId, String existingId) {
     String zeroUuid = "00000000-0000-0000-0000-0000-00000000";
     int shouldBeLength = (baseId + "-" + zeroUuid).length();
@@ -523,7 +523,7 @@ public class SpannerSampleIT {
         baseDbId + "-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{8}",
         Pattern.CASE_INSENSITIVE);
   }
-
+  
   static String formatForTest(String name) {
     return name + "-" + UUID.randomUUID().toString().substring(0, DBID_LENGTH);
   }
