@@ -148,7 +148,7 @@ public class SpannerSample {
     final boolean outdoorVenue;
     final float popularityScore;
     final BigDecimal revenue;
-    final String venueDetails;
+    final Value venueDetails;
 
     Venue(
         long venueId,
@@ -160,7 +160,7 @@ public class SpannerSample {
         boolean outdoorVenue,
         float popularityScore,
         BigDecimal revenue,
-        String venueDetails) {
+        Value venueDetails) {
       this.venueId = venueId;
       this.venueName = venueName;
       this.venueInfo = venueInfo;
@@ -1276,7 +1276,7 @@ public class SpannerSample {
                     + "  OutdoorVenue    BOOL, "
                     + "  PopularityScore FLOAT64, "
                     + "  Revenue         NUMERIC, "
-                    + "  VenueDetails  JSON, "
+                    + "  VenueDetails    JSON, "
                     + "  LastUpdateTime  TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true)"
                     + ") PRIMARY KEY (VenueId)"),
             null);
@@ -1522,28 +1522,6 @@ public class SpannerSample {
     }
   }
   // [END spanner_query_with_numeric_parameter]
-
-  // [START spanner_query_with_json_parameter]
-  static void queryWithJson(DatabaseClient dbClient) {
-    String exampleJson = "{rating: 9}";
-    Statement statement =
-        Statement.newBuilder(
-                "SELECT VenueId, VenueDetails\n"
-                    + "FROM Venues\n"
-                    + "WHERE JSON_VALUE(VenueDetails, '$.rating') = "
-                    + "JSON_VALUE(@details, '$.rating')")
-            .bind("details")
-            .to(Value.json(exampleJson))
-            .build();
-    try (ResultSet resultSet = dbClient.singleUse().executeQuery(statement)) {
-      while (resultSet.next()) {
-        System.out.printf(
-            "VenueId: %s, VenueDetails: %s%n",
-            resultSet.getLong("VenueId"), resultSet.getString("VenueDetails"));
-      }
-    }
-  }
-  // [END spanner_query_with_json_parameter]
 
   // [START spanner_create_client_with_query_options]
   static void clientWithQueryOptions(DatabaseId db) {
@@ -2088,9 +2066,6 @@ public class SpannerSample {
         break;
       case "querywithnumeric":
         queryWithNumeric(dbClient);
-        break;
-      case "querywithjson":
-        queryWithJson(dbClient);
         break;
       case "clientwithqueryoptions":
         clientWithQueryOptions(database);

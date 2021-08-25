@@ -306,9 +306,6 @@ public class SpannerSampleIT {
     assertThat(out).contains("19 Venue 19 1200100");
     assertThat(out).contains("42 Venue 42 390650.99");
 
-    out = runSample("querywithjson");
-    assertThat(out).contains("19 VenueId: 19, VenueDetails: {\"rating\":9,\"open\":true}");
-
     out = runSample("clientwithqueryoptions");
     assertThat(out).contains("1 1 Total Junk");
     out = runSample("querywithqueryoptions");
