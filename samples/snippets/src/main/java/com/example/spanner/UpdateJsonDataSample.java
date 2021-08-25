@@ -23,6 +23,7 @@ import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.Value;
 import com.google.common.collect.ImmutableList;
 
 class UpdateJsonDataSample {
