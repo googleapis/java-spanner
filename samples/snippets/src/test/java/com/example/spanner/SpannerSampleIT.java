@@ -403,7 +403,7 @@ public class SpannerSampleIT {
 
     out = runSample("deletebackup");
     assertThat(out).contains("Deleted backup [" + backupId + "]");
-  }
+}
 
   @Test
   public void testEncryptedDatabaseAndBackupSamples() throws Exception {
@@ -413,62 +413,59 @@ public class SpannerSampleIT {
     String instanceId = String.format("encrypted-test-%s", UUID.randomUUID());
     InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
     instanceAdminClient
-        .createInstance(
-            InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
-                .setDisplayName("Encrypted test instance")
-                .setInstanceConfigId(InstanceConfigId.of(projectId, "regional-us-central1"))
-                .setNodeCount(1)
-                .build())
+        .createInstance(InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
+            .setDisplayName("Encrypted test instance")
+            .setInstanceConfigId(InstanceConfigId.of(projectId, "regional-us-central1"))
+            .setNodeCount(1).build())
         .get();
     try {
       Stringout =
-          SampleRunner.runSample(
-              () ->
-                  CreateDatabaseWithEncryptionKey.createDatabaseWithEncryptionKey(
-                      dbClient, projectId, instanceId, encryptedDatabaseId, key));
-      assertThat(out)
-          .contains(
-              String.format(
-                  "Database projects/%s/instances/%s/databases/%s created with encryption key %s",
-                  projectId, instanceId, encryptedDatabaseId, key));
+        SampleRunner.runSample(
+            () ->
+                CreateDatabaseWithEncryptionKey.createDatabaseWithEncryptionKey(
+                    dbClient, projectId, instanceId, encryptedDatabaseId, key));
+    assertThat(out)
+        .contains(
+            String.format(
+                "Database projects/%s/instances/%s/databases/%s created with encryption key %s",
+                projectId, instanceId, encryptedDatabaseId, key));
 
-      out =
-          SampleRunner.runSampleWithRetry(
-              () ->
-                  CreateBackupWithEncryptionKey.createBackupWithEncryptionKey(
-                      dbClient, projectId, instanceId, encryptedDatabaseId, encryptedBackupId, key),
-              new ShouldRetryBackupOperation());
-      assertThat(out)
-          .containsMatch(
-              String.format(
-                  "Backup projects/%s/instances/%s/backups/%s of size \\d+ bytes "
-                      + "was created at (.*) using encryption key %s",
-                  projectId, instanceId, encryptedBackupId, key));
+    out =
+        SampleRunner.runSampleWithRetry(
+            () ->
+                CreateBackupWithEncryptionKey.createBackupWithEncryptionKey(
+                    dbClient, projectId, instanceId, encryptedDatabaseId, encryptedBackupId, key),
+            new ShouldRetryBackupOperation());
+    assertThat(out)
+        .containsMatch(
+            String.format(
+                "Backup projects/%s/instances/%s/backups/%s of size \\d+ bytes "
+                    + "was created at (.*) using encryption key %s",
+                projectId, instanceId, encryptedBackupId, key));
 
-      out =
-          SampleRunner.runSampleWithRetry(
-              () ->
-                  RestoreBackupWithEncryptionKey.restoreBackupWithEncryptionKey(
-                      dbClient, projectId, instanceId, encryptedBackupId, encryptedRestoreId, key),
-              new ShouldRetryBackupOperation());
-      assertThat(out)
-          .contains(
-              String.format(
-                  "Database projects/%s/instances/%s/databases/%s"
-                      + " restored to projects/%s/instances/%s/databases/%s"
-                      + " from backup projects/%s/instances/%s/backups/%s"
-                      + " using encryption key %s",
-                  projectId,
-                  instanceId,
-                  encryptedDatabaseId,
-                  projectId,
-                  instanceId,
-                  encryptedRestoreId,
-                  projectId,
-                  instanceId,
-                  encryptedBackupId,
-                  key));
-    } finally {
+    out =
+        SampleRunner.runSampleWithRetry(
+            () ->
+                RestoreBackupWithEncryptionKey.restoreBackupWithEncryptionKey(
+                    dbClient, projectId, instanceId, encryptedBackupId, encryptedRestoreId, key),
+            new ShouldRetryBackupOperation());
+    assertThat(out)
+        .contains(
+            String.format(
+                "Database projects/%s/instances/%s/databases/%s"
+                    + " restored to projects/%s/instances/%s/databases/%s"
+                    + " from backup projects/%s/instances/%s/backups/%s"
+                    + " using encryption key %s",
+                projectId,
+                instanceId,
+                encryptedDatabaseId,
+                projectId,
+                instanceId,
+                encryptedRestoreId,
+                projectId,
+                instanceId,
+                encryptedBackupId,
+                key));} finally {
       // Delete the backups from the test instance first, as the instance can only be deleted once
       // all backups have been deleted.
       deleteAllBackups(instanceId);
@@ -485,11 +482,9 @@ public class SpannerSampleIT {
           backup.delete();
           break;
         } catch (SpannerException e) {
-          if (e.getErrorCode() == ErrorCode.FAILED_PRECONDITION
-              && e.getMessage()
-                  .contains(
-                      "Please try deleting the backup once the restore or post-restore optimize "
-                          + "operations have completed on these databases.")) {
+          if (e.getErrorCode() == ErrorCode.FAILED_PRECONDITION && e.getMessage()
+              .contains("Please try deleting the backup once the restore or post-restore optimize "
+                  + "operations have completed on these databases.")) {
             // Wait 30 seconds and then retry.
             Thread.sleep(30_000L);
           } else {
