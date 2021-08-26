@@ -178,6 +178,11 @@ public abstract class ValueBinder<R> {
     return handle(Value.stringArray(values));
   }
 
+  /** Binds to {@code Value.jsonArray(values)} */
+  public R toJsonArray(@Nullable Iterable<String> values) {
+    return handle(Value.jsonArray(values));
+  }
+
   /** Binds to {@code Value.bytesArray(values)} */
   public R toBytesArray(@Nullable Iterable<ByteArray> values) {
     return handle(Value.bytesArray(values));

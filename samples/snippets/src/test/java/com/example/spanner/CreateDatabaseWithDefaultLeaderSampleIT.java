@@ -19,36 +19,41 @@ package com.example.spanner;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.InstanceConfig;
-import org.junit.Ignore;
+import com.google.cloud.spanner.InstanceConfigId;
 import org.junit.Test;
 
 public class CreateDatabaseWithDefaultLeaderSampleIT extends SampleTestBase {
 
-  @Ignore("Skipping until we have a MR instance to run this on")
   @Test
   public void testCreateDatabaseWithDefaultLeader() throws Exception {
     final String databaseId = idGenerator.generateDatabaseId();
 
     // Finds possible default leader
-    final InstanceConfig config = instanceAdminClient.getInstanceConfig(instanceConfigName);
+    final InstanceConfigId instanceConfigId = instanceAdminClient
+        .getInstance(multiRegionalInstanceId)
+        .getInstanceConfigId();
+    final InstanceConfig config = instanceAdminClient
+        .getInstanceConfig(instanceConfigId.getInstanceConfig());
     assertTrue(
-        "Expected instance config " + instanceConfigName + " to have at least one leader option",
-        config.getLeaderOptions().size() > 0);
+        "Expected instance config " + instanceConfigId + " to have at least one leader option",
+        config.getLeaderOptions().size() > 0
+    );
     final String defaultLeader = config.getLeaderOptions().get(0);
 
     // Runs sample
-    final String out =
-        SampleRunner.runSample(
-            () ->
-                CreateDatabaseWithDefaultLeaderSample.createDatabaseWithDefaultLeader(
-                    projectId, instanceId, databaseId, defaultLeader));
+    final String out = SampleRunner.runSample(() ->
+        CreateDatabaseWithDefaultLeaderSample.createDatabaseWithDefaultLeader(
+            projectId,
+            multiRegionalInstanceId,
+            databaseId,
+            defaultLeader
+        )
+    );
 
     assertTrue(
-        "Expected created database to have default leader "
-            + defaultLeader
-            + "."
-            + " Output received was "
-            + out,
-        out.contains("Default leader: " + defaultLeader));
+        "Expected created database to have default leader " + defaultLeader + "."
+            + " Output received was " + out,
+        out.contains("Default leader: " + defaultLeader)
+    );
   }
 }
