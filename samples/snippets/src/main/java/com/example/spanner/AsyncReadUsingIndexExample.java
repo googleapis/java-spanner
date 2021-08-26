@@ -17,6 +17,7 @@
 package com.example.spanner;
 
 // [START spanner_async_read_data_with_index]
+
 import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
@@ -77,17 +78,17 @@ class AsyncReadUsingIndexExample {
                   try {
                     while (true) {
                       switch (resultSet.tryNext()) {
-                          // OK: There is a row ready.
+                        // OK: There is a row ready.
                         case OK:
                           System.out.printf(
                               "%d %s%n", resultSet.getLong(0), resultSet.getString(1));
                           break;
 
-                          // DONE: There are no more rows in the result set.
+                        // DONE: There are no more rows in the result set.
                         case DONE:
                           return CallbackResponse.DONE;
 
-                          // NOT_READY: There are currently no more rows in the buffer.
+                        // NOT_READY: There are currently no more rows in the buffer.
                         case NOT_READY:
                           return CallbackResponse.CONTINUE;
 
