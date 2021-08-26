@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package main.java.com.example.spanner;
+package com.example.spanner;
 
 // [START spanner_query_with_json_parameter]
 import com.google.cloud.spanner.DatabaseClient;

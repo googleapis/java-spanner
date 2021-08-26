@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package main.java.com.example.spanner;
+package com.example.spanner;
 
 // [START spanner_add_json_column]
 import com.google.api.gax.longrunning.OperationFuture;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package main.java.com.example.spanner;
+package com.example.spanner;
 
 // [START spanner_update_data_with_json_column]
 
