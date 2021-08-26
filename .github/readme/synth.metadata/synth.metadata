@@ -4,14 +4,14 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "fb3cf03fb458b8b294602bd0c07d946907a66288"
+        "sha": "269e74edb514eca0f2c686f5ba4498104a00f50b"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "63cff634aabb85854caa511c5837ea6b45f42b4b"
+        "sha": "31728d872f50e439ded2f67fa8d67955b26a4e35"
       }
     }
   ]
