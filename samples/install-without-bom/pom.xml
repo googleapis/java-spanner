@@ -22,8 +22,8 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <opencensus.version>0.28.3</opencensus.version>
-    <trace.version>2.0.1</trace.version>
-    <cloudmonitoring.version>3.0.1</cloudmonitoring.version>
+    <trace.version>2.0.2</trace.version>
+    <cloudmonitoring.version>3.0.2</cloudmonitoring.version>
   </properties>
 
 
@@ -32,7 +32,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.11.1</version>
+      <version>6.12.1</version>
     </dependency>
     <!-- [END spanner_install_without_bom] -->
     

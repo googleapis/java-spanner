@@ -4,7 +4,7 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "2d605e405c9efad5b18f66eff9e5c9942413404f"
+        "sha": "51a4c248b9681fced2d8118f7180f8a61049e2de"
       }
     },
     {
@@ -19,7 +19,7 @@
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "ff01716e16d2c6e87eaf87197b753ac9fcbbed5d"
+        "sha": "e2aa5bcc3356d9e3b8b53de3b5c86226447d3a22"
       }
     }
   ],
@@ -59,6 +59,7 @@
     ".github/PULL_REQUEST_TEMPLATE.md",
     ".github/generated-files-bot.yml",
     ".github/readme/synth.py",
+    ".github/release-trigger.yml",
     ".github/snippet-bot.yml",
     ".github/trusted-contribution.yml",
     ".github/workflows/approve-readme.yaml",
