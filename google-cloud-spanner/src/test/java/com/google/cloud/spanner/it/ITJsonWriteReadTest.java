@@ -102,7 +102,9 @@ public class ITJsonWriteReadTest {
     databaseClient.write(mutations);
 
     try (ResultSet resultSet =
-        databaseClient.singleUse().executeQuery(Statement.of("SELECT COUNT(*) FROM " + TABLE_NAME))){
+        databaseClient
+            .singleUse()
+            .executeQuery(Statement.of("SELECT COUNT(*) FROM " + TABLE_NAME))) {
       resultSet.next();
       assertEquals(resultSet.getLong(0), resources.size());
     }
@@ -120,14 +122,17 @@ public class ITJsonWriteReadTest {
               Resources.getResource(this.getClass(), INVALID_JSON_DIR + File.separator + resource),
               StandardCharsets.UTF_8);
 
-      assertThrows(SpannerException.class, () -> databaseClient.write(
-          Collections.singletonList(
-              Mutation.newInsertBuilder(TABLE_NAME)
-                  .set("Id")
-                  .to(100L)
-                  .set("json")
-                  .to(Value.json(jsonStr))
-                  .build())));
+      assertThrows(
+          SpannerException.class,
+          () ->
+              databaseClient.write(
+                  Collections.singletonList(
+                      Mutation.newInsertBuilder(TABLE_NAME)
+                          .set("Id")
+                          .to(100L)
+                          .set("json")
+                          .to(Value.json(jsonStr))
+                          .build())));
     }
   }
 
