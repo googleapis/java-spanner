@@ -66,7 +66,7 @@ public class ITJsonWriteReadTest {
   @BeforeClass
   public static void beforeClass() {
     final RemoteSpannerHelper testHelper = env.getTestHelper();
-    if (EmulatorSpannerHelper.isUsingEmulator()) {
+    if (!EmulatorSpannerHelper.isUsingEmulator()) {
       final Database database =
           testHelper.createTestDatabase(
               "CREATE TABLE "
