@@ -17,7 +17,7 @@
 package com.google.cloud.spanner.it;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.Database;
@@ -26,6 +26,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
@@ -84,13 +85,11 @@ public class ITJsonWriteReadTest {
 
     long id = 0L;
     List<Mutation> mutations = new ArrayList<>();
-    List<String> jsons = new ArrayList<>();
     for (String resource : resources) {
       String jsonStr =
           Resources.toString(
               Resources.getResource(this.getClass(), VALID_JSON_DIR + File.separator + resource),
               StandardCharsets.UTF_8);
-      jsons.add(jsonStr);
       Mutation mutation =
           Mutation.newInsertBuilder(TABLE_NAME)
               .set("Id")
@@ -100,15 +99,13 @@ public class ITJsonWriteReadTest {
               .build();
       mutations.add(mutation);
     }
-
     databaseClient.write(mutations);
-    ResultSet resultSet =
-        databaseClient.singleUse().executeQuery(Statement.of("SELECT * FROM " + TABLE_NAME));
-    int count = 0;
-    while (resultSet.next()) {
-      count++;
+
+    try (ResultSet resultSet =
+        databaseClient.singleUse().executeQuery(Statement.of("SELECT COUNT(*) FROM " + TABLE_NAME))){
+      resultSet.next();
+      assertEquals(resultSet.getLong(0), resources.size());
     }
-    assertEquals(count, resources.size());
   }
 
   @Test
@@ -123,34 +120,24 @@ public class ITJsonWriteReadTest {
               Resources.getResource(this.getClass(), INVALID_JSON_DIR + File.separator + resource),
               StandardCharsets.UTF_8);
 
-      try {
-        databaseClient.write(
-            Collections.singletonList(
-                Mutation.newInsertBuilder(TABLE_NAME)
-                    .set("Id")
-                    .to(100L)
-                    .set("json")
-                    .to(Value.json(jsonStr))
-                    .build()));
-        fail(resource + " should be rejected.");
-      } catch (Exception e) {
-        System.out.println("Failed to insert JSON: " + jsonStr + ". From: " + resource);
-        e.printStackTrace();
-      }
+      assertThrows(SpannerException.class, () -> databaseClient.write(
+          Collections.singletonList(
+              Mutation.newInsertBuilder(TABLE_NAME)
+                  .set("Id")
+                  .to(100L)
+                  .set("json")
+                  .to(Value.json(jsonStr))
+                  .build())));
     }
   }
 
-  private List<String> getJsonFilePaths(String folder) {
+  private List<String> getJsonFilePaths(String folder) throws IOException {
     String fixturesRoot = Resources.getResource(folder).getPath();
     final Path fixturesRootPath = Paths.get(fixturesRoot);
-    try {
-      return Files.walk(fixturesRootPath)
-          .filter(Files::isRegularFile)
-          .map(path -> fixturesRootPath.relativize(path).toString())
-          .filter(x -> x.endsWith(".json"))
-          .collect(Collectors.toList());
-    } catch (IOException e) {
-      throw new IllegalArgumentException(e);
-    }
+    return Files.walk(fixturesRootPath)
+        .filter(Files::isRegularFile)
+        .map(path -> fixturesRootPath.relativize(path).toString())
+        .filter(x -> x.endsWith(".json"))
+        .collect(Collectors.toList());
   }
 }

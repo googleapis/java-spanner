@@ -64,7 +64,6 @@ import org.junit.runners.JUnit4;
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITQueryTest {
-
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
   private static DatabaseClient client;
