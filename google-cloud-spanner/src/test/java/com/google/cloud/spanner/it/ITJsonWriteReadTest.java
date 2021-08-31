@@ -66,15 +66,17 @@ public class ITJsonWriteReadTest {
   @BeforeClass
   public static void beforeClass() {
     final RemoteSpannerHelper testHelper = env.getTestHelper();
-    final Database database =
-        testHelper.createTestDatabase(
-            "CREATE TABLE "
-                + TABLE_NAME
-                + "("
-                + "Id INT64 NOT NULL,"
-                + "json JSON"
-                + ") PRIMARY KEY (Id)");
-    databaseClient = testHelper.getDatabaseClient(database);
+    if (EmulatorSpannerHelper.isUsingEmulator()) {
+      final Database database =
+          testHelper.createTestDatabase(
+              "CREATE TABLE "
+                  + TABLE_NAME
+                  + "("
+                  + "Id INT64 NOT NULL,"
+                  + "json JSON"
+                  + ") PRIMARY KEY (Id)");
+      databaseClient = testHelper.getDatabaseClient(database);
+    }
   }
 
   @Test
