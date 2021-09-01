@@ -61,30 +61,26 @@ public class SampleTestBase {
   @AfterClass
   public static void afterClass() {
     for (String databaseId : idGenerator.getDatabaseIds()) {
+      System.out.println("Trying to drop " + databaseId);
       try {
+        // If the database is not found, it is ignored (no exception is thrown)
         databaseAdminClient.dropDatabase(instanceId, databaseId);
-      } catch (Exception e1) {
-        try {
-          databaseAdminClient.dropDatabase(multiRegionalInstanceId, databaseId);
-        } catch (Exception e2) {
-          System.out.println(
-              "Failed to drop database " + databaseId + " due to " + e2.getMessage()
-                  + ", skipping..."
-          );
-        }
+        databaseAdminClient.dropDatabase(multiRegionalInstanceId, databaseId);
+      } catch (Exception e) {
+        System.out.println(
+            "Failed to drop database " + databaseId + " due to " + e.getMessage() + ", skipping..."
+        );
       }
     }
     for (String backupId : idGenerator.getBackupIds()) {
       try {
+        // If the backup is not found, it is ignored (no exception is thrown)
         databaseAdminClient.deleteBackup(instanceId, backupId);
-      } catch (Exception e1) {
-        try {
-          databaseAdminClient.deleteBackup(multiRegionalInstanceId, backupId);
-        } catch (Exception e2) {
-          System.out.println(
-              "Failed to delete backup " + backupId + " due to " + e2.getMessage() + ", skipping..."
-          );
-        }
+        databaseAdminClient.deleteBackup(multiRegionalInstanceId, backupId);
+      } catch (Exception e) {
+        System.out.println(
+            "Failed to delete backup " + backupId + " due to " + e.getMessage() + ", skipping..."
+        );
       }
     }
     spanner.close();
