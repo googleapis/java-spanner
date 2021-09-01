@@ -41,6 +41,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -118,12 +119,12 @@ public class ITJsonWriteReadTest {
 
     List<String> resources = getJsonFilePaths(RESOURCES_DIR + File.separator + INVALID_JSON_DIR);
 
+    AtomicLong id = new AtomicLong(100);
     for (String resource : resources) {
       String jsonStr =
           Resources.toString(
               Resources.getResource(this.getClass(), INVALID_JSON_DIR + File.separator + resource),
               StandardCharsets.UTF_8);
-
       assertThrows(
           SpannerException.class,
           () ->
@@ -131,7 +132,7 @@ public class ITJsonWriteReadTest {
                   Collections.singletonList(
                       Mutation.newInsertBuilder(TABLE_NAME)
                           .set("Id")
-                          .to(100L)
+                          .to(id.getAndIncrement())
                           .set("json")
                           .to(Value.json(jsonStr))
                           .build())));
@@ -144,7 +145,7 @@ public class ITJsonWriteReadTest {
     return Files.walk(fixturesRootPath)
         .filter(Files::isRegularFile)
         .map(path -> fixturesRootPath.relativize(path).toString())
-        .filter(x -> x.endsWith(".json"))
+        .filter(path -> path.endsWith(".json"))
         .collect(Collectors.toList());
   }
 }
