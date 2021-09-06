@@ -69,6 +69,18 @@ integration)
       verify
     RETURN_CODE=$?
     ;;
+slowtests)
+  mvn -B ${INTEGRATION_TEST_ARGS} \
+    -ntp \
+    -Pslow-tests \
+    -DskipITs=false \
+    -DtrimStackTrace=false \
+    -Dclirr.skip=true \
+    -Denforcer.skip=true \
+    -fae \
+    verify
+  RETURN_CODE=$?
+  ;;
 samples)
     SAMPLES_DIR=samples
     # only run ITs in snapshot/ on presubmit PRs. run ITs in all 3 samples/ subdirectories otherwise.
