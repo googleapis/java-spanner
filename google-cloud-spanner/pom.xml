@@ -50,7 +50,16 @@
             <!-- Executes unit tests -->
             <id>default-test</id>
             <configuration>
-              <excludedGroups>com.google.cloud.spanner.categories.IntegrationTest</excludedGroups>
+              <excludedGroups>com.google.cloud.spanner.categories.TracerTest,com.google.cloud.spanner.categories.IntegrationTest</excludedGroups>
+            </configuration>
+          </execution>
+          <execution>
+            <id>tracer</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <groups>com.google.cloud.spanner.TracerTest</groups>
             </configuration>
           </execution>
         </executions>
