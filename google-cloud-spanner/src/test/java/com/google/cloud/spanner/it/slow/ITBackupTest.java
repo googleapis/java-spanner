@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spanner.it;
+package com.google.cloud.spanner.it.slow;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.cloud.spanner.testing.TimestampHelper.afterDays;
@@ -42,12 +42,13 @@ import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
-import com.google.cloud.spanner.ParallelIntegrationTest;
+import com.google.cloud.spanner.categories.ParallelIntegrationTest;
 import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.categories.SlowTest;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.base.Preconditions;
@@ -85,7 +86,7 @@ import org.junit.runners.JUnit4;
  * Integration tests creating, reading, updating and deleting backups. This test class combines
  * several tests into one long test to reduce the total execution time.
  */
-@Category(ParallelIntegrationTest.class)
+@Category(SlowTest.class)
 @RunWith(JUnit4.class)
 public class ITBackupTest {
   private static final Logger logger = Logger.getLogger(ITBackupTest.class.getName());

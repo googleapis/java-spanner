@@ -24,7 +24,7 @@ import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.IntegrationTestWithClosedSessionsEnv;
 import com.google.cloud.spanner.IntegrationTestWithClosedSessionsEnv.DatabaseClientWithClosedSessionImpl;
-import com.google.cloud.spanner.ParallelIntegrationTest;
+import com.google.cloud.spanner.categories.ParallelIntegrationTest;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SessionNotFoundException;

@@ -23,7 +23,7 @@ import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
-import com.google.cloud.spanner.ParallelIntegrationTest;
+import com.google.cloud.spanner.categories.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
