@@ -93,4 +93,5 @@ java.common_templates(excludes=[
     '.github/release-please.yml',
     '.github/blunderbuss.yml',
     '.github/workflows/samples.yaml',
+    '.kokoro/build.sh',
 ])
