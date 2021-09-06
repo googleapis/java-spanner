@@ -17,4 +17,4 @@
 package com.google.cloud.spanner.categories;
 
 /** Serial Integration Test interface. */
-public interface SerialIntegrationTest { }
+public interface SerialIntegrationTest {}

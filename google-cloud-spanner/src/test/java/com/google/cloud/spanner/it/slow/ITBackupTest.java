@@ -42,7 +42,6 @@ import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
-import com.google.cloud.spanner.categories.ParallelIntegrationTest;
 import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;

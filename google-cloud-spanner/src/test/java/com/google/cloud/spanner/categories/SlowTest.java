@@ -16,5 +16,5 @@
 
 package com.google.cloud.spanner.categories;
 
-/** Category of slow tests, to be run on the nightly build **/
-public interface SlowTest extends IntegrationTest { }
+/** Category of slow tests, to be run on the nightly build * */
+public interface SlowTest extends IntegrationTest {}
