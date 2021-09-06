@@ -59,7 +59,7 @@
               <goal>test</goal>
             </goals>
             <configuration>
-              <groups>com.google.cloud.spanner.TracerTest</groups>
+              <groups>com.google.cloud.spanner.categories.TracerTest</groups>
             </configuration>
           </execution>
         </executions>
@@ -392,6 +392,7 @@
                     <groups>com.google.cloud.spanner.categories.SlowTest</groups>
                   </configuration>
                 </execution>
+                <!-- Overrides default configuration to skip this step -->
                 <execution>
                   <id>parallel-integration-test</id>
                   <goals>
