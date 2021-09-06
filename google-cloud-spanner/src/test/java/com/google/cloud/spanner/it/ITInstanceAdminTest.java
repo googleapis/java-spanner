@@ -25,9 +25,9 @@ import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceConfig;
 import com.google.cloud.spanner.InstanceInfo;
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.categories.SerialIntegrationTest;
 import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Integration tests for {@link com.google.cloud.spanner.InstanceAdminClient}. */
-@Category(IntegrationTest.class)
+@Category(SerialIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITInstanceAdminTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();

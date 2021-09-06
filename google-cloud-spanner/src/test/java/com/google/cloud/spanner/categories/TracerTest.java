@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spanner;
+package com.google.cloud.spanner.categories;
 
 /**
- * Annotation for JUnit {@link org.junit.experimental.categories.Category} that indicates a test is
- * flaky. These will be excluded from integration tests. Use this annotation sparingly: typically it
- * should only be used for a test where the flakiness is dependent on a fix in a module dependency
- * (for example, grpc-java) and cannot be addressed locally.
+ * Tests marked with this {@link org.junit.experimental.categories.Category} will be executed in a
+ * separate execution with the maven-surefire plugin. The tests will be excluded from execution with
+ * the maven-failsafe plugin.
+ *
+ * <p>Separate execution prevents the injection of any custom tracing configuration from interfering
+ * with other tests, as most tracing configuration is stored in static final variables.
  */
-public interface FlakyTest {}
+public interface TracerTest {}

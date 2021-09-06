@@ -47,9 +47,10 @@
         </configuration>
         <executions>
           <execution>
+            <!-- Executes unit tests -->
             <id>default-test</id>
             <configuration>
-              <excludedGroups>com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.IntegrationTest</excludedGroups>
+              <excludedGroups>com.google.cloud.spanner.categories.TracerTest,com.google.cloud.spanner.categories.IntegrationTest</excludedGroups>
             </configuration>
           </execution>
           <execution>
@@ -58,7 +59,7 @@
               <goal>test</goal>
             </goals>
             <configuration>
-              <groups>com.google.cloud.spanner.TracerTest</groups>
+              <groups>com.google.cloud.spanner.categories.TracerTest</groups>
             </configuration>
           </execution>
         </executions>
@@ -76,21 +77,21 @@
           <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
         </configuration>
         <executions>
+          <!-- Executes serial integration tests -->
           <execution>
             <id>default</id>
             <configuration>
-              <groups>com.google.cloud.spanner.IntegrationTest</groups>
-              <excludedGroups>com.google.cloud.spanner.FlakyTest,com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.ParallelIntegrationTest</excludedGroups>
+              <groups>com.google.cloud.spanner.categories.SerialIntegrationTest</groups>
             </configuration>
           </execution>
+          <!-- Executes parallel integration tests -->
           <execution>
             <id>parallel-integration-test</id>
             <goals>
               <goal>integration-test</goal>
             </goals>
             <configuration>
-              <groups>com.google.cloud.spanner.ParallelIntegrationTest</groups>
-              <excludedGroups>com.google.cloud.spanner.FlakyTest,com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.IntegrationTest</excludedGroups>
+              <groups>com.google.cloud.spanner.categories.ParallelIntegrationTest</groups>
               <forkCount>8</forkCount>
               <reuseForks>true</reuseForks>
             </configuration>
@@ -363,6 +364,47 @@
             </executions>
           </plugin>
         </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>slow-tests</id>
+      <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <executions>
+                <execution>
+                  <id>default-test</id>
+                  <configuration>
+                    <groups>com.google.cloud.spanner.categories.SlowTest</groups>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-failsafe-plugin</artifactId>
+              <executions>
+                <execution>
+                  <id>default</id>
+                  <configuration>
+                    <groups>com.google.cloud.spanner.categories.SlowTest</groups>
+                  </configuration>
+                </execution>
+                <!-- Overrides default configuration to skip this step -->
+                <execution>
+                  <id>parallel-integration-test</id>
+                  <goals>
+                    <goal>integration-test</goal>
+                  </goals>
+                  <configuration>
+                    <skipTests>true</skipTests>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>
+          </plugins>
       </build>
     </profile>
     <profile>

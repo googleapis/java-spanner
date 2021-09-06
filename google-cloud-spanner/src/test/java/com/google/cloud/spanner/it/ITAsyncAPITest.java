@@ -36,7 +36,6 @@ import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeyRange;
@@ -49,6 +48,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
+import com.google.cloud.spanner.categories.SerialIntegrationTest;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.util.concurrent.SettableFuture;
 import java.util.ArrayList;
@@ -68,7 +68,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Integration tests for asynchronous APIs. */
-@Category(IntegrationTest.class)
+@Category(SerialIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITAsyncAPITest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
