@@ -4,7 +4,7 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-spanner.git",
-        "sha": "87b77a3be3fc9cb206e147dcce818b594b2c6b4b"
+        "sha": "0a311ad38558dbf91c863941165cce456cf3c14c"
       }
     },
     {
@@ -19,7 +19,7 @@
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "17ee6e5c08f2eb47029beee4776ce990e56b3925"
+        "sha": "df5093b950d4aafd49a4c7758d74c44485263ada"
       }
     }
   ],
@@ -70,7 +70,6 @@
     ".kokoro/common.cfg",
     ".kokoro/common.sh",
     ".kokoro/continuous/java8.cfg",
-    ".kokoro/continuous/readme.cfg",
     ".kokoro/dependencies.sh",
     ".kokoro/nightly/integration.cfg",
     ".kokoro/nightly/java11.cfg",
