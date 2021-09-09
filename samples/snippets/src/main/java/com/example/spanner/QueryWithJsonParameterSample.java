@@ -56,7 +56,7 @@ class QueryWithJsonParameterSample {
       while (resultSet.next()) {
         System.out.printf(
             "VenueId: %s, VenueDetails: %s%n",
-            resultSet.getLong("VenueId"), resultSet.getString("VenueDetails"));
+            resultSet.getLong("VenueId"), resultSet.getJson("VenueDetails"));
       }
     }
   }

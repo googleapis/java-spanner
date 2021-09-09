@@ -238,7 +238,7 @@ public class SpannerStandaloneExamplesIT {
             () ->
                 UpdateJsonDataSample.updateJsonData(
                     spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId))));
-    assertThat(out).contains("VenueDetails successfully updated");
+    assertThat(out).contains("Venues successfully updated");
   }
 
   @Test
