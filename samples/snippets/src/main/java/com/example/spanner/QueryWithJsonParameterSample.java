@@ -42,7 +42,7 @@ class QueryWithJsonParameterSample {
   }
 
   static void queryWithJsonParameter(DatabaseClient client) {
-    String exampleJson = "{rating: 9}";
+    String exampleJson = "{\"rating\": 9}";
     Statement statement =
         Statement.newBuilder(
                 "SELECT VenueId, VenueDetails\n"
@@ -56,7 +56,7 @@ class QueryWithJsonParameterSample {
       while (resultSet.next()) {
         System.out.printf(
             "VenueId: %s, VenueDetails: %s%n",
-            resultSet.getLong("VenueId"), resultSet.getString("VenueDetails"));
+            resultSet.getLong("VenueId"), resultSet.getJson("VenueDetails"));
       }
     }
   }

@@ -238,7 +238,7 @@ public class SpannerStandaloneExamplesIT {
             () ->
                 UpdateJsonDataSample.updateJsonData(
                     spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId))));
-    assertThat(out).contains("VenueDetails successfully updated");
+    assertThat(out).contains("Venues successfully updated");
   }
 
   @Test
@@ -274,6 +274,6 @@ public class SpannerStandaloneExamplesIT {
                             + "\"tags\":[\"large\",\"airy\"]}"))
                 .build()));
     String out = runExample(() -> QueryWithJsonParameterSample.queryWithJsonParameter(client));
-    assertThat(out).contains("4 35000");
+    assertThat(out).contains("VenueId: 19, VenueDetails: {\"open\":true,\"rating\":9}");
   }
 }
