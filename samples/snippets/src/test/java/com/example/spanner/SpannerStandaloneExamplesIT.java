@@ -274,6 +274,6 @@ public class SpannerStandaloneExamplesIT {
                             + "\"tags\":[\"large\",\"airy\"]}"))
                 .build()));
     String out = runExample(() -> QueryWithJsonParameterSample.queryWithJsonParameter(client));
-    assertThat(out).contains("4 35000");
+    assertThat(out).contains("VenueId: 19, VenueDetails: {\"open\":true,\"rating\":9}");
   }
 }
