@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spanner.categories;
+package com.google.cloud.spanner;
 
-/**
- * Tests marked with this {@link org.junit.experimental.categories.Category} will be executed in a
- * separate execution with the maven-surefire plugin. The tests will be excluded from execution with
- * the maven-failsafe plugin.
- *
- * <p>Separate execution prevents the injection of any custom tracing configuration from interfering
- * with other tests, as most tracing configuration is stored in static final variables.
- */
-public interface TracerTest {}
+/** Category of slow tests, to be run on the nightly build * */
+public interface SlowTest extends IntegrationTest {}

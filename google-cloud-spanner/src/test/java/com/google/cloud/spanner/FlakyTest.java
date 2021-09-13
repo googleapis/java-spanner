@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2017 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spanner.categories;
+package com.google.cloud.spanner;
 
-/** Category of slow tests, to be run on the nightly build * */
-public interface SlowTest extends IntegrationTest {}
+/**
+ * Annotation for JUnit {@link org.junit.experimental.categories.Category} that indicates a test is
+ * flaky. These will be excluded from integration tests. Use this annotation sparingly: typically it
+ * should only be used for a test where the flakiness is dependent on a fix in a module dependency
+ * (for example, grpc-java) and cannot be addressed locally.
+ */
+public interface FlakyTest {}

@@ -50,7 +50,7 @@
             <!-- Executes unit tests -->
             <id>default-test</id>
             <configuration>
-              <excludedGroups>com.google.cloud.spanner.categories.TracerTest,com.google.cloud.spanner.categories.IntegrationTest</excludedGroups>
+              <excludedGroups>com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.IntegrationTest</excludedGroups>
             </configuration>
           </execution>
           <execution>
@@ -59,7 +59,7 @@
               <goal>test</goal>
             </goals>
             <configuration>
-              <groups>com.google.cloud.spanner.categories.TracerTest</groups>
+              <groups>com.google.cloud.spanner.TracerTest</groups>
             </configuration>
           </execution>
         </executions>
@@ -81,7 +81,7 @@
           <execution>
             <id>default</id>
             <configuration>
-              <groups>com.google.cloud.spanner.categories.SerialIntegrationTest</groups>
+              <groups>com.google.cloud.spanner.SerialIntegrationTest</groups>
             </configuration>
           </execution>
           <!-- Executes parallel integration tests -->
@@ -91,7 +91,7 @@
               <goal>integration-test</goal>
             </goals>
             <configuration>
-              <groups>com.google.cloud.spanner.categories.ParallelIntegrationTest</groups>
+              <groups>com.google.cloud.spanner.ParallelIntegrationTest</groups>
               <forkCount>8</forkCount>
               <reuseForks>true</reuseForks>
             </configuration>
@@ -377,7 +377,7 @@
                 <execution>
                   <id>default-test</id>
                   <configuration>
-                    <groups>com.google.cloud.spanner.categories.SlowTest</groups>
+                    <groups>com.google.cloud.spanner.SlowTest</groups>
                   </configuration>
                 </execution>
               </executions>
@@ -389,7 +389,7 @@
                 <execution>
                   <id>default</id>
                   <configuration>
-                    <groups>com.google.cloud.spanner.categories.SlowTest</groups>
+                    <groups>com.google.cloud.spanner.SlowTest</groups>
                   </configuration>
                 </execution>
                 <!-- Overrides default configuration to skip this step -->
