@@ -21,8 +21,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SerialIntegrationTest;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.categories.SerialIntegrationTest;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import java.util.ArrayList;
 import java.util.List;
