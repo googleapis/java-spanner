@@ -1,5 +1,21 @@
 # Changelog
 
+### [6.12.3](https://www.github.com/googleapis/java-spanner/compare/v6.12.2...v6.12.3) (2021-09-15)
+
+
+### Bug Fixes
+
+* drop databases after sample tests ([#1401](https://www.github.com/googleapis/java-spanner/issues/1401)) ([c9f5048](https://www.github.com/googleapis/java-spanner/commit/c9f504829f53bfcff6f78bbbbc447cc8f10f5940))
+* fix JSON sample test ([#1417](https://www.github.com/googleapis/java-spanner/issues/1417)) ([dc1f9a9](https://www.github.com/googleapis/java-spanner/commit/dc1f9a92a7562e2585e2762c2749eb3207f67c25))
+* revert test category refactoring ([#1419](https://www.github.com/googleapis/java-spanner/issues/1419)) ([fe2ad14](https://www.github.com/googleapis/java-spanner/commit/fe2ad14eae2002552d61e497f9892c96584efc24))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.0.4 ([#1422](https://www.github.com/googleapis/java-spanner/issues/1422)) ([d57d47e](https://www.github.com/googleapis/java-spanner/commit/d57d47eb3086d7352b6f7af1c4cc694de030e3ee))
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v2.2.1 ([#1420](https://www.github.com/googleapis/java-spanner/issues/1420)) ([85b4f31](https://www.github.com/googleapis/java-spanner/commit/85b4f31d065202527ad3220cca9df94d40020e0a))
+* update dependency com.google.cloud:google-cloud-trace to v2.0.4 ([#1425](https://www.github.com/googleapis/java-spanner/issues/1425)) ([ce8776a](https://www.github.com/googleapis/java-spanner/commit/ce8776a310f0d53ea2aee738e0d56dc56371fa51))
+
 ### [6.12.2](https://www.github.com/googleapis/java-spanner/compare/v6.12.1...v6.12.2) (2021-09-01)
 
 
