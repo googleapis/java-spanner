@@ -1,5 +1,17 @@
 # Changelog
 
+### [6.12.4](https://www.github.com/googleapis/java-spanner/compare/v6.12.3...v6.12.4) (2021-09-16)
+
+
+### Bug Fixes
+
+* do not serialize unnecessary fields ([#1426](https://www.github.com/googleapis/java-spanner/issues/1426)) ([29209f8](https://www.github.com/googleapis/java-spanner/commit/29209f83d10fa01b5566da66259da95dd60abca0))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.0.5 ([#1431](https://www.github.com/googleapis/java-spanner/issues/1431)) ([32eee0a](https://www.github.com/googleapis/java-spanner/commit/32eee0aa14f0b276673dca7a65e011a509e96453))
+
 ### [6.12.3](https://www.github.com/googleapis/java-spanner/compare/v6.12.2...v6.12.3) (2021-09-15)
 
 
