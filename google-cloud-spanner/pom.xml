@@ -74,7 +74,7 @@
             <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
             <spanner.testenv.kms_key.name>projects/gcloud-devel/locations/us-central1/keyRings/spanner-test-keyring/cryptoKeys/spanner-test-key</spanner.testenv.kms_key.name>
           </systemPropertyVariables>
-          <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
+          <forkedProcessTimeoutInSeconds>6000</forkedProcessTimeoutInSeconds>
         </configuration>
         <executions>
           <!-- Executes serial integration tests -->
@@ -422,7 +422,7 @@
                 <spanner.attempt_directpath>true</spanner.attempt_directpath>
                 <spanner.directpath_test_scenario>ipv4</spanner.directpath_test_scenario>
               </systemPropertyVariables>
-              <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
+              <forkedProcessTimeoutInSeconds>6000</forkedProcessTimeoutInSeconds>
             </configuration>
           </plugin>
         </plugins>
