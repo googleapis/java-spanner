@@ -47,7 +47,10 @@ set +e
 
 case ${JOB_TYPE} in
 test)
-    mvn test -B -Dclirr.skip=true -Denforcer.skip=true
+    mvn test -B \
+      -Dclirr.skip=true \
+      -Denforcer.skip=true \
+      -Djava.net.preferIPv4Stack=true
     RETURN_CODE=$?
     ;;
 lint)
@@ -62,6 +65,7 @@ integration)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
+      -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
       -Denforcer.skip=true \
@@ -73,6 +77,7 @@ slowtests)
   mvn -B ${INTEGRATION_TEST_ARGS} \
     -ntp \
     -Pslow-tests \
+    -Djava.net.preferIPv4Stack=true \
     -DskipITs=false \
     -DtrimStackTrace=false \
     -Dclirr.skip=true \

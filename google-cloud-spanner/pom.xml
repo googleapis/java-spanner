@@ -81,19 +81,7 @@
           <execution>
             <id>default</id>
             <configuration>
-              <groups>com.google.cloud.spanner.SerialIntegrationTest</groups>
-            </configuration>
-          </execution>
-          <!-- Executes parallel integration tests -->
-          <execution>
-            <id>parallel-integration-test</id>
-            <goals>
-              <goal>integration-test</goal>
-            </goals>
-            <configuration>
-              <groups>com.google.cloud.spanner.ParallelIntegrationTest</groups>
-              <forkCount>8</forkCount>
-              <reuseForks>true</reuseForks>
+              <groups>com.google.cloud.spanner.SerialIntegrationTest, com.google.cloud.spanner.ParallelIntegrationTest</groups>
             </configuration>
           </execution>
         </executions>
