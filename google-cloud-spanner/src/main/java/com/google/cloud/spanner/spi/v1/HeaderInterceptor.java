@@ -18,7 +18,6 @@ package com.google.cloud.spanner.spi.v1;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.*;
 
 import com.google.cloud.spanner.DatabaseId;
-import com.google.spanner.admin.instance.v1.ProjectName;
 import io.grpc.*;
 import io.grpc.ForwardingClientCall.SimpleForwardingClientCall;
 import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
@@ -115,13 +114,13 @@ class HeaderInterceptor implements ClientInterceptor {
   private TagContext getTagContext(Metadata headers, String method) {
     if (headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY) != null) {
       String googleResourcePrefix = headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY);
-      try{
+      try {
         DatabaseId database = DatabaseId.of(googleResourcePrefix);
         String databaseId = database.getDatabase();
         String instanceId = database.getInstanceId().getInstance();
         String projectId = database.getInstanceId().getProject();
         return getTagContext(method, projectId, instanceId, databaseId);
-      }catch(IllegalArgumentException e){
+      } catch (IllegalArgumentException e) {
         logger.log(level, e.toString());
       }
     }
