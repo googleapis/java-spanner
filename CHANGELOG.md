@@ -1,5 +1,19 @@
 # Changelog
 
+### [6.12.5](https://www.github.com/googleapis/java-spanner/compare/v6.12.4...v6.12.5) (2021-09-27)
+
+
+### Bug Fixes
+
+* sessions were not always removed from checkedOutSessions ([#1438](https://www.github.com/googleapis/java-spanner/issues/1438)) ([49360b1](https://www.github.com/googleapis/java-spanner/commit/49360b13e5d8904bfdc09cb4db8c24848debfa0b))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.0.6 ([#1443](https://www.github.com/googleapis/java-spanner/issues/1443)) ([159c026](https://www.github.com/googleapis/java-spanner/commit/159c026a250e6f9d6d583ef3123403a64f817e40))
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v2.3.0 ([#1439](https://www.github.com/googleapis/java-spanner/issues/1439)) ([6bdeddf](https://www.github.com/googleapis/java-spanner/commit/6bdeddf7612964d4d59061d0a7c2956d66619a4b))
+* update dependency com.google.cloud:google-cloud-trace to v2.0.5 ([#1459](https://www.github.com/googleapis/java-spanner/issues/1459)) ([2ce9a1b](https://www.github.com/googleapis/java-spanner/commit/2ce9a1bd5cf8edb36b1c4fe57f2d9b304dcd6ccc))
+
 ### [6.12.4](https://www.github.com/googleapis/java-spanner/compare/v6.12.3...v6.12.4) (2021-09-16)
 
 
