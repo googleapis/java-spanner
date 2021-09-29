@@ -1288,25 +1288,27 @@ class SessionPool {
 
     @Override
     public void close() {
-      synchronized (lock) {
-        leakedException = null;
-        checkedOutSessions.remove(this);
-      }
-      PooledSession delegate = getOrNull();
-      if (delegate != null) {
-        delegate.close();
+      try {
+        asyncClose().get();
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      } catch (ExecutionException e) {
+        throw SpannerExceptionFactory.asSpannerException(e.getCause());
       }
     }
 
     @Override
     public ApiFuture<Empty> asyncClose() {
-      synchronized (lock) {
-        leakedException = null;
-        checkedOutSessions.remove(this);
-      }
-      PooledSession delegate = getOrNull();
-      if (delegate != null) {
-        return delegate.asyncClose();
+      try {
+        PooledSession delegate = getOrNull();
+        if (delegate != null) {
+          return delegate.asyncClose();
+        }
+      } finally {
+        synchronized (lock) {
+          leakedException = null;
+          checkedOutSessions.remove(this);
+        }
       }
       return ApiFutures.immediateFuture(Empty.getDefaultInstance());
     }
@@ -1823,7 +1825,8 @@ class SessionPool {
   private final Set<PooledSession> allSessions = new HashSet<>();
 
   @GuardedBy("lock")
-  private final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
+  @VisibleForTesting
+  final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
 
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
 
