@@ -76,6 +76,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -206,6 +207,7 @@ public class ITBackupTest {
   }
 
   @Test
+  @Ignore("Do not run slow test in stable branch")
   public void testBackups() throws InterruptedException, ExecutionException {
     // Create two test databases in parallel.
     final String db1Id = testHelper.getUniqueDatabaseId() + "_db1";
@@ -383,6 +385,7 @@ public class ITBackupTest {
   }
 
   @Test(expected = SpannerException.class)
+  @Ignore("Do not run slow test in stable branch")
   public void backupCreationWithVersionTimeTooFarInThePastFails() throws Exception {
     final Database testDatabase = testHelper.createTestDatabase();
     final DatabaseId databaseId = testDatabase.getId();
@@ -402,6 +405,7 @@ public class ITBackupTest {
   }
 
   @Test(expected = SpannerException.class)
+  @Ignore("Do not run slow test in stable branch")
   public void backupCreationWithVersionTimeInTheFutureFails() throws Exception {
     final Database testDatabase = testHelper.createTestDatabase();
     final DatabaseId databaseId = testDatabase.getId();
