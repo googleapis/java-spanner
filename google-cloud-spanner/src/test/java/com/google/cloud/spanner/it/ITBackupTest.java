@@ -67,6 +67,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -217,6 +218,7 @@ public class ITBackupTest {
   }
 
   @Test
+  @Ignore("Do not run slow test in stable branch")
   public void testBackups() throws InterruptedException, ExecutionException {
     // Create two test databases in parallel.
     String db1Id = testHelper.getUniqueDatabaseId() + "_db1";
