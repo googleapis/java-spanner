@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -174,13 +175,18 @@ public class DatabaseClientImplTest {
 
   @Test
   public void singleUse() {
-    DatabaseClient client =
-        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    DatabaseClientImpl client =
+        (DatabaseClientImpl)
+            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
+    assertThat(checkedOut).isEmpty();
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
       assertThat(rs.next()).isTrue();
+      assertThat(checkedOut).hasSize(1);
       assertThat(rs.getLong(0)).isEqualTo(1L);
       assertThat(rs.next()).isFalse();
     }
+    assertThat(checkedOut).isEmpty();
   }
 
   @Test
@@ -1540,5 +1546,72 @@ public class DatabaseClientImplTest {
     client.transactionManagerAsync(option);
 
     verify(session).transactionManagerAsync(option);
+  }
+
+  @Test
+  public void singleUseNoAction_ClearsCheckedOutSession() {
+    DatabaseClientImpl client =
+        (DatabaseClientImpl)
+            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
+    assertThat(checkedOut).isEmpty();
+
+    // Getting a single use read-only transaction and not using it should not cause any sessions
+    // to be stuck in the map of checked out sessions.
+    client.singleUse().close();
+
+    assertThat(checkedOut).isEmpty();
+  }
+
+  @Test
+  public void singleUseReadOnlyTransactionNoAction_ClearsCheckedOutSession() {
+    DatabaseClientImpl client =
+        (DatabaseClientImpl)
+            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
+    assertThat(checkedOut).isEmpty();
+
+    client.singleUseReadOnlyTransaction().close();
+
+    assertThat(checkedOut).isEmpty();
+  }
+
+  @Test
+  public void readWriteTransactionNoAction_ClearsCheckedOutSession() {
+    DatabaseClientImpl client =
+        (DatabaseClientImpl)
+            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
+    assertThat(checkedOut).isEmpty();
+
+    client.readWriteTransaction();
+
+    assertThat(checkedOut).isEmpty();
+  }
+
+  @Test
+  public void readOnlyTransactionNoAction_ClearsCheckedOutSession() {
+    DatabaseClientImpl client =
+        (DatabaseClientImpl)
+            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
+    assertThat(checkedOut).isEmpty();
+
+    client.readOnlyTransaction().close();
+
+    assertThat(checkedOut).isEmpty();
+  }
+
+  @Test
+  public void transactionManagerNoAction_ClearsCheckedOutSession() {
+    DatabaseClientImpl client =
+        (DatabaseClientImpl)
+            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
+    assertThat(checkedOut).isEmpty();
+
+    client.transactionManager().close();
+
+    assertThat(checkedOut).isEmpty();
   }
 }
