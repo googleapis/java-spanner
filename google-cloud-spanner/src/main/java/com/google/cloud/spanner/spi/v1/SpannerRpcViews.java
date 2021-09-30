@@ -95,6 +95,12 @@ public class SpannerRpcViews {
     viewManager.registerView(SPANNER_GFE_HEADER_MISSING_COUNT_VIEW);
   }
 
+  @VisibleForTesting
+  public static void registerGfeLatencyAndHeaderMissingCountViews(ViewManager viewManager) {
+    viewManager.registerView(SPANNER_GFE_LATENCY_VIEW);
+    viewManager.registerView(SPANNER_GFE_HEADER_MISSING_COUNT_VIEW);
+  }
+
   /**
    * Register GFE Latency view. gfe_latency measures the latency between Google's network receives
    * an RPC and reads back the first byte of the response.

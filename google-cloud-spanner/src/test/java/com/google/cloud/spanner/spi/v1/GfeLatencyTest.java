@@ -208,6 +208,9 @@ public class GfeLatencyTest {
     long latency =
         getMetric(
             SpannerRpcViews.SPANNER_GFE_LATENCY_VIEW,
+            projectId,
+            instanceId,
+            databaseId,
             "google.spanner.v1.Spanner/ExecuteStreamingSql");
     assertEquals(fakeServerTiming.get(), latency);
   }
@@ -219,7 +222,12 @@ public class GfeLatencyTest {
         .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
 
     long latency =
-        getMetric(SpannerRpcViews.SPANNER_GFE_LATENCY_VIEW, "google.spanner.v1.Spanner/ExecuteSql");
+        getMetric(
+            SpannerRpcViews.SPANNER_GFE_LATENCY_VIEW,
+            projectId,
+            instanceId,
+            databaseId,
+            "google.spanner.v1.Spanner/ExecuteSql");
     assertEquals(fakeServerTiming.get(), latency);
   }
 
@@ -231,6 +239,9 @@ public class GfeLatencyTest {
     long count =
         getMetric(
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
+            projectId,
+            instanceId,
+            databaseId,
             "google.spanner.v1.Spanner/ExecuteStreamingSql");
     assertEquals(0, count);
 
@@ -238,8 +249,11 @@ public class GfeLatencyTest {
       rs.next();
     }
     long count1 =
-            getOverriddenHeaderMissingCount(
+        getOverriddenHeaderMissingCount(
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
+            projectId,
+            instanceId,
+            databaseId,
             "google.spanner.v1.Spanner/ExecuteStreamingSql");
     assertEquals(1, count1);
   }
@@ -252,6 +266,9 @@ public class GfeLatencyTest {
     long count =
         getMetric(
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
+            projectId,
+            instanceId,
+            databaseId,
             "google.spanner.v1.Spanner/ExecuteSql");
     assertEquals(0, count);
 
@@ -259,8 +276,11 @@ public class GfeLatencyTest {
         .readWriteTransaction()
         .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
     long count1 =
-            getOverriddenHeaderMissingCount(
+        getOverriddenHeaderMissingCount(
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
+            projectId,
+            instanceId,
+            databaseId,
             "google.spanner.v1.Spanner/ExecuteSql");
     assertEquals(1, count1);
   }
@@ -330,7 +350,9 @@ public class GfeLatencyTest {
         });
   }
 
-  private long getMetric(View view, String method) throws InterruptedException {
+  private long getMetric(
+      View view, String projectId, String instanceId, String databaseId, String method)
+      throws InterruptedException {
     List<TagValue> tagValues = new java.util.ArrayList<>();
     for (TagKey column : view.getColumns()) {
       if (column == SpannerRpcViews.INSTANCE_ID) {
@@ -355,17 +377,19 @@ public class GfeLatencyTest {
     return -1;
   }
 
-  private long getOverriddenHeaderMissingCount(View view, String method) throws InterruptedException {
+  private long getOverriddenHeaderMissingCount(
+      View view, String instanceId, String projectId, String databaseId, String method)
+      throws InterruptedException {
     List<TagValue> tagValues = new java.util.ArrayList<>();
     for (TagKey column : view.getColumns()) {
       if (column == SpannerRpcViews.INSTANCE_ID) {
-        tagValues.add(TagValue.create(instanceId));
+        tagValues.add(TagValue.create(GfeLatencyTest.instanceId));
       } else if (column == SpannerRpcViews.DATABASE_ID) {
-        tagValues.add(TagValue.create(databaseId));
+        tagValues.add(TagValue.create(GfeLatencyTest.databaseId));
       } else if (column == SpannerRpcViews.METHOD) {
         tagValues.add(TagValue.create(method));
       } else if (column == SpannerRpcViews.PROJECT_ID) {
-        tagValues.add(TagValue.create(projectId));
+        tagValues.add(TagValue.create(GfeLatencyTest.projectId));
       }
     }
     for (int i = 0; i < MAXIMUM_RETRIES; i++) {
@@ -374,8 +398,8 @@ public class GfeLatencyTest {
       if (viewData.getAggregationMap() != null) {
         Map<List<TagValue>, AggregationData> aggregationMap = viewData.getAggregationMap();
         AggregationData aggregationData = aggregationMap.get(tagValues);
-        long count =  getAggregationValueAsLong(aggregationData);
-        if(count == 0){
+        long count = getAggregationValueAsLong(aggregationData);
+        if (count == 0) {
           continue;
         }
         return count;
