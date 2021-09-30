@@ -121,7 +121,9 @@ public class TransactionWithTagSampleIT extends SampleTestBase {
               .isEqualTo("SELECT SingerId, AlbumId, AlbumTitle FROM Albums");
           queryStatsFound = true;
         }
-        if (queryStatsFound) break;
+        if (queryStatsFound) {
+          break;
+        }
         Thread.sleep(5000);
       }
     }
@@ -152,7 +154,9 @@ public class TransactionWithTagSampleIT extends SampleTestBase {
           assertThat(resultSet.getStringList(0)).contains("Venues.VenueName");
           txnStatsFound = true;
         }
-        if (txnStatsFound) break;
+        if (txnStatsFound) {
+          break;
+        }
         Thread.sleep(5000);
       }
     }
