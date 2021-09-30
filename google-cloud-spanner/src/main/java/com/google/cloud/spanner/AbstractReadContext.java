@@ -385,7 +385,7 @@ abstract class AbstractReadContext
   private boolean isValid = true;
 
   @GuardedBy("lock")
-  private boolean isClosed = false;
+  protected boolean isClosed = false;
 
   // A per-transaction sequence number used to identify this ExecuteSqlRequests. Required for DML,
   // ignored for query by the server.

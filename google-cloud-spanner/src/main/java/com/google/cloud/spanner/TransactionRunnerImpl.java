@@ -214,6 +214,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
     }
 
+    @Override
+    public void close() {
+      // Only mark the context as closed, but do not end the tracer span, as that is done by the
+      // commit and rollback methods.
+      synchronized (lock) {
+        isClosed = true;
+      }
+    }
+
     void ensureTxn() {
       try {
         ensureTxnAsync().get();
@@ -286,6 +295,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     volatile ApiFuture<CommitResponse> commitFuture;
 
     ApiFuture<CommitResponse> commitAsync() {
+      close();
+
       List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
       synchronized (committingLock) {
         if (committing) {
@@ -429,6 +440,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     ApiFuture<Empty> rollbackAsync() {
+      close();
+
       // It could be that there is no transaction if the transaction has been marked
       // withInlineBegin, and there has not been any query/update statement that has been executed.
       // In that case, we do not need to do anything, as there is no transaction.
