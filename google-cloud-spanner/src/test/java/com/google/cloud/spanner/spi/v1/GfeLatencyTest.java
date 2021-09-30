@@ -238,7 +238,7 @@ public class GfeLatencyTest {
       rs.next();
     }
     long count1 =
-        getOverriddenHeaderMissingCount(
+            getOverriddenHeaderMissingCount(
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
             "google.spanner.v1.Spanner/ExecuteStreamingSql");
     assertEquals(1, count1);
@@ -259,7 +259,7 @@ public class GfeLatencyTest {
         .readWriteTransaction()
         .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
     long count1 =
-        getOverriddenHeaderMissingCount(
+            getOverriddenHeaderMissingCount(
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
             "google.spanner.v1.Spanner/ExecuteSql");
     assertEquals(1, count1);
@@ -344,19 +344,18 @@ public class GfeLatencyTest {
       }
     }
     for (int i = 0; i < MAXIMUM_RETRIES; i++) {
+      Thread.sleep(WAIT_FOR_METRICS_TIME_MS);
       ViewData viewData = SpannerRpcViews.viewManager.getView(view.getName());
       if (viewData.getAggregationMap() != null) {
         Map<List<TagValue>, AggregationData> aggregationMap = viewData.getAggregationMap();
         AggregationData aggregationData = aggregationMap.get(tagValues);
         return getAggregationValueAsLong(aggregationData);
       }
-      Thread.sleep(WAIT_FOR_METRICS_TIME_MS);
     }
     return -1;
   }
 
-  private long getOverriddenHeaderMissingCount(View view, String method)
-      throws InterruptedException {
+  private long getOverriddenHeaderMissingCount(View view, String method) throws InterruptedException {
     List<TagValue> tagValues = new java.util.ArrayList<>();
     for (TagKey column : view.getColumns()) {
       if (column == SpannerRpcViews.INSTANCE_ID) {
@@ -375,8 +374,8 @@ public class GfeLatencyTest {
       if (viewData.getAggregationMap() != null) {
         Map<List<TagValue>, AggregationData> aggregationMap = viewData.getAggregationMap();
         AggregationData aggregationData = aggregationMap.get(tagValues);
-        long count = getAggregationValueAsLong(aggregationData);
-        if (count == 0) {
+        long count =  getAggregationValueAsLong(aggregationData);
+        if(count == 0){
           continue;
         }
         return count;
