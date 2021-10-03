@@ -19,6 +19,8 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -112,6 +114,8 @@ public class InlineBeginTransactionTest {
                   .build())
           .setMetadata(SELECT1_METADATA)
           .build();
+  private static final com.google.spanner.v1.ResultSet EMPTY_RESULTSET =
+      com.google.spanner.v1.ResultSet.newBuilder().setMetadata(SELECT1_METADATA).build();
   private static final Statement SELECT1_UNION_ALL_SELECT2 =
       Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL1");
   private static final com.google.spanner.v1.ResultSet SELECT1_UNION_ALL_SELECT2_RESULTSET =
@@ -1323,6 +1327,38 @@ public class InlineBeginTransactionTest {
     }
 
     @Test
+    public void testWaitForTransactionTimeoutForCommit() {
+      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+      AtomicBoolean firstAttempt = new AtomicBoolean(true);
+      SpannerException exception =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(
+                          transaction -> {
+                            TransactionContextImpl impl = (TransactionContextImpl) transaction;
+                            Struct res =
+                                transaction.readRow(
+                                    "FOO", Key.of(1L), Collections.singletonList("BAR"));
+                            if (firstAttempt.compareAndSet(true, false)) {
+                              impl.waitForTransactionTimeoutMillis = 1L;
+                              // Simulate that the transaction id got lost.
+                              impl.transactionIdFuture = SettableApiFuture.create();
+                              impl.transactionId = null;
+                            } else {
+                              impl.waitForTransactionTimeoutMillis = 60_000L;
+                            }
+                            return res;
+                          }));
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
+      assertEquals(0, countRequests(BeginTransactionRequest.class));
+      assertEquals(1, countRequests(ReadRequest.class));
+      assertEquals(0, countRequests(CommitRequest.class));
+    }
+
+    @Test
     public void testQueryWithInlineBeginDidNotReturnTransaction() {
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       // This will cause the first statement that requests a transaction to not return a transaction
@@ -1584,6 +1620,86 @@ public class InlineBeginTransactionTest {
       // The transaction will never attempt to commit.
       assertEquals(0, countRequests(CommitRequest.class));
       assertEquals(2, countTransactionsStarted());
+    }
+
+    @Test
+    public void testReadRowAborted() {
+      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+      // The retry behavior should be equal regardless whether the readRow operation returns a row
+      // or not.
+      for (boolean emptyResult : new boolean[] {true, false}) {
+        AtomicBoolean firstAttempt = new AtomicBoolean(true);
+        Struct row =
+            client
+                .readWriteTransaction()
+                .run(
+                    transaction -> {
+                      if (firstAttempt.compareAndSet(true, false)) {
+                        mockSpanner.putStatementResult(
+                            StatementResult.exception(
+                                READ_ROW_STATEMENT,
+                                mockSpanner.createAbortedException(ByteString.copyFromUtf8("tx"))));
+                      } else {
+                        mockSpanner.putStatementResult(
+                            StatementResult.query(
+                                READ_ROW_STATEMENT,
+                                emptyResult ? EMPTY_RESULTSET : SELECT1_RESULTSET));
+                      }
+                      return transaction.readRow(
+                          "FOO", Key.of(1L), Collections.singletonList("BAR"));
+                    });
+        if (emptyResult) {
+          assertNull(row);
+        } else {
+          assertNotNull(row);
+          assertEquals(1L, row.getLong(0));
+        }
+        // The transaction is retried once, and the retry will use an explicit BeginTransaction RPC
+        // as the first attempt did not return a transaction id.
+        assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
+        assertThat(countRequests(ReadRequest.class)).isEqualTo(2);
+        assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
+        mockSpanner.clearRequests();
+      }
+    }
+
+    @Test
+    public void testReadRowCommitAborted() {
+      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+      // The retry behavior should be equal regardless whether the readRow operation returns a row
+      // or not.
+      for (boolean emptyResult : new boolean[] {true, false}) {
+        mockSpanner.putStatementResult(
+            StatementResult.query(
+                READ_ROW_STATEMENT, emptyResult ? EMPTY_RESULTSET : SELECT1_RESULTSET));
+        AtomicBoolean firstAttempt = new AtomicBoolean(true);
+        Struct row =
+            client
+                .readWriteTransaction()
+                .run(
+                    transaction -> {
+                      Struct res =
+                          transaction.readRow("FOO", Key.of(1L), Collections.singletonList("BAR"));
+                      // This will cause the commit request to return Aborted.
+                      if (firstAttempt.compareAndSet(true, false)) {
+                        mockSpanner.abortTransaction(transaction);
+                      }
+                      return res;
+                    });
+        if (emptyResult) {
+          assertNull(row);
+        } else {
+          assertNotNull(row);
+          assertEquals(1L, row.getLong(0));
+        }
+        // The transaction is retried once, and will inline the BeginTransaction option with the
+        // read operation during the retry again, as the initial attempt did return a transaction
+        // id.
+        assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(0);
+        assertThat(countRequests(ReadRequest.class)).isEqualTo(2);
+        assertThat(countRequests(CommitRequest.class)).isEqualTo(2);
+        mockSpanner.clearRequests();
+      }
     }
   }
 

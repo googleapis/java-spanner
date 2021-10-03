@@ -178,7 +178,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
      * transaction if the BeginTransaction option is included with the first statement of the
      * transaction.
      */
-    private volatile SettableApiFuture<ByteString> transactionIdFuture = null;
+    @VisibleForTesting volatile SettableApiFuture<ByteString> transactionIdFuture = null;
 
     @VisibleForTesting long waitForTransactionTimeoutMillis = 60_000L;
     private final boolean trackTransactionStarter;
@@ -361,7 +361,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                     .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
           } else {
             requestBuilder.setTransactionId(
-                transactionId == null ? transactionIdFuture.get() : transactionId);
+                transactionId == null
+                    ? transactionIdFuture.get(
+                        waitForTransactionTimeoutMillis, TimeUnit.MILLISECONDS)
+                    : transactionId);
           }
           if (options.hasPriority() || getTransactionTag() != null) {
             RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
@@ -410,6 +413,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               MoreExecutors.directExecutor());
         } catch (InterruptedException e) {
           res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+        } catch (TimeoutException e) {
+          res.setException(SpannerExceptionFactory.propagateTimeout(e));
         } catch (ExecutionException e) {
           res.setException(
               SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause()));
