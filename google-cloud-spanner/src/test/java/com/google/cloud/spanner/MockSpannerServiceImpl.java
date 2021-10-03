@@ -1483,6 +1483,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             .withDescription("No result found for " + statement.toString())
             .asRuntimeException();
       }
+      if (res.getType() == StatementResult.StatementResultType.EXCEPTION) {
+        throw res.getException();
+      }
       returnPartialResultSet(
           res.getResultSet(),
           transactionId,

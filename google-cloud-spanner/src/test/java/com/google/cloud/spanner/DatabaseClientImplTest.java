@@ -76,6 +76,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.After;
@@ -2169,5 +2170,33 @@ public class DatabaseClientImplTest {
     client.transactionManager().close();
 
     assertThat(checkedOut).isEmpty();
+  }
+
+  @Test
+  public void transactionContextFailsIfUsedMultipleTimes() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    Function<TransactionContext, Long> function =
+        new Function<TransactionContext, Long>() {
+          TransactionContext ctx;
+
+          @Override
+          public Long apply(TransactionContext transactionContext) {
+            if (ctx == null) {
+              ctx = transactionContext;
+            }
+            try (ResultSet rs = ctx.executeQuery(SELECT1)) {
+              while (rs.next()) {}
+            }
+            return 1L;
+          }
+        };
+    assertEquals(Long.valueOf(1L), client.readWriteTransaction().run(tx -> function.apply(tx)));
+    SpannerException exception =
+        assertThrows(
+            SpannerException.class,
+            () -> client.readWriteTransaction().run(tx -> function.apply(tx)));
+    assertTrue(exception.getMessage().contains("Context has been closed"));
   }
 }
