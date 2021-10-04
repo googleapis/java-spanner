@@ -172,7 +172,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
      * transaction if the BeginTransaction option is included with the first statement of the
      * transaction.
      */
-    private volatile SettableApiFuture<ByteString> transactionIdFuture = null;
+    @VisibleForTesting volatile SettableApiFuture<ByteString> transactionIdFuture = null;
 
     @VisibleForTesting long waitForTransactionTimeoutMillis = 60_000L;
     private final boolean trackTransactionStarter;
@@ -205,6 +205,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         if (runningAsyncOperations == 0) {
           finishedAsyncOperations.set(null);
         }
+      }
+    }
+
+    @Override
+    public void close() {
+      // Only mark the context as closed, but do not end the tracer span, as that is done by the
+      // commit and rollback methods.
+      synchronized (lock) {
+        isClosed = true;
       }
     }
 
@@ -280,6 +289,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     volatile ApiFuture<CommitResponse> commitFuture;
 
     ApiFuture<CommitResponse> commitAsync() {
+      close();
+
       final SettableApiFuture<CommitResponse> res = SettableApiFuture.create();
       final SettableApiFuture<Void> finishOps;
       CommitRequest.Builder builder =
@@ -340,7 +351,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                     .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
           } else {
             requestBuilder.setTransactionId(
-                transactionId == null ? transactionIdFuture.get() : transactionId);
+                transactionId == null
+                    ? transactionIdFuture.get(
+                        waitForTransactionTimeoutMillis, TimeUnit.MILLISECONDS)
+                    : transactionId);
           }
           if (options.hasPriority() || getTransactionTag() != null) {
             RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
@@ -389,6 +403,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               MoreExecutors.directExecutor());
         } catch (InterruptedException e) {
           res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+        } catch (TimeoutException e) {
+          res.setException(SpannerExceptionFactory.propagateTimeout(e));
         } catch (ExecutionException e) {
           res.setException(
               SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause()));
@@ -419,6 +435,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     ApiFuture<Empty> rollbackAsync() {
+      close();
+
       // It could be that there is no transaction if the transaction has been marked
       // withInlineBegin, and there has not been any query/update statement that has been executed.
       // In that case, we do not need to do anything, as there is no transaction.
