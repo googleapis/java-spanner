@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -99,8 +100,23 @@ public class SpanTest {
           .withDescription("Non-retryable test exception.")
           .asRuntimeException();
 
+  private static int getVersion() {
+    String version = System.getProperty("java.version");
+    if (version.startsWith("1.")) {
+      version = version.substring(2, 3);
+    } else {
+      int dot = version.indexOf(".");
+      if (dot != -1) {
+        version = version.substring(0, dot);
+      }
+    }
+    return Integer.parseInt(version);
+  }
+
   @BeforeClass
   public static void startStaticServer() throws Exception {
+    Assume.assumeTrue("This test is only supported on JDK11 and lower", getVersion() < 12);
+
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
@@ -120,7 +136,8 @@ public class SpanTest {
             .start();
     channelProvider = LocalChannelProvider.create(uniqueName);
 
-    // Use a little bit reflection to set the test tracer.
+    // Use a little reflection to set the test tracer.
+    // This is not possible in Java 12 and later.
     java.lang.reflect.Field field = Tracing.class.getDeclaredField("traceComponent");
     field.setAccessible(true);
     java.lang.reflect.Field modifiersField =
@@ -133,8 +150,10 @@ public class SpanTest {
 
   @AfterClass
   public static void stopServer() throws InterruptedException {
-    server.shutdown();
-    server.awaitTermination();
+    if (server != null) {
+      server.shutdown();
+      server.awaitTermination();
+    }
   }
 
   @Before
