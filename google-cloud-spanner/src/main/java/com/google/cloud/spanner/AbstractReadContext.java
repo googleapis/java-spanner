@@ -790,7 +790,7 @@ abstract class AbstractReadContext
             SpannerRpc.StreamingCall call =
                 rpc.read(builder.build(), stream.consumer(), session.getOptions());
             call.request(prefetchChunks);
-            stream.setCall(call, selector != null && selector.hasBegin());
+            stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
             return stream;
           }
         };
