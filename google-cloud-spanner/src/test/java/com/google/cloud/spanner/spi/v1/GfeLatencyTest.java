@@ -21,22 +21,37 @@ import static org.junit.Assume.assumeFalse;
 
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
-import com.google.cloud.spanner.*;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
+import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.TypeCode;
-import io.grpc.*;
+import io.grpc.ForwardingServerCall;
+import io.grpc.Metadata;
+import io.grpc.Server;
+import io.grpc.ServerCall;
+import io.grpc.ServerCallHandler;
+import io.grpc.ServerInterceptor;
 import io.grpc.auth.MoreCallCredentials;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
-import io.opencensus.stats.*;
+import io.opencensus.stats.AggregationData;
+import io.opencensus.stats.View;
+import io.opencensus.stats.ViewData;
 import io.opencensus.tags.TagKey;
 import io.opencensus.tags.TagValue;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
@@ -211,7 +226,8 @@ public class GfeLatencyTest {
             projectId,
             instanceId,
             databaseId,
-            "google.spanner.v1.Spanner/ExecuteStreamingSql");
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            false);
     assertEquals(fakeServerTiming.get(), latency);
   }
 
@@ -227,7 +243,8 @@ public class GfeLatencyTest {
             projectId,
             instanceId,
             databaseId,
-            "google.spanner.v1.Spanner/ExecuteSql");
+            "google.spanner.v1.Spanner/ExecuteSql",
+            false);
     assertEquals(fakeServerTiming.get(), latency);
   }
 
@@ -242,19 +259,21 @@ public class GfeLatencyTest {
             projectId,
             instanceId,
             databaseId,
-            "google.spanner.v1.Spanner/ExecuteStreamingSql");
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            false);
     assertEquals(0, count);
 
     try (ResultSet rs = databaseClientNoHeader.singleUse().executeQuery(SELECT1AND2)) {
       rs.next();
     }
     long count1 =
-        getOverriddenHeaderMissingCount(
+        getMetric(
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
             projectId,
             instanceId,
             databaseId,
-            "google.spanner.v1.Spanner/ExecuteStreamingSql");
+            "google.spanner.v1.Spanner/ExecuteStreamingSql",
+            true);
     assertEquals(1, count1);
   }
 
@@ -269,19 +288,21 @@ public class GfeLatencyTest {
             projectId,
             instanceId,
             databaseId,
-            "google.spanner.v1.Spanner/ExecuteSql");
+            "google.spanner.v1.Spanner/ExecuteSql",
+            false);
     assertEquals(0, count);
 
     databaseClientNoHeader
         .readWriteTransaction()
         .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
     long count1 =
-        getOverriddenHeaderMissingCount(
+        getMetric(
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
             projectId,
             instanceId,
             databaseId,
-            "google.spanner.v1.Spanner/ExecuteSql");
+            "google.spanner.v1.Spanner/ExecuteSql",
+            true);
     assertEquals(1, count1);
   }
 
@@ -351,7 +372,12 @@ public class GfeLatencyTest {
   }
 
   private long getMetric(
-      View view, String projectId, String instanceId, String databaseId, String method)
+      View view,
+      String projectId,
+      String instanceId,
+      String databaseId,
+      String method,
+      boolean withOverride)
       throws InterruptedException {
     List<TagValue> tagValues = new java.util.ArrayList<>();
     for (TagKey column : view.getColumns()) {
@@ -371,40 +397,12 @@ public class GfeLatencyTest {
       if (viewData.getAggregationMap() != null) {
         Map<List<TagValue>, AggregationData> aggregationMap = viewData.getAggregationMap();
         AggregationData aggregationData = aggregationMap.get(tagValues);
+        if (withOverride && getAggregationValueAsLong(aggregationData) == 0) {
+          continue;
+        }
         return getAggregationValueAsLong(aggregationData);
       }
     }
     return -1;
-  }
-
-  private long getOverriddenHeaderMissingCount(
-      View view, String instanceId, String projectId, String databaseId, String method)
-      throws InterruptedException {
-    List<TagValue> tagValues = new java.util.ArrayList<>();
-    for (TagKey column : view.getColumns()) {
-      if (column == SpannerRpcViews.INSTANCE_ID) {
-        tagValues.add(TagValue.create(GfeLatencyTest.instanceId));
-      } else if (column == SpannerRpcViews.DATABASE_ID) {
-        tagValues.add(TagValue.create(GfeLatencyTest.databaseId));
-      } else if (column == SpannerRpcViews.METHOD) {
-        tagValues.add(TagValue.create(method));
-      } else if (column == SpannerRpcViews.PROJECT_ID) {
-        tagValues.add(TagValue.create(GfeLatencyTest.projectId));
-      }
-    }
-    for (int i = 0; i < MAXIMUM_RETRIES; i++) {
-      Thread.sleep(WAIT_FOR_METRICS_TIME_MS);
-      ViewData viewData = SpannerRpcViews.viewManager.getView(view.getName());
-      if (viewData.getAggregationMap() != null) {
-        Map<List<TagValue>, AggregationData> aggregationMap = viewData.getAggregationMap();
-        AggregationData aggregationData = aggregationMap.get(tagValues);
-        long count = getAggregationValueAsLong(aggregationData);
-        if (count == 0) {
-          continue;
-        }
-        return count;
-      }
-    }
-    return 0;
   }
 }

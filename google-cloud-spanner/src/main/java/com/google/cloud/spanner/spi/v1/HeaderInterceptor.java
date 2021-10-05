@@ -15,14 +15,29 @@
  */
 package com.google.cloud.spanner.spi.v1;
 
-import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.*;
+import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.DATABASE_ID;
+import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.INSTANCE_ID;
+import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.METHOD;
+import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.PROJECT_ID;
+import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT;
+import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_LATENCY;
 
 import com.google.cloud.spanner.DatabaseId;
-import io.grpc.*;
+import io.grpc.CallOptions;
+import io.grpc.Channel;
+import io.grpc.ClientCall;
+import io.grpc.ClientInterceptor;
 import io.grpc.ForwardingClientCall.SimpleForwardingClientCall;
 import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
-import io.opencensus.stats.*;
-import io.opencensus.tags.*;
+import io.grpc.Metadata;
+import io.grpc.MethodDescriptor;
+import io.opencensus.stats.MeasureMap;
+import io.opencensus.stats.Stats;
+import io.opencensus.stats.StatsRecorder;
+import io.opencensus.tags.TagContext;
+import io.opencensus.tags.TagValue;
+import io.opencensus.tags.Tagger;
+import io.opencensus.tags.Tags;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -39,15 +54,13 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Pattern SERVER_TIMING_HEADER_PATTERN = Pattern.compile(".*dur=(?<dur>\\d+)");
   private static final Metadata.Key<String> GOOGLE_CLOUD_RESOURCE_PREFIX_KEY =
       Metadata.Key.of("google-cloud-resource-prefix", Metadata.ASCII_STRING_MARSHALLER);
-  private static final Pattern GOOGLE_CLOUD_RESOURCE_PREFIX_PATTERN =
-      Pattern.compile(
-          ".*projects/(?<project>\\w\\p{ASCII}+)/instances/(?<instance>\\w\\p{ASCII}+)/databases/(?<database>\\w\\p{ASCII}+)");
 
   // Get the global singleton Tagger object.
-  private static final Tagger tagger = Tags.getTagger();
+  private static final Tagger TAGGER = Tags.getTagger();
+  private static final StatsRecorder STATS_RECORDER = Stats.getStatsRecorder();
 
-  private static final Logger logger = Logger.getLogger(HeaderInterceptor.class.getName());
-  private static final Level level = Level.INFO;
+  private static final Logger LOGGER = Logger.getLogger(HeaderInterceptor.class.getName());
+  private static final Level LEVEL = Level.INFO;
 
   HeaderInterceptor() {}
 
@@ -82,7 +95,7 @@ class HeaderInterceptor implements ClientInterceptor {
           measureMap.put(SPANNER_GFE_LATENCY, latency).record(tagContext);
           measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 0L).record(tagContext);
         } catch (NumberFormatException e) {
-          logger.log(level, "invalid server-timing object in header");
+          LOGGER.log(LEVEL, "Invalid server-timing object in header", matcher.group("dur"));
         }
       }
     } else {
@@ -92,22 +105,22 @@ class HeaderInterceptor implements ClientInterceptor {
 
   private TagContext getTagContext(
       String method, String projectId, String instanceId, String databaseId) {
-    return tagger
+    return TAGGER
         .currentBuilder()
-        .putLocal(SpannerRpcViews.PROJECT_ID, TagValue.create(projectId))
+        .putLocal(PROJECT_ID, TagValue.create(projectId))
         .putLocal(INSTANCE_ID, TagValue.create(instanceId))
         .putLocal(DATABASE_ID, TagValue.create(databaseId))
-        .putLocal(SpannerRpcViews.METHOD, TagValue.create(method))
+        .putLocal(METHOD, TagValue.create(method))
         .build();
   }
 
   private TagContext getTagContext(String method) {
-    return tagger
+    return TAGGER
         .currentBuilder()
         .putLocal(PROJECT_ID, TagValue.create("undefined-project"))
         .putLocal(INSTANCE_ID, TagValue.create("undefined-instance"))
         .putLocal(DATABASE_ID, TagValue.create("undefined-database"))
-        .putLocal(SpannerRpcViews.METHOD, TagValue.create(method))
+        .putLocal(METHOD, TagValue.create(method))
         .build();
   }
 
@@ -121,7 +134,7 @@ class HeaderInterceptor implements ClientInterceptor {
         String projectId = database.getInstanceId().getProject();
         return getTagContext(method, projectId, instanceId, databaseId);
       } catch (IllegalArgumentException e) {
-        logger.log(level, e.toString());
+        LOGGER.log(LEVEL, "Error parsing google cloud resource header", e);
       }
     }
     return getTagContext(method);

@@ -17,10 +17,14 @@ package com.google.cloud.spanner.spi.v1;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import io.opencensus.stats.*;
+import io.opencensus.stats.Aggregation;
 import io.opencensus.stats.Aggregation.Distribution;
 import io.opencensus.stats.Aggregation.Sum;
+import io.opencensus.stats.BucketBoundaries;
 import io.opencensus.stats.Measure.MeasureLong;
+import io.opencensus.stats.Stats;
+import io.opencensus.stats.View;
+import io.opencensus.stats.ViewManager;
 import io.opencensus.tags.TagKey;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,7 +45,6 @@ public class SpannerRpcViews {
   public static final TagKey INSTANCE_ID = TagKey.create("instance_id");
   public static final TagKey DATABASE_ID = TagKey.create("database");
 
-  public static final StatsRecorder STATS_RECORDER = Stats.getStatsRecorder();
   /** GFE t4t7 latency extracted from server-timing header. */
   public static final MeasureLong SPANNER_GFE_LATENCY =
       MeasureLong.create(
@@ -91,12 +94,6 @@ public class SpannerRpcViews {
    */
   @VisibleForTesting
   public static void registerGfeLatencyAndHeaderMissingCountViews() {
-    viewManager.registerView(SPANNER_GFE_LATENCY_VIEW);
-    viewManager.registerView(SPANNER_GFE_HEADER_MISSING_COUNT_VIEW);
-  }
-
-  @VisibleForTesting
-  public static void registerGfeLatencyAndHeaderMissingCountViews(ViewManager viewManager) {
     viewManager.registerView(SPANNER_GFE_LATENCY_VIEW);
     viewManager.registerView(SPANNER_GFE_HEADER_MISSING_COUNT_VIEW);
   }
