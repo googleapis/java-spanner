@@ -83,7 +83,7 @@ public class ITDatabaseTest {
     ExponentialBackOff backoff =
         new ExponentialBackOff.Builder()
             .setInitialIntervalMillis(1000)
-            .setMaxElapsedTimeMillis(35000)
+            .setMaxElapsedTimeMillis(300000)
             .setMaxIntervalMillis(5000)
             .build();
     DatabaseNotFoundException notFoundException = null;
