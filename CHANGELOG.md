@@ -1,5 +1,12 @@
 # Changelog
 
+### [6.4.4-sp.3](https://www.github.com/googleapis/java-spanner/compare/6.4.4-sp.2...v6.4.4-sp.3) (2021-10-06)
+
+
+### Bug Fixes
+
+* keep track of any BeginTransaction option for a Read ([#1486](https://www.github.com/googleapis/java-spanner/issues/1486)) ([6664d75](https://www.github.com/googleapis/java-spanner/commit/6664d753d21e004c8c89f5f9e87c54736b764921))
+
 ### [6.4.4-sp.2](https://www.github.com/googleapis/java-spanner/compare/6.4.4-sp.1...v6.4.4-sp.2) (2021-10-04)
 
 
