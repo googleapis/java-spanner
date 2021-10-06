@@ -34,8 +34,6 @@ branchProtectionRules:
       - 'Kokoro - Test: Integration'
       - cla/google
       - checkstyle
-      - compile (8)
-      - compile (11)
   - pattern: 3.3.x
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
@@ -51,8 +49,6 @@ branchProtectionRules:
       - 'Kokoro - Test: Integration'
       - cla/google
       - checkstyle
-      - compile (8)
-      - compile (11)
   - pattern: 4.0.x
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
@@ -68,8 +64,6 @@ branchProtectionRules:
       - 'Kokoro - Test: Integration'
       - cla/google
       - checkstyle
-      - compile (8)
-      - compile (11)
   - pattern: 5.2.x
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
@@ -85,24 +79,6 @@ branchProtectionRules:
       - 'Kokoro - Test: Integration'
       - cla/google
       - checkstyle
-      - compile (8)
-      - compile (11)
-  - pattern: 3.3.3-sp
-    isAdminEnforced: true
-    requiredApprovingReviewCount: 1
-    requiresCodeOwnerReviews: true
-    requiresStrictStatusChecks: false
-    requiredStatusCheckContexts:
-      - dependencies (8)
-      - dependencies (11)
-      - lint
-      - units (8)
-      - units (11)
-      - 'Kokoro - Test: Integration'
-      - cla/google
-      - checkstyle
-      - compile (8)
-      - compile (11)
   - pattern: 6.4.4-sp
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
@@ -116,8 +92,6 @@ branchProtectionRules:
       - 'Kokoro - Test: Integration'
       - cla/google
       - checkstyle
-      - compile (8)
-      - compile (11)
 permissionRules:
   - team: yoshi-admins
     permission: admin

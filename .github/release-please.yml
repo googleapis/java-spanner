@@ -21,8 +21,4 @@ branches:
   - releaseType: java-lts
     bumpMinorPreMajor: true
     handleGHRelease: true
-    branch: 3.3.3-sp
-  - releaseType: java-lts
-    bumpMinorPreMajor: true
-    handleGHRelease: true
     branch: 6.4.4-sp
