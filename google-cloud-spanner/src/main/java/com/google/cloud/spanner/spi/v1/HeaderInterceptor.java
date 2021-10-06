@@ -22,7 +22,6 @@ import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.PROJECT_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_LATENCY;
 
-import com.google.cloud.spanner.DatabaseId;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -54,6 +53,12 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Pattern SERVER_TIMING_HEADER_PATTERN = Pattern.compile(".*dur=(?<dur>\\d+)");
   private static final Metadata.Key<String> GOOGLE_CLOUD_RESOURCE_PREFIX_KEY =
       Metadata.Key.of("google-cloud-resource-prefix", Metadata.ASCII_STRING_MARSHALLER);
+  private static final Pattern GOOGLE_CLOUD_RESOURCE_PREFIX_PATTERN =
+      Pattern.compile(
+          ".*projects/(?<project>\\w\\p{ASCII}+)/instances/(?<instance>\\w\\p{ASCII}+)/databases/(?<database>\\w\\p{ASCII}+)");
+  private static final Pattern GOOGLE_CLOUD_RESOURCE_PREFIX_ADMIN_PATTERN =
+      Pattern.compile(
+          ".*projects/(?<project>\\w\\p{ASCII}+)/instances/(?<instance>\\w\\p{ASCII}+)");
 
   // Get the global singleton Tagger object.
   private static final Tagger TAGGER = Tags.getTagger();
@@ -75,6 +80,7 @@ class HeaderInterceptor implements ClientInterceptor {
             new SimpleForwardingClientCallListener<RespT>(responseListener) {
               @Override
               public void onHeaders(Metadata metadata) {
+
                 processHeader(metadata, tagContext);
                 super.onHeaders(metadata);
               }
@@ -125,18 +131,24 @@ class HeaderInterceptor implements ClientInterceptor {
   }
 
   private TagContext getTagContext(Metadata headers, String method) {
+    String projectId = "undefined-project";
+    String instanceId = "undefined-database";
+    String databaseId = "undefined-database";
     if (headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY) != null) {
       String googleResourcePrefix = headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY);
-      try {
-        DatabaseId database = DatabaseId.of(googleResourcePrefix);
-        String databaseId = database.getDatabase();
-        String instanceId = database.getInstanceId().getInstance();
-        String projectId = database.getInstanceId().getProject();
-        return getTagContext(method, projectId, instanceId, databaseId);
-      } catch (IllegalArgumentException e) {
-        LOGGER.log(LEVEL, "Error parsing google cloud resource header", e);
+      Matcher matcher = GOOGLE_CLOUD_RESOURCE_PREFIX_PATTERN.matcher(googleResourcePrefix);
+      Matcher matcher2 = GOOGLE_CLOUD_RESOURCE_PREFIX_ADMIN_PATTERN.matcher(googleResourcePrefix);
+      if (matcher.find()) {
+        projectId = matcher.group("project");
+        instanceId = matcher.group("instance");
+        databaseId = matcher.group("database");
+      } else if (matcher2.find()) {
+        projectId = matcher2.group("project");
+        instanceId = matcher2.group("instance");
+      } else {
+        LOGGER.log(LEVEL, "Error parsing google cloud resource header", googleResourcePrefix);
       }
     }
-    return getTagContext(method);
+    return getTagContext(method, projectId, instanceId, databaseId);
   }
 }
