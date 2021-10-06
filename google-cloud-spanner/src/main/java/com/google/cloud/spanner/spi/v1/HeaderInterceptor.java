@@ -55,10 +55,7 @@ class HeaderInterceptor implements ClientInterceptor {
       Metadata.Key.of("google-cloud-resource-prefix", Metadata.ASCII_STRING_MARSHALLER);
   private static final Pattern GOOGLE_CLOUD_RESOURCE_PREFIX_PATTERN =
       Pattern.compile(
-          ".*projects/(?<project>\\w\\p{ASCII}+)/instances/(?<instance>\\w\\p{ASCII}+)/databases/(?<database>\\w\\p{ASCII}+)");
-  private static final Pattern GOOGLE_CLOUD_RESOURCE_PREFIX_ADMIN_PATTERN =
-      Pattern.compile(
-          ".*projects/(?<project>\\w\\p{ASCII}+)/instances/(?<instance>\\w\\p{ASCII}+)");
+          ".*projects/(?<project>\\p{ASCII}[^/]*)(/instances/(?<instance>\\p{ASCII}[^/]*))?(/databases/(?<database>\\p{ASCII}[^/]*))?");
 
   // Get the global singleton Tagger object.
   private static final Tagger TAGGER = Tags.getTagger();
@@ -120,16 +117,6 @@ class HeaderInterceptor implements ClientInterceptor {
         .build();
   }
 
-  private TagContext getTagContext(String method) {
-    return TAGGER
-        .currentBuilder()
-        .putLocal(PROJECT_ID, TagValue.create("undefined-project"))
-        .putLocal(INSTANCE_ID, TagValue.create("undefined-instance"))
-        .putLocal(DATABASE_ID, TagValue.create("undefined-database"))
-        .putLocal(METHOD, TagValue.create(method))
-        .build();
-  }
-
   private TagContext getTagContext(Metadata headers, String method) {
     String projectId = "undefined-project";
     String instanceId = "undefined-database";
@@ -137,16 +124,16 @@ class HeaderInterceptor implements ClientInterceptor {
     if (headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY) != null) {
       String googleResourcePrefix = headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY);
       Matcher matcher = GOOGLE_CLOUD_RESOURCE_PREFIX_PATTERN.matcher(googleResourcePrefix);
-      Matcher matcher2 = GOOGLE_CLOUD_RESOURCE_PREFIX_ADMIN_PATTERN.matcher(googleResourcePrefix);
       if (matcher.find()) {
         projectId = matcher.group("project");
-        instanceId = matcher.group("instance");
-        databaseId = matcher.group("database");
-      } else if (matcher2.find()) {
-        projectId = matcher2.group("project");
-        instanceId = matcher2.group("instance");
+        if (matcher.group("instance") != null) {
+          instanceId = matcher.group("instance");
+        }
+        if (matcher.group("database") != null) {
+          databaseId = matcher.group("database");
+        }
       } else {
-        LOGGER.log(LEVEL, "Error parsing google cloud resource header", googleResourcePrefix);
+        LOGGER.log(LEVEL, "Error parsing google cloud resource header: " + googleResourcePrefix);
       }
     }
     return getTagContext(method, projectId, instanceId, databaseId);
