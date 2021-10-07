@@ -1,5 +1,22 @@
 # Changelog
 
+## [6.13.0](https://www.github.com/googleapis/java-spanner/compare/v6.12.5...v6.13.0) (2021-10-07)
+
+
+### Features
+
+* expose GFE latency metrics ([#1473](https://www.github.com/googleapis/java-spanner/issues/1473)) ([de82f78](https://www.github.com/googleapis/java-spanner/commit/de82f7809f8585fcbd13e117a2e29e06f1424de4))
+
+
+### Bug Fixes
+
+* keep track of any BeginTransaction option for a Read ([#1485](https://www.github.com/googleapis/java-spanner/issues/1485)) ([757d6ec](https://www.github.com/googleapis/java-spanner/commit/757d6ecfcceea58e0db7623778dde6f3e5f4b865))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.0.7 ([#1491](https://www.github.com/googleapis/java-spanner/issues/1491)) ([58f0e5a](https://www.github.com/googleapis/java-spanner/commit/58f0e5a6db04d6298ae5d8760f907946ffffbae4))
+
 ### [6.12.5](https://www.github.com/googleapis/java-spanner/compare/v6.12.4...v6.12.5) (2021-09-27)
 
 
