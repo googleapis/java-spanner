@@ -37,14 +37,18 @@ public class TagSample {
           // Sets the request tag to "app=concert,env=dev,action=update".
           // This request tag will only be set on this request.
           transaction.executeUpdate(
-              Statement
-                  .of("UPDATE Venues SET Capacity = CAST(Capacity/4 AS INT64) WHERE OutdoorVenue = false"),
+              Statement.of("UPDATE Venues"
+                  + " SET Capacity = CAST(Capacity/4 AS INT64)"
+                  + " WHERE OutdoorVenue = false"),
               Options.tag("app=concert,env=dev,action=update"));
           System.out.println("Venue capacities updated.");
 
-          Statement insert_statement = Statement.newBuilder(
-              "INSERT INTO Venues (VenueId, VenueName, Capacity, OutdoorVenue, LastUpdateTime) " +
-                  "VALUES (@venueId, @venueName, @capacity, @outdoorVenue, PENDING_COMMIT_TIMESTAMP())")
+          Statement insertStatement = Statement.newBuilder(
+              "INSERT INTO Venues"
+                  + " (VenueId, VenueName, Capacity, OutdoorVenue, LastUpdateTime)"
+                  + " VALUES ("
+                  + " @venueId, @venueName, @capacity, @outdoorVenue, PENDING_COMMIT_TIMESTAMP()"
+                  + " )")
               .bind("venueId")
               .to(81)
               .bind("venueName")
@@ -58,7 +62,7 @@ public class TagSample {
           // Sets the request tag to "app=concert,env=dev,action=insert".
           // This request tag will only be set on this request.
           transaction.executeUpdate(
-              insert_statement,
+              insertStatement,
               Options.tag("app=concert,env=dev,action=insert"));
           System.out.println("New venue inserted.");
 
