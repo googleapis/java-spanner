@@ -55,7 +55,7 @@ public class TagSampleIT extends SampleTestBase {
                     + "  SingerId    INT64 NOT NULL,"
                     + "  AlbumId     INT64,"
                     + "  AlbumTitle  STRING(1024)"
-                    + ") PRIMARY KEY (SingerId)",
+                    + ") PRIMARY KEY (SingerId, AlbumId)",
                 "CREATE TABLE Venues ("
                     + "  VenueId        INT64 NOT NULL,"
                     + "  VenueName      STRING(MAX),"
