@@ -22,7 +22,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 
 /**
- * Sample showing how to add and query tags to Cloud Spanner operations.
+ * Sample showing how to add transaction and query tags to Cloud Spanner operations.
  */
 public class TagSample {
 
