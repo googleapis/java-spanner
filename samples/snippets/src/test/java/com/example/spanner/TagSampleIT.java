@@ -57,10 +57,11 @@ public class TagSampleIT extends SampleTestBase {
                     + "  AlbumTitle  STRING(1024)"
                     + ") PRIMARY KEY (SingerId)",
                 "CREATE TABLE Venues ("
-                    + "  VenueId      INT64 NOT NULL,"
-                    + "  VenueName    STRING(MAX),"
-                    + "  Capacity     INT64,"
-                    + "  OutdoorVenue BOOL"
+                    + "  VenueId        INT64 NOT NULL,"
+                    + "  VenueName      STRING(MAX),"
+                    + "  Capacity       INT64,"
+                    + "  OutdoorVenue   BOOL,"
+                    + "  LastUpdateTime TIMESTAMP OPTIONS (allow_commit_timestamp=true)"
                     + ") PRIMARY KEY  (VenueId)"))
         .get(10, TimeUnit.MINUTES);
     databaseId = DatabaseId.of(projectId, instanceId, database);
@@ -103,7 +104,7 @@ public class TagSampleIT extends SampleTestBase {
     final DatabaseClient client = spanner.getDatabaseClient(databaseId);
 
     final String out = runSample(() -> TagSample.setRequestTag(client));
-    assertEquals("SingerId: 1, AlbumId: 1, AlbumTitle: title 1", out);
+    assertTrue(out.contains("SingerId: 1, AlbumId: 1, AlbumTitle: title 1"));
   }
 
   @Test

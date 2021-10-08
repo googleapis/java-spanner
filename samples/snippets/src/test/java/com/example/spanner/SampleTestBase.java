@@ -50,6 +50,7 @@ public class SampleTestBase {
     final SpannerOptions options = SpannerOptions
         .newBuilder()
         .setAutoThrottleAdministrativeRequests()
+        .setProjectId("gcloud-devel")
         .build();
     projectId = options.getProjectId();
     spanner = options.getService();
