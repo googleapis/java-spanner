@@ -22,8 +22,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -298,7 +298,7 @@ public class SingleUseTransactionTest {
           mock(OperationFuture.class);
       when(operation.get()).thenReturn(null);
       when(ddlClient.executeDdl(anyString())).thenCallRealMethod();
-      when(ddlClient.executeDdl(anyListOf(String.class))).thenReturn(operation);
+      when(ddlClient.executeDdl(anyList())).thenReturn(operation);
       return ddlClient;
     } catch (Exception e) {
       throw new RuntimeException(e);

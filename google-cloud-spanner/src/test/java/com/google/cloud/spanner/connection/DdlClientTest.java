@@ -16,9 +16,9 @@
 
 package com.google.cloud.spanner.connection;
 
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -54,8 +54,7 @@ public class DdlClientTest {
     @SuppressWarnings("unchecked")
     OperationFuture<Void, UpdateDatabaseDdlMetadata> operation = mock(OperationFuture.class);
     when(operation.get()).thenReturn(null);
-    when(client.updateDatabaseDdl(
-            eq(instanceId), eq(databaseId), anyListOf(String.class), isNull(String.class)))
+    when(client.updateDatabaseDdl(eq(instanceId), eq(databaseId), anyList(), isNull()))
         .thenReturn(operation);
     DdlClient subject = createSubject(client);
     String ddl = "CREATE TABLE FOO";

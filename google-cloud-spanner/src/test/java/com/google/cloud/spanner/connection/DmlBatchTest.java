@@ -22,7 +22,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -161,7 +161,7 @@ public class DmlBatchTest {
     assertThat(batch.isActive(), is(false));
 
     UnitOfWork tx = mock(UnitOfWork.class);
-    when(tx.executeBatchUpdateAsync(anyListOf(ParsedStatement.class)))
+    when(tx.executeBatchUpdateAsync(anyList()))
         .thenReturn(ApiFutures.immediateFailedFuture(mock(SpannerException.class)));
     batch = createSubject(tx);
     assertThat(batch.getState(), is(UnitOfWorkState.STARTED));

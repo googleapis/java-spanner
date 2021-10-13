@@ -30,9 +30,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -79,7 +79,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -213,7 +212,7 @@ public class ConnectionImplTest {
       ApiFuture<UpdateDatabaseDdlMetadata> futureMetadata = ApiFutures.immediateFuture(metadata);
       when(operation.getMetadata()).thenReturn(futureMetadata);
       when(ddlClient.executeDdl(anyString())).thenCallRealMethod();
-      when(ddlClient.executeDdl(anyListOf(String.class))).thenReturn(operation);
+      when(ddlClient.executeDdl(anyList())).thenReturn(operation);
       return ddlClient;
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -256,10 +255,10 @@ public class ConnectionImplTest {
               throw SpannerExceptionFactory.newSpannerException(
                   ErrorCode.FAILED_PRECONDITION, "No query has returned with any data yet");
             });
-    when(dbClient.singleUseReadOnlyTransaction(Matchers.any(TimestampBound.class)))
+    when(dbClient.singleUseReadOnlyTransaction(any(TimestampBound.class)))
         .thenReturn(singleUseReadOnlyTx);
 
-    when(dbClient.transactionManager(Mockito.anyVararg()))
+    when(dbClient.transactionManager(any()))
         .thenAnswer(
             invocation -> {
               TransactionContext txContext = mock(TransactionContext.class);
@@ -280,7 +279,7 @@ public class ConnectionImplTest {
               return new SimpleTransactionManager(txContext, options.isReturnCommitStats());
             });
 
-    when(dbClient.readOnlyTransaction(Matchers.any(TimestampBound.class)))
+    when(dbClient.readOnlyTransaction(any(TimestampBound.class)))
         .thenAnswer(
             invocation -> {
               ReadOnlyTransaction tx = mock(ReadOnlyTransaction.class);
@@ -1356,7 +1355,7 @@ public class ConnectionImplTest {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
     when(unitOfWork.executeQueryAsync(
-            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>anyVararg()))
+            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl impl =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
@@ -1455,7 +1454,7 @@ public class ConnectionImplTest {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
     when(unitOfWork.executeQueryAsync(
-            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>anyVararg()))
+            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl connection =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
@@ -1559,7 +1558,7 @@ public class ConnectionImplTest {
     // Indicate that a transaction has been started.
     when(unitOfWork.getState()).thenReturn(UnitOfWorkState.STARTED);
     when(unitOfWork.executeQueryAsync(
-            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>anyVararg()))
+            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     when(unitOfWork.rollbackAsync()).thenReturn(ApiFutures.immediateFuture(null));
     try (ConnectionImpl connection =

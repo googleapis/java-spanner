@@ -17,7 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -77,9 +77,9 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
             invocation -> {
               executor.submit(
                   () -> {
-                    int sessionCount = invocation.getArgumentAt(0, Integer.class);
+                    int sessionCount = invocation.getArgument(0, Integer.class);
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     for (int i = 0; i < sessionCount; i++) {
                       consumer.onSessionReady(setupMockSession(mockSession()));
                     }
