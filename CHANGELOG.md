@@ -1,5 +1,12 @@
 # Changelog
 
+### [3.1.5](https://www.github.com/googleapis/java-spanner/compare/v3.1.4...v3.1.5) (2021-09-29)
+
+
+### Bug Fixes
+
+* **3.1.x:** sessions were not always removed from checkedOutSessions ([#1451](https://www.github.com/googleapis/java-spanner/issues/1451)) ([165b31b](https://www.github.com/googleapis/java-spanner/commit/165b31b35ca0c275db1db3ee44a9b333bafc638d))
+
 ### [3.1.4](https://www.github.com/googleapis/java-spanner/compare/v3.1.3...v3.1.4) (2021-02-09)
 
 
