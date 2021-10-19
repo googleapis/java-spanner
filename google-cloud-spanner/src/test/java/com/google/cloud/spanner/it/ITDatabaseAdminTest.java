@@ -72,6 +72,9 @@ import org.junit.runners.JUnit4;
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITDatabaseAdminTest {
+  private static final long DATABASE_TIMEOUT_MINUTES = 5;
+  private static final long BACKUP_TIMEOUT_MINUTES = 20;
+  private static final long RESTORE_TIMEOUT_MINUTES = 10;
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private DatabaseAdminClient dbAdminClient;
   private RemoteSpannerHelper testHelper;
@@ -98,7 +101,7 @@ public class ITDatabaseAdminTest {
     String statement1 = "CREATE TABLE T (\n" + "  K STRING(MAX),\n" + ") PRIMARY KEY(K)";
     OperationFuture<Database, CreateDatabaseMetadata> op =
         dbAdminClient.createDatabase(instanceId, dbId, ImmutableList.of(statement1));
-    Database db = op.get();
+    Database db = op.get(DATABASE_TIMEOUT_MINUTES, TimeUnit.MINUTES);
     dbs.add(db);
     assertThat(db.getId().getDatabase()).isEqualTo(dbId);
 
@@ -119,7 +122,7 @@ public class ITDatabaseAdminTest {
     String statement2 = "CREATE TABLE T2 (\n" + "  K2 STRING(MAX),\n" + ") PRIMARY KEY(K2)";
     OperationFuture<?, ?> op2 =
         dbAdminClient.updateDatabaseDdl(instanceId, dbId, ImmutableList.of(statement2), null);
-    op2.get();
+    op2.get(DATABASE_TIMEOUT_MINUTES, TimeUnit.MINUTES);
     List<String> statementsInDb = dbAdminClient.getDatabaseDdl(instanceId, dbId);
     assertThat(statementsInDb).containsExactly(statement1, statement2);
 
@@ -140,15 +143,15 @@ public class ITDatabaseAdminTest {
     String statement1 = "CREATE TABLE T (\n" + "  K STRING(MAX),\n" + ") PRIMARY KEY(K)";
     OperationFuture<Database, CreateDatabaseMetadata> op =
         dbAdminClient.createDatabase(instanceId, dbId, ImmutableList.of(statement1));
-    Database db = op.get();
+    Database db = op.get(DATABASE_TIMEOUT_MINUTES, TimeUnit.MINUTES);
     dbs.add(db);
     String statement2 = "CREATE TABLE T2 (\n" + "  K2 STRING(MAX),\n" + ") PRIMARY KEY(K2)";
     OperationFuture<Void, UpdateDatabaseDdlMetadata> op1 =
         dbAdminClient.updateDatabaseDdl(instanceId, dbId, ImmutableList.of(statement2), "myop");
     OperationFuture<Void, UpdateDatabaseDdlMetadata> op2 =
         dbAdminClient.updateDatabaseDdl(instanceId, dbId, ImmutableList.of(statement2), "myop");
-    op1.get();
-    op2.get();
+    op1.get(DATABASE_TIMEOUT_MINUTES, TimeUnit.MINUTES);
+    op2.get(DATABASE_TIMEOUT_MINUTES, TimeUnit.MINUTES);
 
     // Remove the progress list from the metadata before comparing, as there could be small
     // differences between the two in the reported progress depending on exactly when each
@@ -167,7 +170,7 @@ public class ITDatabaseAdminTest {
     String statement1 = "CREATE TABLE T (\n" + "  K STRING(MAX),\n" + ") PRIMARY KEY(K)";
     OperationFuture<Database, CreateDatabaseMetadata> op =
         dbAdminClient.createDatabase(instanceId, dbId, ImmutableList.of(statement1));
-    Database db = op.get();
+    Database db = op.get(DATABASE_TIMEOUT_MINUTES, TimeUnit.MINUTES);
     dbs.add(db);
     assertThat(db.getId().getDatabase()).isEqualTo(dbId);
 
@@ -176,7 +179,7 @@ public class ITDatabaseAdminTest {
 
     String statement2 = "CREATE TABLE T2 (\n" + "  K2 STRING(MAX),\n" + ") PRIMARY KEY(K2)";
     OperationFuture<?, ?> op2 = db.updateDdl(ImmutableList.of(statement2), null);
-    op2.get();
+    op2.get(DATABASE_TIMEOUT_MINUTES, TimeUnit.MINUTES);
     Iterable<String> statementsInDb = db.getDdl();
     assertThat(statementsInDb).containsExactly(statement1, statement2);
     db.drop();
@@ -308,12 +311,12 @@ public class ITDatabaseAdminTest {
                 testHelper.getInstanceId().getInstance(),
                 initialDatabaseId,
                 Collections.emptyList());
-        databases.add(op.get());
+        databases.add(op.get(DATABASE_TIMEOUT_MINUTES, TimeUnit.MINUTES));
         // Keep track of the original create time of this database, as we will drop this database
         // later and create another one with the exact same name. That means that the ListOperations
         // call will return at least two CreateDatabase operations. The retry logic should always
         // pick the last one.
-        initialDbCreateTime = op.get().getCreateTime();
+        initialDbCreateTime = op.get(DATABASE_TIMEOUT_MINUTES, TimeUnit.MINUTES).getCreateTime();
         // Assert that the CreateDatabase RPC was called only once, and that the operation tracking
         // was resumed through a GetOperation call.
         assertThat(createDbInterceptor.methodCount.get()).isEqualTo(1);
@@ -340,7 +343,7 @@ public class ITDatabaseAdminTest {
                 databaseId,
                 Timestamp.ofTimeSecondsAndNanos(
                     Timestamp.now().getSeconds() + TimeUnit.SECONDS.convert(7L, TimeUnit.DAYS), 0));
-        backups.add(op.get());
+        backups.add(op.get(BACKUP_TIMEOUT_MINUTES, TimeUnit.MINUTES));
         // Assert that the CreateBackup RPC was called only once, and that the operation tracking
         // was resumed through a GetOperation call.
         assertThat(createDbInterceptor.methodCount.get()).isEqualTo(1);
@@ -368,7 +371,7 @@ public class ITDatabaseAdminTest {
                   backupId,
                   testHelper.getInstanceId().getInstance(),
                   restoredDbId);
-          databases.add(op.get());
+          databases.add(op.get(RESTORE_TIMEOUT_MINUTES, TimeUnit.MINUTES));
           // Assert that the RestoreDatabase RPC was called only once, and that the operation
           // tracking was resumed through a GetOperation call.
           assertThat(createDbInterceptor.methodCount.get()).isEqualTo(1);
@@ -409,7 +412,8 @@ public class ITDatabaseAdminTest {
                 Collections.emptyList());
         // Check that the second database was created and has a greater creation time than the
         // first.
-        Timestamp secondCreationTime = op.get().getCreateTime();
+        Timestamp secondCreationTime =
+            op.get(DATABASE_TIMEOUT_MINUTES, TimeUnit.MINUTES).getCreateTime();
         // TODO: Change this to greaterThan when the create time of a database is reported back by
         // the server.
         assertThat(secondCreationTime).isAtLeast(initialDbCreateTime);
