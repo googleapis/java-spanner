@@ -505,10 +505,10 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
         != com.google.spanner.v1.RequestOptions.Priority.PRIORITY_UNSPECIFIED.getNumber()) {
       output.writeEnum(1, priority_);
     }
-    if (!getRequestTagBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(requestTag_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, requestTag_);
     }
-    if (!getTransactionTagBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(transactionTag_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, transactionTag_);
     }
     unknownFields.writeTo(output);
@@ -524,10 +524,10 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
         != com.google.spanner.v1.RequestOptions.Priority.PRIORITY_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(1, priority_);
     }
-    if (!getRequestTagBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(requestTag_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, requestTag_);
     }
-    if (!getTransactionTagBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(transactionTag_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, transactionTag_);
     }
     size += unknownFields.getSerializedSize();
