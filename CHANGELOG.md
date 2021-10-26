@@ -1,5 +1,24 @@
 # Changelog
 
+## [6.14.0](https://www.github.com/googleapis/java-spanner/compare/v6.13.0...v6.14.0) (2021-10-25)
+
+
+### Features
+
+* Introduce Native Image testing build script changes ([#1500](https://www.github.com/googleapis/java-spanner/issues/1500)) ([7a034c9](https://www.github.com/googleapis/java-spanner/commit/7a034c9120ffa433f64e67d565c854f1fb3ce9f5))
+
+
+### Bug Fixes
+
+* **java:** java 17 dependency arguments ([#1512](https://www.github.com/googleapis/java-spanner/issues/1512)) ([4cebefa](https://www.github.com/googleapis/java-spanner/commit/4cebefa1ce6502d48c2e2e0a3a484f60eeed450f))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.1.0 ([#1506](https://www.github.com/googleapis/java-spanner/issues/1506)) ([ea35b27](https://www.github.com/googleapis/java-spanner/commit/ea35b2723fcc8c255ab0e52306e066c689c6a0c6))
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v2.4.0 ([#1501](https://www.github.com/googleapis/java-spanner/issues/1501)) ([d5a37b8](https://www.github.com/googleapis/java-spanner/commit/d5a37b8853fc21a28b6610b2933ed31fcbe206e2))
+* update dependency com.google.cloud:google-cloud-trace to v2.0.6 ([#1504](https://www.github.com/googleapis/java-spanner/issues/1504)) ([667b8b1](https://www.github.com/googleapis/java-spanner/commit/667b8b17cc2f8d217ecda0af89bdc668670f3aab))
+
 ## [6.13.0](https://www.github.com/googleapis/java-spanner/compare/v6.12.5...v6.13.0) (2021-10-07)
 
 

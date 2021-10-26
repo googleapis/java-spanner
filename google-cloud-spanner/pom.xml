@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>6.13.0</version><!-- {x-version-update:google-cloud-spanner:current} -->
+  <version>6.14.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner</name>
   <url>https://github.com/googleapis/java-spanner</url>
@@ -11,7 +11,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.13.0</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.14.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
@@ -74,14 +74,27 @@
             <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
             <spanner.testenv.kms_key.name>projects/gcloud-devel/locations/us-central1/keyRings/spanner-test-keyring/cryptoKeys/spanner-test-key</spanner.testenv.kms_key.name>
           </systemPropertyVariables>
-          <forkedProcessTimeoutInSeconds>6000</forkedProcessTimeoutInSeconds>
+          <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
         </configuration>
         <executions>
           <!-- Executes serial integration tests -->
           <execution>
             <id>default</id>
             <configuration>
-              <groups>com.google.cloud.spanner.SerialIntegrationTest, com.google.cloud.spanner.ParallelIntegrationTest</groups>
+              <groups>com.google.cloud.spanner.SerialIntegrationTest</groups>
+            </configuration>
+          </execution>
+          <!-- Executes parallel integration tests -->
+          <execution>
+            <id>parallel-integration-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <configuration>
+              <groups>com.google.cloud.spanner.ParallelIntegrationTest</groups>
+              <forkCount>8</forkCount>
+              <reuseForks>true</reuseForks>
+              <groups>com.google.cloud.spanner.ParallelIntegrationTest</groups>
             </configuration>
           </execution>
         </executions>
@@ -410,7 +423,7 @@
                 <spanner.attempt_directpath>true</spanner.attempt_directpath>
                 <spanner.directpath_test_scenario>ipv4</spanner.directpath_test_scenario>
               </systemPropertyVariables>
-              <forkedProcessTimeoutInSeconds>6000</forkedProcessTimeoutInSeconds>
+              <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
             </configuration>
           </plugin>
         </plugins>
