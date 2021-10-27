@@ -1,5 +1,12 @@
 # Changelog
 
+### [6.15.1](https://www.github.com/googleapis/java-spanner/compare/v6.15.0...v6.15.1) (2021-10-27)
+
+
+### Dependencies
+
+* upgrade Mockito to version 4.x ([#1498](https://www.github.com/googleapis/java-spanner/issues/1498)) ([09bd561](https://www.github.com/googleapis/java-spanner/commit/09bd56157827119586fd3e0a1ee056bb793d08e3))
+
 ## [6.15.0](https://www.github.com/googleapis/java-spanner/compare/v6.14.0...v6.15.0) (2021-10-27)
 
 
