@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.15.0](https://www.github.com/googleapis/java-spanner/compare/v6.14.0...v6.15.0) (2021-10-27)
+
+
+### Features
+
+* next release from main branch is 6.15.0 ([#1518](https://www.github.com/googleapis/java-spanner/issues/1518)) ([9e5e27e](https://www.github.com/googleapis/java-spanner/commit/9e5e27eee8ba9906900bb2868183b1ec88f19ecf))
+
 ## [6.14.0](https://www.github.com/googleapis/java-spanner/compare/v6.13.0...v6.14.0) (2021-10-25)
 
 
