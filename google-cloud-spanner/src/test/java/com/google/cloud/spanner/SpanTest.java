@@ -100,22 +100,11 @@ public class SpanTest {
           .withDescription("Non-retryable test exception.")
           .asRuntimeException();
 
-  private static int getVersion() {
-    String version = System.getProperty("java.version");
-    if (version.startsWith("1.")) {
-      version = version.substring(2, 3);
-    } else {
-      int dot = version.indexOf(".");
-      if (dot != -1) {
-        version = version.substring(0, dot);
-      }
-    }
-    return Integer.parseInt(version);
-  }
-
   @BeforeClass
   public static void startStaticServer() throws Exception {
-    Assume.assumeTrue("This test is only supported on JDK11 and lower", getVersion() < 12);
+    Assume.assumeTrue(
+        "This test is only supported on JDK11 and lower",
+        JavaVersionUtil.getJavaMajorVersion() < 12);
 
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.

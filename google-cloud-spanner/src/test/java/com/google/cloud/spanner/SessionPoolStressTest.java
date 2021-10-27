@@ -17,7 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -96,7 +96,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             invocation -> {
               createExecutor.submit(
                   () -> {
-                    int sessionCount = invocation.getArgumentAt(0, Integer.class);
+                    int sessionCount = invocation.getArgument(0, Integer.class);
                     for (int s = 0; s < sessionCount; s++) {
                       SessionImpl session;
                       synchronized (lock) {
@@ -108,7 +108,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                         }
                       }
                       SessionConsumerImpl consumer =
-                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                          invocation.getArgument(2, SessionConsumerImpl.class);
                       consumer.onSessionReady(session);
                     }
                   });

@@ -18,7 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -36,7 +36,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.Matchers;
 
 @RunWith(JUnit4.class)
 public class ReadOnlyStalenessTest {
@@ -54,11 +53,11 @@ public class ReadOnlyStalenessTest {
     DdlClient ddlClient = mock(DdlClient.class);
     ReadOnlyTransaction singleUseReadOnlyTx = mock(ReadOnlyTransaction.class);
     when(singleUseReadOnlyTx.executeQuery(Statement.of(SELECT))).thenReturn(mock(ResultSet.class));
-    when(dbClient.singleUseReadOnlyTransaction(Matchers.any(TimestampBound.class)))
+    when(dbClient.singleUseReadOnlyTransaction(any(TimestampBound.class)))
         .thenReturn(singleUseReadOnlyTx);
     ReadOnlyTransaction readOnlyTx = mock(ReadOnlyTransaction.class);
     when(readOnlyTx.executeQuery(Statement.of(SELECT))).thenReturn(mock(ResultSet.class));
-    when(dbClient.readOnlyTransaction(Matchers.any(TimestampBound.class))).thenReturn(readOnlyTx);
+    when(dbClient.readOnlyTransaction(any(TimestampBound.class))).thenReturn(readOnlyTx);
 
     return new ConnectionImpl(options, spannerPool, ddlClient, dbClient);
   }
