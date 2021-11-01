@@ -411,10 +411,10 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!getParentBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parent_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, parent_);
     }
-    if (!getCreateStatementBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(createStatement_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, createStatement_);
     }
     for (int i = 0; i < extraStatements_.size(); i++) {
@@ -432,10 +432,10 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     if (size != -1) return size;
 
     size = 0;
-    if (!getParentBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parent_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, parent_);
     }
-    if (!getCreateStatementBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(createStatement_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, createStatement_);
     }
     {

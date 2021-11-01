@@ -676,16 +676,16 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!getSessionBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(session_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, session_);
     }
     if (transaction_ != null) {
       output.writeMessage(2, getTransaction());
     }
-    if (!getTableBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(table_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, table_);
     }
-    if (!getIndexBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(index_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 4, index_);
     }
     for (int i = 0; i < columns_.size(); i++) {
@@ -715,16 +715,16 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     if (size != -1) return size;
 
     size = 0;
-    if (!getSessionBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(session_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, session_);
     }
     if (transaction_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getTransaction());
     }
-    if (!getTableBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(table_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, table_);
     }
-    if (!getIndexBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(index_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, index_);
     }
     {
