@@ -93,7 +93,11 @@ public class RemoteSpannerHelper {
    * accordingly.
    */
   public Database createTestDatabase(String... statements) throws SpannerException {
-    return createTestDatabase(Arrays.asList(statements));
+    final long start = System.nanoTime();
+    final Database database = createTestDatabase(Arrays.asList(statements));
+    final long end = System.nanoTime();
+    logger.info("RemoteSpannerHelper@createTestDatabase completed in " + (end - start) + "ns");
+    return database;
   }
 
   /**
@@ -133,18 +137,29 @@ public class RemoteSpannerHelper {
 
   /** Deletes all the databases created via {@code createTestDatabase}. Shuts down the client. */
   public void cleanUp() {
+    final long start = System.nanoTime();
     // Drop all the databases we created explicitly.
     int numDropped = 0;
     for (Database db : dbs) {
       try {
         logger.log(Level.FINE, "Dropping test database {0}", db.getId());
+        final long startDrop = System.nanoTime();
         db.drop();
+        final long endDrop = System.nanoTime();
+        logger.log(
+            Level.FINE,
+            "Dropped test database {0} in {1}ns",
+            new Object[] {db.getId(), (endDrop - startDrop)});
         ++numDropped;
       } catch (SpannerException e) {
         logger.log(Level.SEVERE, "Failed to drop test database " + db.getId(), e);
       }
     }
-    logger.log(Level.INFO, "Dropped {0} test database(s)", numDropped);
+    final long end = System.nanoTime();
+    logger.log(
+        Level.INFO,
+        "Dropped {0} test database(s) in {1}ns",
+        new Object[] {numDropped, (end - start)});
   }
 
   /**

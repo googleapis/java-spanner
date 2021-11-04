@@ -73,6 +73,7 @@ public class IntegrationTestEnv extends ExternalResource {
 
   @Override
   protected void before() throws Throwable {
+    final long start = System.nanoTime();
     this.initializeConfig();
     this.config.setUp();
 
@@ -96,6 +97,8 @@ public class IntegrationTestEnv extends ExternalResource {
     if (isOwnedInstance) {
       initializeInstance(instanceId);
     }
+    final long end = System.nanoTime();
+    logger.log(Level.INFO, "IntegrationTestEnv@before completed in " + (end - start) + "ns");
   }
 
   RemoteSpannerHelper createTestHelper(SpannerOptions options, InstanceId instanceId)
@@ -105,8 +108,11 @@ public class IntegrationTestEnv extends ExternalResource {
 
   @Override
   protected void after() {
+    final long start = System.nanoTime();
     cleanUpInstance();
     this.config.tearDown();
+    final long end = System.nanoTime();
+    logger.log(Level.INFO, "IntegrationTestEnv@after completed in " + (end - start) + "ns");
   }
 
   private void initializeInstance(InstanceId instanceId) {
