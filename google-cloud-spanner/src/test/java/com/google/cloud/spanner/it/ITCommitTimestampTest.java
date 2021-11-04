@@ -168,22 +168,16 @@ public class ITCommitTimestampTest {
 
     // error_catalog error CommitTimestampNotInFuture
     String statement = "ALTER TABLE T ALTER COLUMN T3 SET OPTIONS (allow_commit_timestamp=true)";
+    final long start = System.nanoTime();
     try {
-      final long start = System.nanoTime();
-      final OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
-          dbAdminClient.updateDatabaseDdl(
-              instanceId, databaseId, ImmutableList.of(statement), null);
-      final UpdateDatabaseDdlMetadata metadata = operation.getMetadata().get();
-      operation.get();
-      final long end = System.nanoTime();
-      logger.info(
-          "schemaChangeTimestampInFuture@updateDatabaseDdl completed in "
-              + (end - start)
-              + "ns (throttled = "
-              + metadata.getThrottled()
-              + ")");
+      dbAdminClient
+          .updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null)
+          .get();
       fail("missing expected exception");
     } catch (ExecutionException e) {
+      final long end = System.nanoTime();
+      logger.info(
+          "schemaChangeTimestampInFuture@updateDatabaseDdl completed in " + (end - start) + "ns");
       assertThat(e.getCause()).isInstanceOf(SpannerException.class);
       SpannerException se = (SpannerException) e.getCause();
       assertThat(se.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
@@ -211,22 +205,15 @@ public class ITCommitTimestampTest {
   public void invalidColumnOption() throws Exception {
     // error_catalog error DDLStatementWithError
     String statement = "ALTER TABLE T ALTER COLUMN T3 SET OPTIONS (bogus=null)";
+    final long start = System.nanoTime();
     try {
-      final long start = System.nanoTime();
-      final OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
-          dbAdminClient.updateDatabaseDdl(
-              instanceId, databaseId, ImmutableList.of(statement), null);
-      final UpdateDatabaseDdlMetadata metadata = operation.getMetadata().get();
-      operation.get();
-      final long end = System.nanoTime();
-      logger.info(
-          "invalidColumnOption@updateDatabaseDdl completed in "
-              + (end - start)
-              + "ns (throttled = "
-              + metadata.getThrottled()
-              + ")");
+      dbAdminClient
+          .updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null)
+          .get();
       fail("missing expected exception");
     } catch (ExecutionException e) {
+      final long end = System.nanoTime();
+      logger.info("invalidColumnOption@updateDatabaseDdl completed in " + (end - start) + "ns");
       assertThat(e.getCause()).isInstanceOf(SpannerException.class);
       SpannerException se = (SpannerException) e.getCause();
       assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
@@ -237,22 +224,16 @@ public class ITCommitTimestampTest {
   public void invalidColumnOptionValue() throws Exception {
     // error_catalog error DDLStatementWithErrors
     String statement = "ALTER TABLE T ALTER COLUMN T3 SET OPTIONS (allow_commit_timestamp=bogus)";
+    final long start = System.nanoTime();
     try {
-      final long start = System.nanoTime();
-      final OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
-          dbAdminClient.updateDatabaseDdl(
-              instanceId, databaseId, ImmutableList.of(statement), null);
-      final UpdateDatabaseDdlMetadata metadata = operation.getMetadata().get();
-      operation.get();
-      final long end = System.nanoTime();
-      logger.info(
-          "invalidColumnOptionValue@updateDatabaseDdl completed in "
-              + (end - start)
-              + "ns (throttled = "
-              + metadata.getThrottled()
-              + ")");
+      dbAdminClient
+          .updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null)
+          .get();
       fail("missing expected exception");
     } catch (ExecutionException e) {
+      final long end = System.nanoTime();
+      logger.info(
+          "invalidColumnOptionValue@updateDatabaseDdl completed in " + (end - start) + "ns");
       assertThat(e.getCause()).isInstanceOf(SpannerException.class);
       SpannerException se = (SpannerException) e.getCause();
       assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
@@ -263,22 +244,15 @@ public class ITCommitTimestampTest {
   public void invalidColumnType() throws Exception {
     // error_catalog error OptionErrorList
     String statement = "ALTER TABLE T ADD COLUMN T4 INT64 OPTIONS (allow_commit_timestamp=true)";
+    final long start = System.nanoTime();
     try {
-      final long start = System.nanoTime();
-      final OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
-          dbAdminClient.updateDatabaseDdl(
-              instanceId, databaseId, ImmutableList.of(statement), null);
-      final UpdateDatabaseDdlMetadata metadata = operation.getMetadata().get();
-      operation.get();
-      final long end = System.nanoTime();
-      logger.info(
-          "invalidColumnType@updateDatabaseDdl completed in "
-              + (end - start)
-              + "ns (throttled = "
-              + metadata.getThrottled()
-              + ")");
+      dbAdminClient
+          .updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null)
+          .get();
       fail("missing expected exception");
     } catch (ExecutionException e) {
+      final long end = System.nanoTime();
+      logger.info("invalidColumnType@updateDatabaseDdl completed in " + (end - start) + "ns");
       assertThat(e.getCause()).isInstanceOf(SpannerException.class);
       SpannerException se = (SpannerException) e.getCause();
       assertThat(se.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
@@ -329,12 +303,18 @@ public class ITCommitTimestampTest {
   // 5) Write timestamps in the future
   @Test
   public void interleavedTable() throws Exception {
+    final long start = System.nanoTime();
     Database db =
         testHelper.createTestDatabase(
             "CREATE TABLE T1 (ts TIMESTAMP) PRIMARY KEY (ts)",
             "CREATE TABLE T2 (ts TIMESTAMP) PRIMARY KEY (ts), INTERLEAVE IN PARENT T1",
             "CREATE TABLE T3 (ts TIMESTAMP) PRIMARY KEY (ts), INTERLEAVE IN PARENT T2");
     DatabaseClient client = testHelper.getDatabaseClient(db);
+    final long end = System.nanoTime();
+    logger.info(
+        "ITCommitTimestampTest@interleavedTable createDatabase completed in "
+            + (end - start)
+            + "ns");
     String databaseId = db.getId().getDatabase();
 
     Timestamp timeNow = Timestamp.ofTimeMicroseconds(Instant.now().toEpochMilli() * 1000);
@@ -359,12 +339,18 @@ public class ITCommitTimestampTest {
   // if parent tables are not allow_commit_timestamp=true
   @Test
   public void interleavedTableHierarchy1() {
+    final long start = System.nanoTime();
     Database db =
         testHelper.createTestDatabase(
             "CREATE TABLE T1 (ts TIMESTAMP) PRIMARY KEY (ts)",
             "CREATE TABLE T2 (ts TIMESTAMP) PRIMARY KEY (ts), INTERLEAVE IN PARENT T1",
             "CREATE TABLE T3 (ts TIMESTAMP OPTIONS (allow_commit_timestamp = true)) "
                 + "PRIMARY KEY (ts), INTERLEAVE IN PARENT T2");
+    final long end = System.nanoTime();
+    logger.info(
+        "ITCommitTimestampTest@interleavedTableHierarchy1 createDatabase completed in "
+            + (end - start)
+            + "ns");
     DatabaseClient client = testHelper.getDatabaseClient(db);
 
     // error_catalog error CommitTimestampOptionNotEnabled
@@ -385,6 +371,7 @@ public class ITCommitTimestampTest {
   // allowed if child tables are not allow_commit_timestamp=true
   @Test
   public void interleavedTableHierarchy2() {
+    final long start = System.nanoTime();
     Database db =
         testHelper.createTestDatabase(
             "CREATE TABLE T1 (ts TIMESTAMP OPTIONS (allow_commit_timestamp = true)) "
@@ -392,6 +379,11 @@ public class ITCommitTimestampTest {
             "CREATE TABLE T2 (ts TIMESTAMP) PRIMARY KEY (ts), INTERLEAVE IN PARENT T1",
             "CREATE TABLE T3 (ts TIMESTAMP OPTIONS (allow_commit_timestamp = true)) "
                 + "PRIMARY KEY (ts), INTERLEAVE IN PARENT T2");
+    final long end = System.nanoTime();
+    logger.info(
+        "ITCommitTimestampTest@interleavedTableHierarchy2 createDatabase completed in "
+            + (end - start)
+            + "ns");
     DatabaseClient client = testHelper.getDatabaseClient(db);
 
     // error_catalog error CommitTimestampOptionNotEnabled
