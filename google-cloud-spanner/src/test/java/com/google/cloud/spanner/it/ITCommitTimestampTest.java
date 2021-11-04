@@ -19,6 +19,7 @@ package com.google.cloud.spanner.it;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -36,9 +37,11 @@ import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
+import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -54,6 +57,7 @@ import org.threeten.bp.Instant;
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITCommitTimestampTest {
+  private static final Logger logger = Logger.getLogger(ITCommitTimestampTest.class.getName());
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static Database db;
   private static DatabaseClient client;
@@ -165,9 +169,19 @@ public class ITCommitTimestampTest {
     // error_catalog error CommitTimestampNotInFuture
     String statement = "ALTER TABLE T ALTER COLUMN T3 SET OPTIONS (allow_commit_timestamp=true)";
     try {
-      dbAdminClient
-          .updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null)
-          .get();
+      final long start = System.nanoTime();
+      final OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
+          dbAdminClient.updateDatabaseDdl(
+              instanceId, databaseId, ImmutableList.of(statement), null);
+      final UpdateDatabaseDdlMetadata metadata = operation.getMetadata().get();
+      operation.get();
+      final long end = System.nanoTime();
+      logger.info(
+          "schemaChangeTimestampInFuture@updateDatabaseDdl completed in "
+              + (end - start)
+              + "ns (throttled = "
+              + metadata.getThrottled()
+              + ")");
       fail("missing expected exception");
     } catch (ExecutionException e) {
       assertThat(e.getCause()).isInstanceOf(SpannerException.class);
@@ -198,9 +212,19 @@ public class ITCommitTimestampTest {
     // error_catalog error DDLStatementWithError
     String statement = "ALTER TABLE T ALTER COLUMN T3 SET OPTIONS (bogus=null)";
     try {
-      dbAdminClient
-          .updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null)
-          .get();
+      final long start = System.nanoTime();
+      final OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
+          dbAdminClient.updateDatabaseDdl(
+              instanceId, databaseId, ImmutableList.of(statement), null);
+      final UpdateDatabaseDdlMetadata metadata = operation.getMetadata().get();
+      operation.get();
+      final long end = System.nanoTime();
+      logger.info(
+          "invalidColumnOption@updateDatabaseDdl completed in "
+              + (end - start)
+              + "ns (throttled = "
+              + metadata.getThrottled()
+              + ")");
       fail("missing expected exception");
     } catch (ExecutionException e) {
       assertThat(e.getCause()).isInstanceOf(SpannerException.class);
@@ -214,9 +238,19 @@ public class ITCommitTimestampTest {
     // error_catalog error DDLStatementWithErrors
     String statement = "ALTER TABLE T ALTER COLUMN T3 SET OPTIONS (allow_commit_timestamp=bogus)";
     try {
-      dbAdminClient
-          .updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null)
-          .get();
+      final long start = System.nanoTime();
+      final OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
+          dbAdminClient.updateDatabaseDdl(
+              instanceId, databaseId, ImmutableList.of(statement), null);
+      final UpdateDatabaseDdlMetadata metadata = operation.getMetadata().get();
+      operation.get();
+      final long end = System.nanoTime();
+      logger.info(
+          "invalidColumnOptionValue@updateDatabaseDdl completed in "
+              + (end - start)
+              + "ns (throttled = "
+              + metadata.getThrottled()
+              + ")");
       fail("missing expected exception");
     } catch (ExecutionException e) {
       assertThat(e.getCause()).isInstanceOf(SpannerException.class);
@@ -230,9 +264,19 @@ public class ITCommitTimestampTest {
     // error_catalog error OptionErrorList
     String statement = "ALTER TABLE T ADD COLUMN T4 INT64 OPTIONS (allow_commit_timestamp=true)";
     try {
-      dbAdminClient
-          .updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null)
-          .get();
+      final long start = System.nanoTime();
+      final OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
+          dbAdminClient.updateDatabaseDdl(
+              instanceId, databaseId, ImmutableList.of(statement), null);
+      final UpdateDatabaseDdlMetadata metadata = operation.getMetadata().get();
+      operation.get();
+      final long end = System.nanoTime();
+      logger.info(
+          "invalidColumnType@updateDatabaseDdl completed in "
+              + (end - start)
+              + "ns (throttled = "
+              + metadata.getThrottled()
+              + ")");
       fail("missing expected exception");
     } catch (ExecutionException e) {
       assertThat(e.getCause()).isInstanceOf(SpannerException.class);
@@ -249,9 +293,18 @@ public class ITCommitTimestampTest {
             + " SET OPTIONS (allow_commit_timestamp="
             + opt
             + ")";
-    dbAdminClient
-        .updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null)
-        .get();
+    final long start = System.nanoTime();
+    final OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
+        dbAdminClient.updateDatabaseDdl(instanceId, databaseId, ImmutableList.of(statement), null);
+    final UpdateDatabaseDdlMetadata metadata = operation.getMetadata().get();
+    operation.get();
+    final long end = System.nanoTime();
+    logger.info(
+        "alterColumnOption@updateDatabaseDdl completed in "
+            + (end - start)
+            + "ns (throttled = "
+            + metadata.getThrottled()
+            + ")");
   }
 
   private void writeAndVerify(DatabaseClient client, Timestamp ts) {
