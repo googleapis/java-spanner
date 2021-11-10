@@ -141,12 +141,12 @@
         <version>3.0.0-M5</version>
         <configuration>
           <systemPropertyVariables>
-            <spanner.test.instance>spanner-testing</spanner.test.instance>
+            <spanner.test.instance>spanner-testing-west1</spanner.test.instance>
             <spanner.test.instance.mr>spanner-mr-testing</spanner.test.instance.mr>
             <spanner.test.instance.config>nam6</spanner.test.instance.config>
-            <spanner.test.key.location>us-central1</spanner.test.key.location>
-            <spanner.test.key.ring>spanner-test-keyring</spanner.test.key.ring>
-            <spanner.test.key.name>spanner-test-key</spanner.test.key.name>
+            <spanner.test.key.location>us-east1</spanner.test.key.location>
+            <spanner.test.key.ring>cmek-test-key-ring</spanner.test.key.ring>
+            <spanner.test.key.name>cmek-test-key</spanner.test.key.name>
             <spanner.sample.database>mysample</spanner.sample.database>
             <spanner.quickstart.database>quick-db</spanner.quickstart.database>
           </systemPropertyVariables>
