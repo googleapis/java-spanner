@@ -654,7 +654,7 @@ public class DatabaseAdminClientTest {
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
     Policy policy = Policy.newBuilder().build();
 
     Policy actualResponse = client.setIamPolicy(resource, policy);
@@ -678,7 +678,7 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addException(exception);
 
     try {
-      ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
       Policy policy = Policy.newBuilder().build();
       client.setIamPolicy(resource, policy);
       Assert.fail("No exception raised");
@@ -740,7 +740,7 @@ public class DatabaseAdminClientTest {
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
 
     Policy actualResponse = client.getIamPolicy(resource);
     Assert.assertEquals(expectedResponse, actualResponse);
@@ -762,7 +762,7 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addException(exception);
 
     try {
-      ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
       client.getIamPolicy(resource);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
@@ -816,7 +816,7 @@ public class DatabaseAdminClientTest {
         TestIamPermissionsResponse.newBuilder().addAllPermissions(new ArrayList<String>()).build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
     List<String> permissions = new ArrayList<>();
 
     TestIamPermissionsResponse actualResponse = client.testIamPermissions(resource, permissions);
@@ -840,7 +840,7 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addException(exception);
 
     try {
-      ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
       List<String> permissions = new ArrayList<>();
       client.testIamPermissions(resource, permissions);
       Assert.fail("No exception raised");
