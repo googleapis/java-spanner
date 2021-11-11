@@ -533,6 +533,26 @@ public interface Connection extends AutoCloseable {
   boolean isReturnCommitStats();
 
   /**
+   * Sets the priority to use for the RPC.
+   *
+   * @param rpcPriority The RPC priority to use. Must be a string from (HIGH/MEDIUM/LOW). The empty
+   *     string will instruct the connection to use the client level rpcPriority. If none is set,
+   *     the default rpcPriority of Cloud Spanner is used.
+   */
+  default void setRPCPriority(String rpcPriority) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
+   * Gets the current RPC priority of this connection.
+   *
+   * @return The RPC priority that is currently used by this connection.
+   */
+  default String getRPCPriority() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
    * Commits the current transaction of this connection. All mutations that have been buffered
    * during the current transaction will be written to the database.
    *

@@ -615,6 +615,21 @@
     <method>void setTransactionTag(java.lang.String)</method>
   </difference>
 
+  <!-- Support for RPC Priority in Connection API -->
+  <!-- These are not breaking changes, since we provide default interface implementation -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>java.lang.String getRPCPriority()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setRPCPriority(java.lang.String)</method>
+  </difference>
+
+
+
   <!-- Adds getValue to ResultSet -->
   <!-- These are not breaking changes, since we provide default interface implementation -->
   <difference>

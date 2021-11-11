@@ -97,4 +97,8 @@ interface ConnectionStatementExecutor {
   StatementResult statementRunBatch();
 
   StatementResult statementAbortBatch();
+
+  StatementResult statementSetRPCPriority(String priority);
+
+  StatementResult statementShowRPCPriority();
 }

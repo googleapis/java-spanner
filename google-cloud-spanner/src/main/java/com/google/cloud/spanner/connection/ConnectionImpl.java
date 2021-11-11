@@ -208,6 +208,7 @@ class ConnectionImpl implements Connection {
   private AutocommitDmlMode autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
   private TimestampBound readOnlyStaleness = TimestampBound.strong();
   private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
+  private Options.RpcPriority rpcPriority = Options.RpcPriority.HIGH;
 
   private String transactionTag;
   private String statementTag;
@@ -227,6 +228,7 @@ class ConnectionImpl implements Connection {
     this.readOnly = options.isReadOnly();
     this.autocommit = options.isAutocommit();
     this.queryOptions = this.queryOptions.toBuilder().mergeFrom(options.getQueryOptions()).build();
+    this.rpcPriority = options.getRPCPriority();
     this.returnCommitStats = options.isReturnCommitStats();
     this.ddlClient = createDdlClient();
     setDefaultTransactionOptions();
@@ -451,6 +453,19 @@ class ConnectionImpl implements Connection {
   public String getOptimizerStatisticsPackage() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     return this.queryOptions.getOptimizerStatisticsPackage();
+  }
+
+  @Override
+  public void setRPCPriority(String rpcPriority) {
+    Preconditions.checkNotNull(rpcPriority);
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    this.rpcPriority = Options.RpcPriority.valueOf(rpcPriority);
+  }
+
+  @Override
+  public String getRPCPriority() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.rpcPriority.toString();
   }
 
   @Override
@@ -1010,8 +1025,9 @@ class ConnectionImpl implements Connection {
       if (options == null || options.length == 0) {
         options = new QueryOption[] {Options.tag(statementTag)};
       } else {
-        options = Arrays.copyOf(options, options.length + 1);
-        options[options.length - 1] = Options.tag(statementTag);
+        options = Arrays.copyOf(options, options.length + 2);
+        options[options.length - 2] = Options.tag(statementTag);
+        options[options.length - 1] = Options.priority(this.rpcPriority);
       }
       this.statementTag = null;
     }
@@ -1024,8 +1040,9 @@ class ConnectionImpl implements Connection {
       if (options == null || options.length == 0) {
         options = new UpdateOption[] {Options.tag(statementTag)};
       } else {
-        options = Arrays.copyOf(options, options.length + 1);
-        options[options.length - 1] = Options.tag(statementTag);
+        options = Arrays.copyOf(options, options.length + 2);
+        options[options.length - 2] = Options.tag(statementTag);
+        options[options.length - 1] = Options.priority(this.rpcPriority);
       }
       this.statementTag = null;
     }

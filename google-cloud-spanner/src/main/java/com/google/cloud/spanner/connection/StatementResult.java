@@ -80,7 +80,9 @@ public interface StatementResult {
     START_BATCH_DDL,
     START_BATCH_DML,
     RUN_BATCH,
-    ABORT_BATCH
+    ABORT_BATCH,
+    SET_RPC_PRIORITY,
+    SHOW_RPC_PRIORITY
   }
 
   /**
