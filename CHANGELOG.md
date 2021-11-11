@@ -1,5 +1,12 @@
 # Changelog
 
+### [6.4.4-sp.4](https://www.github.com/googleapis/java-spanner/compare/6.4.4-sp.3...v6.4.4-sp.4) (2021-11-11)
+
+
+### Dependencies
+
+* upgrade gson to 2.8.9 ([#1549](https://www.github.com/googleapis/java-spanner/issues/1549)) ([ec0e702](https://www.github.com/googleapis/java-spanner/commit/ec0e702fefdb3aae3b5c49104dba765f67ffc7a4))
+
 ### [6.4.4-sp.3](https://www.github.com/googleapis/java-spanner/compare/6.4.4-sp.2...v6.4.4-sp.3) (2021-10-06)
 
 
