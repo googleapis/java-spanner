@@ -69,9 +69,9 @@
         <configuration>
           <systemPropertyVariables>
             <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
-            <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing</spanner.testenv.instance>
+            <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing-west1</spanner.testenv.instance>
             <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
-            <spanner.testenv.kms_key.name>projects/gcloud-devel/locations/us-central1/keyRings/spanner-test-keyring/cryptoKeys/spanner-test-key</spanner.testenv.kms_key.name>
+            <spanner.testenv.kms_key.name>projects/gcloud-devel/locations/us-east1/keyRings/cmek-test-key-ring/cryptoKeys/cmek-test-key</spanner.testenv.kms_key.name>
           </systemPropertyVariables>
           <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
         </configuration>
@@ -240,6 +240,7 @@
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
+      <version>2.8.9</version>
     </dependency>
     <dependency>
       <groupId>com.google.auth</groupId>
