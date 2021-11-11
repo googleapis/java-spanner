@@ -1,5 +1,12 @@
 # Changelog
 
+### [6.15.2](https://www.github.com/googleapis/java-spanner/compare/v6.15.1...v6.15.2) (2021-11-10)
+
+
+### Bug Fixes
+
+* **java:** java 17 dependency arguments ([#1537](https://www.github.com/googleapis/java-spanner/issues/1537)) ([0e30ebf](https://www.github.com/googleapis/java-spanner/commit/0e30ebffc63de2de940db1eb807175ec19aa752d))
+
 ### [6.15.1](https://www.github.com/googleapis/java-spanner/compare/v6.15.0...v6.15.1) (2021-10-27)
 
 
