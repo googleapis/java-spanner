@@ -25,7 +25,7 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
@@ -159,7 +159,7 @@ public class ConnectionOptions {
   private static final String DEFAULT_USER_AGENT = null;
   private static final String DEFAULT_OPTIMIZER_VERSION = "";
   private static final String DEFAULT_OPTIMIZER_STATISTICS_PACKAGE = "";
-  private static final Options.RpcPriority DEFAULT_RPC_PRIORITY = Options.RpcPriority.HIGH;
+  private static final RpcPriority DEFAULT_RPC_PRIORITY = RpcPriority.HIGH;
   private static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
   private static final boolean DEFAULT_LENIENT = false;
 
@@ -497,7 +497,7 @@ public class ConnectionOptions {
   private final QueryOptions queryOptions;
   private final boolean returnCommitStats;
   private final boolean autoConfigEmulator;
-  private final Options.RpcPriority rpcPriority;
+  private final RpcPriority rpcPriority;
 
   private final boolean autocommit;
   private final boolean readOnly;
@@ -735,9 +735,9 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
-  static Options.RpcPriority parseRPCPriority(String uri) {
+  static RpcPriority parseRPCPriority(String uri) {
     String value = parseUriProperty(uri, RPC_PRIORITY_NAME);
-    return value != null ? Options.RpcPriority.valueOf(value) : DEFAULT_RPC_PRIORITY;
+    return value != null ? RpcPriority.valueOf(value) : DEFAULT_RPC_PRIORITY;
   }
 
   @VisibleForTesting
@@ -938,9 +938,8 @@ public class ConnectionOptions {
     return autoConfigEmulator;
   }
 
-  /** The initial rpcPriority value for connections created by this {@link ConnectionOptions} */
-  /** The {@link Options.RpcPriority} to use for the connection. */
-  Options.RpcPriority getRPCPriority() {
+  /** The {@link RpcPriority} to use for the connection. */
+  RpcPriority getRPCPriority() {
     return rpcPriority;
   }
 

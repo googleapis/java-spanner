@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
@@ -238,6 +239,24 @@ class ClientSideStatementValueConverters {
       // Transaction mode may contain multiple spaces.
       String valueWithSingleSpaces = value.replaceAll("\\s+", " ");
       return values.get(valueWithSingleSpaces);
+    }
+  }
+
+  /** Converter for converting strings to {@link RpcPriority} values. */
+  static class RpcPriorityConverter implements ClientSideStatementValueConverter<RpcPriority> {
+    private final CaseInsensitiveEnumMap<RpcPriority> values =
+        new CaseInsensitiveEnumMap<>(RpcPriority.class);
+
+    public RpcPriorityConverter(String allowedValues) {}
+
+    @Override
+    public Class<RpcPriority> getParameterClass() {
+      return RpcPriority.class;
+    }
+
+    @Override
+    public RpcPriority convert(String value) {
+      return values.get(value);
     }
   }
 }

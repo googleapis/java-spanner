@@ -56,6 +56,7 @@ import static com.google.cloud.spanner.connection.StatementResultImpl.resultSet;
 
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.CommitStats;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
 import com.google.cloud.spanner.Struct;
@@ -342,7 +343,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
-  public StatementResult statementSetRPCPriority(String rpcPriority) {
+  public StatementResult statementSetRPCPriority(RpcPriority rpcPriority) {
     getConnection().setRPCPriority(rpcPriority);
     return noResult(SET_RPC_PRIORITY);
   }

@@ -26,6 +26,7 @@ import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
@@ -533,13 +534,13 @@ public interface Connection extends AutoCloseable {
   boolean isReturnCommitStats();
 
   /**
-   * Sets the priority to use for the RPC.
+   * Sets the priority to use for RPCs executed by this connection..
    *
    * @param rpcPriority The RPC priority to use. Must be a string from (HIGH/MEDIUM/LOW). The empty
-   *     string will instruct the connection to use the client level rpcPriority. If none is set,
-   *     the default rpcPriority of Cloud Spanner is used.
+   *     string will instruct the connection to use the priority set in the connection URL. If none
+   *     is set, the default rpcPriority of Cloud Spanner is used.
    */
-  default void setRPCPriority(String rpcPriority) {
+  default void setRPCPriority(RpcPriority rpcPriority) {
     throw new UnsupportedOperationException("Unimplemented");
   }
 
@@ -548,7 +549,7 @@ public interface Connection extends AutoCloseable {
    *
    * @return The RPC priority that is currently used by this connection.
    */
-  default String getRPCPriority() {
+  default RpcPriority getRPCPriority() {
     throw new UnsupportedOperationException("Unimplemented");
   }
 

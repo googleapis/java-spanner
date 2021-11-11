@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.protobuf.Duration;
 
@@ -98,7 +99,7 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementAbortBatch();
 
-  StatementResult statementSetRPCPriority(String priority);
+  StatementResult statementSetRPCPriority(RpcPriority priority);
 
   StatementResult statementShowRPCPriority();
 }

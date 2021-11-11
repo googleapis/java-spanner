@@ -384,7 +384,7 @@
 			"propertyName": "RPC_PRIORITY",
 			"separator": "=",
 			"allowedValues": "'(HIGH|MEDIUM|LOW)'",
-			"converterName": "ClientSideStatementValueConverters$StringValueConverter"
+			"converterName": "ClientSideStatementValueConverters$RpcPriorityConverter"
 		}
 	}
 	]

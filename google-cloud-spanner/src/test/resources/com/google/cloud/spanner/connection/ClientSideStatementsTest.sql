@@ -2130,6 +2130,205 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 show variable/-optimizer_version;
 NEW_CONNECTION;
+show variable optimizer_statistics_package;
+NEW_CONNECTION;
+SHOW VARIABLE OPTIMIZER_STATISTICS_PACKAGE;
+NEW_CONNECTION;
+show variable optimizer_statistics_package;
+NEW_CONNECTION;
+   show variable optimizer_statistics_package;
+NEW_CONNECTION;
+			show variable optimizer_statistics_package;
+NEW_CONNECTION;
+
+
+
+show variable optimizer_statistics_package;
+NEW_CONNECTION;
+show variable optimizer_statistics_package  ;
+NEW_CONNECTION;
+show variable optimizer_statistics_package		;
+NEW_CONNECTION;
+show variable optimizer_statistics_package
+
+;
+NEW_CONNECTION;
+show   variable   optimizer_statistics_package;
+NEW_CONNECTION;
+show	variable	optimizer_statistics_package;
+NEW_CONNECTION;
+show
+variable
+optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable%optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable_optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable&optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable$optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable@optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable!optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable*optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable(optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable)optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable-optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable+optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable-#optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable/optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable\optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable?optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable-/optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable/#optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable optimizer_statistics_package;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable optimizer_statistics_package/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable/-optimizer_statistics_package;
+NEW_CONNECTION;
 show variable return_commit_stats;
 NEW_CONNECTION;
 SHOW VARIABLE RETURN_COMMIT_STATS;
@@ -2993,6 +3192,205 @@ show variable transaction_tag/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 show variable/-transaction_tag;
+NEW_CONNECTION;
+show variable rpc_priority;
+NEW_CONNECTION;
+SHOW VARIABLE RPC_PRIORITY;
+NEW_CONNECTION;
+show variable rpc_priority;
+NEW_CONNECTION;
+   show variable rpc_priority;
+NEW_CONNECTION;
+			show variable rpc_priority;
+NEW_CONNECTION;
+
+
+
+show variable rpc_priority;
+NEW_CONNECTION;
+show variable rpc_priority  ;
+NEW_CONNECTION;
+show variable rpc_priority		;
+NEW_CONNECTION;
+show variable rpc_priority
+
+;
+NEW_CONNECTION;
+show   variable   rpc_priority;
+NEW_CONNECTION;
+show	variable	rpc_priority;
+NEW_CONNECTION;
+show
+variable
+rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable%rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable_rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable&rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable$rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable@rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable!rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable*rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable(rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable)rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable-rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable+rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable-#rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable/rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable\rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable?rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable-/rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable/#rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable rpc_priority;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable rpc_priority/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show variable/-rpc_priority;
 NEW_CONNECTION;
 begin;
 NEW_CONNECTION;
@@ -12932,6 +13330,402 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set/-optimizer_version='';
 NEW_CONNECTION;
+set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+SET OPTIMIZER_STATISTICS_PACKAGE='AUTO_20191128_14_47_22UTC';
+NEW_CONNECTION;
+set optimizer_statistics_package='auto_20191128_14_47_22utc';
+NEW_CONNECTION;
+   set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+			set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+
+
+
+set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'  ;
+NEW_CONNECTION;
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'		;
+NEW_CONNECTION;
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'
+
+;
+NEW_CONNECTION;
+set   optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+set	optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+set
+optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='auto_20191128_14_47_22UTC'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-optimizer_statistics_package='auto_20191128_14_47_22UTC';
+NEW_CONNECTION;
+set optimizer_statistics_package='';
+NEW_CONNECTION;
+SET OPTIMIZER_STATISTICS_PACKAGE='';
+NEW_CONNECTION;
+set optimizer_statistics_package='';
+NEW_CONNECTION;
+   set optimizer_statistics_package='';
+NEW_CONNECTION;
+			set optimizer_statistics_package='';
+NEW_CONNECTION;
+
+
+
+set optimizer_statistics_package='';
+NEW_CONNECTION;
+set optimizer_statistics_package=''  ;
+NEW_CONNECTION;
+set optimizer_statistics_package=''		;
+NEW_CONNECTION;
+set optimizer_statistics_package=''
+
+;
+NEW_CONNECTION;
+set   optimizer_statistics_package='';
+NEW_CONNECTION;
+set	optimizer_statistics_package='';
+NEW_CONNECTION;
+set
+optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package='');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set optimizer_statistics_package='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set optimizer_statistics_package=''/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-optimizer_statistics_package='';
+NEW_CONNECTION;
 set return_commit_stats = true;
 NEW_CONNECTION;
 SET RETURN_COMMIT_STATS = TRUE;
@@ -14723,3 +15517,399 @@ NEW_CONNECTION;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set/-transaction_tag='';
+NEW_CONNECTION;
+set rpc_priority='HIGH';
+NEW_CONNECTION;
+SET RPC_PRIORITY='HIGH';
+NEW_CONNECTION;
+set rpc_priority='high';
+NEW_CONNECTION;
+   set rpc_priority='HIGH';
+NEW_CONNECTION;
+			set rpc_priority='HIGH';
+NEW_CONNECTION;
+
+
+
+set rpc_priority='HIGH';
+NEW_CONNECTION;
+set rpc_priority='HIGH'  ;
+NEW_CONNECTION;
+set rpc_priority='HIGH'		;
+NEW_CONNECTION;
+set rpc_priority='HIGH'
+
+;
+NEW_CONNECTION;
+set   rpc_priority='HIGH';
+NEW_CONNECTION;
+set	rpc_priority='HIGH';
+NEW_CONNECTION;
+set
+rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set rpc_priority='HIGH';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='HIGH'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-rpc_priority='HIGH';
+NEW_CONNECTION;
+set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+SET RPC_PRIORITY='MEDIUM';
+NEW_CONNECTION;
+set rpc_priority='medium';
+NEW_CONNECTION;
+   set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+			set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+
+
+
+set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+set rpc_priority='MEDIUM'  ;
+NEW_CONNECTION;
+set rpc_priority='MEDIUM'		;
+NEW_CONNECTION;
+set rpc_priority='MEDIUM'
+
+;
+NEW_CONNECTION;
+set   rpc_priority='MEDIUM';
+NEW_CONNECTION;
+set	rpc_priority='MEDIUM';
+NEW_CONNECTION;
+set
+rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set rpc_priority='MEDIUM';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set rpc_priority='MEDIUM'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-rpc_priority='MEDIUM';

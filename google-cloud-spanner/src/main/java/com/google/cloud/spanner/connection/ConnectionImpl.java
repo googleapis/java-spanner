@@ -28,6 +28,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
@@ -208,7 +209,7 @@ class ConnectionImpl implements Connection {
   private AutocommitDmlMode autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
   private TimestampBound readOnlyStaleness = TimestampBound.strong();
   private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
-  private Options.RpcPriority rpcPriority = Options.RpcPriority.HIGH;
+  private RpcPriority rpcPriority = RpcPriority.HIGH;
 
   private String transactionTag;
   private String statementTag;
@@ -456,16 +457,16 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
-  public void setRPCPriority(String rpcPriority) {
+  public void setRPCPriority(RpcPriority rpcPriority) {
     Preconditions.checkNotNull(rpcPriority);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    this.rpcPriority = Options.RpcPriority.valueOf(rpcPriority);
+    this.rpcPriority = rpcPriority;
   }
 
   @Override
-  public String getRPCPriority() {
+  public RpcPriority getRPCPriority() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return this.rpcPriority.toString();
+    return this.rpcPriority;
   }
 
   @Override
@@ -1023,7 +1024,7 @@ class ConnectionImpl implements Connection {
     if (this.statementTag != null) {
       // Shortcut for the most common scenario.
       if (options == null || options.length == 0) {
-        options = new QueryOption[] {Options.tag(statementTag)};
+        options = new QueryOption[] {Options.tag(statementTag), Options.priority(this.rpcPriority)};
       } else {
         options = Arrays.copyOf(options, options.length + 2);
         options[options.length - 2] = Options.tag(statementTag);
@@ -1038,7 +1039,8 @@ class ConnectionImpl implements Connection {
     if (this.statementTag != null) {
       // Shortcut for the most common scenario.
       if (options == null || options.length == 0) {
-        options = new UpdateOption[] {Options.tag(statementTag)};
+        options =
+            new UpdateOption[] {Options.tag(statementTag), Options.priority(this.rpcPriority)};
       } else {
         options = Arrays.copyOf(options, options.length + 2);
         options[options.length - 2] = Options.tag(statementTag);
