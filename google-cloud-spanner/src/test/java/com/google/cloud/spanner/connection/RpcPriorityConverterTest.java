@@ -16,11 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
@@ -34,20 +31,20 @@ public class RpcPriorityConverterTest {
 
   @Test
   public void testConvert() throws CompileException {
-    String allowedValues = "'(HIGH|MEDIUM|LOW)'";
-    assertThat(allowedValues, is(notNullValue()));
+    String allowedValues = "'(HIGH|MEDIUM|LOW|NULL)'";
     RpcPriorityConverter converter =
         new ClientSideStatementValueConverters.RpcPriorityConverter(allowedValues);
-    assertThat(converter.convert("high"), is(equalTo(RpcPriority.HIGH)));
-    assertThat(converter.convert("HIGH"), is(equalTo(RpcPriority.HIGH)));
-    assertThat(converter.convert("High"), is(equalTo(RpcPriority.HIGH)));
+    assertEquals(converter.convert("high"), RpcPriority.HIGH);
+    assertEquals(converter.convert("HIGH"), RpcPriority.HIGH);
+    assertEquals(converter.convert("High"), RpcPriority.HIGH);
 
-    assertThat(converter.convert("medium"), is(equalTo(RpcPriority.MEDIUM)));
-    assertThat(converter.convert("Low"), is(equalTo(RpcPriority.LOW)));
-    assertThat(converter.convert("Medium"), is(equalTo(RpcPriority.MEDIUM)));
+    assertEquals(converter.convert("medium"), RpcPriority.MEDIUM);
+    assertEquals(converter.convert("Low"), RpcPriority.LOW);
+    assertEquals(converter.convert("Medium"), RpcPriority.MEDIUM);
 
-    assertThat(converter.convert(""), is(nullValue()));
-    assertThat(converter.convert(" "), is(nullValue()));
-    assertThat(converter.convert("random string"), is(nullValue()));
+    assertNull(converter.convert(""));
+    assertNull(converter.convert(" "));
+    assertNull(converter.convert("random string"));
+    assertEquals(converter.convert("NULL"), RpcPriority.UNSPECIFIED);
   }
 }

@@ -345,6 +345,9 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementSetRPCPriority(RpcPriority rpcPriority) {
+    if (rpcPriority == RpcPriority.UNSPECIFIED) {
+      rpcPriority = null;
+    }
     getConnection().setRPCPriority(rpcPriority);
     return noResult(SET_RPC_PRIORITY);
   }

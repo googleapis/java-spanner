@@ -246,8 +246,14 @@ class ClientSideStatementValueConverters {
   static class RpcPriorityConverter implements ClientSideStatementValueConverter<RpcPriority> {
     private final CaseInsensitiveEnumMap<RpcPriority> values =
         new CaseInsensitiveEnumMap<>(RpcPriority.class);
+    private final Pattern allowedValues;
 
-    public RpcPriorityConverter(String allowedValues) {}
+    public RpcPriorityConverter(String allowedValues) {
+      // Remove the parentheses from the beginning and end.
+      this.allowedValues =
+          Pattern.compile(
+              "(?is)\\A" + allowedValues.substring(1, allowedValues.length() - 1) + "\\z");
+    }
 
     @Override
     public Class<RpcPriority> getParameterClass() {
@@ -256,6 +262,12 @@ class ClientSideStatementValueConverters {
 
     @Override
     public RpcPriority convert(String value) {
+      Matcher matcher = allowedValues.matcher(value);
+      if (matcher.find()) {
+        if (matcher.group(0).equalsIgnoreCase("null")) {
+          return RpcPriority.UNSPECIFIED;
+        }
+      }
       return values.get(value);
     }
   }

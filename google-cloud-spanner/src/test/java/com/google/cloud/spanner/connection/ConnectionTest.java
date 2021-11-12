@@ -38,6 +38,7 @@ import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.RequestOptions;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -300,28 +301,6 @@ public class ConnectionTest {
     }
 
     @Test
-    public void testRPCPriorityAllowedForCommit() {
-      try (Connection connection = createConnection()) {
-        try {
-          connection.commit();
-        } catch (SpannerException e) {
-          assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-        }
-      }
-    }
-
-    @Test
-    public void testRPCPriorityAllowedForRollback() {
-      try (Connection connection = createConnection()) {
-        try {
-          connection.rollback();
-        } catch (SpannerException e) {
-          assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-        }
-      }
-    }
-
-    @Test
     public void testQuery_RPCPriority() {
       try (Connection connection = createConnection()) {
         for (boolean autocommit : new boolean[] {true, false}) {
@@ -382,7 +361,7 @@ public class ConnectionTest {
     @Test
     public void testBatchUpdate_RPCPriority() {
       try (Connection connection = createConnection()) {
-        connection.executeBatchUpdate(Arrays.asList(INSERT_STATEMENT));
+        connection.executeBatchUpdate(Collections.singleton(INSERT_STATEMENT));
         connection.commit();
 
         assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
@@ -461,6 +440,13 @@ public class ConnectionTest {
     @Test
     public void testShowSetRPCPriority() {
       try (Connection connection = createConnection()) {
+        connection.setRPCPriority(null);
+        try (ResultSet rs =
+            connection.execute(Statement.of("SHOW VARIABLE RPC_PRIORITY")).getResultSet()) {
+          assertTrue(rs.next());
+          assertEquals("PRIORITY_UNSPECIFIED", rs.getString("RPC_PRIORITY"));
+          assertFalse(rs.next());
+        }
         connection.execute(Statement.of("SET RPC_PRIORITY='LOW'"));
         try (ResultSet rs =
             connection.execute(Statement.of("SHOW VARIABLE RPC_PRIORITY")).getResultSet()) {

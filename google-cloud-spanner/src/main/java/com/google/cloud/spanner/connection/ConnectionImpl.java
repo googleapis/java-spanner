@@ -458,7 +458,6 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void setRPCPriority(RpcPriority rpcPriority) {
-    Preconditions.checkNotNull(rpcPriority);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     this.rpcPriority = rpcPriority;
   }

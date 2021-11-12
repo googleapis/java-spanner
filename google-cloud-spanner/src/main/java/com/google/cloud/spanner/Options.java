@@ -30,6 +30,7 @@ public final class Options implements Serializable {
    * set a lower priority for a specific RPC invocation.
    */
   public enum RpcPriority {
+    UNSPECIFIED(Priority.PRIORITY_UNSPECIFIED),
     LOW(Priority.PRIORITY_LOW),
     MEDIUM(Priority.PRIORITY_MEDIUM),
     HIGH(Priority.PRIORITY_HIGH);
