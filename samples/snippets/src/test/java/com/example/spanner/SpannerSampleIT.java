@@ -418,7 +418,7 @@ public class SpannerSampleIT {
     instanceAdminClient
         .createInstance(InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
             .setDisplayName("Encrypted test instance")
-            .setInstanceConfigId(InstanceConfigId.of(projectId, "regional-us-central1"))
+            .setInstanceConfigId(InstanceConfigId.of(projectId, "regional-" + keyLocation))
             .setNodeCount(1).build())
         .get();
     try {
