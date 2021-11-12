@@ -16,9 +16,9 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.protobuf.Duration;
+import com.google.spanner.v1.RequestOptions.Priority;
 
 /**
  * The Cloud Spanner JDBC driver supports a number of client side statements that are interpreted by
@@ -99,7 +99,7 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementAbortBatch();
 
-  StatementResult statementSetRPCPriority(RpcPriority priority);
+  StatementResult statementSetRPCPriority(Priority priority);
 
   StatementResult statementShowRPCPriority();
 }

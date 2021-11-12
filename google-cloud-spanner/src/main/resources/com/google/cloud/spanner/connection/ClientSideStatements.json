@@ -378,7 +378,9 @@
 		"method": "statementSetRPCPriority",
 		"exampleStatements": [
 			"set rpc_priority='HIGH'",
-			"set rpc_priority='MEDIUM'"
+			"set rpc_priority='MEDIUM'",
+			"set rpc_priority='LOW'",
+			"set rpc_priority='NULL'"
 		],
 		"setStatement": {
 			"propertyName": "RPC_PRIORITY",

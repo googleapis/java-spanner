@@ -68,6 +68,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.Duration;
 import com.google.spanner.v1.RequestOptions;
+import com.google.spanner.v1.RequestOptions.Priority;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -344,11 +345,12 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
-  public StatementResult statementSetRPCPriority(RpcPriority rpcPriority) {
-    if (rpcPriority == RpcPriority.UNSPECIFIED) {
-      rpcPriority = null;
+  public StatementResult statementSetRPCPriority(Priority priority) {
+    RpcPriority value = null;
+    if (priority != null && priority != Priority.PRIORITY_UNSPECIFIED) {
+      value = RpcPriority.values()[priority.ordinal() - 1];
     }
-    getConnection().setRPCPriority(rpcPriority);
+    getConnection().setRPCPriority(value);
     return noResult(SET_RPC_PRIORITY);
   }
 

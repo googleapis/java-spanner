@@ -19,9 +19,9 @@ package com.google.cloud.spanner.connection;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.RpcPriorityConverter;
+import com.google.spanner.v1.RequestOptions.Priority;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -34,17 +34,17 @@ public class RpcPriorityConverterTest {
     String allowedValues = "'(HIGH|MEDIUM|LOW|NULL)'";
     RpcPriorityConverter converter =
         new ClientSideStatementValueConverters.RpcPriorityConverter(allowedValues);
-    assertEquals(converter.convert("high"), RpcPriority.HIGH);
-    assertEquals(converter.convert("HIGH"), RpcPriority.HIGH);
-    assertEquals(converter.convert("High"), RpcPriority.HIGH);
+    assertEquals(converter.convert("high"), Priority.PRIORITY_HIGH);
+    assertEquals(converter.convert("HIGH"), Priority.PRIORITY_HIGH);
+    assertEquals(converter.convert("High"), Priority.PRIORITY_HIGH);
 
-    assertEquals(converter.convert("medium"), RpcPriority.MEDIUM);
-    assertEquals(converter.convert("Low"), RpcPriority.LOW);
-    assertEquals(converter.convert("Medium"), RpcPriority.MEDIUM);
+    assertEquals(converter.convert("medium"), Priority.PRIORITY_MEDIUM);
+    assertEquals(converter.convert("Low"), Priority.PRIORITY_LOW);
+    assertEquals(converter.convert("Medium"), Priority.PRIORITY_MEDIUM);
 
     assertNull(converter.convert(""));
     assertNull(converter.convert(" "));
     assertNull(converter.convert("random string"));
-    assertEquals(converter.convert("NULL"), RpcPriority.UNSPECIFIED);
+    assertEquals(converter.convert("NULL"), Priority.PRIORITY_UNSPECIFIED);
   }
 }
