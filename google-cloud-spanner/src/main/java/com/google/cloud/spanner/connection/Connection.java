@@ -536,9 +536,15 @@ public interface Connection extends AutoCloseable {
   /**
    * Sets the priority to use for RPCs executed by this connection..
    *
-   * @param rpcPriority The RPC priority to use. Must be a string from (HIGH/MEDIUM/LOW). The empty
-   *     string will instruct the connection to use the priority set in the connection URL. If none
-   *     is set, the default rpcPriority of Cloud Spanner is used.
+   * @param rpcPriority The RPC priority to use.
+   *     <ul>
+   *       <li>{@link RpcPriority#HIGH} This specifies that the RPC's invocation will be of high
+   *           priority.
+   *       <li>{@link RpcPriority#MEDIUM} This specifies that the RPC's invocation will be of medium
+   *           priority.
+   *       <li>{@link RpcPriority#LOW} This specifies that the RPC's invocation will be of low
+   *           priority.
+   *     </ul>
    */
   default void setRPCPriority(RpcPriority rpcPriority) {
     throw new UnsupportedOperationException("Unimplemented");

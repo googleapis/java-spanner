@@ -209,7 +209,7 @@ class ConnectionImpl implements Connection {
   private AutocommitDmlMode autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
   private TimestampBound readOnlyStaleness = TimestampBound.strong();
   private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
-  private RpcPriority rpcPriority = RpcPriority.HIGH;
+  private RpcPriority rpcPriority = null;
 
   private String transactionTag;
   private String statementTag;
@@ -1024,13 +1024,25 @@ class ConnectionImpl implements Connection {
     if (this.statementTag != null) {
       // Shortcut for the most common scenario.
       if (options == null || options.length == 0) {
-        options = new QueryOption[] {Options.tag(statementTag), Options.priority(this.rpcPriority)};
+        options = new QueryOption[] {Options.tag(statementTag)};
       } else {
-        options = Arrays.copyOf(options, options.length + 2);
-        options[options.length - 2] = Options.tag(statementTag);
-        options[options.length - 1] = Options.priority(this.rpcPriority);
+        options = Arrays.copyOf(options, options.length + 1);
+        options[options.length - 1] = Options.tag(statementTag);
       }
       this.statementTag = null;
+    }
+    return options;
+  }
+
+  private QueryOption[] mergeQueryRequestOptions(QueryOption... options) {
+    if (this.rpcPriority != null) {
+      // Shortcut for the most common scenario.
+      if (options == null || options.length == 0) {
+        options = new QueryOption[] {Options.priority(this.rpcPriority)};
+      } else {
+        options = Arrays.copyOf(options, options.length + 1);
+        options[options.length - 1] = Options.priority(this.rpcPriority);
+      }
     }
     return options;
   }
@@ -1039,14 +1051,25 @@ class ConnectionImpl implements Connection {
     if (this.statementTag != null) {
       // Shortcut for the most common scenario.
       if (options == null || options.length == 0) {
-        options =
-            new UpdateOption[] {Options.tag(statementTag), Options.priority(this.rpcPriority)};
+        options = new UpdateOption[] {Options.tag(statementTag)};
       } else {
-        options = Arrays.copyOf(options, options.length + 2);
-        options[options.length - 2] = Options.tag(statementTag);
-        options[options.length - 1] = Options.priority(this.rpcPriority);
+        options = Arrays.copyOf(options, options.length + 1);
+        options[options.length - 1] = Options.tag(statementTag);
       }
       this.statementTag = null;
+    }
+    return options;
+  }
+
+  private UpdateOption[] mergeUpdateRequestOptions(UpdateOption... options) {
+    if (this.rpcPriority != null) {
+      // Shortcut for the most common scenario.
+      if (options == null || options.length == 0) {
+        options = new UpdateOption[] {Options.priority(this.rpcPriority)};
+      } else {
+        options = Arrays.copyOf(options, options.length + 1);
+        options[options.length - 1] = Options.priority(this.rpcPriority);
+      }
     }
     return options;
   }
@@ -1059,7 +1082,8 @@ class ConnectionImpl implements Connection {
         statement.getType() == StatementType.QUERY, "Statement must be a query");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return get(
-        transaction.executeQueryAsync(statement, analyzeMode, mergeQueryStatementTag(options)));
+        transaction.executeQueryAsync(
+            statement, analyzeMode, mergeQueryRequestOptions(mergeQueryStatementTag(options))));
   }
 
   private AsyncResultSet internalExecuteQueryAsync(
@@ -1070,7 +1094,8 @@ class ConnectionImpl implements Connection {
         statement.getType() == StatementType.QUERY, "Statement must be a query");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return ResultSets.toAsyncResultSet(
-        transaction.executeQueryAsync(statement, analyzeMode, mergeQueryStatementTag(options)),
+        transaction.executeQueryAsync(
+            statement, analyzeMode, mergeQueryRequestOptions(mergeQueryStatementTag(options))),
         spanner.getAsyncExecutorProvider(),
         options);
   }
@@ -1080,13 +1105,15 @@ class ConnectionImpl implements Connection {
     Preconditions.checkArgument(
         update.getType() == StatementType.UPDATE, "Statement must be an update");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    return transaction.executeUpdateAsync(update, mergeUpdateStatementTag(options));
+    return transaction.executeUpdateAsync(
+        update, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
   }
 
   private ApiFuture<long[]> internalExecuteBatchUpdateAsync(
       List<ParsedStatement> updates, UpdateOption... options) {
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    return transaction.executeBatchUpdateAsync(updates, mergeUpdateStatementTag(options));
+    return transaction.executeBatchUpdateAsync(
+        updates, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
   }
 
   /**
@@ -1123,6 +1150,7 @@ class ConnectionImpl implements Connection {
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
               .setTransactionTag(transactionTag)
+              .setRpcPriority(rpcPriority)
               .build();
         case READ_WRITE_TRANSACTION:
           return ReadWriteTransaction.newBuilder()
@@ -1133,6 +1161,7 @@ class ConnectionImpl implements Connection {
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
               .setTransactionTag(transactionTag)
+              .setRpcPriority(rpcPriority)
               .build();
         case DML_BATCH:
           // A DML batch can run inside the current transaction. It should therefore only
@@ -1143,6 +1172,7 @@ class ConnectionImpl implements Connection {
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
               .setStatementTag(statementTag)
+              .setRpcPriority(rpcPriority)
               .build();
         case DDL_BATCH:
           return DdlBatch.newBuilder()

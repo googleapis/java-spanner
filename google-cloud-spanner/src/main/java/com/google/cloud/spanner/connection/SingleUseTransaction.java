@@ -333,9 +333,25 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   private TransactionRunner createWriteTransaction() {
-    return returnCommitStats
-        ? dbClient.readWriteTransaction(Options.commitStats())
-        : dbClient.readWriteTransaction();
+    int numOptions = 0;
+    if (this.rpcPriority != null) {
+      numOptions++;
+    }
+    if (returnCommitStats) {
+      numOptions++;
+    }
+    if (numOptions == 0) {
+      return dbClient.readWriteTransaction();
+    }
+    Options.TransactionOption[] options = new Options.TransactionOption[numOptions];
+    int index = 0;
+    if (this.rpcPriority != null) {
+      options[index++] = Options.priority(this.rpcPriority);
+    }
+    if (returnCommitStats) {
+      options[index++] = Options.commitStats();
+    }
+    return dbClient.readWriteTransaction(options);
   }
 
   private ApiFuture<Long> executeTransactionalUpdateAsync(

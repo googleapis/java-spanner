@@ -189,8 +189,21 @@ class DmlBatch extends AbstractBaseUnitOfWork {
     // executed AFTER a Future is done, which means that a user could read the state of the Batch
     // before it has been changed.
     final SettableApiFuture<long[]> res = SettableApiFuture.create();
-    UpdateOption[] options =
-        statementTag == null ? new UpdateOption[0] : new UpdateOption[] {Options.tag(statementTag)};
+    int numOptions = 0;
+    if (statementTag != null) {
+      numOptions++;
+    }
+    if (this.rpcPriority != null) {
+      numOptions++;
+    }
+    UpdateOption[] options = new UpdateOption[numOptions];
+    int index = 0;
+    if (statementTag != null) {
+      options[index++] = Options.tag(statementTag);
+    }
+    if (this.rpcPriority != null) {
+      options[index++] = Options.priority(this.rpcPriority);
+    }
     ApiFuture<long[]> updateCounts = transaction.executeBatchUpdateAsync(statements, options);
     ApiFutures.addCallback(
         updateCounts,

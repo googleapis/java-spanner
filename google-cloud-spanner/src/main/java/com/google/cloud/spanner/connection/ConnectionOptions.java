@@ -159,7 +159,7 @@ public class ConnectionOptions {
   private static final String DEFAULT_USER_AGENT = null;
   private static final String DEFAULT_OPTIMIZER_VERSION = "";
   private static final String DEFAULT_OPTIMIZER_STATISTICS_PACKAGE = "";
-  private static final RpcPriority DEFAULT_RPC_PRIORITY = RpcPriority.HIGH;
+  private static final RpcPriority DEFAULT_RPC_PRIORITY = null;
   private static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
   private static final boolean DEFAULT_LENIENT = false;
 

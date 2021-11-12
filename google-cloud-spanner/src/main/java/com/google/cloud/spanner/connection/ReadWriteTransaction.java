@@ -150,6 +150,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     if (this.transactionTag != null) {
       numOptions++;
     }
+    if (this.rpcPriority != null) {
+      numOptions++;
+    }
     TransactionOption[] options = new TransactionOption[numOptions];
     int index = 0;
     if (builder.returnCommitStats) {
@@ -157,6 +160,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     }
     if (this.transactionTag != null) {
       options[index++] = Options.tag(this.transactionTag);
+    }
+    if (this.rpcPriority != null) {
+      options[index++] = Options.priority(this.rpcPriority);
     }
     return options;
   }

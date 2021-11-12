@@ -67,6 +67,7 @@ import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGe
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.Duration;
+import com.google.spanner.v1.RequestOptions;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -350,6 +351,11 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementShowRPCPriority() {
-    return resultSet("RPC_PRIORITY", getConnection().getRPCPriority(), SHOW_RPC_PRIORITY);
+    return resultSet(
+        "RPC_PRIORITY",
+        getConnection().getRPCPriority() == null
+            ? RequestOptions.Priority.PRIORITY_UNSPECIFIED
+            : getConnection().getRPCPriority(),
+        SHOW_RPC_PRIORITY);
   }
 }
