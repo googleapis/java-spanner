@@ -156,6 +156,16 @@ public class ValueTest {
   }
 
   @Test
+  public void float64WrapperNaN() {
+    final Value value = Value.float64(Double.NaN);
+    assertEquals(Type.float64(), value.getType());
+    assertFalse(value.isNull());
+    assertEquals(Value.float64(Double.NaN), value);
+    assertEquals(Value.float64(Float.NaN), value);
+    assertEquals("NaN", value.toString());
+  }
+
+  @Test
   public void float64WrapperNull() {
     Value v = Value.float64(null);
     assertThat(v.getType()).isEqualTo(Type.float64());

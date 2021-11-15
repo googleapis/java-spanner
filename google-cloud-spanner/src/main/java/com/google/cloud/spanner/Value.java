@@ -1028,7 +1028,8 @@ public abstract class Value implements Serializable {
 
     @Override
     boolean valueEquals(Value v) {
-      return ((Float64Impl) v).value == value;
+      final Float64Impl float64Value = (Float64Impl) v;
+      return Double.isNaN(value) && Double.isNaN(float64Value.value) || float64Value.value == value;
     }
 
     @Override
