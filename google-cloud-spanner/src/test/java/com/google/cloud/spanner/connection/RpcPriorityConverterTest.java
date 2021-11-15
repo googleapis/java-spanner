@@ -34,17 +34,18 @@ public class RpcPriorityConverterTest {
     String allowedValues = "'(HIGH|MEDIUM|LOW|NULL)'";
     RpcPriorityConverter converter =
         new ClientSideStatementValueConverters.RpcPriorityConverter(allowedValues);
-    assertEquals(converter.convert("high"), Priority.PRIORITY_HIGH);
-    assertEquals(converter.convert("HIGH"), Priority.PRIORITY_HIGH);
-    assertEquals(converter.convert("High"), Priority.PRIORITY_HIGH);
+    assertEquals(Priority.PRIORITY_HIGH, converter.convert("high"));
+    assertEquals(Priority.PRIORITY_HIGH, converter.convert("HIGH"));
+    assertEquals(Priority.PRIORITY_HIGH, converter.convert("High"));
 
-    assertEquals(converter.convert("medium"), Priority.PRIORITY_MEDIUM);
-    assertEquals(converter.convert("Low"), Priority.PRIORITY_LOW);
-    assertEquals(converter.convert("Medium"), Priority.PRIORITY_MEDIUM);
+    assertEquals(Priority.PRIORITY_MEDIUM, converter.convert("medium"));
+    assertEquals(Priority.PRIORITY_MEDIUM, converter.convert("Medium"));
+
+    assertEquals(Priority.PRIORITY_LOW, converter.convert("Low"));
 
     assertNull(converter.convert(""));
     assertNull(converter.convert(" "));
     assertNull(converter.convert("random string"));
-    assertEquals(converter.convert("NULL"), Priority.PRIORITY_UNSPECIFIED);
+    assertEquals(Priority.PRIORITY_UNSPECIFIED, converter.convert("NULL"));
   }
 }

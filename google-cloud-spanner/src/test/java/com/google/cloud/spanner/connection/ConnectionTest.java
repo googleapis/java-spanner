@@ -306,6 +306,7 @@ public class ConnectionTest {
         for (boolean autocommit : new boolean[] {true, false}) {
           connection.setAutocommit(autocommit);
           try (ResultSet rs = connection.executeQuery(SELECT_COUNT_STATEMENT)) {}
+
           assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
           assertEquals(
               RequestOptions.Priority.PRIORITY_MEDIUM,

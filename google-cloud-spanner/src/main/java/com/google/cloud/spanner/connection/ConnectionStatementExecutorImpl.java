@@ -66,10 +66,12 @@ import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Duration;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -93,6 +95,16 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     public boolean hasDuration() {
       return connection.hasStatementTimeout();
     }
+  }
+
+  private static final Map<Priority, RpcPriority> validRPCPriorityValues;
+
+  static {
+    ImmutableMap.Builder<Priority, RpcPriority> builder = ImmutableMap.builder();
+    builder.put(Priority.PRIORITY_HIGH, RpcPriority.HIGH);
+    builder.put(Priority.PRIORITY_MEDIUM, RpcPriority.MEDIUM);
+    builder.put(Priority.PRIORITY_LOW, RpcPriority.LOW);
+    validRPCPriorityValues = builder.build();
   }
 
   /** The connection to execute the statements on. */
@@ -346,10 +358,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementSetRPCPriority(Priority priority) {
-    RpcPriority value = null;
-    if (priority != null && priority != Priority.PRIORITY_UNSPECIFIED) {
-      value = RpcPriority.values()[priority.ordinal() - 1];
-    }
+    RpcPriority value = validRPCPriorityValues.get(priority);
     getConnection().setRPCPriority(value);
     return noResult(SET_RPC_PRIORITY);
   }
