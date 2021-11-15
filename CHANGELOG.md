@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.16.0](https://www.github.com/googleapis/java-spanner/compare/v6.15.2...v6.16.0) (2021-11-15)
+
+
+### Features
+
+* support RPC priority for JDBC connections and statements ([#1548](https://www.github.com/googleapis/java-spanner/issues/1548)) ([b61a0d4](https://www.github.com/googleapis/java-spanner/commit/b61a0d4db80a689f6f1b2ccf53c9360226890e9d))
+
 ### [6.15.2](https://www.github.com/googleapis/java-spanner/compare/v6.15.1...v6.15.2) (2021-11-10)
 
 
