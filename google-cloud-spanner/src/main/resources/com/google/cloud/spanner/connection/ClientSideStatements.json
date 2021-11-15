@@ -118,6 +118,14 @@
 	  "exampleStatements": ["show variable transaction_tag"]
 	},
 	{
+		"name": "SHOW VARIABLE RPC_PRIORITY",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+rpc_priority\\s*\\z",
+		"method": "statementShowRPCPriority",
+		"exampleStatements": ["show variable rpc_priority"]
+	},
+	{
 	  "name": "BEGIN TRANSACTION",
 	  "executorName": "ClientSideStatementNoParamExecutor",
 	  "resultType": "NO_RESULT",
@@ -361,6 +369,25 @@
 	    "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
 	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
 	  }
+	},
+	{
+		"name": "SET RPC_PRIORITY = 'HIGH'|'MEDIUM'|'LOW'|'NULL'",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"regex": "(?is)\\A\\s*set\\s+rpc_priority\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetRPCPriority",
+		"exampleStatements": [
+			"set rpc_priority='HIGH'",
+			"set rpc_priority='MEDIUM'",
+			"set rpc_priority='LOW'",
+			"set rpc_priority='NULL'"
+		],
+		"setStatement": {
+			"propertyName": "RPC_PRIORITY",
+			"separator": "=",
+			"allowedValues": "'(HIGH|MEDIUM|LOW|NULL)'",
+			"converterName": "ClientSideStatementValueConverters$RpcPriorityConverter"
+		}
 	}
 	]
 }

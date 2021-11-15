@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
@@ -24,6 +25,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.Duration;
 import com.google.protobuf.util.Durations;
+import com.google.spanner.v1.RequestOptions.Priority;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -238,6 +240,36 @@ class ClientSideStatementValueConverters {
       // Transaction mode may contain multiple spaces.
       String valueWithSingleSpaces = value.replaceAll("\\s+", " ");
       return values.get(valueWithSingleSpaces);
+    }
+  }
+
+  /** Converter for converting strings to {@link RpcPriority} values. */
+  static class RpcPriorityConverter implements ClientSideStatementValueConverter<Priority> {
+    private final CaseInsensitiveEnumMap<Priority> values =
+        new CaseInsensitiveEnumMap<>(Priority.class);
+    private final Pattern allowedValues;
+
+    public RpcPriorityConverter(String allowedValues) {
+      // Remove the parentheses from the beginning and end.
+      this.allowedValues =
+          Pattern.compile(
+              "(?is)\\A" + allowedValues.substring(1, allowedValues.length() - 1) + "\\z");
+    }
+
+    @Override
+    public Class<Priority> getParameterClass() {
+      return Priority.class;
+    }
+
+    @Override
+    public Priority convert(String value) {
+      Matcher matcher = allowedValues.matcher(value);
+      if (matcher.find()) {
+        if (matcher.group(0).equalsIgnoreCase("null")) {
+          return Priority.PRIORITY_UNSPECIFIED;
+        }
+      }
+      return values.get("PRIORITY_" + value);
     }
   }
 }

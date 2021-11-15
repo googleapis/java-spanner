@@ -22,6 +22,7 @@ import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
@@ -52,6 +53,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   private final StatementExecutor statementExecutor;
   private final StatementTimeout statementTimeout;
   protected final String transactionTag;
+  protected final RpcPriority rpcPriority;
 
   /** Class for keeping track of the stacktrace of the caller of an async statement. */
   static final class SpannerAsyncExecutionException extends RuntimeException {
@@ -84,6 +86,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     private StatementExecutor statementExecutor;
     private StatementTimeout statementTimeout = new StatementTimeout();
     private String transactionTag;
+    private RpcPriority rpcPriority;
 
     Builder() {}
 
@@ -109,6 +112,11 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
       return self();
     }
 
+    B setRpcPriority(@Nullable RpcPriority rpcPriority) {
+      this.rpcPriority = rpcPriority;
+      return self();
+    }
+
     abstract T build();
   }
 
@@ -117,6 +125,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     this.statementExecutor = builder.statementExecutor;
     this.statementTimeout = builder.statementTimeout;
     this.transactionTag = builder.transactionTag;
+    this.rpcPriority = builder.rpcPriority;
   }
 
   StatementExecutor getStatementExecutor() {

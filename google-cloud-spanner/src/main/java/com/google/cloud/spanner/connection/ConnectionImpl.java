@@ -28,6 +28,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
@@ -208,6 +209,7 @@ class ConnectionImpl implements Connection {
   private AutocommitDmlMode autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
   private TimestampBound readOnlyStaleness = TimestampBound.strong();
   private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
+  private RpcPriority rpcPriority = null;
 
   private String transactionTag;
   private String statementTag;
@@ -227,6 +229,7 @@ class ConnectionImpl implements Connection {
     this.readOnly = options.isReadOnly();
     this.autocommit = options.isAutocommit();
     this.queryOptions = this.queryOptions.toBuilder().mergeFrom(options.getQueryOptions()).build();
+    this.rpcPriority = options.getRPCPriority();
     this.returnCommitStats = options.isReturnCommitStats();
     this.ddlClient = createDdlClient();
     setDefaultTransactionOptions();
@@ -451,6 +454,18 @@ class ConnectionImpl implements Connection {
   public String getOptimizerStatisticsPackage() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     return this.queryOptions.getOptimizerStatisticsPackage();
+  }
+
+  @Override
+  public void setRPCPriority(RpcPriority rpcPriority) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    this.rpcPriority = rpcPriority;
+  }
+
+  @Override
+  public RpcPriority getRPCPriority() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.rpcPriority;
   }
 
   @Override
@@ -1018,6 +1033,19 @@ class ConnectionImpl implements Connection {
     return options;
   }
 
+  private QueryOption[] mergeQueryRequestOptions(QueryOption... options) {
+    if (this.rpcPriority != null) {
+      // Shortcut for the most common scenario.
+      if (options == null || options.length == 0) {
+        options = new QueryOption[] {Options.priority(this.rpcPriority)};
+      } else {
+        options = Arrays.copyOf(options, options.length + 1);
+        options[options.length - 1] = Options.priority(this.rpcPriority);
+      }
+    }
+    return options;
+  }
+
   private UpdateOption[] mergeUpdateStatementTag(UpdateOption... options) {
     if (this.statementTag != null) {
       // Shortcut for the most common scenario.
@@ -1032,6 +1060,19 @@ class ConnectionImpl implements Connection {
     return options;
   }
 
+  private UpdateOption[] mergeUpdateRequestOptions(UpdateOption... options) {
+    if (this.rpcPriority != null) {
+      // Shortcut for the most common scenario.
+      if (options == null || options.length == 0) {
+        options = new UpdateOption[] {Options.priority(this.rpcPriority)};
+      } else {
+        options = Arrays.copyOf(options, options.length + 1);
+        options[options.length - 1] = Options.priority(this.rpcPriority);
+      }
+    }
+    return options;
+  }
+
   private ResultSet internalExecuteQuery(
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
@@ -1040,7 +1081,8 @@ class ConnectionImpl implements Connection {
         statement.getType() == StatementType.QUERY, "Statement must be a query");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return get(
-        transaction.executeQueryAsync(statement, analyzeMode, mergeQueryStatementTag(options)));
+        transaction.executeQueryAsync(
+            statement, analyzeMode, mergeQueryRequestOptions(mergeQueryStatementTag(options))));
   }
 
   private AsyncResultSet internalExecuteQueryAsync(
@@ -1051,7 +1093,8 @@ class ConnectionImpl implements Connection {
         statement.getType() == StatementType.QUERY, "Statement must be a query");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return ResultSets.toAsyncResultSet(
-        transaction.executeQueryAsync(statement, analyzeMode, mergeQueryStatementTag(options)),
+        transaction.executeQueryAsync(
+            statement, analyzeMode, mergeQueryRequestOptions(mergeQueryStatementTag(options))),
         spanner.getAsyncExecutorProvider(),
         options);
   }
@@ -1061,13 +1104,15 @@ class ConnectionImpl implements Connection {
     Preconditions.checkArgument(
         update.getType() == StatementType.UPDATE, "Statement must be an update");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    return transaction.executeUpdateAsync(update, mergeUpdateStatementTag(options));
+    return transaction.executeUpdateAsync(
+        update, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
   }
 
   private ApiFuture<long[]> internalExecuteBatchUpdateAsync(
       List<ParsedStatement> updates, UpdateOption... options) {
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    return transaction.executeBatchUpdateAsync(updates, mergeUpdateStatementTag(options));
+    return transaction.executeBatchUpdateAsync(
+        updates, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
   }
 
   /**
@@ -1104,6 +1149,7 @@ class ConnectionImpl implements Connection {
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
               .setTransactionTag(transactionTag)
+              .setRpcPriority(rpcPriority)
               .build();
         case READ_WRITE_TRANSACTION:
           return ReadWriteTransaction.newBuilder()
@@ -1114,6 +1160,7 @@ class ConnectionImpl implements Connection {
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
               .setTransactionTag(transactionTag)
+              .setRpcPriority(rpcPriority)
               .build();
         case DML_BATCH:
           // A DML batch can run inside the current transaction. It should therefore only
@@ -1124,6 +1171,7 @@ class ConnectionImpl implements Connection {
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
               .setStatementTag(statementTag)
+              .setRpcPriority(rpcPriority)
               .build();
         case DDL_BATCH:
           return DdlBatch.newBuilder()

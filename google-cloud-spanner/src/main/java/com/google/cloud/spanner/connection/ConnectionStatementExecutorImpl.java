@@ -29,6 +29,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETRY_ABORTS_INTERNALLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETURN_COMMIT_STATS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RPC_PRIORITY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_STATEMENT_TAG;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_STATEMENT_TIMEOUT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_TRANSACTION_MODE;
@@ -44,6 +45,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_TIMESTAMP;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_RETRY_ABORTS_INTERNALLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_RETURN_COMMIT_STATS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_RPC_PRIORITY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_STATEMENT_TAG;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_STATEMENT_TIMEOUT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_TRANSACTION_TAG;
@@ -54,6 +56,7 @@ import static com.google.cloud.spanner.connection.StatementResultImpl.resultSet;
 
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.CommitStats;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
 import com.google.cloud.spanner.Struct;
@@ -63,8 +66,12 @@ import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Duration;
+import com.google.spanner.v1.RequestOptions;
+import com.google.spanner.v1.RequestOptions.Priority;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -88,6 +95,16 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     public boolean hasDuration() {
       return connection.hasStatementTimeout();
     }
+  }
+
+  private static final Map<Priority, RpcPriority> validRPCPriorityValues;
+
+  static {
+    ImmutableMap.Builder<Priority, RpcPriority> builder = ImmutableMap.builder();
+    builder.put(Priority.PRIORITY_HIGH, RpcPriority.HIGH);
+    builder.put(Priority.PRIORITY_MEDIUM, RpcPriority.MEDIUM);
+    builder.put(Priority.PRIORITY_LOW, RpcPriority.LOW);
+    validRPCPriorityValues = builder.build();
   }
 
   /** The connection to execute the statements on. */
@@ -337,5 +354,22 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   public StatementResult statementAbortBatch() {
     getConnection().abortBatch();
     return noResult(ABORT_BATCH);
+  }
+
+  @Override
+  public StatementResult statementSetRPCPriority(Priority priority) {
+    RpcPriority value = validRPCPriorityValues.get(priority);
+    getConnection().setRPCPriority(value);
+    return noResult(SET_RPC_PRIORITY);
+  }
+
+  @Override
+  public StatementResult statementShowRPCPriority() {
+    return resultSet(
+        "RPC_PRIORITY",
+        getConnection().getRPCPriority() == null
+            ? RequestOptions.Priority.PRIORITY_UNSPECIFIED
+            : getConnection().getRPCPriority(),
+        SHOW_RPC_PRIORITY);
   }
 }

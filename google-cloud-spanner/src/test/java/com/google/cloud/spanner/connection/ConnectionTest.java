@@ -17,6 +17,9 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFuture;
@@ -29,9 +32,13 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
+import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.RequestOptions;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -279,6 +286,183 @@ public class ConnectionTest {
         assertThat(count2.isDone()).isTrue();
       }
       assertThat(mockSpanner.numSessionsCreated()).isEqualTo(1);
+    }
+  }
+
+  public static class ConnectionRPCPriorityTest extends AbstractMockServerTest {
+
+    @AfterClass
+    public static void reset() {
+      mockSpanner.reset();
+    }
+
+    protected String getBaseUrl() {
+      return super.getBaseUrl() + ";rpcPriority=MEDIUM";
+    }
+
+    @Test
+    public void testQuery_RPCPriority() {
+      try (Connection connection = createConnection()) {
+        for (boolean autocommit : new boolean[] {true, false}) {
+          connection.setAutocommit(autocommit);
+          try (ResultSet rs = connection.executeQuery(SELECT_COUNT_STATEMENT)) {}
+
+          assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+          assertEquals(
+              RequestOptions.Priority.PRIORITY_MEDIUM,
+              mockSpanner
+                  .getRequestsOfType(ExecuteSqlRequest.class)
+                  .get(0)
+                  .getRequestOptions()
+                  .getPriority());
+          mockSpanner.clearRequests();
+        }
+      }
+    }
+
+    @Test
+    public void testUpdate_RPCPriority() {
+      try (Connection connection = createConnection()) {
+        for (boolean autocommit : new boolean[] {true, false}) {
+          connection.setAutocommit(autocommit);
+          connection.executeUpdate(INSERT_STATEMENT);
+
+          assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+          assertEquals(
+              RequestOptions.Priority.PRIORITY_MEDIUM,
+              mockSpanner
+                  .getRequestsOfType(ExecuteSqlRequest.class)
+                  .get(0)
+                  .getRequestOptions()
+                  .getPriority());
+          mockSpanner.clearRequests();
+        }
+      }
+    }
+
+    @Test
+    public void testPartitionedUpdate_RPCPriority() {
+      try (Connection connection = createConnection()) {
+        connection.setAutocommit(true);
+        connection.setAutocommitDmlMode(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);
+        connection.executeUpdate(INSERT_STATEMENT);
+
+        assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+        assertEquals(
+            RequestOptions.Priority.PRIORITY_MEDIUM,
+            mockSpanner
+                .getRequestsOfType(ExecuteSqlRequest.class)
+                .get(0)
+                .getRequestOptions()
+                .getPriority());
+        mockSpanner.clearRequests();
+      }
+    }
+
+    @Test
+    public void testBatchUpdate_RPCPriority() {
+      try (Connection connection = createConnection()) {
+        connection.executeBatchUpdate(Collections.singleton(INSERT_STATEMENT));
+        connection.commit();
+
+        assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+        assertEquals(
+            RequestOptions.Priority.PRIORITY_MEDIUM,
+            mockSpanner
+                .getRequestsOfType(ExecuteBatchDmlRequest.class)
+                .get(0)
+                .getRequestOptions()
+                .getPriority());
+        assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+        assertEquals(
+            RequestOptions.Priority.PRIORITY_MEDIUM,
+            mockSpanner
+                .getRequestsOfType(CommitRequest.class)
+                .get(0)
+                .getRequestOptions()
+                .getPriority());
+        mockSpanner.clearRequests();
+      }
+    }
+
+    @Test
+    public void testDmlBatch_RPCPriority() {
+      try (Connection connection = createConnection()) {
+        for (boolean autocommit : new boolean[] {true, false}) {
+          connection.setAutocommit(autocommit);
+
+          connection.startBatchDml();
+          connection.execute(INSERT_STATEMENT);
+          connection.execute(INSERT_STATEMENT);
+          connection.runBatch();
+
+          assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+          assertEquals(
+              RequestOptions.Priority.PRIORITY_MEDIUM,
+              mockSpanner
+                  .getRequestsOfType(ExecuteBatchDmlRequest.class)
+                  .get(0)
+                  .getRequestOptions()
+                  .getPriority());
+          mockSpanner.clearRequests();
+        }
+      }
+    }
+
+    @Test
+    public void testRunBatch_RPCPriority() {
+      try (Connection connection = createConnection()) {
+        connection.startBatchDml();
+        connection.execute(INSERT_STATEMENT);
+        connection.execute(INSERT_STATEMENT);
+        connection.runBatch();
+        connection.commit();
+
+        assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+        assertEquals(
+            RequestOptions.Priority.PRIORITY_MEDIUM,
+            mockSpanner
+                .getRequestsOfType(ExecuteBatchDmlRequest.class)
+                .get(0)
+                .getRequestOptions()
+                .getPriority());
+        assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+        assertEquals(
+            RequestOptions.Priority.PRIORITY_MEDIUM,
+            mockSpanner
+                .getRequestsOfType(CommitRequest.class)
+                .get(0)
+                .getRequestOptions()
+                .getPriority());
+        mockSpanner.clearRequests();
+      }
+    }
+
+    @Test
+    public void testShowSetRPCPriority() {
+      try (Connection connection = createConnection()) {
+        connection.setRPCPriority(null);
+        try (ResultSet rs =
+            connection.execute(Statement.of("SHOW VARIABLE RPC_PRIORITY")).getResultSet()) {
+          assertTrue(rs.next());
+          assertEquals("PRIORITY_UNSPECIFIED", rs.getString("RPC_PRIORITY"));
+          assertFalse(rs.next());
+        }
+        connection.execute(Statement.of("SET RPC_PRIORITY='LOW'"));
+        try (ResultSet rs =
+            connection.execute(Statement.of("SHOW VARIABLE RPC_PRIORITY")).getResultSet()) {
+          assertTrue(rs.next());
+          assertEquals("LOW", rs.getString("RPC_PRIORITY"));
+          assertFalse(rs.next());
+        }
+        connection.execute(Statement.of("SET RPC_PRIORITY='HIGH'"));
+        try (ResultSet rs =
+            connection.execute(Statement.of("SHOW VARIABLE RPC_PRIORITY")).getResultSet()) {
+          assertTrue(rs.next());
+          assertEquals("HIGH", rs.getString("RPC_PRIORITY"));
+          assertFalse(rs.next());
+        }
+      }
     }
   }
 }

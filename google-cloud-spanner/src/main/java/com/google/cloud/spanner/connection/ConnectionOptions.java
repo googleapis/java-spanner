@@ -25,6 +25,7 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
@@ -158,6 +159,7 @@ public class ConnectionOptions {
   private static final String DEFAULT_USER_AGENT = null;
   private static final String DEFAULT_OPTIMIZER_VERSION = "";
   private static final String DEFAULT_OPTIMIZER_STATISTICS_PACKAGE = "";
+  private static final RpcPriority DEFAULT_RPC_PRIORITY = null;
   private static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
   private static final boolean DEFAULT_LENIENT = false;
 
@@ -196,6 +198,8 @@ public class ConnectionOptions {
       "optimizerStatisticsPackage";
   /** Name of the 'lenientMode' connection property. */
   public static final String LENIENT_PROPERTY_NAME = "lenient";
+  /** Name of the 'rpcPriority' connection property. */
+  public static final String RPC_PRIORITY_NAME = "rpcPriority";
 
   /** All valid connection properties. */
   public static final Set<ConnectionProperty> VALID_PROPERTIES =
@@ -252,7 +256,10 @@ public class ConnectionOptions {
                   ConnectionProperty.createBooleanProperty(
                       LENIENT_PROPERTY_NAME,
                       "Silently ignore unknown properties in the connection string/properties (true/false)",
-                      DEFAULT_LENIENT))));
+                      DEFAULT_LENIENT),
+                  ConnectionProperty.createStringProperty(
+                      RPC_PRIORITY_NAME,
+                      "Sets the priority for all RPC invocations from this connection (HIGH/MEDIUM/LOW). The default is HIGH."))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -490,6 +497,7 @@ public class ConnectionOptions {
   private final QueryOptions queryOptions;
   private final boolean returnCommitStats;
   private final boolean autoConfigEmulator;
+  private final RpcPriority rpcPriority;
 
   private final boolean autocommit;
   private final boolean readOnly;
@@ -533,6 +541,7 @@ public class ConnectionOptions {
     this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
     this.host = determineHost(matcher, autoConfigEmulator, usePlainText);
+    this.rpcPriority = parseRPCPriority(this.uri);
 
     this.instanceId = matcher.group(Builder.INSTANCE_GROUP);
     this.databaseName = matcher.group(Builder.DATABASE_GROUP);
@@ -723,6 +732,12 @@ public class ConnectionOptions {
   static boolean parseLenient(String uri) {
     String value = parseUriProperty(uri, LENIENT_PROPERTY_NAME);
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_LENIENT;
+  }
+
+  @VisibleForTesting
+  static RpcPriority parseRPCPriority(String uri) {
+    String value = parseUriProperty(uri, RPC_PRIORITY_NAME);
+    return value != null ? RpcPriority.valueOf(value) : DEFAULT_RPC_PRIORITY;
   }
 
   @VisibleForTesting
@@ -921,6 +936,11 @@ public class ConnectionOptions {
    */
   public boolean isAutoConfigEmulator() {
     return autoConfigEmulator;
+  }
+
+  /** The {@link RpcPriority} to use for the connection. */
+  RpcPriority getRPCPriority() {
+    return rpcPriority;
   }
 
   /** Interceptors that should be executed after each statement */
