@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
@@ -206,6 +207,26 @@ public class MutationTest {
         Mutation.newInsertBuilder("T1").set("C").to(Double.NaN).build(),
         Mutation.newInsertBuilder("T1").set("C").to(Double.NaN).build(),
         Mutation.newInsertBuilder("T1").set("C").to(Float.NaN).build());
+
+    tester.addEqualityGroup(
+        Mutation.newInsertBuilder("T1").set("C").toFloat64Array(new double[] {Double.NaN}).build(),
+        Mutation.newInsertBuilder("T1").set("C").toFloat64Array(new double[] {Float.NaN}).build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(new double[] {Double.NaN}, 0, 1)
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(new double[] {Float.NaN}, 0, 1)
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(Collections.singletonList(Double.NaN))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(Collections.singletonList((double) Float.NaN))
+            .build());
 
     // Deletes consider the key set.
     tester.addEqualityGroup(Mutation.delete("T1", KeySet.all()));
