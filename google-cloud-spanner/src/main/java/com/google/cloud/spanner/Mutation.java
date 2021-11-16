@@ -349,13 +349,36 @@ public final class Mutation implements Serializable {
     return operation == that.operation
         && Objects.equals(table, that.table)
         && Objects.equals(columns, that.columns)
-        && Objects.equals(values, that.values)
+        && areValuesEqual(values, that.values)
         && Objects.equals(keySet, that.keySet);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(operation, table, columns, values, keySet);
+  }
+
+  private boolean areValuesEqual(List<Value> values, List<Value> otherValues) {
+    if (values == null && otherValues == null) {
+      return true;
+    } else if (values == null || otherValues == null) {
+      return false;
+    } else if (values.size() != otherValues.size()) {
+      return false;
+    } else {
+      for (int i = 0; i < values.size(); i++) {
+        final Value value = values.get(i);
+        final Value otherValue = otherValues.get(i);
+        if (!value.equals(otherValue) && (!isNaN(value) || !isNaN(otherValue))) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+
+  private boolean isNaN(Value value) {
+    return !value.isNull() && value.getType() == Type.float64() && Double.isNaN(value.getFloat64());
   }
 
   static void toProto(Iterable<Mutation> mutations, List<com.google.spanner.v1.Mutation> out) {
