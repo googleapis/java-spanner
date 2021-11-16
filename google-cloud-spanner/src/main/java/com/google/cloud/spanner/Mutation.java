@@ -358,6 +358,13 @@ public final class Mutation implements Serializable {
     return Objects.hash(operation, table, columns, values, keySet);
   }
 
+  /**
+   * We are relaxing equality values here, making sure that Double.NaNs and Float.NaNs are equal to
+   * each other. This is because our Cloud Spanner Import / Export template in Apache Beam uses the
+   * mutation equality to check for modifications before committing. We noticed that when NaNs where
+   * used the template would always indicate a modification was present, when it turned out not to
+   * be the case. For more information see b/206339664.
+   */
   private boolean areValuesEqual(List<Value> values, List<Value> otherValues) {
     if (values == null && otherValues == null) {
       return true;
