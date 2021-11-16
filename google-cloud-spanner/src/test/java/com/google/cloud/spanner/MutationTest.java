@@ -201,12 +201,6 @@ public class MutationTest {
         Mutation.newInsertBuilder("T1").set("C").to("V").build(),
         Mutation.newInsertBuilder("T1").set("C").to("V").build());
 
-    // Test NaNs are equal
-    tester.addEqualityGroup(
-        Mutation.newInsertBuilder("T1").set("C").to(Double.NaN).build(),
-        Mutation.newInsertBuilder("T1").set("C").to(Double.NaN).build(),
-        Mutation.newInsertBuilder("T1").set("C").to(Float.NaN).build());
-
     // Deletes consider the key set.
     tester.addEqualityGroup(Mutation.delete("T1", KeySet.all()));
     tester.addEqualityGroup(
