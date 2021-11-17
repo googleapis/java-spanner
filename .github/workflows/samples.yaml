@@ -26,4 +26,4 @@ jobs:
       run: mvn clean install
     - name: Compile samples
       run: mvn compile
-      working-directory: samples/snapshot
+      working-directory: samples
