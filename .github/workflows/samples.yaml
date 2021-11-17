@@ -22,6 +22,8 @@ jobs:
     - uses: actions/setup-java@v1
       with:
         java-version: ${{matrix.java}}
+    - name: Compile Spanner
+      run: mvn clean install
     - name: Compile samples
       run: mvn compile
       working-directory: samples/snapshot
