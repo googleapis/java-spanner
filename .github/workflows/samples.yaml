@@ -24,4 +24,4 @@ jobs:
         java-version: ${{matrix.java}}
     - name: Compile samples
       run: mvn compile
-      working-directory: samples/snippets
+      working-directory: samples/snapshot
