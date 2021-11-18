@@ -55,7 +55,7 @@ public class TracingSample {
 
     // Installs an exporter for stack driver stats.
     StackdriverStatsExporter.createAndRegister();
-    RpcViews.registerAllCumulativeViews();
+    RpcViews.registerAllGrpcViews();
     // Capture GFE Latency and GFE Header missing count.
     SpannerRpcViews.registerGfeLatencyAndHeaderMissingCountViews();
 
