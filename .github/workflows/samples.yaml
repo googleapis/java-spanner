@@ -6,9 +6,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: stCarolas/setup-maven@v4
-        with:
-          maven-version: 3.8.1
       - uses: actions/setup-java@v1
         with:
           java-version: 8
@@ -22,11 +19,11 @@ jobs:
         java: [8, 11]
     steps:
     - uses: actions/checkout@v2
-    - uses: stCarolas/setup-maven@v4
-      with:
-        maven-version: 3.8.1
     - uses: actions/setup-java@v1
       with:
         java-version: ${{matrix.java}}
+    - name: Compile Spanner
+      run: mvn clean install
     - name: Compile samples
-      run: mvn -Penable-samples compile
+      run: mvn compile
+      working-directory: samples
