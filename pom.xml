@@ -125,13 +125,13 @@
   </dependencyManagement>
 
   <modules>
-    <module>proto-google-cloud-spanner-admin-instance-v1</module>
-    <module>proto-google-cloud-spanner-v1</module>
-    <module>proto-google-cloud-spanner-admin-database-v1</module>
+    <module>google-cloud-spanner</module>
     <module>grpc-google-cloud-spanner-v1</module>
     <module>grpc-google-cloud-spanner-admin-instance-v1</module>
     <module>grpc-google-cloud-spanner-admin-database-v1</module>
-    <module>google-cloud-spanner</module>
+    <module>proto-google-cloud-spanner-admin-instance-v1</module>
+    <module>proto-google-cloud-spanner-v1</module>
+    <module>proto-google-cloud-spanner-admin-database-v1</module>
     <module>google-cloud-spanner-bom</module>
   </modules>
 
