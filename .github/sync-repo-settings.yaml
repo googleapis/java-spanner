@@ -19,6 +19,7 @@ branchProtectionRules:
       - checkstyle
       - compile (8)
       - compile (11)
+      - OwlBot Post Processor
   - pattern: 3.1.x
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
