@@ -178,12 +178,16 @@ public class ITBackupTest {
 
   @After
   public void tearDown() throws Exception {
+    logger.info("Starting test teardown");
     for (String backup : backups) {
+      logger.info(String.format("Waiting for optimize operation for backup %s to finish", backup));
       waitForDbOperations(backup);
+      logger.info(String.format("Deleting backup %s", backup));
       dbAdminClient.deleteBackup(testHelper.getInstanceId().getInstance(), backup);
     }
     backups.clear();
     for (String db : databases) {
+      logger.info(String.format("Dropping database %s", db));
       dbAdminClient.dropDatabase(testHelper.getInstanceId().getInstance(), db);
     }
   }
