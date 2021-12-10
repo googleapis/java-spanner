@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.testing.TimestampHelper.afterDays;
 import static com.google.cloud.spanner.testing.TimestampHelper.afterMinutes;
 import static com.google.cloud.spanner.testing.TimestampHelper.daysAgo;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
@@ -43,9 +44,9 @@ import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.SlowTest;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -99,7 +100,9 @@ import org.junit.runners.JUnit4;
  * Integration tests creating, reading, updating and deleting backups. This test class combines
  * several tests into one long test to reduce the total execution time.
  */
-@Category(SlowTest.class)
+// TODO: Move back to SlowTest when has been verified that the test works.
+// @Category(SlowTest.class)
+@Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITBackupTest {
   private static final long DATABASE_TIMEOUT_MINUTES = 5;
@@ -224,7 +227,6 @@ public class ITBackupTest {
 
   @Test
   public void testBackups() throws InterruptedException, ExecutionException, TimeoutException {
-    // Create two test databases in parallel.
     final String db1Id = testHelper.getUniqueDatabaseId() + "_db1";
     final Database sourceDatabase1 =
         dbAdminClient
@@ -237,24 +239,14 @@ public class ITBackupTest {
             sourceDatabase1,
             Collections.singletonList(
                 "CREATE TABLE FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
-    String db2Id = testHelper.getUniqueDatabaseId() + "_db2";
-    logger.info(String.format("Creating test database %s", db2Id));
-    OperationFuture<Database, CreateDatabaseMetadata> dbOp2 =
-        dbAdminClient.createDatabase(
-            testHelper.getInstanceId().getInstance(),
-            testHelper.getUniqueDatabaseId() + "_db2",
-            Collections.singletonList(
-                "CREATE TABLE BAR (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
-    // Make sure all databases are created before we try to create any backups.
+    // Make sure the database has been created before we try to create a backup.
     Database db1 = dbOp1.get(DATABASE_TIMEOUT_MINUTES, TimeUnit.MINUTES);
-    Database db2 = dbOp2.get(DATABASE_TIMEOUT_MINUTES, TimeUnit.MINUTES);
     databases.add(db1.getId().getDatabase());
-    databases.add(db2.getId().getDatabase());
-    // Insert some data into db2 to make sure the backup will have a size>0.
-    DatabaseClient client = testHelper.getDatabaseClient(db2);
+    // Insert some data to make sure the backup will have a size>0.
+    DatabaseClient client = testHelper.getDatabaseClient(db1);
     client.writeAtLeastOnce(
         Collections.singletonList(
-            Mutation.newInsertOrUpdateBuilder("BAR")
+            Mutation.newInsertOrUpdateBuilder("FOO")
                 .set("ID")
                 .to(1L)
                 .set("NAME")
@@ -264,68 +256,50 @@ public class ITBackupTest {
     // Verifies that the database encryption has been properly set
     testDatabaseEncryption(db1, keyName);
 
-    // Create two backups in parallel.
+    // Create a backup of the database.
     String backupId1 = testHelper.getUniqueBackupId() + "_bck1";
-    String backupId2 = testHelper.getUniqueBackupId() + "_bck2";
     Timestamp expireTime = afterDays(7);
     Timestamp versionTime = getCurrentTimestamp(client);
-    logger.info(String.format("Creating backups %s and %s in parallel", backupId1, backupId2));
+    logger.info(String.format("Creating backup %s", backupId1));
     // This backup has the version time specified as the server's current timestamp
     // This backup is encrypted with a customer managed key
+    // The expiry time is 7 days in the future.
     final Backup backupToCreate1 =
         dbAdminClient
             .newBackupBuilder(BackupId.of(projectId, instanceId, backupId1))
             .setDatabase(db1.getId())
             .setExpireTime(expireTime)
             .setVersionTime(versionTime)
+            .setExpireTime(expireTime)
             .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(keyName))
             .build();
-    // This backup has no version time specified
-    final Backup backupToCreate2 =
-        dbAdminClient
-            .newBackupBuilder(BackupId.of(projectId, instanceId, backupId2))
-            .setDatabase(db2.getId())
-            .setExpireTime(expireTime)
-            .build();
     OperationFuture<Backup, CreateBackupMetadata> op1 = dbAdminClient.createBackup(backupToCreate1);
-    OperationFuture<Backup, CreateBackupMetadata> op2 = dbAdminClient.createBackup(backupToCreate2);
     backups.add(backupId1);
-    backups.add(backupId2);
 
     // Execute metadata tests as part of this integration test to reduce total execution time.
-    testMetadata(op1, op2, backupId1, backupId2, db1, db2);
+    testMetadata(op1, backupId1, db1);
 
-    // Ensure both backups have been created before we proceed.
-    logger.info("Waiting for backup operations to finish");
+    // Ensure that the backup has been created before we proceed.
+    logger.info("Waiting for backup operation to finish");
     Backup backup1;
-    Backup backup2;
     Stopwatch watch = Stopwatch.createStarted();
     try {
       backup1 = op1.get(6L, TimeUnit.MINUTES);
-      backup2 = op2.get(Math.max(1L, 6L - watch.elapsed(TimeUnit.MINUTES)), TimeUnit.MINUTES);
     } catch (TimeoutException e) {
       logger.warning(
-          "Waiting for backup operations to finish timed out. Getting long-running operations.");
+          "Waiting for backup operation to finish timed out. Getting long-running operations.");
       while (watch.elapsed(TimeUnit.MINUTES) < 12L
-          && (!dbAdminClient.getOperation(op1.getName()).getDone()
-              || !dbAdminClient.getOperation(op2.getName()).getDone())) {
+          && !dbAdminClient.getOperation(op1.getName()).getDone()) {
         Thread.sleep(10_000L);
       }
       if (!dbAdminClient.getOperation(op1.getName()).getDone()) {
         logger.warning(String.format("Operation %s still not finished", op1.getName()));
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.DEADLINE_EXCEEDED,
-            "Backup1 still not finished. Test is giving up waiting for it.");
-      }
-      if (!dbAdminClient.getOperation(op2.getName()).getDone()) {
-        logger.warning(String.format("Operation %s still not finished", op2.getName()));
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.DEADLINE_EXCEEDED,
-            "Backup2 still not finished. Test is giving up waiting for it.");
+            "Backup still not finished. Test is giving up waiting for it.");
       }
       logger.info("Long-running operations finished. Getting backups by id.");
       backup1 = dbAdminClient.getBackup(instance.getId().getInstance(), backupId1);
-      backup2 = dbAdminClient.getBackup(instance.getId().getInstance(), backupId2);
     }
 
     // Verifies that backup version time is the specified one
@@ -347,7 +321,7 @@ public class ITBackupTest {
     // Test listing operations.
     // List all backups.
     logger.info("Listing all backups");
-    assertThat(instance.listBackups().iterateAll()).containsAtLeast(backup1, backup2);
+    assertThat(instance.listBackups().iterateAll()).contains(backup1);
     // List all backups whose names contain 'bck1'.
     logger.info("Listing backups with name bck1");
     assertThat(
@@ -359,7 +333,7 @@ public class ITBackupTest {
     logger.info("Listing ready backups");
     Iterable<Backup> readyBackups =
         dbAdminClient.listBackups(instanceId, Options.filter("state:READY")).iterateAll();
-    assertThat(readyBackups).containsAtLeast(backup1, backup2);
+    assertThat(readyBackups).contains(backup1);
     // List all backups for databases whose names contain 'db1'.
     logger.info("Listing backups for database db1");
     assertThat(
@@ -375,25 +349,23 @@ public class ITBackupTest {
             dbAdminClient
                 .listBackups(instanceId, Options.filter(String.format("create_time<\"%s\"", ts)))
                 .iterateAll())
-        .containsAtLeast(backup1, backup2);
+        .contains(backup1);
     // List all backups with a size > 0.
     logger.info("Listing backups with size>0");
     assertThat(dbAdminClient.listBackups(instanceId, Options.filter("size_bytes>0")).iterateAll())
-        .contains(backup2);
-    assertThat(dbAdminClient.listBackups(instanceId, Options.filter("size_bytes>0")).iterateAll())
-        .doesNotContain(backup1);
+        .contains(backup1);
 
     // Test pagination.
-    testPagination(2);
+    testPagination(1);
     logger.info("Finished listBackup tests");
 
     // Execute other tests as part of this integration test to reduce total execution time.
-    testGetBackup(db2, backupId2, expireTime);
+    testGetBackup(db1, backupId1, expireTime);
     testUpdateBackup(backup1);
     testCreateInvalidExpirationDate(db1);
     testRestore(backup1, versionTime, keyName);
 
-    testDelete(backupId2);
+    testDelete(backupId1);
     testCancelBackupOperation(db1);
     // Finished all tests.
     logger.info("Finished all backup tests");
@@ -614,30 +586,16 @@ public class ITBackupTest {
   }
 
   private void testMetadata(
-      OperationFuture<Backup, CreateBackupMetadata> op1,
-      OperationFuture<Backup, CreateBackupMetadata> op2,
-      String backupId1,
-      String backupId2,
-      Database db1,
-      Database db2)
+      OperationFuture<Backup, CreateBackupMetadata> operation, String backupId, Database database)
       throws InterruptedException, ExecutionException {
 
-    logger.info("Getting operation metadata 1");
-    CreateBackupMetadata metadata1 = op1.getMetadata().get();
-    logger.info("Getting operation metadata 2");
-    CreateBackupMetadata metadata2 = op2.getMetadata().get();
+    logger.info("Getting operation metadata");
+    CreateBackupMetadata metadata1 = operation.getMetadata().get();
     String expectedOperationName1 =
-        String.format(EXPECTED_OP_NAME_FORMAT, testHelper.getInstanceId().getName(), backupId1);
-    String expectedOperationName2 =
-        String.format(EXPECTED_OP_NAME_FORMAT, testHelper.getInstanceId().getName(), backupId2);
-    assertThat(op1.getName()).startsWith(expectedOperationName1);
-    assertThat(op2.getName()).startsWith(expectedOperationName2);
-    assertThat(metadata1.getDatabase()).isEqualTo(db1.getId().getName());
-    assertThat(metadata2.getDatabase()).isEqualTo(db2.getId().getName());
-    assertThat(metadata1.getName())
-        .isEqualTo(BackupId.of(testHelper.getInstanceId(), backupId1).getName());
-    assertThat(metadata2.getName())
-        .isEqualTo(BackupId.of(testHelper.getInstanceId(), backupId2).getName());
+        String.format(EXPECTED_OP_NAME_FORMAT, testHelper.getInstanceId().getName(), backupId);
+    assertEquals(expectedOperationName1, operation.getName());
+    assertEquals(database.getId().getName(), metadata1.getDatabase());
+    assertEquals(BackupId.of(testHelper.getInstanceId(), backupId).getName(), metadata1.getName());
     logger.info("Finished metadata tests");
   }
 
