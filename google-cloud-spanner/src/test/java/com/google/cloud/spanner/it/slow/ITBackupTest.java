@@ -49,13 +49,11 @@ import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
-import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.longrunning.Operation;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -282,26 +280,27 @@ public class ITBackupTest {
 
     // Ensure that the backup has been created before we proceed.
     logger.info("Waiting for backup operation to finish");
-    Backup backup;
-    Stopwatch watch = Stopwatch.createStarted();
-    try {
-      backup = operation.get(6L, TimeUnit.MINUTES);
-    } catch (TimeoutException e) {
-      logger.warning(
-          "Waiting for backup operation to finish timed out. Getting long-running operations.");
-      while (watch.elapsed(TimeUnit.MINUTES) < 12L
-          && !dbAdminClient.getOperation(operation.getName()).getDone()) {
-        Thread.sleep(10_000L);
-      }
-      if (!dbAdminClient.getOperation(operation.getName()).getDone()) {
-        logger.warning(String.format("Operation %s still not finished", operation.getName()));
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.DEADLINE_EXCEEDED,
-            "Backup still not finished. Test is giving up waiting for it.");
-      }
-      logger.info("Long-running operations finished. Getting backups by id.");
-      backup = dbAdminClient.getBackup(instance.getId().getInstance(), backupId);
-    }
+    Backup backup = operation.get(18L, TimeUnit.MINUTES);
+    //    Stopwatch watch = Stopwatch.createStarted();
+    //    try {
+    //      backup = operation.get(6L, TimeUnit.MINUTES);
+    //    } catch (TimeoutException e) {
+    //      logger.warning(
+    //          "Waiting for backup operation to finish timed out. Getting long-running
+    // operations.");
+    //      while (watch.elapsed(TimeUnit.MINUTES) < 12L
+    //          && !dbAdminClient.getOperation(operation.getName()).getDone()) {
+    //        Thread.sleep(10_000L);
+    //      }
+    //      if (!dbAdminClient.getOperation(operation.getName()).getDone()) {
+    //        logger.warning(String.format("Operation %s still not finished", operation.getName()));
+    //        throw SpannerExceptionFactory.newSpannerException(
+    //            ErrorCode.DEADLINE_EXCEEDED,
+    //            "Backup still not finished. Test is giving up waiting for it.");
+    //      }
+    //      logger.info("Long-running operations finished. Getting backups by id.");
+    //      backup = dbAdminClient.getBackup(instance.getId().getInstance(), backupId);
+    //    }
 
     // Verifies that backup version time is the specified one
     testBackupVersionTime(backup, versionTime);
