@@ -227,23 +227,23 @@ public class ITBackupTest {
 
   @Test
   public void testBackups() throws InterruptedException, ExecutionException, TimeoutException {
-    final String db1Id = testHelper.getUniqueDatabaseId() + "_db1";
-    final Database sourceDatabase1 =
+    final String databaseId = testHelper.getUniqueDatabaseId() + "_db1";
+    final Database sourceDatabase =
         dbAdminClient
-            .newDatabaseBuilder(DatabaseId.of(projectId, instanceId, db1Id))
+            .newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
             .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(keyName))
             .build();
-    logger.info(String.format("Creating test database %s", db1Id));
-    OperationFuture<Database, CreateDatabaseMetadata> dbOp1 =
+    logger.info(String.format("Creating test database %s", databaseId));
+    OperationFuture<Database, CreateDatabaseMetadata> dbOp =
         dbAdminClient.createDatabase(
-            sourceDatabase1,
+            sourceDatabase,
             Collections.singletonList(
                 "CREATE TABLE FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
     // Make sure the database has been created before we try to create a backup.
-    Database db1 = dbOp1.get(DATABASE_TIMEOUT_MINUTES, TimeUnit.MINUTES);
-    databases.add(db1.getId().getDatabase());
+    Database database = dbOp.get(DATABASE_TIMEOUT_MINUTES, TimeUnit.MINUTES);
+    databases.add(database.getId().getDatabase());
     // Insert some data to make sure the backup will have a size>0.
-    DatabaseClient client = testHelper.getDatabaseClient(db1);
+    DatabaseClient client = testHelper.getDatabaseClient(database);
     client.writeAtLeastOnce(
         Collections.singletonList(
             Mutation.newInsertOrUpdateBuilder("FOO")
@@ -254,58 +254,59 @@ public class ITBackupTest {
                 .build()));
 
     // Verifies that the database encryption has been properly set
-    testDatabaseEncryption(db1, keyName);
+    testDatabaseEncryption(database, keyName);
 
     // Create a backup of the database.
-    String backupId1 = testHelper.getUniqueBackupId() + "_bck1";
+    String backupId = testHelper.getUniqueBackupId() + "_bck1";
     Timestamp expireTime = afterDays(7);
     Timestamp versionTime = getCurrentTimestamp(client);
-    logger.info(String.format("Creating backup %s", backupId1));
+    logger.info(String.format("Creating backup %s", backupId));
     // This backup has the version time specified as the server's current timestamp
     // This backup is encrypted with a customer managed key
     // The expiry time is 7 days in the future.
-    final Backup backupToCreate1 =
+    final Backup backupToCreate =
         dbAdminClient
-            .newBackupBuilder(BackupId.of(projectId, instanceId, backupId1))
-            .setDatabase(db1.getId())
+            .newBackupBuilder(BackupId.of(projectId, instanceId, backupId))
+            .setDatabase(database.getId())
             .setExpireTime(expireTime)
             .setVersionTime(versionTime)
             .setExpireTime(expireTime)
             .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(keyName))
             .build();
-    OperationFuture<Backup, CreateBackupMetadata> op1 = dbAdminClient.createBackup(backupToCreate1);
-    backups.add(backupId1);
+    OperationFuture<Backup, CreateBackupMetadata> operation =
+        dbAdminClient.createBackup(backupToCreate);
+    backups.add(backupId);
 
     // Execute metadata tests as part of this integration test to reduce total execution time.
-    testMetadata(op1, backupId1, db1);
+    testMetadata(operation, backupId, database);
 
     // Ensure that the backup has been created before we proceed.
     logger.info("Waiting for backup operation to finish");
-    Backup backup1;
+    Backup backup;
     Stopwatch watch = Stopwatch.createStarted();
     try {
-      backup1 = op1.get(6L, TimeUnit.MINUTES);
+      backup = operation.get(6L, TimeUnit.MINUTES);
     } catch (TimeoutException e) {
       logger.warning(
           "Waiting for backup operation to finish timed out. Getting long-running operations.");
       while (watch.elapsed(TimeUnit.MINUTES) < 12L
-          && !dbAdminClient.getOperation(op1.getName()).getDone()) {
+          && !dbAdminClient.getOperation(operation.getName()).getDone()) {
         Thread.sleep(10_000L);
       }
-      if (!dbAdminClient.getOperation(op1.getName()).getDone()) {
-        logger.warning(String.format("Operation %s still not finished", op1.getName()));
+      if (!dbAdminClient.getOperation(operation.getName()).getDone()) {
+        logger.warning(String.format("Operation %s still not finished", operation.getName()));
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.DEADLINE_EXCEEDED,
             "Backup still not finished. Test is giving up waiting for it.");
       }
       logger.info("Long-running operations finished. Getting backups by id.");
-      backup1 = dbAdminClient.getBackup(instance.getId().getInstance(), backupId1);
+      backup = dbAdminClient.getBackup(instance.getId().getInstance(), backupId);
     }
 
     // Verifies that backup version time is the specified one
-    testBackupVersionTime(backup1, versionTime);
+    testBackupVersionTime(backup, versionTime);
     // Verifies that backup encryption has been properly set
-    testBackupEncryption(backup1, keyName);
+    testBackupEncryption(backup, keyName);
 
     // Insert some more data into db2 to get a timestamp from the server.
     Timestamp commitTs =
@@ -321,27 +322,28 @@ public class ITBackupTest {
     // Test listing operations.
     // List all backups.
     logger.info("Listing all backups");
-    assertThat(instance.listBackups().iterateAll()).contains(backup1);
+    assertThat(instance.listBackups().iterateAll()).contains(backup);
     // List all backups whose names contain 'bck1'.
     logger.info("Listing backups with name bck1");
     assertThat(
             dbAdminClient
                 .listBackups(
-                    instanceId, Options.filter(String.format("name:%s", backup1.getId().getName())))
+                    instanceId, Options.filter(String.format("name:%s", backup.getId().getName())))
                 .iterateAll())
-        .containsExactly(backup1);
+        .containsExactly(backup);
     logger.info("Listing ready backups");
     Iterable<Backup> readyBackups =
         dbAdminClient.listBackups(instanceId, Options.filter("state:READY")).iterateAll();
-    assertThat(readyBackups).contains(backup1);
+    assertThat(readyBackups).contains(backup);
     // List all backups for databases whose names contain 'db1'.
     logger.info("Listing backups for database db1");
     assertThat(
             dbAdminClient
                 .listBackups(
-                    instanceId, Options.filter(String.format("database:%s", db1.getId().getName())))
+                    instanceId,
+                    Options.filter(String.format("database:%s", database.getId().getName())))
                 .iterateAll())
-        .containsExactly(backup1);
+        .containsExactly(backup);
     // List all backups that were created before a certain time.
     Timestamp ts = Timestamp.ofTimeSecondsAndNanos(commitTs.getSeconds(), 0);
     logger.info(String.format("Listing backups created before %s", ts));
@@ -349,24 +351,24 @@ public class ITBackupTest {
             dbAdminClient
                 .listBackups(instanceId, Options.filter(String.format("create_time<\"%s\"", ts)))
                 .iterateAll())
-        .contains(backup1);
+        .contains(backup);
     // List all backups with a size > 0.
     logger.info("Listing backups with size>0");
     assertThat(dbAdminClient.listBackups(instanceId, Options.filter("size_bytes>0")).iterateAll())
-        .contains(backup1);
+        .contains(backup);
 
     // Test pagination.
     testPagination(1);
     logger.info("Finished listBackup tests");
 
     // Execute other tests as part of this integration test to reduce total execution time.
-    testGetBackup(db1, backupId1, expireTime);
-    testUpdateBackup(backup1);
-    testCreateInvalidExpirationDate(db1);
-    testRestore(backup1, versionTime, keyName);
+    testGetBackup(database, backupId, expireTime);
+    testUpdateBackup(backup);
+    testCreateInvalidExpirationDate(database);
+    testRestore(backup, versionTime, keyName);
 
-    testDelete(backupId1);
-    testCancelBackupOperation(db1);
+    testDelete(backupId);
+    testCancelBackupOperation(database);
     // Finished all tests.
     logger.info("Finished all backup tests");
   }
@@ -593,7 +595,7 @@ public class ITBackupTest {
     CreateBackupMetadata metadata1 = operation.getMetadata().get();
     String expectedOperationName1 =
         String.format(EXPECTED_OP_NAME_FORMAT, testHelper.getInstanceId().getName(), backupId);
-    assertEquals(expectedOperationName1, operation.getName());
+    assertThat(operation.getName()).startsWith(expectedOperationName1);
     assertEquals(database.getId().getName(), metadata1.getDatabase());
     assertEquals(BackupId.of(testHelper.getInstanceId(), backupId).getName(), metadata1.getName());
     logger.info("Finished metadata tests");
