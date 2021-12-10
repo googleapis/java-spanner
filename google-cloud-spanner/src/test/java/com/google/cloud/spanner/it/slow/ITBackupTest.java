@@ -281,37 +281,17 @@ public class ITBackupTest {
     // Ensure that the backup has been created before we proceed.
     logger.info("Waiting for backup operation to finish");
     Backup backup = operation.get(18L, TimeUnit.MINUTES);
-    //    Stopwatch watch = Stopwatch.createStarted();
-    //    try {
-    //      backup = operation.get(6L, TimeUnit.MINUTES);
-    //    } catch (TimeoutException e) {
-    //      logger.warning(
-    //          "Waiting for backup operation to finish timed out. Getting long-running
-    // operations.");
-    //      while (watch.elapsed(TimeUnit.MINUTES) < 12L
-    //          && !dbAdminClient.getOperation(operation.getName()).getDone()) {
-    //        Thread.sleep(10_000L);
-    //      }
-    //      if (!dbAdminClient.getOperation(operation.getName()).getDone()) {
-    //        logger.warning(String.format("Operation %s still not finished", operation.getName()));
-    //        throw SpannerExceptionFactory.newSpannerException(
-    //            ErrorCode.DEADLINE_EXCEEDED,
-    //            "Backup still not finished. Test is giving up waiting for it.");
-    //      }
-    //      logger.info("Long-running operations finished. Getting backups by id.");
-    //      backup = dbAdminClient.getBackup(instance.getId().getInstance(), backupId);
-    //    }
 
     // Verifies that backup version time is the specified one
     testBackupVersionTime(backup, versionTime);
     // Verifies that backup encryption has been properly set
     testBackupEncryption(backup, keyName);
 
-    // Insert some more data into db2 to get a timestamp from the server.
+    // Insert some more data into the database to get a timestamp from the server.
     Timestamp commitTs =
         client.writeAtLeastOnce(
             Collections.singletonList(
-                Mutation.newInsertOrUpdateBuilder("BAR")
+                Mutation.newInsertOrUpdateBuilder("FOO")
                     .set("ID")
                     .to(2L)
                     .set("NAME")
