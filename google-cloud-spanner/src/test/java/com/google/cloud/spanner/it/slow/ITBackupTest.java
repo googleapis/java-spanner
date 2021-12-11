@@ -22,6 +22,7 @@ import static com.google.cloud.spanner.testing.TimestampHelper.afterMinutes;
 import static com.google.cloud.spanner.testing.TimestampHelper.daysAgo;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
@@ -54,7 +55,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterables;
+import com.google.common.base.Stopwatch;
 import com.google.longrunning.Operation;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
@@ -85,6 +86,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.StreamSupport;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -104,8 +106,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ITBackupTest {
   private static final long DATABASE_TIMEOUT_MINUTES = 5;
-  private static final long RESTORE_TIMEOUT_MINUTES = 20;
-  private static final long BACKUP_TIMEOUT_MINUTES = 30;
   private static final Logger logger = Logger.getLogger(ITBackupTest.class.getName());
   private static final String EXPECTED_OP_NAME_FORMAT = "%s/backups/%s/operations/";
   private static final String KMS_KEY_NAME_PROPERTY = "spanner.testenv.kms_key.name";
@@ -113,11 +113,10 @@ public class ITBackupTest {
   private static String keyName;
 
   private DatabaseAdminClient dbAdminClient;
-  private InstanceAdminClient instanceAdminClient;
   private Instance instance;
   private RemoteSpannerHelper testHelper;
-  private List<String> databases = new ArrayList<>();
-  private List<String> backups = new ArrayList<>();
+  private final List<String> databases = new ArrayList<>();
+  private final List<String> backups = new ArrayList<>();
   private String projectId;
   private String instanceId;
 
@@ -135,7 +134,7 @@ public class ITBackupTest {
     logger.info("Setting up tests");
     testHelper = env.getTestHelper();
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
-    instanceAdminClient = testHelper.getClient().getInstanceAdminClient();
+    InstanceAdminClient instanceAdminClient = testHelper.getClient().getInstanceAdminClient();
     instance = instanceAdminClient.getInstance(testHelper.getInstanceId().getInstance());
     projectId = testHelper.getInstanceId().getProject();
     instanceId = testHelper.getInstanceId().getInstance();
@@ -164,7 +163,7 @@ public class ITBackupTest {
               logger.warning(
                   String.format(
                       "Cancelling test backup operation %s that was started at %s",
-                      operation.getName(), startTime.toString()));
+                      operation.getName(), startTime));
               dbAdminClient.cancelOperation(operation.getName());
             }
           }
@@ -199,6 +198,7 @@ public class ITBackupTest {
       boolean allDbOpsDone = false;
       while (!allDbOpsDone) {
         allDbOpsDone = true;
+        assertNotNull(backupMetadata.getProto());
         for (String referencingDb : backupMetadata.getProto().getReferencingDatabasesList()) {
           String filter =
               String.format(
@@ -341,7 +341,7 @@ public class ITBackupTest {
         .contains(backup);
 
     // Test pagination.
-    testPagination(1);
+    testPagination();
     logger.info("Finished listBackup tests");
 
     // Execute other tests as part of this integration test to reduce total execution time.
@@ -369,7 +369,6 @@ public class ITBackupTest {
     // operation.
 
     List<Database> databases = new ArrayList<>();
-    List<Backup> backups = new ArrayList<>();
     String initialDatabaseId;
     Timestamp initialDbCreateTime;
 
@@ -401,9 +400,9 @@ public class ITBackupTest {
         new InjectErrorInterceptorProvider("CreateBackup");
     options =
         testHelper.getOptions().toBuilder().setInterceptorProvider(createBackupInterceptor).build();
+    String backupId = String.format("test-bck-%08d", new Random().nextInt(100000000));
     try (Spanner spanner = options.getService()) {
       String databaseId = databases.get(0).getId().getDatabase();
-      String backupId = String.format("test-bck-%08d", new Random().nextInt(100000000));
       DatabaseAdminClient client = spanner.getDatabaseAdminClient();
       OperationFuture<Backup, CreateBackupMetadata> op =
           client.createBackup(
@@ -412,57 +411,50 @@ public class ITBackupTest {
               databaseId,
               Timestamp.ofTimeSecondsAndNanos(
                   Timestamp.now().getSeconds() + TimeUnit.SECONDS.convert(7L, TimeUnit.DAYS), 0));
-      backups.add(op.get(BACKUP_TIMEOUT_MINUTES, TimeUnit.MINUTES));
+      Stopwatch watch = Stopwatch.createStarted();
+      while (createBackupInterceptor.methodCount.get() < 1
+          && createBackupInterceptor.getOperationCount.get() < 0
+          && watch.elapsed(TimeUnit.SECONDS) < 120) {
+        //noinspection BusyWait
+        Thread.sleep(5000L);
+      }
+      client.cancelOperation(op.getName());
       // Assert that the CreateBackup RPC was called only once, and that the operation tracking
       // was resumed through a GetOperation call.
-      assertThat(createDbInterceptor.methodCount.get()).isEqualTo(1);
-      assertThat(createDbInterceptor.getOperationCount.get()).isAtLeast(1);
+      assertThat(createBackupInterceptor.methodCount.get()).isEqualTo(1);
+      assertThat(createBackupInterceptor.getOperationCount.get()).isAtLeast(1);
     }
 
     // RestoreBackup
-    int attempts = 0;
-    while (true) {
-      InjectErrorInterceptorProvider restoreBackupInterceptor =
-          new InjectErrorInterceptorProvider("RestoreBackup");
-      options =
-          testHelper
-              .getOptions()
-              .toBuilder()
-              .setInterceptorProvider(restoreBackupInterceptor)
-              .build();
-      try (Spanner spanner = options.getService()) {
-        String backupId = backups.get(0).getId().getBackup();
-        String restoredDbId = testHelper.getUniqueDatabaseId();
-        DatabaseAdminClient client = spanner.getDatabaseAdminClient();
-        OperationFuture<Database, RestoreDatabaseMetadata> op =
-            client.restoreDatabase(
-                testHelper.getInstanceId().getInstance(),
-                backupId,
-                testHelper.getInstanceId().getInstance(),
-                restoredDbId);
-        databases.add(op.get(RESTORE_TIMEOUT_MINUTES, TimeUnit.MINUTES));
-        // Assert that the RestoreDatabase RPC was called only once, and that the operation
-        // tracking was resumed through a GetOperation call.
-        assertThat(createDbInterceptor.methodCount.get()).isEqualTo(1);
-        assertThat(createDbInterceptor.getOperationCount.get()).isAtLeast(1);
-        break;
-      } catch (ExecutionException e) {
-        if (e.getCause() instanceof SpannerException
-            && ((SpannerException) e.getCause()).getErrorCode() == ErrorCode.FAILED_PRECONDITION
-            && e.getCause()
-                .getMessage()
-                .contains("Please retry the operation once the pending restores complete")) {
-          attempts++;
-          if (attempts == 10) {
-            // Still same error after 10 attempts. Ignore.
-            break;
-          }
-          // wait and then retry.
-          Thread.sleep(60_000L);
-        } else {
-          throw e;
-        }
+    InjectErrorInterceptorProvider restoreBackupInterceptor =
+        new InjectErrorInterceptorProvider("RestoreBackup");
+    options =
+        testHelper
+            .getOptions()
+            .toBuilder()
+            .setInterceptorProvider(restoreBackupInterceptor)
+            .build();
+    try (Spanner spanner = options.getService()) {
+      String restoredDbId = testHelper.getUniqueDatabaseId();
+      DatabaseAdminClient client = spanner.getDatabaseAdminClient();
+      OperationFuture<Database, RestoreDatabaseMetadata> op =
+          client.restoreDatabase(
+              testHelper.getInstanceId().getInstance(),
+              backupId,
+              testHelper.getInstanceId().getInstance(),
+              restoredDbId);
+      Stopwatch watch = Stopwatch.createStarted();
+      while (restoreBackupInterceptor.methodCount.get() < 1
+          && restoreBackupInterceptor.getOperationCount.get() < 0
+          && watch.elapsed(TimeUnit.SECONDS) < 120) {
+        //noinspection BusyWait
+        Thread.sleep(5000L);
       }
+      client.cancelOperation(op.getName());
+      // Assert that the RestoreDatabase RPC was called only once, and that the operation
+      // tracking was resumed through a GetOperation call.
+      assertThat(restoreBackupInterceptor.methodCount.get()).isEqualTo(1);
+      assertThat(restoreBackupInterceptor.getOperationCount.get()).isAtLeast(1);
     }
 
     // Create another database with the exact same name as the first database.
@@ -529,10 +521,10 @@ public class ITBackupTest {
     getOrThrow(dbAdminClient.createBackup(backupToCreate));
   }
 
-  private <T> T getOrThrow(OperationFuture<T, ?> operation)
+  private <T> void getOrThrow(OperationFuture<T, ?> operation)
       throws InterruptedException, ExecutionException {
     try {
-      return operation.get();
+      operation.get();
     } catch (ExecutionException e) {
       if (e.getCause() instanceof SpannerException) {
         throw (SpannerException) e.getCause();
@@ -667,7 +659,7 @@ public class ITBackupTest {
     assertThat(backup.getExpireTime()).isEqualTo(tomorrow);
   }
 
-  private void testPagination(int expectedMinimumTotalBackups) {
+  private void testPagination() {
     logger.info("Listing backups using pagination");
 
     // First get all current backups without using pagination so we can compare that list with
@@ -711,7 +703,7 @@ public class ITBackupTest {
       assertThat(page.getValues()).hasSize(1);
       numBackups++;
     }
-    assertThat(numBackups).isAtLeast(expectedMinimumTotalBackups);
+    assertThat(numBackups).isAtLeast(1);
   }
 
   private void testDelete(String backupId) throws InterruptedException {
@@ -772,6 +764,7 @@ public class ITBackupTest {
               String.format(
                   "Restoring backup %s to database %s must wait because of other pending restore operation",
                   backup.getId().getBackup(), restoredDb));
+          //noinspection BusyWait
           Thread.sleep(60_000L);
         } else {
           throw e;
@@ -798,6 +791,7 @@ public class ITBackupTest {
 
     // Reloads the database
     final Database reloadedDatabase = database.reload();
+    assertNotNull(reloadedDatabase.getProto());
     assertThat(
             Timestamp.fromProto(
                 reloadedDatabase.getProto().getRestoreInfo().getBackupInfo().getVersionTime()))
@@ -824,24 +818,22 @@ public class ITBackupTest {
   private void verifyRestoreOperations(
       final String backupOperationName, final String restoreOperationName) {
     assertThat(
-            Iterables.any(
-                instance.listBackupOperations().iterateAll(),
-                input -> input.getName().equals(backupOperationName)))
+            StreamSupport.stream(instance.listBackupOperations().iterateAll().spliterator(), false)
+                .anyMatch(input -> input.getName().equals(backupOperationName)))
         .isTrue();
     assertThat(
-            Iterables.any(
-                instance.listBackupOperations().iterateAll(),
-                input -> input.getName().equals(restoreOperationName)))
+            StreamSupport.stream(instance.listBackupOperations().iterateAll().spliterator(), false)
+                .anyMatch(input -> input.getName().equals(restoreOperationName)))
         .isFalse();
     assertThat(
-            Iterables.any(
-                instance.listDatabaseOperations().iterateAll(),
-                input -> input.getName().equals(backupOperationName)))
+            StreamSupport.stream(
+                    instance.listDatabaseOperations().iterateAll().spliterator(), false)
+                .anyMatch(input -> input.getName().equals(backupOperationName)))
         .isFalse();
     assertThat(
-            Iterables.any(
-                instance.listDatabaseOperations().iterateAll(),
-                input -> input.getName().equals(restoreOperationName)))
+            StreamSupport.stream(
+                    instance.listDatabaseOperations().iterateAll().spliterator(), false)
+                .anyMatch(input -> input.getName().equals(restoreOperationName)))
         .isTrue();
   }
 
