@@ -427,7 +427,7 @@ public class ITBackupTest {
 
     // RestoreBackup
     InjectErrorInterceptorProvider restoreBackupInterceptor =
-        new InjectErrorInterceptorProvider("RestoreBackup");
+        new InjectErrorInterceptorProvider("RestoreDatabase");
     options =
         testHelper
             .getOptions()
