@@ -105,6 +105,7 @@ import org.junit.runners.JUnit4;
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITBackupTest {
+  private static final long BACKUP_TIMEOUT_MINUTES = 30L;
   private static final long DATABASE_TIMEOUT_MINUTES = 5;
   private static final Logger logger = Logger.getLogger(ITBackupTest.class.getName());
   private static final String EXPECTED_OP_NAME_FORMAT = "%s/backups/%s/operations/";
@@ -284,7 +285,7 @@ public class ITBackupTest {
 
     // Ensure that the backup has been created before we proceed.
     logger.info("Waiting for backup operation to finish");
-    Backup backup = operation.get(18L, TimeUnit.MINUTES);
+    Backup backup = operation.get(BACKUP_TIMEOUT_MINUTES, TimeUnit.MINUTES);
 
     // Verifies that backup version time is the specified one
     testBackupVersionTime(backup, versionTime);
