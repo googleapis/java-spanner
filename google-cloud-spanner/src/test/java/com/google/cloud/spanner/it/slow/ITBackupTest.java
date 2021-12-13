@@ -414,7 +414,7 @@ public class ITBackupTest {
                   Timestamp.now().getSeconds() + TimeUnit.SECONDS.convert(7L, TimeUnit.DAYS), 0));
       Stopwatch watch = Stopwatch.createStarted();
       while (createBackupInterceptor.methodCount.get() < 1
-          && createBackupInterceptor.getOperationCount.get() < 0
+          && createBackupInterceptor.getOperationCount.get() < 1
           && watch.elapsed(TimeUnit.SECONDS) < 120) {
         //noinspection BusyWait
         Thread.sleep(5000L);
@@ -446,7 +446,7 @@ public class ITBackupTest {
               restoredDbId);
       Stopwatch watch = Stopwatch.createStarted();
       while (restoreBackupInterceptor.methodCount.get() < 1
-          && restoreBackupInterceptor.getOperationCount.get() < 0
+          && restoreBackupInterceptor.getOperationCount.get() < 1
           && watch.elapsed(TimeUnit.SECONDS) < 120) {
         //noinspection BusyWait
         Thread.sleep(5000L);
