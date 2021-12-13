@@ -88,6 +88,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
@@ -350,7 +351,6 @@ public class ITBackupTest {
     testCreateInvalidExpirationDate(database);
     testRestore(backup, versionTime, keyName);
 
-    testDelete(backupId);
     testCancelBackupOperation(database);
     // Finished all tests.
     logger.info("Finished all backup tests");
@@ -485,8 +485,33 @@ public class ITBackupTest {
     }
   }
 
+  @Test
+  public void test03_Delete() throws InterruptedException {
+    Assert.assertFalse("No backups created", backups.isEmpty());
+    String backupId = backups.get(0);
+    waitForDbOperations(backupId);
+    // Get the backup.
+    logger.info(String.format("Fetching backup %s", backupId));
+    Backup backup = instance.getBackup(backupId);
+    // Delete it.
+    logger.info(String.format("Deleting backup %s", backupId));
+    backup.delete();
+    // Try to get it again. This should cause a NOT_FOUND error.
+    try {
+      logger.info(String.format("Fetching non-existent backup %s", backupId));
+      instance.getBackup(backupId);
+      fail("Missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    }
+    // Try to delete the non-existent backup. This should be a no-op.
+    logger.info(String.format("Deleting non-existent backup %s", backupId));
+    backup.delete();
+    logger.info("Finished delete tests");
+  }
+
   @Test(expected = SpannerException.class)
-  public void test03_backupCreationWithVersionTimeTooFarInThePastFails() throws Exception {
+  public void test04_backupCreationWithVersionTimeTooFarInThePastFails() throws Exception {
     final Database testDatabase = testHelper.createTestDatabase();
     final DatabaseId databaseId = testDatabase.getId();
     final InstanceId instanceId = databaseId.getInstanceId();
@@ -505,7 +530,7 @@ public class ITBackupTest {
   }
 
   @Test(expected = SpannerException.class)
-  public void test04_backupCreationWithVersionTimeInTheFutureFails() throws Exception {
+  public void test05_backupCreationWithVersionTimeInTheFutureFails() throws Exception {
     final Database testDatabase = testHelper.createTestDatabase();
     final DatabaseId databaseId = testDatabase.getId();
     final InstanceId instanceId = databaseId.getInstanceId();
@@ -706,28 +731,6 @@ public class ITBackupTest {
       numBackups++;
     }
     assertThat(numBackups).isAtLeast(1);
-  }
-
-  private void testDelete(String backupId) throws InterruptedException {
-    waitForDbOperations(backupId);
-    // Get the backup.
-    logger.info(String.format("Fetching backup %s", backupId));
-    Backup backup = instance.getBackup(backupId);
-    // Delete it.
-    logger.info(String.format("Deleting backup %s", backupId));
-    backup.delete();
-    // Try to get it again. This should cause a NOT_FOUND error.
-    try {
-      logger.info(String.format("Fetching non-existent backup %s", backupId));
-      instance.getBackup(backupId);
-      fail("Missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
-    }
-    // Try to delete the non-existent backup. This should be a no-op.
-    logger.info(String.format("Deleting non-existent backup %s", backupId));
-    backup.delete();
-    logger.info("Finished delete tests");
   }
 
   private void testRestore(Backup backup, Timestamp versionTime, String expectedKey)
