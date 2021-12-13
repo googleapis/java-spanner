@@ -87,14 +87,15 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.junit.runners.MethodSorters;
 
 /**
  * Integration tests creating, reading, updating and deleting backups. This test class combines
@@ -104,6 +105,7 @@ import org.junit.runners.JUnit4;
 // @Category(SlowTest.class)
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ITBackupTest {
   private static final long BACKUP_TIMEOUT_MINUTES = 30L;
   private static final long DATABASE_TIMEOUT_MINUTES = 5;
@@ -113,25 +115,22 @@ public class ITBackupTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static String keyName;
 
-  private DatabaseAdminClient dbAdminClient;
-  private Instance instance;
-  private RemoteSpannerHelper testHelper;
-  private final List<String> databases = new ArrayList<>();
-  private final List<String> backups = new ArrayList<>();
-  private String projectId;
-  private String instanceId;
+  private static DatabaseAdminClient dbAdminClient;
+  private static Instance instance;
+  private static RemoteSpannerHelper testHelper;
+  private static final List<String> databases = new ArrayList<>();
+  private static final List<String> backups = new ArrayList<>();
+  private static String projectId;
+  private static String instanceId;
 
   @BeforeClass
-  public static void doNotRunOnEmulator() {
+  public static void setup() {
     assumeFalse("backups are not supported on the emulator", isUsingEmulator());
     keyName = System.getProperty(KMS_KEY_NAME_PROPERTY);
     Preconditions.checkNotNull(
         keyName,
         "Key name is null, please set a key to be used for this test. The necessary permissions should be grant to the spanner service account according to the CMEK user guide.");
-  }
 
-  @Before
-  public void setUp() {
     logger.info("Setting up tests");
     testHelper = env.getTestHelper();
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
@@ -176,8 +175,8 @@ public class ITBackupTest {
     logger.info("Finished checking existing test backup operations");
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @AfterClass
+  public static void tearDown() throws Exception {
     logger.info("Starting test teardown");
     for (String backup : backups) {
       logger.info(String.format("Waiting for optimize operation for backup %s to finish", backup));
@@ -192,7 +191,7 @@ public class ITBackupTest {
     }
   }
 
-  private void waitForDbOperations(String backupId) throws InterruptedException {
+  private static void waitForDbOperations(String backupId) throws InterruptedException {
     try {
       Backup backupMetadata =
           dbAdminClient.getBackup(testHelper.getInstanceId().getInstance(), backupId);
@@ -229,7 +228,7 @@ public class ITBackupTest {
   }
 
   @Test
-  public void testBackups() throws InterruptedException, ExecutionException, TimeoutException {
+  public void test01_Backups() throws InterruptedException, ExecutionException, TimeoutException {
     final String databaseId = testHelper.getUniqueDatabaseId() + "_db1";
     final Database sourceDatabase =
         dbAdminClient
@@ -358,7 +357,7 @@ public class ITBackupTest {
   }
 
   @Test
-  public void testRetryNonIdempotentRpcsReturningLongRunningOperations() throws Exception {
+  public void test02_RetryNonIdempotentRpcsReturningLongRunningOperations() throws Exception {
     assumeFalse(
         "Querying long-running operations is not supported on the emulator", isUsingEmulator());
 
@@ -427,39 +426,41 @@ public class ITBackupTest {
     }
 
     // RestoreBackup
-    InjectErrorInterceptorProvider restoreBackupInterceptor =
-        new InjectErrorInterceptorProvider("RestoreDatabase");
-    options =
-        testHelper
-            .getOptions()
-            .toBuilder()
-            .setInterceptorProvider(restoreBackupInterceptor)
-            .build();
-    try (Spanner spanner = options.getService()) {
-      String restoredDbId = testHelper.getUniqueDatabaseId();
-      DatabaseAdminClient client = spanner.getDatabaseAdminClient();
-      OperationFuture<Database, RestoreDatabaseMetadata> op =
-          client.restoreDatabase(
-              testHelper.getInstanceId().getInstance(),
-              backupId,
-              testHelper.getInstanceId().getInstance(),
-              restoredDbId);
-      Stopwatch watch = Stopwatch.createStarted();
-      while (restoreBackupInterceptor.methodCount.get() < 1
-          && restoreBackupInterceptor.getOperationCount.get() < 1
-          && watch.elapsed(TimeUnit.SECONDS) < 120) {
-        //noinspection BusyWait
-        Thread.sleep(5000L);
+    if (!backups.isEmpty()) {
+      InjectErrorInterceptorProvider restoreBackupInterceptor =
+          new InjectErrorInterceptorProvider("RestoreDatabase");
+      options =
+          testHelper
+              .getOptions()
+              .toBuilder()
+              .setInterceptorProvider(restoreBackupInterceptor)
+              .build();
+      try (Spanner spanner = options.getService()) {
+        String restoredDbId = testHelper.getUniqueDatabaseId();
+        DatabaseAdminClient client = spanner.getDatabaseAdminClient();
+        OperationFuture<Database, RestoreDatabaseMetadata> op =
+            client.restoreDatabase(
+                testHelper.getInstanceId().getInstance(),
+                backups.get(0),
+                testHelper.getInstanceId().getInstance(),
+                restoredDbId);
+        Stopwatch watch = Stopwatch.createStarted();
+        while (restoreBackupInterceptor.methodCount.get() < 1
+            && restoreBackupInterceptor.getOperationCount.get() < 1
+            && watch.elapsed(TimeUnit.SECONDS) < 120) {
+          //noinspection BusyWait
+          Thread.sleep(5000L);
+        }
+        try {
+          client.cancelOperation(op.getName());
+        } catch (Exception e) {
+          // Ignore, this is expected as it cannot find the backup that we are trying to restore.
+        }
+        // Assert that the RestoreDatabase RPC was called only once, and that the operation
+        // tracking was resumed through a GetOperation call.
+        assertThat(restoreBackupInterceptor.methodCount.get()).isEqualTo(1);
+        assertThat(restoreBackupInterceptor.getOperationCount.get()).isAtLeast(1);
       }
-      try {
-        client.cancelOperation(op.getName());
-      } catch (Exception e) {
-        // Ignore, this is expected as it cannot find the backup that we are trying to restore.
-      }
-      // Assert that the RestoreDatabase RPC was called only once, and that the operation
-      // tracking was resumed through a GetOperation call.
-      assertThat(restoreBackupInterceptor.methodCount.get()).isEqualTo(1);
-      assertThat(restoreBackupInterceptor.getOperationCount.get()).isAtLeast(1);
     }
 
     // Create another database with the exact same name as the first database.
@@ -489,7 +490,7 @@ public class ITBackupTest {
   }
 
   @Test(expected = SpannerException.class)
-  public void backupCreationWithVersionTimeTooFarInThePastFails() throws Exception {
+  public void test03_backupCreationWithVersionTimeTooFarInThePastFails() throws Exception {
     final Database testDatabase = testHelper.createTestDatabase();
     final DatabaseId databaseId = testDatabase.getId();
     final InstanceId instanceId = databaseId.getInstanceId();
@@ -508,7 +509,7 @@ public class ITBackupTest {
   }
 
   @Test(expected = SpannerException.class)
-  public void backupCreationWithVersionTimeInTheFutureFails() throws Exception {
+  public void test04_backupCreationWithVersionTimeInTheFutureFails() throws Exception {
     final Database testDatabase = testHelper.createTestDatabase();
     final DatabaseId databaseId = testDatabase.getId();
     final InstanceId instanceId = databaseId.getInstanceId();
