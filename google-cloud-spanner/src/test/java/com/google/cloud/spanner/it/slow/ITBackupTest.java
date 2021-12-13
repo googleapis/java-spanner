@@ -451,11 +451,7 @@ public class ITBackupTest {
           //noinspection BusyWait
           Thread.sleep(5000L);
         }
-        try {
-          client.cancelOperation(op.getName());
-        } catch (Exception e) {
-          // Ignore, this is expected as it cannot find the backup that we are trying to restore.
-        }
+        client.cancelOperation(op.getName());
         // Assert that the RestoreDatabase RPC was called only once, and that the operation
         // tracking was resumed through a GetOperation call.
         assertThat(restoreBackupInterceptor.methodCount.get()).isEqualTo(1);
