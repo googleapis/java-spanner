@@ -204,8 +204,12 @@ public class ITBackupTest {
           String filter =
               String.format(
                   "name:%s/operations/ AND "
+                      + "("
                       + "(metadata.@type:type.googleapis.com/"
-                      + "google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata)",
+                      + "google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata) OR "
+                      + "(metadata.@type:type.googleapis.com/"
+                      + "google.spanner.admin.database.v1.RestoreDatabaseMetadata)"
+                      + ")",
                   referencingDb);
           for (Operation op :
               dbAdminClient
@@ -451,7 +455,15 @@ public class ITBackupTest {
           //noinspection BusyWait
           Thread.sleep(5000L);
         }
-        client.cancelOperation(op.getName());
+        try {
+          client.cancelOperation(op.getName());
+        } catch (SpannerException e) {
+          // Ignore UNIMPLEMENTED errors, as it seems that Cloud Spanner cannot cancel a restore
+          // operation that has already started.
+          if (e.getErrorCode() != ErrorCode.UNIMPLEMENTED) {
+            throw e;
+          }
+        }
         // Assert that the RestoreDatabase RPC was called only once, and that the operation
         // tracking was resumed through a GetOperation call.
         assertThat(restoreBackupInterceptor.methodCount.get()).isEqualTo(1);
