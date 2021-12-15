@@ -1,5 +1,12 @@
 # Changelog
 
+### [6.17.2](https://www.github.com/googleapis/java-spanner/compare/v6.17.1...v6.17.2) (2021-12-15)
+
+
+### Dependencies
+
+* update opencensus.version to v0.29.0 ([#1589](https://www.github.com/googleapis/java-spanner/issues/1589)) ([7abf7ff](https://www.github.com/googleapis/java-spanner/commit/7abf7ff9b339eaef499313be17c7cabc169246fb))
+
 ### [6.17.1](https://www.github.com/googleapis/java-spanner/compare/v6.17.0...v6.17.1) (2021-12-08)
 
 
