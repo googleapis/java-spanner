@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
@@ -205,6 +206,67 @@ public class MutationTest {
     tester.addEqualityGroup(Mutation.delete("T1", KeySet.all()));
     tester.addEqualityGroup(
         Mutation.delete("T1", KeySet.singleKey(Key.of("k"))), Mutation.delete("T1", Key.of("k")));
+
+    // Test NaNs
+    tester.addEqualityGroup(
+        Mutation.newInsertBuilder("T1").set("C").to(Double.NaN).build(),
+        Mutation.newInsertBuilder("T1").set("C").to(Value.float64(Double.NaN)).build(),
+        Mutation.newInsertBuilder("T1").set("C").to(Float.NaN).build(),
+        Mutation.newInsertBuilder("T1").set("C").to(Value.float64(Float.NaN)).build());
+
+    tester.addEqualityGroup(
+        Mutation.newInsertBuilder("T1").set("C").toFloat64Array(new double[] {Double.NaN}).build(),
+        Mutation.newInsertBuilder("T1").set("C").toFloat64Array(new double[] {Float.NaN}).build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(new double[] {Double.NaN}, 0, 1)
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(new double[] {Float.NaN}, 0, 1)
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(Collections.singletonList(Double.NaN))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(Collections.singletonList((double) Float.NaN))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .to(Value.float64Array(new double[] {Double.NaN}))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .to(Value.float64Array(new double[] {Float.NaN}))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .to(Value.float64Array(new double[] {Double.NaN}, 0, 1))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .to(Value.float64Array(new double[] {Float.NaN}, 0, 1))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .to(Value.float64Array(Collections.singletonList(Double.NaN)))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .to(Value.float64Array(Collections.singletonList((double) Float.NaN)))
+            .build());
+    // Test NaNs and nulls
+    tester.addEqualityGroup(
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(Arrays.asList(null, Double.NaN))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(Arrays.asList(null, (double) Float.NaN))
+            .build());
 
     tester.testEquals();
   }

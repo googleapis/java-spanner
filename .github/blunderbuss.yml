@@ -1,7 +1,7 @@
 # Configuration for the Blunderbuss GitHub app. For more info see
 # https://github.com/googleapis/repo-automation-bots/tree/main/packages/blunderbuss
 assign_issues:
-  - thiagotnunes
+  - ansh0l
 assign_prs_by:
 - labels:
   - samples

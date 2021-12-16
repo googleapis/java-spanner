@@ -1,5 +1,33 @@
 # Changelog
 
+### [6.17.2](https://www.github.com/googleapis/java-spanner/compare/v6.17.1...v6.17.2) (2021-12-15)
+
+
+### Dependencies
+
+* update opencensus.version to v0.29.0 ([#1589](https://www.github.com/googleapis/java-spanner/issues/1589)) ([7abf7ff](https://www.github.com/googleapis/java-spanner/commit/7abf7ff9b339eaef499313be17c7cabc169246fb))
+
+### [6.17.1](https://www.github.com/googleapis/java-spanner/compare/v6.17.0...v6.17.1) (2021-12-08)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-trace to v2.1.0 ([#1574](https://www.github.com/googleapis/java-spanner/issues/1574)) ([eaf2831](https://www.github.com/googleapis/java-spanner/commit/eaf28318f0a8eb5dc3795865de438f1d0e7bd982))
+
+## [6.17.0](https://www.github.com/googleapis/java-spanner/compare/v6.16.0...v6.17.0) (2021-12-06)
+
+
+### Features
+
+* NaNs in Mutations are equal and have the same hashcode ([#1554](https://www.github.com/googleapis/java-spanner/issues/1554)) ([91a18fc](https://www.github.com/googleapis/java-spanner/commit/91a18fc09a2034959758d38f1278dc93128c7622))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.2.0 ([#1571](https://www.github.com/googleapis/java-spanner/issues/1571)) ([0e0d9f7](https://www.github.com/googleapis/java-spanner/commit/0e0d9f7c45c71dd4e9b5500bb3931e1d399041bc))
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v2.5.1 ([#1570](https://www.github.com/googleapis/java-spanner/issues/1570)) ([563879e](https://www.github.com/googleapis/java-spanner/commit/563879e82e77da0603f1b817190d98cfbee4e81f))
+* update dependency org.json:json to v20211205 ([#1572](https://www.github.com/googleapis/java-spanner/issues/1572)) ([59593bd](https://www.github.com/googleapis/java-spanner/commit/59593bd471e7e890b589c9e5a7291a837a88a0e7))
+
 ## [6.16.0](https://www.github.com/googleapis/java-spanner/compare/v6.15.2...v6.16.0) (2021-11-15)
 
 

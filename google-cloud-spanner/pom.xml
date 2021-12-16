@@ -1,9 +1,9 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>6.16.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+  <version>6.17.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner</name>
   <url>https://github.com/googleapis/java-spanner</url>
@@ -11,7 +11,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.16.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.17.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
@@ -285,13 +285,13 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>4.0.0</version>
+      <version>4.1.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20210307</version>
+      <version>20211205</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -337,7 +337,7 @@
     <profile>
       <id>benchmark</id>
       <properties>
-        <benchmark.name></benchmark.name>
+        <benchmark.name/>
       </properties>
       <build>
         <plugins>
@@ -356,7 +356,7 @@
                   <executable>java</executable>
                   <arguments>
                       <argument>-classpath</argument>
-                      <classpath />
+                      <classpath/>
                       <argument>org.openjdk.jmh.Main</argument>
                       <argument>${benchmark.name}</argument>
                   </arguments>
