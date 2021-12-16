@@ -1,5 +1,12 @@
 # Changelog
 
+### [6.4.4-sp.5](https://www.github.com/googleapis/java-spanner/compare/6.4.4-sp.4...v6.4.4-sp.5) (2021-12-16)
+
+
+### Dependencies
+
+* bump OpenCensus API to 0.29 ([#1590](https://www.github.com/googleapis/java-spanner/issues/1590)) ([ee2f844](https://www.github.com/googleapis/java-spanner/commit/ee2f844a2a112e8aa0aab7f957ccb3394689cc2d))
+
 ### [6.4.4-sp.4](https://www.github.com/googleapis/java-spanner/compare/6.4.4-sp.3...v6.4.4-sp.4) (2021-11-11)
 
 
