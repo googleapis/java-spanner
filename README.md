@@ -56,13 +56,13 @@ implementation 'com.google.cloud:google-cloud-spanner'
 If you are using Gradle without BOM, add this to your dependencies
 
 ```Groovy
-implementation 'com.google.cloud:google-cloud-spanner:6.17.1'
+implementation 'com.google.cloud:google-cloud-spanner:6.17.2'
 ```
 
 If you are using SBT, add this to your dependencies
 
 ```Scala
-libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.17.1"
+libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.17.2"
 ```
 
 ## Authentication
@@ -186,13 +186,6 @@ with `grpc.io/client/`.
   granted (the thread that requested the session is placed in a wait queue where
   it waits until a session is released into the pool by another thread) due to
   pool exhaustion since the server process started.
-
-* `cloud.google.com/java/spanner/gfe_latency`: This metric shows latency between
-  Google's network receiving an RPC and reading back the first byte of the response.
-
-* `cloud.google.com/java/spanner/gfe_header_missing_count`: This metric shows the
-  number of RPC responses received without the server-timing header, most likely
-  indicating that the RPC never reached Google's network.
 
 If you are using Maven, add this to your pom.xml file
 ```xml
