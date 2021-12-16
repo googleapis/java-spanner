@@ -56,12 +56,6 @@
         <version>6.17.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
       </dependency>
       <dependency>
-        <groupId>com.google.cloud</groupId>
-        <artifactId>google-cloud-spanner</artifactId>
-        <type>test-jar</type>
-        <version>6.17.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
-      </dependency>
-      <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>grpc-google-cloud-spanner-v1</artifactId>
         <version>6.17.3-SNAPSHOT</version><!-- {x-version-update:grpc-google-cloud-spanner-v1:current} -->
