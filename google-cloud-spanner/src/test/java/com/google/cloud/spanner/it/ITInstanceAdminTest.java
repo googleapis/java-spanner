@@ -83,7 +83,7 @@ public class ITInstanceAdminTest {
             instanceClient
                 .listInstances(
                     Options.filter(
-                        "name:instances/" + env.getTestHelper().getInstanceId().getInstance()))
+                        "name=" + env.getTestHelper().getInstanceId()))
                 .iterateAll()
                 .iterator());
     assertThat(instance.getId()).isEqualTo(env.getTestHelper().getInstanceId());
