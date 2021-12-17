@@ -15,6 +15,7 @@
   </parent>
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
+    <opencensus.version>0.30.0</opencensus.version>
   </properties>
 
 
@@ -187,14 +188,23 @@
     <dependency>
       <groupId>io.opencensus</groupId>
       <artifactId>opencensus-api</artifactId>
+      <version>${opencensus.version}</version>
     </dependency>
     <dependency>
       <groupId>io.opencensus</groupId>
       <artifactId>opencensus-contrib-grpc-util</artifactId>
+      <version>${opencensus.version}</version>
     </dependency>
     <dependency>
       <groupId>io.opencensus</groupId>
       <artifactId>opencensus-impl</artifactId>
+      <version>${opencensus.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.opencensus</groupId>
+      <artifactId>opencensus-impl-core</artifactId>
+      <version>${opencensus.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
