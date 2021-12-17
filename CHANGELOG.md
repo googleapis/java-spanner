@@ -1,5 +1,12 @@
 # Changelog
 
+### [5.2.3](https://www.github.com/googleapis/java-spanner/compare/v5.2.2...v5.2.3) (2021-12-17)
+
+
+### Dependencies
+
+* **5.2.x:** update OpenCensus API to 0.30.0 ([#1602](https://www.github.com/googleapis/java-spanner/issues/1602)) ([25da051](https://www.github.com/googleapis/java-spanner/commit/25da0514c61d1bc0240b8cbf566dc89954c038c0))
+
 ### [5.2.2](https://www.github.com/googleapis/java-spanner/compare/v5.2.1...v5.2.2) (2021-09-29)
 
 
