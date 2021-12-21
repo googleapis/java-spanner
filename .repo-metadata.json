@@ -15,6 +15,7 @@
   "transport": "grpc",
   "requires_billing": true,
   "codeowner_team": "@googleapis/api-spanner-java",
+  "library_type": "GAPIC_COMBO",
   "excluded_poms": "google-cloud-spanner-bom"
 }
 
