@@ -2,10 +2,6 @@ releaseType: java-yoshi
 bumpMinorPreMajor: true
 handleGHRelease: true
 branches:
-  - branch: 3.1.x
-    releaseType: java-yoshi
-    bumpMinorPreMajor: true
-    handleGHRelease: true
   - branch: 3.3.x
     releaseType: java-yoshi
     bumpMinorPreMajor: true
