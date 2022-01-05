@@ -45,9 +45,9 @@ import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
-import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SlowTest;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
@@ -102,9 +102,7 @@ import org.junit.runners.MethodSorters;
  * Integration tests creating, reading, updating and deleting backups. This test class combines
  * several tests into one long test to reduce the total execution time.
  */
-// TODO: Move back to SlowTest when has been verified that the test works.
-// @Category(SlowTest.class)
-@Category(ParallelIntegrationTest.class)
+@Category(SlowTest.class)
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ITBackupTest {
