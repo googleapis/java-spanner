@@ -1,5 +1,24 @@
 # Changelog
 
+### [6.17.3](https://www.github.com/googleapis/java-spanner/compare/v6.17.2...v6.17.3) (2021-12-17)
+
+
+### Bug Fixes
+
+* re-adds test-jar to bom definition ([#1596](https://www.github.com/googleapis/java-spanner/issues/1596)) ([5accdcd](https://www.github.com/googleapis/java-spanner/commit/5accdcdb163a4f434ba1b47ac4f1ecba92be6f67))
+
+
+### Dependencies
+
+* bump OpenCensus API to 0.30.0 ([#1598](https://www.github.com/googleapis/java-spanner/issues/1598)) ([b953363](https://www.github.com/googleapis/java-spanner/commit/b953363c531cd2cd7e831d546a30b3bbfab54268))
+
+### [6.17.2](https://www.github.com/googleapis/java-spanner/compare/v6.17.1...v6.17.2) (2021-12-15)
+
+
+### Dependencies
+
+* update opencensus.version to v0.29.0 ([#1589](https://www.github.com/googleapis/java-spanner/issues/1589)) ([7abf7ff](https://www.github.com/googleapis/java-spanner/commit/7abf7ff9b339eaef499313be17c7cabc169246fb))
+
 ### [6.17.1](https://www.github.com/googleapis/java-spanner/compare/v6.17.0...v6.17.1) (2021-12-08)
 
 
