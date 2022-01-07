@@ -67,9 +67,9 @@ custom_content: |
   * `cloud.google.com/java/spanner/max_allowed_sessions`: This shows the maximum
     number of sessions allowed.
 
-  * `cloud.google.com/java/spanner/in_use_sessions`: This metric allows users to
+  * `cloud.google.com/java/spanner/num_sessions_in_pool`: This metric allows users to
      see instance-level and database-level data for the total number of sessions in
-     use (or checked out from the pool) at this very moment.
+     the pool at this very moment.
 
   * `cloud.google.com/java/spanner/num_acquired_sessions`: This metric allows
     users to see the total number of acquired sessions.
@@ -95,19 +95,19 @@ custom_content: |
   <dependency>
     <groupId>io.opencensus</groupId>
     <artifactId>opencensus-impl</artifactId>
-    <version>0.26.0</version>
+    <version>0.30.0</version>
     <scope>runtime</scope>
   </dependency>
   <dependency>
     <groupId>io.opencensus</groupId>
     <artifactId>opencensus-exporter-stats-stackdriver</artifactId>
-    <version>0.26.0</version>
+    <version>0.30.0</version>
   </dependency>
   ```
   If you are using Gradle, add this to your dependencies
   ```Groovy
-  compile 'io.opencensus:opencensus-impl:0.26.0'
-  compile 'io.opencensus:opencensus-exporter-stats-stackdriver:0.26.0'
+  compile 'io.opencensus:opencensus-impl:0.30.0'
+  compile 'io.opencensus:opencensus-exporter-stats-stackdriver:0.30.0'
   ```
 
   At the start of your application configure the exporter:
