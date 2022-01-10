@@ -49,20 +49,20 @@ If you are using Maven without BOM, add this to your dependencies:
 If you are using Gradle 5.x or later, add this to your dependencies
 
 ```Groovy
-implementation platform('com.google.cloud:libraries-bom:24.1.1')
+implementation platform('com.google.cloud:libraries-bom:24.1.2')
 
 implementation 'com.google.cloud:google-cloud-spanner'
 ```
 If you are using Gradle without BOM, add this to your dependencies
 
 ```Groovy
-implementation 'com.google.cloud:google-cloud-spanner:6.17.3'
+implementation 'com.google.cloud:google-cloud-spanner:6.17.4'
 ```
 
 If you are using SBT, add this to your dependencies
 
 ```Scala
-libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.17.3"
+libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.17.4"
 ```
 
 ## Authentication
