@@ -394,6 +394,8 @@
                   <id>default</id>
                   <configuration>
                     <groups>com.google.cloud.spanner.SlowTest</groups>
+                    <!-- Overrides default configuration to allow slow integration tests more time -->
+                    <forkedProcessTimeoutInSeconds>7200</forkedProcessTimeoutInSeconds>
                   </configuration>
                 </execution>
                 <!-- Overrides default configuration to skip this step -->
