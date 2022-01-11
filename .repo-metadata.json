@@ -1,5 +1,5 @@
 {
-  "name": "spanner",
+  "api_shortname": "spanner",
   "name_pretty": "Cloud Spanner",
   "product_documentation": "https://cloud.google.com/spanner/docs/",
   "client_documentation": "https://cloud.google.com/java/docs/reference/google-cloud-spanner/latest/history",
