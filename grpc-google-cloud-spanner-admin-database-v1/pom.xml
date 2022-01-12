@@ -26,8 +26,10 @@
       <artifactId>grpc-protobuf</artifactId>
     </dependency>
     <dependency>
+      <!-- override google-cloud-shared-dependencies -->
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
+      <version>3.18.2</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
