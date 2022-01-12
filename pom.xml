@@ -60,6 +60,12 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <!-- override google-cloud-shared-dependencies -->
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-java</artifactId>
+        <version>3.18.2</version>
+      </dependency>
+      <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>proto-google-cloud-spanner-admin-instance-v1</artifactId>
         <version>6.14.0</version><!-- {x-version-update:proto-google-cloud-spanner-admin-instance-v1:current} -->
