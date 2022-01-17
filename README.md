@@ -171,9 +171,9 @@ with `grpc.io/client/`.
 * `cloud.google.com/java/spanner/max_allowed_sessions`: This shows the maximum
   number of sessions allowed.
 
-* `cloud.google.com/java/spanner/in_use_sessions`: This metric allows users to
+* `cloud.google.com/java/spanner/num_sessions_in_pool`: This metric allows users to
    see instance-level and database-level data for the total number of sessions in
-   use (or checked out from the pool) at this very moment.
+   the pool at this very moment.
 
 * `cloud.google.com/java/spanner/num_acquired_sessions`: This metric allows
   users to see the total number of acquired sessions.
@@ -187,24 +187,31 @@ with `grpc.io/client/`.
   it waits until a session is released into the pool by another thread) due to
   pool exhaustion since the server process started.
 
+* `cloud.google.com/java/spanner/gfe_latency`: This metric shows latency between
+  Google's network receiving an RPC and reading back the first byte of the response.
+
+* `cloud.google.com/java/spanner/gfe_header_missing_count`: This metric shows the
+  number of RPC responses received without the server-timing header, most likely
+  indicating that the RPC never reached Google's network.
+
 If you are using Maven, add this to your pom.xml file
 ```xml
 <dependency>
   <groupId>io.opencensus</groupId>
   <artifactId>opencensus-impl</artifactId>
-  <version>0.26.0</version>
+  <version>0.30.0</version>
   <scope>runtime</scope>
 </dependency>
 <dependency>
   <groupId>io.opencensus</groupId>
   <artifactId>opencensus-exporter-stats-stackdriver</artifactId>
-  <version>0.26.0</version>
+  <version>0.30.0</version>
 </dependency>
 ```
 If you are using Gradle, add this to your dependencies
 ```Groovy
-compile 'io.opencensus:opencensus-impl:0.26.0'
-compile 'io.opencensus:opencensus-exporter-stats-stackdriver:0.26.0'
+compile 'io.opencensus:opencensus-impl:0.30.0'
+compile 'io.opencensus:opencensus-exporter-stats-stackdriver:0.30.0'
 ```
 
 At the start of your application configure the exporter:
@@ -370,7 +377,7 @@ Java is a registered trademark of Oracle and/or its affiliates.
 [kokoro-badge-link-4]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-spanner/java8-win.html
 [kokoro-badge-image-5]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-spanner/java11.svg
 [kokoro-badge-link-5]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-spanner/java11.html
-[stability-image]: https://img.shields.io/badge/stability-ga-green
+[stability-image]: https://img.shields.io/badge/stability-stable-green
 [maven-version-image]: https://img.shields.io/maven-central/v/com.google.cloud/google-cloud-spanner.svg
 [maven-version-link]: https://search.maven.org/search?q=g:com.google.cloud%20AND%20a:google-cloud-spanner&core=gav
 [authentication]: https://github.com/googleapis/google-cloud-java#authentication
