@@ -15,7 +15,7 @@
   </parent>
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
-    <opencensus.version>0.30.0</opencensus.version>
+    <opencensus.version>0.31.0</opencensus.version>
   </properties>
 
 
