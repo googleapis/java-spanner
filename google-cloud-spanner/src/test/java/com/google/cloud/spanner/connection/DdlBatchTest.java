@@ -36,6 +36,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ReadContext;
@@ -44,9 +45,9 @@ import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.Connection.InternalMetadataQuery;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
-import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
@@ -393,8 +394,12 @@ public class DdlBatchTest {
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
             .build();
-    batch.executeDdlAsync(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE FOO")));
-    batch.executeDdlAsync(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE BAR")));
+    batch.executeDdlAsync(
+        AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+            .parse(Statement.of("CREATE TABLE FOO")));
+    batch.executeDdlAsync(
+        AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+            .parse(Statement.of("CREATE TABLE BAR")));
     long[] updateCounts = get(batch.runBatchAsync());
     assertThat(updateCounts.length, is(equalTo(2)));
     assertThat(updateCounts[0], is(equalTo(1L)));
@@ -425,9 +430,12 @@ public class DdlBatchTest {
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
             .build();
-    batch.executeDdlAsync(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE FOO")));
     batch.executeDdlAsync(
-        StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE INVALID_TABLE")));
+        AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+            .parse(Statement.of("CREATE TABLE FOO")));
+    batch.executeDdlAsync(
+        AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+            .parse(Statement.of("CREATE TABLE INVALID_TABLE")));
     try {
       get(batch.runBatchAsync());
       fail("missing expected exception");
@@ -462,9 +470,12 @@ public class DdlBatchTest {
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
             .build();
-    batch.executeDdlAsync(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE FOO")));
     batch.executeDdlAsync(
-        StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE INVALID_TABLE")));
+        AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+            .parse(Statement.of("CREATE TABLE FOO")));
+    batch.executeDdlAsync(
+        AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+            .parse(Statement.of("CREATE TABLE INVALID_TABLE")));
     try {
       get(batch.runBatchAsync());
       fail("missing expected exception");

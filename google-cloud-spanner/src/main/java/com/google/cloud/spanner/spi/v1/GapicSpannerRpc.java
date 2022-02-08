@@ -175,6 +175,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -187,6 +189,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.threeten.bp.Duration;
 
@@ -578,18 +582,19 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   private static HeaderProvider headerProviderWithUserAgentFrom(HeaderProvider headerProvider) {
+    final Optional<Entry<String, String>> existingUserAgentEntry =
+        headerProvider.getHeaders().entrySet().stream()
+            .filter(entry -> entry.getKey().equalsIgnoreCase(USER_AGENT_KEY))
+            .findFirst();
+    final String existingUserAgentValue = existingUserAgentEntry.map(Entry::getValue).orElse(null);
+    final String userAgent =
+        Stream.of(existingUserAgentValue, DEFAULT_USER_AGENT)
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(" "));
+
     final Map<String, String> headersWithUserAgent = new HashMap<>(headerProvider.getHeaders());
-    String userAgent = null;
-    for (Entry<String, String> entry : headersWithUserAgent.entrySet()) {
-      if (entry.getKey().equalsIgnoreCase(USER_AGENT_KEY)) {
-        userAgent = entry.getValue();
-        headersWithUserAgent.remove(entry.getKey());
-        break;
-      }
-    }
-    headersWithUserAgent.put(
-        USER_AGENT_KEY,
-        userAgent == null ? DEFAULT_USER_AGENT : userAgent + " " + DEFAULT_USER_AGENT);
+    existingUserAgentEntry.ifPresent(entry -> headersWithUserAgent.remove(entry.getKey()));
+    headersWithUserAgent.put(USER_AGENT_KEY, userAgent);
 
     return FixedHeaderProvider.create(headersWithUserAgent);
   }
@@ -1045,9 +1050,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       Iterable<String> additionalStatements,
       com.google.cloud.spanner.Database databaseInfo)
       throws SpannerException {
-    final String databaseId =
-        createDatabaseStatement.substring(
-            "CREATE DATABASE `".length(), createDatabaseStatement.length() - 1);
+    final String databaseId = databaseInfo.getId().getDatabase();
     CreateDatabaseRequest.Builder requestBuilder =
         CreateDatabaseRequest.newBuilder()
             .setParent(instanceName)
@@ -1056,6 +1059,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (databaseInfo.getEncryptionConfig() != null) {
       requestBuilder.setEncryptionConfig(
           EncryptionConfigProtoMapper.encryptionConfig(databaseInfo.getEncryptionConfig()));
+    }
+    if (databaseInfo.getDialect() != null) {
+      requestBuilder.setDatabaseDialect(databaseInfo.getDialect().toProto());
     }
     final CreateDatabaseRequest request = requestBuilder.build();
 

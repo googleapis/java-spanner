@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
@@ -152,6 +153,7 @@ public class SpannerPool {
     private final Integer numChannels;
     private final boolean usePlainText;
     private final String userAgent;
+    private final Dialect dialect;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -169,6 +171,7 @@ public class SpannerPool {
       this.numChannels = options.getNumChannels();
       this.usePlainText = options.isUsePlainText();
       this.userAgent = options.getUserAgent();
+      this.dialect = options.getDialect();
     }
 
     @Override
@@ -183,7 +186,8 @@ public class SpannerPool {
           && Objects.equals(this.sessionPoolOptions, other.sessionPoolOptions)
           && Objects.equals(this.numChannels, other.numChannels)
           && Objects.equals(this.usePlainText, other.usePlainText)
-          && Objects.equals(this.userAgent, other.userAgent);
+          && Objects.equals(this.userAgent, other.userAgent)
+          && Objects.equals(this.dialect, other.dialect);
     }
 
     @Override
@@ -195,7 +199,8 @@ public class SpannerPool {
           this.sessionPoolOptions,
           this.numChannels,
           this.usePlainText,
-          this.userAgent);
+          this.userAgent,
+          this.dialect);
     }
   }
 
@@ -321,10 +326,14 @@ public class SpannerPool {
         .setClientLibToken(MoreObjects.firstNonNull(key.userAgent, CONNECTION_API_CLIENT_LIB_TOKEN))
         .setHost(key.host)
         .setProjectId(key.projectId)
-        .setCredentials(options.getCredentials());
+        .setCredentials(options.getCredentials())
+        .setDialect(options.getDialect());
     builder.setSessionPoolOption(key.sessionPoolOptions);
     if (key.numChannels != null) {
       builder.setNumChannels(key.numChannels);
+    }
+    if (options.getChannelProvider() != null) {
+      builder.setChannelProvider(options.getChannelProvider());
     }
     if (key.usePlainText) {
       // Credentials may not be sent over a plain text channel.

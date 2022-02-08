@@ -54,6 +54,10 @@ public class DatabaseInfo {
       throw new UnsupportedOperationException("Unimplemented");
     }
 
+    public Builder setDialect(Dialect dialect) {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
+
     abstract Builder setProto(com.google.spanner.admin.database.v1.Database proto);
 
     /** Builds the database from this builder. */
@@ -69,6 +73,7 @@ public class DatabaseInfo {
     private Timestamp earliestVersionTime;
     private CustomerManagedEncryption encryptionConfig;
     private String defaultLeader;
+    private Dialect dialect = Dialect.GOOGLE_STANDARD_SQL;
     private com.google.spanner.admin.database.v1.Database proto;
 
     BuilderImpl(DatabaseId id) {
@@ -84,6 +89,7 @@ public class DatabaseInfo {
       this.earliestVersionTime = other.earliestVersionTime;
       this.encryptionConfig = other.encryptionConfig;
       this.defaultLeader = other.defaultLeader;
+      this.dialect = other.dialect;
       this.proto = other.proto;
     }
 
@@ -130,6 +136,12 @@ public class DatabaseInfo {
     }
 
     @Override
+    public Builder setDialect(Dialect dialect) {
+      this.dialect = dialect;
+      return this;
+    }
+
+    @Override
     Builder setProto(@Nullable com.google.spanner.admin.database.v1.Database proto) {
       this.proto = proto;
       return this;
@@ -156,6 +168,7 @@ public class DatabaseInfo {
   private final Timestamp earliestVersionTime;
   private final CustomerManagedEncryption encryptionConfig;
   private final String defaultLeader;
+  private final Dialect dialect;
   private final com.google.spanner.admin.database.v1.Database proto;
 
   public DatabaseInfo(DatabaseId id, State state) {
@@ -167,6 +180,7 @@ public class DatabaseInfo {
     this.earliestVersionTime = null;
     this.encryptionConfig = null;
     this.defaultLeader = null;
+    this.dialect = null;
     this.proto = null;
   }
 
@@ -179,6 +193,7 @@ public class DatabaseInfo {
     this.earliestVersionTime = builder.earliestVersionTime;
     this.encryptionConfig = builder.encryptionConfig;
     this.defaultLeader = builder.defaultLeader;
+    this.dialect = builder.dialect;
     this.proto = builder.proto;
   }
 
@@ -239,6 +254,14 @@ public class DatabaseInfo {
     return defaultLeader;
   }
 
+  /**
+   * The dialect that is used by the database. It can be one of the values as specified in {@link
+   * Dialect#values()}.
+   */
+  public @Nullable Dialect getDialect() {
+    return dialect;
+  }
+
   /** Returns the raw proto instance that was used to construct this {@link Database}. */
   public @Nullable com.google.spanner.admin.database.v1.Database getProto() {
     return proto;
@@ -260,7 +283,8 @@ public class DatabaseInfo {
         && Objects.equals(versionRetentionPeriod, that.versionRetentionPeriod)
         && Objects.equals(earliestVersionTime, that.earliestVersionTime)
         && Objects.equals(encryptionConfig, that.encryptionConfig)
-        && Objects.equals(defaultLeader, that.defaultLeader);
+        && Objects.equals(defaultLeader, that.defaultLeader)
+        && Objects.equals(dialect, that.dialect);
   }
 
   @Override
@@ -273,13 +297,14 @@ public class DatabaseInfo {
         versionRetentionPeriod,
         earliestVersionTime,
         encryptionConfig,
-        defaultLeader);
+        defaultLeader,
+        dialect);
   }
 
   @Override
   public String toString() {
     return String.format(
-        "Database[%s, %s, %s, %s, %s, %s, %s, %s]",
+        "Database[%s, %s, %s, %s, %s, %s, %s, %s, %s]",
         id.getName(),
         state,
         createTime,
@@ -287,6 +312,7 @@ public class DatabaseInfo {
         versionRetentionPeriod,
         earliestVersionTime,
         encryptionConfig,
-        defaultLeader);
+        defaultLeader,
+        dialect);
   }
 }

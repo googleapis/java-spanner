@@ -24,6 +24,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
@@ -39,9 +40,9 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
-import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -82,7 +83,7 @@ class ConnectionImpl implements Connection {
 
   private volatile LeakedConnectionException leakedException = new LeakedConnectionException();
   private final SpannerPool spannerPool;
-  private final StatementParser parser = StatementParser.INSTANCE;
+  private final AbstractStatementParser parser;
   /**
    * The {@link ConnectionStatementExecutor} is responsible for translating parsed {@link
    * ClientSideStatement}s into actual method calls on this {@link ConnectionImpl}. I.e. the {@link
@@ -220,6 +221,7 @@ class ConnectionImpl implements Connection {
     this.statementExecutor = new StatementExecutor(options.getStatementExecutionInterceptors());
     this.spannerPool = SpannerPool.INSTANCE;
     this.options = options;
+    this.parser = AbstractStatementParser.getInstance(options.getDialect());
     this.spanner = spannerPool.getSpanner(options, this);
     if (options.isAutoConfigEmulator()) {
       EmulatorUtil.maybeCreateInstanceAndDatabase(spanner, options.getDatabaseId());
@@ -249,6 +251,7 @@ class ConnectionImpl implements Connection {
     this.statementExecutor = new StatementExecutor(Collections.emptyList());
     this.spannerPool = spannerPool;
     this.options = options;
+    this.parser = AbstractStatementParser.getInstance(options.getDialect());
     this.spanner = spannerPool.getSpanner(options, this);
     this.ddlClient = ddlClient;
     this.dbClient = dbClient;
@@ -317,6 +320,11 @@ class ConnectionImpl implements Connection {
   /** Get the call stack from when the {@link Connection} was opened. */
   LeakedConnectionException getLeakedException() {
     return leakedException;
+  }
+
+  @Override
+  public Dialect getDialect() {
+    return options.getDialect();
   }
 
   @Override

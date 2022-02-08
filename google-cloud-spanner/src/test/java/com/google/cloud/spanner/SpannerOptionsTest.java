@@ -81,6 +81,7 @@ public class SpannerOptionsTest {
     }
     assertThat(options.getPrefetchChunks()).isEqualTo(4);
     assertThat(options.getSessionLabels()).isNull();
+    assertThat(options.getDialect()).isEqualTo(Dialect.GOOGLE_STANDARD_SQL);
   }
 
   @Test
@@ -95,11 +96,13 @@ public class SpannerOptionsTest {
             .setProjectId(projectId)
             .setPrefetchChunks(2)
             .setSessionLabels(labels)
+            .setDialect(Dialect.POSTGRESQL)
             .build();
     assertThat(options.getHost()).isEqualTo(host);
     assertThat(options.getProjectId()).isEqualTo(projectId);
     assertThat(options.getPrefetchChunks()).isEqualTo(2);
     assertThat(options.getSessionLabels()).containsExactlyEntriesIn(labels);
+    assertThat(options.getDialect()).isEqualTo(Dialect.POSTGRESQL);
   }
 
   @Test

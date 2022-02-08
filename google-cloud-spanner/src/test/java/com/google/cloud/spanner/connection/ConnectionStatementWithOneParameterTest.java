@@ -23,15 +23,34 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.protobuf.Duration;
 import java.util.concurrent.TimeUnit;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
+@RunWith(Parameterized.class)
 public class ConnectionStatementWithOneParameterTest {
-  private final StatementParser parser = StatementParser.INSTANCE;
+  @Parameter public Dialect dialect;
+
+  @Parameters(name = "dialect = {0}")
+  public static Object[] data() {
+    return Dialect.values();
+  }
+
+  private AbstractStatementParser parser;
+
+  @Before
+  public void setup() {
+    parser = AbstractStatementParser.getInstance(dialect);
+  }
 
   @Test
   public void testExecuteSetAutocommit() {

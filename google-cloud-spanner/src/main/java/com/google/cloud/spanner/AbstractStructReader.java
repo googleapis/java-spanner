@@ -22,7 +22,9 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Base class for assisting {@link StructReader} implementations.
@@ -159,14 +161,14 @@ public abstract class AbstractStructReader implements StructReader {
 
   @Override
   public String getString(int columnIndex) {
-    checkNonNullOfType(columnIndex, Type.string(), columnIndex);
+    checkNonNullOfTypes(columnIndex, Arrays.asList(Type.string(), Type.pgNumeric()), columnIndex);
     return getStringInternal(columnIndex);
   }
 
   @Override
   public String getString(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.string(), columnName);
+    checkNonNullOfTypes(columnIndex, Arrays.asList(Type.string(), Type.pgNumeric()), columnName);
     return getStringInternal(columnIndex);
   }
 
@@ -327,14 +329,20 @@ public abstract class AbstractStructReader implements StructReader {
 
   @Override
   public List<String> getStringList(int columnIndex) {
-    checkNonNullOfType(columnIndex, Type.array(Type.string()), columnIndex);
+    checkNonNullOfTypes(
+        columnIndex,
+        Arrays.asList(Type.array(Type.string()), Type.array(Type.pgNumeric())),
+        columnIndex);
     return getStringListInternal(columnIndex);
   }
 
   @Override
   public List<String> getStringList(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.array(Type.string()), columnName);
+    checkNonNullOfTypes(
+        columnIndex,
+        Arrays.asList(Type.array(Type.string()), Type.array(Type.pgNumeric())),
+        columnName);
     return getStringListInternal(columnIndex);
   }
 
@@ -425,6 +433,18 @@ public abstract class AbstractStructReader implements StructReader {
         "Column %s is not of correct type: expected %s but was %s",
         columnNameForError,
         expectedType,
+        actualType);
+    checkNonNull(columnIndex, columnNameForError);
+  }
+
+  private void checkNonNullOfTypes(
+      int columnIndex, List<Type> expectedTypes, Object columnNameForError) {
+    Type actualType = getColumnType(columnIndex);
+    checkState(
+        expectedTypes.contains(actualType),
+        "Column %s is not of correct type: expected one of [%s] but was %s",
+        columnNameForError,
+        expectedTypes.stream().map(Type::toString).collect(Collectors.joining(", ")),
         actualType);
     checkNonNull(columnIndex, columnNameForError);
   }

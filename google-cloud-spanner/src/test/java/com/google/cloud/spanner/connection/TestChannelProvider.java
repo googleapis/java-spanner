@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,11 @@
 
 package com.google.cloud.spanner.connection;
 
-import org.junit.Test;
+import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.cloud.spanner.v1.SpannerSettings;
 
-public class SetStatementTimeoutSqlScriptTest extends AbstractSqlScriptTest {
-
-  @Test
-  public void testSetStatementTimeoutScript() throws Exception {
-    SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider(dialect));
-    verifier.verifyStatementsInFile("SetStatementTimeoutTest.sql", getClass(), true);
+public final class TestChannelProvider implements ConnectionOptions.ExternalChannelProvider {
+  public TransportChannelProvider getChannelProvider(String host, int port) {
+    return SpannerSettings.defaultTransportChannelProvider();
   }
 }

@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.AbstractStatementParser.RUN_BATCH_STATEMENT;
+
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
@@ -53,9 +55,7 @@ final class FailedBatchUpdate implements RetriableStatement {
     transaction
         .getStatementExecutor()
         .invokeInterceptors(
-            ReadWriteTransaction.EXECUTE_BATCH_UPDATE_STATEMENT,
-            StatementExecutionStep.RETRY_STATEMENT,
-            transaction);
+            RUN_BATCH_STATEMENT, StatementExecutionStep.RETRY_STATEMENT, transaction);
     try {
       transaction.getReadContext().batchUpdate(statements);
     } catch (AbortedException e) {

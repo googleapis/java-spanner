@@ -18,8 +18,8 @@ package com.google.cloud.spanner.connection;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ListenableFutureToApiFuture;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListeningExecutorService;

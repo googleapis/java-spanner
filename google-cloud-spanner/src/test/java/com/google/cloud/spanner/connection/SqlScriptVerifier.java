@@ -21,6 +21,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -155,6 +156,11 @@ public class SqlScriptVerifier extends AbstractSqlScriptVerifier {
       if (this.connection != null) {
         this.connection.close();
       }
+    }
+
+    @Override
+    public Dialect getDialect() {
+      return connection.getDialect();
     }
   }
 

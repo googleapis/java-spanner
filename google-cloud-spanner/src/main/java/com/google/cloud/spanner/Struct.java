@@ -349,6 +349,8 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
         return getDoubleInternal(columnIndex);
       case NUMERIC:
         return getBigDecimalInternal(columnIndex);
+      case PG_NUMERIC:
+        return getStringInternal(columnIndex);
       case STRING:
         return getStringInternal(columnIndex);
       case JSON:
@@ -371,6 +373,8 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
             return getDoubleListInternal(columnIndex);
           case NUMERIC:
             return getBigDecimalListInternal(columnIndex);
+          case PG_NUMERIC:
+            return getStringListInternal(columnIndex);
           case STRING:
             return getStringListInternal(columnIndex);
           case JSON:

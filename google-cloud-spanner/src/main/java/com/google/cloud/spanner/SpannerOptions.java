@@ -125,6 +125,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final CallCredentialsProvider callCredentialsProvider;
   private final CloseableExecutorProvider asyncExecutorProvider;
   private final String compressorName;
+  private final Dialect dialect;
 
   /**
    * Interface that can be used to provide {@link CallCredentials} instead of {@link Credentials} to
@@ -592,6 +593,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     callCredentialsProvider = builder.callCredentialsProvider;
     asyncExecutorProvider = builder.asyncExecutorProvider;
     compressorName = builder.compressorName;
+    dialect = builder.dialect;
   }
 
   /**
@@ -691,6 +693,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private CloseableExecutorProvider asyncExecutorProvider;
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
+    private Dialect dialect = Dialect.GOOGLE_STANDARD_SQL;
 
     private Builder() {
       // Manually set retry and polling settings that work.
@@ -745,6 +748,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.channelProvider = options.channelProvider;
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
+      this.dialect = options.dialect;
     }
 
     @Override
@@ -764,6 +768,20 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     /**
      * Sets the {@code ChannelProvider}. {@link GapicSpannerRpc} would create a default one if none
      * is provided.
+     *
+     * <p>Setting a custom {@link TransportChannelProvider} also overrides any other settings that
+     * affect the default channel provider. These must be set manually on the custom {@link
+     * TransportChannelProvider} instead of on {@link SpannerOptions}. The settings of {@link
+     * SpannerOptions} that have no effect if you set a custom {@link TransportChannelProvider} are:
+     *
+     * <ol>
+     *   <li>{@link #setChannelConfigurator(ApiFunction)}
+     *   <li>{@link #setHost(String)}
+     *   <li>{@link #setNumChannels(int)}
+     *   <li>{@link #setInterceptorProvider(GrpcInterceptorProvider)}
+     *   <li>{@link #setDialect(Dialect)}
+     *   <li>{@link #setHeaderProvider(com.google.api.gax.rpc.HeaderProvider)}
+     * </ol>
      */
     public Builder setChannelProvider(TransportChannelProvider channelProvider) {
       this.channelProvider = channelProvider;
@@ -1121,6 +1139,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Sets the {@link Dialect} to use with Cloud Spanner. The default is {@link
+     * Dialect#GOOGLE_STANDARD_SQL}.
+     */
+    public Builder setDialect(Dialect dialect) {
+      Preconditions.checkNotNull(dialect);
+      this.dialect = dialect;
+      return this;
+    }
+
+    @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
       // Set the host of emulator has been set.
@@ -1245,6 +1274,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public String getCompressorName() {
     return compressorName;
+  }
+
+  public Dialect getDialect() {
+    return dialect;
   }
 
   /** Returns the default query options to use for the specific database. */

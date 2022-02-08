@@ -40,6 +40,7 @@ import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceAdminClient;
@@ -264,6 +265,8 @@ public class ITBackupTest {
 
     // Verifies that the database encryption has been properly set
     testDatabaseEncryption(database, keyName);
+    // Verifies that the database dialect has been properly set
+    testDatabaseDialect(database, Dialect.GOOGLE_STANDARD_SQL);
 
     // Create a backup of the database.
     String backupId = testHelper.getUniqueBackupId() + "_bck1";
@@ -598,6 +601,13 @@ public class ITBackupTest {
     logger.info("Done verifying database encryption for " + database.getId());
   }
 
+  private void testDatabaseDialect(Database database, Dialect expectedDialect) {
+    logger.info("Verifying dialect for " + database.getId());
+    assertNotNull(database.getDialect());
+    assertEquals(expectedDialect, database.getDialect());
+    logger.info("Done verifying database dialect for " + database.getId());
+  }
+
   private void testBackupEncryption(Backup backup, String expectedKey) {
     logger.info("Verifying backup encryption for " + backup.getId());
     assertNotNull(backup.getEncryptionInfo());
@@ -813,6 +823,7 @@ public class ITBackupTest {
         Timestamp.fromProto(
             reloadedDatabase.getProto().getRestoreInfo().getBackupInfo().getVersionTime()));
     testDatabaseEncryption(reloadedDatabase, expectedKey);
+    testDatabaseDialect(reloadedDatabase, Dialect.GOOGLE_STANDARD_SQL);
 
     // Restoring the backup to an existing database should fail.
     logger.info(
