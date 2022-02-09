@@ -77,9 +77,9 @@ import javax.annotation.Generated;
 /**
  * Service Description: Cloud Spanner Database Admin API
  *
- * <p>The Cloud Spanner Database Admin API can be used to create, drop, and list databases. It also
- * enables updating the schema of pre-existing databases. It can be also used to create, delete and
- * list backups for a database and to restore from an existing backup.
+ * <p>The Cloud Spanner Database Admin API can be used to: &#42; create, drop, and list databases
+ * &#42; update the schema of pre-existing databases &#42; create, delete and list backups for a
+ * database &#42; restore a database from an existing backup
  *
  * <p>This class provides the ability to make remote calls to the backing service through method
  * calls that map to API methods. Sample code to get started:
@@ -438,6 +438,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setCreateStatement("createStatement744686547")
    *           .addAllExtraStatements(new ArrayList<String>())
    *           .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+   *           .setDatabaseDialect(DatabaseDialect.forNumber(0))
    *           .build();
    *   Database response = databaseAdminClient.createDatabaseAsync(request).get();
    * }
@@ -471,6 +472,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setCreateStatement("createStatement744686547")
    *           .addAllExtraStatements(new ArrayList<String>())
    *           .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+   *           .setDatabaseDialect(DatabaseDialect.forNumber(0))
    *           .build();
    *   OperationFuture<Database, CreateDatabaseMetadata> future =
    *       databaseAdminClient.createDatabaseOperationCallable().futureCall(request);
@@ -504,6 +506,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setCreateStatement("createStatement744686547")
    *           .addAllExtraStatements(new ArrayList<String>())
    *           .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+   *           .setDatabaseDialect(DatabaseDialect.forNumber(0))
    *           .build();
    *   ApiFuture<Operation> future =
    *       databaseAdminClient.createDatabaseCallable().futureCall(request);
@@ -772,7 +775,8 @@ public class DatabaseAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be
-   * retained according to their `expire_time`.
+   * retained according to their `expire_time`. Note: Cloud Spanner might continue to accept
+   * requests for a few seconds after the database has been deleted.
    *
    * <p>Sample code:
    *
@@ -797,7 +801,8 @@ public class DatabaseAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be
-   * retained according to their `expire_time`.
+   * retained according to their `expire_time`. Note: Cloud Spanner might continue to accept
+   * requests for a few seconds after the database has been deleted.
    *
    * <p>Sample code:
    *
@@ -819,7 +824,8 @@ public class DatabaseAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be
-   * retained according to their `expire_time`.
+   * retained according to their `expire_time`. Note: Cloud Spanner might continue to accept
+   * requests for a few seconds after the database has been deleted.
    *
    * <p>Sample code:
    *
@@ -843,7 +849,8 @@ public class DatabaseAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be
-   * retained according to their `expire_time`.
+   * retained according to their `expire_time`. Note: Cloud Spanner might continue to accept
+   * requests for a few seconds after the database has been deleted.
    *
    * <p>Sample code:
    *

@@ -49,6 +49,7 @@ import com.google.spanner.admin.database.v1.BackupName;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DatabaseDialect;
 import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
@@ -224,6 +225,7 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -280,6 +282,7 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -336,6 +339,7 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -381,6 +385,7 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -900,6 +905,7 @@ public class DatabaseAdminClientTest {
             .setSizeBytes(-1796325715)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -959,6 +965,7 @@ public class DatabaseAdminClientTest {
             .setSizeBytes(-1796325715)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1018,6 +1025,7 @@ public class DatabaseAdminClientTest {
             .setSizeBytes(-1796325715)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1063,6 +1071,7 @@ public class DatabaseAdminClientTest {
             .setSizeBytes(-1796325715)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1108,6 +1117,7 @@ public class DatabaseAdminClientTest {
             .setSizeBytes(-1796325715)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1312,6 +1322,7 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1371,6 +1382,7 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1430,6 +1442,7 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1489,6 +1502,7 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     Operation resultOperation =
         Operation.newBuilder()
