@@ -163,7 +163,7 @@ public abstract class AbstractStructReader implements StructReader {
     checkNonNullOfTypes(
         columnIndex,
         Arrays.asList(Type.string(), Type.pgNumeric()),
-        getType().getStructFields().get(columnIndex).getName(),
+        columnIndex,
         "STRING, NUMERIC");
     return getStringInternal(columnIndex);
   }
@@ -336,7 +336,7 @@ public abstract class AbstractStructReader implements StructReader {
     checkNonNullOfTypes(
         columnIndex,
         Arrays.asList(Type.array(Type.string()), Type.array(Type.pgNumeric())),
-        getType().getStructFields().get(columnIndex).getName(),
+        columnIndex,
         "ARRAY<STRING>, ARRAY<NUMERIC>");
     return getStringListInternal(columnIndex);
   }
