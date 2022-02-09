@@ -227,6 +227,7 @@ public class ConnectionImplTest {
         .thenReturn(spanner);
     DdlClient ddlClient = createDefaultMockDdlClient();
     DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     ReadOnlyTransaction singleUseReadOnlyTx = mock(ReadOnlyTransaction.class);
 
     ResultSet mockResultSetWithStats = createSelect1MockResultSet();
@@ -1362,10 +1363,10 @@ public class ConnectionImplTest {
   @Test
   public void testMergeQueryOptions() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
-    when(connectionOptions.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
     when(unitOfWork.executeQueryAsync(
             any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
@@ -1466,10 +1467,10 @@ public class ConnectionImplTest {
   public void testStatementTagAlwaysAllowed() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
     when(connectionOptions.isAutocommit()).thenReturn(true);
-    when(connectionOptions.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
     when(unitOfWork.executeQueryAsync(
             any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
@@ -1509,10 +1510,10 @@ public class ConnectionImplTest {
   public void testTransactionTagAllowedInTransaction() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
     when(connectionOptions.isAutocommit()).thenReturn(false);
-    when(connectionOptions.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     try (ConnectionImpl connection =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
       assertFalse(connection.isAutocommit());
@@ -1550,10 +1551,10 @@ public class ConnectionImplTest {
   public void testTransactionTagNotAllowedWithoutTransaction() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
     when(connectionOptions.isAutocommit()).thenReturn(true);
-    when(connectionOptions.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     try (ConnectionImpl connection =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
       assertTrue(connection.isAutocommit());
@@ -1571,10 +1572,10 @@ public class ConnectionImplTest {
   public void testTransactionTagNotAllowedAfterTransactionStarted() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
     when(connectionOptions.isAutocommit()).thenReturn(false);
-    when(connectionOptions.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
     // Indicate that a transaction has been started.
     when(unitOfWork.getState()).thenReturn(UnitOfWorkState.STARTED);

@@ -83,7 +83,7 @@ class ConnectionImpl implements Connection {
 
   private volatile LeakedConnectionException leakedException = new LeakedConnectionException();
   private final SpannerPool spannerPool;
-  private final AbstractStatementParser parser;
+  private AbstractStatementParser statementParser;
   /**
    * The {@link ConnectionStatementExecutor} is responsible for translating parsed {@link
    * ClientSideStatement}s into actual method calls on this {@link ConnectionImpl}. I.e. the {@link
@@ -221,7 +221,6 @@ class ConnectionImpl implements Connection {
     this.statementExecutor = new StatementExecutor(options.getStatementExecutionInterceptors());
     this.spannerPool = SpannerPool.INSTANCE;
     this.options = options;
-    this.parser = AbstractStatementParser.getInstance(options.getDialect());
     this.spanner = spannerPool.getSpanner(options, this);
     if (options.isAutoConfigEmulator()) {
       EmulatorUtil.maybeCreateInstanceAndDatabase(spanner, options.getDatabaseId());
@@ -251,7 +250,6 @@ class ConnectionImpl implements Connection {
     this.statementExecutor = new StatementExecutor(Collections.emptyList());
     this.spannerPool = spannerPool;
     this.options = options;
-    this.parser = AbstractStatementParser.getInstance(options.getDialect());
     this.spanner = spannerPool.getSpanner(options, this);
     this.ddlClient = ddlClient;
     this.dbClient = dbClient;
@@ -267,6 +265,13 @@ class ConnectionImpl implements Connection {
         .setInstanceId(options.getInstanceId())
         .setDatabaseName(options.getDatabaseName())
         .build();
+  }
+
+  private AbstractStatementParser getStatementParser() {
+    if (this.statementParser == null) {
+      this.statementParser = AbstractStatementParser.getInstance(dbClient.getDialect());
+    }
+    return this.statementParser;
   }
 
   @Override
@@ -324,7 +329,7 @@ class ConnectionImpl implements Connection {
 
   @Override
   public Dialect getDialect() {
-    return options.getDialect();
+    return dbClient.getDialect();
   }
 
   @Override
@@ -812,7 +817,7 @@ class ConnectionImpl implements Connection {
   public StatementResult execute(Statement statement) {
     Preconditions.checkNotNull(statement);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(statement, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(statement, this.queryOptions);
     switch (parsedStatement.getType()) {
       case CLIENT_SIDE:
         return parsedStatement
@@ -837,7 +842,7 @@ class ConnectionImpl implements Connection {
   public AsyncStatementResult executeAsync(Statement statement) {
     Preconditions.checkNotNull(statement);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(statement, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(statement, this.queryOptions);
     switch (parsedStatement.getType()) {
       case CLIENT_SIDE:
         return AsyncStatementResultImpl.of(
@@ -885,7 +890,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(query);
     Preconditions.checkNotNull(analyzeMode);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(query, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
     if (parsedStatement.isQuery()) {
       switch (parsedStatement.getType()) {
         case CLIENT_SIDE:
@@ -910,7 +915,7 @@ class ConnectionImpl implements Connection {
       Statement query, AnalyzeMode analyzeMode, QueryOption... options) {
     Preconditions.checkNotNull(query);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(query, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
     if (parsedStatement.isQuery()) {
       switch (parsedStatement.getType()) {
         case CLIENT_SIDE:
@@ -938,7 +943,7 @@ class ConnectionImpl implements Connection {
   public long executeUpdate(Statement update) {
     Preconditions.checkNotNull(update);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(update);
+    ParsedStatement parsedStatement = getStatementParser().parse(update);
     if (parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case UPDATE:
@@ -958,7 +963,7 @@ class ConnectionImpl implements Connection {
   public ApiFuture<Long> executeUpdateAsync(Statement update) {
     Preconditions.checkNotNull(update);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(update);
+    ParsedStatement parsedStatement = getStatementParser().parse(update);
     if (parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case UPDATE:
@@ -982,7 +987,7 @@ class ConnectionImpl implements Connection {
     // Check that there are only DML statements in the input.
     List<ParsedStatement> parsedStatements = new LinkedList<>();
     for (Statement update : updates) {
-      ParsedStatement parsedStatement = parser.parse(update);
+      ParsedStatement parsedStatement = getStatementParser().parse(update);
       switch (parsedStatement.getType()) {
         case UPDATE:
           parsedStatements.add(parsedStatement);
@@ -1008,7 +1013,7 @@ class ConnectionImpl implements Connection {
     // Check that there are only DML statements in the input.
     List<ParsedStatement> parsedStatements = new LinkedList<>();
     for (Statement update : updates) {
-      ParsedStatement parsedStatement = parser.parse(update);
+      ParsedStatement parsedStatement = getStatementParser().parse(update);
       switch (parsedStatement.getType()) {
         case UPDATE:
           parsedStatements.add(parsedStatement);

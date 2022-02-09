@@ -28,6 +28,15 @@ import com.google.cloud.spanner.Options.UpdateOption;
 public interface DatabaseClient {
 
   /**
+   * Returns the SQL dialect that is used by the database.
+   *
+   * @return the SQL dialect that is used by the database.
+   */
+  default Dialect getDialect() {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
    * Writes the given mutations atomically to the database.
    *
    * <p>This method uses retries and replay protection internally, which means that the mutations
