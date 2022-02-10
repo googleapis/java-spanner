@@ -400,7 +400,6 @@ public class GapicSpannerRpcTest {
     String endpoint = address.getHostString() + ":" + server.getPort();
     return SpannerOptions.newBuilder()
         .setProjectId("[PROJECT]")
-        .setDialect(dialect)
         // Set a custom channel configurator to allow http instead of https.
         .setChannelConfigurator(
             input -> {

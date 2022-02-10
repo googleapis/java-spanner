@@ -106,6 +106,17 @@ public class SpanTest {
         "This test is only supported on JDK11 and lower",
         JavaVersionUtil.getJavaMajorVersion() < 12);
 
+    // Use a little reflection to set the test tracer.
+    // This is not possible in Java 12 and later.
+    java.lang.reflect.Field field = Tracing.class.getDeclaredField("traceComponent");
+    field.setAccessible(true);
+    java.lang.reflect.Field modifiersField =
+        java.lang.reflect.Field.class.getDeclaredField("modifiers");
+    modifiersField.setAccessible(true);
+    // Remove the final modifier from the 'traceComponent' field.
+    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+    field.set(null, failOnOverkillTraceComponent);
+
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
@@ -124,17 +135,6 @@ public class SpanTest {
             .build()
             .start();
     channelProvider = LocalChannelProvider.create(uniqueName);
-
-    // Use a little reflection to set the test tracer.
-    // This is not possible in Java 12 and later.
-    java.lang.reflect.Field field = Tracing.class.getDeclaredField("traceComponent");
-    field.setAccessible(true);
-    java.lang.reflect.Field modifiersField =
-        java.lang.reflect.Field.class.getDeclaredField("modifiers");
-    modifiersField.setAccessible(true);
-    // Remove the final modifier from the 'traceComponent' field.
-    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-    field.set(null, failOnOverkillTraceComponent);
   }
 
   @AfterClass
