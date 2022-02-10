@@ -16,7 +16,9 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
@@ -25,6 +27,7 @@ import com.google.cloud.spanner.BatchReadOnlyTransaction;
 import com.google.cloud.spanner.BatchTransactionId;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
@@ -34,6 +37,7 @@ import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
+import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import java.util.ArrayList;
@@ -50,31 +54,45 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Integration test reading large amounts of data using the Batch APIs. The size of data ensures
  * that multiple partitions are returned by the server.
  */
 @Category(ParallelIntegrationTest.class)
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class ITBatchReadTest {
   private static int numRows;
 
   private static final int WRITE_BATCH_SIZE = 1 << 20;
   private static final String TABLE_NAME = "BatchTestTable";
   private static final String INDEX_NAME = "TestIndexByValue";
-  private static final long STALENESS_MILLISEC = 1 * 1000;
+  private static final long STALENESS_MILLISEC = 1000;
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
-  private static Database db;
   private static HashFunction hasher;
-  private static DatabaseClient dbClient;
-  private static BatchClient client;
+  private static BatchClient googleStandardSQLBatchClient;
+  private static BatchClient postgreSQLBatchClient;
   private static final Random RANDOM = new Random();
 
   private BatchReadOnlyTransaction batchTxn;
+
+  @Parameters(name = "Dialect = {0}")
+  public static List<DialectTestParameter> data() {
+    List<DialectTestParameter> params = new ArrayList<>();
+    params.add(new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL));
+    // PG dialect tests are not supported by the emulator
+    if (!isUsingEmulator()) {
+      params.add(new DialectTestParameter(Dialect.POSTGRESQL));
+    }
+    return params;
+  }
+
+  @Parameter public DialectTestParameter dialect;
 
   // Generate a large number of rows to allow multiple read/query partitions.
   private static List<Integer> manyRows() {
@@ -88,7 +106,7 @@ public class ITBatchReadTest {
 
   @BeforeClass
   public static void setUpDatabase() throws Exception {
-    db =
+    Database googleStandardDatabase =
         env.getTestHelper()
             .createTestDatabase(
                 "CREATE TABLE "
@@ -101,46 +119,86 @@ public class ITBatchReadTest {
                     + ") PRIMARY KEY (Key)",
                 "CREATE INDEX " + INDEX_NAME + " ON " + TABLE_NAME + "(Fingerprint)");
     hasher = Hashing.goodFastHash(64);
-    dbClient = env.getTestHelper().getDatabaseClient(db);
-    client = env.getTestHelper().getBatchClient(db);
+    googleStandardSQLBatchClient = env.getTestHelper().getBatchClient(googleStandardDatabase);
 
-    List<Mutation> mutations = new ArrayList<>();
-    int totalSize = 0;
-    int i = 0;
-    for (int row : manyRows()) {
-      numRows++;
-      byte[] data = new byte[row];
-      RANDOM.nextBytes(data);
-      mutations.add(
-          Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
-              .set("Key")
-              .to(i)
-              .set("Data")
-              .to(ByteArray.copyFrom(data))
-              .set("Fingerprint")
-              .to(hasher.hashBytes(data).asLong())
-              .set("Size")
-              .to(row)
-              .build());
-      totalSize += row;
-      i++;
-      if (totalSize >= WRITE_BATCH_SIZE) {
-        dbClient.write(mutations);
-        mutations.clear();
-        totalSize = 0;
-      }
+    List<DatabaseClient> databaseClients = new ArrayList<>();
+    databaseClients.add(env.getTestHelper().getDatabaseClient(googleStandardDatabase));
+
+    if (!isUsingEmulator()) {
+      Database postgreSQLDatabase =
+          env.getTestHelper().createTestDatabase(Dialect.POSTGRESQL, Collections.emptyList());
+      env.getTestHelper()
+          .getClient()
+          .getDatabaseAdminClient()
+          .updateDatabaseDdl(
+              env.getTestHelper().getInstanceId().getInstance(),
+              postgreSQLDatabase.getId().getDatabase(),
+              ImmutableList.of(
+                  "CREATE TABLE "
+                      + TABLE_NAME
+                      + " ("
+                      + "  Key           bigint not null primary key,"
+                      + "  Data          bytea,"
+                      + "  Fingerprint   bigint,"
+                      + "  Size          bigint"
+                      + ")",
+                  "CREATE INDEX " + INDEX_NAME + " ON " + TABLE_NAME + "(Fingerprint)"),
+              null)
+          .get();
+      postgreSQLBatchClient = env.getTestHelper().getBatchClient(postgreSQLDatabase);
+      databaseClients.add(env.getTestHelper().getDatabaseClient(postgreSQLDatabase));
     }
-    dbClient.write(mutations);
+
+    List<Integer> rows = manyRows();
+    numRows = rows.size();
+    for (DatabaseClient dbClient : databaseClients) {
+      List<Mutation> mutations = new ArrayList<>();
+      int totalSize = 0;
+      int i = 0;
+      for (int row : rows) {
+        byte[] data = new byte[row];
+        RANDOM.nextBytes(data);
+        mutations.add(
+            Mutation.newInsertOrUpdateBuilder(TABLE_NAME)
+                .set("Key")
+                .to(i)
+                .set("Data")
+                .to(ByteArray.copyFrom(data))
+                .set("Fingerprint")
+                .to(hasher.hashBytes(data).asLong())
+                .set("Size")
+                .to(row)
+                .build());
+        totalSize += row;
+        i++;
+        if (totalSize >= WRITE_BATCH_SIZE) {
+          dbClient.write(mutations);
+          mutations.clear();
+          totalSize = 0;
+        }
+      }
+      dbClient.write(mutations);
+    }
     // Our read/queries are executed with some staleness.
     Thread.sleep(2 * STALENESS_MILLISEC);
   }
 
+  private BatchClient getBatchClient() {
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      return postgreSQLBatchClient;
+    }
+    return googleStandardSQLBatchClient;
+  }
+
   @Test
   public void read() {
+    assumeFalse(
+        "PostgreSQL does not support the PartitionRead RPC", dialect.dialect == Dialect.POSTGRESQL);
+
     BitSet seenRows = new BitSet(numRows);
     TimestampBound bound = getRandomBound();
     PartitionOptions partitionParams = getRandomPartitionOptions();
-    batchTxn = client.batchReadOnlyTransaction(bound);
+    batchTxn = getBatchClient().batchReadOnlyTransaction(bound);
     List<Partition> partitions =
         batchTxn.partitionRead(
             partitionParams,
@@ -153,9 +211,12 @@ public class ITBatchReadTest {
 
   @Test
   public void readUsingIndex() {
+    assumeFalse(
+        "PostgreSQL does not support the PartitionRead RPC", dialect.dialect == Dialect.POSTGRESQL);
+
     TimestampBound bound = getRandomBound();
     PartitionOptions partitionParams = getRandomPartitionOptions();
-    batchTxn = client.batchReadOnlyTransaction(bound);
+    batchTxn = getBatchClient().batchReadOnlyTransaction(bound);
     List<Partition> partitions =
         batchTxn.partitionReadUsingIndex(
             partitionParams,
@@ -166,7 +227,8 @@ public class ITBatchReadTest {
     BatchTransactionId txnID = batchTxn.getBatchTransactionId();
     int numRowsRead = 0;
     for (Partition p : partitions) {
-      BatchReadOnlyTransaction batchTxnOnEachWorker = client.batchReadOnlyTransaction(txnID);
+      BatchReadOnlyTransaction batchTxnOnEachWorker =
+          getBatchClient().batchReadOnlyTransaction(txnID);
       try (ResultSet result = batchTxnOnEachWorker.execute(p)) {
         while (result.next()) {
           numRowsRead++;
@@ -188,7 +250,7 @@ public class ITBatchReadTest {
     BitSet seenRows = new BitSet(numRows);
     TimestampBound bound = getRandomBound();
     PartitionOptions partitionParams = getRandomPartitionOptions();
-    batchTxn = client.batchReadOnlyTransaction(bound);
+    batchTxn = getBatchClient().batchReadOnlyTransaction(bound);
     List<Partition> partitions =
         batchTxn.partitionQuery(
             partitionParams,
@@ -227,7 +289,8 @@ public class ITBatchReadTest {
   private void fetchAndValidateRows(
       List<Partition> partitions, BatchTransactionId txnID, BitSet seenRows) {
     for (Partition p : partitions) {
-      BatchReadOnlyTransaction batchTxnOnEachWorker = client.batchReadOnlyTransaction(txnID);
+      BatchReadOnlyTransaction batchTxnOnEachWorker =
+          getBatchClient().batchReadOnlyTransaction(txnID);
       try (ResultSet result = batchTxnOnEachWorker.execute(p)) {
         // validate no duplicate rows; verify all columns read.
         validate(result, seenRows);
