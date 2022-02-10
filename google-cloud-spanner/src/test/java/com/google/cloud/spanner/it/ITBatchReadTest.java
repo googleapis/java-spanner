@@ -18,6 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
@@ -142,17 +143,19 @@ public class ITBatchReadTest {
                       + "  Size          bigint"
                       + ")",
                   "CREATE INDEX " + INDEX_NAME + " ON " + TABLE_NAME + "(Fingerprint)"),
-              null);
+              null)
+          .get();
       postgreSQLBatchClient = env.getTestHelper().getBatchClient(postgreSQLDatabase);
       databaseClients.add(env.getTestHelper().getDatabaseClient(postgreSQLDatabase));
     }
 
+    List<Integer> rows = manyRows();
+    numRows = rows.size();
     for (DatabaseClient dbClient : databaseClients) {
       List<Mutation> mutations = new ArrayList<>();
       int totalSize = 0;
       int i = 0;
-      for (int row : manyRows()) {
-        numRows++;
+      for (int row : rows) {
         byte[] data = new byte[row];
         RANDOM.nextBytes(data);
         mutations.add(
@@ -189,6 +192,9 @@ public class ITBatchReadTest {
 
   @Test
   public void read() {
+    assumeFalse(
+        "PostgreSQL does not support the PartitionRead RPC", dialect.dialect == Dialect.POSTGRESQL);
+
     BitSet seenRows = new BitSet(numRows);
     TimestampBound bound = getRandomBound();
     PartitionOptions partitionParams = getRandomPartitionOptions();
@@ -205,6 +211,9 @@ public class ITBatchReadTest {
 
   @Test
   public void readUsingIndex() {
+    assumeFalse(
+        "PostgreSQL does not support the PartitionRead RPC", dialect.dialect == Dialect.POSTGRESQL);
+
     TimestampBound bound = getRandomBound();
     PartitionOptions partitionParams = getRandomPartitionOptions();
     batchTxn = getBatchClient().batchReadOnlyTransaction(bound);
