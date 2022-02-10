@@ -173,6 +173,11 @@ public abstract class ValueBinder<R> {
     return handle(Value.numericArray(values));
   }
 
+  /** Binds to {@code Value.pgNumericArray(values)} */
+  public R toPgNumericArray(@Nullable Iterable<String> values) {
+    return handle(Value.pgNumericArray(values));
+  }
+
   /** Binds to {@code Value.stringArray(values)} */
   public R toStringArray(@Nullable Iterable<String> values) {
     return handle(Value.stringArray(values));

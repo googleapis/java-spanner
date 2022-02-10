@@ -20,7 +20,7 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
-import com.google.cloud.spanner.connection.StatementParser.StatementType;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import java.util.concurrent.TimeUnit;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;

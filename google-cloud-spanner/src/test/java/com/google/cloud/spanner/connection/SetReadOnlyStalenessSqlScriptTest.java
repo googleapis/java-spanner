@@ -16,32 +16,13 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.cloud.NoCredentials;
-import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConnection;
-import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConnectionProvider;
-import com.google.cloud.spanner.connection.SqlScriptVerifier.SpannerGenericConnection;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
-@RunWith(JUnit4.class)
-public class SetReadOnlyStalenessSqlScriptTest {
-
-  static class TestConnectionProvider implements GenericConnectionProvider {
-    @Override
-    public GenericConnection getConnection() {
-      return SpannerGenericConnection.of(
-          ConnectionImplTest.createConnection(
-              ConnectionOptions.newBuilder()
-                  .setCredentials(NoCredentials.getInstance())
-                  .setUri(ConnectionImplTest.URI)
-                  .build()));
-    }
-  }
+public class SetReadOnlyStalenessSqlScriptTest extends AbstractSqlScriptTest {
 
   @Test
   public void testSetReadOnlyStalenessScript() throws Exception {
-    SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider());
+    SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider(dialect));
     verifier.verifyStatementsInFile("SetReadOnlyStalenessTest.sql", getClass(), true);
   }
 }

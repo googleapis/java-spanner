@@ -16,11 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConnection;
-import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConnectionProvider;
-import com.google.cloud.spanner.connection.SqlScriptVerifier.SpannerGenericConnection;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -31,8 +27,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.AfterClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 /**
  * Test that runs a pre-generated sql script for {@link ClientSideStatement}s. The sql script can be
@@ -43,12 +37,11 @@ import org.junit.runners.JUnit4;
  * <p>This class does not need to be implemented for the client libraries of other programming
  * languages. All test cases are covered by the sql file ClientSideStatementsTest.sql.
  */
-@RunWith(JUnit4.class)
-public class ClientSideStatementsTest {
+public class ClientSideStatementsTest extends AbstractSqlScriptTest {
 
   @Test
   public void testExecuteClientSideStatementsScript() throws Exception {
-    SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider());
+    SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider(dialect));
     verifier.verifyStatementsInFile("ClientSideStatementsTest.sql", getClass(), true);
   }
 
@@ -110,18 +103,6 @@ public class ClientSideStatementsTest {
     }
   }
 
-  static class TestConnectionProvider implements GenericConnectionProvider {
-    @Override
-    public GenericConnection getConnection() {
-      return SpannerGenericConnection.of(
-          ConnectionImplTest.createConnection(
-              ConnectionOptions.newBuilder()
-                  .setCredentials(NoCredentials.getInstance())
-                  .setUri(ConnectionImplTest.URI)
-                  .build()));
-    }
-  }
-
   /** Generates test statements for all {@link ClientSideStatement}s */
   private static void generateTestStatements(ClientSideStatementImpl statement) {
     for (String sql : statement.getExampleStatements()) {
@@ -145,7 +126,7 @@ public class ClientSideStatementsTest {
       log(
           statement.getExamplePrerequisiteStatements(),
           withInvalidSuffix(sql),
-          ErrorCode.INVALID_ARGUMENT);
+          statement.isQuery() ? ErrorCode.UNIMPLEMENTED : ErrorCode.INVALID_ARGUMENT);
 
       final String[] replacements = {
         "%", "_", "&", "$", "@", "!", "*", "(", ")", "-", "+", "-#", "/", "\\", "?", "-/", "/#",
@@ -159,11 +140,11 @@ public class ClientSideStatementsTest {
         log(
             statement.getExamplePrerequisiteStatements(),
             withSuffix(replacement, sql),
-            ErrorCode.INVALID_ARGUMENT);
+            statement.isQuery() ? ErrorCode.UNIMPLEMENTED : ErrorCode.INVALID_ARGUMENT);
         log(
             statement.getExamplePrerequisiteStatements(),
             replaceLastSpaceWith(replacement, sql),
-            ErrorCode.INVALID_ARGUMENT);
+            statement.isQuery() ? ErrorCode.UNIMPLEMENTED : ErrorCode.INVALID_ARGUMENT);
       }
     }
   }

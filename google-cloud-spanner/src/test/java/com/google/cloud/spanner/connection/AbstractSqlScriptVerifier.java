@@ -26,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -136,6 +137,8 @@ public abstract class AbstractSqlScriptVerifier {
 
     @Override
     public abstract void close() throws Exception;
+
+    public abstract Dialect getDialect();
   }
 
   /**
@@ -309,7 +312,7 @@ public abstract class AbstractSqlScriptVerifier {
                         + " ---- verifying statement:");
                 System.out.println(sql);
               }
-              verifyStatement(variables, connection, sql);
+              verifyStatement(variables, connection, sql, connection.getDialect());
             }
             connection.close();
           } catch (Exception e) {
@@ -339,10 +342,14 @@ public abstract class AbstractSqlScriptVerifier {
   }
 
   private void verifyStatement(
-      Map<String, Object> variables, GenericConnection connection, String statement)
+      Map<String, Object> variables,
+      GenericConnection connection,
+      String statement,
+      Dialect dialect)
       throws Exception {
     statement = replaceVariables(variables, statement);
-    String statementWithoutComments = StatementParser.removeCommentsAndTrim(statement);
+    String statementWithoutComments =
+        AbstractStatementParser.getInstance(dialect).removeCommentsAndTrim(statement);
     Matcher verifyMatcher = VERIFY_PATTERN.matcher(statementWithoutComments);
     Matcher putMatcher = PUT_PATTERN.matcher(statementWithoutComments);
     if (verifyMatcher.matches()) {

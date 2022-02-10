@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.AbstractStatementParser.RUN_BATCH_STATEMENT;
+
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
@@ -29,10 +31,9 @@ import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.Connection.InternalMetadataQuery;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
-import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
@@ -210,15 +211,6 @@ class DdlBatch extends AbstractBaseUnitOfWork {
         ErrorCode.FAILED_PRECONDITION, "Writing mutations is not allowed for DDL batches.");
   }
 
-  /**
-   * Create a {@link ParsedStatement} that we can use as input for the generic execute method when
-   * the {@link #runBatch()} method is executed. This method uses the generic execute method that
-   * allows statements to be cancelled and to timeout, which requires the input to be a {@link
-   * ParsedStatement}.
-   */
-  private static final ParsedStatement RUN_BATCH =
-      StatementParser.INSTANCE.parse(Statement.of("RUN BATCH"));
-
   @Override
   public ApiFuture<long[]> runBatchAsync() {
     ConnectionPreconditions.checkState(
@@ -235,7 +227,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
                 ddlClient.executeDdl(statements);
             try {
               // Wait until the operation has finished.
-              getWithStatementTimeout(operation, RUN_BATCH);
+              getWithStatementTimeout(operation, RUN_BATCH_STATEMENT);
               long[] updateCounts = new long[statements.size()];
               Arrays.fill(updateCounts, 1L);
               state = UnitOfWorkState.RAN;
@@ -252,7 +244,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
         };
     this.state = UnitOfWorkState.RUNNING;
     return executeStatementAsync(
-        RUN_BATCH, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
+        RUN_BATCH_STATEMENT, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
   }
 
   long[] extractUpdateCounts(OperationFuture<Void, UpdateDatabaseDdlMetadata> operation) {

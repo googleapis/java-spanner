@@ -71,6 +71,7 @@ import com.google.spanner.v1.TransactionOptions.ModeCase;
 import com.google.spanner.v1.TransactionOptions.ReadWrite;
 import com.google.spanner.v1.TransactionSelector;
 import com.google.spanner.v1.Type;
+import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Metadata;
 import io.grpc.ServerServiceDefinition;
@@ -79,6 +80,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
 import io.grpc.stub.StreamObserver;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1176,84 +1178,99 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       String sql, Map<String, Type> paramTypes, com.google.protobuf.Struct params) {
     Statement.Builder builder = Statement.newBuilder(sql);
     for (Entry<String, Type> entry : paramTypes.entrySet()) {
-      com.google.protobuf.Value value = params.getFieldsOrThrow(entry.getKey());
+      final String fieldName = entry.getKey();
+      final Type fieldType = entry.getValue();
+      final Type elementType = fieldType.getArrayElementType();
+      com.google.protobuf.Value value = params.getFieldsOrThrow(fieldName);
       if (value.getKindCase() == KindCase.NULL_VALUE) {
-        switch (entry.getValue().getCode()) {
+        switch (fieldType.getCode()) {
           case ARRAY:
-            switch (entry.getValue().getArrayElementType().getCode()) {
+            switch (elementType.getCode()) {
               case BOOL:
-                builder.bind(entry.getKey()).toBoolArray((Iterable<Boolean>) null);
+                builder.bind(fieldName).toBoolArray((Iterable<Boolean>) null);
                 break;
               case BYTES:
-                builder.bind(entry.getKey()).toBytesArray(null);
+                builder.bind(fieldName).toBytesArray(null);
                 break;
               case DATE:
-                builder.bind(entry.getKey()).toDateArray(null);
+                builder.bind(fieldName).toDateArray(null);
                 break;
               case FLOAT64:
-                builder.bind(entry.getKey()).toFloat64Array((Iterable<Double>) null);
+                builder.bind(fieldName).toFloat64Array((Iterable<Double>) null);
                 break;
               case INT64:
-                builder.bind(entry.getKey()).toInt64Array((Iterable<Long>) null);
+                builder.bind(fieldName).toInt64Array((Iterable<Long>) null);
                 break;
               case STRING:
-                builder.bind(entry.getKey()).toStringArray(null);
+                builder.bind(fieldName).toStringArray(null);
+                break;
+              case NUMERIC:
+                if (elementType.getTypeAnnotation() == TypeAnnotationCode.PG_NUMERIC) {
+                  builder.bind(fieldName).toPgNumericArray(null);
+                } else {
+                  builder.bind(fieldName).toNumericArray(null);
+                }
                 break;
               case TIMESTAMP:
-                builder.bind(entry.getKey()).toTimestampArray(null);
+                builder.bind(fieldName).toTimestampArray(null);
                 break;
               case JSON:
-                builder.bind(entry.getKey()).toJsonArray(null);
+                builder.bind(fieldName).toJsonArray(null);
                 break;
               case STRUCT:
               case TYPE_CODE_UNSPECIFIED:
               case UNRECOGNIZED:
               default:
                 throw new IllegalArgumentException(
-                    "Unknown or invalid array parameter type: "
-                        + entry.getValue().getArrayElementType().getCode());
+                    "Unknown or invalid array parameter type: " + elementType.getCode());
             }
             break;
           case BOOL:
-            builder.bind(entry.getKey()).to((Boolean) null);
+            builder.bind(fieldName).to((Boolean) null);
             break;
           case BYTES:
-            builder.bind(entry.getKey()).to((ByteArray) null);
+            builder.bind(fieldName).to((ByteArray) null);
             break;
           case DATE:
-            builder.bind(entry.getKey()).to((Date) null);
+            builder.bind(fieldName).to((Date) null);
             break;
           case FLOAT64:
-            builder.bind(entry.getKey()).to((Double) null);
+            builder.bind(fieldName).to((Double) null);
             break;
           case INT64:
-            builder.bind(entry.getKey()).to((Long) null);
+            builder.bind(fieldName).to((Long) null);
             break;
           case STRING:
-            builder.bind(entry.getKey()).to((String) null);
+            builder.bind(fieldName).to((String) null);
+            break;
+          case NUMERIC:
+            if (fieldType.getTypeAnnotation() == TypeAnnotationCode.PG_NUMERIC) {
+              builder.bind(fieldName).to(Value.pgNumeric(null));
+            } else {
+              builder.bind(fieldName).to((BigDecimal) null);
+            }
             break;
           case STRUCT:
-            builder.bind(entry.getKey()).to((Struct) null);
+            builder.bind(fieldName).to((Struct) null);
             break;
           case TIMESTAMP:
-            builder.bind(entry.getKey()).to((com.google.cloud.Timestamp) null);
+            builder.bind(fieldName).to((com.google.cloud.Timestamp) null);
             break;
           case JSON:
-            builder.bind(entry.getKey()).to(Value.json((String) null));
+            builder.bind(fieldName).to(Value.json(null));
             break;
           case TYPE_CODE_UNSPECIFIED:
           case UNRECOGNIZED:
           default:
-            throw new IllegalArgumentException(
-                "Unknown parameter type: " + entry.getValue().getCode());
+            throw new IllegalArgumentException("Unknown parameter type: " + fieldType.getCode());
         }
       } else {
-        switch (entry.getValue().getCode()) {
+        switch (fieldType.getCode()) {
           case ARRAY:
-            switch (entry.getValue().getArrayElementType().getCode()) {
+            switch (elementType.getCode()) {
               case BOOL:
                 builder
-                    .bind(entry.getKey())
+                    .bind(fieldName)
                     .toBoolArray(
                         (Iterable<Boolean>)
                             GrpcStruct.decodeArrayValue(
@@ -1261,7 +1278,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 break;
               case BYTES:
                 builder
-                    .bind(entry.getKey())
+                    .bind(fieldName)
                     .toBytesArray(
                         (Iterable<ByteArray>)
                             GrpcStruct.decodeArrayValue(
@@ -1269,7 +1286,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 break;
               case DATE:
                 builder
-                    .bind(entry.getKey())
+                    .bind(fieldName)
                     .toDateArray(
                         (Iterable<Date>)
                             GrpcStruct.decodeArrayValue(
@@ -1277,7 +1294,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 break;
               case FLOAT64:
                 builder
-                    .bind(entry.getKey())
+                    .bind(fieldName)
                     .toFloat64Array(
                         (Iterable<Double>)
                             GrpcStruct.decodeArrayValue(
@@ -1285,7 +1302,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 break;
               case INT64:
                 builder
-                    .bind(entry.getKey())
+                    .bind(fieldName)
                     .toInt64Array(
                         (Iterable<Long>)
                             GrpcStruct.decodeArrayValue(
@@ -1293,15 +1310,32 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 break;
               case STRING:
                 builder
-                    .bind(entry.getKey())
+                    .bind(fieldName)
                     .toStringArray(
                         (Iterable<String>)
                             GrpcStruct.decodeArrayValue(
                                 com.google.cloud.spanner.Type.string(), value.getListValue()));
                 break;
+              case NUMERIC:
+                if (elementType.getTypeAnnotation() == TypeAnnotationCode.PG_NUMERIC) {
+                  builder
+                      .bind(fieldName)
+                      .toPgNumericArray(
+                          (Iterable<String>)
+                              GrpcStruct.decodeArrayValue(
+                                  com.google.cloud.spanner.Type.pgNumeric(), value.getListValue()));
+                } else {
+                  builder
+                      .bind(fieldName)
+                      .toNumericArray(
+                          (Iterable<BigDecimal>)
+                              GrpcStruct.decodeArrayValue(
+                                  com.google.cloud.spanner.Type.numeric(), value.getListValue()));
+                }
+                break;
               case TIMESTAMP:
                 builder
-                    .bind(entry.getKey())
+                    .bind(fieldName)
                     .toTimestampArray(
                         (Iterable<com.google.cloud.Timestamp>)
                             GrpcStruct.decodeArrayValue(
@@ -1309,7 +1343,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 break;
               case JSON:
                 builder
-                    .bind(entry.getKey())
+                    .bind(fieldName)
                     .toJsonArray(
                         (Iterable<String>)
                             GrpcStruct.decodeArrayValue(
@@ -1320,43 +1354,48 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               case UNRECOGNIZED:
               default:
                 throw new IllegalArgumentException(
-                    "Unknown or invalid array parameter type: "
-                        + entry.getValue().getArrayElementType().getCode());
+                    "Unknown or invalid array parameter type: " + elementType.getCode());
             }
             break;
           case BOOL:
-            builder.bind(entry.getKey()).to(value.getBoolValue());
+            builder.bind(fieldName).to(value.getBoolValue());
             break;
           case BYTES:
-            builder.bind(entry.getKey()).to(ByteArray.fromBase64(value.getStringValue()));
+            builder.bind(fieldName).to(ByteArray.fromBase64(value.getStringValue()));
             break;
           case DATE:
-            builder.bind(entry.getKey()).to(Date.parseDate(value.getStringValue()));
+            builder.bind(fieldName).to(Date.parseDate(value.getStringValue()));
             break;
           case FLOAT64:
-            builder.bind(entry.getKey()).to(value.getNumberValue());
+            builder.bind(fieldName).to(value.getNumberValue());
             break;
           case INT64:
-            builder.bind(entry.getKey()).to(Long.valueOf(value.getStringValue()));
+            builder.bind(fieldName).to(Long.valueOf(value.getStringValue()));
             break;
           case STRING:
-            builder.bind(entry.getKey()).to(value.getStringValue());
+            builder.bind(fieldName).to(value.getStringValue());
+            break;
+          case NUMERIC:
+            if (fieldType.getTypeAnnotation() == TypeAnnotationCode.PG_NUMERIC) {
+              builder.bind(fieldName).to(Value.pgNumeric(value.getStringValue()));
+            } else {
+              builder.bind(fieldName).to(new BigDecimal(value.getStringValue()));
+            }
             break;
           case STRUCT:
             throw new IllegalArgumentException("Struct parameters not (yet) supported");
           case TIMESTAMP:
             builder
-                .bind(entry.getKey())
+                .bind(fieldName)
                 .to(com.google.cloud.Timestamp.parseTimestamp(value.getStringValue()));
             break;
           case JSON:
-            builder.bind(entry.getKey()).to(Value.json(value.getStringValue()));
+            builder.bind(fieldName).to(Value.json(value.getStringValue()));
             break;
           case TYPE_CODE_UNSPECIFIED:
           case UNRECOGNIZED:
           default:
-            throw new IllegalArgumentException(
-                "Unknown parameter type: " + entry.getValue().getCode());
+            throw new IllegalArgumentException("Unknown parameter type: " + fieldType.getCode());
         }
       }
     }

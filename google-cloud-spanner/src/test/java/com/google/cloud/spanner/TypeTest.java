@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.spanner.Type.Code;
+import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
@@ -34,12 +35,21 @@ import org.junit.runners.JUnit4;
 public class TypeTest {
 
   private abstract static class ScalarTypeTester {
-    final Type.Code expectedCode;
-    final TypeCode expectedProtoCode;
+    private final Type.Code expectedCode;
+    private final TypeCode expectedTypeCode;
+    private final TypeAnnotationCode expectedTypeAnnotationCode;
 
-    ScalarTypeTester(Type.Code expectedCode, TypeCode expectedProtoCode) {
+    ScalarTypeTester(Type.Code expectedCode, TypeCode expectedTypeCode) {
+      this(expectedCode, expectedTypeCode, TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED);
+    }
+
+    ScalarTypeTester(
+        Type.Code expectedCode,
+        TypeCode expectedTypeCode,
+        TypeAnnotationCode expectedTypeAnnotationCode) {
       this.expectedCode = expectedCode;
-      this.expectedProtoCode = expectedProtoCode;
+      this.expectedTypeCode = expectedTypeCode;
+      this.expectedTypeAnnotationCode = expectedTypeAnnotationCode;
     }
 
     abstract Type newType();
@@ -49,10 +59,17 @@ public class TypeTest {
       assertThat(t.getCode()).isEqualTo(expectedCode);
       assertThat(newType()).isSameInstanceAs(t); // Interned.
       // String form is deliberately the same as the corresponding type enum in the public API.
-      assertThat(t.toString()).isEqualTo(expectedProtoCode.toString());
+      if (expectedTypeAnnotationCode != TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED) {
+        assertThat(t.toString())
+            .isEqualTo(
+                expectedTypeCode.toString() + "<" + expectedTypeAnnotationCode.toString() + ">");
+      } else {
+        assertThat(t.toString()).isEqualTo(expectedTypeCode.toString());
+      }
 
       com.google.spanner.v1.Type proto = t.toProto();
-      assertThat(proto.getCode()).isEqualTo(expectedProtoCode);
+      assertThat(proto.getCode()).isEqualTo(expectedTypeCode);
+      assertThat(proto.getTypeAnnotation()).isEqualTo(expectedTypeAnnotationCode);
       assertThat(proto.hasArrayElementType()).isFalse();
       assertThat(proto.hasStructType()).isFalse();
 
@@ -101,6 +118,16 @@ public class TypeTest {
       @Override
       Type newType() {
         return Type.numeric();
+      }
+    }.test();
+  }
+
+  @Test
+  public void pgNumeric() {
+    new ScalarTypeTester(Type.Code.PG_NUMERIC, TypeCode.NUMERIC, TypeAnnotationCode.PG_NUMERIC) {
+      @Override
+      Type newType() {
+        return Type.pgNumeric();
       }
     }.test();
   }
@@ -156,14 +183,28 @@ public class TypeTest {
   }
 
   abstract static class ArrayTypeTester {
-    final Type.Code expectedElementCode;
-    final TypeCode expectedElementProtoCode;
-    final boolean expectInterned;
+    private final Type.Code expectedElementCode;
+    private final TypeCode expectedElementTypeCode;
+    private final TypeAnnotationCode expectedTypeAnnotationCode;
+    private final boolean expectInterned;
 
-    protected ArrayTypeTester(
-        Type.Code expectedElementCode, TypeCode expectedElementProtoCode, boolean expectInterned) {
+    ArrayTypeTester(
+        Type.Code expectedElementCode, TypeCode expectedElementTypeCode, boolean expectInterned) {
+      this(
+          expectedElementCode,
+          expectedElementTypeCode,
+          TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED,
+          expectInterned);
+    }
+
+    ArrayTypeTester(
+        Type.Code expectedElementCode,
+        TypeCode expectedElementTypeCode,
+        TypeAnnotationCode expectedTypeAnnotationCode,
+        boolean expectInterned) {
       this.expectedElementCode = expectedElementCode;
-      this.expectedElementProtoCode = expectedElementProtoCode;
+      this.expectedElementTypeCode = expectedElementTypeCode;
+      this.expectedTypeAnnotationCode = expectedTypeAnnotationCode;
       this.expectInterned = expectInterned;
     }
 
@@ -235,6 +276,17 @@ public class TypeTest {
   }
 
   @Test
+  public void pgNumericArray() {
+    new ArrayTypeTester(
+        Type.Code.PG_NUMERIC, TypeCode.NUMERIC, TypeAnnotationCode.PG_NUMERIC, true) {
+      @Override
+      Type newElementType() {
+        return Type.pgNumeric();
+      }
+    }.test();
+  }
+
+  @Test
   public void stringArray() {
     new ArrayTypeTester(Type.Code.STRING, TypeCode.STRING, true) {
       @Override
@@ -296,25 +348,36 @@ public class TypeTest {
 
   @Test
   public void struct() {
-    Type t = Type.struct(StructField.of("f1", Type.int64()), StructField.of("f2", Type.string()));
+    Type t =
+        Type.struct(
+            StructField.of("f1", Type.int64()),
+            StructField.of("f2", Type.string()),
+            StructField.of("f3", Type.pgNumeric()));
     assertThat(t.getCode()).isEqualTo(Type.Code.STRUCT);
     // Exercise StructField equality.
     assertThat(t.getStructFields())
-        .containsExactly(StructField.of("f1", Type.int64()), StructField.of("f2", Type.string()))
+        .containsExactly(
+            StructField.of("f1", Type.int64()),
+            StructField.of("f2", Type.string()),
+            StructField.of("f3", Type.pgNumeric()))
         .inOrder();
     // Exercise StructField getters.
     assertThat(t.getStructFields().get(0).getName()).isEqualTo("f1");
     assertThat(t.getStructFields().get(0).getType()).isEqualTo(Type.int64());
     assertThat(t.getStructFields().get(1).getName()).isEqualTo("f2");
     assertThat(t.getStructFields().get(1).getType()).isEqualTo(Type.string());
-    assertThat(t.toString()).isEqualTo("STRUCT<f1 INT64, f2 STRING>");
+    assertThat(t.getStructFields().get(2).getName()).isEqualTo("f3");
+    assertThat(t.getStructFields().get(2).getType()).isEqualTo(Type.pgNumeric());
+    assertThat(t.toString()).isEqualTo("STRUCT<f1 INT64, f2 STRING, f3 NUMERIC<PG_NUMERIC>>");
     assertThat(t.getFieldIndex("f1")).isEqualTo(0);
     assertThat(t.getFieldIndex("f2")).isEqualTo(1);
+    assertThat(t.getFieldIndex("f3")).isEqualTo(2);
 
     assertProtoEquals(
         t.toProto(),
         "code: STRUCT struct_type { fields { name: 'f1' type { code: INT64 } }"
-            + " fields { name: 'f2' type { code: STRING } } }");
+            + " fields { name: 'f2' type { code: STRING } } "
+            + " fields { name: 'f3' type { code: NUMERIC, type_annotation: PG_NUMERIC } } }");
   }
 
   @Test

@@ -22,9 +22,12 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
@@ -572,5 +575,78 @@ public class ConnectionOptionsTest {
     assertThat(e.getMessage())
         .contains(
             "Cannot specify both a credentials URL and encoded credentials. Only set one of the properties.");
+  }
+
+  @Test
+  public void testSetDialect() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setCredentials(NoCredentials.getInstance())
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .build();
+    assertThat(options.getDialect()).isEqualTo(Dialect.GOOGLE_STANDARD_SQL);
+
+    ConnectionOptions optionsSpanner =
+        ConnectionOptions.newBuilder()
+            .setCredentials(NoCredentials.getInstance())
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?dialect=GOOGLE_STANDARD_SQL")
+            .build();
+    assertThat(optionsSpanner.getDialect()).isEqualTo(Dialect.GOOGLE_STANDARD_SQL);
+
+    ConnectionOptions optionsPostgreSQL =
+        ConnectionOptions.newBuilder()
+            .setCredentials(NoCredentials.getInstance())
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?dialect=POSTGRESQL")
+            .build();
+    assertThat(optionsPostgreSQL.getDialect()).isEqualTo(Dialect.POSTGRESQL);
+
+    ConnectionOptions optionsSpannerLC =
+        ConnectionOptions.newBuilder()
+            .setCredentials(NoCredentials.getInstance())
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?dialect=google_standard_sql")
+            .build();
+    assertThat(optionsSpannerLC.getDialect()).isEqualTo(Dialect.GOOGLE_STANDARD_SQL);
+
+    ConnectionOptions optionsPostgreSQLLC =
+        ConnectionOptions.newBuilder()
+            .setCredentials(NoCredentials.getInstance())
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?dialect=postgresql")
+            .build();
+    assertThat(optionsPostgreSQLLC.getDialect()).isEqualTo(Dialect.POSTGRESQL);
+
+    try {
+      ConnectionOptions.newBuilder()
+          .setCredentials(NoCredentials.getInstance())
+          .setUri(
+              "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?dialect=POSTGRES")
+          .build();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      assertThat(e.getMessage())
+          .contains("Dialect must be one of [GOOGLE_STANDARD_SQL, POSTGRESQL]");
+    }
+  }
+
+  @Test
+  public void testExternalChannelProvider() {
+    String baseUri =
+        "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database";
+
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                baseUri
+                    + "?channelProvider=com.google.cloud.spanner.connection.TestChannelProvider")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
+
+    TransportChannelProvider provider = options.getChannelProvider();
+    assertTrue(provider instanceof InstantiatingGrpcChannelProvider);
   }
 }

@@ -17,16 +17,20 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.spanner.v1.TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import java.io.Serializable;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.TreeMap;
 import javax.annotation.Nullable;
@@ -45,6 +49,7 @@ public final class Type implements Serializable {
   private static final Type TYPE_INT64 = new Type(Code.INT64, null, null);
   private static final Type TYPE_FLOAT64 = new Type(Code.FLOAT64, null, null);
   private static final Type TYPE_NUMERIC = new Type(Code.NUMERIC, null, null);
+  private static final Type TYPE_PG_NUMERIC = new Type(Code.PG_NUMERIC, null, null);
   private static final Type TYPE_STRING = new Type(Code.STRING, null, null);
   private static final Type TYPE_JSON = new Type(Code.JSON, null, null);
   private static final Type TYPE_BYTES = new Type(Code.BYTES, null, null);
@@ -54,6 +59,7 @@ public final class Type implements Serializable {
   private static final Type TYPE_ARRAY_INT64 = new Type(Code.ARRAY, TYPE_INT64, null);
   private static final Type TYPE_ARRAY_FLOAT64 = new Type(Code.ARRAY, TYPE_FLOAT64, null);
   private static final Type TYPE_ARRAY_NUMERIC = new Type(Code.ARRAY, TYPE_NUMERIC, null);
+  private static final Type TYPE_ARRAY_PG_NUMERIC = new Type(Code.ARRAY, TYPE_PG_NUMERIC, null);
   private static final Type TYPE_ARRAY_STRING = new Type(Code.ARRAY, TYPE_STRING, null);
   private static final Type TYPE_ARRAY_JSON = new Type(Code.ARRAY, TYPE_JSON, null);
   private static final Type TYPE_ARRAY_BYTES = new Type(Code.ARRAY, TYPE_BYTES, null);
@@ -87,6 +93,14 @@ public final class Type implements Serializable {
   /** Returns the descriptor for the {@code NUMERIC} type. */
   public static Type numeric() {
     return TYPE_NUMERIC;
+  }
+
+  /**
+   * Returns the descriptor for the {@code NUMERIC} type with the {@code PG_NUMERIC} type
+   * annotation.
+   */
+  public static Type pgNumeric() {
+    return Type.TYPE_PG_NUMERIC;
   }
 
   /**
@@ -134,6 +148,8 @@ public final class Type implements Serializable {
         return TYPE_ARRAY_FLOAT64;
       case NUMERIC:
         return TYPE_ARRAY_NUMERIC;
+      case PG_NUMERIC:
+        return TYPE_ARRAY_PG_NUMERIC;
       case STRING:
         return TYPE_ARRAY_STRING;
       case JSON:
@@ -189,6 +205,7 @@ public final class Type implements Serializable {
     BOOL(TypeCode.BOOL),
     INT64(TypeCode.INT64),
     NUMERIC(TypeCode.NUMERIC),
+    PG_NUMERIC(TypeCode.NUMERIC, TypeAnnotationCode.PG_NUMERIC),
     FLOAT64(TypeCode.FLOAT64),
     STRING(TypeCode.STRING),
     JSON(TypeCode.JSON),
@@ -198,30 +215,50 @@ public final class Type implements Serializable {
     ARRAY(TypeCode.ARRAY),
     STRUCT(TypeCode.STRUCT);
 
-    private static final Map<TypeCode, Code> protoToCode;
+    private static final Map<Entry<TypeCode, TypeAnnotationCode>, Code> protoToCode;
 
     static {
-      ImmutableMap.Builder<TypeCode, Code> builder = ImmutableMap.builder();
+      ImmutableMap.Builder<Entry<TypeCode, TypeAnnotationCode>, Code> builder =
+          ImmutableMap.builder();
       for (Code code : Code.values()) {
-        builder.put(code.protoCode(), code);
+        builder.put(new SimpleEntry<>(code.getTypeCode(), code.getTypeAnnotationCode()), code);
       }
       protoToCode = builder.build();
     }
 
-    private final TypeCode protoCode;
+    private final TypeCode typeCode;
+    private final TypeAnnotationCode typeAnnotationCode;
 
-    Code(TypeCode protoCode) {
-      this.protoCode = protoCode;
+    Code(TypeCode typeCode) {
+      this(typeCode, TYPE_ANNOTATION_CODE_UNSPECIFIED);
     }
 
-    TypeCode protoCode() {
-      return protoCode;
+    Code(TypeCode typeCode, TypeAnnotationCode typeAnnotationCode) {
+      this.typeCode = typeCode;
+      this.typeAnnotationCode = typeAnnotationCode;
     }
 
-    static Code fromProtoCode(TypeCode protoCode) {
-      Code code = protoToCode.get(protoCode);
-      checkArgument(code != null, "Invalid code: %s", protoCode);
+    TypeCode getTypeCode() {
+      return typeCode;
+    }
+
+    TypeAnnotationCode getTypeAnnotationCode() {
+      return typeAnnotationCode;
+    }
+
+    static Code fromProto(TypeCode typeCode, TypeAnnotationCode typeAnnotationCode) {
+      Code code = protoToCode.get(new SimpleEntry<>(typeCode, typeAnnotationCode));
+      checkArgument(code != null, "Invalid code: %s<%s>", typeCode, typeAnnotationCode);
       return code;
+    }
+
+    @Override
+    public String toString() {
+      if (typeAnnotationCode == TYPE_ANNOTATION_CODE_UNSPECIFIED) {
+        return typeCode.toString();
+      } else {
+        return typeCode.toString() + "<" + typeAnnotationCode.toString() + ">";
+      }
     }
   }
 
@@ -379,7 +416,8 @@ public final class Type implements Serializable {
 
   com.google.spanner.v1.Type toProto() {
     com.google.spanner.v1.Type.Builder proto = com.google.spanner.v1.Type.newBuilder();
-    proto.setCode(code.protoCode());
+    proto.setCode(code.getTypeCode());
+    proto.setTypeAnnotation(code.getTypeAnnotationCode());
     if (code == Code.ARRAY) {
       proto.setArrayElementType(arrayElementType.toProto());
     } else if (code == Code.STRUCT) {
@@ -392,7 +430,7 @@ public final class Type implements Serializable {
   }
 
   static Type fromProto(com.google.spanner.v1.Type proto) {
-    Code type = Code.fromProtoCode(proto.getCode());
+    Code type = Code.fromProto(proto.getCode(), proto.getTypeAnnotation());
     switch (type) {
       case BOOL:
         return bool();
@@ -402,6 +440,8 @@ public final class Type implements Serializable {
         return float64();
       case NUMERIC:
         return numeric();
+      case PG_NUMERIC:
+        return pgNumeric();
       case STRING:
         return string();
       case JSON:
