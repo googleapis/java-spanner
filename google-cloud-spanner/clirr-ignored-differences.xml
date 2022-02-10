@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- see http://www.mojohaus.org/clirr-maven-plugin/examples/ignored-differences.html -->
 <differences>
-  8001: com.google.cloud.spanner.connection.StatementParser: Class com.google.cloud.spanner.connection.StatementParser removed
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/connection/Connection</className>
