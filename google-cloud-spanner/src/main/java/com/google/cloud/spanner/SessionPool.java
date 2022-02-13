@@ -1463,6 +1463,11 @@ class SessionPool {
     }
 
     @Override
+    public long getSessionsInUse() {
+      return delegate.getSessionsInUse();
+    }
+
+    @Override
     public ApiFuture<Empty> asyncClose() {
       close();
       return ApiFutures.immediateFuture(Empty.getDefaultInstance());

@@ -234,6 +234,11 @@ class DatabaseClientImpl implements DatabaseClient {
     }
   }
 
+  @Override
+  public long getSessionsInUse() {
+    return pool.getNumberOfSessionsInUse();
+  }
+
   private <T> T runWithSessionRetry(Function<Session, T> callable) {
     PooledSessionFuture session = getSession();
     while (true) {

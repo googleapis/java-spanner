@@ -577,4 +577,8 @@ public interface DatabaseClient {
    * idempotent, such as deleting old rows from a very large table.
    */
   long executePartitionedUpdate(Statement stmt, UpdateOption... options);
+
+  default long getSessionsInUse() {
+    return -1L;
+  }
 }
