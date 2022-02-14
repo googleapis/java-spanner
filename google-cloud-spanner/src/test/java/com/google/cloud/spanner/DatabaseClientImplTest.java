@@ -1631,7 +1631,7 @@ public class DatabaseClientImplTest {
       try (ResultSet rs = transaction.execute(partitions.get(0))) {
         // Just iterate over the results to execute the query.
         while (rs.next()) {}
-      }  finally {
+      } finally {
         transaction.cleanup();
       }
       // Check if the last query executed is a DeleteSessionRequest and the second last query
