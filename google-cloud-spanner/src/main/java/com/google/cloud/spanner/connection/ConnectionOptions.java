@@ -25,7 +25,6 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SessionPoolOptions;
@@ -166,7 +165,6 @@ public class ConnectionOptions {
   private static final RpcPriority DEFAULT_RPC_PRIORITY = null;
   private static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
   private static final boolean DEFAULT_LENIENT = false;
-  private static final String DEFAULT_DIALECT = Dialect.GOOGLE_STANDARD_SQL.name();
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -519,7 +517,6 @@ public class ConnectionOptions {
   private final Integer maxSessions;
   private final String userAgent;
   private final QueryOptions queryOptions;
-  private final Dialect dialect;
   private final boolean returnCommitStats;
   private final boolean autoConfigEmulator;
   private final RpcPriority rpcPriority;
@@ -563,14 +560,6 @@ public class ConnectionOptions {
     queryOptionsBuilder.setOptimizerStatisticsPackage(parseOptimizerStatisticsPackage(this.uri));
     this.queryOptions = queryOptionsBuilder.build();
     this.returnCommitStats = parseReturnCommitStats(this.uri);
-
-    try {
-      this.dialect = Dialect.fromName(parseDialect(uri));
-    } catch (IllegalArgumentException e) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.INVALID_ARGUMENT, e.getMessage(), e);
-    }
-
     this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
     this.host = determineHost(matcher, autoConfigEmulator, usePlainText);
@@ -622,6 +611,7 @@ public class ConnectionOptions {
           builder.sessionPoolOptions == null
               ? SessionPoolOptions.newBuilder()
               : builder.sessionPoolOptions.toBuilder();
+      sessionPoolOptionsBuilder.setAutoDetectDialect(true);
       if (this.minSessions != null) {
         sessionPoolOptionsBuilder.setMinSessions(this.minSessions);
       }
@@ -629,8 +619,10 @@ public class ConnectionOptions {
         sessionPoolOptionsBuilder.setMaxSessions(this.maxSessions);
       }
       this.sessionPoolOptions = sessionPoolOptionsBuilder.build();
-    } else {
+    } else if (builder.sessionPoolOptions != null) {
       this.sessionPoolOptions = builder.sessionPoolOptions;
+    } else {
+      this.sessionPoolOptions = SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build();
     }
   }
 
@@ -778,12 +770,6 @@ public class ConnectionOptions {
   static RpcPriority parseRPCPriority(String uri) {
     String value = parseUriProperty(uri, RPC_PRIORITY_NAME);
     return value != null ? RpcPriority.valueOf(value) : DEFAULT_RPC_PRIORITY;
-  }
-
-  @VisibleForTesting
-  static String parseDialect(String uri) {
-    String value = parseUriProperty(uri, DIALECT_PROPERTY_NAME);
-    return value != null ? value.toUpperCase() : DEFAULT_DIALECT;
   }
 
   @VisibleForTesting
@@ -968,11 +954,6 @@ public class ConnectionOptions {
   @Nullable
   public String getWarnings() {
     return warnings;
-  }
-
-  /** The dialect to use for connections created by this {@link ConnectionOptions}. */
-  public Dialect getDialect() {
-    return dialect;
   }
 
   /** Use http instead of https. Only valid for (local) test servers. */

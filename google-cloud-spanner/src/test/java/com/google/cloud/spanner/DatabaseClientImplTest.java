@@ -2204,4 +2204,60 @@ public class DatabaseClientImplTest {
             () -> client.readWriteTransaction().run(tx -> function.apply(tx)));
     assertTrue(exception.getMessage().contains("Context has been closed"));
   }
+
+  @Test
+  public void testGetDialectDefault() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    assertEquals(Dialect.GOOGLE_STANDARD_SQL, client.getDialect());
+  }
+
+  @Test
+  public void testGetDialectDefaultPreloaded() {
+    try (Spanner spanner =
+        this.spanner
+            .getOptions()
+            .toBuilder()
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build())
+            .build()
+            .getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      assertEquals(Dialect.GOOGLE_STANDARD_SQL, client.getDialect());
+    }
+  }
+
+  @Test
+  public void testGetDialectPostgreSQL() {
+    mockSpanner.putStatementResult(StatementResult.detectDialectResult(Dialect.POSTGRESQL));
+    try {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      assertEquals(Dialect.POSTGRESQL, client.getDialect());
+    } finally {
+      mockSpanner.putStatementResult(
+          StatementResult.detectDialectResult(Dialect.GOOGLE_STANDARD_SQL));
+    }
+  }
+
+  @Test
+  public void testGetDialectPostgreSQLPreloaded() {
+    mockSpanner.putStatementResult(StatementResult.detectDialectResult(Dialect.POSTGRESQL));
+    try (Spanner spanner =
+        this.spanner
+            .getOptions()
+            .toBuilder()
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build())
+            .build()
+            .getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      assertEquals(Dialect.POSTGRESQL, client.getDialect());
+    } finally {
+      mockSpanner.putStatementResult(
+          StatementResult.detectDialectResult(Dialect.GOOGLE_STANDARD_SQL));
+    }
+  }
 }

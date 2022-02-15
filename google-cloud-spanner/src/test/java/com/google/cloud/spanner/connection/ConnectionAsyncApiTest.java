@@ -54,6 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -76,6 +77,13 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   @AfterClass
   public static void stopExecutor() {
     executor.shutdown();
+  }
+
+  @Before
+  public void setup() {
+    try (Connection connection = createConnection()) {
+      connection.getDialect();
+    }
   }
 
   @After
