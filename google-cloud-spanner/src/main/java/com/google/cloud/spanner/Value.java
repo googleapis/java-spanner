@@ -73,6 +73,9 @@ public abstract class Value implements Serializable {
    */
   public static final Timestamp COMMIT_TIMESTAMP = Timestamp.ofTimeMicroseconds(0L);
 
+  static final com.google.protobuf.Value NULL_PROTO =
+      com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
+
   /** Constant to specify a PG Numeric NaN value. */
   public static final String NAN = "NaN";
 
@@ -622,6 +625,10 @@ public abstract class Value implements Serializable {
 
   // END OF PUBLIC API.
 
+  static com.google.protobuf.Value toProto(Value value) {
+    return value == null ? NULL_PROTO : value.toProto();
+  }
+
   abstract void toString(StringBuilder b);
 
   abstract com.google.protobuf.Value toProto();
@@ -737,9 +744,6 @@ public abstract class Value implements Serializable {
 
   /** Template class for {@code Value} implementations. */
   private abstract static class AbstractValue extends Value {
-    static final com.google.protobuf.Value NULL_PROTO =
-        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
-
     private final boolean isNull;
     private final Type type;
 

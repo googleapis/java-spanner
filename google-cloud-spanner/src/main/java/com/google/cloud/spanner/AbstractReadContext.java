@@ -583,8 +583,10 @@ abstract class AbstractReadContext
     if (!stmtParameters.isEmpty()) {
       com.google.protobuf.Struct.Builder paramsBuilder = builder.getParamsBuilder();
       for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
-        paramsBuilder.putFields(param.getKey(), param.getValue().toProto());
-        builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
+        paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
+        if (param.getValue() != null) {
+          builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
+        }
       }
     }
     if (withTransactionSelector) {
@@ -612,10 +614,12 @@ abstract class AbstractReadContext
         com.google.protobuf.Struct.Builder paramsBuilder =
             builder.getStatementsBuilder(idx).getParamsBuilder();
         for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
-          paramsBuilder.putFields(param.getKey(), param.getValue().toProto());
-          builder
-              .getStatementsBuilder(idx)
-              .putParamTypes(param.getKey(), param.getValue().getType().toProto());
+          paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
+          if (param.getValue() != null) {
+            builder
+                .getStatementsBuilder(idx)
+                .putParamTypes(param.getKey(), param.getValue().getType().toProto());
+          }
         }
       }
       idx++;
