@@ -18,7 +18,12 @@ package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.Database;
@@ -38,6 +43,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -379,5 +385,42 @@ public final class ITDMLTest {
     executeQuery(DML_COUNT, insertDml());
     // checks for multi-stmts within a txn, therefore also verifying seqNo.
     executeQuery(DML_COUNT * 2, updateDml(), deleteDml());
+  }
+
+  @Test
+  public void testUntypedNullValues() {
+    assumeFalse(
+        "Spanner PostgreSQL does not yet support untyped null values",
+        dialect.dialect == Dialect.POSTGRESQL);
+
+    DatabaseClient client = getClient(dialect.dialect);
+    String sql;
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      sql = "INSERT INTO T (K, V) VALUES ($1, $2)";
+    } else {
+      sql = "INSERT INTO T (K, V) VALUES (@p1, @p2)";
+    }
+    Long updateCount =
+        client
+            .readWriteTransaction()
+            .run(
+                transaction ->
+                    transaction.executeUpdate(
+                        Statement.newBuilder(sql)
+                            .bind("p1")
+                            .to("k1")
+                            .bind("p2")
+                            .to((Value) null)
+                            .build()));
+
+    assertNotNull(updateCount);
+    assertEquals(1L, updateCount.longValue());
+
+    // Read the row back and verify that the value is null.
+    try (ResultSet resultSet = client.singleUse().executeQuery(Statement.of("SELECT V FROM T"))) {
+      assertTrue(resultSet.next());
+      assertTrue(resultSet.isNull(0));
+      assertFalse(resultSet.next());
+    }
   }
 }

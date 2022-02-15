@@ -169,8 +169,10 @@ public class BatchClientImpl implements BatchClient {
       if (!stmtParameters.isEmpty()) {
         Struct.Builder paramsBuilder = builder.getParamsBuilder();
         for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
-          paramsBuilder.putFields(param.getKey(), param.getValue().toProto());
-          builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
+          paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
+          if (param.getValue() != null) {
+            builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
+          }
         }
       }
       TransactionSelector selector = getTransactionSelector();
