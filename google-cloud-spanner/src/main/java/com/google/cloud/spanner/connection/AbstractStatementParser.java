@@ -130,7 +130,8 @@ public abstract class AbstractStatementParser {
           .parse(Statement.of("RUN BATCH"));
 
   /** The type of statement that has been recognized by the parser. */
-  enum StatementType {
+  @InternalApi
+  public enum StatementType {
     CLIENT_SIDE,
     DDL,
     QUERY,
@@ -139,7 +140,8 @@ public abstract class AbstractStatementParser {
   }
 
   /** A statement that has been parsed */
-  static class ParsedStatement {
+  @InternalApi
+  public static class ParsedStatement {
     private final StatementType type;
     private final ClientSideStatementImpl clientSideStatement;
     private final Statement statement;
@@ -217,11 +219,18 @@ public abstract class AbstractStatementParser {
           && Objects.equals(this.sqlWithoutComments, o.sqlWithoutComments);
     }
 
-    StatementType getType() {
+    /** Returns the type of statement that was recognized by the parser. */
+    @InternalApi
+    public StatementType getType() {
       return type;
     }
 
-    boolean isQuery() {
+    /**
+     * Returns true if the statement is a query that will return a {@link
+     * com.google.cloud.spanner.ResultSet}.
+     */
+    @InternalApi
+    public boolean isQuery() {
       switch (type) {
         case CLIENT_SIDE:
           return getClientSideStatement().isQuery();
@@ -235,7 +244,12 @@ public abstract class AbstractStatementParser {
       return false;
     }
 
-    boolean isUpdate() {
+    /**
+     * Returns true if the statement is a DML statement or a client side statement that will return
+     * an update count.
+     */
+    @InternalApi
+    public boolean isUpdate() {
       switch (type) {
         case CLIENT_SIDE:
           return getClientSideStatement().isUpdate();
@@ -249,7 +263,9 @@ public abstract class AbstractStatementParser {
       return false;
     }
 
-    boolean isDdl() {
+    /** Returns true if the statement is a DDL statement. */
+    @InternalApi
+    public boolean isDdl() {
       switch (type) {
         case DDL:
           return true;
@@ -286,7 +302,9 @@ public abstract class AbstractStatementParser {
           .build();
     }
 
-    String getSqlWithoutComments() {
+    /** Returns the SQL statement with all comments removed from the SQL string. */
+    @InternalApi
+    public String getSqlWithoutComments() {
       return sqlWithoutComments;
     }
 
@@ -321,7 +339,8 @@ public abstract class AbstractStatementParser {
    * @param statement The statement to parse.
    * @return the parsed and categorized statement.
    */
-  ParsedStatement parse(Statement statement) {
+  @InternalApi
+  public ParsedStatement parse(Statement statement) {
     return parse(statement, null);
   }
 
