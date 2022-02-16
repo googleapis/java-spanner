@@ -53,7 +53,17 @@ public class DirectExecuteResultSetTest {
   public void testMethodCallBeforeNext()
       throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     List<String> excludedMethods =
-        Arrays.asList("getStats", "next", "close", "ofResultSet", "equals", "hashCode");
+        Arrays.asList(
+            "getStats",
+            "next",
+            "close",
+            "ofResultSet",
+            "equals",
+            "hashCode",
+            "getType",
+            "getColumnCount",
+            "getColumnIndex",
+            "getColumnType");
     DirectExecuteResultSet subject = createSubject();
     callMethods(subject, excludedMethods, IllegalStateException.class);
   }
