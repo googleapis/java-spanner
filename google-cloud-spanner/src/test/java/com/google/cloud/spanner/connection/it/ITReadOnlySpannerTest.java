@@ -33,6 +33,7 @@ import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import com.google.cloud.spanner.connection.SqlScriptVerifier;
 import java.math.BigInteger;
@@ -211,6 +212,30 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
       exec.awaitTermination(1000L, TimeUnit.SECONDS);
       rs1.close();
       rs2.close();
+    }
+  }
+
+  @Test
+  public void testGetMetadataFromAnalyzeQuery() {
+    assumeFalse("analyze query is not supported on the emulator", isUsingEmulator());
+    try (ITConnection connection = createConnection()) {
+      // Request a query plan without executing the query and verify that we can get the column
+      // metadata of the query without calling resultSet.next() first.
+      try (ResultSet resultSet =
+          connection.analyzeQuery(
+              Statement.of("SELECT number, name FROM NUMBERS"), QueryAnalyzeMode.PLAN)) {
+        assertEquals(2, resultSet.getColumnCount());
+
+        assertEquals(0, resultSet.getColumnIndex("number"));
+        assertEquals("number", resultSet.getType().getStructFields().get(0).getName());
+        assertEquals(Type.int64(), resultSet.getColumnType(0));
+        assertEquals(Type.int64(), resultSet.getColumnType("number"));
+
+        assertEquals(1, resultSet.getColumnIndex("name"));
+        assertEquals("name", resultSet.getType().getStructFields().get(1).getName());
+        assertEquals(Type.string(), resultSet.getColumnType(1));
+        assertEquals(Type.string(), resultSet.getColumnType("name"));
+      }
     }
   }
 }

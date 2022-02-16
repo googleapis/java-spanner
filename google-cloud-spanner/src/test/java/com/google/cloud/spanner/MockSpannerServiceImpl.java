@@ -33,6 +33,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Empty;
+import com.google.protobuf.ListValue;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value.KindCase;
 import com.google.rpc.Code;
@@ -269,6 +270,32 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     /** Creates a {@link StatementResult} for statement that should return an error. */
     public static StatementResult exception(Statement statement, StatusRuntimeException exception) {
       return new StatementResult(statement, exception);
+    }
+
+    /** Creates a result for the query that detects the dialect that is used for the database. */
+    public static StatementResult detectDialectResult(Dialect resultDialect) {
+      return StatementResult.query(
+          SessionPool.DETERMINE_DIALECT_STATEMENT,
+          ResultSet.newBuilder()
+              .setMetadata(
+                  ResultSetMetadata.newBuilder()
+                      .setRowType(
+                          StructType.newBuilder()
+                              .addFields(
+                                  Field.newBuilder()
+                                      .setName("DIALECT")
+                                      .setType(Type.newBuilder().setCode(TypeCode.STRING).build())
+                                      .build())
+                              .build())
+                      .build())
+              .addRows(
+                  ListValue.newBuilder()
+                      .addValues(
+                          com.google.protobuf.Value.newBuilder()
+                              .setStringValue(resultDialect.toString())
+                              .build())
+                      .build())
+              .build());
     }
 
     private static class KeepLastElementDeque<E> extends LinkedList<E> {
@@ -525,6 +552,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   private final Random random = new Random();
   private double abortProbability = 0.0010D;
+  /**
+   * Flip this switch to true if you want the {@link SessionPool#DETERMINE_DIALECT_STATEMENT}
+   * statement to be included in the recorded requests on the mock server. It is ignored by default
+   * to prevent tests that do not expect this request to suddenly start failing.
+   */
+  private boolean includeDetermineDialectStatementInRequests = false;
 
   private final Object lock = new Object();
   private Deque<AbstractMessage> requests = new ConcurrentLinkedDeque<>();
@@ -567,6 +600,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private SimulatedExecutionTime readExecutionTime = NO_EXECUTION_TIME;
   private SimulatedExecutionTime rollbackExecutionTime = NO_EXECUTION_TIME;
   private SimulatedExecutionTime streamingReadExecutionTime = NO_EXECUTION_TIME;
+
+  public MockSpannerServiceImpl() {
+    putStatementResult(StatementResult.detectDialectResult(Dialect.GOOGLE_STANDARD_SQL));
+  }
 
   private String generateSessionName(String database) {
     return String.format("%s/sessions/%s", database, UUID.randomUUID().toString());
@@ -661,6 +698,15 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     Preconditions.checkArgument(
         probability >= 0D && probability <= 1D, "Probability must be >= 0 and <= 1");
     this.abortProbability = probability;
+  }
+
+  /**
+   * Set this to true if you want the {@link SessionPool#DETERMINE_DIALECT_STATEMENT} statement to
+   * be included in the recorded requests on the mock server. It is ignored by default to prevent
+   * tests that do not expect this request to suddenly start failing.
+   */
+  public void setIncludeDetermineDialectStatementInRequests(boolean include) {
+    this.includeDetermineDialectStatementInRequests = include;
   }
 
   /**
@@ -1097,7 +1143,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   @Override
   public void executeStreamingSql(
       ExecuteSqlRequest request, StreamObserver<PartialResultSet> responseObserver) {
-    requests.add(request);
+    if (includeDetermineDialectStatementInRequests
+        || !request.getSql().equals(SessionPool.DETERMINE_DIALECT_STATEMENT.getSql())) {
+      requests.add(request);
+    }
     Preconditions.checkNotNull(request.getSession());
     Session session = sessions.get(request.getSession());
     if (session == null) {

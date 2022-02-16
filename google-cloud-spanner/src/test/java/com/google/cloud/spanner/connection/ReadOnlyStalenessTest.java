@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
@@ -46,6 +47,7 @@ public class ReadOnlyStalenessTest {
   private final DatabaseClient dbClient = mock(DatabaseClient.class);
 
   private ConnectionImpl createConnection(ConnectionOptions options) {
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     Spanner spanner = mock(Spanner.class);
     SpannerPool spannerPool = mock(SpannerPool.class);
     when(spannerPool.getSpanner(any(ConnectionOptions.class), any(ConnectionImpl.class)))

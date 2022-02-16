@@ -54,6 +54,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.AbstractMessage;
 import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.DeleteSessionRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
@@ -1630,16 +1631,20 @@ public class DatabaseClientImplTest {
       try (ResultSet rs = transaction.execute(partitions.get(0))) {
         // Just iterate over the results to execute the query.
         while (rs.next()) {}
+      } finally {
+        transaction.cleanup();
       }
-      // Check that the last query was executed using a custom optimizer version and statistics
-      // package.
+      // Check if the last query executed is a DeleteSessionRequest and the second last query
+      // executed is a ExecuteSqlRequest and was executed using a custom optimizer version and
+      // statistics package.
       List<AbstractMessage> requests = mockSpanner.getRequests();
-      assertThat(requests).isNotEmpty();
-      assertThat(requests.get(requests.size() - 1)).isInstanceOf(ExecuteSqlRequest.class);
-      ExecuteSqlRequest request = (ExecuteSqlRequest) requests.get(requests.size() - 1);
-      assertThat(request.getQueryOptions()).isNotNull();
-      assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
-      assertThat(request.getQueryOptions().getOptimizerStatisticsPackage())
+      assert requests.size() >= 2 : "required to have at least 2 requests";
+      assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);
+      assertThat(requests.get(requests.size() - 2)).isInstanceOf(ExecuteSqlRequest.class);
+      ExecuteSqlRequest executeSqlRequest = (ExecuteSqlRequest) requests.get(requests.size() - 2);
+      assertThat(executeSqlRequest.getQueryOptions()).isNotNull();
+      assertThat(executeSqlRequest.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
+      assertThat(executeSqlRequest.getQueryOptions().getOptimizerStatisticsPackage())
           .isEqualTo("custom-package");
     }
   }
@@ -2198,5 +2203,61 @@ public class DatabaseClientImplTest {
             SpannerException.class,
             () -> client.readWriteTransaction().run(tx -> function.apply(tx)));
     assertTrue(exception.getMessage().contains("Context has been closed"));
+  }
+
+  @Test
+  public void testGetDialectDefault() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    assertEquals(Dialect.GOOGLE_STANDARD_SQL, client.getDialect());
+  }
+
+  @Test
+  public void testGetDialectDefaultPreloaded() {
+    try (Spanner spanner =
+        this.spanner
+            .getOptions()
+            .toBuilder()
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build())
+            .build()
+            .getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      assertEquals(Dialect.GOOGLE_STANDARD_SQL, client.getDialect());
+    }
+  }
+
+  @Test
+  public void testGetDialectPostgreSQL() {
+    mockSpanner.putStatementResult(StatementResult.detectDialectResult(Dialect.POSTGRESQL));
+    try {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      assertEquals(Dialect.POSTGRESQL, client.getDialect());
+    } finally {
+      mockSpanner.putStatementResult(
+          StatementResult.detectDialectResult(Dialect.GOOGLE_STANDARD_SQL));
+    }
+  }
+
+  @Test
+  public void testGetDialectPostgreSQLPreloaded() {
+    mockSpanner.putStatementResult(StatementResult.detectDialectResult(Dialect.POSTGRESQL));
+    try (Spanner spanner =
+        this.spanner
+            .getOptions()
+            .toBuilder()
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build())
+            .build()
+            .getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      assertEquals(Dialect.POSTGRESQL, client.getDialect());
+    } finally {
+      mockSpanner.putStatementResult(
+          StatementResult.detectDialectResult(Dialect.GOOGLE_STANDARD_SQL));
+    }
   }
 }

@@ -54,6 +54,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -103,6 +104,17 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
                                     .build())))
             .build();
     return createITConnection(options);
+  }
+
+  @Before
+  public void setup() {
+    // Set up a connection and get the dialect to ensure that the auto-detect-dialect query has
+    // already been executed when any of the test cases start. This is necessary to ensure that any
+    // errors or slow execution times that are used by the different test cases are not applied to
+    // the query that is used for automatic dialect detection.
+    try (Connection connection = createConnection()) {
+      connection.getDialect();
+    }
   }
 
   @After
