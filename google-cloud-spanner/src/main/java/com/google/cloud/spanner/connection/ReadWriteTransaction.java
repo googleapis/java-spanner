@@ -17,6 +17,10 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
+import static com.google.cloud.spanner.connection.AbstractStatementParser.BEGIN_STATEMENT;
+import static com.google.cloud.spanner.connection.AbstractStatementParser.COMMIT_STATEMENT;
+import static com.google.cloud.spanner.connection.AbstractStatementParser.ROLLBACK_STATEMENT;
+import static com.google.cloud.spanner.connection.AbstractStatementParser.RUN_BATCH_STATEMENT;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.api.core.ApiFuture;
@@ -40,7 +44,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.TransactionRetryListener.RetryResult;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -202,9 +206,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   public boolean isReadOnly() {
     return false;
   }
-
-  private static final ParsedStatement BEGIN_STATEMENT =
-      StatementParser.INSTANCE.parse(Statement.of("BEGIN"));
 
   @Override
   void checkValidTransaction() {
@@ -453,20 +454,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     return res;
   }
 
-  /**
-   * Create a RUN BATCH statement to use with the {@link #executeBatchUpdate(Iterable)} method to
-   * allow it to be cancelled, time out or retried.
-   *
-   * <p>{@link ReadWriteTransaction} uses the generic methods {@link #executeAsync(ParsedStatement,
-   * Callable)} and {@link #runWithRetry(Callable)} to allow statements to be cancelled, to timeout
-   * and to be retried. These methods require a {@link ParsedStatement} as input. When the {@link
-   * #executeBatchUpdate(Iterable)} method is called, we do not have one {@link ParsedStatement},
-   * and the method uses this statement instead in order to use the same logic as the other
-   * statements.
-   */
-  static final ParsedStatement EXECUTE_BATCH_UPDATE_STATEMENT =
-      StatementParser.INSTANCE.parse(Statement.of("RUN BATCH"));
-
   @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(
       Iterable<ParsedStatement> updates, final UpdateOption... options) {
@@ -484,7 +471,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     if (retryAbortsInternally) {
       res =
           executeStatementAsync(
-              EXECUTE_BATCH_UPDATE_STATEMENT,
+              RUN_BATCH_STATEMENT,
               () -> {
                 checkTimedOut();
                 return runWithRetry(
@@ -492,7 +479,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                       try {
                         getStatementExecutor()
                             .invokeInterceptors(
-                                EXECUTE_BATCH_UPDATE_STATEMENT,
+                                RUN_BATCH_STATEMENT,
                                 StatementExecutionStep.EXECUTE_STATEMENT,
                                 ReadWriteTransaction.this);
                         long[] updateCounts =
@@ -513,7 +500,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     } else {
       res =
           executeStatementAsync(
-              EXECUTE_BATCH_UPDATE_STATEMENT,
+              RUN_BATCH_STATEMENT,
               () -> {
                 checkTimedOut();
                 checkAborted();
@@ -547,19 +534,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     }
     return ApiFutures.immediateFuture(null);
   }
-
-  /**
-   * Create a COMMIT statement to use with the {@link #commit()} method to allow it to be cancelled,
-   * time out or retried.
-   *
-   * <p>{@link ReadWriteTransaction} uses the generic methods {@link #executeAsync(ParsedStatement,
-   * Callable)} and {@link #runWithRetry(Callable)} to allow statements to be cancelled, to timeout
-   * and to be retried. These methods require a {@link ParsedStatement} as input. When the {@link
-   * #commit()} method is called directly, we do not have a {@link ParsedStatement}, and the method
-   * uses this statement instead in order to use the same logic as the other statements.
-   */
-  private static final ParsedStatement COMMIT_STATEMENT =
-      StatementParser.INSTANCE.parse(Statement.of("COMMIT"));
 
   private final Callable<Void> commitCallable =
       new Callable<Void>() {
@@ -861,10 +835,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     }
   }
 
-  /** The {@link Statement} and {@link Callable} for rollbacks */
-  private final ParsedStatement rollbackStatement =
-      StatementParser.INSTANCE.parse(Statement.of("ROLLBACK"));
-
   private final Callable<Void> rollbackCallable =
       new Callable<Void>() {
         @Override
@@ -890,7 +860,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     state = UnitOfWorkState.ROLLED_BACK;
     if (txContextFuture != null && state != UnitOfWorkState.ABORTED) {
       return executeStatementAsync(
-          rollbackStatement, rollbackCallable, SpannerGrpc.getRollbackMethod());
+          ROLLBACK_STATEMENT, rollbackCallable, SpannerGrpc.getRollbackMethod());
     } else {
       return ApiFutures.immediateFuture(null);
     }

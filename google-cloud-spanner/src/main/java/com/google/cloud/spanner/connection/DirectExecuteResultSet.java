@@ -96,31 +96,26 @@ class DirectExecuteResultSet implements ResultSet {
 
   @Override
   public Type getType() {
-    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getType();
   }
 
   @Override
   public int getColumnCount() {
-    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getColumnCount();
   }
 
   @Override
   public int getColumnIndex(String columnName) {
-    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getColumnIndex(columnName);
   }
 
   @Override
   public Type getColumnType(int columnIndex) {
-    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getColumnType(columnIndex);
   }
 
   @Override
   public Type getColumnType(String columnName) {
-    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getColumnType(columnName);
   }
 

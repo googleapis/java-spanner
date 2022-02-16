@@ -22,6 +22,8 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.NoCredentials;
@@ -572,5 +574,22 @@ public class ConnectionOptionsTest {
     assertThat(e.getMessage())
         .contains(
             "Cannot specify both a credentials URL and encoded credentials. Only set one of the properties.");
+  }
+
+  @Test
+  public void testExternalChannelProvider() {
+    String baseUri =
+        "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database";
+
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                baseUri
+                    + "?channelProvider=com.google.cloud.spanner.connection.TestChannelProvider")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
+
+    TransportChannelProvider provider = options.getChannelProvider();
+    assertTrue(provider instanceof InstantiatingGrpcChannelProvider);
   }
 }

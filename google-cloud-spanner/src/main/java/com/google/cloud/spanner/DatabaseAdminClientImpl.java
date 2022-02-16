@@ -23,7 +23,6 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.cloud.Policy.DefaultMarshaller;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.DatabaseInfo.State;
 import com.google.cloud.spanner.Options.ListOption;
 import com.google.cloud.spanner.SpannerImpl.PageFetcher;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -281,14 +280,18 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       String instanceId, String databaseId, Iterable<String> statements) throws SpannerException {
     return createDatabase(
-        new Database(DatabaseId.of(projectId, instanceId, databaseId), State.UNSPECIFIED, this),
+        newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
+            .setDialect(Dialect.GOOGLE_STANDARD_SQL)
+            .build(),
         statements);
   }
 
   @Override
   public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       Database database, Iterable<String> statements) throws SpannerException {
-    String createStatement = "CREATE DATABASE `" + database.getId().getDatabase() + "`";
+    final Dialect dialect = Preconditions.checkNotNull(database.getDialect());
+    final String createStatement =
+        dialect.createDatabaseStatementFor(database.getId().getDatabase());
     OperationFuture<com.google.spanner.admin.database.v1.Database, CreateDatabaseMetadata>
         rawOperationFuture =
             rpc.createDatabase(

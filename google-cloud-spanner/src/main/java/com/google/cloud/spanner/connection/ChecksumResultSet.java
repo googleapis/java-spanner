@@ -26,8 +26,8 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type.Code;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.ReadWriteTransaction.RetriableStatement;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.hash.Funnel;
@@ -236,6 +236,9 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             case NUMERIC:
               funnelValue(type, row.getBigDecimal(i), into);
               break;
+            case PG_NUMERIC:
+              funnelValue(type, row.getString(i), into);
+              break;
             case INT64:
               funnelValue(type, row.getLong(i), into);
               break;
@@ -289,6 +292,12 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
           into.putInt(row.getBigDecimalList(columnIndex).size());
           for (BigDecimal value : row.getBigDecimalList(columnIndex)) {
             funnelValue(Code.NUMERIC, value, into);
+          }
+          break;
+        case PG_NUMERIC:
+          into.putInt(row.getStringList(columnIndex).size());
+          for (String value : row.getStringList(columnIndex)) {
+            funnelValue(Code.STRING, value, into);
           }
           break;
         case INT64:
@@ -358,6 +367,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
           case INT64:
             into.putLong((Long) value);
             break;
+          case PG_NUMERIC:
           case STRING:
           case JSON:
             String stringValue = (String) value;

@@ -28,7 +28,7 @@ import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
 
 /**

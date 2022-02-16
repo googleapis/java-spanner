@@ -37,6 +37,8 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ValueBinderTest {
   private static final String JSON_METHOD_NAME = "json";
+  private static final String PG_NUMERIC_METHOD_NAME = "pgNumeric";
+  public static final String DEFAULT_PG_NUMERIC = "1.23";
 
   private Value lastValue;
   private int lastReturnValue;
@@ -120,6 +122,10 @@ public class ValueBinderTest {
             // ValueBinder.to(Value)
             binderMethod = ValueBinder.class.getMethod("to", Value.class);
             assertThat(binderMethod.invoke(binder, Value.json(null))).isEqualTo(lastReturnValue);
+          } else if (method.getName().equalsIgnoreCase(PG_NUMERIC_METHOD_NAME)) {
+            binderMethod = ValueBinder.class.getMethod("to", Value.class);
+            assertThat(binderMethod.invoke(binder, Value.pgNumeric(null)))
+                .isEqualTo(lastReturnValue);
           } else {
             assertThat(binderMethod.invoke(binder, (Object) null)).isEqualTo(lastReturnValue);
           }
@@ -135,6 +141,11 @@ public class ValueBinderTest {
           defaultObject = defaultJson();
           binderMethod = ValueBinder.class.getMethod("to", Value.class);
           assertThat(binderMethod.invoke(binder, Value.json(defaultJson())))
+              .isEqualTo(lastReturnValue);
+        } else if (method.getName().equalsIgnoreCase(PG_NUMERIC_METHOD_NAME)) {
+          defaultObject = DEFAULT_PG_NUMERIC;
+          binderMethod = ValueBinder.class.getMethod("to", Value.class);
+          assertThat(binderMethod.invoke(binder, Value.pgNumeric(DEFAULT_PG_NUMERIC)))
               .isEqualTo(lastReturnValue);
         } else {
           defaultObject = DefaultValues.getDefault(method.getGenericParameterTypes()[0]);

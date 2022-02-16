@@ -16,6 +16,9 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.AbstractStatementParser.COMMIT_STATEMENT;
+import static com.google.cloud.spanner.connection.AbstractStatementParser.RUN_BATCH_STATEMENT;
+
 import com.google.api.core.ApiFuture;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
@@ -33,11 +36,10 @@ import com.google.cloud.spanner.SpannerApiFutures;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionRunner;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
-import com.google.cloud.spanner.connection.StatementParser.StatementType;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -304,9 +306,6 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     return res;
   }
 
-  private final ParsedStatement executeBatchUpdateStatement =
-      StatementParser.INSTANCE.parse(Statement.of("RUN BATCH"));
-
   @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(
       Iterable<ParsedStatement> updates, UpdateOption... options) {
@@ -417,11 +416,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
               });
         };
     return executeStatementAsync(
-        executeBatchUpdateStatement, callable, SpannerGrpc.getExecuteBatchDmlMethod());
+        RUN_BATCH_STATEMENT, callable, SpannerGrpc.getExecuteBatchDmlMethod());
   }
-
-  private final ParsedStatement commitStatement =
-      StatementParser.INSTANCE.parse(Statement.of("COMMIT"));
 
   @Override
   public ApiFuture<Void> writeAsync(final Iterable<Mutation> mutations) {
@@ -447,7 +443,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
             throw t;
           }
         };
-    return executeStatementAsync(commitStatement, callable, SpannerGrpc.getCommitMethod());
+    return executeStatementAsync(COMMIT_STATEMENT, callable, SpannerGrpc.getCommitMethod());
   }
 
   @Override

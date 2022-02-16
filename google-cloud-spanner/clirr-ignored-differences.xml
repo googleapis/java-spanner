@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- see http://www.mojohaus.org/clirr-maven-plugin/examples/ignored-differences.html -->
+<differences>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.Dialect getDialect()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.cloud.spanner.Dialect getDialect()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/BatchReadOnlyTransaction</className>
+    <method>void cleanup()</method>
+  </difference>
+  <difference>
+    <differenceType>8001</differenceType>
+    <className>com/google/cloud/spanner/connection/StatementParser</className>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions</className>
+    <method>com.google.cloud.spanner.Dialect getDialect()</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$Builder</className>
+    <method>com.google.cloud.spanner.SpannerOptions$Builder setDialect(com.google.cloud.spanner.Dialect)</method>
+  </difference>
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/connection/ConnectionOptions</className>
+    <method>com.google.cloud.spanner.Dialect getDialect()</method>
+  </difference>
+</differences>

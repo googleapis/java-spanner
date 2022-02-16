@@ -45,6 +45,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.CommitStats;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ForwardingResultSet;
 import com.google.cloud.spanner.Options;
@@ -62,10 +63,10 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.Type;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.ConnectionImpl.UnitOfWorkType;
 import com.google.cloud.spanner.connection.ConnectionStatementExecutorImpl.StatementTimeoutGetter;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.GetExactStaleness;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
@@ -226,6 +227,7 @@ public class ConnectionImplTest {
         .thenReturn(spanner);
     DdlClient ddlClient = createDefaultMockDdlClient();
     DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     ReadOnlyTransaction singleUseReadOnlyTx = mock(ReadOnlyTransaction.class);
 
     ResultSet mockResultSetWithStats = createSelect1MockResultSet();
@@ -233,6 +235,11 @@ public class ConnectionImplTest {
 
     final SimpleResultSet select1ResultSet = new SimpleResultSet(createSelect1MockResultSet());
     final SimpleResultSet select1ResultSetWithStats = new SimpleResultSet(mockResultSetWithStats);
+    when(singleUseReadOnlyTx.executeQuery(
+            Mockito.argThat(statement -> statement.getSql().toUpperCase().startsWith("SHOW"))))
+        .thenThrow(
+            SpannerExceptionFactory.newSpannerException(
+                ErrorCode.UNIMPLEMENTED, "SHOW queries are not supported"));
     when(singleUseReadOnlyTx.executeQuery(Statement.of(SELECT)))
         .thenAnswer(
             invocation -> {
@@ -271,6 +278,12 @@ public class ConnectionImplTest {
                         }
                         return select1ResultSet;
                       });
+              when(txContext.executeQuery(
+                      Mockito.argThat(
+                          statement -> statement.getSql().toUpperCase().startsWith("SHOW"))))
+                  .thenThrow(
+                      SpannerExceptionFactory.newSpannerException(
+                          ErrorCode.UNIMPLEMENTED, "SHOW queries are not supported"));
               when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
                   .thenReturn(select1ResultSetWithStats);
               when(txContext.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
@@ -1353,6 +1366,7 @@ public class ConnectionImplTest {
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
     when(unitOfWork.executeQueryAsync(
             any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
@@ -1370,14 +1384,15 @@ public class ConnectionImplTest {
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"));
       verify(unitOfWork)
           .executeQueryAsync(
-              StatementParser.INSTANCE.parse(
-                  Statement.newBuilder("SELECT FOO FROM BAR")
-                      .withQueryOptions(
-                          QueryOptions.newBuilder()
-                              .setOptimizerVersion("1")
-                              .setOptimizerStatisticsPackage("custom-package-1")
-                              .build())
-                      .build()),
+              AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+                  .parse(
+                      Statement.newBuilder("SELECT FOO FROM BAR")
+                          .withQueryOptions(
+                              QueryOptions.newBuilder()
+                                  .setOptimizerVersion("1")
+                                  .setOptimizerStatisticsPackage("custom-package-1")
+                                  .build())
+                          .build()),
               AnalyzeMode.NONE);
 
       // Execute query with an optimizer version and statistics package set on the connection.
@@ -1386,14 +1401,15 @@ public class ConnectionImplTest {
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"));
       verify(unitOfWork)
           .executeQueryAsync(
-              StatementParser.INSTANCE.parse(
-                  Statement.newBuilder("SELECT FOO FROM BAR")
-                      .withQueryOptions(
-                          QueryOptions.newBuilder()
-                              .setOptimizerVersion("2")
-                              .setOptimizerStatisticsPackage("custom-package-2")
-                              .build())
-                      .build()),
+              AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+                  .parse(
+                      Statement.newBuilder("SELECT FOO FROM BAR")
+                          .withQueryOptions(
+                              QueryOptions.newBuilder()
+                                  .setOptimizerVersion("2")
+                                  .setOptimizerStatisticsPackage("custom-package-2")
+                                  .build())
+                          .build()),
               AnalyzeMode.NONE);
 
       // Execute query with an optimizer version and statistics package set on the connection and
@@ -1405,14 +1421,15 @@ public class ConnectionImplTest {
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"), prefetchOption);
       verify(unitOfWork)
           .executeQueryAsync(
-              StatementParser.INSTANCE.parse(
-                  Statement.newBuilder("SELECT FOO FROM BAR")
-                      .withQueryOptions(
-                          QueryOptions.newBuilder()
-                              .setOptimizerVersion("3")
-                              .setOptimizerStatisticsPackage("custom-package-3")
-                              .build())
-                      .build()),
+              AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+                  .parse(
+                      Statement.newBuilder("SELECT FOO FROM BAR")
+                          .withQueryOptions(
+                              QueryOptions.newBuilder()
+                                  .setOptimizerVersion("3")
+                                  .setOptimizerStatisticsPackage("custom-package-3")
+                                  .build())
+                          .build()),
               AnalyzeMode.NONE,
               prefetchOption);
 
@@ -1432,14 +1449,15 @@ public class ConnectionImplTest {
           prefetchOption);
       verify(unitOfWork)
           .executeQueryAsync(
-              StatementParser.INSTANCE.parse(
-                  Statement.newBuilder("SELECT FOO FROM BAR")
-                      .withQueryOptions(
-                          QueryOptions.newBuilder()
-                              .setOptimizerVersion("5")
-                              .setOptimizerStatisticsPackage("custom-package-5")
-                              .build())
-                      .build()),
+              AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+                  .parse(
+                      Statement.newBuilder("SELECT FOO FROM BAR")
+                          .withQueryOptions(
+                              QueryOptions.newBuilder()
+                                  .setOptimizerVersion("5")
+                                  .setOptimizerStatisticsPackage("custom-package-5")
+                                  .build())
+                          .build()),
               AnalyzeMode.NONE,
               prefetchOption);
     }
@@ -1452,6 +1470,7 @@ public class ConnectionImplTest {
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
     when(unitOfWork.executeQueryAsync(
             any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
@@ -1494,6 +1513,7 @@ public class ConnectionImplTest {
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     try (ConnectionImpl connection =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
       assertFalse(connection.isAutocommit());
@@ -1534,6 +1554,7 @@ public class ConnectionImplTest {
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     try (ConnectionImpl connection =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
       assertTrue(connection.isAutocommit());
@@ -1554,6 +1575,7 @@ public class ConnectionImplTest {
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
     // Indicate that a transaction has been started.
     when(unitOfWork.getState()).thenReturn(UnitOfWorkState.STARTED);

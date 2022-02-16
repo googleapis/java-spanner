@@ -375,6 +375,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           case NUMERIC:
             builder.set(fieldName).to((BigDecimal) value);
             break;
+          case PG_NUMERIC:
+            builder.set(fieldName).to((String) value);
+            break;
           case STRING:
             builder.set(fieldName).to((String) value);
             break;
@@ -391,7 +394,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             builder.set(fieldName).to((Date) value);
             break;
           case ARRAY:
-            switch (fieldType.getArrayElementType().getCode()) {
+            final Type elementType = fieldType.getArrayElementType();
+            switch (elementType.getCode()) {
               case BOOL:
                 builder.set(fieldName).toBoolArray((Iterable<Boolean>) value);
                 break;
@@ -403,6 +407,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 break;
               case NUMERIC:
                 builder.set(fieldName).toNumericArray((Iterable<BigDecimal>) value);
+                break;
+              case PG_NUMERIC:
+                builder.set(fieldName).toPgNumericArray((Iterable<String>) value);
                 break;
               case STRING:
                 builder.set(fieldName).toStringArray((Iterable<String>) value);
@@ -420,13 +427,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 builder.set(fieldName).toDateArray((Iterable<Date>) value);
                 break;
               case STRUCT:
-                builder
-                    .set(fieldName)
-                    .toStructArray(fieldType.getArrayElementType(), (Iterable<Struct>) value);
+                builder.set(fieldName).toStructArray(elementType, (Iterable<Struct>) value);
                 break;
               default:
-                throw new AssertionError(
-                    "Unhandled array type code: " + fieldType.getArrayElementType());
+                throw new AssertionError("Unhandled array type code: " + elementType);
             }
             break;
           case STRUCT:
@@ -484,7 +488,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case FLOAT64:
           return valueProtoToFloat64(proto);
         case NUMERIC:
+          checkType(fieldType, proto, KindCase.STRING_VALUE);
           return new BigDecimal(proto.getStringValue());
+        case PG_NUMERIC:
+          checkType(fieldType, proto, KindCase.STRING_VALUE);
+          return proto.getStringValue();
         case STRING:
         case JSON:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
@@ -549,6 +557,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             }
             return list;
           }
+        case PG_NUMERIC:
+          return Lists.transform(
+              listValue.getValuesList(),
+              input -> input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue());
         case STRING:
         case JSON:
           return Lists.transform(
@@ -695,6 +707,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return Value.int64(isNull ? null : getLongInternal(columnIndex));
         case NUMERIC:
           return Value.numeric(isNull ? null : getBigDecimalInternal(columnIndex));
+        case PG_NUMERIC:
+          return Value.pgNumeric(isNull ? null : getStringInternal(columnIndex));
         case FLOAT64:
           return Value.float64(isNull ? null : getDoubleInternal(columnIndex));
         case STRING:
@@ -708,13 +722,16 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case STRUCT:
           return Value.struct(isNull ? null : getStructInternal(columnIndex));
         case ARRAY:
-          switch (columnType.getArrayElementType().getCode()) {
+          final Type elementType = columnType.getArrayElementType();
+          switch (elementType.getCode()) {
             case BOOL:
               return Value.boolArray(isNull ? null : getBooleanListInternal(columnIndex));
             case INT64:
               return Value.int64Array(isNull ? null : getLongListInternal(columnIndex));
             case NUMERIC:
               return Value.numericArray(isNull ? null : getBigDecimalListInternal(columnIndex));
+            case PG_NUMERIC:
+              return Value.pgNumericArray(isNull ? null : getStringListInternal(columnIndex));
             case FLOAT64:
               return Value.float64Array(isNull ? null : getDoubleListInternal(columnIndex));
             case STRING:
@@ -727,8 +744,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               return Value.dateArray(isNull ? null : getDateListInternal(columnIndex));
             case STRUCT:
               return Value.structArray(
-                  columnType.getArrayElementType(),
-                  isNull ? null : getStructListInternal(columnIndex));
+                  elementType, isNull ? null : getStructListInternal(columnIndex));
             default:
               throw new IllegalArgumentException(
                   "Invalid array value type " + this.type.getArrayElementType());

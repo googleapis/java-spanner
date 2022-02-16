@@ -26,6 +26,7 @@ import static org.junit.Assume.assumeFalse;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
@@ -37,41 +38,82 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
+import com.google.cloud.spanner.connection.ConnectionOptions;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
 
 @Category(ParallelIntegrationTest.class)
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class ITTransactionManagerTest {
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
-  private static Database db;
   private static DatabaseClient client;
+  private static DatabaseClient googleStandardSQLClient;
+  private static DatabaseClient postgreSQLClient;
+
+  @Parameterized.Parameters(name = "Dialect = {0}")
+  public static List<DialectTestParameter> data() {
+    List<DialectTestParameter> params = new ArrayList<>();
+    params.add(new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL));
+    if (!EmulatorSpannerHelper.isUsingEmulator()) {
+      params.add(new DialectTestParameter(Dialect.POSTGRESQL));
+    }
+    return params;
+  }
+
+  @Parameterized.Parameter() public DialectTestParameter dialect;
 
   @BeforeClass
-  public static void setUpDatabase() {
-    // Empty database.
-    db =
+  public static void setUpDatabase()
+      throws ExecutionException, InterruptedException, TimeoutException {
+
+    Database googleStandardSQLDatabase =
         env.getTestHelper()
             .createTestDatabase(
                 "CREATE TABLE T ("
                     + "  K                   STRING(MAX) NOT NULL,"
                     + "  BoolValue           BOOL,"
                     + ") PRIMARY KEY (K)");
-    client = env.getTestHelper().getDatabaseClient(db);
+    googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSQLDatabase);
+    if (!EmulatorSpannerHelper.isUsingEmulator()) {
+      Database postgreSQLDatabase =
+          env.getTestHelper()
+              .createTestDatabase(
+                  Dialect.POSTGRESQL,
+                  Collections.singletonList(
+                      "CREATE TABLE T ("
+                          + "  K        VARCHAR PRIMARY KEY,"
+                          + "  BoolValue BOOL"
+                          + ")"));
+      postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
+    }
   }
 
   @Before
-  public void deleteTestData() {
+  public void before() {
+    client =
+        dialect.dialect == Dialect.GOOGLE_STANDARD_SQL ? googleStandardSQLClient : postgreSQLClient;
+    // Delete all test data
     client.write(ImmutableList.of(Mutation.delete("T", KeySet.all())));
+  }
+
+  @AfterClass
+  public static void teardown() {
+    ConnectionOptions.closeSpanner();
   }
 
   @SuppressWarnings("resource")

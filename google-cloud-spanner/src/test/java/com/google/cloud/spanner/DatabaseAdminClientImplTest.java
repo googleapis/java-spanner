@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,6 +47,7 @@ import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DatabaseDialect;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
@@ -77,6 +79,7 @@ public class DatabaseAdminClientImplTest {
   private static final String KMS_KEY_NAME =
       "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key";
   private static final String KMS_KEY_VERSION = "1";
+  private static final DatabaseDialect DIALECT = GOOGLE_STANDARD_SQL;
 
   @Mock SpannerRpc rpc;
   DatabaseAdminClientImpl client;
@@ -93,6 +96,7 @@ public class DatabaseAdminClientImplTest {
         .setState(Database.State.READY)
         .setEarliestVersionTime(EARLIEST_VERSION_TIME.toProto())
         .setVersionRetentionPeriod(VERSION_RETENTION_PERIOD)
+        .setDatabaseDialect(DIALECT)
         .build();
   }
 
@@ -161,8 +165,11 @@ public class DatabaseAdminClientImplTest {
             INSTANCE_NAME,
             "CREATE DATABASE `" + DB_ID + "`",
             Collections.emptyList(),
-            new com.google.cloud.spanner.Database(
-                DatabaseId.of(DB_NAME), State.UNSPECIFIED, client)))
+            client
+                .newDatabaseBuilder(DatabaseId.of(DB_NAME))
+                .setState(State.UNSPECIFIED)
+                .setDialect(Dialect.GOOGLE_STANDARD_SQL)
+                .build()))
         .thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Database, CreateDatabaseMetadata> op =
         client.createDatabase(INSTANCE_ID, DB_ID, Collections.emptyList());
@@ -176,6 +183,7 @@ public class DatabaseAdminClientImplTest {
         client
             .newDatabaseBuilder(DatabaseId.of(DB_NAME))
             .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME))
+            .setDialect(Dialect.GOOGLE_STANDARD_SQL)
             .build();
 
     OperationFuture<Database, CreateDatabaseMetadata> rawOperationFuture =

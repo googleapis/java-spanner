@@ -201,6 +201,13 @@ public class AbstractStructReaderTypesTest {
             Collections.singletonList("getValue")
           },
           {
+            Type.pgNumeric(),
+            "getStringInternal",
+            "1.23",
+            "getString",
+            Collections.singletonList("getValue")
+          },
+          {
             Type.string(),
             "getStringInternal",
             "a",
@@ -282,6 +289,13 @@ public class AbstractStructReaderTypesTest {
             "getBigDecimalListInternal",
             Arrays.asList(BigDecimal.valueOf(21, 1), BigDecimal.valueOf(41, 1)),
             "getBigDecimalList",
+            Collections.singletonList("getValue")
+          },
+          {
+            Type.array(Type.pgNumeric()),
+            "getStringListInternal",
+            Arrays.asList("1.23", "2.34"),
+            "getStringList",
             Collections.singletonList("getValue")
           },
           {

@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -71,6 +72,12 @@ public abstract class Value implements Serializable {
    *     Transaction Semantics</a>
    */
   public static final Timestamp COMMIT_TIMESTAMP = Timestamp.ofTimeMicroseconds(0L);
+
+  static final com.google.protobuf.Value NULL_PROTO =
+      com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
+
+  /** Constant to specify a PG Numeric NaN value. */
+  public static final String NAN = "NaN";
 
   private static final int MAX_DEBUG_STRING_LENGTH = 36;
   private static final String ELLIPSIS = "...";
@@ -155,6 +162,21 @@ public abstract class Value implements Serializable {
       }
     }
     return new NumericImpl(v == null, v);
+  }
+
+  /**
+   * Returns a {@code PG NUMERIC} value. This value has flexible precision and scale which is
+   * specified in the Database DDL. This value also supports {@code NaNs}, which can be specified
+   * with {@code Value.pgNumeric(Value.NAN)} or simply as {@code Value.pgNumeric("NaN")}.
+   *
+   * <p>Note that this flavour of numeric is different than Spanner numerics ({@link
+   * Value#numeric(BigDecimal)}). It should be used only for handling numerics in the PostgreSQL
+   * dialect.
+   *
+   * @param v the value, which may be null
+   */
+  public static Value pgNumeric(@Nullable String v) {
+    return new PgNumericImpl(v == null, v);
   }
 
   /**
@@ -336,6 +358,17 @@ public abstract class Value implements Serializable {
    */
   public static Value numericArray(@Nullable Iterable<BigDecimal> v) {
     return new NumericArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+  }
+
+  /**
+   * Returns an {@code ARRAY<PG_NUMERIC>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}. Individual
+   *     elements may be {@code "NaN"} or {@link Value#NAN}.
+   */
+  public static Value pgNumericArray(@Nullable Iterable<String> v) {
+    return new PgNumericArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
   }
 
   /**
@@ -592,6 +625,10 @@ public abstract class Value implements Serializable {
 
   // END OF PUBLIC API.
 
+  static com.google.protobuf.Value toProto(Value value) {
+    return value == null ? NULL_PROTO : value.toProto();
+  }
+
   abstract void toString(StringBuilder b);
 
   abstract com.google.protobuf.Value toProto();
@@ -707,9 +744,6 @@ public abstract class Value implements Serializable {
 
   /** Template class for {@code Value} implementations. */
   private abstract static class AbstractValue extends Value {
-    static final com.google.protobuf.Value NULL_PROTO =
-        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
-
     private final boolean isNull;
     private final Type type;
 
@@ -1232,6 +1266,65 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class PgNumericImpl extends AbstractObjectValue<String> {
+    private BigDecimal valueAsBigDecimal;
+    private NumberFormatException bigDecimalConversionError;
+    private Double valueAsDouble;
+    private NumberFormatException doubleConversionError;
+
+    private PgNumericImpl(boolean isNull, String value) {
+      super(isNull, Type.pgNumeric(), value);
+    }
+
+    @Override
+    public String getString() {
+      checkType(Type.pgNumeric());
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    public BigDecimal getNumeric() {
+      checkType(Type.pgNumeric());
+      checkNotNull();
+      if (bigDecimalConversionError != null) {
+        throw bigDecimalConversionError;
+      }
+      if (valueAsBigDecimal == null) {
+        try {
+          valueAsBigDecimal = new BigDecimal(value);
+        } catch (NumberFormatException e) {
+          bigDecimalConversionError = e;
+          throw e;
+        }
+      }
+      return valueAsBigDecimal;
+    }
+
+    @Override
+    public double getFloat64() {
+      checkType(Type.pgNumeric());
+      checkNotNull();
+      if (doubleConversionError != null) {
+        throw doubleConversionError;
+      }
+      if (valueAsDouble == null) {
+        try {
+          valueAsDouble = Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+          doubleConversionError = e;
+          throw e;
+        }
+      }
+      return valueAsDouble;
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value);
+    }
+  }
+
   private abstract static class PrimitiveArrayImpl<T> extends AbstractValue {
     private final BitSet nulls;
 
@@ -1580,6 +1673,72 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class PgNumericArrayImpl extends AbstractArrayValue<String> {
+
+    private List<BigDecimal> valuesAsBigDecimal;
+    private NumberFormatException bigDecimalConversionError;
+    private List<Double> valuesAsDouble;
+    private NumberFormatException doubleConversionError;
+
+    private PgNumericArrayImpl(boolean isNull, @Nullable List<String> values) {
+      super(isNull, Type.pgNumeric(), values);
+    }
+
+    @Override
+    public List<String> getStringArray() {
+      checkType(getType());
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    public List<BigDecimal> getNumericArray() {
+      checkType(getType());
+      checkNotNull();
+      if (bigDecimalConversionError != null) {
+        throw bigDecimalConversionError;
+      }
+      if (valuesAsBigDecimal == null) {
+        try {
+          valuesAsBigDecimal =
+              value.stream()
+                  .map(v -> v == null ? null : new BigDecimal(v))
+                  .collect(Collectors.toList());
+        } catch (NumberFormatException e) {
+          bigDecimalConversionError = e;
+          throw e;
+        }
+      }
+      return valuesAsBigDecimal;
+    }
+
+    @Override
+    public List<Double> getFloat64Array() {
+      checkType(getType());
+      checkNotNull();
+      if (doubleConversionError != null) {
+        throw doubleConversionError;
+      }
+      if (valuesAsDouble == null) {
+        try {
+          valuesAsDouble =
+              value.stream()
+                  .map(v -> v == null ? null : Double.valueOf(v))
+                  .collect(Collectors.toList());
+        } catch (NumberFormatException e) {
+          doubleConversionError = e;
+          throw e;
+        }
+      }
+      return valuesAsDouble;
+    }
+
+    @Override
+    void appendElement(StringBuilder b, String element) {
+      b.append(element);
+    }
+  }
+
   private static class StructImpl extends AbstractObjectValue<Struct> {
 
     // Constructor for non-NULL struct values.
@@ -1631,6 +1790,8 @@ public abstract class Value implements Serializable {
           return Value.float64(value.getDouble(fieldIndex));
         case NUMERIC:
           return Value.numeric(value.getBigDecimal(fieldIndex));
+        case PG_NUMERIC:
+          return Value.pgNumeric(value.getString(fieldIndex));
         case DATE:
           return Value.date(value.getDate(fieldIndex));
         case TIMESTAMP:
@@ -1655,6 +1816,8 @@ public abstract class Value implements Serializable {
                 return Value.float64Array(value.getDoubleList(fieldIndex));
               case NUMERIC:
                 return Value.numericArray(value.getBigDecimalList(fieldIndex));
+              case PG_NUMERIC:
+                return Value.pgNumericArray(value.getStringList(fieldIndex));
               case DATE:
                 return Value.dateArray(value.getDateList(fieldIndex));
               case TIMESTAMP:

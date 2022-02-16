@@ -326,6 +326,9 @@ public class SpannerPool {
     if (key.numChannels != null) {
       builder.setNumChannels(key.numChannels);
     }
+    if (options.getChannelProvider() != null) {
+      builder.setChannelProvider(options.getChannelProvider());
+    }
     if (key.usePlainText) {
       // Credentials may not be sent over a plain text channel.
       builder.setCredentials(NoCredentials.getInstance());

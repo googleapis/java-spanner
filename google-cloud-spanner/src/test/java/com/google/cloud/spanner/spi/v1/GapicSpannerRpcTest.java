@@ -29,6 +29,7 @@ import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
@@ -70,14 +71,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.threeten.bp.Duration;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class GapicSpannerRpcTest {
 
   private static final Statement SELECT1AND2 =
@@ -134,8 +136,15 @@ public class GapicSpannerRpcTest {
   private static String defaultUserAgent;
   private static Spanner spanner;
 
-  @BeforeClass
-  public static void startServer() throws IOException {
+  @Parameter public Dialect dialect;
+
+  @Parameters(name = "dialect = {0}")
+  public static Object[] data() {
+    return Dialect.values();
+  }
+
+  @Before
+  public void startServer() throws IOException {
     assumeTrue(
         "Skip tests when emulator is enabled as this test interferes with the check whether the emulator is running",
         System.getenv("SPANNER_EMULATOR_HOST") == null);
@@ -172,18 +181,18 @@ public class GapicSpannerRpcTest {
     spanner = createSpannerOptions().getService();
   }
 
-  @AfterClass
-  public static void stopServer() throws InterruptedException {
+  @After
+  public void reset() throws InterruptedException {
+    if (mockSpanner != null) {
+      mockSpanner.reset();
+    }
     if (spanner != null) {
       spanner.close();
+    }
+    if (server != null) {
       server.shutdown();
       server.awaitTermination();
     }
-  }
-
-  @After
-  public void reset() {
-    mockSpanner.reset();
   }
 
   @Test
@@ -387,7 +396,7 @@ public class GapicSpannerRpcTest {
     }
   }
 
-  private static SpannerOptions createSpannerOptions() {
+  private SpannerOptions createSpannerOptions() {
     String endpoint = address.getHostString() + ":" + server.getPort();
     return SpannerOptions.newBuilder()
         .setProjectId("[PROJECT]")

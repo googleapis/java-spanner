@@ -16,10 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.cloud.NoCredentials;
-import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConnection;
-import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConnectionProvider;
-import com.google.cloud.spanner.connection.SqlScriptVerifier.SpannerGenericConnection;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
@@ -30,8 +26,6 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 /**
  * This test executes a SQL script that has been generated from the log of all the subclasses of
@@ -45,24 +39,11 @@ import org.junit.runners.JUnit4;
  * not allowed in AUTOCOMMIT mode, but this has changed to be a no-op). A new test script must also
  * be generated if additional test cases have been added to {@link AbstractConnectionImplTest}.
  */
-@RunWith(JUnit4.class)
-public class ConnectionImplGeneratedSqlScriptTest {
-
-  static class TestConnectionProvider implements GenericConnectionProvider {
-    @Override
-    public GenericConnection getConnection() {
-      return SpannerGenericConnection.of(
-          ConnectionImplTest.createConnection(
-              ConnectionOptions.newBuilder()
-                  .setCredentials(NoCredentials.getInstance())
-                  .setUri(ConnectionImplTest.URI)
-                  .build()));
-    }
-  }
+public class ConnectionImplGeneratedSqlScriptTest extends AbstractSqlScriptTest {
 
   @Test
   public void testGeneratedScript() throws Exception {
-    SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider());
+    SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider(dialect));
     verifier.verifyStatementsInFile("ConnectionImplGeneratedSqlScriptTest.sql", getClass(), true);
   }
 

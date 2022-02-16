@@ -17,18 +17,23 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.api.core.InternalApi;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 /**
  * Internal class for the Spanner Connection API.
@@ -37,15 +42,96 @@ import java.util.Set;
  * the type of statement, allowing the connection API to know which method on Spanner should be
  * called. The parser does not validate the validity of statements, except for {@link
  * ClientSideStatement}s. This means that an invalid DML statement could be accepted by the {@link
- * StatementParser} and sent to Spanner, and Spanner will then reject it with some error message.
+ * AbstractStatementParser} and sent to Spanner, and Spanner will then reject it with some error
+ * message.
  */
 @InternalApi
-public class StatementParser {
-  /** Singleton instance of {@link StatementParser}. */
-  public static final StatementParser INSTANCE = new StatementParser();
+public abstract class AbstractStatementParser {
+  private static final Object lock = new Object();
+  private static final Map<Dialect, AbstractStatementParser> INSTANCES = new HashMap<>();
+  private static final ImmutableMap<Dialect, Class<? extends AbstractStatementParser>>
+      KNOWN_PARSER_CLASSES =
+          ImmutableMap.of(
+              Dialect.GOOGLE_STANDARD_SQL,
+              SpannerStatementParser.class,
+              Dialect.POSTGRESQL,
+              PostgreSQLStatementParser.class);
+  private static final String GSQL_STATEMENT = "/*GSQL*/";
+
+  /* Checks if the SQL statement starts with /*GSQL*/
+  private boolean isGoogleSql(String sql) {
+    return sql.startsWith(GSQL_STATEMENT);
+  }
+
+  /** Get an instance of {@link AbstractStatementParser} for the specified dialect. */
+  public static AbstractStatementParser getInstance(Dialect dialect) {
+    synchronized (lock) {
+      if (!INSTANCES.containsKey(dialect)) {
+        try {
+          Class<? extends AbstractStatementParser> clazz = KNOWN_PARSER_CLASSES.get(dialect);
+          if (clazz == null) {
+            throw SpannerExceptionFactory.newSpannerException(
+                ErrorCode.INTERNAL, "There is no known statement parser for dialect " + dialect);
+          }
+          INSTANCES.put(dialect, clazz.newInstance());
+        } catch (InstantiationException | IllegalAccessException e) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INTERNAL,
+              "Could not instantiate statement parser for dialect " + dialect.name(),
+              e);
+        }
+      }
+      return INSTANCES.get(dialect);
+    }
+  }
+
+  /**
+   * The following fixed pre-parsed statements are used internally by the Connection API. These do
+   * not need to be parsed using a specific dialect, as they are equal for all dialects, and
+   * pre-parsing them avoids the need to repeatedly parse statements that are used internally.
+   */
+
+  /** Begins a transaction. */
+  static final ParsedStatement BEGIN_STATEMENT =
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("BEGIN"));
+
+  /**
+   * Create a COMMIT statement to use with the {@link #commit()} method to allow it to be cancelled,
+   * time out or retried.
+   *
+   * <p>{@link ReadWriteTransaction} uses the generic methods {@link #executeAsync(ParsedStatement,
+   * Callable)} and {@link #runWithRetry(Callable)} to allow statements to be cancelled, to timeout
+   * and to be retried. These methods require a {@link ParsedStatement} as input. When the {@link
+   * #commit()} method is called directly, we do not have a {@link ParsedStatement}, and the method
+   * uses this statement instead in order to use the same logic as the other statements.
+   */
+  static final ParsedStatement COMMIT_STATEMENT =
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+          .parse(Statement.of("COMMIT"));
+
+  /** The {@link Statement} and {@link Callable} for rollbacks */
+  static final ParsedStatement ROLLBACK_STATEMENT =
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+          .parse(Statement.of("ROLLBACK"));
+
+  /**
+   * Create a RUN BATCH statement to use with the {@link #executeBatchUpdate(Iterable)} method to
+   * allow it to be cancelled, time out or retried.
+   *
+   * <p>{@link ReadWriteTransaction} uses the generic methods {@link #executeAsync(ParsedStatement,
+   * Callable)} and {@link #runWithRetry(Callable)} to allow statements to be cancelled, to timeout
+   * and to be retried. These methods require a {@link ParsedStatement} as input. When the {@link
+   * #executeBatchUpdate(Iterable)} method is called, we do not have one {@link ParsedStatement},
+   * and the method uses this statement instead in order to use the same logic as the other
+   * statements.
+   */
+  static final ParsedStatement RUN_BATCH_STATEMENT =
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+          .parse(Statement.of("RUN BATCH"));
 
   /** The type of statement that has been recognized by the parser. */
-  enum StatementType {
+  @InternalApi
+  public enum StatementType {
     CLIENT_SIDE,
     DDL,
     QUERY,
@@ -54,7 +140,8 @@ public class StatementParser {
   }
 
   /** A statement that has been parsed */
-  static class ParsedStatement {
+  @InternalApi
+  public static class ParsedStatement {
     private final StatementType type;
     private final ClientSideStatementImpl clientSideStatement;
     private final Statement statement;
@@ -132,11 +219,18 @@ public class StatementParser {
           && Objects.equals(this.sqlWithoutComments, o.sqlWithoutComments);
     }
 
-    StatementType getType() {
+    /** Returns the type of statement that was recognized by the parser. */
+    @InternalApi
+    public StatementType getType() {
       return type;
     }
 
-    boolean isQuery() {
+    /**
+     * Returns true if the statement is a query that will return a {@link
+     * com.google.cloud.spanner.ResultSet}.
+     */
+    @InternalApi
+    public boolean isQuery() {
       switch (type) {
         case CLIENT_SIDE:
           return getClientSideStatement().isQuery();
@@ -150,7 +244,12 @@ public class StatementParser {
       return false;
     }
 
-    boolean isUpdate() {
+    /**
+     * Returns true if the statement is a DML statement or a client side statement that will return
+     * an update count.
+     */
+    @InternalApi
+    public boolean isUpdate() {
       switch (type) {
         case CLIENT_SIDE:
           return getClientSideStatement().isUpdate();
@@ -164,7 +263,9 @@ public class StatementParser {
       return false;
     }
 
-    boolean isDdl() {
+    /** Returns true if the statement is a DDL statement. */
+    @InternalApi
+    public boolean isDdl() {
       switch (type) {
         case DDL:
           return true;
@@ -201,7 +302,9 @@ public class StatementParser {
           .build();
     }
 
-    String getSqlWithoutComments() {
+    /** Returns the SQL statement with all comments removed from the SQL string. */
+    @InternalApi
+    public String getSqlWithoutComments() {
       return sqlWithoutComments;
     }
 
@@ -213,13 +316,14 @@ public class StatementParser {
     }
   }
 
-  private static final Set<String> ddlStatements = ImmutableSet.of("CREATE", "DROP", "ALTER");
-  private static final Set<String> selectStatements = ImmutableSet.of("SELECT", "WITH");
-  private static final Set<String> dmlStatements = ImmutableSet.of("INSERT", "UPDATE", "DELETE");
+  static final Set<String> ddlStatements = ImmutableSet.of("CREATE", "DROP", "ALTER");
+  static final Set<String> selectStatements = ImmutableSet.of("SELECT", "WITH", "SHOW");
+  static final Set<String> dmlStatements = ImmutableSet.of("INSERT", "UPDATE", "DELETE");
+  private final Dialect dialect;
   private final Set<ClientSideStatementImpl> statements;
 
-  /** Private constructor for singleton instance. */
-  private StatementParser() {
+  AbstractStatementParser(Dialect dialect) {
+    this.dialect = dialect;
     try {
       statements =
           Collections.unmodifiableSet(ClientSideStatements.INSTANCE.getCompiledStatements());
@@ -235,7 +339,8 @@ public class StatementParser {
    * @param statement The statement to parse.
    * @return the parsed and categorized statement.
    */
-  ParsedStatement parse(Statement statement) {
+  @InternalApi
+  public ParsedStatement parse(Statement statement) {
     return parse(statement, null);
   }
 
@@ -299,6 +404,8 @@ public class StatementParser {
   @InternalApi
   public boolean isQuery(String sql) {
     // Skip any query hints at the beginning of the query.
+    // We only do this if we actually know that it starts with a hint to prevent unnecessary
+    // re-assigning the exact same sql string.
     if (sql.startsWith("@")) {
       sql = removeStatementHint(sql);
     }
@@ -323,12 +430,23 @@ public class StatementParser {
     return statementStartsWith(sql, dmlStatements);
   }
 
+  protected abstract boolean supportsExplain();
+
   private boolean statementStartsWith(String sql, Iterable<String> checkStatements) {
     Preconditions.checkNotNull(sql);
-    String[] tokens = sql.split("\\s+", 2);
-    if (tokens.length > 0) {
+    String[] tokens;
+    if (isGoogleSql(sql)) {
+      tokens = sql.substring(GSQL_STATEMENT.length()).split("\\s+", 2);
+    } else {
+      tokens = sql.split("\\s+", 2);
+    }
+    int checkIndex = 0;
+    if (supportsExplain() && tokens[0].equalsIgnoreCase("EXPLAIN")) {
+      checkIndex = 1;
+    }
+    if (tokens.length > checkIndex) {
       for (String check : checkStatements) {
-        if (tokens[0].equalsIgnoreCase(check)) {
+        if (tokens[checkIndex].equalsIgnoreCase(check)) {
           return true;
         }
       }
@@ -336,149 +454,95 @@ public class StatementParser {
     return false;
   }
 
+  static final char SINGLE_QUOTE = '\'';
+  static final char DOUBLE_QUOTE = '"';
+  static final char BACKTICK_QUOTE = '`';
+  static final char HYPHEN = '-';
+  static final char DASH = '#';
+  static final char SLASH = '/';
+  static final char ASTERIKS = '*';
+  static final char DOLLAR = '$';
+
   /**
-   * Removes comments from and trims the given sql statement. Spanner supports three types of
-   * comments:
-   *
-   * <ul>
-   *   <li>Single line comments starting with '--'
-   *   <li>Single line comments starting with '#'
-   *   <li>Multi line comments between '/&#42;' and '&#42;/'
-   * </ul>
-   *
-   * Reference: https://cloud.google.com/spanner/docs/lexical#comments
+   * Removes comments from and trims the given sql statement using the dialect of this parser.
    *
    * @param sql The sql statement to remove comments from and to trim.
    * @return the sql statement without the comments and leading and trailing spaces.
    */
   @InternalApi
-  public static String removeCommentsAndTrim(String sql) {
-    Preconditions.checkNotNull(sql);
-    final char SINGLE_QUOTE = '\'';
-    final char DOUBLE_QUOTE = '"';
-    final char BACKTICK_QUOTE = '`';
-    final char HYPHEN = '-';
-    final char DASH = '#';
-    final char SLASH = '/';
-    final char ASTERISK = '*';
-    boolean isInQuoted = false;
-    boolean isInSingleLineComment = false;
-    boolean isInMultiLineComment = false;
-    char startQuote = 0;
-    boolean lastCharWasEscapeChar = false;
-    boolean isTripleQuoted = false;
-    StringBuilder res = new StringBuilder(sql.length());
-    int index = 0;
-    while (index < sql.length()) {
-      char c = sql.charAt(index);
-      if (isInQuoted) {
-        if ((c == '\n' || c == '\r') && !isTripleQuoted) {
-          throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
-        } else if (c == startQuote) {
-          if (lastCharWasEscapeChar) {
-            lastCharWasEscapeChar = false;
-          } else if (isTripleQuoted) {
-            if (sql.length() > index + 2
-                && sql.charAt(index + 1) == startQuote
-                && sql.charAt(index + 2) == startQuote) {
-              isInQuoted = false;
-              startQuote = 0;
-              isTripleQuoted = false;
-              res.append(c).append(c);
-              index += 2;
-            }
-          } else {
-            isInQuoted = false;
-            startQuote = 0;
-          }
-        } else if (c == '\\') {
-          lastCharWasEscapeChar = true;
+  abstract String removeCommentsAndTrimInternal(String sql);
+
+  @InternalApi
+  public String removeCommentsAndTrim(String sql) {
+    switch (dialect) {
+      case POSTGRESQL:
+        if (isGoogleSql(sql.trim())) {
+          return GSQL_STATEMENT
+              + INSTANCES.get(Dialect.GOOGLE_STANDARD_SQL).removeCommentsAndTrimInternal(sql);
         } else {
-          lastCharWasEscapeChar = false;
+          return removeCommentsAndTrimInternal(sql);
         }
-        res.append(c);
-      } else {
-        // We are not in a quoted string.
-        if (isInSingleLineComment) {
-          if (c == '\n') {
-            isInSingleLineComment = false;
-            // Include the line feed in the result.
-            res.append(c);
-          }
-        } else if (isInMultiLineComment) {
-          if (sql.length() > index + 1 && c == ASTERISK && sql.charAt(index + 1) == SLASH) {
-            isInMultiLineComment = false;
-            index++;
-          }
-        } else {
-          if (c == DASH
-              || (sql.length() > index + 1 && c == HYPHEN && sql.charAt(index + 1) == HYPHEN)) {
-            // This is a single line comment.
-            isInSingleLineComment = true;
-          } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
-            isInMultiLineComment = true;
-            index++;
-          } else {
-            if (c == SINGLE_QUOTE || c == DOUBLE_QUOTE || c == BACKTICK_QUOTE) {
-              isInQuoted = true;
-              startQuote = c;
-              // Check whether it is a triple-quote.
-              if (sql.length() > index + 2
-                  && sql.charAt(index + 1) == startQuote
-                  && sql.charAt(index + 2) == startQuote) {
-                isTripleQuoted = true;
-                res.append(c).append(c);
-                index += 2;
-              }
-            }
-            res.append(c);
-          }
-        }
-      }
-      index++;
+      case GOOGLE_STANDARD_SQL:
+        return removeCommentsAndTrimInternal(sql);
+      default:
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INTERNAL, "Unknown dialect: " + dialect);
     }
-    if (isInQuoted) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
-    }
-    if (res.length() > 0 && res.charAt(res.length() - 1) == ';') {
-      res.deleteCharAt(res.length() - 1);
-    }
-    return res.toString().trim();
   }
 
   /** Removes any statement hints at the beginning of the statement. */
-  static String removeStatementHint(String sql) {
-    // Valid statement hints at the beginning of a query statement can only contain a fixed set of
-    // possible values. Although it is possible to add a @{FORCE_INDEX=...} as a statement hint, the
-    // only allowed value is _BASE_TABLE. This means that we can safely assume that the statement
-    // hint will not contain any special characters, for example a closing curly brace or one of the
-    // keywords SELECT, UPDATE, DELETE, WITH, and that we can keep the check simple by just
-    // searching for the first occurrence of a keyword that should be preceded by a closing curly
-    // brace at the end of the statement hint.
-    int startStatementHintIndex = sql.indexOf('{');
-    // Statement hints are allowed for both queries and DML statements.
-    int startQueryIndex = -1;
-    String upperCaseSql = sql.toUpperCase();
-    Set<String> selectAndDmlStatements =
-        Sets.union(selectStatements, dmlStatements).immutableCopy();
-    for (String keyword : selectAndDmlStatements) {
-      startQueryIndex = upperCaseSql.indexOf(keyword);
-      if (startQueryIndex > -1) {
-        break;
+  abstract String removeStatementHint(String sql);
+
+  /** Parameter information with positional parameters translated to named parameters. */
+  @InternalApi
+  public static class ParametersInfo {
+    public final int numberOfParameters;
+    public final String sqlWithNamedParameters;
+
+    ParametersInfo(int numberOfParameters, String sqlWithNamedParameters) {
+      this.numberOfParameters = numberOfParameters;
+      this.sqlWithNamedParameters = sqlWithNamedParameters;
+    }
+  }
+
+  /**
+   * Converts all positional parameters (?) in the given sql string into named parameters. The
+   * parameters are named @p1, @p2, etc. This method is used when converting a JDBC statement that
+   * uses positional parameters to a Cloud Spanner {@link Statement} instance that requires named
+   * parameters. The input SQL string may not contain any comments. There is an exception case if
+   * the statement starts with a GSQL comment which forces it to be interpreted as a GoogleSql
+   * statement.
+   *
+   * @param sql The sql string without comments that should be converted
+   * @return A {@link ParametersInfo} object containing a string with named parameters instead of
+   *     positional parameters and the number of parameters.
+   * @throws SpannerException If the input sql string contains an unclosed string/byte literal.
+   */
+  @InternalApi
+  abstract ParametersInfo convertPositionalParametersToNamedParametersInternal(
+      char paramChar, String sql);
+
+  @InternalApi
+  public ParametersInfo convertPositionalParametersToNamedParameters(char paramChar, String sql) {
+    if (dialect == Dialect.POSTGRESQL && isGoogleSql(sql.trim())) {
+      return INSTANCES
+          .get(Dialect.GOOGLE_STANDARD_SQL)
+          .convertPositionalParametersToNamedParametersInternal(paramChar, sql);
+    } else {
+      return INSTANCES
+          .get(dialect)
+          .convertPositionalParametersToNamedParametersInternal(paramChar, sql);
+    }
+  }
+
+  /** Convenience method that is used to estimate the number of parameters in a SQL statement. */
+  static int countOccurrencesOf(char c, String string) {
+    int res = 0;
+    for (int i = 0; i < string.length(); i++) {
+      if (string.charAt(i) == c) {
+        res++;
       }
     }
-    if (startQueryIndex > -1) {
-      int endStatementHintIndex = sql.substring(0, startQueryIndex).lastIndexOf('}');
-      if (startStatementHintIndex == -1 || startStatementHintIndex > endStatementHintIndex) {
-        // Looks like an invalid statement hint. Just ignore at this point and let the caller handle
-        // the invalid query.
-        return sql;
-      }
-      return removeCommentsAndTrim(sql.substring(endStatementHintIndex + 1));
-    }
-    // Seems invalid, just return the original statement.
-    return sql;
+    return res;
   }
 }

@@ -23,6 +23,7 @@ import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.CommitResponse;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -1097,6 +1098,11 @@ public interface Connection extends AutoCloseable {
    * @throws SpannerException if the {@link Connection} is in autocommit mode
    */
   void bufferedWrite(Iterable<Mutation> mutations);
+
+  /** The {@link Dialect} that is used by this {@link Connection}. */
+  default Dialect getDialect() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   /**
    * This query option is used internally to indicate that a query is executed by the library itself

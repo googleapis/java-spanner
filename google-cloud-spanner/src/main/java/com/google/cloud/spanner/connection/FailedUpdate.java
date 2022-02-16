@@ -19,8 +19,8 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.ReadWriteTransaction.RetriableStatement;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
 import java.util.Objects;
 

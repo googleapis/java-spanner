@@ -764,6 +764,19 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     /**
      * Sets the {@code ChannelProvider}. {@link GapicSpannerRpc} would create a default one if none
      * is provided.
+     *
+     * <p>Setting a custom {@link TransportChannelProvider} also overrides any other settings that
+     * affect the default channel provider. These must be set manually on the custom {@link
+     * TransportChannelProvider} instead of on {@link SpannerOptions}. The settings of {@link
+     * SpannerOptions} that have no effect if you set a custom {@link TransportChannelProvider} are:
+     *
+     * <ol>
+     *   <li>{@link #setChannelConfigurator(ApiFunction)}
+     *   <li>{@link #setHost(String)}
+     *   <li>{@link #setNumChannels(int)}
+     *   <li>{@link #setInterceptorProvider(GrpcInterceptorProvider)}
+     *   <li>{@link #setHeaderProvider(com.google.api.gax.rpc.HeaderProvider)}
+     * </ol>
      */
     public Builder setChannelProvider(TransportChannelProvider channelProvider) {
       this.channelProvider = channelProvider;
@@ -1121,6 +1134,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
       // Set the host of emulator has been set.

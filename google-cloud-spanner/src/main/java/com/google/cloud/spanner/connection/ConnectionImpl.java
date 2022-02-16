@@ -24,6 +24,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
@@ -39,9 +40,9 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
-import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -82,7 +83,7 @@ class ConnectionImpl implements Connection {
 
   private volatile LeakedConnectionException leakedException = new LeakedConnectionException();
   private final SpannerPool spannerPool;
-  private final StatementParser parser = StatementParser.INSTANCE;
+  private AbstractStatementParser statementParser;
   /**
    * The {@link ConnectionStatementExecutor} is responsible for translating parsed {@link
    * ClientSideStatement}s into actual method calls on this {@link ConnectionImpl}. I.e. the {@link
@@ -266,6 +267,13 @@ class ConnectionImpl implements Connection {
         .build();
   }
 
+  private AbstractStatementParser getStatementParser() {
+    if (this.statementParser == null) {
+      this.statementParser = AbstractStatementParser.getInstance(dbClient.getDialect());
+    }
+    return this.statementParser;
+  }
+
   @Override
   public void close() {
     try {
@@ -317,6 +325,11 @@ class ConnectionImpl implements Connection {
   /** Get the call stack from when the {@link Connection} was opened. */
   LeakedConnectionException getLeakedException() {
     return leakedException;
+  }
+
+  @Override
+  public Dialect getDialect() {
+    return dbClient.getDialect();
   }
 
   @Override
@@ -804,7 +817,7 @@ class ConnectionImpl implements Connection {
   public StatementResult execute(Statement statement) {
     Preconditions.checkNotNull(statement);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(statement, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(statement, this.queryOptions);
     switch (parsedStatement.getType()) {
       case CLIENT_SIDE:
         return parsedStatement
@@ -829,7 +842,7 @@ class ConnectionImpl implements Connection {
   public AsyncStatementResult executeAsync(Statement statement) {
     Preconditions.checkNotNull(statement);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(statement, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(statement, this.queryOptions);
     switch (parsedStatement.getType()) {
       case CLIENT_SIDE:
         return AsyncStatementResultImpl.of(
@@ -877,7 +890,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(query);
     Preconditions.checkNotNull(analyzeMode);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(query, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
     if (parsedStatement.isQuery()) {
       switch (parsedStatement.getType()) {
         case CLIENT_SIDE:
@@ -902,7 +915,7 @@ class ConnectionImpl implements Connection {
       Statement query, AnalyzeMode analyzeMode, QueryOption... options) {
     Preconditions.checkNotNull(query);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(query, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
     if (parsedStatement.isQuery()) {
       switch (parsedStatement.getType()) {
         case CLIENT_SIDE:
@@ -930,7 +943,7 @@ class ConnectionImpl implements Connection {
   public long executeUpdate(Statement update) {
     Preconditions.checkNotNull(update);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(update);
+    ParsedStatement parsedStatement = getStatementParser().parse(update);
     if (parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case UPDATE:
@@ -950,7 +963,7 @@ class ConnectionImpl implements Connection {
   public ApiFuture<Long> executeUpdateAsync(Statement update) {
     Preconditions.checkNotNull(update);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(update);
+    ParsedStatement parsedStatement = getStatementParser().parse(update);
     if (parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case UPDATE:
@@ -974,7 +987,7 @@ class ConnectionImpl implements Connection {
     // Check that there are only DML statements in the input.
     List<ParsedStatement> parsedStatements = new LinkedList<>();
     for (Statement update : updates) {
-      ParsedStatement parsedStatement = parser.parse(update);
+      ParsedStatement parsedStatement = getStatementParser().parse(update);
       switch (parsedStatement.getType()) {
         case UPDATE:
           parsedStatements.add(parsedStatement);
@@ -1000,7 +1013,7 @@ class ConnectionImpl implements Connection {
     // Check that there are only DML statements in the input.
     List<ParsedStatement> parsedStatements = new LinkedList<>();
     for (Statement update : updates) {
-      ParsedStatement parsedStatement = parser.parse(update);
+      ParsedStatement parsedStatement = getStatementParser().parse(update);
       switch (parsedStatement.getType()) {
         case UPDATE:
           parsedStatements.add(parsedStatement);
