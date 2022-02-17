@@ -1,5 +1,26 @@
 # Changelog
 
+## [6.19.0](https://github.com/googleapis/java-spanner/compare/v6.18.0...v6.19.0) (2022-02-16)
+
+
+### Features
+
+* automatically detect database dialect ([#1677](https://github.com/googleapis/java-spanner/issues/1677)) ([9eccfc4](https://github.com/googleapis/java-spanner/commit/9eccfc441237272b01140c1f3d7da51b2b985554))
+* PostgreSQL dialect databases ([#1673](https://github.com/googleapis/java-spanner/issues/1673)) ([5f156f2](https://github.com/googleapis/java-spanner/commit/5f156f2efdb4726679766b385d500a030c24e477))
+
+
+### Bug Fixes
+
+* allow getting metadata without calling next() ([#1691](https://github.com/googleapis/java-spanner/issues/1691)) ([4cfe74e](https://github.com/googleapis/java-spanner/commit/4cfe74ef780f57747ea1dfef1a7098f809bcb300))
+* do not delete session in close method for BatchReadOnlyTransactionImpl ([#1688](https://github.com/googleapis/java-spanner/issues/1688)) ([5dc3e19](https://github.com/googleapis/java-spanner/commit/5dc3e191bee603a7feec29b7d4412646d53d73e4))
+* untyped null parameters would cause NPE ([#1680](https://github.com/googleapis/java-spanner/issues/1680)) ([7095f94](https://github.com/googleapis/java-spanner/commit/7095f940638d786745ed6715cf7a221d3e4a41a9)), closes [#1679](https://github.com/googleapis/java-spanner/issues/1679)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.2.2 ([#1666](https://github.com/googleapis/java-spanner/issues/1666)) ([8ea2220](https://github.com/googleapis/java-spanner/commit/8ea22205ea1361012b8f237af9150f320b41cc23))
+* update dependency com.google.cloud:google-cloud-trace to v2.1.2 ([#1664](https://github.com/googleapis/java-spanner/issues/1664)) ([4f46635](https://github.com/googleapis/java-spanner/commit/4f46635577f0e754ce271e4aba338b84d34f57dd))
+
 ## [6.18.0](https://github.com/googleapis/java-spanner/compare/v6.17.4...v6.18.0) (2022-02-03)
 
 
