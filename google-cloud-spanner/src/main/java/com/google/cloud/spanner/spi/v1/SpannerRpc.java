@@ -33,6 +33,7 @@ import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.Database;
@@ -229,6 +230,19 @@ public interface SpannerRpc extends ServiceRpc {
    */
   OperationFuture<Backup, CreateBackupMetadata> createBackup(
       com.google.cloud.spanner.Backup backupInfo) throws SpannerException;
+
+
+  /**
+   * Creates a copy backup from the source database specified in the {@link
+   * com.google.cloud.spanner.Backup} instance.
+   *
+   * @param backupInfo the backup to create. The instance, database, sourceBackupId and expireTime fields of the
+   *     backup must be filled.
+   * @return the operation that monitors the backup creation.
+   */
+  OperationFuture<Backup, CopyBackupMetadata> copyBackUp(
+          com.google.cloud.spanner.Backup backupInfo) throws SpannerException;
+
 
   /**
    * Restore a backup into the given database.

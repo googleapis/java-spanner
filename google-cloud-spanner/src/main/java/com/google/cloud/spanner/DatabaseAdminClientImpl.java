@@ -32,10 +32,12 @@ import com.google.common.base.Preconditions;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+
 import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -163,6 +165,50 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
         e -> {
           throw SpannerExceptionFactory.newSpannerException(e);
         });
+  }
+
+  @Override
+  public OperationFuture<Backup, CopyBackupMetadata> copyBackup(
+          String instanceId,String backupId, String sourceBackUp, Timestamp expireTime)
+          throws SpannerException {
+    final Backup backupInfo =
+            newBackupBuilder(BackupId.of(projectId, instanceId, backupId))
+                    .setExpireTime(expireTime)
+                    .setSourceBackup(sourceBackUp)
+                    .build();
+
+    return copyBackup(backupInfo);
+  }
+
+  @Override
+  public OperationFuture<Backup, CopyBackupMetadata> copyBackup(Backup backupInfo)
+          throws SpannerException {
+    Preconditions.checkArgument(
+            backupInfo.getId() != null, "Cannot create a backup without a source backup");
+
+    final OperationFuture<com.google.spanner.admin.database.v1.Backup, CopyBackupMetadata>
+            rawOperationFuture = rpc.copyBackUp(backupInfo);
+
+    return new OperationFutureImpl<>(
+            rawOperationFuture.getPollingFuture(),
+            rawOperationFuture.getInitialFuture(),
+            snapshot -> {
+              com.google.spanner.admin.database.v1.Backup proto =
+                      ProtoOperationTransformers.ResponseTransformer.create(
+                                      com.google.spanner.admin.database.v1.Backup.class)
+                              .apply(snapshot);
+              return Backup.fromProto(
+                      com.google.spanner.admin.database.v1.Backup.newBuilder(proto)
+                              .setName(proto.getName())
+                              .setExpireTime(proto.getExpireTime())
+                              .setEncryptionInfo(proto.getEncryptionInfo())
+                              .build(),
+                      DatabaseAdminClientImpl.this);
+            },
+            ProtoOperationTransformers.MetadataTransformer.create(CopyBackupMetadata.class),
+            e -> {
+              throw SpannerExceptionFactory.newSpannerException(e);
+            });
   }
 
   @Override

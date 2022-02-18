@@ -22,11 +22,13 @@ import com.google.cloud.Policy;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.ListOption;
 import com.google.longrunning.Operation;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -179,6 +181,66 @@ public interface DatabaseAdminClient {
   OperationFuture<Backup, CreateBackupMetadata> createBackup(Backup backup) throws SpannerException;
 
   /**
+   * Creates a copy of backup from an existing database backup in a Cloud Spanner instance.
+   *
+   * <p>Example to create a backup.
+   *
+   * <pre>{@code
+   * String instance       = my_instance_id;
+   * String backupId       = my_backup_id;
+   * String databaseId     = my_database_id;
+   * Timestamp expireTime  = Timestamp.ofTimeMicroseconds(micros);
+   * OperationFuture<Backup, CreateBackupMetadata> op = dbAdminClient
+   *     .createBackup(
+   *         instanceId,
+   *         backupId,
+   *         databaseId,
+   *         expireTime);
+   * Backup backup = op.get();
+   * }</pre>
+   *
+   * @param sourceInstanceId the id of the instance where the database to backup is located and
+   *     where the backup will be created.
+   * @param backupId the id of the backup which will be created. It must conform to the regular
+   *     expression [a-z][a-z0-9_\-]*[a-z0-9] and be between 2 and 60 characters in length.
+   * @param sourceBackup the source backup id.
+   * @param expireTime the time that the backup will automatically expire.
+   */
+  OperationFuture<Backup, CopyBackupMetadata> copyBackup(
+          String sourceInstanceId, String backupId, String sourceBackup, Timestamp expireTime)
+          throws SpannerException;
+
+
+  /**
+   * Creates a copy of backup from an existing database backup in Cloud Spanner. Any configuration options in the
+   * {@link Backup} instance will be included in the {@link
+   * com.google.spanner.admin.database.v1.CopyBackupRequest}.
+   *
+   * <p>Example to create an encrypted backup.
+   *
+   * <pre>{@code
+   * BackupId backupId = BackupId.of("project", "instance", "backup-id");
+   * Timestamp expireTime = Timestamp.ofTimeMicroseconds(expireTimeMicros);
+   * EncryptionConfig encryptionConfig =
+   *         EncryptionConfig.ofKey(
+   *             "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key"));
+   *
+   * Backup backupToCopy = dbAdminClient
+   *     .newBackupBuilder(backupId)
+   *     .setExpireTime(expireTime)
+   *     .setVersionTime(versionTime)
+   *     .setEncryptionConfig(encryptionConfig)
+   *     .build();
+   *
+   * OperationFuture<Backup, CreateBackupMetadata> op = dbAdminClient.copyBackUp(backupToCopy);
+   * Backup copiedBackup = op.get();
+   * }</pre>
+   *
+   * @param backup the backup to be copied
+   */
+  OperationFuture<Backup, CopyBackupMetadata> copyBackup(Backup backup) throws SpannerException;
+
+  /**
    * Restore a database from a backup. The database that is restored will be created and may not
    * already exist.
    *
@@ -266,6 +328,20 @@ public interface DatabaseAdminClient {
    * }</pre>
    */
   Backup getBackup(String instanceId, String backupId) throws SpannerException;
+
+  /**
+   * Creates a copy backup within this instance.
+   *
+   * <p>Example to get a backup.
+   *
+   * <pre>{@code
+   * String sourceBackupId = source_backup_id;
+   * String backupId   = my_backup_id;
+   * Timestamp expireTime = expire_time;
+   * Backup backup = dbAdminClient.copyBackup(sourceBackupId, backupId, expireTime);
+   * }</pre>
+   */
+//  Backup copyBackup(String sourceBackupId, Timestamp expireTime) throws SpannerException;
 
   /**
    * Enqueues the given DDL statements to be applied, in order but not necessarily all at once, to

@@ -44,6 +44,7 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.Message;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.Database;
@@ -51,6 +52,7 @@ import com.google.spanner.admin.database.v1.DatabaseDialect;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -72,6 +74,7 @@ public class DatabaseAdminClientImplTest {
   private static final String DB_NAME2 =
       "projects/my-project/instances/my-instance/databases/my-db2";
   private static final String BK_ID = "my-bk";
+  private static final String SOURCE_BK = "my-bk";
   private static final String BK_NAME = "projects/my-project/instances/my-instance/backups/my-bk";
   private static final String BK_NAME2 = "projects/my-project/instances/my-instance/backups/my-bk2";
   private static final Timestamp EARLIEST_VERSION_TIME = Timestamp.now();
@@ -449,6 +452,91 @@ public class DatabaseAdminClientImplTest {
     when(rpc.createBackup(backup)).thenReturn(rawOperationFuture);
     final OperationFuture<com.google.cloud.spanner.Backup, CreateBackupMetadata> op =
         client.createBackup(backup);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+    assertThat(op.get().getEncryptionInfo().getKmsKeyVersion()).isEqualTo(KMS_KEY_VERSION);
+  }
+
+  @Test
+  public void copyBackupWithParams() throws Exception {
+    OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =
+            OperationFutureUtil.immediateOperationFuture(
+                    "copyBackup", getBackupProto(), CopyBackupMetadata.getDefaultInstance());
+    Timestamp t =
+            Timestamp.ofTimeMicroseconds(
+                    TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
+                            + TimeUnit.HOURS.toMicros(28));
+    final com.google.cloud.spanner.Backup backup =
+            client
+                    .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+                    .setSourceBackup(SOURCE_BK)
+                    .setExpireTime(t)
+                    .build();
+    when(rpc.copyBackUp(backup)).thenReturn(rawOperationFuture);
+    OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
+            client.copyBackup(INSTANCE_ID, BK_ID, DB_ID, t);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+  }
+
+  @Test
+  public void copyBackupWithBackupObject() throws ExecutionException, InterruptedException {
+    final OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =
+            OperationFutureUtil.immediateOperationFuture(
+                    "copyBackup", getBackupProto(), CopyBackupMetadata.getDefaultInstance());
+    final Timestamp expireTime =
+            Timestamp.ofTimeMicroseconds(
+                    TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
+                            + TimeUnit.HOURS.toMicros(28));
+    final Timestamp versionTime =
+            Timestamp.ofTimeMicroseconds(
+                    TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis()) - TimeUnit.DAYS.toMicros(2));
+    final com.google.cloud.spanner.Backup requestBackup =
+            client
+                    .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+                    .setSourceBackup(SOURCE_BK)
+                    .setExpireTime(expireTime)
+                    .setVersionTime(versionTime)
+                    .build();
+
+    when(rpc.copyBackUp(requestBackup)).thenReturn(rawOperationFuture);
+
+    final OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
+            client.copyBackup(requestBackup);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCopyBackupNoSource() {
+    final com.google.cloud.spanner.Backup requestBackup =
+            client
+                    .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+                    .setExpireTime(Timestamp.now())
+                    .build();
+
+    client.copyBackup(requestBackup);
+  }
+
+  @Test
+  public void copyEncryptedBackup() throws ExecutionException, InterruptedException {
+    final OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =
+            OperationFutureUtil.immediateOperationFuture(
+                    "copyBackup", getEncryptedBackupProto(), CopyBackupMetadata.getDefaultInstance());
+    final Timestamp t =
+            Timestamp.ofTimeMicroseconds(
+                    TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
+                            + TimeUnit.HOURS.toMicros(28));
+    final com.google.cloud.spanner.Backup backup =
+            client
+                    .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+                    .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+                    .setExpireTime(t)
+                    .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME))
+                    .build();
+    when(rpc.copyBackUp(backup)).thenReturn(rawOperationFuture);
+    final OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
+            client.copyBackup(backup);
     assertThat(op.isDone()).isTrue();
     assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
     assertThat(op.get().getEncryptionInfo().getKmsKeyVersion()).isEqualTo(KMS_KEY_VERSION);
