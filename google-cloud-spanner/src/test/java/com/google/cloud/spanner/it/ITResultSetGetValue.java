@@ -101,6 +101,7 @@ public class ITResultSetGetValue {
                     + "bytes BYTES(MAX),"
                     + "timestamp TIMESTAMP,"
                     + "date DATE,"
+                    + "json JSON,"
                     + "boolArray ARRAY<BOOL>,"
                     + "int64Array ARRAY<INT64>,"
                     + "float64Array ARRAY<FLOAT64>,"
@@ -108,7 +109,8 @@ public class ITResultSetGetValue {
                     + "stringArray ARRAY<STRING(MAX)>,"
                     + "bytesArray ARRAY<BYTES(MAX)>,"
                     + "timestampArray ARRAY<TIMESTAMP>,"
-                    + "dateArray ARRAY<DATE>"
+                    + "dateArray ARRAY<DATE>,"
+                    + "jsonArray ARRAY<JSON>"
                     + ") PRIMARY KEY (Id)");
     googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSqlDatabase);
     if (!EmulatorSpannerHelper.isUsingEmulator()) {
@@ -167,6 +169,8 @@ public class ITResultSetGetValue {
                 .to(Timestamp.ofTimeSecondsAndNanos(1, 0))
                 .set("date")
                 .to(Date.fromYearMonthDay(2021, 1, 2))
+                .set("json")
+                .to(Value.json("{\"key\":\"value\"}"))
                 .set("boolArray")
                 .toBoolArray(new boolean[] {false, true})
                 .set("int64Array")
@@ -189,6 +193,8 @@ public class ITResultSetGetValue {
                 .toDateArray(
                     Arrays.asList(
                         Date.fromYearMonthDay(2021, 2, 3), Date.fromYearMonthDay(2021, 3, 4)))
+                .set("jsonArray")
+                .toJsonArray(Arrays.asList("{\"key1\":\"value1\"}", "{\"key2\":\"value2\"}"))
                 .build()));
     try (ResultSet resultSet =
         databaseClient
@@ -206,6 +212,7 @@ public class ITResultSetGetValue {
       assertEquals(
           Value.timestamp(Timestamp.ofTimeSecondsAndNanos(1, 0)), resultSet.getValue("timestamp"));
       assertEquals(Value.date(Date.fromYearMonthDay(2021, 1, 2)), resultSet.getValue("date"));
+      assertEquals(Value.json("{\"key\":\"value\"}"), resultSet.getValue("json"));
       assertEquals(Value.boolArray(new boolean[] {false, true}), resultSet.getValue("boolArray"));
       assertEquals(Value.int64Array(new long[] {100L, 200L}), resultSet.getValue("int64Array"));
       assertArrayEquals(
@@ -231,6 +238,9 @@ public class ITResultSetGetValue {
           Value.dateArray(
               Arrays.asList(Date.fromYearMonthDay(2021, 2, 3), Date.fromYearMonthDay(2021, 3, 4))),
           resultSet.getValue("dateArray"));
+      assertEquals(
+          Value.jsonArray(Arrays.asList("{\"key1\":\"value1\"}", "{\"key2\":\"value2\"}")),
+          resultSet.getValue("jsonArray"));
     }
   }
 
@@ -300,6 +310,8 @@ public class ITResultSetGetValue {
           IllegalStateException.class, () -> resultSet.getValue("timestamp").getTimestamp());
       assertTrue(resultSet.getValue("date").isNull());
       assertThrows(IllegalStateException.class, () -> resultSet.getValue("date").getDate());
+      assertTrue(resultSet.getValue("json").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("json").getDate());
       assertTrue(resultSet.getValue("boolArray").isNull());
       assertThrows(
           IllegalStateException.class, () -> resultSet.getValue("boolArray").getBoolArray());
@@ -325,6 +337,9 @@ public class ITResultSetGetValue {
       assertTrue(resultSet.getValue("dateArray").isNull());
       assertThrows(
           IllegalStateException.class, () -> resultSet.getValue("dateArray").getDateArray());
+      assertTrue(resultSet.getValue("jsonArray").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("jsonArray").getDateArray());
     }
   }
 
@@ -379,6 +394,8 @@ public class ITResultSetGetValue {
                 .toTimestampArray(Arrays.asList(null, Timestamp.ofTimeSecondsAndNanos(20, 0)))
                 .set("dateArray")
                 .toDateArray(Arrays.asList(Date.fromYearMonthDay(2021, 2, 3), null))
+                .set("jsonArray")
+                .toJsonArray(Arrays.asList("{\"key1\":\"value1\"}", null))
                 .build()));
 
     try (ResultSet resultSet =
@@ -406,6 +423,9 @@ public class ITResultSetGetValue {
       assertEquals(
           Value.dateArray(Arrays.asList(Date.fromYearMonthDay(2021, 2, 3), null)),
           resultSet.getValue("dateArray"));
+      assertEquals(
+          Value.jsonArray(Arrays.asList("{\"key1\":\"value1\"}", null)),
+          resultSet.getValue("jsonArray"));
     }
   }
 

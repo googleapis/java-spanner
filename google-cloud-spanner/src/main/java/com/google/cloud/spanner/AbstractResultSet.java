@@ -713,6 +713,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return Value.float64(isNull ? null : getDoubleInternal(columnIndex));
         case STRING:
           return Value.string(isNull ? null : getStringInternal(columnIndex));
+        case JSON:
+          return Value.json(isNull ? null : getJsonInternal(columnIndex));
         case BYTES:
           return Value.bytes(isNull ? null : getBytesInternal(columnIndex));
         case TIMESTAMP:
@@ -736,6 +738,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               return Value.float64Array(isNull ? null : getDoubleListInternal(columnIndex));
             case STRING:
               return Value.stringArray(isNull ? null : getStringListInternal(columnIndex));
+            case JSON:
+              return Value.jsonArray(isNull ? null : getJsonListInternal(columnIndex));
             case BYTES:
               return Value.bytesArray(isNull ? null : getBytesListInternal(columnIndex));
             case TIMESTAMP:
