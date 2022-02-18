@@ -56,6 +56,7 @@ import com.google.cloud.spanner.Value;
 import com.google.common.io.BaseEncoding;
 import com.google.longrunning.Operation;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata;
@@ -63,6 +64,7 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.math.BigDecimal;
+import Java.lang.math.min;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1611,6 +1613,48 @@ public class SpannerSample {
   }
   // [END spanner_create_backup]
 
+  // [START spanner_create_copy_backup]
+  static void createCopyBackup(String instanceId, String copyBackupId, String sourceBackupPath):
+    // Creates a copy backup of an existing backup with tables
+    Instance instance = instanceAdminClient.getInstance(instanceId.getInstance());
+
+    Timestamp expireTime = Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
+            System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14), TimeUnit.MILLISECONDS));
+
+    Backup copyBackup = instance.co
+
+    // Initiate the request which returns an OperationFuture.
+    System.out.println("Creating backup [" + backup.getId() + "]...");
+    OperationFuture<Backup, CopyBackupMetadata> op = backup.copyBackup();
+      try {
+      // Wait for the backup operation to complete.
+      backup = op.get();
+      System.out.println("Created backup [" + backup.getId() + "]");
+    } catch (ExecutionException e) {
+      throw (SpannerException) e.getCause();
+    } catch (InterruptedException e) {
+      throw SpannerExceptionFactory.propagateInterrupt(e);
+    }
+
+    // Reload the metadata of the backup from the server.
+    backup = backup.reload();
+    System.out.println(
+            String.format(
+            "Backup %s of size %d bytes was created at %s for version of database at %s",
+            backup.getId().getName(),
+            backup.getSize(),
+                    LocalDateTime.ofEpochSecond(
+                    backup.getProto().getCreateTime().getSeconds(),
+                backup.getProto().getCreateTime().getNanos(),
+                OffsetDateTime.now().getOffset()),
+          LocalDateTime.ofEpochSecond(
+          backup.getProto().getVersionTime().getSeconds(),
+                backup.getProto().getVersionTime().getNanos(),
+                OffsetDateTime.now().getOffset())
+          ));
+
+  // [END spanner_create_copy_backup]
+
   // [START spanner_cancel_backup_create]
   static void cancelCreateBackup(
       DatabaseAdminClient dbAdminClient, DatabaseId databaseId, BackupId backupId) {
@@ -1840,6 +1884,9 @@ public class SpannerSample {
             TimeUnit.SECONDS.toMicros(backup.getExpireTime().getSeconds())
                 + TimeUnit.NANOSECONDS.toMicros(backup.getExpireTime().getNanos())
                 + TimeUnit.DAYS.toMicros(30L));
+    Timestamp newExpireTime = Math.min(expireTime, backup.getExpireTime());
+    new_expire_time = min(backup.maxExpireTime, old_expire_time)
+
     System.out.println(String.format(
         "Updating expire time of backup [%s] to %s...",
         backupId.toString(),
