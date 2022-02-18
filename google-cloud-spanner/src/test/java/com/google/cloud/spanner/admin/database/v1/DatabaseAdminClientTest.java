@@ -46,10 +46,10 @@ import com.google.protobuf.FieldMask;
 import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupName;
+import com.google.spanner.admin.database.v1.CopyBackupRequest;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
-import com.google.spanner.admin.database.v1.DatabaseDialect;
 import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
@@ -225,7 +225,6 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
-            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -282,7 +281,6 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
-            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -339,7 +337,6 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
-            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -385,7 +382,6 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
-            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -659,7 +655,7 @@ public class DatabaseAdminClientTest {
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+    ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
     Policy policy = Policy.newBuilder().build();
 
     Policy actualResponse = client.setIamPolicy(resource, policy);
@@ -683,7 +679,7 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addException(exception);
 
     try {
-      ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+      ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
       Policy policy = Policy.newBuilder().build();
       client.setIamPolicy(resource, policy);
       Assert.fail("No exception raised");
@@ -745,7 +741,7 @@ public class DatabaseAdminClientTest {
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+    ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
 
     Policy actualResponse = client.getIamPolicy(resource);
     Assert.assertEquals(expectedResponse, actualResponse);
@@ -767,7 +763,7 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addException(exception);
 
     try {
-      ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+      ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
       client.getIamPolicy(resource);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
@@ -821,7 +817,7 @@ public class DatabaseAdminClientTest {
         TestIamPermissionsResponse.newBuilder().addAllPermissions(new ArrayList<String>()).build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+    ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
     List<String> permissions = new ArrayList<>();
 
     TestIamPermissionsResponse actualResponse = client.testIamPermissions(resource, permissions);
@@ -845,7 +841,7 @@ public class DatabaseAdminClientTest {
     mockDatabaseAdmin.addException(exception);
 
     try {
-      ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+      ResourceName resource = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
       List<String> permissions = new ArrayList<>();
       client.testIamPermissions(resource, permissions);
       Assert.fail("No exception raised");
@@ -905,7 +901,8 @@ public class DatabaseAdminClientTest {
             .setSizeBytes(-1796325715)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
-            .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .addAllReferencingBackups(new ArrayList<String>())
+            .setMaxExpireTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -965,7 +962,8 @@ public class DatabaseAdminClientTest {
             .setSizeBytes(-1796325715)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
-            .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .addAllReferencingBackups(new ArrayList<String>())
+            .setMaxExpireTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1014,6 +1012,266 @@ public class DatabaseAdminClientTest {
   }
 
   @Test
+  public void copyBackupTest() throws Exception {
+    Backup expectedResponse =
+        Backup.newBuilder()
+            .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+            .setVersionTime(Timestamp.newBuilder().build())
+            .setExpireTime(Timestamp.newBuilder().build())
+            .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setSizeBytes(-1796325715)
+            .addAllReferencingDatabases(new ArrayList<String>())
+            .setEncryptionInfo(EncryptionInfo.newBuilder().build())
+            .addAllReferencingBackups(new ArrayList<String>())
+            .setMaxExpireTime(Timestamp.newBuilder().build())
+            .build();
+    Operation resultOperation =
+        Operation.newBuilder()
+            .setName("copyBackupTest")
+            .setDone(true)
+            .setResponse(Any.pack(expectedResponse))
+            .build();
+    mockDatabaseAdmin.addResponse(resultOperation);
+
+    InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+    String backupId = "backupId2121930365";
+    BackupName sourceBackup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+    Timestamp expireTime = Timestamp.newBuilder().build();
+
+    Backup actualResponse =
+        client.copyBackupAsync(parent, backupId, sourceBackup, expireTime).get();
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    CopyBackupRequest actualRequest = ((CopyBackupRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent.toString(), actualRequest.getParent());
+    Assert.assertEquals(backupId, actualRequest.getBackupId());
+    Assert.assertEquals(sourceBackup.toString(), actualRequest.getSourceBackup());
+    Assert.assertEquals(expireTime, actualRequest.getExpireTime());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void copyBackupExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+      String backupId = "backupId2121930365";
+      BackupName sourceBackup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+      Timestamp expireTime = Timestamp.newBuilder().build();
+      client.copyBackupAsync(parent, backupId, sourceBackup, expireTime).get();
+      Assert.fail("No exception raised");
+    } catch (ExecutionException e) {
+      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
+      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
+      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
+    }
+  }
+
+  @Test
+  public void copyBackupTest2() throws Exception {
+    Backup expectedResponse =
+        Backup.newBuilder()
+            .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+            .setVersionTime(Timestamp.newBuilder().build())
+            .setExpireTime(Timestamp.newBuilder().build())
+            .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setSizeBytes(-1796325715)
+            .addAllReferencingDatabases(new ArrayList<String>())
+            .setEncryptionInfo(EncryptionInfo.newBuilder().build())
+            .addAllReferencingBackups(new ArrayList<String>())
+            .setMaxExpireTime(Timestamp.newBuilder().build())
+            .build();
+    Operation resultOperation =
+        Operation.newBuilder()
+            .setName("copyBackupTest")
+            .setDone(true)
+            .setResponse(Any.pack(expectedResponse))
+            .build();
+    mockDatabaseAdmin.addResponse(resultOperation);
+
+    InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+    String backupId = "backupId2121930365";
+    String sourceBackup = "sourceBackup823134653";
+    Timestamp expireTime = Timestamp.newBuilder().build();
+
+    Backup actualResponse =
+        client.copyBackupAsync(parent, backupId, sourceBackup, expireTime).get();
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    CopyBackupRequest actualRequest = ((CopyBackupRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent.toString(), actualRequest.getParent());
+    Assert.assertEquals(backupId, actualRequest.getBackupId());
+    Assert.assertEquals(sourceBackup, actualRequest.getSourceBackup());
+    Assert.assertEquals(expireTime, actualRequest.getExpireTime());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void copyBackupExceptionTest2() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+      String backupId = "backupId2121930365";
+      String sourceBackup = "sourceBackup823134653";
+      Timestamp expireTime = Timestamp.newBuilder().build();
+      client.copyBackupAsync(parent, backupId, sourceBackup, expireTime).get();
+      Assert.fail("No exception raised");
+    } catch (ExecutionException e) {
+      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
+      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
+      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
+    }
+  }
+
+  @Test
+  public void copyBackupTest3() throws Exception {
+    Backup expectedResponse =
+        Backup.newBuilder()
+            .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+            .setVersionTime(Timestamp.newBuilder().build())
+            .setExpireTime(Timestamp.newBuilder().build())
+            .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setSizeBytes(-1796325715)
+            .addAllReferencingDatabases(new ArrayList<String>())
+            .setEncryptionInfo(EncryptionInfo.newBuilder().build())
+            .addAllReferencingBackups(new ArrayList<String>())
+            .setMaxExpireTime(Timestamp.newBuilder().build())
+            .build();
+    Operation resultOperation =
+        Operation.newBuilder()
+            .setName("copyBackupTest")
+            .setDone(true)
+            .setResponse(Any.pack(expectedResponse))
+            .build();
+    mockDatabaseAdmin.addResponse(resultOperation);
+
+    String parent = "parent-995424086";
+    String backupId = "backupId2121930365";
+    BackupName sourceBackup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+    Timestamp expireTime = Timestamp.newBuilder().build();
+
+    Backup actualResponse =
+        client.copyBackupAsync(parent, backupId, sourceBackup, expireTime).get();
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    CopyBackupRequest actualRequest = ((CopyBackupRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent, actualRequest.getParent());
+    Assert.assertEquals(backupId, actualRequest.getBackupId());
+    Assert.assertEquals(sourceBackup.toString(), actualRequest.getSourceBackup());
+    Assert.assertEquals(expireTime, actualRequest.getExpireTime());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void copyBackupExceptionTest3() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      String parent = "parent-995424086";
+      String backupId = "backupId2121930365";
+      BackupName sourceBackup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+      Timestamp expireTime = Timestamp.newBuilder().build();
+      client.copyBackupAsync(parent, backupId, sourceBackup, expireTime).get();
+      Assert.fail("No exception raised");
+    } catch (ExecutionException e) {
+      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
+      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
+      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
+    }
+  }
+
+  @Test
+  public void copyBackupTest4() throws Exception {
+    Backup expectedResponse =
+        Backup.newBuilder()
+            .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+            .setVersionTime(Timestamp.newBuilder().build())
+            .setExpireTime(Timestamp.newBuilder().build())
+            .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setSizeBytes(-1796325715)
+            .addAllReferencingDatabases(new ArrayList<String>())
+            .setEncryptionInfo(EncryptionInfo.newBuilder().build())
+            .addAllReferencingBackups(new ArrayList<String>())
+            .setMaxExpireTime(Timestamp.newBuilder().build())
+            .build();
+    Operation resultOperation =
+        Operation.newBuilder()
+            .setName("copyBackupTest")
+            .setDone(true)
+            .setResponse(Any.pack(expectedResponse))
+            .build();
+    mockDatabaseAdmin.addResponse(resultOperation);
+
+    String parent = "parent-995424086";
+    String backupId = "backupId2121930365";
+    String sourceBackup = "sourceBackup823134653";
+    Timestamp expireTime = Timestamp.newBuilder().build();
+
+    Backup actualResponse =
+        client.copyBackupAsync(parent, backupId, sourceBackup, expireTime).get();
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    CopyBackupRequest actualRequest = ((CopyBackupRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent, actualRequest.getParent());
+    Assert.assertEquals(backupId, actualRequest.getBackupId());
+    Assert.assertEquals(sourceBackup, actualRequest.getSourceBackup());
+    Assert.assertEquals(expireTime, actualRequest.getExpireTime());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void copyBackupExceptionTest4() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      String parent = "parent-995424086";
+      String backupId = "backupId2121930365";
+      String sourceBackup = "sourceBackup823134653";
+      Timestamp expireTime = Timestamp.newBuilder().build();
+      client.copyBackupAsync(parent, backupId, sourceBackup, expireTime).get();
+      Assert.fail("No exception raised");
+    } catch (ExecutionException e) {
+      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
+      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
+      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
+    }
+  }
+
+  @Test
   public void getBackupTest() throws Exception {
     Backup expectedResponse =
         Backup.newBuilder()
@@ -1025,7 +1283,8 @@ public class DatabaseAdminClientTest {
             .setSizeBytes(-1796325715)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
-            .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .addAllReferencingBackups(new ArrayList<String>())
+            .setMaxExpireTime(Timestamp.newBuilder().build())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1071,7 +1330,8 @@ public class DatabaseAdminClientTest {
             .setSizeBytes(-1796325715)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
-            .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .addAllReferencingBackups(new ArrayList<String>())
+            .setMaxExpireTime(Timestamp.newBuilder().build())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1117,7 +1377,8 @@ public class DatabaseAdminClientTest {
             .setSizeBytes(-1796325715)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
-            .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .addAllReferencingBackups(new ArrayList<String>())
+            .setMaxExpireTime(Timestamp.newBuilder().build())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1322,7 +1583,6 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
-            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1382,7 +1642,6 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
-            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1442,7 +1701,6 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
-            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1502,7 +1760,6 @@ public class DatabaseAdminClientTest {
             .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
-            .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .build();
     Operation resultOperation =
         Operation.newBuilder()

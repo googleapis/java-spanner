@@ -357,13 +357,13 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(database_)) {
+    if (!getDatabaseBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, database_);
     }
     for (int i = 0; i < statements_.size(); i++) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, statements_.getRaw(i));
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(operationId_)) {
+    if (!getOperationIdBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, operationId_);
     }
     unknownFields.writeTo(output);
@@ -375,7 +375,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     if (size != -1) return size;
 
     size = 0;
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(database_)) {
+    if (!getDatabaseBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, database_);
     }
     {
@@ -386,7 +386,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       size += dataSize;
       size += 1 * getStatementsList().size();
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(operationId_)) {
+    if (!getOperationIdBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, operationId_);
     }
     size += unknownFields.getSerializedSize();

@@ -145,13 +145,13 @@ public final class SpannerProto {
   static {
     java.lang.String[] descriptorData = {
       "\n\037google/spanner/v1/spanner.proto\022\021googl"
-          + "e.spanner.v1\032\034google/api/annotations.pro"
-          + "to\032\027google/api/client.proto\032\037google/api/"
-          + "field_behavior.proto\032\031google/api/resourc"
-          + "e.proto\032\033google/protobuf/empty.proto\032\034go"
-          + "ogle/protobuf/struct.proto\032\037google/proto"
-          + "buf/timestamp.proto\032\027google/rpc/status.p"
-          + "roto\032\'google/spanner/v1/commit_response."
+          + "e.spanner.v1\032\'google/spanner/v1/commit_r"
+          + "esponse.proto\032\034google/api/annotations.pr"
+          + "oto\032\027google/api/client.proto\032\037google/api"
+          + "/field_behavior.proto\032\031google/api/resour"
+          + "ce.proto\032\033google/protobuf/empty.proto\032\034g"
+          + "oogle/protobuf/struct.proto\032\037google/prot"
+          + "obuf/timestamp.proto\032\027google/rpc/status."
           + "proto\032\034google/spanner/v1/keys.proto\032 goo"
           + "gle/spanner/v1/mutation.proto\032\"google/sp"
           + "anner/v1/result_set.proto\032#google/spanne"
@@ -353,12 +353,13 @@ public final class SpannerProto {
           + "Spanner\\V1\352\002\032Google::Cloud::Spanner::V1\352"
           + "A_\n\037spanner.googleapis.com/Database\022<pro"
           + "jects/{project}/instances/{instance}/dat"
-          + "abases/{database}P\010b\006proto3"
+          + "abases/{database}P\000b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
             descriptorData,
             new com.google.protobuf.Descriptors.FileDescriptor[] {
+              com.google.spanner.v1.CommitResponseProto.getDescriptor(),
               com.google.api.AnnotationsProto.getDescriptor(),
               com.google.api.ClientProto.getDescriptor(),
               com.google.api.FieldBehaviorProto.getDescriptor(),
@@ -367,7 +368,6 @@ public final class SpannerProto {
               com.google.protobuf.StructProto.getDescriptor(),
               com.google.protobuf.TimestampProto.getDescriptor(),
               com.google.rpc.StatusProto.getDescriptor(),
-              com.google.spanner.v1.CommitResponseProto.getDescriptor(),
               com.google.spanner.v1.KeysProto.getDescriptor(),
               com.google.spanner.v1.MutationProto.getDescriptor(),
               com.google.spanner.v1.ResultSetProto.getDescriptor(),
@@ -628,6 +628,7 @@ public final class SpannerProto {
     registry.add(com.google.api.ResourceProto.resourceReference);
     com.google.protobuf.Descriptors.FileDescriptor.internalUpdateFileDescriptor(
         descriptor, registry);
+    com.google.spanner.v1.CommitResponseProto.getDescriptor();
     com.google.api.AnnotationsProto.getDescriptor();
     com.google.api.ClientProto.getDescriptor();
     com.google.api.FieldBehaviorProto.getDescriptor();
@@ -636,7 +637,6 @@ public final class SpannerProto {
     com.google.protobuf.StructProto.getDescriptor();
     com.google.protobuf.TimestampProto.getDescriptor();
     com.google.rpc.StatusProto.getDescriptor();
-    com.google.spanner.v1.CommitResponseProto.getDescriptor();
     com.google.spanner.v1.KeysProto.getDescriptor();
     com.google.spanner.v1.MutationProto.getDescriptor();
     com.google.spanner.v1.ResultSetProto.getDescriptor();

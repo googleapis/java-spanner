@@ -22,22 +22,22 @@ package com.google.spanner.admin.database.v1;
  *
  *
  * <pre>
- * Encryption configuration for the backup to create.
+ * Encryption configuration for the copied backup.
  * </pre>
  *
- * Protobuf type {@code google.spanner.admin.database.v1.CreateBackupEncryptionConfig}
+ * Protobuf type {@code google.spanner.admin.database.v1.CopyBackupEncryptionConfig}
  */
-public final class CreateBackupEncryptionConfig extends com.google.protobuf.GeneratedMessageV3
+public final class CopyBackupEncryptionConfig extends com.google.protobuf.GeneratedMessageV3
     implements
-    // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.CreateBackupEncryptionConfig)
-    CreateBackupEncryptionConfigOrBuilder {
+    // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.CopyBackupEncryptionConfig)
+    CopyBackupEncryptionConfigOrBuilder {
   private static final long serialVersionUID = 0L;
-  // Use CreateBackupEncryptionConfig.newBuilder() to construct.
-  private CreateBackupEncryptionConfig(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+  // Use CopyBackupEncryptionConfig.newBuilder() to construct.
+  private CopyBackupEncryptionConfig(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
 
-  private CreateBackupEncryptionConfig() {
+  private CopyBackupEncryptionConfig() {
     encryptionType_ = 0;
     kmsKeyName_ = "";
   }
@@ -45,7 +45,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
-    return new CreateBackupEncryptionConfig();
+    return new CopyBackupEncryptionConfig();
   }
 
   @java.lang.Override
@@ -53,7 +53,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
     return this.unknownFields;
   }
 
-  private CreateBackupEncryptionConfig(
+  private CopyBackupEncryptionConfig(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -106,17 +106,17 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.database.v1.BackupProto
-        .internal_static_google_spanner_admin_database_v1_CreateBackupEncryptionConfig_descriptor;
+        .internal_static_google_spanner_admin_database_v1_CopyBackupEncryptionConfig_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
     return com.google.spanner.admin.database.v1.BackupProto
-        .internal_static_google_spanner_admin_database_v1_CreateBackupEncryptionConfig_fieldAccessorTable
+        .internal_static_google_spanner_admin_database_v1_CopyBackupEncryptionConfig_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.class,
-            com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.Builder.class);
+            com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.class,
+            com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.Builder.class);
   }
 
   /**
@@ -127,7 +127,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
    * </pre>
    *
    * Protobuf enum {@code
-   * google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType}
+   * google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType}
    */
   public enum EncryptionType implements com.google.protobuf.ProtocolMessageEnum {
     /**
@@ -144,16 +144,15 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      *
      *
      * <pre>
-     * Use the same encryption configuration as the database. This is the
-     * default option when
-     * [encryption_config][google.spanner.admin.database.v1.CreateBackupEncryptionConfig] is empty.
-     * For example, if the database is using `Customer_Managed_Encryption`, the
-     * backup will be using the same Cloud KMS key as the database.
+     * This is the default option for [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+     * when [encryption_config][google.spanner.admin.database.v1.CopyBackupEncryptionConfig] is not specified.
+     * For example, if the source backup is using `Customer_Managed_Encryption`,
+     * the backup will be using the same Cloud KMS key as the source backup.
      * </pre>
      *
-     * <code>USE_DATABASE_ENCRYPTION = 1;</code>
+     * <code>USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION = 1;</code>
      */
-    USE_DATABASE_ENCRYPTION(1),
+    USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION(1),
     /**
      *
      *
@@ -192,16 +191,15 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      *
      *
      * <pre>
-     * Use the same encryption configuration as the database. This is the
-     * default option when
-     * [encryption_config][google.spanner.admin.database.v1.CreateBackupEncryptionConfig] is empty.
-     * For example, if the database is using `Customer_Managed_Encryption`, the
-     * backup will be using the same Cloud KMS key as the database.
+     * This is the default option for [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+     * when [encryption_config][google.spanner.admin.database.v1.CopyBackupEncryptionConfig] is not specified.
+     * For example, if the source backup is using `Customer_Managed_Encryption`,
+     * the backup will be using the same Cloud KMS key as the source backup.
      * </pre>
      *
-     * <code>USE_DATABASE_ENCRYPTION = 1;</code>
+     * <code>USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION = 1;</code>
      */
-    public static final int USE_DATABASE_ENCRYPTION_VALUE = 1;
+    public static final int USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION_VALUE = 1;
     /**
      *
      *
@@ -251,7 +249,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
         case 0:
           return ENCRYPTION_TYPE_UNSPECIFIED;
         case 1:
-          return USE_DATABASE_ENCRYPTION;
+          return USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION;
         case 2:
           return GOOGLE_DEFAULT_ENCRYPTION;
         case 3:
@@ -285,7 +283,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
     }
 
     public static final com.google.protobuf.Descriptors.EnumDescriptor getDescriptor() {
-      return com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.getDescriptor()
+      return com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.getDescriptor()
           .getEnumTypes()
           .get(0);
     }
@@ -308,7 +306,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
       this.value = value;
     }
 
-    // @@protoc_insertion_point(enum_scope:google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType)
+    // @@protoc_insertion_point(enum_scope:google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType)
   }
 
   public static final int ENCRYPTION_TYPE_FIELD_NUMBER = 1;
@@ -321,7 +319,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
    * </pre>
    *
    * <code>
-   * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType encryption_type = 1 [(.google.api.field_behavior) = REQUIRED];
+   * .google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType encryption_type = 1 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    *
    * @return The enum numeric value on the wire for encryptionType.
@@ -338,20 +336,20 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
    * </pre>
    *
    * <code>
-   * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType encryption_type = 1 [(.google.api.field_behavior) = REQUIRED];
+   * .google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType encryption_type = 1 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    *
    * @return The encryptionType.
    */
   @java.lang.Override
-  public com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType
+  public com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType
       getEncryptionType() {
     @SuppressWarnings("deprecation")
-    com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType result =
-        com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType.valueOf(
+    com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType result =
+        com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType.valueOf(
             encryptionType_);
     return result == null
-        ? com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType
+        ? com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType
             .UNRECOGNIZED
         : result;
   }
@@ -364,7 +362,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
    * <pre>
    * Optional. The Cloud KMS key that will be used to protect the backup.
    * This field should be set only when
-   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
+   * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] is
    * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
    * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
    * </pre>
@@ -393,7 +391,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
    * <pre>
    * Optional. The Cloud KMS key that will be used to protect the backup.
    * This field should be set only when
-   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
+   * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] is
    * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
    * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
    * </pre>
@@ -432,7 +430,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
     if (encryptionType_
-        != com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType
+        != com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType
             .ENCRYPTION_TYPE_UNSPECIFIED
             .getNumber()) {
       output.writeEnum(1, encryptionType_);
@@ -450,7 +448,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
 
     size = 0;
     if (encryptionType_
-        != com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType
+        != com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType
             .ENCRYPTION_TYPE_UNSPECIFIED
             .getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(1, encryptionType_);
@@ -468,11 +466,11 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig)) {
+    if (!(obj instanceof com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig)) {
       return super.equals(obj);
     }
-    com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig other =
-        (com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig) obj;
+    com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig other =
+        (com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig) obj;
 
     if (encryptionType_ != other.encryptionType_) return false;
     if (!getKmsKeyName().equals(other.getKmsKeyName())) return false;
@@ -496,72 +494,71 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
     return hash;
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig parseFrom(
       java.nio.ByteBuffer data) throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig parseFrom(
       java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig parseFrom(
       byte[] data) throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig parseFrom(
       byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig parseFrom(
       java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig parseFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig
-      parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
+  public static com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig parseDelimitedFrom(
+      java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig
-      parseDelimitedFrom(
-          java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
+  public static com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig parseDelimitedFrom(
+      java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig parseFrom(
       com.google.protobuf.CodedInputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -579,7 +576,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
   }
 
   public static Builder newBuilder(
-      com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig prototype) {
+      com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
 
@@ -597,32 +594,31 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
    *
    *
    * <pre>
-   * Encryption configuration for the backup to create.
+   * Encryption configuration for the copied backup.
    * </pre>
    *
-   * Protobuf type {@code google.spanner.admin.database.v1.CreateBackupEncryptionConfig}
+   * Protobuf type {@code google.spanner.admin.database.v1.CopyBackupEncryptionConfig}
    */
   public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
       implements
-      // @@protoc_insertion_point(builder_implements:google.spanner.admin.database.v1.CreateBackupEncryptionConfig)
-      com.google.spanner.admin.database.v1.CreateBackupEncryptionConfigOrBuilder {
+      // @@protoc_insertion_point(builder_implements:google.spanner.admin.database.v1.CopyBackupEncryptionConfig)
+      com.google.spanner.admin.database.v1.CopyBackupEncryptionConfigOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
       return com.google.spanner.admin.database.v1.BackupProto
-          .internal_static_google_spanner_admin_database_v1_CreateBackupEncryptionConfig_descriptor;
+          .internal_static_google_spanner_admin_database_v1_CopyBackupEncryptionConfig_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return com.google.spanner.admin.database.v1.BackupProto
-          .internal_static_google_spanner_admin_database_v1_CreateBackupEncryptionConfig_fieldAccessorTable
+          .internal_static_google_spanner_admin_database_v1_CopyBackupEncryptionConfig_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.class,
-              com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.Builder.class);
+              com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.class,
+              com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.Builder.class);
     }
 
-    // Construct using
-    // com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.newBuilder()
+    // Construct using com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -649,18 +645,18 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
       return com.google.spanner.admin.database.v1.BackupProto
-          .internal_static_google_spanner_admin_database_v1_CreateBackupEncryptionConfig_descriptor;
+          .internal_static_google_spanner_admin_database_v1_CopyBackupEncryptionConfig_descriptor;
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig
+    public com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig
         getDefaultInstanceForType() {
-      return com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.getDefaultInstance();
+      return com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.getDefaultInstance();
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig build() {
-      com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig result = buildPartial();
+    public com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig build() {
+      com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -668,9 +664,9 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig buildPartial() {
-      com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig result =
-          new com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig(this);
+    public com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig buildPartial() {
+      com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig result =
+          new com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig(this);
       result.encryptionType_ = encryptionType_;
       result.kmsKeyName_ = kmsKeyName_;
       onBuilt();
@@ -712,8 +708,8 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig) {
-        return mergeFrom((com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig) other);
+      if (other instanceof com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig) {
+        return mergeFrom((com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig) other);
       } else {
         super.mergeFrom(other);
         return this;
@@ -721,9 +717,9 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
     }
 
     public Builder mergeFrom(
-        com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig other) {
+        com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig other) {
       if (other
-          == com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.getDefaultInstance())
+          == com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.getDefaultInstance())
         return this;
       if (other.encryptionType_ != 0) {
         setEncryptionTypeValue(other.getEncryptionTypeValue());
@@ -747,12 +743,12 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig parsedMessage = null;
+      com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         parsedMessage =
-            (com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig)
+            (com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig)
                 e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
@@ -772,7 +768,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * </pre>
      *
      * <code>
-     * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType encryption_type = 1 [(.google.api.field_behavior) = REQUIRED];
+     * .google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType encryption_type = 1 [(.google.api.field_behavior) = REQUIRED];
      * </code>
      *
      * @return The enum numeric value on the wire for encryptionType.
@@ -789,7 +785,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * </pre>
      *
      * <code>
-     * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType encryption_type = 1 [(.google.api.field_behavior) = REQUIRED];
+     * .google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType encryption_type = 1 [(.google.api.field_behavior) = REQUIRED];
      * </code>
      *
      * @param value The enum numeric value on the wire for encryptionType to set.
@@ -809,20 +805,20 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * </pre>
      *
      * <code>
-     * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType encryption_type = 1 [(.google.api.field_behavior) = REQUIRED];
+     * .google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType encryption_type = 1 [(.google.api.field_behavior) = REQUIRED];
      * </code>
      *
      * @return The encryptionType.
      */
     @java.lang.Override
-    public com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType
+    public com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType
         getEncryptionType() {
       @SuppressWarnings("deprecation")
-      com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType result =
-          com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType.valueOf(
+      com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType result =
+          com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType.valueOf(
               encryptionType_);
       return result == null
-          ? com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType
+          ? com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType
               .UNRECOGNIZED
           : result;
     }
@@ -834,14 +830,14 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * </pre>
      *
      * <code>
-     * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType encryption_type = 1 [(.google.api.field_behavior) = REQUIRED];
+     * .google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType encryption_type = 1 [(.google.api.field_behavior) = REQUIRED];
      * </code>
      *
      * @param value The encryptionType to set.
      * @return This builder for chaining.
      */
     public Builder setEncryptionType(
-        com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType value) {
+        com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType value) {
       if (value == null) {
         throw new NullPointerException();
       }
@@ -858,7 +854,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * </pre>
      *
      * <code>
-     * .google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType encryption_type = 1 [(.google.api.field_behavior) = REQUIRED];
+     * .google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType encryption_type = 1 [(.google.api.field_behavior) = REQUIRED];
      * </code>
      *
      * @return This builder for chaining.
@@ -877,7 +873,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * <pre>
      * Optional. The Cloud KMS key that will be used to protect the backup.
      * This field should be set only when
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
+     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] is
      * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
      * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
      * </pre>
@@ -905,7 +901,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * <pre>
      * Optional. The Cloud KMS key that will be used to protect the backup.
      * This field should be set only when
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
+     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] is
      * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
      * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
      * </pre>
@@ -933,7 +929,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * <pre>
      * Optional. The Cloud KMS key that will be used to protect the backup.
      * This field should be set only when
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
+     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] is
      * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
      * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
      * </pre>
@@ -960,7 +956,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * <pre>
      * Optional. The Cloud KMS key that will be used to protect the backup.
      * This field should be set only when
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
+     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] is
      * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
      * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
      * </pre>
@@ -983,7 +979,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * <pre>
      * Optional. The Cloud KMS key that will be used to protect the backup.
      * This field should be set only when
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
+     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] is
      * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
      * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
      * </pre>
@@ -1017,44 +1013,44 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
       return super.mergeUnknownFields(unknownFields);
     }
 
-    // @@protoc_insertion_point(builder_scope:google.spanner.admin.database.v1.CreateBackupEncryptionConfig)
+    // @@protoc_insertion_point(builder_scope:google.spanner.admin.database.v1.CopyBackupEncryptionConfig)
   }
 
-  // @@protoc_insertion_point(class_scope:google.spanner.admin.database.v1.CreateBackupEncryptionConfig)
-  private static final com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig
+  // @@protoc_insertion_point(class_scope:google.spanner.admin.database.v1.CopyBackupEncryptionConfig)
+  private static final com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig
       DEFAULT_INSTANCE;
 
   static {
-    DEFAULT_INSTANCE = new com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig();
+    DEFAULT_INSTANCE = new com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig();
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig
+  public static com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig
       getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<CreateBackupEncryptionConfig> PARSER =
-      new com.google.protobuf.AbstractParser<CreateBackupEncryptionConfig>() {
+  private static final com.google.protobuf.Parser<CopyBackupEncryptionConfig> PARSER =
+      new com.google.protobuf.AbstractParser<CopyBackupEncryptionConfig>() {
         @java.lang.Override
-        public CreateBackupEncryptionConfig parsePartialFrom(
+        public CopyBackupEncryptionConfig parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new CreateBackupEncryptionConfig(input, extensionRegistry);
+          return new CopyBackupEncryptionConfig(input, extensionRegistry);
         }
       };
 
-  public static com.google.protobuf.Parser<CreateBackupEncryptionConfig> parser() {
+  public static com.google.protobuf.Parser<CopyBackupEncryptionConfig> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<CreateBackupEncryptionConfig> getParserForType() {
+  public com.google.protobuf.Parser<CopyBackupEncryptionConfig> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig
+  public com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig
       getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }

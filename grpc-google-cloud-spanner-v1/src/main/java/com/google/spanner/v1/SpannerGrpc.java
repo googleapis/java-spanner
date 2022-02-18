@@ -29,7 +29,6 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
 @javax.annotation.Generated(
     value = "by gRPC proto compiler",
     comments = "Source: google/spanner/v1/spanner.proto")
-@io.grpc.stub.annotations.GrpcGenerated
 public final class SpannerGrpc {
 
   private SpannerGrpc() {}

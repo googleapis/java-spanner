@@ -123,39 +123,4 @@ public interface TypeOrBuilder
    * <code>.google.spanner.v1.StructType struct_type = 3;</code>
    */
   com.google.spanner.v1.StructTypeOrBuilder getStructTypeOrBuilder();
-
-  /**
-   *
-   *
-   * <pre>
-   * The [TypeAnnotationCode][google.spanner.v1.TypeAnnotationCode] that disambiguates SQL type that Spanner will
-   * use to represent values of this type during query processing. This is
-   * necessary for some type codes because a single [TypeCode][google.spanner.v1.TypeCode] can be mapped
-   * to different SQL types depending on the SQL dialect. [type_annotation][google.spanner.v1.Type.type_annotation]
-   * typically is not needed to process the content of a value (it doesn't
-   * affect serialization) and clients can ignore it on the read path.
-   * </pre>
-   *
-   * <code>.google.spanner.v1.TypeAnnotationCode type_annotation = 4;</code>
-   *
-   * @return The enum numeric value on the wire for typeAnnotation.
-   */
-  int getTypeAnnotationValue();
-  /**
-   *
-   *
-   * <pre>
-   * The [TypeAnnotationCode][google.spanner.v1.TypeAnnotationCode] that disambiguates SQL type that Spanner will
-   * use to represent values of this type during query processing. This is
-   * necessary for some type codes because a single [TypeCode][google.spanner.v1.TypeCode] can be mapped
-   * to different SQL types depending on the SQL dialect. [type_annotation][google.spanner.v1.Type.type_annotation]
-   * typically is not needed to process the content of a value (it doesn't
-   * affect serialization) and clients can ignore it on the read path.
-   * </pre>
-   *
-   * <code>.google.spanner.v1.TypeAnnotationCode type_annotation = 4;</code>
-   *
-   * @return The typeAnnotation.
-   */
-  com.google.spanner.v1.TypeAnnotationCode getTypeAnnotation();
 }

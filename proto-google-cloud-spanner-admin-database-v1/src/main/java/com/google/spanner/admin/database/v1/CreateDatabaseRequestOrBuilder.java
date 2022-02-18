@@ -196,33 +196,4 @@ public interface CreateDatabaseRequestOrBuilder
    * </code>
    */
   com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder getEncryptionConfigOrBuilder();
-
-  /**
-   *
-   *
-   * <pre>
-   * Optional. The dialect of the Cloud Spanner Database.
-   * </pre>
-   *
-   * <code>
-   * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
-   * </code>
-   *
-   * @return The enum numeric value on the wire for databaseDialect.
-   */
-  int getDatabaseDialectValue();
-  /**
-   *
-   *
-   * <pre>
-   * Optional. The dialect of the Cloud Spanner Database.
-   * </pre>
-   *
-   * <code>
-   * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
-   * </code>
-   *
-   * @return The databaseDialect.
-   */
-  com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect();
 }

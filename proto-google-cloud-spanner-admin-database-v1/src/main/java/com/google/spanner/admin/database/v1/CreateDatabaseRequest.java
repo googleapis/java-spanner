@@ -41,7 +41,6 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     parent_ = "";
     createStatement_ = "";
     extraStatements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-    databaseDialect_ = 0;
   }
 
   @java.lang.Override
@@ -113,13 +112,6 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
                 encryptionConfig_ = subBuilder.buildPartial();
               }
 
-              break;
-            }
-          case 40:
-            {
-              int rawValue = input.readEnum();
-
-              databaseDialect_ = rawValue;
               break;
             }
           default:
@@ -405,48 +397,6 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     return getEncryptionConfig();
   }
 
-  public static final int DATABASE_DIALECT_FIELD_NUMBER = 5;
-  private int databaseDialect_;
-  /**
-   *
-   *
-   * <pre>
-   * Optional. The dialect of the Cloud Spanner Database.
-   * </pre>
-   *
-   * <code>
-   * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
-   * </code>
-   *
-   * @return The enum numeric value on the wire for databaseDialect.
-   */
-  @java.lang.Override
-  public int getDatabaseDialectValue() {
-    return databaseDialect_;
-  }
-  /**
-   *
-   *
-   * <pre>
-   * Optional. The dialect of the Cloud Spanner Database.
-   * </pre>
-   *
-   * <code>
-   * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
-   * </code>
-   *
-   * @return The databaseDialect.
-   */
-  @java.lang.Override
-  public com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect() {
-    @SuppressWarnings("deprecation")
-    com.google.spanner.admin.database.v1.DatabaseDialect result =
-        com.google.spanner.admin.database.v1.DatabaseDialect.valueOf(databaseDialect_);
-    return result == null
-        ? com.google.spanner.admin.database.v1.DatabaseDialect.UNRECOGNIZED
-        : result;
-  }
-
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -461,10 +411,10 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parent_)) {
+    if (!getParentBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, parent_);
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(createStatement_)) {
+    if (!getCreateStatementBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, createStatement_);
     }
     for (int i = 0; i < extraStatements_.size(); i++) {
@@ -472,11 +422,6 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     }
     if (encryptionConfig_ != null) {
       output.writeMessage(4, getEncryptionConfig());
-    }
-    if (databaseDialect_
-        != com.google.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED
-            .getNumber()) {
-      output.writeEnum(5, databaseDialect_);
     }
     unknownFields.writeTo(output);
   }
@@ -487,10 +432,10 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     if (size != -1) return size;
 
     size = 0;
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parent_)) {
+    if (!getParentBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, parent_);
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(createStatement_)) {
+    if (!getCreateStatementBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, createStatement_);
     }
     {
@@ -503,11 +448,6 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     }
     if (encryptionConfig_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, getEncryptionConfig());
-    }
-    if (databaseDialect_
-        != com.google.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED
-            .getNumber()) {
-      size += com.google.protobuf.CodedOutputStream.computeEnumSize(5, databaseDialect_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -532,7 +472,6 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     if (hasEncryptionConfig()) {
       if (!getEncryptionConfig().equals(other.getEncryptionConfig())) return false;
     }
-    if (databaseDialect_ != other.databaseDialect_) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -556,8 +495,6 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       hash = (37 * hash) + ENCRYPTION_CONFIG_FIELD_NUMBER;
       hash = (53 * hash) + getEncryptionConfig().hashCode();
     }
-    hash = (37 * hash) + DATABASE_DIALECT_FIELD_NUMBER;
-    hash = (53 * hash) + databaseDialect_;
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -716,8 +653,6 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         encryptionConfig_ = null;
         encryptionConfigBuilder_ = null;
       }
-      databaseDialect_ = 0;
-
       return this;
     }
 
@@ -758,7 +693,6 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       } else {
         result.encryptionConfig_ = encryptionConfigBuilder_.build();
       }
-      result.databaseDialect_ = databaseDialect_;
       onBuilt();
       return result;
     }
@@ -829,9 +763,6 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       }
       if (other.hasEncryptionConfig()) {
         mergeEncryptionConfig(other.getEncryptionConfig());
-      }
-      if (other.databaseDialect_ != 0) {
-        setDatabaseDialectValue(other.getDatabaseDialectValue());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1531,109 +1462,6 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         encryptionConfig_ = null;
       }
       return encryptionConfigBuilder_;
-    }
-
-    private int databaseDialect_ = 0;
-    /**
-     *
-     *
-     * <pre>
-     * Optional. The dialect of the Cloud Spanner Database.
-     * </pre>
-     *
-     * <code>
-     * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
-     * </code>
-     *
-     * @return The enum numeric value on the wire for databaseDialect.
-     */
-    @java.lang.Override
-    public int getDatabaseDialectValue() {
-      return databaseDialect_;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * Optional. The dialect of the Cloud Spanner Database.
-     * </pre>
-     *
-     * <code>
-     * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
-     * </code>
-     *
-     * @param value The enum numeric value on the wire for databaseDialect to set.
-     * @return This builder for chaining.
-     */
-    public Builder setDatabaseDialectValue(int value) {
-
-      databaseDialect_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * Optional. The dialect of the Cloud Spanner Database.
-     * </pre>
-     *
-     * <code>
-     * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
-     * </code>
-     *
-     * @return The databaseDialect.
-     */
-    @java.lang.Override
-    public com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect() {
-      @SuppressWarnings("deprecation")
-      com.google.spanner.admin.database.v1.DatabaseDialect result =
-          com.google.spanner.admin.database.v1.DatabaseDialect.valueOf(databaseDialect_);
-      return result == null
-          ? com.google.spanner.admin.database.v1.DatabaseDialect.UNRECOGNIZED
-          : result;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * Optional. The dialect of the Cloud Spanner Database.
-     * </pre>
-     *
-     * <code>
-     * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
-     * </code>
-     *
-     * @param value The databaseDialect to set.
-     * @return This builder for chaining.
-     */
-    public Builder setDatabaseDialect(com.google.spanner.admin.database.v1.DatabaseDialect value) {
-      if (value == null) {
-        throw new NullPointerException();
-      }
-
-      databaseDialect_ = value.getNumber();
-      onChanged();
-      return this;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * Optional. The dialect of the Cloud Spanner Database.
-     * </pre>
-     *
-     * <code>
-     * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
-     * </code>
-     *
-     * @return This builder for chaining.
-     */
-    public Builder clearDatabaseDialect() {
-
-      databaseDialect_ = 0;
-      onChanged();
-      return this;
     }
 
     @java.lang.Override

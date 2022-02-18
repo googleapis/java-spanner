@@ -22,31 +22,31 @@ package com.google.spanner.admin.database.v1;
  *
  *
  * <pre>
- * Metadata type for the operation returned by
- * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup].
+ * Metadata type for the google.longrunning.Operation returned by
+ * [CopyBackup][DatabaseAdmin.CopyBackup].
  * </pre>
  *
- * Protobuf type {@code google.spanner.admin.database.v1.CreateBackupMetadata}
+ * Protobuf type {@code google.spanner.admin.database.v1.CopyBackupMetadata}
  */
-public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMessageV3
+public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessageV3
     implements
-    // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.CreateBackupMetadata)
-    CreateBackupMetadataOrBuilder {
+    // @@protoc_insertion_point(message_implements:google.spanner.admin.database.v1.CopyBackupMetadata)
+    CopyBackupMetadataOrBuilder {
   private static final long serialVersionUID = 0L;
-  // Use CreateBackupMetadata.newBuilder() to construct.
-  private CreateBackupMetadata(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+  // Use CopyBackupMetadata.newBuilder() to construct.
+  private CopyBackupMetadata(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
 
-  private CreateBackupMetadata() {
+  private CopyBackupMetadata() {
     name_ = "";
-    database_ = "";
+    sourceBackup_ = "";
   }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
-    return new CreateBackupMetadata();
+    return new CopyBackupMetadata();
   }
 
   @java.lang.Override
@@ -54,7 +54,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
     return this.unknownFields;
   }
 
-  private CreateBackupMetadata(
+  private CopyBackupMetadata(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -83,7 +83,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
             {
               java.lang.String s = input.readStringRequireUtf8();
 
-              database_ = s;
+              sourceBackup_ = s;
               break;
             }
           case 26:
@@ -139,17 +139,17 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.database.v1.BackupProto
-        .internal_static_google_spanner_admin_database_v1_CreateBackupMetadata_descriptor;
+        .internal_static_google_spanner_admin_database_v1_CopyBackupMetadata_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
     return com.google.spanner.admin.database.v1.BackupProto
-        .internal_static_google_spanner_admin_database_v1_CreateBackupMetadata_fieldAccessorTable
+        .internal_static_google_spanner_admin_database_v1_CopyBackupMetadata_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            com.google.spanner.admin.database.v1.CreateBackupMetadata.class,
-            com.google.spanner.admin.database.v1.CreateBackupMetadata.Builder.class);
+            com.google.spanner.admin.database.v1.CopyBackupMetadata.class,
+            com.google.spanner.admin.database.v1.CopyBackupMetadata.Builder.class);
   }
 
   public static final int NAME_FIELD_NUMBER = 1;
@@ -158,7 +158,9 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * The name of the backup being created.
+   * The name of the backup being created through the copy operation.
+   * Values are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
    * </pre>
    *
    * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
@@ -181,7 +183,9 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * The name of the backup being created.
+   * The name of the backup being created through the copy operation.
+   * Values are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
    * </pre>
    *
    * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
@@ -201,28 +205,30 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
     }
   }
 
-  public static final int DATABASE_FIELD_NUMBER = 2;
-  private volatile java.lang.Object database_;
+  public static final int SOURCE_BACKUP_FIELD_NUMBER = 2;
+  private volatile java.lang.Object sourceBackup_;
   /**
    *
    *
    * <pre>
-   * The name of the database the backup is created from.
+   * The name of the source backup that is being copied.
+   * Values are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
    * </pre>
    *
-   * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
+   * <code>string source_backup = 2 [(.google.api.resource_reference) = { ... }</code>
    *
-   * @return The database.
+   * @return The sourceBackup.
    */
   @java.lang.Override
-  public java.lang.String getDatabase() {
-    java.lang.Object ref = database_;
+  public java.lang.String getSourceBackup() {
+    java.lang.Object ref = sourceBackup_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
-      database_ = s;
+      sourceBackup_ = s;
       return s;
     }
   }
@@ -230,20 +236,22 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * The name of the database the backup is created from.
+   * The name of the source backup that is being copied.
+   * Values are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
    * </pre>
    *
-   * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
+   * <code>string source_backup = 2 [(.google.api.resource_reference) = { ... }</code>
    *
-   * @return The bytes for database.
+   * @return The bytes for sourceBackup.
    */
   @java.lang.Override
-  public com.google.protobuf.ByteString getDatabaseBytes() {
-    java.lang.Object ref = database_;
+  public com.google.protobuf.ByteString getSourceBackupBytes() {
+    java.lang.Object ref = sourceBackup_;
     if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
-      database_ = b;
+      sourceBackup_ = b;
       return b;
     } else {
       return (com.google.protobuf.ByteString) ref;
@@ -257,7 +265,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * <pre>
    * The progress of the
-   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
+   * [CopyBackup][DatabaseAdmin.CopyBackup] operation.
    * </pre>
    *
    * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -273,7 +281,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * <pre>
    * The progress of the
-   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
+   * [CopyBackup][DatabaseAdmin.CopyBackup] operation.
    * </pre>
    *
    * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -291,7 +299,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    * <pre>
    * The progress of the
-   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
+   * [CopyBackup][DatabaseAdmin.CopyBackup] operation.
    * </pre>
    *
    * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -307,7 +315,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * The time at which cancellation of this operation was received.
+   * The time at which cancellation of CopyBackup operation was received.
    * [Operations.CancelOperation][google.longrunning.Operations.CancelOperation]
    * starts asynchronous cancellation on a long-running operation. The server
    * makes a best effort to cancel the operation, but success is not guaranteed.
@@ -317,7 +325,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    * operation completed despite cancellation. On successful cancellation,
    * the operation is not deleted; instead, it becomes an operation with
    * an [Operation.error][google.longrunning.Operation.error] value with a
-   * [google.rpc.Status.code][google.rpc.Status.code] of 1,
+   * [google.rpc.Status.code][] of 1,
    * corresponding to `Code.CANCELLED`.
    * </pre>
    *
@@ -333,7 +341,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * The time at which cancellation of this operation was received.
+   * The time at which cancellation of CopyBackup operation was received.
    * [Operations.CancelOperation][google.longrunning.Operations.CancelOperation]
    * starts asynchronous cancellation on a long-running operation. The server
    * makes a best effort to cancel the operation, but success is not guaranteed.
@@ -343,7 +351,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    * operation completed despite cancellation. On successful cancellation,
    * the operation is not deleted; instead, it becomes an operation with
    * an [Operation.error][google.longrunning.Operation.error] value with a
-   * [google.rpc.Status.code][google.rpc.Status.code] of 1,
+   * [google.rpc.Status.code][] of 1,
    * corresponding to `Code.CANCELLED`.
    * </pre>
    *
@@ -359,7 +367,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * The time at which cancellation of this operation was received.
+   * The time at which cancellation of CopyBackup operation was received.
    * [Operations.CancelOperation][google.longrunning.Operations.CancelOperation]
    * starts asynchronous cancellation on a long-running operation. The server
    * makes a best effort to cancel the operation, but success is not guaranteed.
@@ -369,7 +377,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    * operation completed despite cancellation. On successful cancellation,
    * the operation is not deleted; instead, it becomes an operation with
    * an [Operation.error][google.longrunning.Operation.error] value with a
-   * [google.rpc.Status.code][google.rpc.Status.code] of 1,
+   * [google.rpc.Status.code][] of 1,
    * corresponding to `Code.CANCELLED`.
    * </pre>
    *
@@ -397,8 +405,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
     if (!getNameBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
     }
-    if (!getDatabaseBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, database_);
+    if (!getSourceBackupBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, sourceBackup_);
     }
     if (progress_ != null) {
       output.writeMessage(3, getProgress());
@@ -418,8 +426,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
     if (!getNameBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
     }
-    if (!getDatabaseBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, database_);
+    if (!getSourceBackupBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, sourceBackup_);
     }
     if (progress_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(3, getProgress());
@@ -437,14 +445,14 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof com.google.spanner.admin.database.v1.CreateBackupMetadata)) {
+    if (!(obj instanceof com.google.spanner.admin.database.v1.CopyBackupMetadata)) {
       return super.equals(obj);
     }
-    com.google.spanner.admin.database.v1.CreateBackupMetadata other =
-        (com.google.spanner.admin.database.v1.CreateBackupMetadata) obj;
+    com.google.spanner.admin.database.v1.CopyBackupMetadata other =
+        (com.google.spanner.admin.database.v1.CopyBackupMetadata) obj;
 
     if (!getName().equals(other.getName())) return false;
-    if (!getDatabase().equals(other.getDatabase())) return false;
+    if (!getSourceBackup().equals(other.getSourceBackup())) return false;
     if (hasProgress() != other.hasProgress()) return false;
     if (hasProgress()) {
       if (!getProgress().equals(other.getProgress())) return false;
@@ -466,8 +474,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + NAME_FIELD_NUMBER;
     hash = (53 * hash) + getName().hashCode();
-    hash = (37 * hash) + DATABASE_FIELD_NUMBER;
-    hash = (53 * hash) + getDatabase().hashCode();
+    hash = (37 * hash) + SOURCE_BACKUP_FIELD_NUMBER;
+    hash = (53 * hash) + getSourceBackup().hashCode();
     if (hasProgress()) {
       hash = (37 * hash) + PROGRESS_FIELD_NUMBER;
       hash = (53 * hash) + getProgress().hashCode();
@@ -481,71 +489,71 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
     return hash;
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupMetadata parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupMetadata parseFrom(
       java.nio.ByteBuffer data) throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupMetadata parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupMetadata parseFrom(
       java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupMetadata parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupMetadata parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupMetadata parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupMetadata parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupMetadata parseFrom(byte[] data)
+  public static com.google.spanner.admin.database.v1.CopyBackupMetadata parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupMetadata parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupMetadata parseFrom(
       byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupMetadata parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupMetadata parseFrom(
       java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupMetadata parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupMetadata parseFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupMetadata parseDelimitedFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupMetadata parseDelimitedFrom(
       java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupMetadata parseDelimitedFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupMetadata parseDelimitedFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupMetadata parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupMetadata parseFrom(
       com.google.protobuf.CodedInputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupMetadata parseFrom(
+  public static com.google.spanner.admin.database.v1.CopyBackupMetadata parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -563,7 +571,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
   }
 
   public static Builder newBuilder(
-      com.google.spanner.admin.database.v1.CreateBackupMetadata prototype) {
+      com.google.spanner.admin.database.v1.CopyBackupMetadata prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
 
@@ -581,32 +589,32 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * Metadata type for the operation returned by
-   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup].
+   * Metadata type for the google.longrunning.Operation returned by
+   * [CopyBackup][DatabaseAdmin.CopyBackup].
    * </pre>
    *
-   * Protobuf type {@code google.spanner.admin.database.v1.CreateBackupMetadata}
+   * Protobuf type {@code google.spanner.admin.database.v1.CopyBackupMetadata}
    */
   public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
       implements
-      // @@protoc_insertion_point(builder_implements:google.spanner.admin.database.v1.CreateBackupMetadata)
-      com.google.spanner.admin.database.v1.CreateBackupMetadataOrBuilder {
+      // @@protoc_insertion_point(builder_implements:google.spanner.admin.database.v1.CopyBackupMetadata)
+      com.google.spanner.admin.database.v1.CopyBackupMetadataOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
       return com.google.spanner.admin.database.v1.BackupProto
-          .internal_static_google_spanner_admin_database_v1_CreateBackupMetadata_descriptor;
+          .internal_static_google_spanner_admin_database_v1_CopyBackupMetadata_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return com.google.spanner.admin.database.v1.BackupProto
-          .internal_static_google_spanner_admin_database_v1_CreateBackupMetadata_fieldAccessorTable
+          .internal_static_google_spanner_admin_database_v1_CopyBackupMetadata_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.google.spanner.admin.database.v1.CreateBackupMetadata.class,
-              com.google.spanner.admin.database.v1.CreateBackupMetadata.Builder.class);
+              com.google.spanner.admin.database.v1.CopyBackupMetadata.class,
+              com.google.spanner.admin.database.v1.CopyBackupMetadata.Builder.class);
     }
 
-    // Construct using com.google.spanner.admin.database.v1.CreateBackupMetadata.newBuilder()
+    // Construct using com.google.spanner.admin.database.v1.CopyBackupMetadata.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -625,7 +633,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
       super.clear();
       name_ = "";
 
-      database_ = "";
+      sourceBackup_ = "";
 
       if (progressBuilder_ == null) {
         progress_ = null;
@@ -645,17 +653,17 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
       return com.google.spanner.admin.database.v1.BackupProto
-          .internal_static_google_spanner_admin_database_v1_CreateBackupMetadata_descriptor;
+          .internal_static_google_spanner_admin_database_v1_CopyBackupMetadata_descriptor;
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.database.v1.CreateBackupMetadata getDefaultInstanceForType() {
-      return com.google.spanner.admin.database.v1.CreateBackupMetadata.getDefaultInstance();
+    public com.google.spanner.admin.database.v1.CopyBackupMetadata getDefaultInstanceForType() {
+      return com.google.spanner.admin.database.v1.CopyBackupMetadata.getDefaultInstance();
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.database.v1.CreateBackupMetadata build() {
-      com.google.spanner.admin.database.v1.CreateBackupMetadata result = buildPartial();
+    public com.google.spanner.admin.database.v1.CopyBackupMetadata build() {
+      com.google.spanner.admin.database.v1.CopyBackupMetadata result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -663,11 +671,11 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.database.v1.CreateBackupMetadata buildPartial() {
-      com.google.spanner.admin.database.v1.CreateBackupMetadata result =
-          new com.google.spanner.admin.database.v1.CreateBackupMetadata(this);
+    public com.google.spanner.admin.database.v1.CopyBackupMetadata buildPartial() {
+      com.google.spanner.admin.database.v1.CopyBackupMetadata result =
+          new com.google.spanner.admin.database.v1.CopyBackupMetadata(this);
       result.name_ = name_;
-      result.database_ = database_;
+      result.sourceBackup_ = sourceBackup_;
       if (progressBuilder_ == null) {
         result.progress_ = progress_;
       } else {
@@ -717,23 +725,23 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof com.google.spanner.admin.database.v1.CreateBackupMetadata) {
-        return mergeFrom((com.google.spanner.admin.database.v1.CreateBackupMetadata) other);
+      if (other instanceof com.google.spanner.admin.database.v1.CopyBackupMetadata) {
+        return mergeFrom((com.google.spanner.admin.database.v1.CopyBackupMetadata) other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(com.google.spanner.admin.database.v1.CreateBackupMetadata other) {
-      if (other == com.google.spanner.admin.database.v1.CreateBackupMetadata.getDefaultInstance())
+    public Builder mergeFrom(com.google.spanner.admin.database.v1.CopyBackupMetadata other) {
+      if (other == com.google.spanner.admin.database.v1.CopyBackupMetadata.getDefaultInstance())
         return this;
       if (!other.getName().isEmpty()) {
         name_ = other.name_;
         onChanged();
       }
-      if (!other.getDatabase().isEmpty()) {
-        database_ = other.database_;
+      if (!other.getSourceBackup().isEmpty()) {
+        sourceBackup_ = other.sourceBackup_;
         onChanged();
       }
       if (other.hasProgress()) {
@@ -757,12 +765,12 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.admin.database.v1.CreateBackupMetadata parsedMessage = null;
+      com.google.spanner.admin.database.v1.CopyBackupMetadata parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         parsedMessage =
-            (com.google.spanner.admin.database.v1.CreateBackupMetadata) e.getUnfinishedMessage();
+            (com.google.spanner.admin.database.v1.CopyBackupMetadata) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -777,7 +785,9 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The name of the backup being created.
+     * The name of the backup being created through the copy operation.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
      * </pre>
      *
      * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
@@ -799,7 +809,9 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The name of the backup being created.
+     * The name of the backup being created through the copy operation.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
      * </pre>
      *
      * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
@@ -821,7 +833,9 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The name of the backup being created.
+     * The name of the backup being created through the copy operation.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
      * </pre>
      *
      * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
@@ -842,7 +856,9 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The name of the backup being created.
+     * The name of the backup being created through the copy operation.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
      * </pre>
      *
      * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
@@ -859,7 +875,9 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The name of the backup being created.
+     * The name of the backup being created through the copy operation.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
      * </pre>
      *
      * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
@@ -878,24 +896,26 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
       return this;
     }
 
-    private java.lang.Object database_ = "";
+    private java.lang.Object sourceBackup_ = "";
     /**
      *
      *
      * <pre>
-     * The name of the database the backup is created from.
+     * The name of the source backup that is being copied.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
      * </pre>
      *
-     * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
+     * <code>string source_backup = 2 [(.google.api.resource_reference) = { ... }</code>
      *
-     * @return The database.
+     * @return The sourceBackup.
      */
-    public java.lang.String getDatabase() {
-      java.lang.Object ref = database_;
+    public java.lang.String getSourceBackup() {
+      java.lang.Object ref = sourceBackup_;
       if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        database_ = s;
+        sourceBackup_ = s;
         return s;
       } else {
         return (java.lang.String) ref;
@@ -905,19 +925,21 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The name of the database the backup is created from.
+     * The name of the source backup that is being copied.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
      * </pre>
      *
-     * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
+     * <code>string source_backup = 2 [(.google.api.resource_reference) = { ... }</code>
      *
-     * @return The bytes for database.
+     * @return The bytes for sourceBackup.
      */
-    public com.google.protobuf.ByteString getDatabaseBytes() {
-      java.lang.Object ref = database_;
+    public com.google.protobuf.ByteString getSourceBackupBytes() {
+      java.lang.Object ref = sourceBackup_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
-        database_ = b;
+        sourceBackup_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -927,20 +949,22 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The name of the database the backup is created from.
+     * The name of the source backup that is being copied.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
      * </pre>
      *
-     * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
+     * <code>string source_backup = 2 [(.google.api.resource_reference) = { ... }</code>
      *
-     * @param value The database to set.
+     * @param value The sourceBackup to set.
      * @return This builder for chaining.
      */
-    public Builder setDatabase(java.lang.String value) {
+    public Builder setSourceBackup(java.lang.String value) {
       if (value == null) {
         throw new NullPointerException();
       }
 
-      database_ = value;
+      sourceBackup_ = value;
       onChanged();
       return this;
     }
@@ -948,16 +972,18 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The name of the database the backup is created from.
+     * The name of the source backup that is being copied.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
      * </pre>
      *
-     * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
+     * <code>string source_backup = 2 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return This builder for chaining.
      */
-    public Builder clearDatabase() {
+    public Builder clearSourceBackup() {
 
-      database_ = getDefaultInstance().getDatabase();
+      sourceBackup_ = getDefaultInstance().getSourceBackup();
       onChanged();
       return this;
     }
@@ -965,21 +991,23 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The name of the database the backup is created from.
+     * The name of the source backup that is being copied.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
      * </pre>
      *
-     * <code>string database = 2 [(.google.api.resource_reference) = { ... }</code>
+     * <code>string source_backup = 2 [(.google.api.resource_reference) = { ... }</code>
      *
-     * @param value The bytes for database to set.
+     * @param value The bytes for sourceBackup to set.
      * @return This builder for chaining.
      */
-    public Builder setDatabaseBytes(com.google.protobuf.ByteString value) {
+    public Builder setSourceBackupBytes(com.google.protobuf.ByteString value) {
       if (value == null) {
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
 
-      database_ = value;
+      sourceBackup_ = value;
       onChanged();
       return this;
     }
@@ -995,7 +1023,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
+     * [CopyBackup][DatabaseAdmin.CopyBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1010,7 +1038,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
+     * [CopyBackup][DatabaseAdmin.CopyBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1031,7 +1059,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
+     * [CopyBackup][DatabaseAdmin.CopyBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1054,7 +1082,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
+     * [CopyBackup][DatabaseAdmin.CopyBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1075,7 +1103,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
+     * [CopyBackup][DatabaseAdmin.CopyBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1102,7 +1130,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
+     * [CopyBackup][DatabaseAdmin.CopyBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1123,7 +1151,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
+     * [CopyBackup][DatabaseAdmin.CopyBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1138,7 +1166,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
+     * [CopyBackup][DatabaseAdmin.CopyBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1157,7 +1185,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * The progress of the
-     * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
+     * [CopyBackup][DatabaseAdmin.CopyBackup] operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1189,7 +1217,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The time at which cancellation of this operation was received.
+     * The time at which cancellation of CopyBackup operation was received.
      * [Operations.CancelOperation][google.longrunning.Operations.CancelOperation]
      * starts asynchronous cancellation on a long-running operation. The server
      * makes a best effort to cancel the operation, but success is not guaranteed.
@@ -1199,7 +1227,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
      * an [Operation.error][google.longrunning.Operation.error] value with a
-     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * [google.rpc.Status.code][] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1214,7 +1242,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The time at which cancellation of this operation was received.
+     * The time at which cancellation of CopyBackup operation was received.
      * [Operations.CancelOperation][google.longrunning.Operations.CancelOperation]
      * starts asynchronous cancellation on a long-running operation. The server
      * makes a best effort to cancel the operation, but success is not guaranteed.
@@ -1224,7 +1252,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
      * an [Operation.error][google.longrunning.Operation.error] value with a
-     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * [google.rpc.Status.code][] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1245,7 +1273,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The time at which cancellation of this operation was received.
+     * The time at which cancellation of CopyBackup operation was received.
      * [Operations.CancelOperation][google.longrunning.Operations.CancelOperation]
      * starts asynchronous cancellation on a long-running operation. The server
      * makes a best effort to cancel the operation, but success is not guaranteed.
@@ -1255,7 +1283,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
      * an [Operation.error][google.longrunning.Operation.error] value with a
-     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * [google.rpc.Status.code][] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1278,7 +1306,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The time at which cancellation of this operation was received.
+     * The time at which cancellation of CopyBackup operation was received.
      * [Operations.CancelOperation][google.longrunning.Operations.CancelOperation]
      * starts asynchronous cancellation on a long-running operation. The server
      * makes a best effort to cancel the operation, but success is not guaranteed.
@@ -1288,7 +1316,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
      * an [Operation.error][google.longrunning.Operation.error] value with a
-     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * [google.rpc.Status.code][] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1308,7 +1336,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The time at which cancellation of this operation was received.
+     * The time at which cancellation of CopyBackup operation was received.
      * [Operations.CancelOperation][google.longrunning.Operations.CancelOperation]
      * starts asynchronous cancellation on a long-running operation. The server
      * makes a best effort to cancel the operation, but success is not guaranteed.
@@ -1318,7 +1346,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
      * an [Operation.error][google.longrunning.Operation.error] value with a
-     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * [google.rpc.Status.code][] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1343,7 +1371,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The time at which cancellation of this operation was received.
+     * The time at which cancellation of CopyBackup operation was received.
      * [Operations.CancelOperation][google.longrunning.Operations.CancelOperation]
      * starts asynchronous cancellation on a long-running operation. The server
      * makes a best effort to cancel the operation, but success is not guaranteed.
@@ -1353,7 +1381,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
      * an [Operation.error][google.longrunning.Operation.error] value with a
-     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * [google.rpc.Status.code][] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1374,7 +1402,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The time at which cancellation of this operation was received.
+     * The time at which cancellation of CopyBackup operation was received.
      * [Operations.CancelOperation][google.longrunning.Operations.CancelOperation]
      * starts asynchronous cancellation on a long-running operation. The server
      * makes a best effort to cancel the operation, but success is not guaranteed.
@@ -1384,7 +1412,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
      * an [Operation.error][google.longrunning.Operation.error] value with a
-     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * [google.rpc.Status.code][] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1399,7 +1427,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The time at which cancellation of this operation was received.
+     * The time at which cancellation of CopyBackup operation was received.
      * [Operations.CancelOperation][google.longrunning.Operations.CancelOperation]
      * starts asynchronous cancellation on a long-running operation. The server
      * makes a best effort to cancel the operation, but success is not guaranteed.
@@ -1409,7 +1437,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
      * an [Operation.error][google.longrunning.Operation.error] value with a
-     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * [google.rpc.Status.code][] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1428,7 +1456,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The time at which cancellation of this operation was received.
+     * The time at which cancellation of CopyBackup operation was received.
      * [Operations.CancelOperation][google.longrunning.Operations.CancelOperation]
      * starts asynchronous cancellation on a long-running operation. The server
      * makes a best effort to cancel the operation, but success is not guaranteed.
@@ -1438,7 +1466,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * operation completed despite cancellation. On successful cancellation,
      * the operation is not deleted; instead, it becomes an operation with
      * an [Operation.error][google.longrunning.Operation.error] value with a
-     * [google.rpc.Status.code][google.rpc.Status.code] of 1,
+     * [google.rpc.Status.code][] of 1,
      * corresponding to `Code.CANCELLED`.
      * </pre>
      *
@@ -1472,42 +1500,42 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
       return super.mergeUnknownFields(unknownFields);
     }
 
-    // @@protoc_insertion_point(builder_scope:google.spanner.admin.database.v1.CreateBackupMetadata)
+    // @@protoc_insertion_point(builder_scope:google.spanner.admin.database.v1.CopyBackupMetadata)
   }
 
-  // @@protoc_insertion_point(class_scope:google.spanner.admin.database.v1.CreateBackupMetadata)
-  private static final com.google.spanner.admin.database.v1.CreateBackupMetadata DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:google.spanner.admin.database.v1.CopyBackupMetadata)
+  private static final com.google.spanner.admin.database.v1.CopyBackupMetadata DEFAULT_INSTANCE;
 
   static {
-    DEFAULT_INSTANCE = new com.google.spanner.admin.database.v1.CreateBackupMetadata();
+    DEFAULT_INSTANCE = new com.google.spanner.admin.database.v1.CopyBackupMetadata();
   }
 
-  public static com.google.spanner.admin.database.v1.CreateBackupMetadata getDefaultInstance() {
+  public static com.google.spanner.admin.database.v1.CopyBackupMetadata getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<CreateBackupMetadata> PARSER =
-      new com.google.protobuf.AbstractParser<CreateBackupMetadata>() {
+  private static final com.google.protobuf.Parser<CopyBackupMetadata> PARSER =
+      new com.google.protobuf.AbstractParser<CopyBackupMetadata>() {
         @java.lang.Override
-        public CreateBackupMetadata parsePartialFrom(
+        public CopyBackupMetadata parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new CreateBackupMetadata(input, extensionRegistry);
+          return new CopyBackupMetadata(input, extensionRegistry);
         }
       };
 
-  public static com.google.protobuf.Parser<CreateBackupMetadata> parser() {
+  public static com.google.protobuf.Parser<CopyBackupMetadata> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<CreateBackupMetadata> getParserForType() {
+  public com.google.protobuf.Parser<CopyBackupMetadata> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.spanner.admin.database.v1.CreateBackupMetadata getDefaultInstanceForType() {
+  public com.google.spanner.admin.database.v1.CopyBackupMetadata getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 }

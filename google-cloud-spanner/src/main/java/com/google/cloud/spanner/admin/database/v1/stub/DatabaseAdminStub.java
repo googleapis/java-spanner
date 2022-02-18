@@ -33,6 +33,8 @@ import com.google.longrunning.Operation;
 import com.google.longrunning.stub.OperationsStub;
 import com.google.protobuf.Empty;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
+import com.google.spanner.admin.database.v1.CopyBackupRequest;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
@@ -132,6 +134,15 @@ public abstract class DatabaseAdminStub implements BackgroundResource {
 
   public UnaryCallable<CreateBackupRequest, Operation> createBackupCallable() {
     throw new UnsupportedOperationException("Not implemented: createBackupCallable()");
+  }
+
+  public OperationCallable<CopyBackupRequest, Backup, CopyBackupMetadata>
+      copyBackupOperationCallable() {
+    throw new UnsupportedOperationException("Not implemented: copyBackupOperationCallable()");
+  }
+
+  public UnaryCallable<CopyBackupRequest, Operation> copyBackupCallable() {
+    throw new UnsupportedOperationException("Not implemented: copyBackupCallable()");
   }
 
   public UnaryCallable<GetBackupRequest, Backup> getBackupCallable() {

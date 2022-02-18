@@ -40,7 +40,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
 
   private Type() {
     code_ = 0;
-    typeAnnotation_ = 0;
   }
 
   @java.lang.Override
@@ -107,13 +106,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
                 structType_ = subBuilder.buildPartial();
               }
 
-              break;
-            }
-          case 32:
-            {
-              int rawValue = input.readEnum();
-
-              typeAnnotation_ = rawValue;
               break;
             }
           default:
@@ -284,52 +276,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
     return getStructType();
   }
 
-  public static final int TYPE_ANNOTATION_FIELD_NUMBER = 4;
-  private int typeAnnotation_;
-  /**
-   *
-   *
-   * <pre>
-   * The [TypeAnnotationCode][google.spanner.v1.TypeAnnotationCode] that disambiguates SQL type that Spanner will
-   * use to represent values of this type during query processing. This is
-   * necessary for some type codes because a single [TypeCode][google.spanner.v1.TypeCode] can be mapped
-   * to different SQL types depending on the SQL dialect. [type_annotation][google.spanner.v1.Type.type_annotation]
-   * typically is not needed to process the content of a value (it doesn't
-   * affect serialization) and clients can ignore it on the read path.
-   * </pre>
-   *
-   * <code>.google.spanner.v1.TypeAnnotationCode type_annotation = 4;</code>
-   *
-   * @return The enum numeric value on the wire for typeAnnotation.
-   */
-  @java.lang.Override
-  public int getTypeAnnotationValue() {
-    return typeAnnotation_;
-  }
-  /**
-   *
-   *
-   * <pre>
-   * The [TypeAnnotationCode][google.spanner.v1.TypeAnnotationCode] that disambiguates SQL type that Spanner will
-   * use to represent values of this type during query processing. This is
-   * necessary for some type codes because a single [TypeCode][google.spanner.v1.TypeCode] can be mapped
-   * to different SQL types depending on the SQL dialect. [type_annotation][google.spanner.v1.Type.type_annotation]
-   * typically is not needed to process the content of a value (it doesn't
-   * affect serialization) and clients can ignore it on the read path.
-   * </pre>
-   *
-   * <code>.google.spanner.v1.TypeAnnotationCode type_annotation = 4;</code>
-   *
-   * @return The typeAnnotation.
-   */
-  @java.lang.Override
-  public com.google.spanner.v1.TypeAnnotationCode getTypeAnnotation() {
-    @SuppressWarnings("deprecation")
-    com.google.spanner.v1.TypeAnnotationCode result =
-        com.google.spanner.v1.TypeAnnotationCode.valueOf(typeAnnotation_);
-    return result == null ? com.google.spanner.v1.TypeAnnotationCode.UNRECOGNIZED : result;
-  }
-
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -353,10 +299,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
     if (structType_ != null) {
       output.writeMessage(3, getStructType());
     }
-    if (typeAnnotation_
-        != com.google.spanner.v1.TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED.getNumber()) {
-      output.writeEnum(4, typeAnnotation_);
-    }
     unknownFields.writeTo(output);
   }
 
@@ -374,10 +316,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
     }
     if (structType_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(3, getStructType());
-    }
-    if (typeAnnotation_
-        != com.google.spanner.v1.TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED.getNumber()) {
-      size += com.google.protobuf.CodedOutputStream.computeEnumSize(4, typeAnnotation_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -403,7 +341,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
     if (hasStructType()) {
       if (!getStructType().equals(other.getStructType())) return false;
     }
-    if (typeAnnotation_ != other.typeAnnotation_) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -425,8 +362,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
       hash = (37 * hash) + STRUCT_TYPE_FIELD_NUMBER;
       hash = (53 * hash) + getStructType().hashCode();
     }
-    hash = (37 * hash) + TYPE_ANNOTATION_FIELD_NUMBER;
-    hash = (53 * hash) + typeAnnotation_;
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -584,8 +519,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
         structType_ = null;
         structTypeBuilder_ = null;
       }
-      typeAnnotation_ = 0;
-
       return this;
     }
 
@@ -622,7 +555,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
       } else {
         result.structType_ = structTypeBuilder_.build();
       }
-      result.typeAnnotation_ = typeAnnotation_;
       onBuilt();
       return result;
     }
@@ -680,9 +612,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
       }
       if (other.hasStructType()) {
         mergeStructType(other.getStructType());
-      }
-      if (other.typeAnnotation_ != 0) {
-        setTypeAnnotationValue(other.getTypeAnnotationValue());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1189,122 +1118,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
         structType_ = null;
       }
       return structTypeBuilder_;
-    }
-
-    private int typeAnnotation_ = 0;
-    /**
-     *
-     *
-     * <pre>
-     * The [TypeAnnotationCode][google.spanner.v1.TypeAnnotationCode] that disambiguates SQL type that Spanner will
-     * use to represent values of this type during query processing. This is
-     * necessary for some type codes because a single [TypeCode][google.spanner.v1.TypeCode] can be mapped
-     * to different SQL types depending on the SQL dialect. [type_annotation][google.spanner.v1.Type.type_annotation]
-     * typically is not needed to process the content of a value (it doesn't
-     * affect serialization) and clients can ignore it on the read path.
-     * </pre>
-     *
-     * <code>.google.spanner.v1.TypeAnnotationCode type_annotation = 4;</code>
-     *
-     * @return The enum numeric value on the wire for typeAnnotation.
-     */
-    @java.lang.Override
-    public int getTypeAnnotationValue() {
-      return typeAnnotation_;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * The [TypeAnnotationCode][google.spanner.v1.TypeAnnotationCode] that disambiguates SQL type that Spanner will
-     * use to represent values of this type during query processing. This is
-     * necessary for some type codes because a single [TypeCode][google.spanner.v1.TypeCode] can be mapped
-     * to different SQL types depending on the SQL dialect. [type_annotation][google.spanner.v1.Type.type_annotation]
-     * typically is not needed to process the content of a value (it doesn't
-     * affect serialization) and clients can ignore it on the read path.
-     * </pre>
-     *
-     * <code>.google.spanner.v1.TypeAnnotationCode type_annotation = 4;</code>
-     *
-     * @param value The enum numeric value on the wire for typeAnnotation to set.
-     * @return This builder for chaining.
-     */
-    public Builder setTypeAnnotationValue(int value) {
-
-      typeAnnotation_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * The [TypeAnnotationCode][google.spanner.v1.TypeAnnotationCode] that disambiguates SQL type that Spanner will
-     * use to represent values of this type during query processing. This is
-     * necessary for some type codes because a single [TypeCode][google.spanner.v1.TypeCode] can be mapped
-     * to different SQL types depending on the SQL dialect. [type_annotation][google.spanner.v1.Type.type_annotation]
-     * typically is not needed to process the content of a value (it doesn't
-     * affect serialization) and clients can ignore it on the read path.
-     * </pre>
-     *
-     * <code>.google.spanner.v1.TypeAnnotationCode type_annotation = 4;</code>
-     *
-     * @return The typeAnnotation.
-     */
-    @java.lang.Override
-    public com.google.spanner.v1.TypeAnnotationCode getTypeAnnotation() {
-      @SuppressWarnings("deprecation")
-      com.google.spanner.v1.TypeAnnotationCode result =
-          com.google.spanner.v1.TypeAnnotationCode.valueOf(typeAnnotation_);
-      return result == null ? com.google.spanner.v1.TypeAnnotationCode.UNRECOGNIZED : result;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * The [TypeAnnotationCode][google.spanner.v1.TypeAnnotationCode] that disambiguates SQL type that Spanner will
-     * use to represent values of this type during query processing. This is
-     * necessary for some type codes because a single [TypeCode][google.spanner.v1.TypeCode] can be mapped
-     * to different SQL types depending on the SQL dialect. [type_annotation][google.spanner.v1.Type.type_annotation]
-     * typically is not needed to process the content of a value (it doesn't
-     * affect serialization) and clients can ignore it on the read path.
-     * </pre>
-     *
-     * <code>.google.spanner.v1.TypeAnnotationCode type_annotation = 4;</code>
-     *
-     * @param value The typeAnnotation to set.
-     * @return This builder for chaining.
-     */
-    public Builder setTypeAnnotation(com.google.spanner.v1.TypeAnnotationCode value) {
-      if (value == null) {
-        throw new NullPointerException();
-      }
-
-      typeAnnotation_ = value.getNumber();
-      onChanged();
-      return this;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * The [TypeAnnotationCode][google.spanner.v1.TypeAnnotationCode] that disambiguates SQL type that Spanner will
-     * use to represent values of this type during query processing. This is
-     * necessary for some type codes because a single [TypeCode][google.spanner.v1.TypeCode] can be mapped
-     * to different SQL types depending on the SQL dialect. [type_annotation][google.spanner.v1.Type.type_annotation]
-     * typically is not needed to process the content of a value (it doesn't
-     * affect serialization) and clients can ignore it on the read path.
-     * </pre>
-     *
-     * <code>.google.spanner.v1.TypeAnnotationCode type_annotation = 4;</code>
-     *
-     * @return This builder for chaining.
-     */
-    public Builder clearTypeAnnotation() {
-
-      typeAnnotation_ = 0;
-      onChanged();
-      return this;
     }
 
     @java.lang.Override

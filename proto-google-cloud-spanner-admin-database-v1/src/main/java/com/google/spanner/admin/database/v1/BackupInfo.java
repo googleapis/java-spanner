@@ -368,13 +368,13 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(backup_)) {
+    if (!getBackupBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, backup_);
     }
     if (createTime_ != null) {
       output.writeMessage(2, getCreateTime());
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(sourceDatabase_)) {
+    if (!getSourceDatabaseBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, sourceDatabase_);
     }
     if (versionTime_ != null) {
@@ -389,13 +389,13 @@ public final class BackupInfo extends com.google.protobuf.GeneratedMessageV3
     if (size != -1) return size;
 
     size = 0;
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(backup_)) {
+    if (!getBackupBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, backup_);
     }
     if (createTime_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getCreateTime());
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(sourceDatabase_)) {
+    if (!getSourceDatabaseBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, sourceDatabase_);
     }
     if (versionTime_ != null) {

@@ -16,7 +16,6 @@ syntax = "proto3";
 
 package google.spanner.admin.database.v1;
 
-import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/api/resource.proto";
 import "google/protobuf/timestamp.proto";
@@ -97,17 +96,4 @@ message EncryptionInfo {
       type: "cloudkms.googleapis.com/CryptoKeyVersion"
     }
   ];
-}
-
-// Indicates the dialect type of a database.
-enum DatabaseDialect {
-  // Default value. This value will create a database with the
-  // GOOGLE_STANDARD_SQL dialect.
-  DATABASE_DIALECT_UNSPECIFIED = 0;
-
-  // Google standard SQL.
-  GOOGLE_STANDARD_SQL = 1;
-
-  // PostgreSQL supported SQL.
-  POSTGRESQL = 2;
 }

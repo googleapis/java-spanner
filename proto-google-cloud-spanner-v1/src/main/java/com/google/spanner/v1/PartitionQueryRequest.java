@@ -619,13 +619,13 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(session_)) {
+    if (!getSessionBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, session_);
     }
     if (transaction_ != null) {
       output.writeMessage(2, getTransaction());
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(sql_)) {
+    if (!getSqlBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, sql_);
     }
     if (params_ != null) {
@@ -645,13 +645,13 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     if (size != -1) return size;
 
     size = 0;
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(session_)) {
+    if (!getSessionBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, session_);
     }
     if (transaction_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getTransaction());
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(sql_)) {
+    if (!getSqlBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, sql_);
     }
     if (params_ != null) {

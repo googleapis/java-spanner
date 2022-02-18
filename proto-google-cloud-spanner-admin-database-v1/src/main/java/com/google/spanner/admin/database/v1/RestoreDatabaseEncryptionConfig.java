@@ -432,7 +432,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
             .getNumber()) {
       output.writeEnum(1, encryptionType_);
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(kmsKeyName_)) {
+    if (!getKmsKeyNameBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, kmsKeyName_);
     }
     unknownFields.writeTo(output);
@@ -450,7 +450,7 @@ public final class RestoreDatabaseEncryptionConfig extends com.google.protobuf.G
             .getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(1, encryptionType_);
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(kmsKeyName_)) {
+    if (!getKmsKeyNameBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, kmsKeyName_);
     }
     size += unknownFields.getSerializedSize();

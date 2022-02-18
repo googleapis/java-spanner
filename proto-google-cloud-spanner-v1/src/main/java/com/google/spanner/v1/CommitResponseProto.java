@@ -45,9 +45,9 @@ public final class CommitResponseProto {
   static {
     java.lang.String[] descriptorData = {
       "\n\'google/spanner/v1/commit_response.prot"
-          + "o\022\021google.spanner.v1\032\034google/api/annotat"
-          + "ions.proto\032\036google/protobuf/duration.pro"
-          + "to\032\037google/protobuf/timestamp.proto\"\262\001\n\016"
+          + "o\022\021google.spanner.v1\032\036google/protobuf/du"
+          + "ration.proto\032\037google/protobuf/timestamp."
+          + "proto\032\034google/api/annotations.proto\"\262\001\n\016"
           + "CommitResponse\0224\n\020commit_timestamp\030\001 \001(\013"
           + "2\032.google.protobuf.Timestamp\022C\n\014commit_s"
           + "tats\030\002 \001(\0132-.google.spanner.v1.CommitRes"
@@ -63,9 +63,9 @@ public final class CommitResponseProto {
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
             descriptorData,
             new com.google.protobuf.Descriptors.FileDescriptor[] {
-              com.google.api.AnnotationsProto.getDescriptor(),
               com.google.protobuf.DurationProto.getDescriptor(),
               com.google.protobuf.TimestampProto.getDescriptor(),
+              com.google.api.AnnotationsProto.getDescriptor(),
             });
     internal_static_google_spanner_v1_CommitResponse_descriptor =
         getDescriptor().getMessageTypes().get(0);
@@ -83,9 +83,9 @@ public final class CommitResponseProto {
             new java.lang.String[] {
               "MutationCount",
             });
-    com.google.api.AnnotationsProto.getDescriptor();
     com.google.protobuf.DurationProto.getDescriptor();
     com.google.protobuf.TimestampProto.getDescriptor();
+    com.google.api.AnnotationsProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)
