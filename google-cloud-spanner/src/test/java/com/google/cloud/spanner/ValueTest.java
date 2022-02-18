@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -42,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -416,6 +418,7 @@ public class ValueTest {
     assertEquals(Type.json(), v.getType());
     assertFalse(v.isNull());
     assertEquals(json, v.getJson());
+    assertEquals(json, v.getString());
   }
 
   @Test
@@ -424,12 +427,8 @@ public class ValueTest {
     assertEquals(Type.json(), v.getType());
     assertTrue(v.isNull());
     assertEquals(NULL_STRING, v.toString());
-    try {
-      v.getJson();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    assertThrowsWithMessage(v::getJson, "null value");
+    assertThrowsWithMessage(v::getString, "null value");
   }
 
   @Test
@@ -834,8 +833,9 @@ public class ValueTest {
     String three = "{\"color\":\"red\",\"value\":\"#f00\"}";
     Value v = Value.jsonArray(Arrays.asList(one, two, three));
     assertFalse(v.isNull());
-    assertThat(v.getJsonArray()).containsExactly(one, two, three).inOrder();
+    assertArrayEquals(new String[] {one, two, three}, v.getJsonArray().toArray());
     assertEquals("[{},NULL,{\"color\":\"red\",\"value\":\"#f00\"}]", v.toString());
+    assertArrayEquals(new String[] {one, two, three}, v.getStringArray().toArray());
   }
 
   @Test
@@ -843,12 +843,8 @@ public class ValueTest {
     Value v = Value.jsonArray(null);
     assertTrue(v.isNull());
     assertEquals(NULL_STRING, v.toString());
-    try {
-      v.getJsonArray();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("null value"));
-    }
+    assertThrowsWithMessage(v::getJsonArray, "null value");
+    assertThrowsWithMessage(v::getStringArray, "null value");
   }
 
   @Test
@@ -863,14 +859,9 @@ public class ValueTest {
   }
 
   @Test
-  public void jsonArrayTryGetStringArray() {
-    Value value = Value.jsonArray(Arrays.asList("{}"));
-    try {
-      value.getStringArray();
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage().contains("Expected: ARRAY<STRING> actual: ARRAY<JSON>"));
-    }
+  public void jsonArrayTryGetFloat64Array() {
+    Value value = Value.jsonArray(Collections.singletonList("{}"));
+    assertThrowsWithMessage(value::getFloat64Array, "Expected: ARRAY<FLOAT64> actual: ARRAY<JSON>");
   }
 
   @Test
@@ -1808,6 +1799,21 @@ public class ValueTest {
 
     private void writeObject(@SuppressWarnings("unused") java.io.ObjectOutputStream unusedStream) {
       throw new IllegalStateException("Serialization disabled");
+    }
+  }
+
+  private void assertThrowsWithMessage(Supplier<?> supplier, String message) {
+    try {
+      supplier.get();
+      fail("Expected exception");
+    } catch (Exception e) {
+      assertTrue(
+          "Expected exception message to contain: \""
+              + message
+              + "\", actual: \""
+              + e.getMessage()
+              + "\"",
+          e.getMessage().contains(message));
     }
   }
 }

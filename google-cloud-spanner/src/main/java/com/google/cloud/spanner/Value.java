@@ -1152,6 +1152,11 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public String getString() {
+      return getJson();
+    }
+
+    @Override
     void valueToString(StringBuilder b) {
       if (value.length() > MAX_DEBUG_STRING_LENGTH) {
         b.append(value, 0, MAX_DEBUG_STRING_LENGTH - ELLIPSIS.length()).append(ELLIPSIS);
@@ -1585,6 +1590,11 @@ public abstract class Value implements Serializable {
       checkType(getType());
       checkNotNull();
       return value;
+    }
+
+    @Override
+    public List<String> getStringArray() {
+      return getJsonArray();
     }
 
     @Override
