@@ -102,6 +102,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
+import com.google.spanner.admin.database.v1.CopyBackupRequest;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
@@ -1262,6 +1264,72 @@ public class GapicSpannerRpc implements SpannerRpc {
             .getRetrySettings(),
         new OperationFutureRetryAlgorithm<>(),
         NanoClock.getDefaultClock());
+  }
+
+
+  @Override
+  public OperationFuture<Backup, CopyBackupMetadata> copyBackUp(
+          final com.google.cloud.spanner.Backup backupInfo) throws SpannerException {
+    final String instanceName = backupInfo.getInstanceId().getName();
+    final String databaseName = backupInfo.getDatabase().getName();
+    final String backupId = backupInfo.getId().getBackup();
+    final Backup.Builder backupBuilder =
+            com.google.spanner.admin.database.v1.Backup.newBuilder()
+                    .setDatabase(databaseName)
+                    .setExpireTime(backupInfo.getExpireTime().toProto());
+    if (backupInfo.getVersionTime() != null) {
+      backupBuilder.setVersionTime(backupInfo.getVersionTime().toProto());
+    }
+    final Backup backup = backupBuilder.build();
+
+    final CopyBackupRequest.Builder requestBuilder =
+            CopyBackupRequest.newBuilder()
+                    .setParent(instanceName)
+                    .setBackupId(backupId)
+                    .setSourceBackup(backupId)
+                    .setExpireTime(backup.getExpireTime()) ;//add +30
+
+    if (backupInfo.getEncryptionConfig() != null) {
+      requestBuilder.setEncryptionConfig(
+              EncryptionConfigProtoMapper.copyBackupEncryptionConfig(
+                      backupInfo.getEncryptionConfig()));
+    }
+    final CopyBackupRequest request = requestBuilder.build();
+    final OperationFutureCallable<CopyBackupRequest, Backup, CopyBackupMetadata> callable =
+            new OperationFutureCallable<>(
+                    databaseAdminStub.copyBackupOperationCallable(),
+                    request,
+                    //calling copy backup method of dbClientImpl
+                    DatabaseAdminGrpc.getCopyBackupMethod(),
+                    instanceName,
+                    nextPageToken ->
+                            listBackupOperations(
+                                    instanceName,
+                                    0,
+                                    String.format(
+                                            "(metadata.@type:type.googleapis.com/%s) AND (metadata.name:%s)",
+                                            CopyBackupMetadata.getDescriptor().getFullName(),
+                                            String.format("%s/backups/%s", instanceName, backupId)),
+                                    nextPageToken),
+                    input -> {
+                      try {
+                        return input
+                                .getMetadata()
+                                .unpack(CopyBackupMetadata.class)
+                                .getProgress()
+                                .getStartTime();
+                      } catch (InvalidProtocolBufferException e) {
+                        return null;
+                      }
+                    });
+    return RetryHelper.runWithRetries(
+            callable,
+            databaseAdminStubSettings
+                    .copyBackupOperationSettings()
+                    .getInitialCallSettings()
+                    .getRetrySettings(),
+            new OperationFutureRetryAlgorithm<>(),
+            NanoClock.getDefaultClock());
   }
 
   @Override
