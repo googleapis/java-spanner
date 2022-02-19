@@ -339,7 +339,7 @@ public class ITResultSetGetValue {
           IllegalStateException.class, () -> resultSet.getValue("dateArray").getDateArray());
       assertTrue(resultSet.getValue("jsonArray").isNull());
       assertThrows(
-          IllegalStateException.class, () -> resultSet.getValue("jsonArray").getDateArray());
+          IllegalStateException.class, () -> resultSet.getValue("jsonArray").getJsonArray());
     }
   }
 
