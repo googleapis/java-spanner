@@ -1,5 +1,13 @@
 # Changelog
 
+### [6.19.1](https://github.com/googleapis/java-spanner/compare/v6.19.0...v6.19.1) (2022-02-18)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.2.3 ([#1698](https://github.com/googleapis/java-spanner/issues/1698)) ([cd4f4ca](https://github.com/googleapis/java-spanner/commit/cd4f4ca3fe870227dceae8c6ab66993477b4bdc4))
+* update dependency com.google.cloud:google-cloud-trace to v2.1.3 ([#1684](https://github.com/googleapis/java-spanner/issues/1684)) ([e70e5c4](https://github.com/googleapis/java-spanner/commit/e70e5c4c9c9ce0b8d18f9f1f7d01baf6a97ec264))
+
 ## [6.19.0](https://github.com/googleapis/java-spanner/compare/v6.18.0...v6.19.0) (2022-02-16)
 
 
