@@ -311,7 +311,7 @@ public class ITResultSetGetValue {
       assertTrue(resultSet.getValue("date").isNull());
       assertThrows(IllegalStateException.class, () -> resultSet.getValue("date").getDate());
       assertTrue(resultSet.getValue("json").isNull());
-      assertThrows(IllegalStateException.class, () -> resultSet.getValue("json").getDate());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("json").getJson());
       assertTrue(resultSet.getValue("boolArray").isNull());
       assertThrows(
           IllegalStateException.class, () -> resultSet.getValue("boolArray").getBoolArray());
