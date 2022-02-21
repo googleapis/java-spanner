@@ -1764,7 +1764,7 @@ class SessionPool {
       Statement.newBuilder(
               "SELECT 'POSTGRESQL' AS DIALECT\n"
                   + "FROM INFORMATION_SCHEMA.SCHEMATA\n"
-                  + "WHERE SCHEMA_NAME='pg_catalog'\n"
+                  + "WHERE SCHEMA_NAME='information_schema'\n"
                   + "UNION ALL\n"
                   + "SELECT 'GOOGLE_STANDARD_SQL' AS DIALECT\n"
                   + "FROM INFORMATION_SCHEMA.SCHEMATA\n"
