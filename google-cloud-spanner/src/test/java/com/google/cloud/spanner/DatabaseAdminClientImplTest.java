@@ -507,17 +507,6 @@ public class DatabaseAdminClientImplTest {
     assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testCopyBackupNoSource() {
-    final com.google.cloud.spanner.Backup requestBackup =
-            client
-                    .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
-                    .setExpireTime(Timestamp.now())
-                    .build();
-
-    client.copyBackup(requestBackup);
-  }
-
   @Test
   public void copyEncryptedBackup() throws ExecutionException, InterruptedException {
     final OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =

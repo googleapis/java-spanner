@@ -293,24 +293,27 @@ public class BackupTest {
   public void testEqualsAndHashCode() {
     final Backup backup1 = createBackup();
     final Backup backup2 = createBackup();
+    final Backup copyBackup1 = copyBackup();
 
     assertEquals(backup1, backup2);
     assertEquals(backup1.hashCode(), backup2.hashCode());
+    assertEquals(backup1.hashCode(), copyBackup1.hashCode());
   }
 
   private Backup createBackup() {
     com.google.spanner.admin.database.v1.Backup proto =
-        com.google.spanner.admin.database.v1.Backup.newBuilder()
-            .setName(NAME)
-            .setDatabase(DB)
-            .setExpireTime(
-                com.google.protobuf.Timestamp.newBuilder().setSeconds(1000L).setNanos(1000).build())
-            .setVersionTime(
-                com.google.protobuf.Timestamp.newBuilder().setSeconds(2000L).setNanos(2000).build())
-            .setEncryptionInfo(ENCRYPTION_INFO)
-            .setState(com.google.spanner.admin.database.v1.Backup.State.CREATING)
-            .build();
+            com.google.spanner.admin.database.v1.Backup.newBuilder()
+                    .setName(NAME)
+                    .setDatabase(DB)
+                    .setExpireTime(
+                            com.google.protobuf.Timestamp.newBuilder().setSeconds(1000L).setNanos(1000).build())
+                    .setVersionTime(
+                            com.google.protobuf.Timestamp.newBuilder().setSeconds(2000L).setNanos(2000).build())
+                    .setEncryptionInfo(ENCRYPTION_INFO)
+                    .setState(com.google.spanner.admin.database.v1.Backup.State.CREATING)
+                    .build();
     return Backup.fromProto(proto, dbClient);
+  }
 
     private Backup copyBackup() {
       com.google.spanner.admin.database.v1.Backup proto =

@@ -1287,7 +1287,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                     .setParent(instanceName)
                     .setBackupId(backupId)
                     .setSourceBackup(backupId)
-                    .setExpireTime(backup.getExpireTime()) ;//add +30
+                    .setExpireTime(backup.getExpireTime()) ;
 
     if (backupInfo.getEncryptionConfig() != null) {
       requestBuilder.setEncryptionConfig(
