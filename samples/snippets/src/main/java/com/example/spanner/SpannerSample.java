@@ -1887,7 +1887,6 @@ public class SpannerSample {
                 + TimeUnit.NANOSECONDS.toMicros(backup.getExpireTime().getNanos())
                 + TimeUnit.DAYS.toMicros(30L));
     Timestamp newExpireTime = Math.min(expireTime, backup.getExpireTime());
-    new_expire_time = min(backup.maxExpireTime, old_expire_time)
 
     System.out.println(String.format(
         "Updating expire time of backup [%s] to %s...",
