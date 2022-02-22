@@ -1226,6 +1226,13 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private Statement buildStatement(
       String sql, Map<String, Type> paramTypes, com.google.protobuf.Struct params) {
     Statement.Builder builder = Statement.newBuilder(sql);
+    // Set all untyped null values first.
+    for (Entry<String, com.google.protobuf.Value> entry : params.getFieldsMap().entrySet()) {
+      if (entry.getValue().hasNullValue() && !paramTypes.containsKey(entry.getKey())) {
+        builder.bind(entry.getKey()).to((Value) null);
+      }
+    }
+
     for (Entry<String, Type> entry : paramTypes.entrySet()) {
       final String fieldName = entry.getKey();
       final Type fieldType = entry.getValue();
