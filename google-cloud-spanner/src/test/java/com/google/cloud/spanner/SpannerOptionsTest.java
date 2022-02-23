@@ -502,6 +502,7 @@ public class SpannerOptionsTest {
   public void testSetClientLibToken() {
     final String jdbcToken = "sp-jdbc";
     final String hibernateToken = "sp-hib";
+    final String pgAdapterToken = "pg-adapter";
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId("some-project")
@@ -517,6 +518,14 @@ public class SpannerOptionsTest {
             .setClientLibToken(hibernateToken)
             .build();
     assertThat(options.getClientLibToken()).isEqualTo(hibernateToken);
+
+    options =
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .setCredentials(NoCredentials.getInstance())
+            .setClientLibToken(pgAdapterToken)
+            .build();
+    assertThat(options.getClientLibToken()).isEqualTo(pgAdapterToken);
 
     options =
         SpannerOptions.newBuilder()
