@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.20.0](https://github.com/googleapis/java-spanner/compare/v6.19.1...v6.20.0) (2022-02-22)
+
+
+### Features
+
+* allows for getting json columns using getValue ([#1699](https://github.com/googleapis/java-spanner/issues/1699)) ([a51973b](https://github.com/googleapis/java-spanner/commit/a51973b1a87c0a57b114892fe39a24caa1458d1d))
+
+
+### Bug Fixes
+
+* **java:** make system property accessible for native image compilation ([#1694](https://github.com/googleapis/java-spanner/issues/1694)) ([e3fb2b2](https://github.com/googleapis/java-spanner/commit/e3fb2b273f939314d9cdbce539f373d6fc77d0ad))
+* use information_schema instead of pg_catalog for dialect detection ([#1708](https://github.com/googleapis/java-spanner/issues/1708)) ([91e157a](https://github.com/googleapis/java-spanner/commit/91e157a6dcd08afd81a4cbddffcb8e02defb8d3a))
+
 ### [6.19.1](https://github.com/googleapis/java-spanner/compare/v6.19.0...v6.19.1) (2022-02-18)
 
 
