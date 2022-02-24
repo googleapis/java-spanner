@@ -179,7 +179,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * Required. The DML string.
      * </pre>
      *
-     * <code>string sql = 1;</code>
+     * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The sql.
      */
@@ -191,7 +191,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * Required. The DML string.
      * </pre>
      *
-     * <code>string sql = 1;</code>
+     * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The bytes for sql.
      */
@@ -482,7 +482,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * Required. The DML string.
      * </pre>
      *
-     * <code>string sql = 1;</code>
+     * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The sql.
      */
@@ -505,7 +505,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * Required. The DML string.
      * </pre>
      *
-     * <code>string sql = 1;</code>
+     * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The bytes for sql.
      */
@@ -732,7 +732,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-      if (!getSqlBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(sql_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, sql_);
       }
       if (params_ != null) {
@@ -749,7 +749,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       if (size != -1) return size;
 
       size = 0;
-      if (!getSqlBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(sql_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, sql_);
       }
       if (params_ != null) {
@@ -1121,7 +1121,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * Required. The DML string.
        * </pre>
        *
-       * <code>string sql = 1;</code>
+       * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @return The sql.
        */
@@ -1143,7 +1143,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * Required. The DML string.
        * </pre>
        *
-       * <code>string sql = 1;</code>
+       * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @return The bytes for sql.
        */
@@ -1165,7 +1165,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * Required. The DML string.
        * </pre>
        *
-       * <code>string sql = 1;</code>
+       * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @param value The sql to set.
        * @return This builder for chaining.
@@ -1186,7 +1186,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * Required. The DML string.
        * </pre>
        *
-       * <code>string sql = 1;</code>
+       * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @return This builder for chaining.
        */
@@ -1203,7 +1203,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * Required. The DML string.
        * </pre>
        *
-       * <code>string sql = 1;</code>
+       * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @param value The bytes for sql to set.
        * @return This builder for chaining.
@@ -2022,7 +2022,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!getSessionBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(session_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, session_);
     }
     if (transaction_ != null) {
@@ -2046,7 +2046,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     if (size != -1) return size;
 
     size = 0;
-    if (!getSessionBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(session_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, session_);
     }
     if (transaction_ != null) {

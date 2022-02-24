@@ -22,15 +22,17 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
  *
  * <pre>
  * Cloud Spanner Database Admin API
- * The Cloud Spanner Database Admin API can be used to create, drop, and
- * list databases. It also enables updating the schema of pre-existing
- * databases. It can be also used to create, delete and list backups for a
- * database and to restore from an existing backup.
+ * The Cloud Spanner Database Admin API can be used to:
+ *   * create, drop, and list databases
+ *   * update the schema of pre-existing databases
+ *   * create, delete and list backups for a database
+ *   * restore a database from an existing backup
  * </pre>
  */
 @javax.annotation.Generated(
     value = "by gRPC proto compiler",
     comments = "Source: google/spanner/admin/database/v1/spanner_database_admin.proto")
+@io.grpc.stub.annotations.GrpcGenerated
 public final class DatabaseAdminGrpc {
 
   private DatabaseAdminGrpc() {}
@@ -893,10 +895,11 @@ public final class DatabaseAdminGrpc {
    *
    * <pre>
    * Cloud Spanner Database Admin API
-   * The Cloud Spanner Database Admin API can be used to create, drop, and
-   * list databases. It also enables updating the schema of pre-existing
-   * databases. It can be also used to create, delete and list backups for a
-   * database and to restore from an existing backup.
+   * The Cloud Spanner Database Admin API can be used to:
+   *   * create, drop, and list databases
+   *   * update the schema of pre-existing databases
+   *   * create, delete and list backups for a database
+   *   * restore a database from an existing backup
    * </pre>
    */
   public abstract static class DatabaseAdminImplBase implements io.grpc.BindableService {
@@ -979,6 +982,8 @@ public final class DatabaseAdminGrpc {
      * Drops (aka deletes) a Cloud Spanner database.
      * Completed backups for the database will be retained according to their
      * `expire_time`.
+     * Note: Cloud Spanner might continue to accept requests for a few seconds
+     * after the database has been deleted.
      * </pre>
      */
     public void dropDatabase(
@@ -1378,10 +1383,11 @@ public final class DatabaseAdminGrpc {
    *
    * <pre>
    * Cloud Spanner Database Admin API
-   * The Cloud Spanner Database Admin API can be used to create, drop, and
-   * list databases. It also enables updating the schema of pre-existing
-   * databases. It can be also used to create, delete and list backups for a
-   * database and to restore from an existing backup.
+   * The Cloud Spanner Database Admin API can be used to:
+   *   * create, drop, and list databases
+   *   * update the schema of pre-existing databases
+   *   * create, delete and list backups for a database
+   *   * restore a database from an existing backup
    * </pre>
    */
   public static final class DatabaseAdminStub
@@ -1481,6 +1487,8 @@ public final class DatabaseAdminGrpc {
      * Drops (aka deletes) a Cloud Spanner database.
      * Completed backups for the database will be retained according to their
      * `expire_time`.
+     * Note: Cloud Spanner might continue to accept requests for a few seconds
+     * after the database has been deleted.
      * </pre>
      */
     public void dropDatabase(
@@ -1786,10 +1794,11 @@ public final class DatabaseAdminGrpc {
    *
    * <pre>
    * Cloud Spanner Database Admin API
-   * The Cloud Spanner Database Admin API can be used to create, drop, and
-   * list databases. It also enables updating the schema of pre-existing
-   * databases. It can be also used to create, delete and list backups for a
-   * database and to restore from an existing backup.
+   * The Cloud Spanner Database Admin API can be used to:
+   *   * create, drop, and list databases
+   *   * update the schema of pre-existing databases
+   *   * create, delete and list backups for a database
+   *   * restore a database from an existing backup
    * </pre>
    */
   public static final class DatabaseAdminBlockingStub
@@ -1876,6 +1885,8 @@ public final class DatabaseAdminGrpc {
      * Drops (aka deletes) a Cloud Spanner database.
      * Completed backups for the database will be retained according to their
      * `expire_time`.
+     * Note: Cloud Spanner might continue to accept requests for a few seconds
+     * after the database has been deleted.
      * </pre>
      */
     public com.google.protobuf.Empty dropDatabase(
@@ -2135,10 +2146,11 @@ public final class DatabaseAdminGrpc {
    *
    * <pre>
    * Cloud Spanner Database Admin API
-   * The Cloud Spanner Database Admin API can be used to create, drop, and
-   * list databases. It also enables updating the schema of pre-existing
-   * databases. It can be also used to create, delete and list backups for a
-   * database and to restore from an existing backup.
+   * The Cloud Spanner Database Admin API can be used to:
+   *   * create, drop, and list databases
+   *   * update the schema of pre-existing databases
+   *   * create, delete and list backups for a database
+   *   * restore a database from an existing backup
    * </pre>
    */
   public static final class DatabaseAdminFutureStub
@@ -2227,6 +2239,8 @@ public final class DatabaseAdminGrpc {
      * Drops (aka deletes) a Cloud Spanner database.
      * Completed backups for the database will be retained according to their
      * `expire_time`.
+     * Note: Cloud Spanner might continue to accept requests for a few seconds
+     * after the database has been deleted.
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty>

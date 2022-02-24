@@ -409,6 +409,35 @@ public interface BackupOrBuilder
    *
    *
    * <pre>
+   * Output only. The database dialect information for the backup.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 10 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for databaseDialect.
+   */
+  int getDatabaseDialectValue();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The database dialect information for the backup.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 10 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The databaseDialect.
+   */
+  com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect();
+
+  /**
+   *
+   *
+   * <pre>
    * Output only. The names of the destination backups being created by copying
    * this source backup. The backup names are of the form
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
