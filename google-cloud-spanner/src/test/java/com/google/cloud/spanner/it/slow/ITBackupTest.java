@@ -468,7 +468,7 @@ public class ITBackupTest {
         try {
           client.cancelOperation(op.getName());
         } catch (SpannerException e) {
-          // Ignore, as exception indicates there's no long running operation to cancel.
+          // Ignore, this is expected as it cannot find the backup that we are trying to restore.
         }
         // Assert that the RestoreDatabase RPC was called only once, and that the operation
         // tracking was resumed through a GetOperation call.
