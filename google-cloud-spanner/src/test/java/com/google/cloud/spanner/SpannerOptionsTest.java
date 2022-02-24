@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -532,7 +533,7 @@ public class SpannerOptionsTest {
             .setProjectId("some-project")
             .setCredentials(NoCredentials.getInstance())
             .build();
-    assertThat(options.getClientLibToken()).isEqualTo(ServiceOptions.getGoogApiClientLibName());
+    assertEquals(options.getClientLibToken(), ServiceOptions.getGoogApiClientLibName());
   }
 
   @Test(expected = IllegalArgumentException.class)
