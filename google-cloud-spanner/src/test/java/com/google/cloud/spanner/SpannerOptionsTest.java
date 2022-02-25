@@ -526,7 +526,7 @@ public class SpannerOptionsTest {
             .setCredentials(NoCredentials.getInstance())
             .setClientLibToken(pgAdapterToken)
             .build();
-    assertThat(options.getClientLibToken()).isEqualTo(pgAdapterToken);
+    assertEquals(options.getClientLibToken(), pgAdapterToken);
 
     options =
         SpannerOptions.newBuilder()
