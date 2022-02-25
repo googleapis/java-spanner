@@ -56,10 +56,10 @@ public interface CreateSessionRequestOrBuilder
    *
    *
    * <pre>
-   * The session to create.
+   * Required. The session to create.
    * </pre>
    *
-   * <code>.google.spanner.v1.Session session = 2;</code>
+   * <code>.google.spanner.v1.Session session = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return Whether the session field is set.
    */
@@ -68,10 +68,10 @@ public interface CreateSessionRequestOrBuilder
    *
    *
    * <pre>
-   * The session to create.
+   * Required. The session to create.
    * </pre>
    *
-   * <code>.google.spanner.v1.Session session = 2;</code>
+   * <code>.google.spanner.v1.Session session = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The session.
    */
@@ -80,10 +80,10 @@ public interface CreateSessionRequestOrBuilder
    *
    *
    * <pre>
-   * The session to create.
+   * Required. The session to create.
    * </pre>
    *
-   * <code>.google.spanner.v1.Session session = 2;</code>
+   * <code>.google.spanner.v1.Session session = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   com.google.spanner.v1.SessionOrBuilder getSessionOrBuilder();
 }

@@ -195,7 +195,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Required. The table whose rows will be written.
      * </pre>
      *
-     * <code>string table = 1;</code>
+     * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The table.
      */
@@ -207,7 +207,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Required. The table whose rows will be written.
      * </pre>
      *
-     * <code>string table = 1;</code>
+     * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The bytes for table.
      */
@@ -494,7 +494,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Required. The table whose rows will be written.
      * </pre>
      *
-     * <code>string table = 1;</code>
+     * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The table.
      */
@@ -517,7 +517,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Required. The table whose rows will be written.
      * </pre>
      *
-     * <code>string table = 1;</code>
+     * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The bytes for table.
      */
@@ -1130,7 +1130,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * Required. The table whose rows will be written.
        * </pre>
        *
-       * <code>string table = 1;</code>
+       * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @return The table.
        */
@@ -1152,7 +1152,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * Required. The table whose rows will be written.
        * </pre>
        *
-       * <code>string table = 1;</code>
+       * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @return The bytes for table.
        */
@@ -1174,7 +1174,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * Required. The table whose rows will be written.
        * </pre>
        *
-       * <code>string table = 1;</code>
+       * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @param value The table to set.
        * @return This builder for chaining.
@@ -1195,7 +1195,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * Required. The table whose rows will be written.
        * </pre>
        *
-       * <code>string table = 1;</code>
+       * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @return This builder for chaining.
        */
@@ -1212,7 +1212,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * Required. The table whose rows will be written.
        * </pre>
        *
-       * <code>string table = 1;</code>
+       * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @param value The bytes for table to set.
        * @return This builder for chaining.
@@ -1959,7 +1959,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Required. The table whose rows will be deleted.
      * </pre>
      *
-     * <code>string table = 1;</code>
+     * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The table.
      */
@@ -1971,7 +1971,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Required. The table whose rows will be deleted.
      * </pre>
      *
-     * <code>string table = 1;</code>
+     * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The bytes for table.
      */
@@ -1989,7 +1989,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * rows do not exist.
      * </pre>
      *
-     * <code>.google.spanner.v1.KeySet key_set = 2;</code>
+     * <code>.google.spanner.v1.KeySet key_set = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return Whether the keySet field is set.
      */
@@ -2006,7 +2006,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * rows do not exist.
      * </pre>
      *
-     * <code>.google.spanner.v1.KeySet key_set = 2;</code>
+     * <code>.google.spanner.v1.KeySet key_set = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The keySet.
      */
@@ -2023,7 +2023,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * rows do not exist.
      * </pre>
      *
-     * <code>.google.spanner.v1.KeySet key_set = 2;</code>
+     * <code>.google.spanner.v1.KeySet key_set = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     com.google.spanner.v1.KeySetOrBuilder getKeySetOrBuilder();
   }
@@ -2144,7 +2144,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Required. The table whose rows will be deleted.
      * </pre>
      *
-     * <code>string table = 1;</code>
+     * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The table.
      */
@@ -2167,7 +2167,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Required. The table whose rows will be deleted.
      * </pre>
      *
-     * <code>string table = 1;</code>
+     * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The bytes for table.
      */
@@ -2198,7 +2198,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * rows do not exist.
      * </pre>
      *
-     * <code>.google.spanner.v1.KeySet key_set = 2;</code>
+     * <code>.google.spanner.v1.KeySet key_set = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return Whether the keySet field is set.
      */
@@ -2218,7 +2218,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * rows do not exist.
      * </pre>
      *
-     * <code>.google.spanner.v1.KeySet key_set = 2;</code>
+     * <code>.google.spanner.v1.KeySet key_set = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The keySet.
      */
@@ -2238,7 +2238,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * rows do not exist.
      * </pre>
      *
-     * <code>.google.spanner.v1.KeySet key_set = 2;</code>
+     * <code>.google.spanner.v1.KeySet key_set = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     @java.lang.Override
     public com.google.spanner.v1.KeySetOrBuilder getKeySetOrBuilder() {
@@ -2600,7 +2600,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * Required. The table whose rows will be deleted.
        * </pre>
        *
-       * <code>string table = 1;</code>
+       * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @return The table.
        */
@@ -2622,7 +2622,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * Required. The table whose rows will be deleted.
        * </pre>
        *
-       * <code>string table = 1;</code>
+       * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @return The bytes for table.
        */
@@ -2644,7 +2644,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * Required. The table whose rows will be deleted.
        * </pre>
        *
-       * <code>string table = 1;</code>
+       * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @param value The table to set.
        * @return This builder for chaining.
@@ -2665,7 +2665,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * Required. The table whose rows will be deleted.
        * </pre>
        *
-       * <code>string table = 1;</code>
+       * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @return This builder for chaining.
        */
@@ -2682,7 +2682,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * Required. The table whose rows will be deleted.
        * </pre>
        *
-       * <code>string table = 1;</code>
+       * <code>string table = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @param value The bytes for table to set.
        * @return This builder for chaining.
@@ -2716,7 +2716,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * rows do not exist.
        * </pre>
        *
-       * <code>.google.spanner.v1.KeySet key_set = 2;</code>
+       * <code>.google.spanner.v1.KeySet key_set = 2 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
        *
        * @return Whether the keySet field is set.
        */
@@ -2735,7 +2736,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * rows do not exist.
        * </pre>
        *
-       * <code>.google.spanner.v1.KeySet key_set = 2;</code>
+       * <code>.google.spanner.v1.KeySet key_set = 2 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
        *
        * @return The keySet.
        */
@@ -2758,7 +2760,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * rows do not exist.
        * </pre>
        *
-       * <code>.google.spanner.v1.KeySet key_set = 2;</code>
+       * <code>.google.spanner.v1.KeySet key_set = 2 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
        */
       public Builder setKeySet(com.google.spanner.v1.KeySet value) {
         if (keySetBuilder_ == null) {
@@ -2785,7 +2788,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * rows do not exist.
        * </pre>
        *
-       * <code>.google.spanner.v1.KeySet key_set = 2;</code>
+       * <code>.google.spanner.v1.KeySet key_set = 2 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
        */
       public Builder setKeySet(com.google.spanner.v1.KeySet.Builder builderForValue) {
         if (keySetBuilder_ == null) {
@@ -2809,7 +2813,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * rows do not exist.
        * </pre>
        *
-       * <code>.google.spanner.v1.KeySet key_set = 2;</code>
+       * <code>.google.spanner.v1.KeySet key_set = 2 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
        */
       public Builder mergeKeySet(com.google.spanner.v1.KeySet value) {
         if (keySetBuilder_ == null) {
@@ -2838,7 +2843,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * rows do not exist.
        * </pre>
        *
-       * <code>.google.spanner.v1.KeySet key_set = 2;</code>
+       * <code>.google.spanner.v1.KeySet key_set = 2 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
        */
       public Builder clearKeySet() {
         if (keySetBuilder_ == null) {
@@ -2863,7 +2869,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * rows do not exist.
        * </pre>
        *
-       * <code>.google.spanner.v1.KeySet key_set = 2;</code>
+       * <code>.google.spanner.v1.KeySet key_set = 2 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
        */
       public com.google.spanner.v1.KeySet.Builder getKeySetBuilder() {
 
@@ -2882,7 +2889,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * rows do not exist.
        * </pre>
        *
-       * <code>.google.spanner.v1.KeySet key_set = 2;</code>
+       * <code>.google.spanner.v1.KeySet key_set = 2 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
        */
       public com.google.spanner.v1.KeySetOrBuilder getKeySetOrBuilder() {
         if (keySetBuilder_ != null) {
@@ -2903,7 +2911,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * rows do not exist.
        * </pre>
        *
-       * <code>.google.spanner.v1.KeySet key_set = 2;</code>
+       * <code>.google.spanner.v1.KeySet key_set = 2 [(.google.api.field_behavior) = REQUIRED];
+       * </code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
               com.google.spanner.v1.KeySet,

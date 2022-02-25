@@ -179,7 +179,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * Required. The DML string.
      * </pre>
      *
-     * <code>string sql = 1;</code>
+     * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The sql.
      */
@@ -191,7 +191,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * Required. The DML string.
      * </pre>
      *
-     * <code>string sql = 1;</code>
+     * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The bytes for sql.
      */
@@ -482,7 +482,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * Required. The DML string.
      * </pre>
      *
-     * <code>string sql = 1;</code>
+     * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The sql.
      */
@@ -505,7 +505,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * Required. The DML string.
      * </pre>
      *
-     * <code>string sql = 1;</code>
+     * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The bytes for sql.
      */
@@ -1121,7 +1121,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * Required. The DML string.
        * </pre>
        *
-       * <code>string sql = 1;</code>
+       * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @return The sql.
        */
@@ -1143,7 +1143,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * Required. The DML string.
        * </pre>
        *
-       * <code>string sql = 1;</code>
+       * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @return The bytes for sql.
        */
@@ -1165,7 +1165,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * Required. The DML string.
        * </pre>
        *
-       * <code>string sql = 1;</code>
+       * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @param value The sql to set.
        * @return This builder for chaining.
@@ -1186,7 +1186,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * Required. The DML string.
        * </pre>
        *
-       * <code>string sql = 1;</code>
+       * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @return This builder for chaining.
        */
@@ -1203,7 +1203,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * Required. The DML string.
        * </pre>
        *
-       * <code>string sql = 1;</code>
+       * <code>string sql = 1 [(.google.api.field_behavior) = REQUIRED];</code>
        *
        * @param value The bytes for sql to set.
        * @return This builder for chaining.

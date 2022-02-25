@@ -359,7 +359,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * segment of the name must be between 2 and 64 characters in length.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The name.
    */
@@ -385,7 +385,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * segment of the name must be between 2 and 64 characters in length.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The bytes for name.
    */
@@ -414,7 +414,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
    * </pre>
    *
-   * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+   * <code>
+   * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+   * </code>
    *
    * @return The config.
    */
@@ -440,7 +442,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
    * </pre>
    *
-   * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+   * <code>
+   * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+   * </code>
    *
    * @return The bytes for config.
    */
@@ -467,7 +471,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * Must be unique per project and between 4 and 30 characters in length.
    * </pre>
    *
-   * <code>string display_name = 3;</code>
+   * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The displayName.
    */
@@ -491,7 +495,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * Must be unique per project and between 4 and 30 characters in length.
    * </pre>
    *
-   * <code>string display_name = 3;</code>
+   * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The bytes for displayName.
    */
@@ -1310,7 +1314,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * segment of the name must be between 2 and 64 characters in length.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The name.
      */
@@ -1335,7 +1339,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * segment of the name must be between 2 and 64 characters in length.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The bytes for name.
      */
@@ -1360,7 +1364,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * segment of the name must be between 2 and 64 characters in length.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @param value The name to set.
      * @return This builder for chaining.
@@ -1384,7 +1388,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * segment of the name must be between 2 and 64 characters in length.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return This builder for chaining.
      */
@@ -1404,7 +1408,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * segment of the name must be between 2 and 64 characters in length.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @param value The bytes for name to set.
      * @return This builder for chaining.
@@ -1431,7 +1435,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
      * </pre>
      *
-     * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+     * <code>
+     * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+     * </code>
      *
      * @return The config.
      */
@@ -1456,7 +1462,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
      * </pre>
      *
-     * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+     * <code>
+     * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+     * </code>
      *
      * @return The bytes for config.
      */
@@ -1481,7 +1489,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
      * </pre>
      *
-     * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+     * <code>
+     * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+     * </code>
      *
      * @param value The config to set.
      * @return This builder for chaining.
@@ -1505,7 +1515,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
      * </pre>
      *
-     * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+     * <code>
+     * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+     * </code>
      *
      * @return This builder for chaining.
      */
@@ -1525,7 +1537,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
      * </pre>
      *
-     * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+     * <code>
+     * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+     * </code>
      *
      * @param value The bytes for config to set.
      * @return This builder for chaining.
@@ -1550,7 +1564,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * Must be unique per project and between 4 and 30 characters in length.
      * </pre>
      *
-     * <code>string display_name = 3;</code>
+     * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The displayName.
      */
@@ -1573,7 +1587,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * Must be unique per project and between 4 and 30 characters in length.
      * </pre>
      *
-     * <code>string display_name = 3;</code>
+     * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The bytes for displayName.
      */
@@ -1596,7 +1610,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * Must be unique per project and between 4 and 30 characters in length.
      * </pre>
      *
-     * <code>string display_name = 3;</code>
+     * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @param value The displayName to set.
      * @return This builder for chaining.
@@ -1618,7 +1632,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * Must be unique per project and between 4 and 30 characters in length.
      * </pre>
      *
-     * <code>string display_name = 3;</code>
+     * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return This builder for chaining.
      */
@@ -1636,7 +1650,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * Must be unique per project and between 4 and 30 characters in length.
      * </pre>
      *
-     * <code>string display_name = 3;</code>
+     * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @param value The bytes for displayName to set.
      * @return This builder for chaining.
