@@ -64,7 +64,7 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.math.BigDecimal;
-import Java.lang.math.min;
+import java.lang.Math;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1614,7 +1614,7 @@ public class SpannerSample {
   // [END spanner_create_backup]
 
   // [START spanner_copy_backup]
-  static void copyBackup(DatabaseAdminClient dbAdminClient, String backupId, String sourceBackupId) {
+  static void copyBackup(DatabaseAdminClient dbAdminClient, BackupId backupId, String sourceBackupId) {
 
     // Creates a copy backup of an existing backup with tables
     Backup backup = dbAdminClient
