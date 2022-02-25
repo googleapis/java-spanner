@@ -1625,9 +1625,9 @@ public class SpannerSample {
     Timestamp expireTime = Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
             System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14), TimeUnit.MILLISECONDS));
 
-    // Initiate the request which returns an OperationFuture.
+    // Initiate the requefst which returns an OperationFuture.
     System.out.println("Copying backup [" + backup.getId() + "]...");
-    OperationFuture<Backup, CopyBackupMetadata> op = backup.copyBackup();
+    OperationFuture<Backup, CopyBackupMetadata> op = dbAdminClient.copyBackup(backup);
     try {
       // Wait for the backup operation to complete.
       backup = op.get();
@@ -1886,7 +1886,8 @@ public class SpannerSample {
             TimeUnit.SECONDS.toMicros(backup.getExpireTime().getSeconds())
                 + TimeUnit.NANOSECONDS.toMicros(backup.getExpireTime().getNanos())
                 + TimeUnit.DAYS.toMicros(30L));
-    Timestamp newExpireTime = Math.min(expireTime, backup.getExpireTime());
+    int timeDiff = expireTime.compareTo(backup.getExpireTime());
+    Timestamp newExpireTime = (timeDiff < 0) ? expireTime : backup.getExpireTime();
 
     System.out.println(String.format(
         "Updating expire time of backup [%s] to %s...",
