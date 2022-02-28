@@ -22,6 +22,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.ServiceRpc;
+import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
@@ -231,18 +232,18 @@ public interface SpannerRpc extends ServiceRpc {
   OperationFuture<Backup, CreateBackupMetadata> createBackup(
       com.google.cloud.spanner.Backup backupInfo) throws SpannerException;
 
-
   /**
-   * Creates a copy backup from the source database specified in the {@link
-   * com.google.cloud.spanner.Backup} instance.
+   * Creates a copy backup from the source backup specified.
    *
-   * @param backupInfo the backup to create. The instance, database, sourceBackupId and expireTime fields of the
-   *     backup must be filled.
+   * @param destinationBackup the backup to create. The instance, database, and expireTime fields of
+   *     the backup must be filled. It may also optionally have an encryption config set. If no
+   *     encryption config has been set, the new backup will use the same encryption config as the
+   *     source backup.
    * @return the operation that monitors the backup creation.
    */
   OperationFuture<Backup, CopyBackupMetadata> copyBackUp(
-          com.google.cloud.spanner.Backup backupInfo) throws SpannerException;
-
+      BackupId sourceBackupId, com.google.cloud.spanner.Backup destinationBackup)
+      throws SpannerException;
 
   /**
    * Restore a backup into the given database.

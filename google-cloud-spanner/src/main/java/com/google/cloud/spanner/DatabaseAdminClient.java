@@ -28,7 +28,6 @@ import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
-
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -181,64 +180,68 @@ public interface DatabaseAdminClient {
   OperationFuture<Backup, CreateBackupMetadata> createBackup(Backup backup) throws SpannerException;
 
   /**
-   * Creates a copy of backup from an existing database backup in a Cloud Spanner instance.
+   * Creates a copy of backup from an existing backup in a Cloud Spanner instance.
    *
    * <p>Example to copy a backup.
    *
    * <pre>{@code
-   * String instance                    = my_instance_id;
-   * String destinationBackupId         = my_backup_id;
-   * String sourceBackup                = source_backup;
+   * String instanceId                  = "my_instance_id";
+   * String sourceBackupId              = "source_backup_id";
+   * String destinationBackupId         = "destination_backup_id";
    * Timestamp expireTime               = Timestamp.ofTimeMicroseconds(micros);
    * OperationFuture<Backup, CopyBackupMetadata> op = dbAdminClient
    *     .copyBackup(
    *         instanceId,
-   *         sourceBackup,
+   *         sourceBackupId,
    *         destinationBackupId,
    *         expireTime);
    * Backup backup = op.get();
    * }</pre>
    *
-   * @param sourceInstanceId the id of the instance where the database to backup is located and
-   *     where the backup will be created.
-   * @param sourceBackup the source backup id.
-   * @param destinationBackupId the id of the backup which will be created. It must conform to the regular
-   *     expression [a-z][a-z0-9_\-]*[a-z0-9] and be between 2 and 60 characters in length.
-   * @param expireTime the time that the backup will automatically expire.
+   * @param instanceId the id of the instance where the source backup is located and where the new
+   *     backup will be created.
+   * @param sourceBackupId the source backup id.
+   * @param destinationBackupId the id of the backup which will be created. It must conform to the
+   *     regular expression [a-z][a-z0-9_\-]*[a-z0-9] and be between 2 and 60 characters in length.
+   * @param expireTime the time that the new backup will automatically expire.
    */
   OperationFuture<Backup, CopyBackupMetadata> copyBackup(
-          String sourceInstanceId, String sourceBackup, String destinationBackupId, Timestamp expireTime)
-          throws SpannerException;
-
+      String instanceId, String sourceBackupId, String destinationBackupId, Timestamp expireTime)
+      throws SpannerException;
 
   /**
-   * Creates a copy of backup from an existing database backup in Cloud Spanner. Any configuration options in the
-   * {@link Backup} instance will be included in the {@link
+   * Creates a copy of backup from an existing backup in Cloud Spanner. Any configuration options in
+   * the {@link Backup} instance will be included in the {@link
    * com.google.spanner.admin.database.v1.CopyBackupRequest}.
    *
-   * <p>Example to create an encrypted backup.
+   * <p>The expire time of the new backup must be set and be at least 6 hours and at most 366 days
+   * after the creation time of the existing backup that is being copied.
+   *
+   * <p>Example to create a copy of a backup.
    *
    * <pre>{@code
-   * BackupId destinationBackupId = BackupId.of("project", "instance", "backup-id");
+   * BackupId sourceBackupId = BackupId.of("source-project", "source-instance", "source-backup-id");
+   * BackupId destinationBackupId = BackupId.of("destination-project", "destination-instance", "new-backup-id");
    * Timestamp expireTime = Timestamp.ofTimeMicroseconds(expireTimeMicros);
    * EncryptionConfig encryptionConfig =
    *         EncryptionConfig.ofKey(
    *             "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key"));
    *
-   * Backup backupToCopy = dbAdminClient
+   * Backup destinationBackup = dbAdminClient
    *     .newBackupBuilder(destinationBackupId)
    *     .setExpireTime(expireTime)
-   *     .setVersionTime(versionTime)
    *     .setEncryptionConfig(encryptionConfig)
    *     .build();
    *
-   * OperationFuture<Backup, CopyBackupMetadata> op = dbAdminClient.copyBackUp(backupToCopy);
+   * OperationFuture<Backup, CopyBackupMetadata> op = dbAdminClient.copyBackUp(sourceBackupId, destinationBackup);
    * Backup copiedBackup = op.get();
    * }</pre>
    *
-   * @param backup the backup to be copied
+   * @param sourceBackupId the backup to be copied
+   * @param destinationBackup the new backup to create
    */
-  OperationFuture<Backup, CopyBackupMetadata> copyBackup(Backup backup) throws SpannerException;
+  OperationFuture<Backup, CopyBackupMetadata> copyBackup(
+      BackupId sourceBackupId, Backup destinationBackup) throws SpannerException;
 
   /**
    * Restore a database from a backup. The database that is restored will be created and may not
