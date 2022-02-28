@@ -169,10 +169,10 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
 
   @Override
   public OperationFuture<Backup, CopyBackupMetadata> copyBackup(
-          String instanceId,String backupId, String sourceBackUp, Timestamp expireTime)
+          String instanceId, String sourceBackUp, String destinationBackupId, Timestamp expireTime)
           throws SpannerException {
     final Backup backupInfo =
-            newBackupBuilder(BackupId.of(projectId, instanceId, backupId))
+            newBackupBuilder(BackupId.of(projectId, instanceId, destinationBackupId))
                     .setExpireTime(expireTime)
                     .setSourceBackup(sourceBackUp)
                     .build();
