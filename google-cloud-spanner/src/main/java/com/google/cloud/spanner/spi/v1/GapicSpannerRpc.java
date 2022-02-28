@@ -1280,14 +1280,13 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (backupInfo.getVersionTime() != null) {
       backupBuilder.setVersionTime(backupInfo.getVersionTime().toProto());
     }
-    final Backup backup = backupBuilder.build();
 
     final CopyBackupRequest.Builder requestBuilder =
             CopyBackupRequest.newBuilder()
                     .setParent(instanceName)
                     .setBackupId(backupId)
                     .setSourceBackup(backupId)
-                    .setExpireTime(backup.getExpireTime()) ;
+                    .setExpireTime(backupInfo.getExpireTime().toProto()) ;
 
     if (backupInfo.getEncryptionConfig() != null) {
       requestBuilder.setEncryptionConfig(

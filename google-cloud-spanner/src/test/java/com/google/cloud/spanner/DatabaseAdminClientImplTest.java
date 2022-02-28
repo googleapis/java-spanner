@@ -474,7 +474,7 @@ public class DatabaseAdminClientImplTest {
                     .build();
     when(rpc.copyBackUp(backup)).thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
-            client.copyBackup(INSTANCE_ID, BK_ID, DB_ID, t);
+            client.copyBackup(INSTANCE_ID, DB_ID, BK_ID, t);
     assertThat(op.isDone()).isTrue();
     assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
   }
