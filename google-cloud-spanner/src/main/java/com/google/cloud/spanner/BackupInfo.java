@@ -82,8 +82,6 @@ public class BackupInfo {
      */
     public abstract Builder setDatabase(DatabaseId database);
 
-    public abstract Builder setSourceBackup(String sourceBackup);
-
     /** Builds the backup from this builder. */
     public abstract Backup build();
   }
@@ -97,7 +95,6 @@ public class BackupInfo {
     private long size;
     private BackupEncryptionConfig encryptionConfig;
     private EncryptionInfo encryptionInfo;
-    private String sourceBackup;
     private com.google.spanner.admin.database.v1.Backup proto;
 
     BuilderImpl(BackupId id) {
@@ -125,12 +122,6 @@ public class BackupInfo {
     @Override
     public Builder setExpireTime(Timestamp expireTime) {
       this.expireTime = Preconditions.checkNotNull(expireTime);
-      return this;
-    }
-
-    @Override
-    public Builder setSourceBackup(String sourceBackup) {
-      this.sourceBackup = Preconditions.checkNotNull(sourceBackup);
       return this;
     }
 

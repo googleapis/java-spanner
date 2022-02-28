@@ -1613,51 +1613,6 @@ public class SpannerSample {
   }
   // [END spanner_create_backup]
 
-  // [START spanner_copy_backup]
-  static void copyBackup(DatabaseAdminClient dbAdminClient,
-      BackupId backupId, String sourceBackupId) {
-
-    // Creates a copy backup of an existing backup with tables
-    Backup backup = dbAdminClient
-            .newBackupBuilder(backupId)
-            .setSourceBackup(sourceBackupId)
-            .build();
-
-    Timestamp expireTime = Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
-            System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14), TimeUnit.MILLISECONDS));
-
-    // Initiate the requefst which returns an OperationFuture.
-    System.out.println("Copying backup [" + backup.getId() + "]...");
-    OperationFuture<Backup, CopyBackupMetadata> op = dbAdminClient.copyBackup(backup);
-    try {
-      // Wait for the backup operation to complete.
-      backup = op.get();
-      System.out.println("Copied backup [" + backup.getId() + "]");
-    } catch (ExecutionException e) {
-      throw (SpannerException) e.getCause();
-    } catch (InterruptedException e) {
-      throw SpannerExceptionFactory.propagateInterrupt(e);
-    }
-
-    // Reload the metadata of the backup from the server.
-    backup = backup.reload();
-    System.out.println(
-            String.format(
-                    "Backup %s of size %d bytes was copied at %s for version of database at %s",
-                    backup.getId().getName(),
-                    backup.getSize(),
-                    LocalDateTime.ofEpochSecond(
-                            backup.getProto().getCreateTime().getSeconds(),
-                            backup.getProto().getCreateTime().getNanos(),
-                            OffsetDateTime.now().getOffset()),
-                    LocalDateTime.ofEpochSecond(
-                            backup.getProto().getVersionTime().getSeconds(),
-                            backup.getProto().getVersionTime().getNanos(),
-                            OffsetDateTime.now().getOffset())
-            ));
-  }
-  // [END spanner_copy_backup]
-
   // [START spanner_cancel_backup_create]
   static void cancelCreateBackup(
       DatabaseAdminClient dbAdminClient, DatabaseId databaseId, BackupId backupId) {

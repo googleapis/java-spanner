@@ -302,31 +302,31 @@ public class BackupTest {
 
   private Backup createBackup() {
     com.google.spanner.admin.database.v1.Backup proto =
-            com.google.spanner.admin.database.v1.Backup.newBuilder()
-                    .setName(NAME)
-                    .setDatabase(DB)
-                    .setExpireTime(
-                            com.google.protobuf.Timestamp.newBuilder().setSeconds(1000L).setNanos(1000).build())
-                    .setVersionTime(
-                            com.google.protobuf.Timestamp.newBuilder().setSeconds(2000L).setNanos(2000).build())
-                    .setEncryptionInfo(ENCRYPTION_INFO)
-                    .setState(com.google.spanner.admin.database.v1.Backup.State.CREATING)
-                    .build();
+        com.google.spanner.admin.database.v1.Backup.newBuilder()
+            .setName(NAME)
+            .setDatabase(DB)
+            .setExpireTime(
+                com.google.protobuf.Timestamp.newBuilder().setSeconds(1000L).setNanos(1000).build())
+            .setVersionTime(
+                com.google.protobuf.Timestamp.newBuilder().setSeconds(2000L).setNanos(2000).build())
+            .setEncryptionInfo(ENCRYPTION_INFO)
+            .setState(com.google.spanner.admin.database.v1.Backup.State.CREATING)
+            .build();
     return Backup.fromProto(proto, dbClient);
   }
 
-    private Backup copyBackup() {
-      com.google.spanner.admin.database.v1.Backup proto =
-              com.google.spanner.admin.database.v1.Backup.newBuilder()
-                      .setName(NAME)
-                      .setDatabase(DB)
-                      .setExpireTime(
-                              com.google.protobuf.Timestamp.newBuilder().setSeconds(1000L).setNanos(1000).build())
-                      .setVersionTime(
-                              com.google.protobuf.Timestamp.newBuilder().setSeconds(2000L).setNanos(2000).build())
-                      .setEncryptionInfo(ENCRYPTION_INFO)
-                      .setState(com.google.spanner.admin.database.v1.Backup.State.CREATING)
-                      .build();
-      return Backup.fromProto(proto, dbClient);
+  private Backup copyBackup() {
+    com.google.spanner.admin.database.v1.Backup proto =
+        com.google.spanner.admin.database.v1.Backup.newBuilder()
+            .setName(NAME)
+            .setDatabase(DB)
+            .setExpireTime(
+                com.google.protobuf.Timestamp.newBuilder().setSeconds(1000L).setNanos(1000).build())
+            .setVersionTime(
+                com.google.protobuf.Timestamp.newBuilder().setSeconds(2000L).setNanos(2000).build())
+            .setEncryptionInfo(ENCRYPTION_INFO)
+            .setState(com.google.spanner.admin.database.v1.Backup.State.CREATING)
+            .build();
+    return Backup.fromProto(proto, dbClient);
   }
 }

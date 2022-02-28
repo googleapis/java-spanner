@@ -53,21 +53,21 @@ public class EncryptionConfigProtoMapper {
 
   /** Returns an encryption config to be used for a copy backup. */
   public static CopyBackupEncryptionConfig copyBackupEncryptionConfig(
-          BackupEncryptionConfig config) {
+      BackupEncryptionConfig config) {
     if (config instanceof CustomerManagedEncryption) {
       return CopyBackupEncryptionConfig.newBuilder()
-              .setEncryptionType(
-                      CopyBackupEncryptionConfig.EncryptionType.CUSTOMER_MANAGED_ENCRYPTION)
-              .setKmsKeyName(((CustomerManagedEncryption) config).getKmsKeyName())
-              .build();
+          .setEncryptionType(CopyBackupEncryptionConfig.EncryptionType.CUSTOMER_MANAGED_ENCRYPTION)
+          .setKmsKeyName(((CustomerManagedEncryption) config).getKmsKeyName())
+          .build();
     } else if (config instanceof GoogleDefaultEncryption) {
       return CopyBackupEncryptionConfig.newBuilder()
-              .setEncryptionType(CopyBackupEncryptionConfig.EncryptionType.GOOGLE_DEFAULT_ENCRYPTION)
-              .build();
+          .setEncryptionType(CopyBackupEncryptionConfig.EncryptionType.GOOGLE_DEFAULT_ENCRYPTION)
+          .build();
     } else if (config instanceof UseBackupEncryption) {
       return CopyBackupEncryptionConfig.newBuilder()
-              .setEncryptionType(CopyBackupEncryptionConfig.EncryptionType.USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION)
-              .build();
+          .setEncryptionType(
+              CopyBackupEncryptionConfig.EncryptionType.USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION)
+          .build();
     } else {
       throw new IllegalArgumentException("Unknown backup encryption configuration " + config);
     }
