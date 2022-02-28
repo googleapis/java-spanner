@@ -38,7 +38,9 @@ public class CopyBackupSample {
   public static void main(String[] args) {
     if (args.length != 4) {
       throw new IllegalArgumentException(
-          "Invalid number of arguments. Usage: CopyBackupSample <project-id> <instance-id> <source-backup-id> <destination-backup-id>");
+          "Invalid number of arguments. "
+              + "Usage: CopyBackupSample "
+              + "<project-id> <instance-id> <source-backup-id> <destination-backup-id>");
     }
     String projectId = args[0];
     String instanceId = args[1];
