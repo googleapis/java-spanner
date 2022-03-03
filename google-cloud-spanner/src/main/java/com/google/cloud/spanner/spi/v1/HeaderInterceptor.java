@@ -97,7 +97,7 @@ class HeaderInterceptor implements ClientInterceptor {
           long latency = Long.parseLong(matcher.group("dur"));
           measureMap.put(SPANNER_GFE_LATENCY, latency);
           measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 0L);
-	      measureMap.record(tagContext);
+          measureMap.record(tagContext);
         } catch (NumberFormatException e) {
           LOGGER.log(LEVEL, "Invalid server-timing object in header", matcher.group("dur"));
         }
