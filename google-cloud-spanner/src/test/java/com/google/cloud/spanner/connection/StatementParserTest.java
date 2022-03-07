@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
@@ -33,6 +34,7 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStateme
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.truth.Truth;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -42,7 +44,6 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -158,7 +159,7 @@ public class StatementParserTest {
 
   @Test
   public void testGoogleStandardSQLRemoveCommentsGsql() {
-    Assume.assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
 
     assertThat(parser.removeCommentsAndTrim("/*GSQL*/")).isEqualTo("");
     assertThat(parser.removeCommentsAndTrim("/*GSQL*/SELECT * FROM FOO"))
@@ -183,7 +184,7 @@ public class StatementParserTest {
 
   @Test
   public void testPostgreSQLDialectRemoveCommentsGsql() {
-    Assume.assumeTrue(dialect == Dialect.POSTGRESQL);
+    assumeTrue(dialect == Dialect.POSTGRESQL);
 
     assertThat(parser.removeCommentsAndTrim("/*GSQL*/")).isEqualTo("/*GSQL*/");
     assertThat(parser.removeCommentsAndTrim("/*GSQL*/SELECT * FROM FOO"))
@@ -273,7 +274,7 @@ public class StatementParserTest {
 
   @Test
   public void testPostgresSQLDialectDollarQuoted() {
-    Assume.assumeTrue(dialect == Dialect.POSTGRESQL);
+    assumeTrue(dialect == Dialect.POSTGRESQL);
 
     assertThat(parser.removeCommentsAndTrim("$$foo$$")).isEqualTo("$$foo$$");
     assertThat(parser.removeCommentsAndTrim("$$--foo$$")).isEqualTo("$$--foo$$");
@@ -296,7 +297,7 @@ public class StatementParserTest {
 
   @Test
   public void testPostgreSQLDialectSupportsEmbeddedComments() {
-    Assume.assumeTrue(dialect == Dialect.POSTGRESQL);
+    assumeTrue(dialect == Dialect.POSTGRESQL);
 
     final String sql =
         "/* This is a comment /* This is an embedded comment */ This is after the embedded comment */ SELECT 1";
@@ -305,7 +306,7 @@ public class StatementParserTest {
 
   @Test
   public void testGoogleStandardSQLDialectDoesNotSupportEmbeddedComments() {
-    Assume.assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
 
     final String sql =
         "/* This is a comment /* This is an embedded comment */ This is after the embedded comment */ SELECT 1";
@@ -315,7 +316,7 @@ public class StatementParserTest {
 
   @Test
   public void testPostgreSQLDialectUnterminatedComment() {
-    Assume.assumeTrue(dialect == Dialect.POSTGRESQL);
+    assumeTrue(dialect == Dialect.POSTGRESQL);
 
     final String sql =
         "/* This is a comment /* This is still a comment */ this is unterminated SELECT 1";
@@ -334,7 +335,7 @@ public class StatementParserTest {
 
   @Test
   public void testGoogleStandardSqlDialectDialectUnterminatedComment() {
-    Assume.assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
 
     final String sql =
         "/* This is a comment /* This is still a comment */ this is unterminated SELECT 1";
@@ -360,7 +361,7 @@ public class StatementParserTest {
 
   @Test
   public void testGoogleStandardSQLDialectStatementWithHashTagSingleLineComment() {
-    Assume.assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
 
     // Supports # based comments
     assertThat(
@@ -382,7 +383,7 @@ public class StatementParserTest {
 
   @Test
   public void testPostgreSQLDialectStatementWithHashTagSingleLineComment() {
-    Assume.assumeTrue(dialect == Dialect.POSTGRESQL);
+    assumeTrue(dialect == Dialect.POSTGRESQL);
 
     // Does not support # based comments
     assertThat(
@@ -615,7 +616,7 @@ public class StatementParserTest {
 
   @Test
   public void testGoogleStandardSQLDialectIsQuery_QueryHints() {
-    Assume.assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
 
     // Supports query hints, PostgreSQL dialect does NOT
     // Valid query hints.
@@ -663,7 +664,7 @@ public class StatementParserTest {
 
   @Test
   public void testIsUpdate_QueryHints() {
-    Assume.assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
 
     // Supports query hints, PostgreSQL dialect does NOT
     // Valid query hints.
@@ -1093,7 +1094,7 @@ public class StatementParserTest {
 
   @Test
   public void testGoogleStandardSQLDialectConvertPositionalParametersToNamedParameters() {
-    Assume.assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
 
     assertThat(
             parser.convertPositionalParametersToNamedParameters(
@@ -1203,7 +1204,7 @@ public class StatementParserTest {
 
   @Test
   public void testPostgreSQLDialectDialectConvertPositionalParametersToNamedParameters() {
-    Assume.assumeTrue(dialect == Dialect.POSTGRESQL);
+    assumeTrue(dialect == Dialect.POSTGRESQL);
 
     assertThat(
             parser.convertPositionalParametersToNamedParameters(
@@ -1316,6 +1317,25 @@ public class StatementParserTest {
                     + "and col6 not in ($6, $7, $8) "
                     + "and col7 in ($9, $10, $11) "
                     + "and col8 between $12 and $13")));
+  }
+
+  @Test
+  public void testPostgreSQLGetQueryParameters() {
+    assumeTrue(dialect == Dialect.POSTGRESQL);
+
+    PostgreSQLStatementParser parser = (PostgreSQLStatementParser) this.parser;
+    assertEquals(ImmutableSet.of(), parser.getQueryParameters("select * from foo"));
+    assertEquals(
+        ImmutableSet.of("$1"), parser.getQueryParameters("select * from foo where bar=$1"));
+    assertEquals(
+        ImmutableSet.of("$1", "$2", "$3"),
+        parser.getQueryParameters("select $2 from foo where bar=$1 and baz=$3"));
+    assertEquals(
+        ImmutableSet.of("$1", "$3"),
+        parser.getQueryParameters("select '$2' from foo where bar=$1 and baz in ($1, $3)"));
+    assertEquals(
+        ImmutableSet.of("$1"),
+        parser.getQueryParameters("select '$2' from foo where bar=$1 and baz=$foo"));
   }
 
   private void assertUnclosedLiteral(String sql) {
