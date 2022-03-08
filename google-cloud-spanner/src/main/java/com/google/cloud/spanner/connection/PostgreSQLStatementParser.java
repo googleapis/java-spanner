@@ -69,10 +69,10 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
           res.append(c);
         }
       } else if (multiLineCommentLevel > 0) {
-        if (sql.length() > index + 1 && c == ASTERIKS && sql.charAt(index + 1) == SLASH) {
+        if (sql.length() > index + 1 && c == ASTERISK && sql.charAt(index + 1) == SLASH) {
           multiLineCommentLevel--;
           index++;
-        } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERIKS) {
+        } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
           multiLineCommentLevel++;
           index++;
         }
@@ -83,7 +83,7 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
           isInSingleLineComment = true;
           index += 2;
           continue;
-        } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERIKS) {
+        } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
           multiLineCommentLevel++;
           index += 2;
           continue;
