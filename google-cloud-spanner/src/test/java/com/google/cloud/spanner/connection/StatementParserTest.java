@@ -322,11 +322,19 @@ public class StatementParserTest {
         .isEqualTo(StatementType.QUERY);
     assertThat(parser.parse(Statement.of("show variable autocommit")).getType())
         .isEqualTo(StatementType.CLIENT_SIDE);
-    assertThat(parser.parse(Statement.of("show autocommit")).getType())
-        .isEqualTo(StatementType.QUERY);
+    if (dialect == Dialect.POSTGRESQL) {
+      assertThat(parser.parse(Statement.of("show autocommit")).getType())
+          .isEqualTo(StatementType.CLIENT_SIDE);
+      assertThat(
+              parser.parse(Statement.of("show variable spanner.retry_aborts_internally")).getType())
+          .isEqualTo(StatementType.CLIENT_SIDE);
+    } else {
+      assertThat(parser.parse(Statement.of("show autocommit")).getType())
+          .isEqualTo(StatementType.QUERY);
+      assertThat(parser.parse(Statement.of("show variable retry_aborts_internally")).getType())
+          .isEqualTo(StatementType.CLIENT_SIDE);
+    }
 
-    assertThat(parser.parse(Statement.of("show variable retry_aborts_internally")).getType())
-        .isEqualTo(StatementType.CLIENT_SIDE);
     assertThat(parser.parse(Statement.of("show variable retry_aborts_internally bar")).getType())
         .isEqualTo(StatementType.QUERY);
   }

@@ -25,7 +25,7 @@ public class SqlTestScriptsGenerator {
   public static void main(String[] args) throws Exception {
     for (Dialect dialect : Dialect.values()) {
       ClientSideStatementsTest.generateTestScript(dialect);
-      ConnectionImplGeneratedSqlScriptTest.generateTestScript(dialect);
     }
+    ConnectionImplGeneratedSqlScriptTest.generateTestScript();
   }
 }

@@ -51,7 +51,8 @@ public abstract class AbstractSqlScriptTest {
               ConnectionOptions.newBuilder()
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
-                  .build(), dialect));
+                  .build(),
+              dialect));
     }
   }
 }

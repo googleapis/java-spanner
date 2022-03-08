@@ -30,7 +30,10 @@ import java.util.Set;
 public class SpannerStatementParser extends AbstractStatementParser {
 
   public SpannerStatementParser() throws CompileException {
-    super(Dialect.GOOGLE_STANDARD_SQL, Collections.unmodifiableSet(ClientSideStatements.getInstance(Dialect.GOOGLE_STANDARD_SQL).getCompiledStatements()));
+    super(
+        Dialect.GOOGLE_STANDARD_SQL,
+        Collections.unmodifiableSet(
+            ClientSideStatements.getInstance(Dialect.GOOGLE_STANDARD_SQL).getCompiledStatements()));
   }
 
   /**

@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.DialectNamespaceHelper.getNamespace;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -69,20 +70,25 @@ public class ConnectionStatementWithOneParameterTest {
 
   @Test
   public void testExecuteSetReadOnly() {
-    ParsedStatement subject = parser.parse(Statement.of("set readonly = true"));
+    ParsedStatement subject =
+        parser.parse(Statement.of(String.format("set %sreadonly = true", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
     when(executor.getConnection()).thenReturn(connection);
     when(executor.statementSetReadOnly(any(Boolean.class))).thenCallRealMethod();
     for (Boolean mode : new Boolean[] {Boolean.FALSE, Boolean.TRUE}) {
-      subject.getClientSideStatement().execute(executor, String.format("set readonly = %s", mode));
+      subject
+          .getClientSideStatement()
+          .execute(executor, String.format("set %sreadonly = %s", getNamespace(dialect), mode));
       verify(connection, times(1)).setReadOnly(mode);
     }
   }
 
   @Test
   public void testExecuteSetAutocommitDmlMode() {
-    ParsedStatement subject = parser.parse(Statement.of("set autocommit_dml_mode='foo'"));
+    ParsedStatement subject =
+        parser.parse(
+            Statement.of(String.format("set %sautocommit_dml_mode='foo'", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
     when(executor.getConnection()).thenReturn(connection);
@@ -90,7 +96,9 @@ public class ConnectionStatementWithOneParameterTest {
     for (AutocommitDmlMode mode : AutocommitDmlMode.values()) {
       subject
           .getClientSideStatement()
-          .execute(executor, String.format("set autocommit_dml_mode='%s'", mode.name()));
+          .execute(
+              executor,
+              String.format("set %sautocommit_dml_mode='%s'", getNamespace(dialect), mode.name()));
       verify(connection, times(1)).setAutocommitDmlMode(mode);
     }
   }
@@ -126,7 +134,9 @@ public class ConnectionStatementWithOneParameterTest {
 
   @Test
   public void testExecuteSetReadOnlyStaleness() {
-    ParsedStatement subject = parser.parse(Statement.of("set read_only_staleness='foo'"));
+    ParsedStatement subject =
+        parser.parse(
+            Statement.of(String.format("set %sread_only_staleness='foo'", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
     when(executor.getConnection()).thenReturn(connection);
@@ -142,7 +152,10 @@ public class ConnectionStatementWithOneParameterTest {
       subject
           .getClientSideStatement()
           .execute(
-              executor, String.format("set read_only_staleness='%s'", timestampBoundToString(val)));
+              executor,
+              String.format(
+                  "set %sread_only_staleness='%s'",
+                  getNamespace(dialect), timestampBoundToString(val)));
       verify(connection, times(1)).setReadOnlyStaleness(val);
     }
   }
@@ -166,7 +179,9 @@ public class ConnectionStatementWithOneParameterTest {
 
   @Test
   public void testExecuteSetOptimizerVersion() {
-    ParsedStatement subject = parser.parse(Statement.of("set optimizer_version='foo'"));
+    ParsedStatement subject =
+        parser.parse(
+            Statement.of(String.format("set %soptimizer_version='foo'", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
     when(executor.getConnection()).thenReturn(connection);
@@ -174,14 +189,19 @@ public class ConnectionStatementWithOneParameterTest {
     for (String version : new String[] {"1", "200", "", "LATEST"}) {
       subject
           .getClientSideStatement()
-          .execute(executor, String.format("set optimizer_version='%s'", version));
+          .execute(
+              executor,
+              String.format("set %soptimizer_version='%s'", getNamespace(dialect), version));
       verify(connection, times(1)).setOptimizerVersion(version);
     }
   }
 
   @Test
   public void testExecuteSetOptimizerStatisticsPackage() {
-    ParsedStatement subject = parser.parse(Statement.of("set optimizer_statistics_package='foo'"));
+    ParsedStatement subject =
+        parser.parse(
+            Statement.of(
+                String.format("set %soptimizer_statistics_package='foo'", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
     when(executor.getConnection()).thenReturn(connection);
@@ -190,7 +210,10 @@ public class ConnectionStatementWithOneParameterTest {
       subject
           .getClientSideStatement()
           .execute(
-              executor, String.format("set optimizer_statistics_package='%s'", statisticsPackage));
+              executor,
+              String.format(
+                  "set %soptimizer_statistics_package='%s'",
+                  getNamespace(dialect), statisticsPackage));
       verify(connection, times(1)).setOptimizerStatisticsPackage(statisticsPackage);
     }
   }

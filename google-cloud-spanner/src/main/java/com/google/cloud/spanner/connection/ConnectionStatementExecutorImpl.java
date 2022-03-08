@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.DialectNamespaceHelper.getNamespace;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.ABORT_BATCH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.BEGIN;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.COMMIT;
@@ -70,7 +71,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Duration;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -139,7 +140,10 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementShowReadOnly() {
-    return StatementResultImpl.resultSet("READONLY", getConnection().isReadOnly(), SHOW_READONLY);
+    return StatementResultImpl.resultSet(
+        String.format("%sREADONLY", getNamespace(connection.getDialect())),
+        getConnection().isReadOnly(),
+        SHOW_READONLY);
   }
 
   @Override
@@ -152,7 +156,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementShowRetryAbortsInternally() {
     return StatementResultImpl.resultSet(
-        "RETRY_ABORTS_INTERNALLY",
+        String.format("%sRETRY_ABORTS_INTERNALLY", getNamespace(connection.getDialect())),
         getConnection().isRetryAbortsInternally(),
         SHOW_RETRY_ABORTS_INTERNALLY);
   }
@@ -166,7 +170,9 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementShowAutocommitDmlMode() {
     return resultSet(
-        "AUTOCOMMIT_DML_MODE", getConnection().getAutocommitDmlMode(), SHOW_AUTOCOMMIT_DML_MODE);
+        String.format("%sAUTOCOMMIT_DML_MODE", getNamespace(connection.getDialect())),
+        getConnection().getAutocommitDmlMode(),
+        SHOW_AUTOCOMMIT_DML_MODE);
   }
 
   @Override
@@ -196,13 +202,17 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementShowReadTimestamp() {
     return resultSet(
-        "READ_TIMESTAMP", getConnection().getReadTimestampOrNull(), SHOW_READ_TIMESTAMP);
+        String.format("%sREAD_TIMESTAMP", getNamespace(connection.getDialect())),
+        getConnection().getReadTimestampOrNull(),
+        SHOW_READ_TIMESTAMP);
   }
 
   @Override
   public StatementResult statementShowCommitTimestamp() {
     return resultSet(
-        "COMMIT_TIMESTAMP", getConnection().getCommitTimestampOrNull(), SHOW_COMMIT_TIMESTAMP);
+        String.format("%sCOMMIT_TIMESTAMP", getNamespace(connection.getDialect())),
+        getConnection().getCommitTimestampOrNull(),
+        SHOW_COMMIT_TIMESTAMP);
   }
 
   @Override
@@ -215,13 +225,17 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     ResultSet resultSet =
         ResultSets.forRows(
             Type.struct(
-                StructField.of("COMMIT_TIMESTAMP", Type.timestamp()),
-                StructField.of("MUTATION_COUNT", Type.int64())),
-            Arrays.asList(
+                StructField.of(
+                    String.format("%sCOMMIT_TIMESTAMP", getNamespace(connection.getDialect())),
+                    Type.timestamp()),
+                StructField.of(
+                    String.format("%sMUTATION_COUNT", getNamespace(connection.getDialect())),
+                    Type.int64())),
+            Collections.singletonList(
                 Struct.newBuilder()
-                    .set("COMMIT_TIMESTAMP")
+                    .set(String.format("%sCOMMIT_TIMESTAMP", getNamespace(connection.getDialect())))
                     .to(response == null ? null : response.getCommitTimestamp())
-                    .set("MUTATION_COUNT")
+                    .set(String.format("%sMUTATION_COUNT", getNamespace(connection.getDialect())))
                     .to(stats == null ? null : stats.getMutationCount())
                     .build()));
     return StatementResultImpl.of(resultSet, SHOW_COMMIT_RESPONSE);
@@ -237,7 +251,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   public StatementResult statementShowReadOnlyStaleness() {
     TimestampBound staleness = getConnection().getReadOnlyStaleness();
     return resultSet(
-        "READ_ONLY_STALENESS",
+        String.format("%sREAD_ONLY_STALENESS", getNamespace(connection.getDialect())),
         ReadOnlyStalenessUtil.timestampBoundToString(staleness),
         SHOW_READ_ONLY_STALENESS);
   }
@@ -251,7 +265,9 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementShowOptimizerVersion() {
     return resultSet(
-        "OPTIMIZER_VERSION", getConnection().getOptimizerVersion(), SHOW_OPTIMIZER_VERSION);
+        String.format("%sOPTIMIZER_VERSION", getNamespace(connection.getDialect())),
+        getConnection().getOptimizerVersion(),
+        SHOW_OPTIMIZER_VERSION);
   }
 
   @Override
@@ -263,7 +279,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementShowOptimizerStatisticsPackage() {
     return resultSet(
-        "OPTIMIZER_STATISTICS_PACKAGE",
+        String.format("%sOPTIMIZER_STATISTICS_PACKAGE", getNamespace(connection.getDialect())),
         getConnection().getOptimizerStatisticsPackage(),
         SHOW_OPTIMIZER_STATISTICS_PACKAGE);
   }
@@ -277,7 +293,9 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementShowReturnCommitStats() {
     return resultSet(
-        "RETURN_COMMIT_STATS", getConnection().isReturnCommitStats(), SHOW_RETURN_COMMIT_STATS);
+        String.format("%sRETURN_COMMIT_STATS", getNamespace(connection.getDialect())),
+        getConnection().isReturnCommitStats(),
+        SHOW_RETURN_COMMIT_STATS);
   }
 
   @Override
@@ -289,7 +307,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementShowStatementTag() {
     return resultSet(
-        "STATEMENT_TAG",
+        String.format("%sSTATEMENT_TAG", getNamespace(connection.getDialect())),
         MoreObjects.firstNonNull(getConnection().getStatementTag(), ""),
         SHOW_STATEMENT_TAG);
   }
@@ -303,7 +321,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementShowTransactionTag() {
     return resultSet(
-        "TRANSACTION_TAG",
+        String.format("%sTRANSACTION_TAG", getNamespace(connection.getDialect())),
         MoreObjects.firstNonNull(getConnection().getTransactionTag(), ""),
         SHOW_TRANSACTION_TAG);
   }
@@ -366,7 +384,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementShowRPCPriority() {
     return resultSet(
-        "RPC_PRIORITY",
+        String.format("%sRPC_PRIORITY", getNamespace(connection.getDialect())),
         getConnection().getRPCPriority() == null
             ? RequestOptions.Priority.PRIORITY_UNSPECIFIED
             : getConnection().getRPCPriority(),

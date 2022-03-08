@@ -29,15 +29,13 @@ import com.google.protobuf.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class DurationConverterTest {
-  @Parameter
-  public Dialect dialect;
+  @Parameter public Dialect dialect;
 
   @Parameters(name = "dialect = {0}")
   public static Object[] data() {
@@ -46,7 +44,8 @@ public class DurationConverterTest {
 
   @Test
   public void testConvert() throws CompileException {
-    String allowedValues = ReadOnlyStalenessConverterTest.getAllowedValues(DurationConverter.class, dialect);
+    String allowedValues =
+        ReadOnlyStalenessConverterTest.getAllowedValues(DurationConverter.class, dialect);
     assertThat(allowedValues, is(notNullValue()));
     DurationConverter converter = new DurationConverter(allowedValues);
     assertThat(

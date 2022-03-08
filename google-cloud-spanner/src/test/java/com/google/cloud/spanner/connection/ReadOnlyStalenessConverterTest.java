@@ -31,15 +31,13 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class ReadOnlyStalenessConverterTest {
-  @Parameter
-  public Dialect dialect;
+  @Parameter public Dialect dialect;
 
   @Parameters(name = "dialect = {0}")
   public static Object[] data() {
@@ -49,7 +47,8 @@ public class ReadOnlyStalenessConverterTest {
   static String getAllowedValues(
       Class<? extends ClientSideStatementValueConverter<?>> converterClass, Dialect dialect)
       throws CompileException {
-    Set<ClientSideStatementImpl> statements = ClientSideStatements.getInstance(dialect).getCompiledStatements();
+    Set<ClientSideStatementImpl> statements =
+        ClientSideStatements.getInstance(dialect).getCompiledStatements();
     for (ClientSideStatementImpl statement : statements) {
       if (statement.getSetStatement() != null
           && converterClass.getName().endsWith(statement.getSetStatement().getConverterName())) {

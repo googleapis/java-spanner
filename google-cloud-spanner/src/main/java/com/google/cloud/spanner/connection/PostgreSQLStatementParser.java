@@ -27,7 +27,10 @@ import java.util.Collections;
 @InternalApi
 public class PostgreSQLStatementParser extends AbstractStatementParser {
   PostgreSQLStatementParser() throws CompileException {
-    super(Dialect.POSTGRESQL, Collections.unmodifiableSet(ClientSideStatements.getInstance(Dialect.POSTGRESQL).getCompiledStatements()));
+    super(
+        Dialect.POSTGRESQL,
+        Collections.unmodifiableSet(
+            ClientSideStatements.getInstance(Dialect.POSTGRESQL).getCompiledStatements()));
   }
 
   /**

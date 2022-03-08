@@ -27,15 +27,13 @@ import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileExcept
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.AutocommitDmlModeConverter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class AutocommitDmlModeConverterTest {
-  @Parameter
-  public Dialect dialect;
+  @Parameter public Dialect dialect;
 
   @Parameters(name = "dialect = {0}")
   public static Object[] data() {

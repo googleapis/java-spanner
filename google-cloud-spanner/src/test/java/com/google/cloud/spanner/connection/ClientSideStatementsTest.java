@@ -19,14 +19,11 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConnection;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,25 +48,27 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
       case POSTGRESQL:
         return "PG_ClientSideStatementsTest.sql";
       default:
-        throw SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Unknown or unsupported dialect: " + dialect);
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, "Unknown or unsupported dialect: " + dialect);
     }
   }
 
   @Test
   public void testExecuteClientSideStatementsScript() throws Exception {
     SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider(dialect));
-    verifier.verifyStatementsInFile("ClientSideStatementsTest.sql", getClass(), true);
+    verifier.verifyStatementsInFile(getScriptFile(dialect), getClass(), true);
   }
 
   private static PrintWriter writer;
 
   /** Generates the test script file */
   static void generateTestScript(Dialect dialect) throws Exception {
+    AbstractStatementParser parser = AbstractStatementParser.getInstance(dialect);
     try {
       openLog(dialect);
       ClientSideStatements statements = ClientSideStatements.getInstance(dialect);
       for (ClientSideStatementImpl statement : statements.getCompiledStatements()) {
-        generateTestStatements(statement);
+        generateTestStatements(parser, statement);
       }
     } finally {
       closeLog();
@@ -99,12 +98,15 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
   }
 
   private static void openLog(Dialect dialect) {
-    File file = new File(ClientSideStatementsTest.class.getResource(getScriptFile(dialect)).getPath());
     try {
       writer =
           new PrintWriter(
               new OutputStreamWriter(
-                  new FileOutputStream(file, false), StandardCharsets.UTF_8),
+                  new FileOutputStream(
+                      "src/test/resources/com/google/cloud/spanner/connection/"
+                          + getScriptFile(dialect),
+                      false),
+                  StandardCharsets.UTF_8),
               true);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -119,7 +121,8 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
   }
 
   /** Generates test statements for all {@link ClientSideStatement}s */
-  private static void generateTestStatements(ClientSideStatementImpl statement) {
+  private static void generateTestStatements(
+      AbstractStatementParser parser, ClientSideStatementImpl statement) {
     for (String sql : statement.getExampleStatements()) {
       log(statement.getExamplePrerequisiteStatements(), sql);
       log(statement.getExamplePrerequisiteStatements(), upper(sql));
@@ -141,7 +144,9 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
       log(
           statement.getExamplePrerequisiteStatements(),
           withInvalidSuffix(sql),
-          statement.isQuery() ? ErrorCode.UNIMPLEMENTED : ErrorCode.INVALID_ARGUMENT);
+          parser.isQuery(withInvalidSuffix(sql))
+              ? ErrorCode.UNIMPLEMENTED
+              : ErrorCode.INVALID_ARGUMENT);
 
       final String[] replacements = {
         "%", "_", "&", "$", "@", "!", "*", "(", ")", "-", "+", "-#", "/", "\\", "?", "-/", "/#",
@@ -155,11 +160,15 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
         log(
             statement.getExamplePrerequisiteStatements(),
             withSuffix(replacement, sql),
-            statement.isQuery() ? ErrorCode.UNIMPLEMENTED : ErrorCode.INVALID_ARGUMENT);
+            parser.isQuery(withSuffix(replacement, sql))
+                ? ErrorCode.UNIMPLEMENTED
+                : ErrorCode.INVALID_ARGUMENT);
         log(
             statement.getExamplePrerequisiteStatements(),
             replaceLastSpaceWith(replacement, sql),
-            statement.isQuery() ? ErrorCode.UNIMPLEMENTED : ErrorCode.INVALID_ARGUMENT);
+            parser.isQuery(replaceLastSpaceWith(replacement, sql))
+                ? ErrorCode.UNIMPLEMENTED
+                : ErrorCode.INVALID_ARGUMENT);
       }
     }
   }

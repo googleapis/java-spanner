@@ -22,7 +22,6 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.gson.Gson;
 import java.io.InputStreamReader;
-import java.util.Objects;
 import java.util.Set;
 
 /** This class reads and parses the {@link ClientSideStatement}s from the json file. */
@@ -39,7 +38,8 @@ class ClientSideStatements {
       case POSTGRESQL:
         return PG_INSTANCE;
       default:
-        throw SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Unknown or unsupported dialect: " + dialect);
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, "Unknown or unsupported dialect: " + dialect);
     }
   }
 
@@ -50,7 +50,7 @@ class ClientSideStatements {
     Gson gson = new Gson();
     return gson.fromJson(
         new InputStreamReader(
-                ClientSideStatements.class.getResourceAsStream(STATEMENTS_DEFINITION_FILE)),
+            ClientSideStatements.class.getResourceAsStream(STATEMENTS_DEFINITION_FILE)),
         ClientSideStatements.class);
   }
 
@@ -61,7 +61,7 @@ class ClientSideStatements {
     Gson gson = new Gson();
     return gson.fromJson(
         new InputStreamReader(
-                ClientSideStatements.class.getResourceAsStream(PG_STATEMENTS_DEFINITION_FILE)),
+            ClientSideStatements.class.getResourceAsStream(PG_STATEMENTS_DEFINITION_FILE)),
         ClientSideStatements.class);
   }
 
