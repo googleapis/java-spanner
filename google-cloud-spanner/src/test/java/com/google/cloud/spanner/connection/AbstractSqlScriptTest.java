@@ -50,8 +50,8 @@ public abstract class AbstractSqlScriptTest {
           ConnectionImplTest.createConnection(
               ConnectionOptions.newBuilder()
                   .setCredentials(NoCredentials.getInstance())
-                  .setUri(ConnectionImplTest.URI + ";dialect=" + dialect.name())
-                  .build()));
+                  .setUri(ConnectionImplTest.URI)
+                  .build(), dialect));
     }
   }
 }

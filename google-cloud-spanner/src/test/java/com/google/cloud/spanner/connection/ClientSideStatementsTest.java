@@ -16,12 +16,17 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConnection;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,21 +44,30 @@ import org.junit.Test;
  */
 public class ClientSideStatementsTest extends AbstractSqlScriptTest {
 
+  private static String getScriptFile(Dialect dialect) {
+    switch (dialect) {
+      case GOOGLE_STANDARD_SQL:
+        return "ClientSideStatementsTest.sql";
+      case POSTGRESQL:
+        return "PG_ClientSideStatementsTest.sql";
+      default:
+        throw SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Unknown or unsupported dialect: " + dialect);
+    }
+  }
+
   @Test
   public void testExecuteClientSideStatementsScript() throws Exception {
     SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider(dialect));
     verifier.verifyStatementsInFile("ClientSideStatementsTest.sql", getClass(), true);
   }
 
-  private static final String SCRIPT_FILE =
-      "src/test/resources/com/google/cloud/spanner/connection/ClientSideStatementsTest.sql";
   private static PrintWriter writer;
 
   /** Generates the test script file */
-  static void generateTestScript() throws Exception {
+  static void generateTestScript(Dialect dialect) throws Exception {
     try {
-      openLog();
-      ClientSideStatements statements = ClientSideStatements.INSTANCE;
+      openLog(dialect);
+      ClientSideStatements statements = ClientSideStatements.getInstance(dialect);
       for (ClientSideStatementImpl statement : statements.getCompiledStatements()) {
         generateTestStatements(statement);
       }
@@ -84,12 +98,13 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
     writer.println(statement + ";");
   }
 
-  private static void openLog() {
+  private static void openLog(Dialect dialect) {
+    File file = new File(ClientSideStatementsTest.class.getResource(getScriptFile(dialect)).getPath());
     try {
       writer =
           new PrintWriter(
               new OutputStreamWriter(
-                  new FileOutputStream(SCRIPT_FILE, false), StandardCharsets.UTF_8),
+                  new FileOutputStream(file, false), StandardCharsets.UTF_8),
               true);
     } catch (IOException e) {
       throw new RuntimeException(e);

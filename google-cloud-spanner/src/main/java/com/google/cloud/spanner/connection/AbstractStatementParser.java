@@ -322,14 +322,9 @@ public abstract class AbstractStatementParser {
   private final Dialect dialect;
   private final Set<ClientSideStatementImpl> statements;
 
-  AbstractStatementParser(Dialect dialect) {
+  AbstractStatementParser(Dialect dialect, Set<ClientSideStatementImpl> statements) {
     this.dialect = dialect;
-    try {
-      statements =
-          Collections.unmodifiableSet(ClientSideStatements.INSTANCE.getCompiledStatements());
-    } catch (CompileException e) {
-      throw new RuntimeException(e);
-    }
+    this.statements = statements;
   }
 
   /**

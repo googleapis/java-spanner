@@ -220,14 +220,18 @@ public class ConnectionImplTest {
     }
   }
 
-  public static ConnectionImpl createConnection(final ConnectionOptions options) {
+  static ConnectionImpl createConnection(final ConnectionOptions options) {
+    return createConnection(options, Dialect.GOOGLE_STANDARD_SQL);
+  }
+
+  public static ConnectionImpl createConnection(final ConnectionOptions options, Dialect dialect) {
     Spanner spanner = mock(Spanner.class);
     SpannerPool spannerPool = mock(SpannerPool.class);
     when(spannerPool.getSpanner(any(ConnectionOptions.class), any(ConnectionImpl.class)))
         .thenReturn(spanner);
     DdlClient ddlClient = createDefaultMockDdlClient();
     DatabaseClient dbClient = mock(DatabaseClient.class);
-    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
+    when(dbClient.getDialect()).thenReturn(dialect);
     ReadOnlyTransaction singleUseReadOnlyTx = mock(ReadOnlyTransaction.class);
 
     ResultSet mockResultSetWithStats = createSelect1MockResultSet();

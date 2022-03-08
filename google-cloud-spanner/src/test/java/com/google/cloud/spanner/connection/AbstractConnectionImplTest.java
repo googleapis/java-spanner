@@ -26,14 +26,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -44,23 +47,35 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * This test class and all its subclasses are used to generate the file
  * ConnectionImplGeneratedSqlScriptTest.sql.
  */
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public abstract class AbstractConnectionImplTest {
   public static final String UPDATE = "UPDATE foo SET bar=1";
   public static final String SELECT = "SELECT 1 AS TEST";
   public static final String DDL =
       "CREATE TABLE foo (id INT64 NOT NULL, name STRING(100)) PRIMARY KEY (id)";
+
+  @Parameter
+  public Dialect dialect;
+
+  @Parameters(name = "dialect = {0}")
+  public static Object[] data() {
+    return Dialect.values();
+  }
 
   interface ConnectionConsumer {
     void accept(Connection connection);
@@ -76,6 +91,19 @@ public abstract class AbstractConnectionImplTest {
    */
   private static final String LOG_FILE =
       "src/test/resources/com/google/cloud/spanner/connection/ConnectionImplGeneratedSqlScriptTest.sql";
+  private static final String PG_LOG_FILE =
+      "src/test/resources/com/google/cloud/spanner/connection/PG_ConnectionImplGeneratedSqlScriptTest.sql";
+
+  private static String getLogFile(Dialect dialect) {
+    switch (dialect) {
+      case GOOGLE_STANDARD_SQL:
+        return LOG_FILE;
+      case POSTGRESQL:
+        return PG_LOG_FILE;
+      default:
+        throw SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Unknown or unsupported dialect: " + dialect);
+    }
+  }
 
   private static final String DO_LOG_PROPERTY = "do_log_statements";
   private static boolean doLog;
@@ -103,8 +131,8 @@ public abstract class AbstractConnectionImplTest {
   AbstractConnectionImplTest() {}
 
   /** Makes an empty test script. Can be called before a new script is to be generated. */
-  static void emptyScript() {
-    openLog(false);
+  static void emptyScript(Dialect dialect) {
+    openLog(false, dialect);
     closeLog();
   }
 
@@ -114,22 +142,24 @@ public abstract class AbstractConnectionImplTest {
     }
   }
 
-  @BeforeClass
-  public static void openLog() {
+  @Before
+  public void openLog() {
     doLog = Boolean.parseBoolean(System.getProperty(DO_LOG_PROPERTY, "false"));
     if (doLog) {
-      openLog(true);
+      if (writer == null) {
+        openLog(true, dialect);
+      }
     } else {
       writer = null;
     }
   }
 
-  private static void openLog(boolean append) {
+  private static void openLog(boolean append, Dialect dialect) {
     try {
       writer =
           new PrintWriter(
               new OutputStreamWriter(
-                  new FileOutputStream(LOG_FILE, append), StandardCharsets.UTF_8),
+                  new FileOutputStream(getLogFile(dialect), append), StandardCharsets.UTF_8),
               true);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -140,6 +170,7 @@ public abstract class AbstractConnectionImplTest {
   public static void closeLog() {
     if (writer != null) {
       writer.close();
+      writer = null;
     }
   }
 

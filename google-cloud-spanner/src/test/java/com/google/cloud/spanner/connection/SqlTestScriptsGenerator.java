@@ -16,12 +16,16 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.Dialect;
+
 /** Class that runs all generators of SQL test scripts for the Connection API */
 public class SqlTestScriptsGenerator {
 
   /** Main method for generating the test script */
   public static void main(String[] args) throws Exception {
-    ClientSideStatementsTest.generateTestScript();
-    ConnectionImplGeneratedSqlScriptTest.generateTestScript();
+    for (Dialect dialect : Dialect.values()) {
+      ClientSideStatementsTest.generateTestScript(dialect);
+      ConnectionImplGeneratedSqlScriptTest.generateTestScript(dialect);
+    }
   }
 }

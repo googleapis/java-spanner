@@ -20,12 +20,14 @@ import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.common.base.Preconditions;
+import java.util.Collections;
 
 @InternalApi
 public class PostgreSQLStatementParser extends AbstractStatementParser {
-  PostgreSQLStatementParser() {
-    super(Dialect.POSTGRESQL);
+  PostgreSQLStatementParser() throws CompileException {
+    super(Dialect.POSTGRESQL, Collections.unmodifiableSet(ClientSideStatements.getInstance(Dialect.POSTGRESQL).getCompiledStatements()));
   }
 
   /**

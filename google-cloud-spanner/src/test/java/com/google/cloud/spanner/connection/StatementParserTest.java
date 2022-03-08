@@ -875,7 +875,7 @@ public class StatementParserTest {
   }
 
   private Set<ClientSideStatementImpl> getAllStatements() throws CompileException {
-    return ClientSideStatements.INSTANCE.getCompiledStatements();
+    return ClientSideStatements.getInstance(dialect).getCompiledStatements();
   }
 
   private <T extends ClientSideStatementImpl> void assertParsing(
