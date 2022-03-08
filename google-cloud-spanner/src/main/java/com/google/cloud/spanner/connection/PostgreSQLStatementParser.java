@@ -56,94 +56,43 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
   @Override
   String removeCommentsAndTrimInternal(String sql) {
     Preconditions.checkNotNull(sql);
-    String currentTag = null;
-    boolean isInQuoted = false;
     boolean isInSingleLineComment = false;
     int multiLineCommentLevel = 0;
-    char startQuote = 0;
-    boolean lastCharWasEscapeChar = false;
     StringBuilder res = new StringBuilder(sql.length());
     int index = 0;
     while (index < sql.length()) {
       char c = sql.charAt(index);
-      if (isInQuoted) {
-        if ((c == '\n' || c == '\r') && startQuote != DOLLAR) {
-          throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
-        } else if (c == startQuote) {
-          if (c == DOLLAR) {
-            // Check if this is the end of the current dollar quoted string.
-            String tag = parseDollarQuotedString(sql, index + 1);
-            if (tag != null && tag.equals(currentTag)) {
-              index += tag.length() + 1;
-              res.append(c);
-              res.append(tag);
-              isInQuoted = false;
-              startQuote = 0;
-            }
-          } else if (lastCharWasEscapeChar) {
-            lastCharWasEscapeChar = false;
-          } else if (sql.length() > index + 1 && sql.charAt(index + 1) == startQuote) {
-            // This is an escaped quote (e.g. 'foo''bar')
-            res.append(c);
-            index++;
-          } else {
-            isInQuoted = false;
-            startQuote = 0;
-          }
-        } else if (c == '\\') {
-          lastCharWasEscapeChar = true;
-        } else {
-          lastCharWasEscapeChar = false;
+      if (isInSingleLineComment) {
+        if (c == '\n') {
+          isInSingleLineComment = false;
+          // Include the line feed in the result.
+          res.append(c);
         }
-        res.append(c);
+      } else if (multiLineCommentLevel > 0) {
+        if (sql.length() > index + 1 && c == ASTERISK && sql.charAt(index + 1) == SLASH) {
+          multiLineCommentLevel--;
+          index++;
+        } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
+          multiLineCommentLevel++;
+          index++;
+        }
       } else {
-        // We are not in a quoted string.
-        if (isInSingleLineComment) {
-          if (c == '\n') {
-            isInSingleLineComment = false;
-            // Include the line feed in the result.
-            res.append(c);
-          }
-        } else if (multiLineCommentLevel > 0) {
-          if (sql.length() > index + 1 && c == ASTERIKS && sql.charAt(index + 1) == SLASH) {
-            multiLineCommentLevel--;
-            index++;
-          } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERIKS) {
-            multiLineCommentLevel++;
-            index++;
-          }
+        // Check for -- which indicates the start of a single-line comment.
+        if (sql.length() > index + 1 && c == HYPHEN && sql.charAt(index + 1) == HYPHEN) {
+          // This is a single line comment.
+          isInSingleLineComment = true;
+          index += 2;
+          continue;
+        } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
+          multiLineCommentLevel++;
+          index += 2;
+          continue;
         } else {
-          // Check for -- which indicates the start of a single-line comment.
-          if (sql.length() > index + 1 && c == HYPHEN && sql.charAt(index + 1) == HYPHEN) {
-            // This is a single line comment.
-            isInSingleLineComment = true;
-          } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERIKS) {
-            multiLineCommentLevel++;
-            index++;
-          } else {
-            if (c == SINGLE_QUOTE || c == DOUBLE_QUOTE) {
-              isInQuoted = true;
-              startQuote = c;
-            } else if (c == DOLLAR) {
-              currentTag = parseDollarQuotedString(sql, index + 1);
-              if (currentTag != null) {
-                isInQuoted = true;
-                startQuote = DOLLAR;
-                index += currentTag.length() + 1;
-                res.append(c);
-                res.append(currentTag);
-              }
-            }
-            res.append(c);
-          }
+          index = skip(sql, index, res);
+          continue;
         }
       }
       index++;
-    }
-    if (isInQuoted) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
     }
     if (multiLineCommentLevel > 0) {
       throw SpannerExceptionFactory.newSpannerException(
@@ -184,73 +133,78 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
   ParametersInfo convertPositionalParametersToNamedParametersInternal(char paramChar, String sql) {
     Preconditions.checkNotNull(sql);
     final String namedParamPrefix = "$";
-    String currentTag = null;
-    boolean isInQuoted = false;
-    char startQuote = 0;
-    boolean lastCharWasEscapeChar = false;
     StringBuilder named = new StringBuilder(sql.length() + countOccurrencesOf(paramChar, sql));
     int index = 0;
     int paramIndex = 1;
     while (index < sql.length()) {
       char c = sql.charAt(index);
-      if (isInQuoted) {
-        if ((c == '\n' || c == '\r') && startQuote != DOLLAR) {
-          throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
-        } else if (c == startQuote) {
-          if (c == DOLLAR) {
-            // Check if this is the end of the current dollar quoted string.
-            String tag = parseDollarQuotedString(sql, index + 1);
-            if (tag != null && tag.equals(currentTag)) {
-              index += tag.length() + 1;
-              named.append(c);
-              named.append(tag);
-              isInQuoted = false;
-              startQuote = 0;
-            }
-          } else if (lastCharWasEscapeChar) {
-            lastCharWasEscapeChar = false;
-          } else if (sql.length() > index + 1 && sql.charAt(index + 1) == startQuote) {
-            // This is an escaped quote (e.g. 'foo''bar')
-            named.append(c);
-            index++;
-          } else {
-            isInQuoted = false;
-            startQuote = 0;
-          }
-        } else if (c == '\\') {
-          lastCharWasEscapeChar = true;
-        } else {
-          lastCharWasEscapeChar = false;
-        }
-        named.append(c);
+      if (c == paramChar) {
+        named.append(namedParamPrefix).append(paramIndex);
+        paramIndex++;
+        index++;
       } else {
-        if (c == paramChar) {
-          named.append(namedParamPrefix + paramIndex);
-          paramIndex++;
-        } else {
-          if (c == SINGLE_QUOTE || c == DOUBLE_QUOTE) {
-            isInQuoted = true;
-            startQuote = c;
-          } else if (c == DOLLAR) {
-            currentTag = parseDollarQuotedString(sql, index + 1);
-            if (currentTag != null) {
-              isInQuoted = true;
-              startQuote = DOLLAR;
-              index += currentTag.length() + 1;
-              named.append(c);
-              named.append(currentTag);
-            }
-          }
-          named.append(c);
-        }
+        index = skip(sql, index, named);
       }
-      index++;
-    }
-    if (isInQuoted) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
     }
     return new ParametersInfo(paramIndex - 1, named.toString());
+  }
+
+  private int skip(String sql, int currentIndex, StringBuilder result) {
+    char currentChar = sql.charAt(currentIndex);
+    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+      result.append(currentChar);
+      return skipQuoted(sql, currentIndex, currentChar, result);
+    } else if (currentChar == DOLLAR) {
+      String dollarTag = parseDollarQuotedString(sql, currentIndex + 1);
+      if (dollarTag != null) {
+        result.append(currentChar).append(dollarTag).append(currentChar);
+        return skipQuoted(
+            sql, currentIndex + dollarTag.length() + 1, currentChar, dollarTag, result);
+      }
+    }
+
+    result.append(currentChar);
+    return currentIndex + 1;
+  }
+
+  private int skipQuoted(String sql, int startIndex, char startQuote, StringBuilder result) {
+    return skipQuoted(sql, startIndex, startQuote, null, result);
+  }
+
+  private int skipQuoted(
+      String sql, int startIndex, char startQuote, String dollarTag, StringBuilder result) {
+    boolean lastCharWasEscapeChar = false;
+    int currentIndex = startIndex + 1;
+    while (currentIndex < sql.length()) {
+      char currentChar = sql.charAt(currentIndex);
+      if (currentChar == startQuote) {
+        if (currentChar == DOLLAR) {
+          // Check if this is the end of the current dollar quoted string.
+          String tag = parseDollarQuotedString(sql, currentIndex + 1);
+          if (tag != null && tag.equals(dollarTag)) {
+            result.append(currentChar).append(tag).append(currentChar);
+            return currentIndex + tag.length() + 2;
+          }
+        } else if (lastCharWasEscapeChar) {
+          lastCharWasEscapeChar = false;
+        } else if (sql.length() > currentIndex + 1 && sql.charAt(currentIndex + 1) == startQuote) {
+          // This is an escaped quote (e.g. 'foo''bar')
+          result.append(currentChar).append(currentChar);
+          currentIndex += 2;
+          continue;
+        } else {
+          result.append(currentChar);
+          return currentIndex + 1;
+        }
+      } else if (currentChar == '\\') {
+        lastCharWasEscapeChar = true;
+      } else {
+        lastCharWasEscapeChar = false;
+      }
+      currentIndex++;
+      result.append(currentChar);
+    }
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
   }
 }
