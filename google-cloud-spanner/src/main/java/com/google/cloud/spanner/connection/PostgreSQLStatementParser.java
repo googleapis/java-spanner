@@ -21,6 +21,9 @@ import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.common.base.Preconditions;
+import java.util.HashSet;
+import java.util.Set;
+import javax.annotation.Nullable;
 
 @InternalApi
 public class PostgreSQLStatementParser extends AbstractStatementParser {
@@ -149,30 +152,76 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
     return new ParametersInfo(paramIndex - 1, named.toString());
   }
 
-  private int skip(String sql, int currentIndex, StringBuilder result) {
+  /**
+   * Note: This is an internal API and breaking changes can be made without prior notice.
+   *
+   * <p>Returns the PostgreSQL-style query parameters ($1, $2, ...) in the given SQL string. The
+   * SQL-string is assumed to not contain any comments. Use {@link #removeCommentsAndTrim(String)}
+   * to remove all comments before calling this method. Occurrences of query-parameter like strings
+   * inside quoted identifiers or string literals are ignored.
+   *
+   * <p>The following example will return a set containing ("$1", "$2"). <code>
+   * select col1, col2, "col$4"
+   * from some_table
+   * where col1=$1 and col2=$2
+   * and not col3=$1 and col4='$3'
+   * </code>
+   *
+   * @param sql the SQL-string to check for parameters. Must not contain comments.
+   * @return A set containing all the parameters in the SQL-string.
+   */
+  @InternalApi
+  public Set<String> getQueryParameters(String sql) {
+    Preconditions.checkNotNull(sql);
+    int maxCount = countOccurrencesOf('$', sql);
+    Set<String> parameters = new HashSet<>(maxCount);
+    int currentIndex = 0;
+    while (currentIndex < sql.length() - 1) {
+      char c = sql.charAt(currentIndex);
+      if (c == '$' && Character.isDigit(sql.charAt(currentIndex + 1))) {
+        // Look ahead for the first non-digit. That is the end of the query parameter.
+        int endIndex = currentIndex + 2;
+        while (endIndex < sql.length() && Character.isDigit(sql.charAt(endIndex))) {
+          endIndex++;
+        }
+        parameters.add(sql.substring(currentIndex, endIndex));
+        currentIndex = endIndex;
+      } else {
+        currentIndex = skip(sql, currentIndex, null);
+      }
+    }
+    return parameters;
+  }
+
+  private int skip(String sql, int currentIndex, @Nullable StringBuilder result) {
     char currentChar = sql.charAt(currentIndex);
     if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
-      result.append(currentChar);
+      appendIfNotNull(result, currentChar);
       return skipQuoted(sql, currentIndex, currentChar, result);
     } else if (currentChar == DOLLAR) {
       String dollarTag = parseDollarQuotedString(sql, currentIndex + 1);
       if (dollarTag != null) {
-        result.append(currentChar).append(dollarTag).append(currentChar);
+        appendIfNotNull(result, currentChar, dollarTag, currentChar);
         return skipQuoted(
             sql, currentIndex + dollarTag.length() + 1, currentChar, dollarTag, result);
       }
     }
 
-    result.append(currentChar);
+    appendIfNotNull(result, currentChar);
     return currentIndex + 1;
   }
 
-  private int skipQuoted(String sql, int startIndex, char startQuote, StringBuilder result) {
+  private int skipQuoted(
+      String sql, int startIndex, char startQuote, @Nullable StringBuilder result) {
     return skipQuoted(sql, startIndex, startQuote, null, result);
   }
 
   private int skipQuoted(
-      String sql, int startIndex, char startQuote, String dollarTag, StringBuilder result) {
+      String sql,
+      int startIndex,
+      char startQuote,
+      String dollarTag,
+      @Nullable StringBuilder result) {
     boolean lastCharWasEscapeChar = false;
     int currentIndex = startIndex + 1;
     while (currentIndex < sql.length()) {
@@ -182,29 +231,41 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
           // Check if this is the end of the current dollar quoted string.
           String tag = parseDollarQuotedString(sql, currentIndex + 1);
           if (tag != null && tag.equals(dollarTag)) {
-            result.append(currentChar).append(tag).append(currentChar);
+            appendIfNotNull(result, currentChar, dollarTag, currentChar);
             return currentIndex + tag.length() + 2;
           }
         } else if (lastCharWasEscapeChar) {
           lastCharWasEscapeChar = false;
         } else if (sql.length() > currentIndex + 1 && sql.charAt(currentIndex + 1) == startQuote) {
           // This is an escaped quote (e.g. 'foo''bar')
-          result.append(currentChar).append(currentChar);
+          appendIfNotNull(result, currentChar);
+          appendIfNotNull(result, currentChar);
           currentIndex += 2;
           continue;
         } else {
-          result.append(currentChar);
+          appendIfNotNull(result, currentChar);
           return currentIndex + 1;
         }
-      } else if (currentChar == '\\') {
-        lastCharWasEscapeChar = true;
       } else {
-        lastCharWasEscapeChar = false;
+        lastCharWasEscapeChar = currentChar == '\\';
       }
       currentIndex++;
-      result.append(currentChar);
+      appendIfNotNull(result, currentChar);
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
+  }
+
+  private void appendIfNotNull(@Nullable StringBuilder result, char currentChar) {
+    if (result != null) {
+      result.append(currentChar);
+    }
+  }
+
+  private void appendIfNotNull(
+      @Nullable StringBuilder result, char prefix, String tag, char suffix) {
+    if (result != null) {
+      result.append(prefix).append(tag).append(suffix);
+    }
   }
 }
