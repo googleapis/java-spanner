@@ -18,7 +18,15 @@ package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.Dialect;
 
-/** Class that runs all generators of SQL test scripts for the Connection API */
+/**
+ * Class that runs all generators of SQL test scripts for the Connection API.
+ *
+ * <p>Run this generator if new client side statements have been added, or if any existing client
+ * side statements have been modified. The generator can be executed from the command line in the
+ * google-cloud-spanner directory like this: <code>
+ * mvn -Ddo_log_statements=true exec:java -Dexec.mainClass=com.google.cloud.spanner.connection.SqlTestScriptsGenerator -Dexec.classpathScope="test"
+ * </code>
+ */
 public class SqlTestScriptsGenerator {
 
   /** Main method for generating the test script */

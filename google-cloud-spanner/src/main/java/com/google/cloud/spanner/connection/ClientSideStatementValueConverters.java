@@ -243,6 +243,33 @@ class ClientSideStatementValueConverters {
     }
   }
 
+  /**
+   * Converter for converting string values to {@link PgTransactionMode} values. Includes no-op
+   * handling of setting the isolation level of the transaction to default or serializable.
+   */
+  static class PgTransactionModeConverter
+      implements ClientSideStatementValueConverter<PgTransactionMode> {
+    private final CaseInsensitiveEnumMap<PgTransactionMode> values =
+        new CaseInsensitiveEnumMap<>(
+            PgTransactionMode.class, PgTransactionMode::getStatementString);
+
+    PgTransactionModeConverter() {}
+
+    public PgTransactionModeConverter(String allowedValues) {}
+
+    @Override
+    public Class<PgTransactionMode> getParameterClass() {
+      return PgTransactionMode.class;
+    }
+
+    @Override
+    public PgTransactionMode convert(String value) {
+      // Transaction mode may contain multiple spaces.
+      String valueWithSingleSpaces = value.replaceAll("\\s+", " ");
+      return values.get(valueWithSingleSpaces);
+    }
+  }
+
   /** Converter for converting strings to {@link RpcPriority} values. */
   static class RpcPriorityConverter implements ClientSideStatementValueConverter<Priority> {
     private final CaseInsensitiveEnumMap<Priority> values =

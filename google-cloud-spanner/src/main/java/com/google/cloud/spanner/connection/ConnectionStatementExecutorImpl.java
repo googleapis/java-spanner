@@ -74,6 +74,7 @@ import com.google.spanner.v1.RequestOptions.Priority;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /**
  * The methods in this class are called by the different {@link ClientSideStatement}s. These method
@@ -333,6 +334,15 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
+  public StatementResult statementBeginPgTransaction(@Nullable PgTransactionMode transactionMode) {
+    getConnection().beginTransaction();
+    if (transactionMode != null) {
+      statementSetPgTransactionMode(transactionMode);
+    }
+    return noResult(BEGIN);
+  }
+
+  @Override
   public StatementResult statementCommit() {
     getConnection().commit();
     return noResult(COMMIT);
@@ -347,6 +357,41 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementSetTransactionMode(TransactionMode mode) {
     getConnection().setTransactionMode(mode);
+    return noResult(SET_TRANSACTION_MODE);
+  }
+
+  @Override
+  public StatementResult statementSetPgTransactionMode(PgTransactionMode transactionMode) {
+    switch (transactionMode) {
+      case READ_ONLY_TRANSACTION:
+        getConnection().setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
+        break;
+      case READ_WRITE_TRANSACTION:
+        getConnection().setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
+        break;
+      case ISOLATION_LEVEL_DEFAULT:
+      case ISOLATION_LEVEL_SERIALIZABLE:
+      default:
+        // no-op
+    }
+    return noResult(SET_TRANSACTION_MODE);
+  }
+
+  @Override
+  public StatementResult statementSetPgSessionCharacteristicsTransactionMode(
+      PgTransactionMode transactionMode) {
+    switch (transactionMode) {
+      case READ_ONLY_TRANSACTION:
+        getConnection().setReadOnly(true);
+        break;
+      case READ_WRITE_TRANSACTION:
+        getConnection().setReadOnly(false);
+        break;
+      case ISOLATION_LEVEL_DEFAULT:
+      case ISOLATION_LEVEL_SERIALIZABLE:
+      default:
+        // no-op
+    }
     return noResult(SET_TRANSACTION_MODE);
   }
 

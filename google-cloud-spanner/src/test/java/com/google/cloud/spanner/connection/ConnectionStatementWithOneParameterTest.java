@@ -222,9 +222,7 @@ public class ConnectionStatementWithOneParameterTest {
   public void testExecuteSetTransaction() {
     ParsedStatement subject = parser.parse(Statement.of("set transaction read_only"));
     ConnectionImpl connection = mock(ConnectionImpl.class);
-    ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
-    when(executor.getConnection()).thenReturn(connection);
-    when(executor.statementSetTransactionMode(any(TransactionMode.class))).thenCallRealMethod();
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
     for (TransactionMode mode : TransactionMode.values()) {
       subject
           .getClientSideStatement()

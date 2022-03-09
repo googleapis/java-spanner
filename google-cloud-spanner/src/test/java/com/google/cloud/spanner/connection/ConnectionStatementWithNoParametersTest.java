@@ -195,9 +195,7 @@ public class ConnectionStatementWithNoParametersTest {
     ParsedStatement subject = parser.parse(Statement.of("begin"));
     for (String statement : subject.getClientSideStatement().getExampleStatements()) {
       ConnectionImpl connection = mock(ConnectionImpl.class);
-      ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
-      when(executor.getConnection()).thenReturn(connection);
-      when(executor.statementBeginTransaction()).thenCallRealMethod();
+      ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
       subject.getClientSideStatement().execute(executor, statement);
       verify(connection, times(1)).beginTransaction();
     }

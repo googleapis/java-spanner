@@ -126,12 +126,18 @@
       "exampleStatements": ["show spanner.rpc_priority","show variable spanner.rpc_priority"]
     },
     {
-      "name": "{START | BEGIN} [TRANSACTION | WORK]",
-      "executorName": "ClientSideStatementNoParamExecutor",
+      "name": "{START | BEGIN} [TRANSACTION | WORK] [{ (READ ONLY|READ WRITE) | (ISOLATION LEVEL (DEFAULT|SERIALIZABLE)) }]",
+      "executorName": "ClientSideStatementPgBeginExecutor",
       "resultType": "NO_RESULT",
-      "regex": "(?is)\\A\\s*(?:begin|start)(?:\\s+transaction|\\s+work)?\\s*\\z",
-      "method": "statementBeginTransaction",
-      "exampleStatements": ["begin", "start", "begin transaction", "start transaction", "begin work", "start work"]
+      "regex": "(?is)\\A\\s*(?:begin|start)(?:\\s+transaction|\\s+work)?(\\s+read\\s+only|\\s+read\\s+write|\\s+isolation\\s+level\\s+default|\\s+isolation\\s+level\\s+serializable)?\\s*\\z",
+      "method": "statementBeginPgTransaction",
+      "exampleStatements": [
+        "begin", "start", "begin transaction", "start transaction", "begin work", "start work",
+        "begin read only", "start read only", "begin transaction read only", "start transaction read only", "begin work read only", "start work read only",
+        "begin read write", "start read write", "begin transaction read write", "start transaction read write", "begin work read write", "start work read write",
+        "begin isolation level default", "start isolation level default", "begin transaction isolation level default", "start transaction isolation level default", "begin work isolation level default", "start work isolation level default",
+        "begin isolation level serializable", "start isolation level serializable", "begin transaction isolation level serializable", "start transaction isolation level serializable", "begin work isolation level serializable", "start work isolation level serializable"
+      ]
     },
     {
       "name": "COMMIT [TRANSACTION | WORK] [AND NO CHAIN]",
@@ -257,18 +263,32 @@
       }
     },
     {
-      "name": "SET TRANSACTION READ ONLY|READ WRITE",
+      "name": "SET TRANSACTION { (READ ONLY|READ WRITE) | (ISOLATION LEVEL (DEFAULT|SERIALIZABLE)) }",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
       "regex": "(?is)\\A\\s*set\\s+transaction\\s*(?:\\s+)\\s*(.*)\\z",
-      "method": "statementSetTransactionMode",
-      "exampleStatements": ["set transaction read only", "set transaction read write"],
+      "method": "statementSetPgTransactionMode",
+      "exampleStatements": ["set transaction read only", "set transaction read write", "set transaction isolation level default", "set transaction isolation level serializable"],
       "examplePrerequisiteStatements": ["set autocommit = false"],
       "setStatement": {
         "propertyName": "TRANSACTION",
         "separator": "\\s+",
-        "allowedValues": "(READ\\s+ONLY|READ\\s+WRITE)",
-        "converterName": "ClientSideStatementValueConverters$TransactionModeConverter"
+        "allowedValues": "(READ\\s+ONLY|READ\\s+WRITE|ISOLATION\\s+LEVEL\\s+DEFAULT|ISOLATION\\s+LEVEL\\s+SERIALIZABLE)",
+        "converterName": "ClientSideStatementValueConverters$PgTransactionModeConverter"
+      }
+    },
+    {
+      "name": "SET SESSION CHARACTERISTICS AS TRANSACTION { (READ ONLY|READ WRITE) | (ISOLATION LEVEL (DEFAULT|SERIALIZABLE)) }",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "regex": "(?is)\\A\\s*set\\s+session\\s+characteristics\\s+as\\s+transaction\\s*(?:\\s+)\\s*(.*)\\z",
+      "method": "statementSetPgSessionCharacteristicsTransactionMode",
+      "exampleStatements": ["set session characteristics as transaction read only", "set session characteristics as transaction read write", "set session characteristics as transaction isolation level default", "set session characteristics as transaction isolation level serializable"],
+      "setStatement": {
+        "propertyName": "SESSION\\s+CHARACTERISTICS\\s+AS\\s+TRANSACTION",
+        "separator": "\\s+",
+        "allowedValues": "(READ\\s+ONLY|READ\\s+WRITE|ISOLATION\\s+LEVEL\\s+DEFAULT|ISOLATION\\s+LEVEL\\s+SERIALIZABLE)",
+        "converterName": "ClientSideStatementValueConverters$PgTransactionModeConverter"
       }
     },
     {

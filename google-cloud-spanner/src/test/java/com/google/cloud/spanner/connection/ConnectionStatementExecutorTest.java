@@ -22,6 +22,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -219,5 +220,21 @@ public class ConnectionStatementExecutorTest {
     verify(connection).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
     subject.statementSetTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
     verify(connection).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
+  }
+
+  @Test
+  public void testStatementSetPgTransactionMode() {
+    subject.statementSetPgTransactionMode(PgTransactionMode.READ_ONLY_TRANSACTION);
+    verify(connection).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
+    subject.statementSetPgTransactionMode(PgTransactionMode.READ_WRITE_TRANSACTION);
+    verify(connection).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
+  }
+
+  @Test
+  public void testStatementSetPgTransactionModeNoOp() {
+    subject.statementSetPgTransactionMode(PgTransactionMode.ISOLATION_LEVEL_DEFAULT);
+    subject.statementSetPgTransactionMode(PgTransactionMode.ISOLATION_LEVEL_SERIALIZABLE);
+    verify(connection, never()).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
+    verify(connection, never()).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
   }
 }

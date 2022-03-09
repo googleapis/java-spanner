@@ -27,23 +27,16 @@ import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileExcept
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.TransactionModeConverter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.JUnit4;
 
-@RunWith(Parameterized.class)
+@RunWith(JUnit4.class)
 public class TransactionModeConverterTest {
-  @Parameter public Dialect dialect;
-
-  @Parameters(name = "dialect = {0}")
-  public static Object[] data() {
-    return Dialect.values();
-  }
 
   @Test
   public void testConvert() throws CompileException {
     String allowedValues =
-        ReadOnlyStalenessConverterTest.getAllowedValues(TransactionModeConverter.class, dialect);
+        ReadOnlyStalenessConverterTest.getAllowedValues(
+            TransactionModeConverter.class, Dialect.GOOGLE_STANDARD_SQL);
     assertThat(allowedValues, is(notNullValue()));
     TransactionModeConverter converter = new TransactionModeConverter(allowedValues);
     assertThat(
