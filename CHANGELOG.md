@@ -1,5 +1,12 @@
 # Changelog
 
+### [6.21.1](https://github.com/googleapis/java-spanner/compare/v6.21.0...v6.21.1) (2022-03-09)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-trace to v2.1.5 ([#1739](https://github.com/googleapis/java-spanner/issues/1739)) ([b553c03](https://github.com/googleapis/java-spanner/commit/b553c032131a5fe147e48ff031a85b2ee5d982be))
+
 ## [6.21.0](https://github.com/googleapis/java-spanner/compare/v6.20.0...v6.21.0) (2022-03-08)
 
 
