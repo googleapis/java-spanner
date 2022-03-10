@@ -89,7 +89,10 @@ public class PgCaseSensitivitySample {
                   .build()));
 
       try (ResultSet singers =
-          client.singleUse().executeQuery(Statement.of("SELECT * FROM Singers"))) {
+          client
+              .singleUse()
+              .executeQuery(
+                  Statement.of("SELECT SingerId, \"FirstName\", \"LastName\" FROM Singers"))) {
         while (singers.next()) {
           System.out.printf(
               "SingerId: %d, FirstName: %s, LastName: %s\n",
