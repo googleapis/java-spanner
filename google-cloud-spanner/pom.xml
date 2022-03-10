@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>6.19.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+  <version>6.21.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner</name>
   <url>https://github.com/googleapis/java-spanner</url>
@@ -11,11 +11,15 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.19.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.21.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
     <opencensus.version>0.31.0</opencensus.version>
+    <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
+    <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing-east1</spanner.testenv.instance>
+    <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
+    <spanner.testenv.kms_key.name>projects/gcloud-devel/locations/us-east1/keyRings/cmek-test-key-ring/cryptoKeys/cmek-test-key</spanner.testenv.kms_key.name>
   </properties>
 
 
@@ -70,10 +74,10 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <configuration>
           <systemPropertyVariables>
-            <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
-            <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing-east1</spanner.testenv.instance>
-            <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
-            <spanner.testenv.kms_key.name>projects/gcloud-devel/locations/us-east1/keyRings/cmek-test-key-ring/cryptoKeys/cmek-test-key</spanner.testenv.kms_key.name>
+            <spanner.testenv.config.class>${spanner.testenv.config.class}</spanner.testenv.config.class>
+            <spanner.testenv.instance>${spanner.testenv.instance}</spanner.testenv.instance>
+            <spanner.gce.config.project_id>${spanner.gce.config.project_id}</spanner.gce.config.project_id>
+            <spanner.testenv.kms_key.name>${spanner.testenv.kms_key.name}</spanner.testenv.kms_key.name>
           </systemPropertyVariables>
           <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
         </configuration>
@@ -100,6 +104,32 @@
           </execution>
         </executions>
       </plugin>
+
+  <!--Configurations for native image tests-->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <spanner.testenv.config.class>${spanner.testenv.config.class}</spanner.testenv.config.class>
+            <spanner.testenv.instance>${spanner.testenv.instance}</spanner.testenv.instance>
+            <spanner.gce.config.project_id>${spanner.gce.config.project_id}</spanner.gce.config.project_id>
+            <spanner.testenv.kms_key.name>${spanner.testenv.kms_key.name}</spanner.testenv.kms_key.name>
+          </systemPropertyVariables>
+          <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.graalvm.buildtools</groupId>
+        <artifactId>native-maven-plugin</artifactId>
+        <configuration>
+          <buildArgs combine.children="append">
+            <buildArg>-Dspanner.testenv.config.class=${spanner.testenv.config.class}</buildArg>
+          </buildArgs>
+        </configuration>
+      </plugin>
+      <!--Configurations for native image tests-->
+
       <plugin>
         <?m2e ignore?>
         <groupId>org.codehaus.mojo</groupId>
@@ -288,7 +318,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>4.3.1</version>
+      <version>4.4.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>

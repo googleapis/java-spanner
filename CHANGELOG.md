@@ -1,5 +1,56 @@
 # Changelog
 
+### [6.21.1](https://github.com/googleapis/java-spanner/compare/v6.21.0...v6.21.1) (2022-03-09)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-trace to v2.1.5 ([#1739](https://github.com/googleapis/java-spanner/issues/1739)) ([b553c03](https://github.com/googleapis/java-spanner/commit/b553c032131a5fe147e48ff031a85b2ee5d982be))
+
+## [6.21.0](https://github.com/googleapis/java-spanner/compare/v6.20.0...v6.21.0) (2022-03-08)
+
+
+### Features
+
+* parse query parameters in PostgreSQL query ([#1732](https://github.com/googleapis/java-spanner/issues/1732)) ([7357ac6](https://github.com/googleapis/java-spanner/commit/7357ac6e3ddfdfee37e70343a970e7e63fb08bf2))
+* Track PG Adapter usage from user-agent headers ([#1711](https://github.com/googleapis/java-spanner/issues/1711)) ([cb640ab](https://github.com/googleapis/java-spanner/commit/cb640abeb8ec9321136b86d5b54e620dba087080))
+
+
+### Bug Fixes
+
+* annotating some fields as REQUIRED ([#1695](https://github.com/googleapis/java-spanner/issues/1695)) ([8b90b6c](https://github.com/googleapis/java-spanner/commit/8b90b6cce0fd36a1e3ca1c8e0c0f34661ab9c2a3))
+* catch ExecutionException for op.getName ([#1729](https://github.com/googleapis/java-spanner/issues/1729)) ([8ea3ac0](https://github.com/googleapis/java-spanner/commit/8ea3ac086371beebd22f04c8c5f74beb8058e84f))
+* PostgreSQL supports newline in quoted literals and identifiers ([#1731](https://github.com/googleapis/java-spanner/issues/1731)) ([f403d99](https://github.com/googleapis/java-spanner/commit/f403d99acd21db8d494855d71b5ec410164a5232))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.2.4 ([#1719](https://github.com/googleapis/java-spanner/issues/1719)) ([20336cd](https://github.com/googleapis/java-spanner/commit/20336cd5d3307a48f968587212af38872dec5a50))
+* update dependency com.google.cloud:google-cloud-monitoring to v3.2.5 ([#1727](https://github.com/googleapis/java-spanner/issues/1727)) ([92a9f14](https://github.com/googleapis/java-spanner/commit/92a9f148b8dcbd0ac7ca1ff0029ad7c09f577e40))
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v2.8.0 ([#1722](https://github.com/googleapis/java-spanner/issues/1722)) ([9704974](https://github.com/googleapis/java-spanner/commit/9704974a92f56886269e6cbcb1f74528fbe7e73f))
+* update dependency com.google.cloud:google-cloud-trace to v2.1.4 ([#1728](https://github.com/googleapis/java-spanner/issues/1728)) ([d193a26](https://github.com/googleapis/java-spanner/commit/d193a26ec46df1b229103ec50c0db9b62d98507a))
+
+## [6.20.0](https://github.com/googleapis/java-spanner/compare/v6.19.1...v6.20.0) (2022-02-22)
+
+
+### Features
+
+* allows for getting json columns using getValue ([#1699](https://github.com/googleapis/java-spanner/issues/1699)) ([a51973b](https://github.com/googleapis/java-spanner/commit/a51973b1a87c0a57b114892fe39a24caa1458d1d))
+
+
+### Bug Fixes
+
+* **java:** make system property accessible for native image compilation ([#1694](https://github.com/googleapis/java-spanner/issues/1694)) ([e3fb2b2](https://github.com/googleapis/java-spanner/commit/e3fb2b273f939314d9cdbce539f373d6fc77d0ad))
+* use information_schema instead of pg_catalog for dialect detection ([#1708](https://github.com/googleapis/java-spanner/issues/1708)) ([91e157a](https://github.com/googleapis/java-spanner/commit/91e157a6dcd08afd81a4cbddffcb8e02defb8d3a))
+
+### [6.19.1](https://github.com/googleapis/java-spanner/compare/v6.19.0...v6.19.1) (2022-02-18)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.2.3 ([#1698](https://github.com/googleapis/java-spanner/issues/1698)) ([cd4f4ca](https://github.com/googleapis/java-spanner/commit/cd4f4ca3fe870227dceae8c6ab66993477b4bdc4))
+* update dependency com.google.cloud:google-cloud-trace to v2.1.3 ([#1684](https://github.com/googleapis/java-spanner/issues/1684)) ([e70e5c4](https://github.com/googleapis/java-spanner/commit/e70e5c4c9c9ce0b8d18f9f1f7d01baf6a97ec264))
+
 ## [6.19.0](https://github.com/googleapis/java-spanner/compare/v6.18.0...v6.19.0) (2022-02-16)
 
 

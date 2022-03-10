@@ -2260,4 +2260,22 @@ public class DatabaseClientImplTest {
           StatementResult.detectDialectResult(Dialect.GOOGLE_STANDARD_SQL));
     }
   }
+
+  @Test
+  public void testUntypedNullParameters() {
+    Statement statement =
+        Statement.newBuilder("INSERT INTO FOO (BAR) VALUES (@p)")
+            .bind("p")
+            .to((Value) null)
+            .build();
+    mockSpanner.putStatementResult(StatementResult.update(statement, 1L));
+
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Long updateCount =
+        client.readWriteTransaction().run(transaction -> transaction.executeUpdate(statement));
+
+    assertNotNull(updateCount);
+    assertEquals(1L, updateCount.longValue());
+  }
 }
