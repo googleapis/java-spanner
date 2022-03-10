@@ -30,7 +30,6 @@ If you are using Maven with [BOM][libraries-bom], add this to your pom.xml file
   <dependency>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner</artifactId>
-    <version>6.19.0</version>
   </dependency>
 
 ```
