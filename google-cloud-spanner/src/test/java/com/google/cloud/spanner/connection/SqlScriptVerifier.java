@@ -16,9 +16,9 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.common.truth.Truth.assertWithMessage;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.cloud.spanner.Dialect;
@@ -182,10 +182,8 @@ public class SqlScriptVerifier extends AbstractSqlScriptVerifier {
         spannerException.getErrorCode(),
         is(equalTo(ErrorCode.valueOf(code))));
     if (messagePrefix != null) {
-      assertThat(
-          statement,
-          e.getMessage(),
-          startsWith(messagePrefix.substring(1, messagePrefix.length() - 1)));
+      assertWithMessage(statement).that(e.getMessage())
+          .startsWith(messagePrefix.substring(1, messagePrefix.length() - 1));
     }
   }
 }
