@@ -37,6 +37,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+import org.mockito.Mockito;
 
 @RunWith(Parameterized.class)
 public class ConnectionStatementWithOneParameterTest {
@@ -147,6 +148,7 @@ public class ConnectionStatementWithOneParameterTest {
     }
     if (dialect == Dialect.POSTGRESQL) {
       for (Long val : new Long[] {1L, 100L, 999L}) {
+        Mockito.clearInvocations(connection);
         ParsedStatement subject =
             parser.parse(Statement.of(String.format("set statement_timeout=%d", val)));
         subject

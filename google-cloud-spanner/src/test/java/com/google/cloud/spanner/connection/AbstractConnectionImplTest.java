@@ -262,7 +262,9 @@ public abstract class AbstractConnectionImplTest {
         log("SHOW VARIABLE STATEMENT_TIMEOUT;");
         assertThat(connection.getStatementTimeout(unit), is(equalTo(1L)));
 
-        log("SET STATEMENT_TIMEOUT=null;");
+        log(
+            String.format(
+                "SET STATEMENT_TIMEOUT=%s;", dialect == Dialect.POSTGRESQL ? "DEFAULT" : "null"));
         connection.clearStatementTimeout();
 
         log("@EXPECT RESULT_SET 'STATEMENT_TIMEOUT',null");

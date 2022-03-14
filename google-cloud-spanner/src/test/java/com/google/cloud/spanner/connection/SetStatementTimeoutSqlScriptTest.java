@@ -16,13 +16,24 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.Dialect;
 import org.junit.Test;
 
 public class SetStatementTimeoutSqlScriptTest extends AbstractSqlScriptTest {
 
+  private String getFile(Dialect dialect) {
+    switch (dialect) {
+      case POSTGRESQL:
+        return "postgresql/SetStatementTimeoutTest.sql";
+      case GOOGLE_STANDARD_SQL:
+      default:
+        return "SetStatementTimeoutTest.sql";
+    }
+  }
+
   @Test
   public void testSetStatementTimeoutScript() throws Exception {
     SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider(dialect));
-    verifier.verifyStatementsInFile("SetStatementTimeoutTest.sql", getClass(), true);
+    verifier.verifyStatementsInFile(getFile(dialect), getClass(), true);
   }
 }
