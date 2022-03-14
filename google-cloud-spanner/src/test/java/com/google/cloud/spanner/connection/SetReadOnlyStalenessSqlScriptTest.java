@@ -22,7 +22,7 @@ public class SetReadOnlyStalenessSqlScriptTest extends AbstractSqlScriptTest {
   private String getFileName() {
     switch (dialect) {
       case POSTGRESQL:
-        return "PG_SetReadOnlyStalenessTest.sql";
+        return "postgresql/SetReadOnlyStalenessTest.sql";
       case GOOGLE_STANDARD_SQL:
       default:
         return "SetReadOnlyStalenessTest.sql";

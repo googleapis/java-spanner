@@ -16,7 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
-import static com.google.cloud.spanner.connection.DialectNamespaceHelper.getNamespace;
+import static com.google.cloud.spanner.connection.DialectNamespaceMapper.getNamespace;
 import static com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.getTimeUnitAbbreviation;
 import static com.google.cloud.spanner.connection.SpannerExceptionMatcher.matchCode;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -90,7 +90,7 @@ public abstract class AbstractConnectionImplTest {
       "src/test/resources/com/google/cloud/spanner/connection/ConnectionImplGeneratedSqlScriptTest.sql";
 
   private static final String PG_LOG_FILE =
-      "src/test/resources/com/google/cloud/spanner/connection/PG_ConnectionImplGeneratedSqlScriptTest.sql";
+      "src/test/resources/com/google/cloud/spanner/connection/postgresql/ConnectionImplGeneratedSqlScriptTest.sql";
 
   private static String getLogFile(Dialect dialect) {
     switch (dialect) {
@@ -479,7 +479,7 @@ public abstract class AbstractConnectionImplTest {
         log(
             String.format(
                 "SET %sTRANSACTION_TAG = '%s';",
-                DialectNamespaceHelper.getNamespace(dialect), tag));
+                DialectNamespaceMapper.getNamespace(dialect), tag));
         connection.setTransactionTag(tag);
         assertEquals(tag, connection.getTransactionTag());
       } else {
@@ -492,7 +492,7 @@ public abstract class AbstractConnectionImplTest {
                 log(
                     String.format(
                         "SET %sTRANSACTION_TAG = '%s';",
-                        DialectNamespaceHelper.getNamespace(dialect), tag));
+                        DialectNamespaceMapper.getNamespace(dialect), tag));
                 t.setTransactionTag(tag);
               }
             },

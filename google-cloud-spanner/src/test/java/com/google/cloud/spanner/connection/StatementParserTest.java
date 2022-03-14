@@ -90,7 +90,7 @@ public class StatementParserTest {
           Dialect.GOOGLE_STANDARD_SQL,
           "CommentsTest.sql",
           Dialect.POSTGRESQL,
-          "PostgreSQLCommentsTest.sql");
+          "postgresql/CommentsTest.sql");
 
   @Test
   public void testRemoveCommentsInScript() {

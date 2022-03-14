@@ -18,7 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.Dialect;
 
-class DialectNamespaceHelper {
+class DialectNamespaceMapper {
   static String getNamespace(Dialect dialect) {
     switch (dialect) {
       case POSTGRESQL:

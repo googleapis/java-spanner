@@ -47,7 +47,7 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
       case GOOGLE_STANDARD_SQL:
         return "ClientSideStatementsTest.sql";
       case POSTGRESQL:
-        return "PG_ClientSideStatementsTest.sql";
+        return "postgresql/ClientSideStatementsTest.sql";
       default:
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT, "Unknown or unsupported dialect: " + dialect);

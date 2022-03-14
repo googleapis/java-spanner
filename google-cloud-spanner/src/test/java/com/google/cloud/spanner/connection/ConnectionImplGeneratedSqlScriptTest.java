@@ -47,7 +47,7 @@ public class ConnectionImplGeneratedSqlScriptTest extends AbstractSqlScriptTest 
   private String getFileName() {
     switch (dialect) {
       case POSTGRESQL:
-        return "PG_ConnectionImplGeneratedSqlScriptTest.sql";
+        return "postgresql/ConnectionImplGeneratedSqlScriptTest.sql";
       case GOOGLE_STANDARD_SQL:
       default:
         return "ConnectionImplGeneratedSqlScriptTest.sql";

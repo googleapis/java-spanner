@@ -16,7 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
-import static com.google.cloud.spanner.connection.DialectNamespaceHelper.getNamespace;
+import static com.google.cloud.spanner.connection.DialectNamespaceMapper.getNamespace;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -85,6 +86,23 @@ public class ConnectionStatementWithOneParameterTest {
   }
 
   @Test
+  public void testExecuteSetReadOnlyTo() {
+    assumeTrue("TO is only supported in PostgreSQL dialect", dialect == Dialect.POSTGRESQL);
+    ParsedStatement subject =
+        parser.parse(Statement.of(String.format("set %sreadonly to true", getNamespace(dialect))));
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
+    when(executor.getConnection()).thenReturn(connection);
+    when(executor.statementSetReadOnly(any(Boolean.class))).thenCallRealMethod();
+    for (Boolean mode : new Boolean[] {Boolean.FALSE, Boolean.TRUE}) {
+      subject
+          .getClientSideStatement()
+          .execute(executor, String.format("set %sreadonly to %s", getNamespace(dialect), mode));
+      verify(connection, times(1)).setReadOnly(mode);
+    }
+  }
+
+  @Test
   public void testExecuteSetAutocommitDmlMode() {
     ParsedStatement subject =
         parser.parse(
@@ -127,8 +145,22 @@ public class ConnectionStatementWithOneParameterTest {
         verify(connection, times(1)).setStatementTimeout(val, unit);
       }
     }
-    ParsedStatement subject = parser.parse(Statement.of("set statement_timeout=null"));
-    subject.getClientSideStatement().execute(executor, "set statement_timeout=null");
+    if (dialect == Dialect.POSTGRESQL) {
+      for (Long val : new Long[] {1L, 100L, 999L}) {
+        ParsedStatement subject =
+            parser.parse(Statement.of(String.format("set statement_timeout=%d", val)));
+        subject
+            .getClientSideStatement()
+            .execute(executor, String.format("set statement_timeout=%d", val));
+        verify(connection, times(1)).setStatementTimeout(val, TimeUnit.MILLISECONDS);
+      }
+
+      ParsedStatement subject = parser.parse(Statement.of("set statement_timeout=default"));
+      subject.getClientSideStatement().execute(executor, "set statement_timeout=default");
+    } else {
+      ParsedStatement subject = parser.parse(Statement.of("set statement_timeout=null"));
+      subject.getClientSideStatement().execute(executor, "set statement_timeout=null");
+    }
     verify(connection, times(1)).clearStatementTimeout();
   }
 

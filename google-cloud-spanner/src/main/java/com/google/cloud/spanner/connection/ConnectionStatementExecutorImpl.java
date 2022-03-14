@@ -16,7 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
-import static com.google.cloud.spanner.connection.DialectNamespaceHelper.getNamespace;
+import static com.google.cloud.spanner.connection.DialectNamespaceMapper.getNamespace;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.ABORT_BATCH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.BEGIN;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.COMMIT;

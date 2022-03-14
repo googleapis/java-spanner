@@ -16,7 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
-import static com.google.cloud.spanner.connection.DialectNamespaceHelper.getNamespace;
+import static com.google.cloud.spanner.connection.DialectNamespaceMapper.getNamespace;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;

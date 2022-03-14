@@ -192,74 +192,92 @@
       "examplePrerequisiteStatements": ["start batch ddl"]
     },
     {
-      "name": "SET AUTOCOMMIT = TRUE|FALSE",
+      "name": "SET AUTOCOMMIT =|TO TRUE|FALSE",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
-      "regex": "(?is)\\A\\s*set\\s+autocommit\\s*(?:=)\\s*(.*)\\z",
+      "regex": "(?is)\\A\\s*set\\s+autocommit(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetAutocommit",
-      "exampleStatements": ["set autocommit = true", "set autocommit = false"],
+      "exampleStatements": ["set autocommit = true", "set autocommit = false", "set autocommit to true", "set autocommit to false"],
       "setStatement": {
         "propertyName": "AUTOCOMMIT",
-        "separator": "=",
+        "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "(TRUE|FALSE)",
         "converterName": "ClientSideStatementValueConverters$BooleanConverter"
       }
     },
     {
-      "name": "SET SPANNER.READONLY = TRUE|FALSE",
+      "name": "SET SPANNER.READONLY =|TO TRUE|FALSE",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
-      "regex": "(?is)\\A\\s*set\\s+spanner\\.readonly\\s*(?:=)\\s*(.*)\\z",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.readonly(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetReadOnly",
-      "exampleStatements": ["set spanner.readonly = true", "set spanner.readonly = false"],
+      "exampleStatements": ["set spanner.readonly = true", "set spanner.readonly = false", "set spanner.readonly to true", "set spanner.readonly to false"],
       "setStatement": {
         "propertyName": "SPANNER.READONLY",
-        "separator": "=",
+        "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "(TRUE|FALSE)",
         "converterName": "ClientSideStatementValueConverters$BooleanConverter"
       }
     },
     {
-      "name": "SET SPANNER.RETRY_ABORTS_INTERNALLY = TRUE|FALSE",
+      "name": "SET SPANNER.RETRY_ABORTS_INTERNALLY =|TO TRUE|FALSE",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
-      "regex": "(?is)\\A\\s*set\\s+spanner\\.retry_aborts_internally\\s*(?:=)\\s*(.*)\\z",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.retry_aborts_internally(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetRetryAbortsInternally",
-      "exampleStatements": ["set spanner.retry_aborts_internally = true", "set spanner.retry_aborts_internally = false"],
+      "exampleStatements": ["set spanner.retry_aborts_internally = true", "set spanner.retry_aborts_internally = false", "set spanner.retry_aborts_internally to true", "set spanner.retry_aborts_internally to false"],
       "examplePrerequisiteStatements": ["set spanner.readonly = false", "set autocommit = false"],
       "setStatement": {
         "propertyName": "SPANNER.RETRY_ABORTS_INTERNALLY",
-        "separator": "=",
+        "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "(TRUE|FALSE)",
         "converterName": "ClientSideStatementValueConverters$BooleanConverter"
       }
     },
     {
-      "name": "SET SPANNER.AUTOCOMMIT_DML_MODE = 'PARTITIONED_NON_ATOMIC'|'TRANSACTIONAL'",
+      "name": "SET SPANNER.AUTOCOMMIT_DML_MODE =|TO 'PARTITIONED_NON_ATOMIC'|'TRANSACTIONAL'",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
-      "regex": "(?is)\\A\\s*set\\s+spanner\\.autocommit_dml_mode\\s*(?:=)\\s*(.*)\\z",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.autocommit_dml_mode(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetAutocommitDmlMode",
-      "exampleStatements": ["set spanner.autocommit_dml_mode='PARTITIONED_NON_ATOMIC'", "set spanner.autocommit_dml_mode='TRANSACTIONAL'"],
+      "exampleStatements": [
+        "set spanner.autocommit_dml_mode='PARTITIONED_NON_ATOMIC'",
+        "set spanner.autocommit_dml_mode='TRANSACTIONAL'",
+        "set spanner.autocommit_dml_mode to 'PARTITIONED_NON_ATOMIC'",
+        "set spanner.autocommit_dml_mode to 'TRANSACTIONAL'"
+      ],
       "setStatement": {
         "propertyName": "SPANNER.AUTOCOMMIT_DML_MODE",
-        "separator": "=",
+        "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "'(PARTITIONED_NON_ATOMIC|TRANSACTIONAL)'",
         "converterName": "ClientSideStatementValueConverters$AutocommitDmlModeConverter"
       }
     },
     {
-      "name": "SET STATEMENT_TIMEOUT = '<duration>'|NULL",
+      "name": "SET STATEMENT_TIMEOUT =|TO '<duration>'|DEFAULT",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
-      "regex": "(?is)\\A\\s*set\\s+statement_timeout\\s*(?:=)\\s*(.*)\\z",
+      "regex": "(?is)\\A\\s*set\\s+statement_timeout(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetStatementTimeout",
-      "exampleStatements": ["set statement_timeout=null", "set statement_timeout='1s'", "set statement_timeout='100ms'", "set statement_timeout='10000us'", "set statement_timeout='9223372036854775807ns'"],
+      "exampleStatements": [
+        "set statement_timeout=default",
+        "set statement_timeout='1s'",
+        "set statement_timeout='100ms'",
+        "set statement_timeout=100",
+        "set statement_timeout='10000us'",
+        "set statement_timeout='9223372036854775807ns'",
+        "set statement_timeout to default",
+        "set statement_timeout to '1s'",
+        "set statement_timeout to '100ms'",
+        "set statement_timeout to 100",
+        "set statement_timeout to '10000us'",
+        "set statement_timeout to '9223372036854775807ns'"
+      ],
       "setStatement": {
         "propertyName": "STATEMENT_TIMEOUT",
-        "separator": "=",
-        "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|NULL)",
-        "converterName": "ClientSideStatementValueConverters$DurationConverter"
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(\\d{1,19}|'(\\d{1,19})(s|ms|us|ns)'|DEFAULT)",
+        "converterName": "ClientSideStatementValueConverters$PgDurationConverter"
       }
     },
     {
@@ -292,12 +310,13 @@
       }
     },
     {
-      "name": "SET SPANNER.READ_ONLY_STALENESS = 'STRONG' | 'MIN_READ_TIMESTAMP <timestamp>' | 'READ_TIMESTAMP <timestamp>' | 'MAX_STALENESS <int64>s|ms|us|ns' | 'EXACT_STALENESS (<int64>s|ms|us|ns)'",
+      "name": "SET SPANNER.READ_ONLY_STALENESS =|TO 'STRONG' | 'MIN_READ_TIMESTAMP <timestamp>' | 'READ_TIMESTAMP <timestamp>' | 'MAX_STALENESS <int64>s|ms|us|ns' | 'EXACT_STALENESS (<int64>s|ms|us|ns)'",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
-      "regex": "(?is)\\A\\s*set\\s+spanner\\.read_only_staleness\\s*(?:=)\\s*(.*)\\z",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.read_only_staleness(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetReadOnlyStaleness",
-      "exampleStatements": ["set spanner.read_only_staleness='STRONG'",
+      "exampleStatements": [
+        "set spanner.read_only_staleness='STRONG'",
         "set spanner.read_only_staleness='MIN_READ_TIMESTAMP 2018-01-02T03:04:05.123-08:00'",
         "set spanner.read_only_staleness='MIN_READ_TIMESTAMP 2018-01-02T03:04:05.123Z'",
         "set spanner.read_only_staleness='MIN_READ_TIMESTAMP 2018-01-02T03:04:05.123+07:45'",
@@ -311,100 +330,148 @@
         "set spanner.read_only_staleness='EXACT_STALENESS 15s'",
         "set spanner.read_only_staleness='EXACT_STALENESS 1500ms'",
         "set spanner.read_only_staleness='EXACT_STALENESS 15000000us'",
-        "set spanner.read_only_staleness='EXACT_STALENESS 9999ns'"],
+        "set spanner.read_only_staleness='EXACT_STALENESS 9999ns'",
+        "set spanner.read_only_staleness to 'STRONG'",
+        "set spanner.read_only_staleness to 'MIN_READ_TIMESTAMP 2018-01-02T03:04:05.123-08:00'",
+        "set spanner.read_only_staleness to 'MIN_READ_TIMESTAMP 2018-01-02T03:04:05.123Z'",
+        "set spanner.read_only_staleness to 'MIN_READ_TIMESTAMP 2018-01-02T03:04:05.123+07:45'",
+        "set spanner.read_only_staleness to 'READ_TIMESTAMP 2018-01-02T03:04:05.54321-07:00'",
+        "set spanner.read_only_staleness to 'READ_TIMESTAMP 2018-01-02T03:04:05.54321Z'",
+        "set spanner.read_only_staleness to 'READ_TIMESTAMP 2018-01-02T03:04:05.54321+05:30'",
+        "set spanner.read_only_staleness to 'MAX_STALENESS 12s'",
+        "set spanner.read_only_staleness to 'MAX_STALENESS 100ms'",
+        "set spanner.read_only_staleness to 'MAX_STALENESS 99999us'",
+        "set spanner.read_only_staleness to 'MAX_STALENESS 10ns'",
+        "set spanner.read_only_staleness to 'EXACT_STALENESS 15s'",
+        "set spanner.read_only_staleness to 'EXACT_STALENESS 1500ms'",
+        "set spanner.read_only_staleness to 'EXACT_STALENESS 15000000us'",
+        "set spanner.read_only_staleness to 'EXACT_STALENESS 9999ns'"
+      ],
       "setStatement": {
         "propertyName": "SPANNER.READ_ONLY_STALENESS",
-        "separator": "=",
+        "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "'((STRONG)|(MIN_READ_TIMESTAMP)[\\t ]+((\\d{4})-(\\d{2})-(\\d{2})([Tt](\\d{2}):(\\d{2}):(\\d{2})(\\.\\d{1,9})?)([Zz]|([+-])(\\d{2}):(\\d{2})))|(READ_TIMESTAMP)[\\t ]+((\\d{4})-(\\d{2})-(\\d{2})([Tt](\\d{2}):(\\d{2}):(\\d{2})(\\.\\d{1,9})?)([Zz]|([+-])(\\d{2}):(\\d{2})))|(MAX_STALENESS)[\\t ]+((\\d{1,19})(s|ms|us|ns))|(EXACT_STALENESS)[\\t ]+((\\d{1,19})(s|ms|us|ns)))'",
         "converterName": "ClientSideStatementValueConverters$ReadOnlyStalenessConverter"
       }
     },
     {
-      "name": "SET SPANNER.OPTIMIZER_VERSION = '<version>'|'LATEST'|''",
+      "name": "SET SPANNER.OPTIMIZER_VERSION =|TO '<version>'|'LATEST'|''",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
-      "regex": "(?is)\\A\\s*set\\s+spanner\\.optimizer_version\\s*(?:=)\\s*(.*)\\z",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.optimizer_version(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetOptimizerVersion",
-      "exampleStatements": ["set spanner.optimizer_version='1'", "set spanner.optimizer_version='200'", "set spanner.optimizer_version='LATEST'", "set spanner.optimizer_version=''"],
+      "exampleStatements": [
+        "set spanner.optimizer_version='1'",
+        "set spanner.optimizer_version='200'",
+        "set spanner.optimizer_version='LATEST'",
+        "set spanner.optimizer_version=''",
+        "set spanner.optimizer_version to '1'",
+        "set spanner.optimizer_version to '200'",
+        "set spanner.optimizer_version to 'LATEST'",
+        "set spanner.optimizer_version to ''"
+      ],
       "setStatement": {
         "propertyName": "SPANNER.OPTIMIZER_VERSION",
-        "separator": "=",
+        "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "'((\\d{1,20})|(LATEST)|())'",
         "converterName": "ClientSideStatementValueConverters$StringValueConverter"
       }
     },
     {
-      "name": "SET SPANNER.OPTIMIZER_STATISTICS_PACKAGE = '<package>'|''",
+      "name": "SET SPANNER.OPTIMIZER_STATISTICS_PACKAGE =|TO '<package>'|''",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
-      "regex": "(?is)\\A\\s*set\\s+spanner\\.optimizer_statistics_package\\s*(?:=)\\s*(.*)\\z",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.optimizer_statistics_package(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetOptimizerStatisticsPackage",
-      "exampleStatements": ["set spanner.optimizer_statistics_package='auto_20191128_14_47_22UTC'", "set spanner.optimizer_statistics_package=''"],
+      "exampleStatements": [
+        "set spanner.optimizer_statistics_package='auto_20191128_14_47_22UTC'",
+        "set spanner.optimizer_statistics_package=''",
+        "set spanner.optimizer_statistics_package to 'auto_20191128_14_47_22UTC'",
+        "set spanner.optimizer_statistics_package to ''"
+      ],
       "setStatement": {
         "propertyName": "SPANNER.OPTIMIZER_STATISTICS_PACKAGE",
-        "separator": "=",
+        "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "'((\\S+)|())'",
         "converterName": "ClientSideStatementValueConverters$StringValueConverter"
       }
     },
     {
-      "name": "SET SPANNER.RETURN_COMMIT_STATS = TRUE|FALSE",
+      "name": "SET SPANNER.RETURN_COMMIT_STATS =|TO TRUE|FALSE",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
-      "regex": "(?is)\\A\\s*set\\s+spanner\\.return_commit_stats\\s*(?:=)\\s*(.*)\\z",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.return_commit_stats(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetReturnCommitStats",
-      "exampleStatements": ["set spanner.return_commit_stats = true", "set spanner.return_commit_stats = false"],
+      "exampleStatements": ["set spanner.return_commit_stats = true", "set spanner.return_commit_stats = false", "set spanner.return_commit_stats to true", "set spanner.return_commit_stats to false"],
       "setStatement": {
         "propertyName": "SPANNER.RETURN_COMMIT_STATS",
-        "separator": "=",
+        "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "(TRUE|FALSE)",
         "converterName": "ClientSideStatementValueConverters$BooleanConverter"
       }
     },
     {
-      "name": "SET SPANNER.STATEMENT_TAG = '<tag>'",
+      "name": "SET SPANNER.STATEMENT_TAG =|TO '<tag>'",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
-      "regex": "(?is)\\A\\s*set\\s+spanner\\.statement_tag\\s*(?:=)\\s*(.*)\\z",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.statement_tag(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetStatementTag",
-      "exampleStatements": ["set spanner.statement_tag='tag1'", "set spanner.statement_tag='tag2'", "set spanner.statement_tag=''"],
+      "exampleStatements": [
+        "set spanner.statement_tag='tag1'",
+        "set spanner.statement_tag='tag2'",
+        "set spanner.statement_tag=''",
+        "set spanner.statement_tag to 'tag1'",
+        "set spanner.statement_tag to 'tag2'",
+        "set spanner.statement_tag to ''"
+      ],
       "setStatement": {
         "propertyName": "SPANNER.STATEMENT_TAG",
-        "separator": "=",
+        "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
         "converterName": "ClientSideStatementValueConverters$StringValueConverter"
       }
     },
     {
-      "name": "SET SPANNER.TRANSACTION_TAG = '<tag>'",
+      "name": "SET SPANNER.TRANSACTION_TAG =|TO '<tag>'",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
-      "regex": "(?is)\\A\\s*set\\s+spanner\\.transaction_tag\\s*(?:=)\\s*(.*)\\z",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.transaction_tag(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetTransactionTag",
-      "exampleStatements": ["set spanner.transaction_tag='tag1'", "set spanner.transaction_tag='tag2'", "set spanner.transaction_tag=''"],
+      "exampleStatements": [
+        "set spanner.transaction_tag='tag1'",
+        "set spanner.transaction_tag='tag2'",
+        "set spanner.transaction_tag=''",
+        "set spanner.transaction_tag to 'tag1'",
+        "set spanner.transaction_tag to 'tag2'",
+        "set spanner.transaction_tag to ''"
+      ],
       "examplePrerequisiteStatements": ["set autocommit = false"],
       "setStatement": {
         "propertyName": "SPANNER.TRANSACTION_TAG",
-        "separator": "=",
+        "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
         "converterName": "ClientSideStatementValueConverters$StringValueConverter"
       }
     },
     {
-      "name": "SET SPANNER.RPC_PRIORITY = 'HIGH'|'MEDIUM'|'LOW'|'NULL'",
+      "name": "SET SPANNER.RPC_PRIORITY =|TO 'HIGH'|'MEDIUM'|'LOW'|'NULL'",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
-      "regex": "(?is)\\A\\s*set\\s+spanner\\.rpc_priority\\s*(?:=)\\s*(.*)\\z",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.rpc_priority(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetRPCPriority",
       "exampleStatements": [
         "set spanner.rpc_priority='HIGH'",
         "set spanner.rpc_priority='MEDIUM'",
         "set spanner.rpc_priority='LOW'",
-        "set spanner.rpc_priority='NULL'"
+        "set spanner.rpc_priority='NULL'",
+        "set spanner.rpc_priority to 'HIGH'",
+        "set spanner.rpc_priority to 'MEDIUM'",
+        "set spanner.rpc_priority to 'LOW'",
+        "set spanner.rpc_priority to 'NULL'"
       ],
       "setStatement": {
         "propertyName": "SPANNER.RPC_PRIORITY",
-        "separator": "=",
+        "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "'(HIGH|MEDIUM|LOW|NULL)'",
         "converterName": "ClientSideStatementValueConverters$RpcPriorityConverter"
       }
