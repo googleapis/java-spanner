@@ -1842,6 +1842,8 @@ public class SpannerSample {
             TimeUnit.SECONDS.toMicros(backup.getExpireTime().getSeconds())
                 + TimeUnit.NANOSECONDS.toMicros(backup.getExpireTime().getNanos())
                 + TimeUnit.DAYS.toMicros(30L));
+    // New Expire Time must be less than Max Expire Time
+    expireTime = expireTime.compareTo(backup.getMaxExpireTime())<0?expireTime:backup.getMaxExpireTime();
     int timeDiff = expireTime.compareTo(backup.getExpireTime());
     Timestamp newExpireTime = (timeDiff < 0) ? expireTime : backup.getExpireTime();
 
