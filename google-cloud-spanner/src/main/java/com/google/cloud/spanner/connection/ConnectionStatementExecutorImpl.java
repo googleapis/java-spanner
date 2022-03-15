@@ -57,6 +57,7 @@ import static com.google.cloud.spanner.connection.StatementResultImpl.resultSet;
 
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.CommitStats;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
@@ -196,7 +197,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         "STATEMENT_TIMEOUT",
         getConnection().hasStatementTimeout()
             ? ReadOnlyStalenessUtil.durationToString(new StatementTimeoutGetter(getConnection()))
-            : null,
+            : connection.getDialect() == Dialect.POSTGRESQL ? "0" : null,
         SHOW_STATEMENT_TIMEOUT);
   }
 

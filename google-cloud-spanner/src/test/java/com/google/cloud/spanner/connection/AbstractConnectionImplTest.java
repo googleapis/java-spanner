@@ -267,7 +267,10 @@ public abstract class AbstractConnectionImplTest {
                 "SET STATEMENT_TIMEOUT=%s;", dialect == Dialect.POSTGRESQL ? "DEFAULT" : "null"));
         connection.clearStatementTimeout();
 
-        log("@EXPECT RESULT_SET 'STATEMENT_TIMEOUT',null");
+        log(
+            String.format(
+                "@EXPECT RESULT_SET 'STATEMENT_TIMEOUT',%s",
+                dialect == Dialect.POSTGRESQL ? "'0'" : "null"));
         log("SHOW VARIABLE STATEMENT_TIMEOUT;");
         assertThat(connection.getStatementTimeout(unit), is(equalTo(0L)));
         assertThat(connection.hasStatementTimeout(), is(false));
@@ -280,7 +283,10 @@ public abstract class AbstractConnectionImplTest {
           gotException = true;
         }
         assertThat(gotException, is(true));
-        log("@EXPECT RESULT_SET 'STATEMENT_TIMEOUT',null");
+        log(
+            String.format(
+                "@EXPECT RESULT_SET 'STATEMENT_TIMEOUT',%s",
+                dialect == Dialect.POSTGRESQL ? "'0'" : "null"));
         log("SHOW VARIABLE STATEMENT_TIMEOUT;");
         assertThat(connection.getStatementTimeout(unit), is(equalTo(0L)));
         assertThat(connection.hasStatementTimeout(), is(false));
