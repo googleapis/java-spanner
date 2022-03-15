@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.DialectNamespaceMapper.getNamespace;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -63,24 +64,32 @@ public class ConnectionStatementWithNoParametersTest {
 
   @Test
   public void testExecuteGetReadOnly() {
-    ParsedStatement statement = parser.parse(Statement.of("show variable readonly"));
+    ParsedStatement statement =
+        parser.parse(
+            Statement.of(String.format("show variable %sreadonly", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
-    ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
-    when(executor.getConnection()).thenReturn(connection);
-    when(executor.statementShowReadOnly()).thenCallRealMethod();
-    statement.getClientSideStatement().execute(executor, "show variable readonly");
+    when(connection.getDialect()).thenReturn(dialect);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
+    statement
+        .getClientSideStatement()
+        .execute(executor, String.format("show variable %sreadonly", getNamespace(dialect)));
     verify(connection, times(1)).isReadOnly();
   }
 
   @Test
   public void testExecuteGetAutocommitDmlMode() {
-    ParsedStatement statement = parser.parse(Statement.of("show variable autocommit_dml_mode"));
+    ParsedStatement statement =
+        parser.parse(
+            Statement.of(
+                String.format("show variable %sautocommit_dml_mode", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
-    ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
-    when(executor.getConnection()).thenReturn(connection);
-    when(executor.statementShowAutocommitDmlMode()).thenCallRealMethod();
+    when(connection.getDialect()).thenReturn(dialect);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
     when(connection.getAutocommitDmlMode()).thenReturn(AutocommitDmlMode.TRANSACTIONAL);
-    statement.getClientSideStatement().execute(executor, "show variable autocommit_dml_mode");
+    statement
+        .getClientSideStatement()
+        .execute(
+            executor, String.format("show variable %sautocommit_dml_mode", getNamespace(dialect)));
     verify(connection, times(1)).getAutocommitDmlMode();
   }
 
@@ -99,64 +108,85 @@ public class ConnectionStatementWithNoParametersTest {
 
   @Test
   public void testExecuteGetReadTimestamp() {
-    ParsedStatement statement = parser.parse(Statement.of("show variable read_timestamp"));
+    ParsedStatement statement =
+        parser.parse(
+            Statement.of(String.format("show variable %sread_timestamp", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
-    ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
-    when(executor.getConnection()).thenReturn(connection);
-    when(executor.statementShowReadTimestamp()).thenCallRealMethod();
+    when(connection.getDialect()).thenReturn(dialect);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
     when(connection.getReadTimestampOrNull()).thenReturn(Timestamp.now());
-    statement.getClientSideStatement().execute(executor, "show variable read_timestamp");
+    statement
+        .getClientSideStatement()
+        .execute(executor, String.format("show variable %sread_timestamp", getNamespace(dialect)));
     verify(connection, times(1)).getReadTimestampOrNull();
   }
 
   @Test
   public void testExecuteGetCommitTimestamp() {
-    ParsedStatement statement = parser.parse(Statement.of("show variable commit_timestamp"));
+    ParsedStatement statement =
+        parser.parse(
+            Statement.of(String.format("show variable %scommit_timestamp", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
-    ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
-    when(executor.getConnection()).thenReturn(connection);
-    when(executor.statementShowCommitTimestamp()).thenCallRealMethod();
+    when(connection.getDialect()).thenReturn(dialect);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
     when(connection.getCommitTimestampOrNull()).thenReturn(Timestamp.now());
-    statement.getClientSideStatement().execute(executor, "show variable commit_timestamp");
+    statement
+        .getClientSideStatement()
+        .execute(
+            executor, String.format("show variable %scommit_timestamp", getNamespace(dialect)));
     verify(connection, times(1)).getCommitTimestampOrNull();
   }
 
   @Test
   public void testExecuteGetReadOnlyStaleness() {
-    ParsedStatement statement = parser.parse(Statement.of("show variable read_only_staleness"));
+    ParsedStatement statement =
+        parser.parse(
+            Statement.of(
+                String.format("show variable %sread_only_staleness", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
-    ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
-    when(executor.getConnection()).thenReturn(connection);
-    when(executor.statementShowReadOnlyStaleness()).thenCallRealMethod();
+    when(connection.getDialect()).thenReturn(dialect);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
     when(connection.getReadOnlyStaleness()).thenReturn(TimestampBound.strong());
-    statement.getClientSideStatement().execute(executor, "show variable read_only_staleness");
+    statement
+        .getClientSideStatement()
+        .execute(
+            executor, String.format("show variable %sread_only_staleness", getNamespace(dialect)));
     verify(connection, times(1)).getReadOnlyStaleness();
   }
 
   @Test
   public void testExecuteGetOptimizerVersion() {
-    ParsedStatement statement = parser.parse(Statement.of("show variable optimizer_version"));
+    ParsedStatement statement =
+        parser.parse(
+            Statement.of(
+                String.format("show variable %soptimizer_version", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
-    ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
-    when(executor.getConnection()).thenReturn(connection);
-    when(executor.statementShowOptimizerVersion()).thenCallRealMethod();
+    when(connection.getDialect()).thenReturn(dialect);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
     when(connection.getOptimizerVersion()).thenReturn("1");
-    statement.getClientSideStatement().execute(executor, "show variable optimizer_version");
+    statement
+        .getClientSideStatement()
+        .execute(
+            executor, String.format("show variable %soptimizer_version", getNamespace(dialect)));
     verify(connection, times(1)).getOptimizerVersion();
   }
 
   @Test
   public void testExecuteGetOptimizerStatisticsPackage() {
     ParsedStatement statement =
-        parser.parse(Statement.of("show variable optimizer_statistics_package"));
+        parser.parse(
+            Statement.of(
+                String.format(
+                    "show variable %soptimizer_statistics_package", getNamespace(dialect))));
     ConnectionImpl connection = mock(ConnectionImpl.class);
-    ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
-    when(executor.getConnection()).thenReturn(connection);
-    when(executor.statementShowOptimizerStatisticsPackage()).thenCallRealMethod();
+    when(connection.getDialect()).thenReturn(dialect);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
     when(connection.getOptimizerStatisticsPackage()).thenReturn("custom-package");
     statement
         .getClientSideStatement()
-        .execute(executor, "show variable optimizer_statistics_package");
+        .execute(
+            executor,
+            String.format("show variable %soptimizer_statistics_package", getNamespace(dialect)));
     verify(connection, times(1)).getOptimizerStatisticsPackage();
   }
 
@@ -165,9 +195,7 @@ public class ConnectionStatementWithNoParametersTest {
     ParsedStatement subject = parser.parse(Statement.of("begin"));
     for (String statement : subject.getClientSideStatement().getExampleStatements()) {
       ConnectionImpl connection = mock(ConnectionImpl.class);
-      ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
-      when(executor.getConnection()).thenReturn(connection);
-      when(executor.statementBeginTransaction()).thenCallRealMethod();
+      ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
       subject.getClientSideStatement().execute(executor, statement);
       verify(connection, times(1)).beginTransaction();
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,15 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.Dialect;
-import org.junit.Test;
 
-public class SetStatementTimeoutSqlScriptTest extends AbstractSqlScriptTest {
-
-  private String getFile(Dialect dialect) {
+class DialectNamespaceMapper {
+  static String getNamespace(Dialect dialect) {
     switch (dialect) {
       case POSTGRESQL:
-        return "postgresql/SetStatementTimeoutTest.sql";
+        return "SPANNER.";
       case GOOGLE_STANDARD_SQL:
       default:
-        return "SetStatementTimeoutTest.sql";
+        return "";
     }
-  }
-
-  @Test
-  public void testSetStatementTimeoutScript() throws Exception {
-    SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider(dialect));
-    verifier.verifyStatementsInFile(getFile(dialect), getClass(), true);
   }
 }

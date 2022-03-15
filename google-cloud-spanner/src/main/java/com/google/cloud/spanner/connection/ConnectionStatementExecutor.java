@@ -85,11 +85,18 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementBeginTransaction();
 
+  StatementResult statementBeginPgTransaction(PgTransactionMode transactionMode);
+
   StatementResult statementCommit();
 
   StatementResult statementRollback();
 
   StatementResult statementSetTransactionMode(TransactionMode mode);
+
+  StatementResult statementSetPgTransactionMode(PgTransactionMode transactionMode);
+
+  StatementResult statementSetPgSessionCharacteristicsTransactionMode(
+      PgTransactionMode transactionMode);
 
   StatementResult statementStartBatchDdl();
 
