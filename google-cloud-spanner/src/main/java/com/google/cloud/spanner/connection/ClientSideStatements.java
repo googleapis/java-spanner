@@ -26,17 +26,17 @@ import java.util.Set;
 
 /** This class reads and parses the {@link ClientSideStatement}s from the json file. */
 class ClientSideStatements {
-  private static final String STATEMENTS_DEFINITION_FILE = "ClientSideStatements.json";
+  private static final String GSQL_STATEMENTS_DEFINITION_FILE = "ClientSideStatements.json";
   private static final String PG_STATEMENTS_DEFINITION_FILE = "PG_ClientSideStatements.json";
-  private static final ClientSideStatements INSTANCE = importStatements();
-  private static final ClientSideStatements PG_INSTANCE = pgImportStatements();
+  private static final ClientSideStatements GSQL_STATEMENTS = importGsqlStatements();
+  private static final ClientSideStatements PG_STATEMENTS = importPgStatements();
 
   static ClientSideStatements getInstance(Dialect dialect) {
     switch (dialect) {
       case GOOGLE_STANDARD_SQL:
-        return INSTANCE;
+        return GSQL_STATEMENTS;
       case POSTGRESQL:
-        return PG_INSTANCE;
+        return PG_STATEMENTS;
       default:
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT, "Unknown or unsupported dialect: " + dialect);
@@ -46,18 +46,18 @@ class ClientSideStatements {
   /**
    * Reads statement definitions from ClientSideStatements.json and parses these as Java objects.
    */
-  private static ClientSideStatements importStatements() {
+  private static ClientSideStatements importGsqlStatements() {
     Gson gson = new Gson();
     return gson.fromJson(
         new InputStreamReader(
-            ClientSideStatements.class.getResourceAsStream(STATEMENTS_DEFINITION_FILE)),
+            ClientSideStatements.class.getResourceAsStream(GSQL_STATEMENTS_DEFINITION_FILE)),
         ClientSideStatements.class);
   }
 
   /**
    * Reads statement definitions from PG_ClientSideStatements.json and parses these as Java objects.
    */
-  private static ClientSideStatements pgImportStatements() {
+  private static ClientSideStatements importPgStatements() {
     Gson gson = new Gson();
     return gson.fromJson(
         new InputStreamReader(
