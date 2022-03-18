@@ -24,12 +24,11 @@ import org.junit.Test;
 
 public class NativeImageSpannerSampleIT {
 
-  @Rule
-  public StdOutCaptureRule stdOut = new StdOutCaptureRule();
+  @Rule public StdOutCaptureRule stdOut = new StdOutCaptureRule();
 
   @Test
   public void testStoreAndRead() throws Exception {
-    NativeImageSpannerSample.main(new String[]{});
+    NativeImageSpannerSample.main(new String[] {});
     assertThat(stdOut.getCapturedOutputAsUtf8String()).contains("Singers Registered in Spanner:");
     assertThat(stdOut.getCapturedOutputAsUtf8String()).contains("Virginia Watson");
     assertThat(stdOut.getCapturedOutputAsUtf8String()).contains("Bob Loblaw");

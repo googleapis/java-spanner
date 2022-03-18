@@ -24,9 +24,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 
-/**
- * Sample Spanner application compiled with Native Image.
- */
+/** Sample Spanner application compiled with Native Image. */
 public class NativeImageSpannerSample {
 
   private static final String TEST_INSTANCE_ID = "test-instance";
@@ -49,8 +47,7 @@ public class NativeImageSpannerSample {
 
     InstanceOperations.createTestInstance(
         instanceAdminClient, options.getProjectId(), TEST_INSTANCE_ID);
-    DatabaseOperations.createDatabase(
-        databaseAdminClient, TEST_INSTANCE_ID, TEST_DATABASE_ID);
+    DatabaseOperations.createDatabase(databaseAdminClient, TEST_INSTANCE_ID, TEST_DATABASE_ID);
 
     // Insert data
     DatabaseClient dbClient =
@@ -63,12 +60,10 @@ public class NativeImageSpannerSample {
     ResultSet resultSet = DatabaseOperations.performRead(dbClient);
     System.out.println("Singers Registered in Spanner:");
     while (resultSet.next()) {
-      System.out.println(
-          resultSet.getString("FirstName") + " " + resultSet.getString("LastName"));
-
+      System.out.println(resultSet.getString("FirstName") + " " + resultSet.getString("LastName"));
     }
-    if (DatabaseOperations.databaseExists(databaseAdminClient, TEST_INSTANCE_ID,
-        TEST_DATABASE_ID)) {
+    if (DatabaseOperations.databaseExists(
+        databaseAdminClient, TEST_INSTANCE_ID, TEST_DATABASE_ID)) {
       DatabaseOperations.deleteDatabase(dbClient);
     }
   }
