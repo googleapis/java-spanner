@@ -2262,6 +2262,46 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testGetDialect_FailsDirectlyIfDatabaseNotFound() {
+    mockSpanner.setBatchCreateSessionsExecutionTime(
+        SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    SpannerException exception = assertThrows(SpannerException.class, client::getDialect);
+    assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
+    assertTrue(
+        exception
+            .getMessage()
+            .contains(
+                "NOT_FOUND: Database not found: Database with id invalid-database not found"));
+  }
+
+  @Test
+  public void testGetDialectDefaultPreloaded_FailsDirectlyIfDatabaseNotFound() {
+    mockSpanner.setBatchCreateSessionsExecutionTime(
+        SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
+    try (Spanner spanner =
+        this.spanner
+            .getOptions()
+            .toBuilder()
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build())
+            .build()
+            .getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      SpannerException exception = assertThrows(SpannerException.class, client::getDialect);
+      assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
+      assertTrue(
+          exception
+              .getMessage()
+              .contains(
+                  "NOT_FOUND: Database not found: Database with id invalid-database not found"));
+    }
+  }
+
+  @Test
   public void testUntypedNullParameters() {
     Statement statement =
         Statement.newBuilder("INSERT INTO FOO (BAR) VALUES (@p)")

@@ -19,13 +19,17 @@ package com.google.cloud.spanner.connection;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.MockSpannerServiceImpl;
+import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
@@ -43,6 +47,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.annotation.Nonnull;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -462,6 +467,50 @@ public class ConnectionTest {
           assertEquals("HIGH", rs.getString("RPC_PRIORITY"));
           assertFalse(rs.next());
         }
+      }
+    }
+  }
+
+  public static class DialectDetectionTest extends AbstractMockServerTest {
+    protected String getBaseUrl() {
+      return super.getBaseUrl() + ";minSessions=1";
+    }
+
+    @After
+    public void reset() {
+      // Reset dialect to default.
+      mockSpanner.putStatementResult(
+          MockSpannerServiceImpl.StatementResult.detectDialectResult(Dialect.GOOGLE_STANDARD_SQL));
+      mockSpanner.reset();
+      mockSpanner.removeAllExecutionTimes();
+      // Close all open Spanner instances to ensure that each test run gets a fresh instance.
+      SpannerPool.closeSpannerPool();
+    }
+
+    @Test
+    public void testDefaultGetDialect() {
+      try (Connection connection = createConnection()) {
+        assertEquals(Dialect.GOOGLE_STANDARD_SQL, connection.getDialect());
+      }
+    }
+
+    @Test
+    public void testPostgreSQLGetDialect() {
+      mockSpanner.putStatementResult(
+          MockSpannerServiceImpl.StatementResult.detectDialectResult(Dialect.POSTGRESQL));
+      try (Connection connection = createConnection()) {
+        assertEquals(Dialect.POSTGRESQL, connection.getDialect());
+      }
+    }
+
+    @Test
+    public void testGetDialect_DatabaseNotFound() throws Exception {
+      mockSpanner.setBatchCreateSessionsExecutionTime(
+          SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
+      try (Connection connection = createConnection()) {
+        SpannerException exception = assertThrows(SpannerException.class, connection::getDialect);
+        assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("Database with id invalid-database not found"));
       }
     }
   }
