@@ -22,9 +22,8 @@ import com.google.cloud.spanner.encryption.BackupEncryptionConfig;
 import com.google.cloud.spanner.encryption.EncryptionInfo;
 import com.google.protobuf.ProtocolStringList;
 import com.google.spanner.admin.database.v1.Database;
-
-import javax.annotation.Nullable;
 import java.util.Objects;
+import javax.annotation.Nullable;
 
 /** Represents a Cloud Spanner database backup. */
 public class BackupInfo {
@@ -90,16 +89,14 @@ public class BackupInfo {
     /**
      * Output Only.
      *
-     * <p>Returns the max allowed expiration time of the backup, with
-     * microseconds granularity.
+     * <p>Returns the max allowed expiration time of the backup, with microseconds granularity.
      */
     protected abstract Builder setMaxExpireTime(Timestamp maxExpireTime);
 
     /**
      * Output Only.
      *
-     * <p>Returns the names of the destination backups being created by copying
-     * this source backup.
+     * <p>Returns the names of the destination backups being created by copying this source backup.
      */
     protected abstract Builder setReferencingBackup(ProtocolStringList referencingBackup);
   }
@@ -191,7 +188,6 @@ public class BackupInfo {
       this.maxExpireTime = Preconditions.checkNotNull(maxExpireTime);
       return this;
     }
-
 
     @Override
     public Builder setReferencingBackup(ProtocolStringList referencingBackup) {
@@ -297,8 +293,10 @@ public class BackupInfo {
     return maxExpireTime;
   }
 
-  /** Returns the names of the destination backups being created by copying
-   * this source backup {@link Backup}. */
+  /**
+   * Returns the names of the destination backups being created by copying this source backup {@link
+   * Backup}.
+   */
   public ProtocolStringList getReferencingBackup() {
     return referencingBackup;
   }
@@ -327,7 +325,16 @@ public class BackupInfo {
   @Override
   public int hashCode() {
     return Objects.hash(
-        id, state, size, encryptionConfig, encryptionInfo, expireTime, versionTime, database, maxExpireTime, referencingBackup);
+        id,
+        state,
+        size,
+        encryptionConfig,
+        encryptionInfo,
+        expireTime,
+        versionTime,
+        database,
+        maxExpireTime,
+        referencingBackup);
   }
 
   @Override

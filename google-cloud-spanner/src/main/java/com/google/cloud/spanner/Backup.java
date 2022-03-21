@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.api.client.util.Preconditions;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
@@ -25,8 +27,6 @@ import com.google.cloud.spanner.encryption.EncryptionInfo;
 import com.google.longrunning.Operation;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Represents a Cloud Spanner database backup. {@code Backup} adds a layer of service related
@@ -177,7 +177,7 @@ public class Backup extends BackupInfo {
     checkArgument(!proto.getDatabase().isEmpty(), "Missing expected 'database' field");
     return new Backup.Builder(client, BackupId.of(proto.getName()))
         .setState(fromProtoState(proto.getState()))
-        .setSize(proto.getSiprotected abstract Builder setMaxExpireTime(Timestamp maxExpireTime);zeBytes())
+        .setSize(proto.getSizeBytes())
         .setExpireTime(Timestamp.fromProto(proto.getExpireTime()))
         .setVersionTime(Timestamp.fromProto(proto.getVersionTime()))
         .setDatabase(DatabaseId.of(proto.getDatabase()))
