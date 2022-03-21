@@ -177,7 +177,7 @@ public class Backup extends BackupInfo {
     checkArgument(!proto.getDatabase().isEmpty(), "Missing expected 'database' field");
     return new Backup.Builder(client, BackupId.of(proto.getName()))
         .setState(fromProtoState(proto.getState()))
-        .setSize(proto.getSizeBytes())
+        .setSize(proto.getSiprotected abstract Builder setMaxExpireTime(Timestamp maxExpireTime);zeBytes())
         .setExpireTime(Timestamp.fromProto(proto.getExpireTime()))
         .setVersionTime(Timestamp.fromProto(proto.getVersionTime()))
         .setDatabase(DatabaseId.of(proto.getDatabase()))
