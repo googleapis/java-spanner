@@ -16,7 +16,7 @@
 
 package com.example.spanner;
 
-//[START spanner_update_instance_config]
+// [START spanner_update_instance_config]
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceConfig;
@@ -38,34 +38,33 @@ class UpdateInstanceConfigSample {
   }
 
   static void updateInstanceConfig(String projectId, String instanceConfigId, String displayName) {
-    try(Spanner spanner = SpannerOptions
-        .newBuilder()
-        .setProjectId(projectId)
-        .build()
-        .getService()) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
 
       InstanceConfigInfo instanceConfigInfo =
-          InstanceConfig
-              .newBuilder(InstanceConfigId.of(projectId, instanceConfigId))
+          InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId))
               .setDisplayName(displayName)
               .build();
 
       final OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> operation =
-          instanceAdminClient.updateInstanceConfig(instanceConfigInfo, InstanceConfigField.DISPLAY_NAME);
+          instanceAdminClient.updateInstanceConfig(
+              instanceConfigInfo, InstanceConfigField.DISPLAY_NAME);
 
       try {
         InstanceConfig instanceConfig = operation.get();
-        System.out.printf("Instance config %s was successfully updated with new display name %s%n", instanceConfig.getId(), instanceConfig.getDisplayName());
-      } catch(ExecutionException e) {
+        System.out.printf(
+            "Instance config %s was successfully updated with new display name %s%n",
+            instanceConfig.getId(), instanceConfig.getDisplayName());
+      } catch (ExecutionException e) {
         System.out.printf(
             "Error: Updating instance config %s failed with error message %s%n",
             instanceConfigInfo.getId(), e.getMessage());
-      } catch(InterruptedException e) {
+      } catch (InterruptedException e) {
         System.out.println(
             "Error: Waiting for updateInstanceConfig operation to finish was interrupted");
       }
     }
   }
 }
-//[END spanner_update_instance_config]
+// [END spanner_update_instance_config]

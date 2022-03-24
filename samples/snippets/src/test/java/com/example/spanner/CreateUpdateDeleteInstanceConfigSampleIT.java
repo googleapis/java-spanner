@@ -17,6 +17,7 @@
 package com.example.spanner;
 
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 public class CreateUpdateDeleteInstanceConfigSampleIT extends SampleTestBase {
@@ -26,35 +27,49 @@ public class CreateUpdateDeleteInstanceConfigSampleIT extends SampleTestBase {
     String customInstanceConfigId = idGenerator.generateInstanceConfigId();
 
     // Create a random instance config. Display name is set to the instance config id in sample.
-    final String out1 = SampleRunner.runSample(() ->
-        CreateInstanceConfigSample.createInstanceConfig(projectId, instanceConfigIdCmmr, customInstanceConfigId)
-    );
+    final String out1 =
+        SampleRunner.runSample(
+            () ->
+                CreateInstanceConfigSample.createInstanceConfig(
+                    projectId, instanceConfigIdCmmr, customInstanceConfigId));
     assertTrue(
-        "Expected instance config " + customInstanceConfigId + " to be created."
-            + " Output received was " + out1,
-        out1.contains(customInstanceConfigId)
-    );
+        "Expected instance config "
+            + customInstanceConfigId
+            + " to be created."
+            + " Output received was "
+            + out1,
+        out1.contains(customInstanceConfigId));
 
     // Update display name to a randomly generated instance config id.
     String newDisplayName = idGenerator.generateInstanceConfigId();
-    final String out2 = SampleRunner.runSample(() ->
-        UpdateInstanceConfigSample.updateInstanceConfig(projectId, customInstanceConfigId, newDisplayName)
-    );
+    final String out2 =
+        SampleRunner.runSample(
+            () ->
+                UpdateInstanceConfigSample.updateInstanceConfig(
+                    projectId, customInstanceConfigId, newDisplayName));
     assertTrue(
-        "Expected display name to be updated from" + customInstanceConfigId + " to " + newDisplayName
-            + " for instance config " + customInstanceConfigId + "."
-            + " Output received was " + out2,
-        out2.contains(newDisplayName)
-    );
+        "Expected display name to be updated from"
+            + customInstanceConfigId
+            + " to "
+            + newDisplayName
+            + " for instance config "
+            + customInstanceConfigId
+            + "."
+            + " Output received was "
+            + out2,
+        out2.contains(newDisplayName));
 
     // Delete the created instance config.
-    final String out3 = SampleRunner.runSample(() ->
-        DeleteInstanceConfigSample.deleteInstanceConfig(projectId, customInstanceConfigId)
-    );
+    final String out3 =
+        SampleRunner.runSample(
+            () ->
+                DeleteInstanceConfigSample.deleteInstanceConfig(projectId, customInstanceConfigId));
     assertTrue(
-        "Expected instance config " + customInstanceConfigId + " to be deleted."
-            + " Output received was " + out3,
-        out3.contains(customInstanceConfigId)
-    );
+        "Expected instance config "
+            + customInstanceConfigId
+            + " to be deleted."
+            + " Output received was "
+            + out3,
+        out3.contains(customInstanceConfigId));
   }
 }

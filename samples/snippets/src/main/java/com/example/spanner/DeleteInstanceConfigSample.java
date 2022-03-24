@@ -15,7 +15,7 @@
  */
 package com.example.spanner;
 
-//[START spanner_delete_instance_config]
+// [START spanner_delete_instance_config]
 import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
@@ -30,20 +30,18 @@ class DeleteInstanceConfigSample {
   }
 
   static void deleteInstanceConfig(String projectId, String instanceConfigId) {
-    try(Spanner spanner = SpannerOptions
-        .newBuilder()
-        .setProjectId(projectId)
-        .build()
-        .getService()) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
 
       try {
         instanceAdminClient.deleteInstanceConfig(instanceConfigId);
         System.out.printf("Deleted user instance config with id %s\n", instanceConfigId);
-      } catch(SpannerException e) {
-        System.out.printf("Could not delete user instance config %s: %s\n", instanceConfigId, e.getMessage());
+      } catch (SpannerException e) {
+        System.out.printf(
+            "Could not delete user instance config %s: %s\n", instanceConfigId, e.getMessage());
       }
     }
   }
 }
-//[END spanner_delete_instance_config]
+// [END spanner_delete_instance_config]

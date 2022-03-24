@@ -63,7 +63,8 @@ public class InstanceAdminClientImplTest {
   private static final String CONFIG_ID = "my-config";
   private static final String CONFIG_NAME = "projects/my-project/instanceConfigs/my-config";
   private static final String CONFIG_NAME2 = "projects/my-project/instanceConfigs/my-config2";
-  private static final String BASE_CONFIG = "projects/<project_name>/instanceConfigs/my-base-config";
+  private static final String BASE_CONFIG =
+      "projects/<project_name>/instanceConfigs/my-base-config";
 
   @Mock SpannerRpc rpc;
   @Mock DatabaseAdminClient dbClient;
@@ -91,8 +92,7 @@ public class InstanceAdminClientImplTest {
             .setLocation("Replica Location 3")
             .setType(com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.WITNESS)
             .setDefaultLeaderLocation(false)
-            .build()
-    );
+            .build());
   }
 
   private com.google.spanner.admin.instance.v1.InstanceConfig getInstanceConfigProto() {
@@ -105,24 +105,25 @@ public class InstanceAdminClientImplTest {
 
   @Test
   public void createInstanceConfig() {
-    OperationFuture<com.google.spanner.admin.instance.v1.InstanceConfig, CreateInstanceConfigMetadata>
+    OperationFuture<
+            com.google.spanner.admin.instance.v1.InstanceConfig, CreateInstanceConfigMetadata>
         rawOperationFuture =
-        OperationFutureUtil.immediateOperationFuture(
-            "createInstanceConfig",
-            getInstanceConfigProto(),
-            CreateInstanceConfigMetadata.getDefaultInstance()
-        );
-    when(rpc.createInstanceConfig(
-        "projects/" + PROJECT_ID,
-        CONFIG_ID,
-        getInstanceConfigProto()))
+            OperationFutureUtil.immediateOperationFuture(
+                "createInstanceConfig",
+                getInstanceConfigProto(),
+                CreateInstanceConfigMetadata.getDefaultInstance());
+    when(rpc.createInstanceConfig("projects/" + PROJECT_ID, CONFIG_ID, getInstanceConfigProto()))
         .thenReturn(rawOperationFuture);
 
     OperationFuture<com.google.cloud.spanner.InstanceConfig, CreateInstanceConfigMetadata> op =
         client.createInstanceConfig(
-            com.google.cloud.spanner.InstanceConfig.newBuilder(InstanceConfigId.of(PROJECT_ID, CONFIG_ID))
+            com.google.cloud.spanner.InstanceConfig.newBuilder(
+                    InstanceConfigId.of(PROJECT_ID, CONFIG_ID))
                 .setBaseConfig(BASE_CONFIG)
-                .addAllReplicas(Lists.newArrayList(getAllReplicas()).stream().map(ReplicaInfo::fromProto).collect(Collectors.toList()))
+                .addAllReplicas(
+                    Lists.newArrayList(getAllReplicas()).stream()
+                        .map(ReplicaInfo::fromProto)
+                        .collect(Collectors.toList()))
                 .build());
     assertThat(op.isDone()).isTrue();
   }
@@ -134,11 +135,15 @@ public class InstanceAdminClientImplTest {
             .setName(CONFIG_NAME)
             .setDisplayName(CONFIG_NAME)
             .build();
-    OperationFuture<com.google.spanner.admin.instance.v1.InstanceConfig, UpdateInstanceConfigMetadata>
+    OperationFuture<
+            com.google.spanner.admin.instance.v1.InstanceConfig, UpdateInstanceConfigMetadata>
         rawOperationFuture =
-        OperationFutureUtil.immediateOperationFuture(
-            "updateInstanceConfig", getInstanceConfigProto(), UpdateInstanceConfigMetadata.getDefaultInstance());
-    when(rpc.updateInstanceConfig(instanceConfig, FieldMask.newBuilder().addPaths("display_name").build()))
+            OperationFutureUtil.immediateOperationFuture(
+                "updateInstanceConfig",
+                getInstanceConfigProto(),
+                UpdateInstanceConfigMetadata.getDefaultInstance());
+    when(rpc.updateInstanceConfig(
+            instanceConfig, FieldMask.newBuilder().addPaths("display_name").build()))
         .thenReturn(rawOperationFuture);
     InstanceConfigInfo instanceConfigInfo =
         InstanceConfigInfo.newBuilder(InstanceConfigId.of(CONFIG_NAME))

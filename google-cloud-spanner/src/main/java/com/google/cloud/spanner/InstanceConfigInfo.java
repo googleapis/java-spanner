@@ -23,12 +23,10 @@ import com.google.cloud.spanner.InstanceInfo.BuilderImpl;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.FieldMask;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /** Represents a Cloud Spanner instance config resource. */
@@ -325,10 +323,12 @@ public class InstanceConfigInfo {
       String displayName,
       List<ReplicaInfo> replicas,
       List<String> leaderOptions) {
-    this((BuilderImpl) newBuilder(id)
-        .setDisplayName(displayName)
-        .addAllReplicas(replicas)
-        .addAllLeaderOptions(leaderOptions));
+    this(
+        (BuilderImpl)
+            newBuilder(id)
+                .setDisplayName(displayName)
+                .addAllReplicas(replicas)
+                .addAllLeaderOptions(leaderOptions));
   }
 
   InstanceConfigInfo(BuilderImpl builder) {
@@ -369,7 +369,18 @@ public class InstanceConfigInfo {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, displayName, replicas, leaderOptions, optionalReplicas, baseConfig, configType, etag, reconciling, state, labels);
+    return Objects.hash(
+        id,
+        displayName,
+        replicas,
+        leaderOptions,
+        optionalReplicas,
+        baseConfig,
+        configType,
+        etag,
+        reconciling,
+        state,
+        labels);
   }
 
   public Builder toBuilder() {
@@ -380,22 +391,32 @@ public class InstanceConfigInfo {
   public String toString() {
     return String.format(
         "Instance Config[%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s]",
-        id, displayName, replicas, leaderOptions, optionalReplicas, baseConfig, configType, etag, reconciling, state, labels);
+        id,
+        displayName,
+        replicas,
+        leaderOptions,
+        optionalReplicas,
+        baseConfig,
+        configType,
+        etag,
+        reconciling,
+        state,
+        labels);
   }
 
   com.google.spanner.admin.instance.v1.InstanceConfig toProto() {
     // TODO: add other fields here.
     com.google.spanner.admin.instance.v1.InstanceConfig.Builder builder =
-        com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder()
-            .setName(getId().getName());
+        com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder().setName(getId().getName());
     if (getDisplayName() != null) {
       builder.setDisplayName(getDisplayName());
     }
-    if(getBaseConfig() != null && !getBaseConfig().isEmpty()) {
+    if (getBaseConfig() != null && !getBaseConfig().isEmpty()) {
       builder.setBaseConfig(getBaseConfig());
     }
-    if(getReplicas() != null) {
-      builder.addAllReplicas(getReplicas().stream().map(ReplicaInfo::getProto).collect(Collectors.toList()));
+    if (getReplicas() != null) {
+      builder.addAllReplicas(
+          getReplicas().stream().map(ReplicaInfo::getProto).collect(Collectors.toList()));
     }
     return builder.build();
   }

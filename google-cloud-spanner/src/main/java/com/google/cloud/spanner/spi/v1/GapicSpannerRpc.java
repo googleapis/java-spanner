@@ -879,7 +879,8 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
-      String parent, String instanceConfigId, InstanceConfig instanceConfig) throws SpannerException {
+      String parent, String instanceConfigId, InstanceConfig instanceConfig)
+      throws SpannerException {
     CreateInstanceConfigRequest request =
         CreateInstanceConfigRequest.newBuilder()
             .setParent(parent)
@@ -895,14 +896,16 @@ public class GapicSpannerRpc implements SpannerRpc {
   public OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
       InstanceConfig instanceConfig, FieldMask fieldMask) throws SpannerException {
     UpdateInstanceConfigRequest request =
-        UpdateInstanceConfigRequest
-            .newBuilder().
-            setInstanceConfig(instanceConfig)
+        UpdateInstanceConfigRequest.newBuilder()
+            .setInstanceConfig(instanceConfig)
             .setUpdateMask(fieldMask)
             .build();
     GrpcCallContext context =
         newCallContext(
-            null, instanceConfig.getName(), request, InstanceAdminGrpc.getUpdateInstanceConfigMethod());
+            null,
+            instanceConfig.getName(),
+            request,
+            InstanceAdminGrpc.getUpdateInstanceConfigMethod());
     return instanceAdminStub.updateInstanceConfigOperationCallable().futureCall(request, context);
   }
 
@@ -922,7 +925,8 @@ public class GapicSpannerRpc implements SpannerRpc {
         DeleteInstanceConfigRequest.newBuilder().setName(instanceConfigName).build();
 
     GrpcCallContext context =
-        newCallContext(null, instanceConfigName, request, InstanceAdminGrpc.getDeleteInstanceConfigMethod());
+        newCallContext(
+            null, instanceConfigName, request, InstanceAdminGrpc.getDeleteInstanceConfigMethod());
     get(instanceAdminStub.deleteInstanceConfigCallable().futureCall(request, context));
   }
 

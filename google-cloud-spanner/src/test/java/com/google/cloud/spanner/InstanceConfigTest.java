@@ -76,7 +76,8 @@ public class InstanceConfigTest {
 
     assertEquals(
         new InstanceConfig(
-            new InstanceConfig.Builder(client, InstanceConfigId.of("my-project", "my-instance-config"))
+            new InstanceConfig.Builder(
+                    client, InstanceConfigId.of("my-project", "my-instance-config"))
                 .setDisplayName("Display Name")
                 .addAllReplicas(
                     Arrays.asList(
@@ -94,8 +95,7 @@ public class InstanceConfigTest {
                             .setLocation("Replica Location 3")
                             .setType(ReplicaInfo.ReplicaType.WITNESS)
                             .setDefaultLeaderLocation(false)
-                            .build())
-                )
+                            .build()))
                 .addAllLeaderOptions(Arrays.asList("Leader Option 1", "Leader Option 2"))
                 .addAllOptionalReplicas(
                     Arrays.asList(
@@ -108,8 +108,7 @@ public class InstanceConfigTest {
                             .setLocation("Optional Replica Location 2")
                             .setType(ReplicaInfo.ReplicaType.READ_ONLY)
                             .setDefaultLeaderLocation(false)
-                            .build())
-                )
+                            .build()))
                 .setBaseConfig("Base Config")),
         instanceConfig);
   }

@@ -29,14 +29,108 @@ import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 /** Client to do admin operations on Cloud Spanner Instance and Instance Configs. */
 public interface InstanceAdminClient {
 
-  /** Creates an instance config. */
-  /* TODO: Add detailed documentation and samples.
+  /**
+   * Creates an instance config and begins preparing it to be used. The returned {@code Operation}
+   * can be used to track the progress of preparing the new instance config. The instance config
+   * name is assigned by the caller. If the named instance config already exists, a SpannerException
+   * is thrown.
+   *
+   * <p>Immediately after the request returns:
+   *
+   * <ul>
+   *   <li>The instance config is readable via the API, with all requested attributes.
+   *   <li>The instance config's {@code reconciling} field is set to true. Its state is {@code
+   *       CREATING}.
+   * </ul>
+   *
+   * While the operation is pending:
+   *
+   * <ul>
+   *   <li>Cancelling the operation renders the instance config immediately unreadable via the API.
+   *   <li>Except for deleting the creating resource, all other attempts to modify the instance
+   *       config are rejected.
+   *       <p>Upon completion of the returned operation:
+   *       <ul>
+   *         <li>Instances can be created using the instance configuration.
+   *         <li>The instance config's {@code reconciling} field becomes false.
+   *         <li>Its state becomes {@code READY}.
+   *             <!--SNIPPET instance_admin_client_create_instance_config-->
+   *             <pre>{@code
+   * String projectId = "my-project";
+   * String baseInstanceConfig = "my-base-config";
+   * String instanceConfigId = "custom-user-config";
+   *
+   * final InstanceConfig baseConfig = instanceAdminClient.getInstanceConfig(baseInstanceConfig);
+   *
+   * InstanceConfigInfo instanceConfigInfo =
+   *     InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId))
+   *         .setDisplayName(instanceConfigId)
+   *         .setBaseConfig(baseConfig.getId().getName())
+   *         .addAllReplicas(replicas)
+   *         .build();
+   *
+   * final OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> operation =
+   *     instanceAdminClient.createInstanceConfig(instanceConfigInfo);
+   *
+   * InstanceConfig instanceConfig = op.get()
+   * }</pre>
+   *             <!--SNIPPET instance_admin_client_create_instance_config-->
    */
   OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
       InstanceConfigInfo instanceConfig) throws SpannerException;
 
-  /** Updates an instance config. */
-  /* TODO: Add detailed documentation and samples.
+  /**
+   * Updates an instance config. The returned {@code Operation} can be used to track the progress of
+   * updating the instance. If the named instance config does not exist, a SpannerException is
+   * thrown.
+   *
+   * <p>Only user managed configurations can be updated.
+   *
+   * <p>Immediately after the request returns:
+   *
+   * <ul>
+   *   <li>The instance config's {@code reconciling} field is set to true.
+   * </ul>
+   *
+   * While the operation is pending:
+   *
+   * <ul>
+   *   <li>Cancelling the operation sets its metadata's cancel_time.
+   *   <li>The operation is guaranteed to succeed at undoing all changes, after which point it
+   *       terminates with a `CANCELLED` status.
+   *   <li>All other attempts to modify the instance config are rejected.
+   *   <li>Reading the instance config via the API continues to give the pre-request values.
+   * </ul>
+   *
+   * Upon completion of the returned operation:
+   *
+   * <ul>
+   *   <li>Creating instances using the instance configuration uses the new values.
+   *   <li>The instance config's new values are readable via the API.
+   *   <li>The instance config's {@code reconciling field} becomes false.
+   * </ul>
+   *
+   * <!--SNIPPET instance_admin_client_update_instance_config-->
+   *
+   * <pre>{@code
+   * String projectId = "my-project";
+   * String instanceConfigId = "custom-user-config";
+   * String displayName = "my-display-name";
+   *
+   * InstanceConfigInfo instanceConfigInfo =
+   *     InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId))
+   *         .setDisplayName(displayName)
+   *         .build();
+   *
+   * // Only update display name.
+   * final OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> operation =
+   *     instanceAdminClient.updateInstanceConfig(
+   *         instanceConfigInfo, InstanceConfigField.DISPLAY_NAME);
+   *
+   * InstanceConfig instanceConfig = operation.get();
+   * }</pre>
+   *
+   * <!--SNIPPET instance_admin_client_update_instance_config-->
    */
   OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
       InstanceConfigInfo instanceConfig, InstanceConfigInfo.InstanceConfigField... fieldsToUpdate)
@@ -52,8 +146,21 @@ public interface InstanceAdminClient {
    */
   InstanceConfig getInstanceConfig(String configId) throws SpannerException;
 
-  /** Deletes an instance config. */
-  /* TODO: Add detailed documentation and samples.
+  /**
+   * Deletes the instance config. Deletion is only allowed when no instances are using the
+   * configuration. If any instances are using the config, a SpannerException is thrown.
+   *
+   * <p>Only user managed configurations can be deleted.
+   * <!--SNIPPET instance_admin_client_delete_instance_config-->
+   *
+   * <pre>{@code
+   * String projectId = "my-project";
+   * String instanceConfigId = "custom-user-config";
+   *
+   * instanceAdminClient.deleteInstanceConfig(instanceConfigId);
+   * }</pre>
+   *
+   * <!--SNIPPET instance_admin_client_delete_instance_config-->
    */
   void deleteInstanceConfig(String instanceConfigId) throws SpannerException;
 

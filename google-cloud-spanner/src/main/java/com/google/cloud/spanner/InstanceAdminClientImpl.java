@@ -63,12 +63,14 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
   }
 
   @Override
-  public OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(InstanceConfigInfo instanceConfig)
-      throws SpannerException {
+  public OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
+      InstanceConfigInfo instanceConfig) throws SpannerException {
     String projectName = PROJECT_NAME_TEMPLATE.instantiate("project", projectId);
-    OperationFuture<com.google.spanner.admin.instance.v1.InstanceConfig, CreateInstanceConfigMetadata>
+    OperationFuture<
+            com.google.spanner.admin.instance.v1.InstanceConfig, CreateInstanceConfigMetadata>
         rawOperationFuture =
-        rpc.createInstanceConfig(projectName, instanceConfig.getId().getInstanceConfig(), instanceConfig.toProto());
+            rpc.createInstanceConfig(
+                projectName, instanceConfig.getId().getInstanceConfig(), instanceConfig.toProto());
 
     return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
@@ -91,7 +93,8 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
       throws SpannerException {
     FieldMask fieldMask = InstanceConfigInfo.InstanceConfigField.toFieldMask(fieldsToUpdate);
 
-    OperationFuture<com.google.spanner.admin.instance.v1.InstanceConfig, UpdateInstanceConfigMetadata>
+    OperationFuture<
+            com.google.spanner.admin.instance.v1.InstanceConfig, UpdateInstanceConfigMetadata>
         rawOperationFuture = rpc.updateInstanceConfig(instanceConfig.toProto(), fieldMask);
     return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),

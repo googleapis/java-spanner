@@ -16,7 +16,7 @@
 
 package com.example.spanner;
 
-//[START spanner_create_instance_config]
+// [START spanner_create_instance_config]
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceConfig;
@@ -38,16 +38,13 @@ class CreateInstanceConfigSample {
     createInstanceConfig(projectId, baseInstanceConfig, instanceConfigId);
   }
 
-  static void createInstanceConfig(String projectId, String baseInstanceConfig, String instanceConfigId) {
-    try(Spanner spanner = SpannerOptions
-        .newBuilder()
-        .setProjectId(projectId)
-        .build()
-        .getService()) {
+  static void createInstanceConfig(
+      String projectId, String baseInstanceConfig, String instanceConfigId) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
 
-      final InstanceConfig baseConfig = instanceAdminClient
-          .getInstanceConfig(baseInstanceConfig);
+      final InstanceConfig baseConfig = instanceAdminClient.getInstanceConfig(baseInstanceConfig);
 
       // Custom configurations contain all the replicas of the base config and atleast one optional
       // replica.
@@ -55,8 +52,7 @@ class CreateInstanceConfigSample {
       replicas.add(baseConfig.getOptionalReplicas().get(0));
 
       InstanceConfigInfo instanceConfigInfo =
-          InstanceConfig
-              .newBuilder(InstanceConfigId.of(projectId, instanceConfigId))
+          InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId))
               .setDisplayName(instanceConfigId)
               .setBaseConfig(baseConfig.getId().getName())
               .addAllReplicas(replicas)
@@ -68,15 +64,15 @@ class CreateInstanceConfigSample {
       try {
         InstanceConfig instanceConfig = operation.get();
         System.out.printf("Instance config %s was successfully created%n", instanceConfig.getId());
-      } catch(ExecutionException e) {
+      } catch (ExecutionException e) {
         System.out.printf(
             "Error: Creating instance config %s failed with error message %s%n",
             instanceConfigInfo.getId(), e.getMessage());
-      } catch(InterruptedException e) {
+      } catch (InterruptedException e) {
         System.out.println(
             "Error: Waiting for createInstanceConfig operation to finish was interrupted");
       }
     }
   }
 }
-//[END spanner_create_instance_config]
+// [END spanner_create_instance_config]

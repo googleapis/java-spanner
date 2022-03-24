@@ -153,14 +153,20 @@ public class InstanceConfig extends InstanceConfigInfo {
         new Builder(client, InstanceConfigId.of(proto.getName()))
             .setBaseConfig(proto.getBaseConfig())
             .setReconciling(proto.getReconciling())
-            .addAllReplicas(proto.getReplicasList().stream().map(ReplicaInfo::fromProto).collect(Collectors.toList()))
+            .addAllReplicas(
+                proto.getReplicasList().stream()
+                    .map(ReplicaInfo::fromProto)
+                    .collect(Collectors.toList()))
             .setDisplayName(proto.getDisplayName())
             .putAllLabels(proto.getLabelsMap())
             .setEtag(proto.getEtag())
             .addAllLeaderOptions(proto.getLeaderOptionsList())
-            .addAllOptionalReplicas(proto.getOptionalReplicasList().stream().map(ReplicaInfo::fromProto).collect(Collectors.toList()));
+            .addAllOptionalReplicas(
+                proto.getOptionalReplicasList().stream()
+                    .map(ReplicaInfo::fromProto)
+                    .collect(Collectors.toList()));
     State state;
-    switch(proto.getState()) {
+    switch (proto.getState()) {
       case STATE_UNSPECIFIED:
         state = State.STATE_UNSPECIFIED;
         break;
@@ -175,7 +181,7 @@ public class InstanceConfig extends InstanceConfigInfo {
     }
     builder.setState(state);
     Type type;
-    switch(proto.getConfigType()) {
+    switch (proto.getConfigType()) {
       case TYPE_UNSPECIFIED:
         type = Type.TYPE_UNSPECIFIED;
         break;

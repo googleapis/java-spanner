@@ -182,7 +182,8 @@ public interface SpannerRpc extends ServiceRpc {
       throws SpannerException;
 
   OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
-      String parent, String instanceConfigId, InstanceConfig instanceConfig) throws SpannerException;
+      String parent, String instanceConfigId, InstanceConfig instanceConfig)
+      throws SpannerException;
 
   OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
       InstanceConfig instanceConfig, FieldMask fieldMask) throws SpannerException;
