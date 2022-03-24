@@ -433,4 +433,140 @@ public interface BackupOrBuilder
    * @return The databaseDialect.
    */
   com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The names of the destination backups being created by copying
+   * this source backup. The backup names are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * Referencing backups may exist in different instances. The existence of
+   * any referencing backup prevents the backup from being deleted. When the
+   * copy operation is done (either successfully completed or cancelled or the
+   * destination backup is deleted), the reference to the backup is removed.
+   * </pre>
+   *
+   * <code>
+   * repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @return A list containing the referencingBackups.
+   */
+  java.util.List<java.lang.String> getReferencingBackupsList();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The names of the destination backups being created by copying
+   * this source backup. The backup names are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * Referencing backups may exist in different instances. The existence of
+   * any referencing backup prevents the backup from being deleted. When the
+   * copy operation is done (either successfully completed or cancelled or the
+   * destination backup is deleted), the reference to the backup is removed.
+   * </pre>
+   *
+   * <code>
+   * repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @return The count of referencingBackups.
+   */
+  int getReferencingBackupsCount();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The names of the destination backups being created by copying
+   * this source backup. The backup names are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * Referencing backups may exist in different instances. The existence of
+   * any referencing backup prevents the backup from being deleted. When the
+   * copy operation is done (either successfully completed or cancelled or the
+   * destination backup is deleted), the reference to the backup is removed.
+   * </pre>
+   *
+   * <code>
+   * repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @param index The index of the element to return.
+   * @return The referencingBackups at the given index.
+   */
+  java.lang.String getReferencingBackups(int index);
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The names of the destination backups being created by copying
+   * this source backup. The backup names are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * Referencing backups may exist in different instances. The existence of
+   * any referencing backup prevents the backup from being deleted. When the
+   * copy operation is done (either successfully completed or cancelled or the
+   * destination backup is deleted), the reference to the backup is removed.
+   * </pre>
+   *
+   * <code>
+   * repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @param index The index of the value to return.
+   * @return The bytes of the referencingBackups at the given index.
+   */
+  com.google.protobuf.ByteString getReferencingBackupsBytes(int index);
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The max allowed expiration time of the backup, with
+   * microseconds granularity. A backup's expiration time can be configured in
+   * multiple APIs: CreateBackup, UpdateBackup, CopyBackup. When updating or
+   * copying an existing backup, the expiration time specified must be
+   * less than `Backup.max_expire_time`.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp max_expire_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the maxExpireTime field is set.
+   */
+  boolean hasMaxExpireTime();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The max allowed expiration time of the backup, with
+   * microseconds granularity. A backup's expiration time can be configured in
+   * multiple APIs: CreateBackup, UpdateBackup, CopyBackup. When updating or
+   * copying an existing backup, the expiration time specified must be
+   * less than `Backup.max_expire_time`.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp max_expire_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The maxExpireTime.
+   */
+  com.google.protobuf.Timestamp getMaxExpireTime();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The max allowed expiration time of the backup, with
+   * microseconds granularity. A backup's expiration time can be configured in
+   * multiple APIs: CreateBackup, UpdateBackup, CopyBackup. When updating or
+   * copying an existing backup, the expiration time specified must be
+   * less than `Backup.max_expire_time`.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp max_expire_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.protobuf.TimestampOrBuilder getMaxExpireTimeOrBuilder();
 }
