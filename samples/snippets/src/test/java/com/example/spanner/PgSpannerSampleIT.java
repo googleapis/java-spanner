@@ -105,28 +105,33 @@ public class PgSpannerSampleIT {
     public void testSample() throws Exception {
         assertThat(instanceId).isNotNull();
         assertThat(databaseId).isNotNull();
+
         System.out.println("Create Database ...");
         String out = runSample("createdatabase");
         assertThat(out).contains("Created database");
         assertThat(out).contains(dbId.getName());
 
-        System.out.println("Create tables for samples ...");
+        System.out.println("Create sample tables Singers and Albums ...");
         runSample("createtableusingddl");
+
+        System.out.println("Write data to sample tables ...");
         runSample("write");
 
+        System.out.println("Read data from sample tables ...");
         out = runSample("read");
         assertThat(out).contains("1 1 Total Junk");
 
+        System.out.println("Write data using DML to sample table ...");
         runSample("writeusingdml");
+        System.out.println("Query Singers table ...");
         out = runSample("querysingerstable");
         assertThat(out).contains("Melissa Garcia");
-
         out = runSample("query");
         assertThat(out).contains("1 1 Total Junk");
-
         out = runSample("querywithparameter");
         assertThat(out).contains("12 Melissa Garcia");
 
+        System.out.println("Add column marketing budget ...");
         runSample("addmarketingbudget");
 
         // wait for 15 seconds to elapse and then run an update, and query for stale data
@@ -134,28 +139,37 @@ public class PgSpannerSampleIT {
         while (System.currentTimeMillis() < lastUpdateDataTimeInMillis + 16000) {
             Thread.sleep(1000);
         }
+        System.out.println("Write data to marketing budget ...");
         runSample("update");
 
+        System.out.println("Query marketing budget ...");
         out = runSample("querymarketingbudget");
         assertThat(out).contains("1 1 100000");
         assertThat(out).contains("2 2 500000");
 
+        System.out.println("Write with transaction using dml...");
         runSample("writewithtransactionusingdml");
         out = runSample("querymarketingbudget");
         assertThat(out).contains("1 1 300000");
         assertThat(out).contains("1 1 300000");
 
+        System.out.println("Add index ...");
         runSample("addindex");
 
+        System.out.println("Read index ...");
         out = runSample("readindex");
         assertThat(out).contains("Go, Go, Go");
         assertThat(out).contains("Forever Hold Your Peace");
         assertThat(out).contains("Green");
 
+        System.out.println("Add Storing index ...");
         runSample("addstoringindex");
+
+        System.out.println("Read storing index ...");
         out = runSample("readstoringindex");
         assertThat(out).contains("300000");
 
+        System.out.println("Read only transaction ...");
         out = runSample("readonlytransaction");
         assertThat(out.replaceAll("[\r\n]+", " ")).containsMatch("(Total Junk.*){2}");
     }

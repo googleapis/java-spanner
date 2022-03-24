@@ -46,6 +46,7 @@ public class PgSpannerSample {
             throw SpannerExceptionFactory.propagateInterrupt(e);
         }
     }
+    // [END spanner_create_database]
 
     // [START spanner_insert_data]
     static void writeExampleData(DatabaseClient dbClient) {
@@ -74,6 +75,7 @@ public class PgSpannerSample {
         }
         dbClient.write(mutations);
     }
+    // [END spanner_insert_datatypes_data]
 
     // [START spanner_query_data]
     static void query(DatabaseClient dbClient) {
@@ -87,7 +89,7 @@ public class PgSpannerSample {
             }
         }
     }
-    // [END spanner_insert_datatypes_data]
+    // [END spanner_query_data]
 
     // [START spanner_read_data]
     static void read(DatabaseClient dbClient) {
@@ -126,7 +128,7 @@ public class PgSpannerSample {
             throw SpannerExceptionFactory.propagateInterrupt(e);
         }
     }
-    // [END spanner_insert_data]
+    // [END spanner_add_column]
 
     // Before executing this method, a new column MarketingBudget has to be added to the Albums
     // table by applying the DDL statement "ALTER TABLE Albums ADD COLUMN MarketingBudget INT64".
@@ -155,7 +157,7 @@ public class PgSpannerSample {
         // This writes all the mutations to Cloud Spanner atomically.
         dbClient.write(mutations);
     }
-    // [END spanner_delete_data]
+    // [END spanner_update_data]
 
     // [START spanner_read_write_transaction]
     static void writeWithTransaction(DatabaseClient dbClient) {
@@ -200,7 +202,7 @@ public class PgSpannerSample {
                     return null;
                 });
     }
-    // [END spanner_query_data]
+    // [END spanner_read_write_transaction]
 
     // [START spanner_query_data_with_new_column]
     static void queryMarketingBudget(DatabaseClient dbClient) {
@@ -222,7 +224,7 @@ public class PgSpannerSample {
             }
         }
     }
-    // [END spanner_read_data]
+    // [END spanner_query_data_with_new_column]
 
     // [START spanner_create_index]
     static void addIndex(DatabaseAdminClient adminClient, DatabaseId dbId) {
@@ -245,7 +247,7 @@ public class PgSpannerSample {
             throw SpannerExceptionFactory.propagateInterrupt(e);
         }
     }
-    // [END spanner_add_column]
+    // [END spanner_create_index]
 
     // [START spanner_read_data_with_index]
     static void readUsingIndex(DatabaseClient dbClient) {
@@ -262,7 +264,7 @@ public class PgSpannerSample {
             }
         }
     }
-    // [END spanner_read_write_transaction]
+    // [END spanner_read_data_with_index]
 
     // [START spanner_create_storing_index]
     static void addStoringIndex(DatabaseAdminClient adminClient, DatabaseId dbId) {
@@ -286,7 +288,7 @@ public class PgSpannerSample {
             throw SpannerExceptionFactory.propagateInterrupt(e);
         }
     }
-    // [END spanner_query_data_with_new_column]
+    // [END spanner_create_storing_index]
 
     // Before running this example, create a storing index AlbumsByAlbumTitle2 by applying the DDL
     // statement "CREATE INDEX AlbumsByAlbumTitle2 ON Albums(AlbumTitle) STORING (MarketingBudget)".
@@ -311,7 +313,7 @@ public class PgSpannerSample {
             }
         }
     }
-    // [END spanner_create_index]
+    // [END spanner_read_data_with_storing_index]
 
     // [START spanner_read_only_transaction]
     static void readOnlyTransaction(DatabaseClient dbClient) {
@@ -337,7 +339,7 @@ public class PgSpannerSample {
             }
         }
     }
-    // [END spanner_query_data_with_index]
+    // [END spanner_read_only_transaction]
 
     // [START spanner_query_singers_table]
     static void querySingersTable(DatabaseClient dbClient) {
@@ -374,7 +376,7 @@ public class PgSpannerSample {
                     return null;
                 });
     }
-    // [END spanner_dml_standard_delete]
+    // [END spanner_dml_getting_started_insert]
 
     // [START spanner_query_with_parameter]
     static void queryWithParameter(DatabaseClient dbClient) {
@@ -396,7 +398,7 @@ public class PgSpannerSample {
             }
         }
     }
-    // [END spanner_dml_standard_update_with_timestamp]
+    // [END spanner_query_with_parameter]
 
     // [START spanner_dml_getting_started_update]
     static void writeWithTransactionUsingDml(DatabaseClient dbClient) {
@@ -448,7 +450,7 @@ public class PgSpannerSample {
                     return null;
                 });
     }
-    // [END spanner_dml_write_then_read]
+    // [END spanner_dml_getting_started_update]
 
     // [START spanner_create_table_using_ddl]
     static void createTableUsingDdl(DatabaseAdminClient dbAdminClient, DatabaseId id) {
@@ -550,7 +552,6 @@ public class PgSpannerSample {
                 printUsageAndExit();
         }
     }
-    // [END spanner_list_backups]
 
     static void printUsageAndExit() {
         System.err.println("Usage:");
@@ -578,7 +579,6 @@ public class PgSpannerSample {
         System.err.println("    PgSpannerExample createtableforsamples my-instance example-db");
         System.exit(1);
     }
-    // [END spanner_update_backup]
 
     public static void main(String[] args) {
         if (args.length != 3) {
@@ -615,7 +615,6 @@ public class PgSpannerSample {
         // [END init_client]
         System.out.println("Closed client");
     }
-    // [END spanner_delete_backup]
 
     /** Class to contain singer sample data. */
     static class Singer {
