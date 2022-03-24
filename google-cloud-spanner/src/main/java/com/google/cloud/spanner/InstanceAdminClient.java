@@ -49,13 +49,18 @@ public interface InstanceAdminClient {
    *   <li>Cancelling the operation renders the instance config immediately unreadable via the API.
    *   <li>Except for deleting the creating resource, all other attempts to modify the instance
    *       config are rejected.
-   *       <p>Upon completion of the returned operation:
-   *       <ul>
-   *         <li>Instances can be created using the instance configuration.
-   *         <li>The instance config's {@code reconciling} field becomes false.
-   *         <li>Its state becomes {@code READY}.
-   *             <!--SNIPPET instance_admin_client_create_instance_config-->
-   *             <pre>{@code
+   * </ul>
+   *
+   * Upon completion of the returned operation:
+   *   <ul>
+   *     <li>Instances can be created using the instance configuration.
+   *     <li>The instance config's {@code reconciling} field becomes false.
+   *     <li>Its state becomes {@code READY}.
+   *   </ul>
+   *
+   * <!--SNIPPET instance_admin_client_create_instance_config-->
+   *
+   * <pre>{@code
    * String projectId = "my-project";
    * String baseInstanceConfig = "my-base-config";
    * String instanceConfigId = "custom-user-config";
@@ -74,7 +79,8 @@ public interface InstanceAdminClient {
    *
    * InstanceConfig instanceConfig = op.get()
    * }</pre>
-   *             <!--SNIPPET instance_admin_client_create_instance_config-->
+   *
+   * <!--SNIPPET instance_admin_client_create_instance_config-->
    */
   OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
       InstanceConfigInfo instanceConfig) throws SpannerException;
