@@ -126,8 +126,11 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
+import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
@@ -138,6 +141,8 @@ import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
@@ -873,6 +878,35 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
+      String parent, String instanceConfigId, InstanceConfig instanceConfig) throws SpannerException {
+    CreateInstanceConfigRequest request =
+        CreateInstanceConfigRequest.newBuilder()
+            .setParent(parent)
+            .setInstanceConfigId(instanceConfigId)
+            .setInstanceConfig(instanceConfig)
+            .build();
+    GrpcCallContext context =
+        newCallContext(null, parent, request, InstanceAdminGrpc.getCreateInstanceConfigMethod());
+    return instanceAdminStub.createInstanceConfigOperationCallable().futureCall(request, context);
+  }
+
+  @Override
+  public OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
+      InstanceConfig instanceConfig, FieldMask fieldMask) throws SpannerException {
+    UpdateInstanceConfigRequest request =
+        UpdateInstanceConfigRequest
+            .newBuilder().
+            setInstanceConfig(instanceConfig)
+            .setUpdateMask(fieldMask)
+            .build();
+    GrpcCallContext context =
+        newCallContext(
+            null, instanceConfig.getName(), request, InstanceAdminGrpc.getUpdateInstanceConfigMethod());
+    return instanceAdminStub.updateInstanceConfigOperationCallable().futureCall(request, context);
+  }
+
+  @Override
   public InstanceConfig getInstanceConfig(String instanceConfigName) throws SpannerException {
     GetInstanceConfigRequest request =
         GetInstanceConfigRequest.newBuilder().setName(instanceConfigName).build();
@@ -880,6 +914,16 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context =
         newCallContext(null, projectName, request, InstanceAdminGrpc.getGetInstanceConfigMethod());
     return get(instanceAdminStub.getInstanceConfigCallable().futureCall(request, context));
+  }
+
+  @Override
+  public void deleteInstanceConfig(String instanceConfigName) throws SpannerException {
+    DeleteInstanceConfigRequest request =
+        DeleteInstanceConfigRequest.newBuilder().setName(instanceConfigName).build();
+
+    GrpcCallContext context =
+        newCallContext(null, instanceConfigName, request, InstanceAdminGrpc.getDeleteInstanceConfigMethod());
+    get(instanceAdminStub.deleteInstanceConfigCallable().futureCall(request, context));
   }
 
   @Override

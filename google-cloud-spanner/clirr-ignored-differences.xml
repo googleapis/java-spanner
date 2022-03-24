@@ -35,4 +35,44 @@
     <className>com/google/cloud/spanner/connection/ConnectionOptions</className>
     <method>com.google.cloud.spanner.Dialect getDialect()</method>
   </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/InstanceConfig</className>
+    <method>InstanceConfig(com.google.cloud.spanner.InstanceConfigId, java.lang.String, java.util.List, java.util.List, com.google.cloud.spanner.InstanceAdminClient)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/InstanceConfigInfo</className>
+    <method>InstanceConfigInfo(com.google.cloud.spanner.InstanceConfigId, java.lang.String, java.util.List, java.util.List)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/InstanceAdminClient</className>
+    <method>com.google.api.gax.longrunning.OperationFuture createInstanceConfig(com.google.cloud.spanner.InstanceConfigInfo)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/InstanceAdminClient</className>
+    <method>com.google.api.gax.longrunning.OperationFuture updateInstanceConfig(com.google.cloud.spanner.InstanceConfigInfo, com.google.cloud.spanner.InstanceConfigInfo$InstanceConfigField[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/InstanceAdminClient</className>
+    <method>void deleteInstanceConfig(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.longrunning.OperationFuture createInstanceConfig(java.lang.String, java.lang.String, com.google.spanner.admin.instance.v1.InstanceConfig)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.longrunning.OperationFuture updateInstanceConfig(com.google.spanner.admin.instance.v1.InstanceConfig, com.google.protobuf.FieldMask)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>void deleteInstanceConfig(java.lang.String)</method>
+  </difference>
 </differences>

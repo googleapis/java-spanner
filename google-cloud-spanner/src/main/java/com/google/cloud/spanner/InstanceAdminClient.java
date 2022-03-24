@@ -21,11 +21,26 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.cloud.spanner.Options.ListOption;
 import com.google.longrunning.Operation;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 
 /** Client to do admin operations on Cloud Spanner Instance and Instance Configs. */
 public interface InstanceAdminClient {
+
+  /** Creates an instance config. */
+  /* TODO: Add detailed documentation and samples.
+   */
+  OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
+      InstanceConfigInfo instanceConfig) throws SpannerException;
+
+  /** Updates an instance config. */
+  /* TODO: Add detailed documentation and samples.
+   */
+  OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
+      InstanceConfigInfo instanceConfig, InstanceConfigInfo.InstanceConfigField... fieldsToUpdate)
+      throws SpannerException;
 
   /** Gets an instance config. */
   /* <!--SNIPPET instance_admin_client_get_instance_config-->
@@ -36,6 +51,11 @@ public interface InstanceAdminClient {
    * <!--SNIPPET instance_admin_client_get_instance_config-->
    */
   InstanceConfig getInstanceConfig(String configId) throws SpannerException;
+
+  /** Deletes an instance config. */
+  /* TODO: Add detailed documentation and samples.
+   */
+  void deleteInstanceConfig(String instanceConfigId) throws SpannerException;
 
   /** Lists the supported instance configs for current project. */
   /* <!--SNIPPET instance_admin_client_list_configs-->
