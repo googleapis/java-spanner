@@ -113,7 +113,7 @@ public interface InstanceAdminClient {
    * <ul>
    *   <li>Creating instances using the instance configuration uses the new values.
    *   <li>The instance config's new values are readable via the API.
-   *   <li>The instance config's {@code reconciling field} becomes false.
+   *   <li>The instance config's {@code reconciling} field becomes false.
    * </ul>
    *
    * <!--SNIPPET instance_admin_client_update_instance_config-->
