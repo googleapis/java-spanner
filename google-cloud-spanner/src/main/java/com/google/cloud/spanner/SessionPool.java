@@ -2210,6 +2210,9 @@ class SessionPool {
           break;
         }
       }
+      if (!dialect.isDone()) {
+        dialect.setException(e);
+      }
       if (isDatabaseOrInstanceNotFound(e)) {
         setResourceNotFoundException((ResourceNotFoundException) e);
         poolMaintainer.close();
