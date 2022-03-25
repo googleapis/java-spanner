@@ -19,9 +19,10 @@ package com.google.cloud.spanner;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.cloud.FieldSelector;
-import com.google.cloud.spanner.InstanceInfo.BuilderImpl;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.InstanceConfig.State;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -145,7 +146,7 @@ public class InstanceConfigInfo {
    * If true, the instance config is being created or updated. If false, there are no ongoing
    * operations for the instance config.
    */
-  public boolean isReconciling() {
+  public boolean getReconciling() {
     return reconciling;
   }
 
@@ -170,19 +171,19 @@ public class InstanceConfigInfo {
 
     public abstract Builder addAllReplicas(List<ReplicaInfo> replicas);
 
-    public abstract Builder addAllOptionalReplicas(List<ReplicaInfo> optionalReplicas);
+    protected abstract Builder addAllOptionalReplicas(List<ReplicaInfo> optionalReplicas);
 
     public abstract Builder setBaseConfig(String baseConfig);
 
     public abstract Builder addAllLeaderOptions(List<String> leaderOptions);
 
-    public abstract Builder setConfigType(Type configType);
+    protected abstract Builder setConfigType(Type configType);
 
-    public abstract Builder setState(State state);
+    protected abstract Builder setState(State state);
 
     public abstract Builder setEtag(String etag);
 
-    public abstract Builder setReconciling(boolean reconciling);
+    protected abstract Builder setReconciling(boolean reconciling);
 
     public abstract Builder addLabel(String key, String value);
 
@@ -257,7 +258,7 @@ public class InstanceConfigInfo {
     }
 
     @Override
-    public BuilderImpl addAllOptionalReplicas(List<ReplicaInfo> optionalReplicas) {
+    protected BuilderImpl addAllOptionalReplicas(List<ReplicaInfo> optionalReplicas) {
       this.optionalReplicas = optionalReplicas;
       return this;
     }
@@ -269,13 +270,13 @@ public class InstanceConfigInfo {
     }
 
     @Override
-    public BuilderImpl setConfigType(Type configType) {
+    protected BuilderImpl setConfigType(Type configType) {
       this.configType = configType;
       return this;
     }
 
     @Override
-    public BuilderImpl setState(State state) {
+    protected BuilderImpl setState(State state) {
       this.state = state;
       return this;
     }
@@ -287,7 +288,7 @@ public class InstanceConfigInfo {
     }
 
     @Override
-    public BuilderImpl setReconciling(boolean reconciling) {
+    protected BuilderImpl setReconciling(boolean reconciling) {
       this.reconciling = reconciling;
       return this;
     }
@@ -405,19 +406,53 @@ public class InstanceConfigInfo {
   }
 
   com.google.spanner.admin.instance.v1.InstanceConfig toProto() {
-    // TODO: add other fields here.
     com.google.spanner.admin.instance.v1.InstanceConfig.Builder builder =
-        com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder().setName(getId().getName());
-    if (getDisplayName() != null) {
-      builder.setDisplayName(getDisplayName());
+        com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder()
+            .setName(getId().getName())
+            .setDisplayName(getDisplayName())
+            .setBaseConfig(getBaseConfig())
+            .addAllReplicas(
+                getReplicas().stream().map(ReplicaInfo::getProto).collect(Collectors.toList())
+            )
+            .addAllLeaderOptions(getLeaderOptions())
+            .setEtag(getEtag())
+            .setReconciling(getReconciling())
+            .putAllLabels(getLabels())
+            .addAllOptionalReplicas(
+                getOptionalReplicas().stream().map(ReplicaInfo::getProto).collect(Collectors.toList())
+            );
+
+    InstanceConfig.Type type;
+    switch(getConfigType()) {
+      case USER_MANAGED:
+        type = InstanceConfig.Type.USER_MANAGED;
+        break;
+      case GOOGLE_MANAGED:
+        type = InstanceConfig.Type.GOOGLE_MANAGED;
+        break;
+      case TYPE_UNSPECIFIED:
+        type = InstanceConfig.Type.TYPE_UNSPECIFIED;
+        break;
+      default:
+        throw new IllegalArgumentException("Unknown config type:" + getConfigType());
     }
-    if (getBaseConfig() != null && !getBaseConfig().isEmpty()) {
-      builder.setBaseConfig(getBaseConfig());
+    builder.setConfigType(type);
+
+    InstanceConfig.State state;
+    switch(getState()) {
+      case STATE_UNSPECIFIED:
+        state = InstanceConfig.State.STATE_UNSPECIFIED;
+        break;
+      case READY:
+        state = InstanceConfig.State.READY;
+        break;
+      case CREATING:
+        state = InstanceConfig.State.CREATING;
+        break;
+      default:
+        throw new IllegalArgumentException("Unknown state:" + getConfigType());
     }
-    if (getReplicas() != null) {
-      builder.addAllReplicas(
-          getReplicas().stream().map(ReplicaInfo::getProto).collect(Collectors.toList()));
-    }
+    builder.setState(state);
     return builder.build();
   }
 }

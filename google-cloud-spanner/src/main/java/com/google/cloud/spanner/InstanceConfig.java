@@ -80,21 +80,25 @@ public class InstanceConfig extends InstanceConfigInfo {
       return this;
     }
 
+    @Override
     public Builder setConfigType(Type configType) {
       infoBuilder.setConfigType(configType);
       return this;
     }
 
-    public Builder setState(State state) {
+    @Override
+    protected Builder setState(State state) {
       infoBuilder.setState(state);
       return this;
     }
 
+    @Override
     public Builder setEtag(String etag) {
       infoBuilder.setEtag(etag);
       return this;
     }
 
+    @Override
     public Builder setReconciling(boolean reconciling) {
       infoBuilder.setReconciling(reconciling);
       return this;
