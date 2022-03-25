@@ -81,7 +81,7 @@ public class InstanceConfig extends InstanceConfigInfo {
     }
 
     @Override
-    public Builder setConfigType(Type configType) {
+    protected Builder setConfigType(Type configType) {
       infoBuilder.setConfigType(configType);
       return this;
     }
