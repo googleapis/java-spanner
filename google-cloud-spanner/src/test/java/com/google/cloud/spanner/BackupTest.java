@@ -16,6 +16,12 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import com.google.cloud.Identity;
 import com.google.cloud.Policy;
 import com.google.cloud.Role;
@@ -25,21 +31,14 @@ import com.google.cloud.spanner.BackupInfo.State;
 import com.google.cloud.spanner.encryption.EncryptionInfo;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-
-import java.util.Arrays;
-import java.util.Collections;
-
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(JUnit4.class)
 public class BackupTest {
