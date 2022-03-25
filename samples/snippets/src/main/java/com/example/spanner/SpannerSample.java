@@ -1661,7 +1661,8 @@ public class SpannerSample {
   // [END spanner_cancel_backup_create]
 
   // [START spanner_list_backup_operations]
-  static void listBackupOperations(InstanceAdminClient instanceAdminClient, DatabaseId databaseId, BackupId backupId) {
+  static void listBackupOperations(
+          InstanceAdminClient instanceAdminClient, DatabaseId databaseId, BackupId backupId) {
     Instance instance = instanceAdminClient.getInstance(databaseId.getInstanceId().getInstance());
     // Get create backup operations for the sample database.
     String filter =

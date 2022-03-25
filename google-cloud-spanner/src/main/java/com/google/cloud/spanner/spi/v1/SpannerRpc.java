@@ -33,32 +33,12 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
-import com.google.spanner.admin.database.v1.Backup;
-import com.google.spanner.admin.database.v1.CopyBackupMetadata;
-import com.google.spanner.admin.database.v1.CreateBackupMetadata;
-import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
-import com.google.spanner.admin.database.v1.Database;
-import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.*;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
-import com.google.spanner.v1.BeginTransactionRequest;
-import com.google.spanner.v1.CommitRequest;
-import com.google.spanner.v1.CommitResponse;
-import com.google.spanner.v1.ExecuteBatchDmlRequest;
-import com.google.spanner.v1.ExecuteBatchDmlResponse;
-import com.google.spanner.v1.ExecuteSqlRequest;
-import com.google.spanner.v1.PartialResultSet;
-import com.google.spanner.v1.PartitionQueryRequest;
-import com.google.spanner.v1.PartitionReadRequest;
-import com.google.spanner.v1.PartitionResponse;
-import com.google.spanner.v1.ReadRequest;
-import com.google.spanner.v1.ResultSet;
-import com.google.spanner.v1.RollbackRequest;
-import com.google.spanner.v1.Session;
-import com.google.spanner.v1.Transaction;
+import com.google.spanner.v1.*;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -241,9 +221,10 @@ public interface SpannerRpc extends ServiceRpc {
    *     source backup.
    * @return the operation that monitors the backup creation.
    */
-  OperationFuture<Backup, CopyBackupMetadata> copyBackUp(
-      BackupId sourceBackupId, com.google.cloud.spanner.Backup destinationBackup)
-      throws SpannerException;
+  default OperationFuture<Backup, CopyBackupMetadata> copyBackUp(
+      BackupId sourceBackupId, com.google.cloud.spanner.Backup destinationBackup) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
 
   /**
    * Restore a backup into the given database.

@@ -20,10 +20,11 @@ import com.google.api.client.util.Preconditions;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.encryption.BackupEncryptionConfig;
 import com.google.cloud.spanner.encryption.EncryptionInfo;
-import com.google.protobuf.ProtocolStringList;
 import com.google.spanner.admin.database.v1.Database;
-import java.util.Objects;
+
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
 
 /** Represents a Cloud Spanner database backup. */
 public class BackupInfo {
@@ -91,14 +92,18 @@ public class BackupInfo {
      *
      * <p>Returns the max allowed expiration time of the backup, with microseconds granularity.
      */
-    protected abstract Builder setMaxExpireTime(Timestamp maxExpireTime);
+    protected Builder setMaxExpireTime(Timestamp maxExpireTime) {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
 
     /**
      * Output Only.
      *
      * <p>Returns the names of the destination backups being created by copying this source backup.
      */
-    protected abstract Builder setReferencingBackup(ProtocolStringList referencingBackup);
+    protected Builder addAllReferencingBackups(List<String> referencingBackup) {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
   }
 
   abstract static class BuilderImpl extends Builder {
@@ -112,7 +117,7 @@ public class BackupInfo {
     private EncryptionInfo encryptionInfo;
     private com.google.spanner.admin.database.v1.Backup proto;
     private Timestamp maxExpireTime;
-    private ProtocolStringList referencingBackup;
+    private List<String> referencingBackup;
 
     BuilderImpl(BackupId id) {
       this.id = Preconditions.checkNotNull(id);
@@ -190,7 +195,7 @@ public class BackupInfo {
     }
 
     @Override
-    public Builder setReferencingBackup(ProtocolStringList referencingBackup) {
+    public Builder addAllReferencingBackups(List<String> referencingBackup) {
       this.referencingBackup = Preconditions.checkNotNull(referencingBackup);
       return this;
     }
@@ -216,7 +221,7 @@ public class BackupInfo {
   private final EncryptionInfo encryptionInfo;
   private final com.google.spanner.admin.database.v1.Backup proto;
   private final Timestamp maxExpireTime;
-  private final ProtocolStringList referencingBackup;
+  private final List<String> referencingBackup;
 
   BackupInfo(BuilderImpl builder) {
     this.id = builder.id;
@@ -297,7 +302,7 @@ public class BackupInfo {
    * Returns the names of the destination backups being created by copying this source backup {@link
    * Backup}.
    */
-  public ProtocolStringList getReferencingBackup() {
+  public List<String> getReferencingBackup() {
     return referencingBackup;
   }
 

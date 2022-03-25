@@ -22,12 +22,7 @@ import com.google.cloud.Policy;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.ListOption;
 import com.google.longrunning.Operation;
-import com.google.spanner.admin.database.v1.CopyBackupMetadata;
-import com.google.spanner.admin.database.v1.CreateBackupMetadata;
-import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
-import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
-import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.*;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -185,10 +180,10 @@ public interface DatabaseAdminClient {
    * <p>Example to copy a backup.
    *
    * <pre>{@code
-   * String instanceId                  = "my_instance_id";
-   * String sourceBackupId              = "source_backup_id";
-   * String destinationBackupId         = "destination_backup_id";
-   * Timestamp expireTime               = Timestamp.ofTimeMicroseconds(micros);
+   * String instanceId                  ="my_instance_id";
+   * String sourceBackupId              ="source_backup_id";
+   * String destinationBackupId         ="destination_backup_id";
+   * Timestamp expireTime               =Timestamp.ofTimeMicroseconds(micros);
    * OperationFuture<Backup, CopyBackupMetadata> op = dbAdminClient
    *     .copyBackup(
    *         instanceId,
@@ -205,9 +200,10 @@ public interface DatabaseAdminClient {
    *     regular expression [a-z][a-z0-9_\-]*[a-z0-9] and be between 2 and 60 characters in length.
    * @param expireTime the time that the new backup will automatically expire.
    */
-  OperationFuture<Backup, CopyBackupMetadata> copyBackup(
-      String instanceId, String sourceBackupId, String destinationBackupId, Timestamp expireTime)
-      throws SpannerException;
+  default OperationFuture<Backup, CopyBackupMetadata> copyBackup(
+      String instanceId, String sourceBackupId, String destinationBackupId, Timestamp expireTime) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
 
   /**
    * Creates a copy of backup from an existing backup in Cloud Spanner. Any configuration options in
@@ -240,8 +236,10 @@ public interface DatabaseAdminClient {
    * @param sourceBackupId the backup to be copied
    * @param destinationBackup the new backup to create
    */
-  OperationFuture<Backup, CopyBackupMetadata> copyBackup(
-      BackupId sourceBackupId, Backup destinationBackup) throws SpannerException;
+  default OperationFuture<Backup, CopyBackupMetadata> copyBackup(
+      BackupId sourceBackupId, Backup destinationBackup) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
 
   /**
    * Restore a database from a backup. The database that is restored will be created and may not
