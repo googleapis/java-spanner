@@ -69,7 +69,7 @@ public class InstanceConfig extends InstanceConfigInfo {
     }
 
     @Override
-    public Builder addAllOptionalReplicas(List<ReplicaInfo> optionalReplicas) {
+    protected Builder addAllOptionalReplicas(List<ReplicaInfo> optionalReplicas) {
       infoBuilder.addAllOptionalReplicas(optionalReplicas);
       return this;
     }
@@ -99,7 +99,7 @@ public class InstanceConfig extends InstanceConfigInfo {
     }
 
     @Override
-    public Builder setReconciling(boolean reconciling) {
+    protected Builder setReconciling(boolean reconciling) {
       infoBuilder.setReconciling(reconciling);
       return this;
     }
