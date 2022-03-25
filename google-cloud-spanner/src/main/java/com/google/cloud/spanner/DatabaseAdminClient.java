@@ -22,7 +22,12 @@ import com.google.cloud.Policy;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.ListOption;
 import com.google.longrunning.Operation;
-import com.google.spanner.admin.database.v1.*;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
+import com.google.spanner.admin.database.v1.CreateBackupMetadata;
+import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -206,8 +211,8 @@ public interface DatabaseAdminClient {
   }
 
   /**
-   * Creates a copy of backup from an existing backup in Cloud Spanner. Any configuration options in
-   * the {@link Backup} instance will be included in the {@link
+   * Creates a copy of backup from an existing backup in Cloud Spanner in the same instance. Any
+   * configuration options in the {@link Backup} instance will be included in the {@link
    * com.google.spanner.admin.database.v1.CopyBackupRequest}.
    *
    * <p>The expire time of the new backup must be set and be at least 6 hours and at most 366 days

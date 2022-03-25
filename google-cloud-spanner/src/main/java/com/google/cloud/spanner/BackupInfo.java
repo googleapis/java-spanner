@@ -100,7 +100,7 @@ public class BackupInfo {
      *
      * <p>Returns the names of the destination backups being created by copying this source backup.
      */
-    protected Builder addAllReferencingBackups(List<String> referencingBackup) {
+    protected Builder addAllReferencingBackups(List<String> referencingBackups) {
       throw new UnsupportedOperationException("Unimplemented");
     }
   }
@@ -116,7 +116,7 @@ public class BackupInfo {
     private EncryptionInfo encryptionInfo;
     private com.google.spanner.admin.database.v1.Backup proto;
     private Timestamp maxExpireTime;
-    private List<String> referencingBackup;
+    private List<String> referencingBackups;
 
     BuilderImpl(BackupId id) {
       this.id = Preconditions.checkNotNull(id);
@@ -133,7 +133,7 @@ public class BackupInfo {
       this.encryptionInfo = other.encryptionInfo;
       this.proto = other.proto;
       this.maxExpireTime = other.maxExpireTime;
-      this.referencingBackup = other.referencingBackup;
+      this.referencingBackups = other.referencingBackups;
     }
 
     @Override
@@ -188,14 +188,14 @@ public class BackupInfo {
     }
 
     @Override
-    public Builder setMaxExpireTime(Timestamp maxExpireTime) {
+    protected Builder setMaxExpireTime(Timestamp maxExpireTime) {
       this.maxExpireTime = Preconditions.checkNotNull(maxExpireTime);
       return this;
     }
 
     @Override
-    public Builder addAllReferencingBackups(List<String> referencingBackup) {
-      this.referencingBackup = Preconditions.checkNotNull(referencingBackup);
+    protected Builder addAllReferencingBackups(List<String> referencingBackups) {
+      this.referencingBackups = Preconditions.checkNotNull(referencingBackups);
       return this;
     }
   }
@@ -220,7 +220,7 @@ public class BackupInfo {
   private final EncryptionInfo encryptionInfo;
   private final com.google.spanner.admin.database.v1.Backup proto;
   private final Timestamp maxExpireTime;
-  private final List<String> referencingBackup;
+  private final List<String> referencingBackups;
 
   BackupInfo(BuilderImpl builder) {
     this.id = builder.id;
@@ -233,7 +233,7 @@ public class BackupInfo {
     this.database = builder.database;
     this.proto = builder.proto;
     this.maxExpireTime = builder.maxExpireTime;
-    this.referencingBackup = builder.referencingBackup;
+    this.referencingBackups = builder.referencingBackups;
   }
 
   /** Returns the backup id. */
@@ -301,8 +301,8 @@ public class BackupInfo {
    * Returns the names of the destination backups being created by copying this source backup {@link
    * Backup}.
    */
-  public List<String> getReferencingBackup() {
-    return referencingBackup;
+  public List<String> getReferencingBackups() {
+    return referencingBackups;
   }
 
   @Override
@@ -323,7 +323,7 @@ public class BackupInfo {
         && Objects.equals(versionTime, that.versionTime)
         && Objects.equals(database, that.database)
         && Objects.equals(maxExpireTime, that.maxExpireTime)
-        && Objects.equals(referencingBackup, that.referencingBackup);
+        && Objects.equals(referencingBackups, that.referencingBackups);
   }
 
   @Override
@@ -338,7 +338,7 @@ public class BackupInfo {
         versionTime,
         database,
         maxExpireTime,
-        referencingBackup);
+        referencingBackups);
   }
 
   @Override
@@ -354,6 +354,6 @@ public class BackupInfo {
         versionTime,
         database,
         maxExpireTime,
-        referencingBackup);
+        referencingBackups);
   }
 }
