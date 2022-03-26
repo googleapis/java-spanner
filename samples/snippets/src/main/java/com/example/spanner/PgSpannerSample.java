@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class PgSpannerSample {
-  // [START spanner_insert_data]
   static final List<Singer> SINGERS =
       Arrays.asList(
           new Singer(1, "Marc", "Richards"),
@@ -588,6 +587,7 @@ public class PgSpannerSample {
     SpannerOptions options = SpannerOptions.newBuilder().build();
     Spanner spanner = options.getService();
     try {
+      // [END init_client]
       String command = args[0];
       DatabaseId db = DatabaseId.of(options.getProjectId(), args[1], args[2]);
 
@@ -600,11 +600,11 @@ public class PgSpannerSample {
                 + clientProject);
         printUsageAndExit();
       }
-
+      // [START init_client]
       DatabaseClient dbClient = spanner.getDatabaseClient(db);
       DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient();
-
       // Use client here...
+      // [END init_client]
       run(dbClient, dbAdminClient, command, db);
     } finally {
       spanner.close();
