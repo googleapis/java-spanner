@@ -583,11 +583,10 @@ public class PgSpannerSample {
     if (args.length != 3) {
       printUsageAndExit();
     }
-    // [START init_client]
+    // [START spanner_init_client]
     SpannerOptions options = SpannerOptions.newBuilder().build();
     Spanner spanner = options.getService();
     try {
-      // [END init_client]
       String command = args[0];
       DatabaseId db = DatabaseId.of(options.getProjectId(), args[1], args[2]);
 
@@ -600,16 +599,17 @@ public class PgSpannerSample {
                 + clientProject);
         printUsageAndExit();
       }
-      // [START init_client]
+      // [START spanner_init_client]
       DatabaseClient dbClient = spanner.getDatabaseClient(db);
       DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient();
+      // [END spanner_init_client]
+
       // Use client here...
-      // [END init_client]
       run(dbClient, dbAdminClient, command, db);
     } finally {
       spanner.close();
     }
-    // [END init_client]
+    // [END spanner_init_client]
     System.out.println("Closed client");
   }
 
