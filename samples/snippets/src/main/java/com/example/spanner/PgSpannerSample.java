@@ -587,6 +587,7 @@ public class PgSpannerSample {
     SpannerOptions options = SpannerOptions.newBuilder().build();
     Spanner spanner = options.getService();
     try {
+      // [END spanner_init_client]
       String command = args[0];
       DatabaseId db = DatabaseId.of(options.getProjectId(), args[1], args[2]);
 
@@ -606,6 +607,7 @@ public class PgSpannerSample {
 
       // Use client here...
       run(dbClient, dbAdminClient, command, db);
+      // [START spanner_init_client]
     } finally {
       spanner.close();
     }
