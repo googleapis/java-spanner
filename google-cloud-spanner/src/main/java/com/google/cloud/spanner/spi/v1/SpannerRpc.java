@@ -221,7 +221,7 @@ public interface SpannerRpc extends ServiceRpc {
    *     source backup.
    * @return the operation that monitors the backup creation.
    */
-  default OperationFuture<Backup, CopyBackupMetadata> copyBackUp(
+  default OperationFuture<Backup, CopyBackupMetadata> copyBackup(
       BackupId sourceBackupId, com.google.cloud.spanner.Backup destinationBackup) {
     throw new UnsupportedOperationException("Unimplemented");
   }

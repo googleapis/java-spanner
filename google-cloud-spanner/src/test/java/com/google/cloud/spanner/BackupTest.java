@@ -31,7 +31,6 @@ import com.google.cloud.spanner.BackupInfo.State;
 import com.google.cloud.spanner.encryption.EncryptionInfo;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
@@ -313,7 +312,7 @@ public class BackupTest {
             .setState(com.google.spanner.admin.database.v1.Backup.State.CREATING)
             .setMaxExpireTime(
                 com.google.protobuf.Timestamp.newBuilder().setSeconds(3000L).setNanos(3000).build())
-            .addAllReferencingBackups(Arrays.asList(REFERENCING_BACKUP_NAME))
+            .addAllReferencingBackups(Collections.singletonList(REFERENCING_BACKUP_NAME))
             .build();
     return Backup.fromProto(proto, dbClient);
   }
@@ -331,7 +330,7 @@ public class BackupTest {
             .setState(com.google.spanner.admin.database.v1.Backup.State.CREATING)
             .setMaxExpireTime(
                 com.google.protobuf.Timestamp.newBuilder().setSeconds(3000L).setNanos(3000).build())
-            .addAllReferencingBackups(Arrays.asList(REFERENCING_BACKUP_NAME))
+            .addAllReferencingBackups(Collections.singletonList(REFERENCING_BACKUP_NAME))
             .build();
     return Backup.fromProto(proto, dbClient);
   }

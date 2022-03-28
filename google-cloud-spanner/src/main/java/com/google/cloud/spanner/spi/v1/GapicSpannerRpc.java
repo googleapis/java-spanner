@@ -1268,7 +1268,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public OperationFuture<Backup, CopyBackupMetadata> copyBackUp(
+  public OperationFuture<Backup, CopyBackupMetadata> copyBackup(
       BackupId sourceBackupId, final com.google.cloud.spanner.Backup destinationBackup)
       throws SpannerException {
     Preconditions.checkNotNull(sourceBackupId);

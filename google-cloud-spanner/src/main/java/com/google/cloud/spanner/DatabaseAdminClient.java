@@ -234,7 +234,7 @@ public interface DatabaseAdminClient {
    *     .setEncryptionConfig(encryptionConfig)
    *     .build();
    *
-   * OperationFuture<Backup, CopyBackupMetadata> op = dbAdminClient.copyBackUp(sourceBackupId, destinationBackup);
+   * OperationFuture<Backup, CopyBackupMetadata> op = dbAdminClient.copyBackup(sourceBackupId, destinationBackup);
    * Backup copiedBackup = op.get();
    * }</pre>
    *

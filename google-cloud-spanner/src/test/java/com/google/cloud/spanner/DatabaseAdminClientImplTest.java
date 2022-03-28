@@ -470,7 +470,7 @@ public class DatabaseAdminClientImplTest {
             .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
             .setExpireTime(t)
             .build();
-    when(rpc.copyBackUp(BackupId.of(PROJECT_ID, INSTANCE_ID, SOURCE_BK), backup))
+    when(rpc.copyBackup(BackupId.of(PROJECT_ID, INSTANCE_ID, SOURCE_BK), backup))
         .thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
         client.copyBackup(INSTANCE_ID, SOURCE_BK, BK_ID, t);
@@ -498,7 +498,7 @@ public class DatabaseAdminClientImplTest {
             .build();
     BackupId sourceBackupId = BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID);
 
-    when(rpc.copyBackUp(sourceBackupId, requestBackup)).thenReturn(rawOperationFuture);
+    when(rpc.copyBackup(sourceBackupId, requestBackup)).thenReturn(rawOperationFuture);
 
     final OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
         client.copyBackup(sourceBackupId, requestBackup);
@@ -523,7 +523,7 @@ public class DatabaseAdminClientImplTest {
             .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME))
             .build();
     BackupId sourceBackupId = BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID);
-    when(rpc.copyBackUp(sourceBackupId, backup)).thenReturn(rawOperationFuture);
+    when(rpc.copyBackup(sourceBackupId, backup)).thenReturn(rawOperationFuture);
     final OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
         client.copyBackup(sourceBackupId, backup);
     assertThat(op.isDone()).isTrue();

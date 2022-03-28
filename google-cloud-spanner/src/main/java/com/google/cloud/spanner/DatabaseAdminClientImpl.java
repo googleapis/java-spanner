@@ -32,11 +32,7 @@ import com.google.common.base.Preconditions;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
-import com.google.spanner.admin.database.v1.CopyBackupMetadata;
-import com.google.spanner.admin.database.v1.CreateBackupMetadata;
-import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
-import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.*;
 import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -185,7 +181,7 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
     Preconditions.checkNotNull(destinationBackup);
 
     final OperationFuture<com.google.spanner.admin.database.v1.Backup, CopyBackupMetadata>
-        rawOperationFuture = rpc.copyBackUp(sourceBackupId, destinationBackup);
+        rawOperationFuture = rpc.copyBackup(sourceBackupId, destinationBackup);
 
     return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
