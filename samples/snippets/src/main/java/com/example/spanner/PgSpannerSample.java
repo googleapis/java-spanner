@@ -35,13 +35,28 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Example code for using the Cloud Spanner API. This example demonstrates all the common operations
+ * that can be done on Cloud Spanner. These are:
+ *
+ * <p>
+ *
+ * <ul>
+ *   <li>Creating a Cloud Spanner database.
+ *   <li>Writing, reading and executing SQL queries.
+ *   <li>Writing data using a read-write transaction.
+ *   <li>Using an index to read and execute SQL queries over data.
+ *   <li>Using commit timestamp for tracking when a record was last updated.
+ *   <li>Using Google API Extensions for Java to make thread-safe requests via long-running
+ *       operations. http://googleapis.github.io/gax-java/
+ * </ul>
+ */
 public class PgSpannerSample {
   static final List<Singer> SINGERS =
       Arrays.asList(
@@ -244,9 +259,9 @@ public class PgSpannerSample {
     try (ResultSet resultSet =
              dbClient
                  .singleUse()
-                 .executeQuery(Statement.of("SELECT singerid as \"SingerId\", " +
-                     "albumid as \"AlbumId\", marketingbudget as \"MarketingBudget\" " +
-                     "FROM Albums"))) {
+                 .executeQuery(Statement.of("SELECT singerid as \"SingerId\", "
+                     + "albumid as \"AlbumId\", marketingbudget as \"MarketingBudget\" "
+                     + "FROM Albums"))) {
       while (resultSet.next()) {
         System.out.printf(
             "%d %d %s\n",
@@ -383,8 +398,8 @@ public class PgSpannerSample {
     try (ResultSet resultSet =
              dbClient
                  .singleUse()
-                 .executeQuery(Statement.of("SELECT singerid as \"SingerId\", " +
-                     "firstname as \"FirstName\", lastname as \"LastName\" FROM Singers"))) {
+                 .executeQuery(Statement.of("SELECT singerid as \"SingerId\", "
+                     + "firstname as \"FirstName\", lastname as \"LastName\" FROM Singers"))) {
       while (resultSet.next()) {
         System.out.printf(
             "%s %s %s\n",
@@ -420,8 +435,8 @@ public class PgSpannerSample {
   static void queryWithParameter(DatabaseClient dbClient) {
     Statement statement =
         Statement.newBuilder(
-                "SELECT singerid AS \"SingerId\", " +
-                    "firstname as \"FirstName\", lastname as \"LastName\" "
+                "SELECT singerid AS \"SingerId\", "
+                    + "firstname as \"FirstName\", lastname as \"LastName\" "
                     + "FROM Singers "
                     + "WHERE LastName = $1")
             .bind("p1")
@@ -447,8 +462,8 @@ public class PgSpannerSample {
           // Transfer marketing budget from one album to another. We do it in a transaction to
           // ensure that the transfer is atomic.
           String sql1 =
-              "SELECT marketingbudget as \"MarketingBudget\" from Albums WHERE " +
-                  "SingerId = 2 and AlbumId = 2";
+              "SELECT marketingbudget as \"MarketingBudget\" from Albums WHERE "
+                  + "SingerId = 2 and AlbumId = 2";
           ResultSet resultSet = transaction.executeQuery(Statement.of(sql1));
           long album2Budget = 0;
           while (resultSet.next()) {
@@ -460,8 +475,8 @@ public class PgSpannerSample {
           long transfer = 200000;
           if (album2Budget >= transfer) {
             String sql2 =
-                "SELECT marketingbudget as \"MarketingBudget\" from Albums WHERE " +
-                    "SingerId = 1 and AlbumId = 1";
+                "SELECT marketingbudget as \"MarketingBudget\" from Albums WHERE "
+                    + "SingerId = 1 and AlbumId = 1";
             ResultSet resultSet2 = transaction.executeQuery(Statement.of(sql2));
             long album1Budget = 0;
             while (resultSet2.next()) {
