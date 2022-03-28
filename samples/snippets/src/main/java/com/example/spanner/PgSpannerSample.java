@@ -1,7 +1,38 @@
+/*
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.example.spanner;
 
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.*;
+import com.google.cloud.spanner.Database;
+import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.KeySet;
+import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.ReadOnlyTransaction;
+import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Struct;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 
@@ -84,7 +115,8 @@ public class PgSpannerSample {
                  .executeQuery(Statement.of("SELECT SingerId, AlbumId, AlbumTitle FROM Albums"))) {
       while (resultSet.next()) {
         System.out.printf(
-            "%d %d %s\n", resultSet.getLong(0), resultSet.getLong(1), resultSet.getString(2));
+            "%d %d %s\n", resultSet.getLong(0), resultSet.getLong(1),
+            resultSet.getString(2));
       }
     }
   }
@@ -101,7 +133,8 @@ public class PgSpannerSample {
                      Arrays.asList("SingerId", "AlbumId", "AlbumTitle"))) {
       while (resultSet.next()) {
         System.out.printf(
-            "%d %d %s\n", resultSet.getLong(0), resultSet.getLong(1), resultSet.getString(2));
+            "%d %d %s\n", resultSet.getLong(0), resultSet.getLong(1),
+            resultSet.getString(2));
       }
     }
   }
@@ -211,7 +244,9 @@ public class PgSpannerSample {
     try (ResultSet resultSet =
              dbClient
                  .singleUse()
-                 .executeQuery(Statement.of("SELECT singerid as \"SingerId\", albumid as \"AlbumId\", marketingbudget as \"MarketingBudget\" FROM Albums"))) {
+                 .executeQuery(Statement.of("SELECT singerid as \"SingerId\", " +
+                     "albumid as \"AlbumId\", marketingbudget as \"MarketingBudget\" " +
+                     "FROM Albums"))) {
       while (resultSet.next()) {
         System.out.printf(
             "%d %d %s\n",
@@ -219,7 +254,8 @@ public class PgSpannerSample {
             resultSet.getLong("AlbumId"),
             // We check that the value is non null. ResultSet getters can only be used to retrieve
             // non null values.
-            resultSet.isNull("MarketingBudget") ? "NULL" : resultSet.getLong("MarketingBudget"));
+            resultSet.isNull("MarketingBudget") ? "NULL" :
+                resultSet.getLong("MarketingBudget"));
       }
     }
   }
@@ -325,7 +361,8 @@ public class PgSpannerSample {
       while (queryResultSet.next()) {
         System.out.printf(
             "%d %d %s\n",
-            queryResultSet.getLong(0), queryResultSet.getLong(1), queryResultSet.getString(2));
+            queryResultSet.getLong(0), queryResultSet.getLong(1),
+            queryResultSet.getString(2));
       }
       try (ResultSet readResultSet =
                transaction.read(
@@ -333,7 +370,8 @@ public class PgSpannerSample {
         while (readResultSet.next()) {
           System.out.printf(
               "%d %d %s\n",
-              readResultSet.getLong(0), readResultSet.getLong(1), readResultSet.getString(2));
+              readResultSet.getLong(0), readResultSet.getLong(1),
+              readResultSet.getString(2));
         }
       }
     }
@@ -345,7 +383,8 @@ public class PgSpannerSample {
     try (ResultSet resultSet =
              dbClient
                  .singleUse()
-                 .executeQuery(Statement.of("SELECT singerid as \"SingerId\", firstname as \"FirstName\", lastname as \"LastName\" FROM Singers"))) {
+                 .executeQuery(Statement.of("SELECT singerid as \"SingerId\", " +
+                     "firstname as \"FirstName\", lastname as \"LastName\" FROM Singers"))) {
       while (resultSet.next()) {
         System.out.printf(
             "%s %s %s\n",
@@ -381,7 +420,8 @@ public class PgSpannerSample {
   static void queryWithParameter(DatabaseClient dbClient) {
     Statement statement =
         Statement.newBuilder(
-                "SELECT singerid AS \"SingerId\", firstname as \"FirstName\", lastname as \"LastName\" "
+                "SELECT singerid AS \"SingerId\", " +
+                    "firstname as \"FirstName\", lastname as \"LastName\" "
                     + "FROM Singers "
                     + "WHERE LastName = $1")
             .bind("p1")
@@ -407,7 +447,8 @@ public class PgSpannerSample {
           // Transfer marketing budget from one album to another. We do it in a transaction to
           // ensure that the transfer is atomic.
           String sql1 =
-              "SELECT marketingbudget as \"MarketingBudget\" from Albums WHERE SingerId = 2 and AlbumId = 2";
+              "SELECT marketingbudget as \"MarketingBudget\" from Albums WHERE " +
+                  "SingerId = 2 and AlbumId = 2";
           ResultSet resultSet = transaction.executeQuery(Statement.of(sql1));
           long album2Budget = 0;
           while (resultSet.next()) {
@@ -419,7 +460,8 @@ public class PgSpannerSample {
           long transfer = 200000;
           if (album2Budget >= transfer) {
             String sql2 =
-                "SELECT marketingbudget as \"MarketingBudget\" from Albums WHERE SingerId = 1 and AlbumId = 1";
+                "SELECT marketingbudget as \"MarketingBudget\" from Albums WHERE " +
+                    "SingerId = 1 and AlbumId = 1";
             ResultSet resultSet2 = transaction.executeQuery(Statement.of(sql2));
             long album1Budget = 0;
             while (resultSet2.next()) {

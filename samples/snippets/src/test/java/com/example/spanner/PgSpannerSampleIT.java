@@ -1,20 +1,23 @@
 package com.example.spanner;
 
-import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.*;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Database;
+import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerOptions;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-
-import static com.google.common.truth.Truth.assertThat;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 @SuppressWarnings("checkstyle:abbreviationaswordinname")
@@ -50,7 +53,8 @@ public class PgSpannerSampleIT {
       if (TimeUnit.HOURS.convert(now.getSeconds() - db.getCreateTime().getSeconds(),
           TimeUnit.SECONDS) > 24) {
         if (db.getId().getDatabase().length() >= DBID_LENGTH) {
-          if (samplePattern.matcher(toComparableId(PgSpannerSampleIT.baseDbId, db.getId().getDatabase())).matches()) {
+          if (samplePattern.matcher(toComparableId(PgSpannerSampleIT.baseDbId,
+              db.getId().getDatabase())).matches()) {
             db.drop();
           }
           if (restoredPattern.matcher(toComparableId("restored", db.getId().getDatabase()))
@@ -171,6 +175,7 @@ public class PgSpannerSampleIT {
 
     System.out.println("Read only transaction ...");
     out = runSample("readonlytransaction");
-    assertThat(out.replaceAll("[\r\n]+", " ")).containsMatch("(Total Junk.*){2}");
+    assertThat(out.replaceAll("[\r\n]+", " "))
+        .containsMatch("(Total Junk.*){2}");
   }
 }
