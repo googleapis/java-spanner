@@ -72,16 +72,14 @@ public interface InstanceAdminClient {
    * final InstanceConfig baseConfig = instanceAdminClient.getInstanceConfig(baseInstanceConfig);
    *
    * InstanceConfigInfo instanceConfigInfo =
-   *     InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId))
+   *     InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId), baseConfig)
    *         .setDisplayName(instanceConfigId)
-   *         .setBaseConfig(baseConfig.getId().getName())
-   *         .addAllReplicas(replicas)
    *         .build();
    *
    * final OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> operation =
    *     instanceAdminClient.createInstanceConfig(instanceConfigInfo);
    *
-   * InstanceConfig instanceConfig = op.get()
+   * InstanceConfig instanceConfig = op.get(10, TimeUnit.MINUTES)
    * }</pre>
    *
    * <!--SNIPPET instance_admin_client_create_instance_config-->
@@ -137,9 +135,9 @@ public interface InstanceAdminClient {
    * // Only update display name.
    * final OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> operation =
    *     instanceAdminClient.updateInstanceConfig(
-   *         instanceConfigInfo, InstanceConfigField.DISPLAY_NAME);
+   *         instanceConfigInfo, ImmutableList.of(InstanceConfigField.DISPLAY_NAME));
    *
-   * InstanceConfig instanceConfig = operation.get();
+   * InstanceConfig instanceConfig = operation.get(5, TimeUnit.MINUTES);
    * }</pre>
    *
    * <!--SNIPPET instance_admin_client_update_instance_config-->
