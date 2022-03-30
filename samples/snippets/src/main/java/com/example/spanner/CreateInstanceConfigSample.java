@@ -22,49 +22,45 @@ import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceConfig;
 import com.google.cloud.spanner.InstanceConfigId;
 import com.google.cloud.spanner.InstanceConfigInfo;
-import com.google.cloud.spanner.ReplicaInfo;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 class CreateInstanceConfigSample {
   static void createInstanceConfig() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
-    String baseInstanceConfig = "my-base-config";
-    String instanceConfigId = "custom-user-config";
+    String baseInstanceConfig = "my-base-instance-config";
+    String instanceConfigId = "custom-instance-config4";
     createInstanceConfig(projectId, baseInstanceConfig, instanceConfigId);
   }
 
   static void createInstanceConfig(
       String projectId, String baseInstanceConfig, String instanceConfigId) {
     try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .build()
+            .getService()) {
       final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
 
       final InstanceConfig baseConfig = instanceAdminClient.getInstanceConfig(baseInstanceConfig);
 
-      // Custom configurations contain all the replicas of the base config and atleast one optional
-      // replica.
-      List<ReplicaInfo> replicas = baseConfig.getReplicas();
-      replicas.add(baseConfig.getOptionalReplicas().get(0));
-
       InstanceConfigInfo instanceConfigInfo =
-          InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId))
+          InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId), baseConfig)
               .setDisplayName(instanceConfigId)
-              .setBaseConfig(baseConfig.getId().getName())
-              .addAllReplicas(replicas)
               .build();
 
       final OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> operation =
           instanceAdminClient.createInstanceConfig(instanceConfigInfo);
 
       try {
-        InstanceConfig instanceConfig = operation.get();
+        InstanceConfig instanceConfig = operation.get(5, TimeUnit.MINUTES);
         System.out.printf("Instance config %s was successfully created%n", instanceConfig.getId());
-      } catch (ExecutionException e) {
+      } catch (ExecutionException | TimeoutException e) {
         System.out.printf(
             "Error: Creating instance config %s failed with error message %s%n",
             instanceConfigInfo.getId(), e.getMessage());

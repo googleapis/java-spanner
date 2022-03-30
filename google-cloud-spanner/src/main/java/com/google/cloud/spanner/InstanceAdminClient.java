@@ -19,7 +19,10 @@ package com.google.cloud.spanner;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
+import com.google.cloud.spanner.Options.CreateAdminAPIOption;
+import com.google.cloud.spanner.Options.DeleteAdminAPIOption;
 import com.google.cloud.spanner.Options.ListOption;
+import com.google.cloud.spanner.Options.UpdateAdminAPIOption;
 import com.google.longrunning.Operation;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
@@ -52,11 +55,12 @@ public interface InstanceAdminClient {
    * </ul>
    *
    * Upon completion of the returned operation:
-   *   <ul>
-   *     <li>Instances can be created using the instance configuration.
-   *     <li>The instance config's {@code reconciling} field becomes false.
-   *     <li>Its state becomes {@code READY}.
-   *   </ul>
+   *
+   * <ul>
+   *   <li>Instances can be created using the instance configuration.
+   *   <li>The instance config's {@code reconciling} field becomes false.
+   *   <li>Its state becomes {@code READY}.
+   * </ul>
    *
    * <!--SNIPPET instance_admin_client_create_instance_config-->
    *
@@ -82,8 +86,10 @@ public interface InstanceAdminClient {
    *
    * <!--SNIPPET instance_admin_client_create_instance_config-->
    */
-  OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
-      InstanceConfigInfo instanceConfig) throws SpannerException;
+  default OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
+      InstanceConfigInfo instanceConfig, CreateAdminAPIOption... options) throws SpannerException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   /**
    * Updates an instance config. The returned {@code Operation} can be used to track the progress of
@@ -138,9 +144,13 @@ public interface InstanceAdminClient {
    *
    * <!--SNIPPET instance_admin_client_update_instance_config-->
    */
-  OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
-      InstanceConfigInfo instanceConfig, InstanceConfigInfo.InstanceConfigField... fieldsToUpdate)
-      throws SpannerException;
+  default OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
+      InstanceConfigInfo instanceConfig,
+      Iterable<InstanceConfigInfo.InstanceConfigField> fieldsToUpdate,
+      UpdateAdminAPIOption... options)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   /** Gets an instance config. */
   /* <!--SNIPPET instance_admin_client_get_instance_config-->
@@ -168,7 +178,10 @@ public interface InstanceAdminClient {
    *
    * <!--SNIPPET instance_admin_client_delete_instance_config-->
    */
-  void deleteInstanceConfig(String instanceConfigId) throws SpannerException;
+  default void deleteInstanceConfig(String instanceConfigId, DeleteAdminAPIOption... options)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   /** Lists the supported instance configs for current project. */
   /* <!--SNIPPET instance_admin_client_list_configs-->

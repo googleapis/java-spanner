@@ -46,7 +46,6 @@ import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -76,7 +75,7 @@ public class InstanceAdminClientImplTest {
     client = new InstanceAdminClientImpl(PROJECT_ID, rpc, dbClient);
   }
 
-  private Iterable<com.google.spanner.admin.instance.v1.ReplicaInfo> getAllReplicas() {
+  private List<com.google.spanner.admin.instance.v1.ReplicaInfo> getAllReplicas() {
     return Arrays.asList(
         com.google.spanner.admin.instance.v1.ReplicaInfo.newBuilder()
             .setLocation("Replica Location 1")
@@ -112,19 +111,15 @@ public class InstanceAdminClientImplTest {
                 "createInstanceConfig",
                 getInstanceConfigProto(),
                 CreateInstanceConfigMetadata.getDefaultInstance());
-    when(rpc.createInstanceConfig("projects/" + PROJECT_ID, CONFIG_ID, getInstanceConfigProto()))
+    when(rpc.createInstanceConfig(
+            "projects/" + PROJECT_ID, CONFIG_ID, getInstanceConfigProto(), false))
         .thenReturn(rawOperationFuture);
 
+    InstanceConfigInfo instanceConfigInfo =
+        InstanceConfigInfo.fromProto(getInstanceConfigProto(), client);
+
     OperationFuture<com.google.cloud.spanner.InstanceConfig, CreateInstanceConfigMetadata> op =
-        client.createInstanceConfig(
-            com.google.cloud.spanner.InstanceConfig.newBuilder(
-                    InstanceConfigId.of(PROJECT_ID, CONFIG_ID))
-                .setBaseConfig(BASE_CONFIG)
-                .addAllReplicas(
-                    Lists.newArrayList(getAllReplicas()).stream()
-                        .map(ReplicaInfo::fromProto)
-                        .collect(Collectors.toList()))
-                .build());
+        client.createInstanceConfig(instanceConfigInfo, Options.validateOnly(false));
     assertThat(op.isDone()).isTrue();
   }
 
@@ -143,14 +138,17 @@ public class InstanceAdminClientImplTest {
                 getInstanceConfigProto(),
                 UpdateInstanceConfigMetadata.getDefaultInstance());
     when(rpc.updateInstanceConfig(
-            instanceConfig, FieldMask.newBuilder().addPaths("display_name").build()))
+            instanceConfig, false, FieldMask.newBuilder().addPaths("display_name").build()))
         .thenReturn(rawOperationFuture);
     InstanceConfigInfo instanceConfigInfo =
         InstanceConfigInfo.newBuilder(InstanceConfigId.of(CONFIG_NAME))
             .setDisplayName(CONFIG_NAME)
             .build();
     OperationFuture<com.google.cloud.spanner.InstanceConfig, UpdateInstanceConfigMetadata> op =
-        client.updateInstanceConfig(instanceConfigInfo, InstanceConfigField.DISPLAY_NAME);
+        client.updateInstanceConfig(
+            instanceConfigInfo,
+            ImmutableList.of(InstanceConfigField.DISPLAY_NAME),
+            Options.validateOnly(false));
     assertThat(op.isDone()).isTrue();
     assertThat(op.get().getId().getName()).isEqualTo(CONFIG_NAME);
   }
@@ -165,7 +163,7 @@ public class InstanceAdminClientImplTest {
   @Test
   public void dropInstanceConfig() {
     client.deleteInstanceConfig(CONFIG_ID);
-    verify(rpc).deleteInstanceConfig(CONFIG_NAME);
+    verify(rpc).deleteInstanceConfig(CONFIG_NAME, null, null);
   }
 
   @Test

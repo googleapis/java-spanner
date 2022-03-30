@@ -879,14 +879,20 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
-      String parent, String instanceConfigId, InstanceConfig instanceConfig)
+      String parent,
+      String instanceConfigId,
+      InstanceConfig instanceConfig,
+      @Nullable Boolean validateOnly)
       throws SpannerException {
-    CreateInstanceConfigRequest request =
+    CreateInstanceConfigRequest.Builder builder =
         CreateInstanceConfigRequest.newBuilder()
             .setParent(parent)
             .setInstanceConfigId(instanceConfigId)
-            .setInstanceConfig(instanceConfig)
-            .build();
+            .setInstanceConfig(instanceConfig);
+    if (validateOnly != null) {
+      builder.setValidateOnly(validateOnly);
+    }
+    CreateInstanceConfigRequest request = builder.build();
     GrpcCallContext context =
         newCallContext(null, parent, request, InstanceAdminGrpc.getCreateInstanceConfigMethod());
     return instanceAdminStub.createInstanceConfigOperationCallable().futureCall(request, context);
@@ -894,12 +900,16 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
-      InstanceConfig instanceConfig, FieldMask fieldMask) throws SpannerException {
-    UpdateInstanceConfigRequest request =
+      InstanceConfig instanceConfig, @Nullable Boolean validateOnly, FieldMask fieldMask)
+      throws SpannerException {
+    UpdateInstanceConfigRequest.Builder builder =
         UpdateInstanceConfigRequest.newBuilder()
             .setInstanceConfig(instanceConfig)
-            .setUpdateMask(fieldMask)
-            .build();
+            .setUpdateMask(fieldMask);
+    if (validateOnly != null) {
+      builder.setValidateOnly(validateOnly);
+    }
+    UpdateInstanceConfigRequest request = builder.build();
     GrpcCallContext context =
         newCallContext(
             null,
@@ -920,10 +930,19 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public void deleteInstanceConfig(String instanceConfigName) throws SpannerException {
-    DeleteInstanceConfigRequest request =
-        DeleteInstanceConfigRequest.newBuilder().setName(instanceConfigName).build();
+  public void deleteInstanceConfig(
+      String instanceConfigName, @Nullable String etag, @Nullable Boolean validateOnly)
+      throws SpannerException {
+    DeleteInstanceConfigRequest.Builder requestBuilder =
+        DeleteInstanceConfigRequest.newBuilder().setName(instanceConfigName);
 
+    if (etag != null) {
+      requestBuilder.setEtag(etag);
+    }
+    if (validateOnly != null) {
+      requestBuilder.setValidateOnly(validateOnly);
+    }
+    DeleteInstanceConfigRequest request = requestBuilder.build();
     GrpcCallContext context =
         newCallContext(
             null, instanceConfigName, request, InstanceAdminGrpc.getDeleteInstanceConfigMethod());

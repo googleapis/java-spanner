@@ -181,16 +181,28 @@ public interface SpannerRpc extends ServiceRpc {
   Paginated<InstanceConfig> listInstanceConfigs(int pageSize, @Nullable String pageToken)
       throws SpannerException;
 
-  OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
-      String parent, String instanceConfigId, InstanceConfig instanceConfig)
-      throws SpannerException;
+  default OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
+      String parent,
+      String instanceConfigId,
+      InstanceConfig instanceConfig,
+      @Nullable Boolean validateOnly)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
-  OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
-      InstanceConfig instanceConfig, FieldMask fieldMask) throws SpannerException;
+  default OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
+      InstanceConfig instanceConfig, @Nullable Boolean validateOnly, FieldMask fieldMask)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   InstanceConfig getInstanceConfig(String instanceConfigName) throws SpannerException;
 
-  void deleteInstanceConfig(String instanceConfigName) throws SpannerException;
+  default void deleteInstanceConfig(
+      String instanceConfigName, @Nullable String etag, @Nullable Boolean validateOnly)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   Paginated<Instance> listInstances(
       int pageSize, @Nullable String pageToken, @Nullable String filter) throws SpannerException;

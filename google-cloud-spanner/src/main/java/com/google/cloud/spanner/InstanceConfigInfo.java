@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.cloud.FieldSelector;
 import com.google.common.collect.ImmutableMap;
@@ -49,7 +48,7 @@ public class InstanceConfigInfo {
       return selector;
     }
 
-    static FieldMask toFieldMask(InstanceConfigField... fields) {
+    static FieldMask toFieldMask(Iterable<InstanceConfigField> fields) {
       FieldMask.Builder builder = FieldMask.newBuilder();
       for (InstanceConfigField field : fields) {
         builder.addPaths(field.getSelector());
@@ -77,7 +76,7 @@ public class InstanceConfigInfo {
   private final List<ReplicaInfo> replicas;
   private final List<String> leaderOptions;
   private final List<ReplicaInfo> optionalReplicas;
-  private final String baseConfig;
+  private final InstanceConfigInfo baseConfig;
   private final Type configType;
   private final String etag;
   private final boolean reconciling;
@@ -123,7 +122,7 @@ public class InstanceConfigInfo {
    * configuration is created. Only set for user managed configurations. base_config must refer to a
    * configuration of type GOOGLE_MANAGED.
    */
-  public String getBaseConfig() {
+  public InstanceConfigInfo getBaseConfig() {
     return baseConfig;
   }
 
@@ -165,15 +164,13 @@ public class InstanceConfigInfo {
 
   /** Builder for {@code InstanceConfigInfo}. */
   public abstract static class Builder {
-    public abstract Builder setInstanceConfigId(InstanceConfigId configId);
-
     public abstract Builder setDisplayName(String displayName);
 
     public abstract Builder addAllReplicas(List<ReplicaInfo> replicas);
 
     protected abstract Builder addAllOptionalReplicas(List<ReplicaInfo> optionalReplicas);
 
-    public abstract Builder setBaseConfig(String baseConfig);
+    public abstract Builder setBaseConfig(InstanceConfigInfo baseConfig);
 
     public abstract Builder addAllLeaderOptions(List<String> leaderOptions);
 
@@ -198,7 +195,7 @@ public class InstanceConfigInfo {
     private List<ReplicaInfo> replicas;
     private List<String> leaderOptions;
     private List<ReplicaInfo> optionalReplicas;
-    private String baseConfig;
+    private InstanceConfigInfo baseConfig;
     private Type configType;
     private String etag;
     private boolean reconciling;
@@ -215,8 +212,24 @@ public class InstanceConfigInfo {
       this.reconciling = false;
       this.configType = Type.TYPE_UNSPECIFIED;
       this.displayName = "";
-      this.baseConfig = "";
       this.etag = "";
+    }
+
+    BuilderImpl(InstanceConfigId id, InstanceConfigInfo baseConfig) {
+      this.id = id;
+      this.baseConfig = baseConfig;
+      this.labels = new HashMap<>();
+      this.replicas = new ArrayList<>();
+      this.leaderOptions = new ArrayList<>();
+      this.optionalReplicas = new ArrayList<>();
+      this.state = State.STATE_UNSPECIFIED;
+      this.reconciling = false;
+      this.configType = Type.TYPE_UNSPECIFIED;
+      this.displayName = "";
+      this.etag = "";
+
+      // Fill replicas from base config.
+      addAllReplicasFromBaseConfig();
     }
 
     BuilderImpl(InstanceConfigInfo instanceConfigInfo) {
@@ -233,74 +246,75 @@ public class InstanceConfigInfo {
       this.labels = new HashMap<>(instanceConfigInfo.labels);
     }
 
-    @Override
-    public BuilderImpl setInstanceConfigId(InstanceConfigId id) {
-      this.id = id;
-      return this;
+    private void addAllReplicasFromBaseConfig() {
+      // Custom configurations contain all the replicas of the base config and at least one optional
+      // replica.
+      this.replicas = this.baseConfig.getReplicas();
+      this.replicas.add(baseConfig.getOptionalReplicas().get(0));
     }
 
     @Override
-    public BuilderImpl setDisplayName(String displayName) {
+    public Builder setDisplayName(String displayName) {
       this.displayName = displayName;
       return this;
     }
 
     @Override
-    public BuilderImpl addAllReplicas(List<ReplicaInfo> replicas) {
+    public Builder addAllReplicas(List<ReplicaInfo> replicas) {
       this.replicas = replicas;
       return this;
     }
 
     @Override
-    public BuilderImpl addAllLeaderOptions(List<String> leaderOptions) {
+    public Builder addAllLeaderOptions(List<String> leaderOptions) {
       this.leaderOptions = leaderOptions;
       return this;
     }
 
     @Override
-    protected BuilderImpl addAllOptionalReplicas(List<ReplicaInfo> optionalReplicas) {
+    protected Builder addAllOptionalReplicas(List<ReplicaInfo> optionalReplicas) {
       this.optionalReplicas = optionalReplicas;
       return this;
     }
 
     @Override
-    public BuilderImpl setBaseConfig(String baseConfig) {
+    public Builder setBaseConfig(InstanceConfigInfo baseConfig) {
       this.baseConfig = baseConfig;
       return this;
     }
 
     @Override
-    protected BuilderImpl setConfigType(Type configType) {
+    protected Builder setConfigType(Type configType) {
       this.configType = configType;
       return this;
     }
 
     @Override
-    protected BuilderImpl setState(State state) {
+    protected Builder setState(State state) {
       this.state = state;
       return this;
     }
 
     @Override
-    public BuilderImpl setEtag(String etag) {
+    public Builder setEtag(String etag) {
       this.etag = etag;
       return this;
     }
 
     @Override
-    protected BuilderImpl setReconciling(boolean reconciling) {
+    protected Builder setReconciling(boolean reconciling) {
       this.reconciling = reconciling;
       return this;
     }
 
     @Override
-    public BuilderImpl addLabel(String key, String value) {
+    public Builder addLabel(String key, String value) {
       this.labels.put(key, value);
       return this;
     }
 
     @Override
-    public BuilderImpl putAllLabels(Map<String, String> labels) {
+    public Builder putAllLabels(Map<String, String> labels) {
       this.labels.putAll(labels);
       return this;
     }
@@ -311,12 +325,16 @@ public class InstanceConfigInfo {
     }
   }
 
-  public static Builder newBuilder(InstanceConfigId id) {
-    return new BuilderImpl(checkNotNull(id));
-  }
-
   public InstanceConfigInfo(InstanceConfigId id, String displayName) {
     this((BuilderImpl) newBuilder(id).setDisplayName(displayName));
+  }
+
+  public static Builder newBuilder(InstanceConfigId id) {
+    return new BuilderImpl(id);
+  }
+
+  public static Builder newBuilder(InstanceConfigId id, InstanceConfigInfo baseConfig) {
+    return new BuilderImpl(id, baseConfig);
   }
 
   public InstanceConfigInfo(
@@ -406,53 +424,111 @@ public class InstanceConfigInfo {
   }
 
   com.google.spanner.admin.instance.v1.InstanceConfig toProto() {
-    com.google.spanner.admin.instance.v1.InstanceConfig.Builder builder =
+    InstanceConfig.Builder builder =
         com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder()
             .setName(getId().getName())
             .setDisplayName(getDisplayName())
-            .setBaseConfig(getBaseConfig())
             .addAllReplicas(
-                getReplicas().stream().map(ReplicaInfo::getProto).collect(Collectors.toList())
-            )
+                getReplicas().stream().map(ReplicaInfo::getProto).collect(Collectors.toList()))
             .addAllLeaderOptions(getLeaderOptions())
             .setEtag(getEtag())
             .setReconciling(getReconciling())
             .putAllLabels(getLabels())
             .addAllOptionalReplicas(
-                getOptionalReplicas().stream().map(ReplicaInfo::getProto).collect(Collectors.toList())
-            );
+                getOptionalReplicas().stream()
+                    .map(ReplicaInfo::getProto)
+                    .collect(Collectors.toList()))
+            .setConfigType(toProtoConfigType(getConfigType()))
+            .setState(toProtoState(getState()));
 
-    InstanceConfig.Type type;
-    switch(getConfigType()) {
-      case USER_MANAGED:
-        type = InstanceConfig.Type.USER_MANAGED;
-        break;
-      case GOOGLE_MANAGED:
-        type = InstanceConfig.Type.GOOGLE_MANAGED;
-        break;
-      case TYPE_UNSPECIFIED:
-        type = InstanceConfig.Type.TYPE_UNSPECIFIED;
-        break;
-      default:
-        throw new IllegalArgumentException("Unknown config type:" + getConfigType());
+    if (getBaseConfig() != null) {
+      builder.setBaseConfig(getBaseConfig().getId().getName());
     }
-    builder.setConfigType(type);
 
-    InstanceConfig.State state;
-    switch(getState()) {
-      case STATE_UNSPECIFIED:
-        state = InstanceConfig.State.STATE_UNSPECIFIED;
-        break;
-      case READY:
-        state = InstanceConfig.State.READY;
-        break;
-      case CREATING:
-        state = InstanceConfig.State.CREATING;
-        break;
-      default:
-        throw new IllegalArgumentException("Unknown state:" + getConfigType());
-    }
-    builder.setState(state);
     return builder.build();
+  }
+
+  static InstanceConfig.Type toProtoConfigType(Type type) {
+    switch (type) {
+      case TYPE_UNSPECIFIED:
+        return com.google.spanner.admin.instance.v1.InstanceConfig.Type.TYPE_UNSPECIFIED;
+      case GOOGLE_MANAGED:
+        return com.google.spanner.admin.instance.v1.InstanceConfig.Type.GOOGLE_MANAGED;
+      case USER_MANAGED:
+        return InstanceConfig.Type.USER_MANAGED;
+      default:
+        throw new IllegalArgumentException("Unknown config type:" + type);
+    }
+  }
+
+  static InstanceConfig.State toProtoState(State state) {
+    switch (state) {
+      case STATE_UNSPECIFIED:
+        return com.google.spanner.admin.instance.v1.InstanceConfig.State.STATE_UNSPECIFIED;
+      case CREATING:
+        return com.google.spanner.admin.instance.v1.InstanceConfig.State.CREATING;
+      case READY:
+        return com.google.spanner.admin.instance.v1.InstanceConfig.State.READY;
+      default:
+        throw new IllegalArgumentException("Unknown state:" + state);
+    }
+  }
+
+  static com.google.cloud.spanner.InstanceConfig fromProto(
+      com.google.spanner.admin.instance.v1.InstanceConfig proto, InstanceAdminClient client) {
+    com.google.cloud.spanner.InstanceConfig.Builder builder =
+        (com.google.cloud.spanner.InstanceConfig.Builder)
+            new com.google.cloud.spanner.InstanceConfig.Builder(
+                    client, InstanceConfigId.of(proto.getName()))
+                .setReconciling(proto.getReconciling())
+                .addAllReplicas(
+                    proto.getReplicasList().stream()
+                        .map(ReplicaInfo::fromProto)
+                        .collect(Collectors.toList()))
+                .setDisplayName(proto.getDisplayName())
+                .putAllLabels(proto.getLabelsMap())
+                .setEtag(proto.getEtag())
+                .addAllLeaderOptions(proto.getLeaderOptionsList())
+                .addAllOptionalReplicas(
+                    proto.getOptionalReplicasList().stream()
+                        .map(ReplicaInfo::fromProto)
+                        .collect(Collectors.toList()))
+                .setState(fromProtoState(proto.getState()))
+                .setConfigType(fromProtoConfigType(proto.getConfigType()));
+
+    if (!proto.getBaseConfig().isEmpty()) {
+      builder.setBaseConfig(
+          new com.google.cloud.spanner.InstanceConfigInfo.BuilderImpl(
+                  InstanceConfigId.of(proto.getBaseConfig()))
+              .build());
+    }
+
+    return builder.build();
+  }
+
+  static State fromProtoState(com.google.spanner.admin.instance.v1.InstanceConfig.State state) {
+    switch (state) {
+      case STATE_UNSPECIFIED:
+        return State.STATE_UNSPECIFIED;
+      case CREATING:
+        return State.CREATING;
+      case READY:
+        return State.READY;
+      default:
+        throw new IllegalArgumentException("Unknown state:" + state);
+    }
+  }
+
+  static Type fromProtoConfigType(com.google.spanner.admin.instance.v1.InstanceConfig.Type type) {
+    switch (type) {
+      case TYPE_UNSPECIFIED:
+        return Type.TYPE_UNSPECIFIED;
+      case GOOGLE_MANAGED:
+        return Type.GOOGLE_MANAGED;
+      case USER_MANAGED:
+        return Type.USER_MANAGED;
+      default:
+        throw new IllegalArgumentException("Unknown config type:" + type);
+    }
   }
 }

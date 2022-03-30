@@ -25,21 +25,27 @@ import com.google.cloud.spanner.InstanceConfigInfo;
 import com.google.cloud.spanner.InstanceConfigInfo.InstanceConfigField;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 class UpdateInstanceConfigSample {
   static void updateInstanceConfig() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
-    String instanceConfigId = "custom-user-config";
+    String instanceConfigId = "custom-instance-config";
     String displayName = "my-display-name";
     updateInstanceConfig(projectId, instanceConfigId, displayName);
   }
 
   static void updateInstanceConfig(String projectId, String instanceConfigId, String displayName) {
     try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .build()
+            .getService()) {
       final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
 
       InstanceConfigInfo instanceConfigInfo =
@@ -49,17 +55,18 @@ class UpdateInstanceConfigSample {
 
       final OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> operation =
           instanceAdminClient.updateInstanceConfig(
-              instanceConfigInfo, InstanceConfigField.DISPLAY_NAME);
+              instanceConfigInfo, ImmutableList.of(InstanceConfigField.DISPLAY_NAME));
 
       try {
-        InstanceConfig instanceConfig = operation.get();
+        InstanceConfig instanceConfig = operation.get(5, TimeUnit.MINUTES);
         System.out.printf(
             "Instance config %s was successfully updated with new display name %s%n",
             instanceConfig.getId(), instanceConfig.getDisplayName());
-      } catch (ExecutionException e) {
+      } catch (ExecutionException | TimeoutException e) {
         System.out.printf(
             "Error: Updating instance config %s failed with error message %s%n",
             instanceConfigInfo.getId(), e.getMessage());
+        e.printStackTrace();
       } catch (InterruptedException e) {
         System.out.println(
             "Error: Waiting for updateInstanceConfig operation to finish was interrupted");

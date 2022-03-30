@@ -51,6 +51,22 @@ public final class Options implements Serializable {
   public interface ReadQueryUpdateTransactionOption
       extends ReadOption, QueryOption, UpdateOption, TransactionOption {}
 
+  /**
+   * Marker interface to mark options applicable to Create, Update and Delete operations in admin
+   * API.
+   */
+  public interface CreateUpdateDeleteAdminAPIOption
+      extends CreateAdminAPIOption, UpdateAdminAPIOption, DeleteAdminAPIOption {}
+
+  /** Marker interface to mark options applicable to Create operations in admin API. */
+  public interface CreateAdminAPIOption extends AdminAPIOption {}
+
+  /** Marker interface to mark options applicable to Delete operations in admin API. */
+  public interface DeleteAdminAPIOption extends AdminAPIOption {}
+
+  /** Marker interface to mark options applicable to Update operations in admin API. */
+  public interface UpdateAdminAPIOption extends AdminAPIOption {}
+
   /** Marker interface to mark options applicable to query operation. */
   public interface QueryOption {}
 
@@ -62,6 +78,9 @@ public final class Options implements Serializable {
 
   /** Marker interface to mark options applicable to list operations in admin API. */
   public interface ListOption {}
+
+  /** Marker interface to mark options applicable to operations in admin API. */
+  public interface AdminAPIOption {}
 
   /** Specifying this instructs the transaction to request {@link CommitStats} from the backend. */
   public static TransactionOption commitStats() {
@@ -151,6 +170,14 @@ public final class Options implements Serializable {
     return new FilterOption(filter);
   }
 
+  public static DeleteAdminAPIOption etag(String etag) {
+    return new EtagOption(etag);
+  }
+
+  public static CreateUpdateDeleteAdminAPIOption validateOnly(Boolean validateOnly) {
+    return new ValidateOnlyOption(validateOnly);
+  }
+
   /** Option to request {@link CommitStats} for read/write transactions. */
   static final class CommitStatsOption extends InternalOption implements TransactionOption {
     @Override
@@ -215,6 +242,33 @@ public final class Options implements Serializable {
     }
   }
 
+  static final class EtagOption extends InternalOption implements DeleteAdminAPIOption {
+    private final String etag;
+
+    EtagOption(String etag) {
+      this.etag = etag;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.etag = etag;
+    }
+  }
+
+  static final class ValidateOnlyOption extends InternalOption
+      implements CreateUpdateDeleteAdminAPIOption {
+    private final Boolean validateOnly;
+
+    ValidateOnlyOption(Boolean validateOnly) {
+      this.validateOnly = validateOnly;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.validateOnly = validateOnly;
+    }
+  }
+
   private boolean withCommitStats;
   private Long limit;
   private Integer prefetchChunks;
@@ -224,6 +278,8 @@ public final class Options implements Serializable {
   private String filter;
   private RpcPriority priority;
   private String tag;
+  private String etag;
+  private Boolean validateOnly;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -296,6 +352,22 @@ public final class Options implements Serializable {
     return tag;
   }
 
+  boolean hasEtag() {
+    return etag != null;
+  }
+
+  String etag() {
+    return etag;
+  }
+
+  boolean hasValidateOnly() {
+    return validateOnly != null;
+  }
+
+  Boolean validateOnly() {
+    return validateOnly;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -322,6 +394,12 @@ public final class Options implements Serializable {
     }
     if (tag != null) {
       b.append("tag: ").append(tag).append(' ');
+    }
+    if (etag != null) {
+      b.append("etag: ").append(etag).append(' ');
+    }
+    if (validateOnly != null) {
+      b.append("validateOnly: ").append(validateOnly).append(' ');
     }
     return b.toString();
   }
@@ -354,7 +432,9 @@ public final class Options implements Serializable {
         && Objects.equals(pageToken(), that.pageToken())
         && Objects.equals(filter(), that.filter())
         && Objects.equals(priority(), that.priority())
-        && Objects.equals(tag(), that.tag());
+        && Objects.equals(tag(), that.tag())
+        && Objects.equals(etag(), that.etag())
+        && Objects.equals(validateOnly(), that.validateOnly());
   }
 
   @Override
@@ -386,6 +466,12 @@ public final class Options implements Serializable {
     }
     if (tag != null) {
       result = 31 * result + tag.hashCode();
+    }
+    if (etag != null) {
+      result = 31 * result + etag.hashCode();
+    }
+    if (validateOnly != null) {
+      result = 31 * result + validateOnly.hashCode();
     }
     return result;
   }
@@ -438,6 +524,16 @@ public final class Options implements Serializable {
       }
     }
     return listOptions;
+  }
+
+  static Options fromAdminAPIOptions(AdminAPIOption... options) {
+    Options adminAPIOptions = new Options();
+    for (AdminAPIOption option : options) {
+      if (option instanceof InternalOption) {
+        ((InternalOption) option).appendToOptions(adminAPIOptions);
+      }
+    }
+    return adminAPIOptions;
   }
 
   private abstract static class InternalOption {
