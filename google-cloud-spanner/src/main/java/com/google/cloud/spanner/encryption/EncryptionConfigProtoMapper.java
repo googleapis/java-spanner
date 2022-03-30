@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.encryption;
 
+import com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig;
 import com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig;
 import com.google.spanner.admin.database.v1.EncryptionConfig;
 import com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig;
@@ -44,6 +45,28 @@ public class EncryptionConfigProtoMapper {
     } else if (config instanceof UseDatabaseEncryption) {
       return CreateBackupEncryptionConfig.newBuilder()
           .setEncryptionType(CreateBackupEncryptionConfig.EncryptionType.USE_DATABASE_ENCRYPTION)
+          .build();
+    } else {
+      throw new IllegalArgumentException("Unknown backup encryption configuration " + config);
+    }
+  }
+
+  /** Returns an encryption config to be used for a copy backup. */
+  public static CopyBackupEncryptionConfig copyBackupEncryptionConfig(
+      BackupEncryptionConfig config) {
+    if (config instanceof CustomerManagedEncryption) {
+      return CopyBackupEncryptionConfig.newBuilder()
+          .setEncryptionType(CopyBackupEncryptionConfig.EncryptionType.CUSTOMER_MANAGED_ENCRYPTION)
+          .setKmsKeyName(((CustomerManagedEncryption) config).getKmsKeyName())
+          .build();
+    } else if (config instanceof GoogleDefaultEncryption) {
+      return CopyBackupEncryptionConfig.newBuilder()
+          .setEncryptionType(CopyBackupEncryptionConfig.EncryptionType.GOOGLE_DEFAULT_ENCRYPTION)
+          .build();
+    } else if (config instanceof UseBackupEncryption) {
+      return CopyBackupEncryptionConfig.newBuilder()
+          .setEncryptionType(
+              CopyBackupEncryptionConfig.EncryptionType.USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION)
           .build();
     } else {
       throw new IllegalArgumentException("Unknown backup encryption configuration " + config);

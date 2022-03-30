@@ -82,7 +82,8 @@ public interface StatementResult {
     RUN_BATCH,
     ABORT_BATCH,
     SET_RPC_PRIORITY,
-    SHOW_RPC_PRIORITY
+    SHOW_RPC_PRIORITY,
+    SHOW_TRANSACTION_ISOLATION_LEVEL
   }
 
   /**

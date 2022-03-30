@@ -42,6 +42,8 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
+import com.google.spanner.admin.database.v1.CopyBackupRequest;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
@@ -172,6 +174,17 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
   public OperationCallSettings<CreateBackupRequest, Backup, CreateBackupMetadata>
       createBackupOperationSettings() {
     return ((DatabaseAdminStubSettings) getStubSettings()).createBackupOperationSettings();
+  }
+
+  /** Returns the object with the settings used for calls to copyBackup. */
+  public UnaryCallSettings<CopyBackupRequest, Operation> copyBackupSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).copyBackupSettings();
+  }
+
+  /** Returns the object with the settings used for calls to copyBackup. */
+  public OperationCallSettings<CopyBackupRequest, Backup, CopyBackupMetadata>
+      copyBackupOperationSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).copyBackupOperationSettings();
   }
 
   /** Returns the object with the settings used for calls to getBackup. */
@@ -392,6 +405,17 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
     public OperationCallSettings.Builder<CreateBackupRequest, Backup, CreateBackupMetadata>
         createBackupOperationSettings() {
       return getStubSettingsBuilder().createBackupOperationSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to copyBackup. */
+    public UnaryCallSettings.Builder<CopyBackupRequest, Operation> copyBackupSettings() {
+      return getStubSettingsBuilder().copyBackupSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to copyBackup. */
+    public OperationCallSettings.Builder<CopyBackupRequest, Backup, CopyBackupMetadata>
+        copyBackupOperationSettings() {
+      return getStubSettingsBuilder().copyBackupOperationSettings();
     }
 
     /** Returns the builder for the settings used for calls to getBackup. */
