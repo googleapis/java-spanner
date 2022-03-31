@@ -21,9 +21,10 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.encryption.BackupEncryptionConfig;
 import com.google.cloud.spanner.encryption.EncryptionInfo;
 import com.google.spanner.admin.database.v1.Database;
+
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 
 /** Represents a Cloud Spanner database backup. */
 public class BackupInfo {

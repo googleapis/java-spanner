@@ -16,8 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.api.client.util.Preconditions;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
@@ -27,6 +25,8 @@ import com.google.cloud.spanner.encryption.EncryptionInfo;
 import com.google.longrunning.Operation;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Represents a Cloud Spanner database backup. {@code Backup} adds a layer of service related
