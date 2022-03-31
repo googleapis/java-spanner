@@ -71,9 +71,12 @@ public interface InstanceAdminClient {
    *
    * final InstanceConfig baseConfig = instanceAdminClient.getInstanceConfig(baseInstanceConfig);
    *
+   * List<ReplicaInfo> readOnlyReplicas = ImmutableList.of(baseConfig.getOptionalReplicas().get(0));
+   *
    * InstanceConfigInfo instanceConfigInfo =
    *     InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId), baseConfig)
    *         .setDisplayName(instanceConfigId)
+   *         .addReadOnlyReplicas(readOnlyReplicas)
    *         .build();
    *
    * final OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> operation =
