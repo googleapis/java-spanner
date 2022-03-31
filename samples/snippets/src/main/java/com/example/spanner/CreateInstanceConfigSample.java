@@ -22,9 +22,12 @@ import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceConfig;
 import com.google.cloud.spanner.InstanceConfigId;
 import com.google.cloud.spanner.InstanceConfigInfo;
+import com.google.cloud.spanner.ReplicaInfo;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -49,9 +52,12 @@ class CreateInstanceConfigSample {
 
       final InstanceConfig baseConfig = instanceAdminClient.getInstanceConfig(baseInstanceConfig);
 
+      List<ReplicaInfo> readOnlyReplicas = ImmutableList.of(baseConfig.getOptionalReplicas().get(0));
+
       InstanceConfigInfo instanceConfigInfo =
           InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId), baseConfig)
               .setDisplayName(instanceConfigId)
+              .addReadOnlyReplicas(readOnlyReplicas)
               .build();
 
       final OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> operation =

@@ -186,6 +186,8 @@ public class InstanceConfigInfo {
 
     public abstract Builder putAllLabels(Map<String, String> labels);
 
+    public abstract Builder addReadOnlyReplicas(List<ReplicaInfo> readOnlyReplicas);
+
     public abstract InstanceConfigInfo build();
   }
 
@@ -219,7 +221,7 @@ public class InstanceConfigInfo {
       this.id = id;
       this.baseConfig = baseConfig;
       this.labels = new HashMap<>();
-      this.replicas = new ArrayList<>();
+      this.replicas = baseConfig.replicas;
       this.leaderOptions = new ArrayList<>();
       this.optionalReplicas = new ArrayList<>();
       this.state = State.STATE_UNSPECIFIED;
@@ -227,9 +229,6 @@ public class InstanceConfigInfo {
       this.configType = Type.TYPE_UNSPECIFIED;
       this.displayName = "";
       this.etag = "";
-
-      // Fill replicas from base config.
-      addAllReplicasFromBaseConfig();
     }
 
     BuilderImpl(InstanceConfigInfo instanceConfigInfo) {
@@ -316,6 +315,12 @@ public class InstanceConfigInfo {
     @Override
     public Builder putAllLabels(Map<String, String> labels) {
       this.labels.putAll(labels);
+      return this;
+    }
+
+    @Override
+    public Builder addReadOnlyReplicas(List<ReplicaInfo> readOnlyReplicas) {
+      this.replicas.addAll(readOnlyReplicas);
       return this;
     }
 

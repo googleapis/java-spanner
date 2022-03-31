@@ -48,7 +48,6 @@ public class SampleTestBase {
   public static void beforeClass() {
     final SpannerOptions options =
         SpannerOptions.newBuilder()
-            .setHost("https://staging-wrenchworks.sandbox.googleapis.com")
             .setAutoThrottleAdministrativeRequests()
             .build();
     projectId = options.getProjectId();

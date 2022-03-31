@@ -3,13 +3,8 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>google-cloud-spanner-parent</artifactId>
   <packaging>pom</packaging>
-  <version>6.20.1-SNAPSHOT</version>
+  <version>6.23.2-SNAPSHOT</version>
   <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>compile</scope>
-    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
