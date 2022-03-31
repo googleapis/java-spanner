@@ -20,15 +20,20 @@ import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
+import java.util.Collections;
 import java.util.Set;
 
 @InternalApi
 public class SpannerStatementParser extends AbstractStatementParser {
 
-  public SpannerStatementParser() {
-    super(Dialect.GOOGLE_STANDARD_SQL);
+  public SpannerStatementParser() throws CompileException {
+    super(
+        Dialect.GOOGLE_STANDARD_SQL,
+        Collections.unmodifiableSet(
+            ClientSideStatements.getInstance(Dialect.GOOGLE_STANDARD_SQL).getCompiledStatements()));
   }
 
   /**
@@ -106,7 +111,7 @@ public class SpannerStatementParser extends AbstractStatementParser {
             res.append(c);
           }
         } else if (isInMultiLineComment) {
-          if (sql.length() > index + 1 && c == ASTERIKS && sql.charAt(index + 1) == SLASH) {
+          if (sql.length() > index + 1 && c == ASTERISK && sql.charAt(index + 1) == SLASH) {
             isInMultiLineComment = false;
             index++;
           }
@@ -115,7 +120,7 @@ public class SpannerStatementParser extends AbstractStatementParser {
               || (sql.length() > index + 1 && c == HYPHEN && sql.charAt(index + 1) == HYPHEN)) {
             // This is a single line comment.
             isInSingleLineComment = true;
-          } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERIKS) {
+          } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
             isInMultiLineComment = true;
             index++;
           } else {

@@ -59,6 +59,8 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
+import com.google.spanner.admin.database.v1.CopyBackupRequest;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
@@ -149,6 +151,9 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
   private final UnaryCallSettings<CreateBackupRequest, Operation> createBackupSettings;
   private final OperationCallSettings<CreateBackupRequest, Backup, CreateBackupMetadata>
       createBackupOperationSettings;
+  private final UnaryCallSettings<CopyBackupRequest, Operation> copyBackupSettings;
+  private final OperationCallSettings<CopyBackupRequest, Backup, CopyBackupMetadata>
+      copyBackupOperationSettings;
   private final UnaryCallSettings<GetBackupRequest, Backup> getBackupSettings;
   private final UnaryCallSettings<UpdateBackupRequest, Backup> updateBackupSettings;
   private final UnaryCallSettings<DeleteBackupRequest, Empty> deleteBackupSettings;
@@ -473,6 +478,17 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     return createBackupOperationSettings;
   }
 
+  /** Returns the object with the settings used for calls to copyBackup. */
+  public UnaryCallSettings<CopyBackupRequest, Operation> copyBackupSettings() {
+    return copyBackupSettings;
+  }
+
+  /** Returns the object with the settings used for calls to copyBackup. */
+  public OperationCallSettings<CopyBackupRequest, Backup, CopyBackupMetadata>
+      copyBackupOperationSettings() {
+    return copyBackupOperationSettings;
+  }
+
   /** Returns the object with the settings used for calls to getBackup. */
   public UnaryCallSettings<GetBackupRequest, Backup> getBackupSettings() {
     return getBackupSettings;
@@ -613,6 +629,8 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     testIamPermissionsSettings = settingsBuilder.testIamPermissionsSettings().build();
     createBackupSettings = settingsBuilder.createBackupSettings().build();
     createBackupOperationSettings = settingsBuilder.createBackupOperationSettings().build();
+    copyBackupSettings = settingsBuilder.copyBackupSettings().build();
+    copyBackupOperationSettings = settingsBuilder.copyBackupOperationSettings().build();
     getBackupSettings = settingsBuilder.getBackupSettings().build();
     updateBackupSettings = settingsBuilder.updateBackupSettings().build();
     deleteBackupSettings = settingsBuilder.deleteBackupSettings().build();
@@ -650,6 +668,9 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     private final UnaryCallSettings.Builder<CreateBackupRequest, Operation> createBackupSettings;
     private final OperationCallSettings.Builder<CreateBackupRequest, Backup, CreateBackupMetadata>
         createBackupOperationSettings;
+    private final UnaryCallSettings.Builder<CopyBackupRequest, Operation> copyBackupSettings;
+    private final OperationCallSettings.Builder<CopyBackupRequest, Backup, CopyBackupMetadata>
+        copyBackupOperationSettings;
     private final UnaryCallSettings.Builder<GetBackupRequest, Backup> getBackupSettings;
     private final UnaryCallSettings.Builder<UpdateBackupRequest, Backup> updateBackupSettings;
     private final UnaryCallSettings.Builder<DeleteBackupRequest, Empty> deleteBackupSettings;
@@ -760,6 +781,8 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
       testIamPermissionsSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       createBackupSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       createBackupOperationSettings = OperationCallSettings.newBuilder();
+      copyBackupSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      copyBackupOperationSettings = OperationCallSettings.newBuilder();
       getBackupSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       updateBackupSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       deleteBackupSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
@@ -783,6 +806,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
               getIamPolicySettings,
               testIamPermissionsSettings,
               createBackupSettings,
+              copyBackupSettings,
               getBackupSettings,
               updateBackupSettings,
               deleteBackupSettings,
@@ -809,6 +833,8 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
       testIamPermissionsSettings = settings.testIamPermissionsSettings.toBuilder();
       createBackupSettings = settings.createBackupSettings.toBuilder();
       createBackupOperationSettings = settings.createBackupOperationSettings.toBuilder();
+      copyBackupSettings = settings.copyBackupSettings.toBuilder();
+      copyBackupOperationSettings = settings.copyBackupOperationSettings.toBuilder();
       getBackupSettings = settings.getBackupSettings.toBuilder();
       updateBackupSettings = settings.updateBackupSettings.toBuilder();
       deleteBackupSettings = settings.deleteBackupSettings.toBuilder();
@@ -830,6 +856,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
               getIamPolicySettings,
               testIamPermissionsSettings,
               createBackupSettings,
+              copyBackupSettings,
               getBackupSettings,
               updateBackupSettings,
               deleteBackupSettings,
@@ -900,6 +927,11 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
 
       builder
           .createBackupSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_2_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_2_params"));
+
+      builder
+          .copyBackupSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_2_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_2_params"));
 
@@ -1009,6 +1041,29 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
                       .setRpcTimeoutMultiplier(1.0)
                       .setMaxRpcTimeout(Duration.ZERO)
                       .setTotalTimeout(Duration.ofMillis(172800000L))
+                      .build()));
+
+      builder
+          .copyBackupOperationSettings()
+          .setInitialCallSettings(
+              UnaryCallSettings.<CopyBackupRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_2_codes"))
+                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_2_params"))
+                  .build())
+          .setResponseTransformer(
+              ProtoOperationTransformers.ResponseTransformer.create(Backup.class))
+          .setMetadataTransformer(
+              ProtoOperationTransformers.MetadataTransformer.create(CopyBackupMetadata.class))
+          .setPollingAlgorithm(
+              OperationTimedPollAlgorithm.create(
+                  RetrySettings.newBuilder()
+                      .setInitialRetryDelay(Duration.ofMillis(5000L))
+                      .setRetryDelayMultiplier(1.5)
+                      .setMaxRetryDelay(Duration.ofMillis(45000L))
+                      .setInitialRpcTimeout(Duration.ZERO)
+                      .setRpcTimeoutMultiplier(1.0)
+                      .setMaxRpcTimeout(Duration.ZERO)
+                      .setTotalTimeout(Duration.ofMillis(300000L))
                       .build()));
 
       builder
@@ -1130,6 +1185,19 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     public OperationCallSettings.Builder<CreateBackupRequest, Backup, CreateBackupMetadata>
         createBackupOperationSettings() {
       return createBackupOperationSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to copyBackup. */
+    public UnaryCallSettings.Builder<CopyBackupRequest, Operation> copyBackupSettings() {
+      return copyBackupSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to copyBackup. */
+    @BetaApi(
+        "The surface for use by generated code is not stable yet and may change in the future.")
+    public OperationCallSettings.Builder<CopyBackupRequest, Backup, CopyBackupMetadata>
+        copyBackupOperationSettings() {
+      return copyBackupOperationSettings;
     }
 
     /** Returns the builder for the settings used for calls to getBackup. */

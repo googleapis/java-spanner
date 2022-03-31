@@ -72,6 +72,8 @@ public interface ListDatabaseOperationsRequestOrBuilder
    *      for [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata] is
    *      `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
+   *      `metadata.&#64;type` must be specified first, if filtering on metadata
+   *      fields.
    *   * `error` - Error associated with the long-running operation.
    *   * `response.&#64;type` - the type of response.
    *   * `response.&lt;field_name&gt;` - any field in response.value.
@@ -117,6 +119,8 @@ public interface ListDatabaseOperationsRequestOrBuilder
    *      for [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata] is
    *      `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
+   *      `metadata.&#64;type` must be specified first, if filtering on metadata
+   *      fields.
    *   * `error` - Error associated with the long-running operation.
    *   * `response.&#64;type` - the type of response.
    *   * `response.&lt;field_name&gt;` - any field in response.value.

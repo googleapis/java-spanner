@@ -53,40 +53,38 @@ public final class ResultSetProto {
   static {
     java.lang.String[] descriptorData = {
       "\n\"google/spanner/v1/result_set.proto\022\021go"
-          + "ogle.spanner.v1\032\034google/api/annotations."
-          + "proto\032\034google/protobuf/struct.proto\032\'goo"
-          + "gle/spanner/v1/commit_response.proto\032\"go"
-          + "ogle/spanner/v1/query_plan.proto\032#google"
-          + "/spanner/v1/transaction.proto\032\034google/sp"
-          + "anner/v1/type.proto\"\237\001\n\tResultSet\0226\n\010met"
-          + "adata\030\001 \001(\0132$.google.spanner.v1.ResultSe"
-          + "tMetadata\022(\n\004rows\030\002 \003(\0132\032.google.protobu"
-          + "f.ListValue\0220\n\005stats\030\003 \001(\0132!.google.span"
-          + "ner.v1.ResultSetStats\"\321\001\n\020PartialResultS"
-          + "et\0226\n\010metadata\030\001 \001(\0132$.google.spanner.v1"
-          + ".ResultSetMetadata\022&\n\006values\030\002 \003(\0132\026.goo"
-          + "gle.protobuf.Value\022\025\n\rchunked_value\030\003 \001("
-          + "\010\022\024\n\014resume_token\030\004 \001(\014\0220\n\005stats\030\005 \001(\0132!"
-          + ".google.spanner.v1.ResultSetStats\"y\n\021Res"
-          + "ultSetMetadata\022/\n\010row_type\030\001 \001(\0132\035.googl"
-          + "e.spanner.v1.StructType\0223\n\013transaction\030\002"
-          + " \001(\0132\036.google.spanner.v1.Transaction\"\271\001\n"
-          + "\016ResultSetStats\0220\n\nquery_plan\030\001 \001(\0132\034.go"
-          + "ogle.spanner.v1.QueryPlan\022,\n\013query_stats"
-          + "\030\002 \001(\0132\027.google.protobuf.Struct\022\031\n\017row_c"
-          + "ount_exact\030\003 \001(\003H\000\022\037\n\025row_count_lower_bo"
-          + "und\030\004 \001(\003H\000B\013\n\trow_countB\267\001\n\025com.google."
-          + "spanner.v1B\016ResultSetProtoP\001Z8google.gol"
-          + "ang.org/genproto/googleapis/spanner/v1;s"
-          + "panner\370\001\001\252\002\027Google.Cloud.Spanner.V1\312\002\027Go"
-          + "ogle\\Cloud\\Spanner\\V1\352\002\032Google::Cloud::S"
-          + "panner::V1b\006proto3"
+          + "ogle.spanner.v1\032\034google/protobuf/struct."
+          + "proto\032\'google/spanner/v1/commit_response"
+          + ".proto\032\"google/spanner/v1/query_plan.pro"
+          + "to\032#google/spanner/v1/transaction.proto\032"
+          + "\034google/spanner/v1/type.proto\"\237\001\n\tResult"
+          + "Set\0226\n\010metadata\030\001 \001(\0132$.google.spanner.v"
+          + "1.ResultSetMetadata\022(\n\004rows\030\002 \003(\0132\032.goog"
+          + "le.protobuf.ListValue\0220\n\005stats\030\003 \001(\0132!.g"
+          + "oogle.spanner.v1.ResultSetStats\"\321\001\n\020Part"
+          + "ialResultSet\0226\n\010metadata\030\001 \001(\0132$.google."
+          + "spanner.v1.ResultSetMetadata\022&\n\006values\030\002"
+          + " \003(\0132\026.google.protobuf.Value\022\025\n\rchunked_"
+          + "value\030\003 \001(\010\022\024\n\014resume_token\030\004 \001(\014\0220\n\005sta"
+          + "ts\030\005 \001(\0132!.google.spanner.v1.ResultSetSt"
+          + "ats\"y\n\021ResultSetMetadata\022/\n\010row_type\030\001 \001"
+          + "(\0132\035.google.spanner.v1.StructType\0223\n\013tra"
+          + "nsaction\030\002 \001(\0132\036.google.spanner.v1.Trans"
+          + "action\"\271\001\n\016ResultSetStats\0220\n\nquery_plan\030"
+          + "\001 \001(\0132\034.google.spanner.v1.QueryPlan\022,\n\013q"
+          + "uery_stats\030\002 \001(\0132\027.google.protobuf.Struc"
+          + "t\022\031\n\017row_count_exact\030\003 \001(\003H\000\022\037\n\025row_coun"
+          + "t_lower_bound\030\004 \001(\003H\000B\013\n\trow_countB\267\001\n\025c"
+          + "om.google.spanner.v1B\016ResultSetProtoP\001Z8"
+          + "google.golang.org/genproto/googleapis/sp"
+          + "anner/v1;spanner\370\001\001\252\002\027Google.Cloud.Spann"
+          + "er.V1\312\002\027Google\\Cloud\\Spanner\\V1\352\002\032Google"
+          + "::Cloud::Spanner::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
             descriptorData,
             new com.google.protobuf.Descriptors.FileDescriptor[] {
-              com.google.api.AnnotationsProto.getDescriptor(),
               com.google.protobuf.StructProto.getDescriptor(),
               com.google.spanner.v1.CommitResponseProto.getDescriptor(),
               com.google.spanner.v1.QueryPlanProto.getDescriptor(),
@@ -125,7 +123,6 @@ public final class ResultSetProto {
             new java.lang.String[] {
               "QueryPlan", "QueryStats", "RowCountExact", "RowCountLowerBound", "RowCount",
             });
-    com.google.api.AnnotationsProto.getDescriptor();
     com.google.protobuf.StructProto.getDescriptor();
     com.google.spanner.v1.CommitResponseProto.getDescriptor();
     com.google.spanner.v1.QueryPlanProto.getDescriptor();
