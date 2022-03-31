@@ -71,6 +71,11 @@
     <method>com.google.api.gax.longrunning.OperationFuture updateInstanceConfig(com.google.spanner.admin.instance.v1.InstanceConfig, java.lang.Boolean, com.google.protobuf.FieldMask)</method>
   </difference>
   <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.longrunning.OperationFuture copyBackup(com.google.cloud.spanner.BackupId, com.google.cloud.spanner.Backup)</method>
+  </difference>
+  <difference>
     <differenceType>7013</differenceType>
     <className>com/google/cloud/spanner/BackupInfo$Builder</className>
     <method>com.google.cloud.spanner.BackupInfo$Builder setMaxExpireTime(com.google.cloud.Timestamp)</method>
