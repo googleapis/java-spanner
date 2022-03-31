@@ -63,7 +63,7 @@ public class InstanceAdminClientImplTest {
   private static final String CONFIG_NAME = "projects/my-project/instanceConfigs/my-config";
   private static final String CONFIG_NAME2 = "projects/my-project/instanceConfigs/my-config2";
   private static final String BASE_CONFIG =
-      "projects/<project_name>/instanceConfigs/my-base-config";
+      "projects/my-project/instanceConfigs/my-base-config";
 
   @Mock SpannerRpc rpc;
   @Mock DatabaseAdminClient dbClient;
