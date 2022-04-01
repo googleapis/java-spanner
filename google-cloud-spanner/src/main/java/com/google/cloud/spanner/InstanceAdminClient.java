@@ -93,7 +93,7 @@ public interface InstanceAdminClient {
   }
 
   /**
-   * Updates an instance config. The returned {@code Operation} can be used to track the progress of
+   * Updates a custom instance config. This can not be used to update a Google managed instance config. The returned {@code Operation} can be used to track the progress of
    * updating the instance. If the named instance config does not exist, a SpannerException is
    * thrown.
    *
