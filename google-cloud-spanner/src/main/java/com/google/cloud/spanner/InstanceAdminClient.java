@@ -35,7 +35,7 @@ public interface InstanceAdminClient {
   /**
    * Creates an instance config and begins preparing it to be used. The returned {@code Operation}
    * can be used to track the progress of preparing the new instance config. The instance config
-   * name is assigned by the caller. If the named instance config already exists, a SpannerException
+   * name is assigned by the caller and must start with the string 'custom'. If the named instance config already exists, a SpannerException
    * is thrown.
    *
    * <p>Immediately after the request returns:
