@@ -164,7 +164,7 @@ public interface InstanceAdminClient {
   InstanceConfig getInstanceConfig(String configId) throws SpannerException;
 
   /**
-   * Deletes the instance config. Deletion is only allowed when no instances are using the
+   * Deletes a custom instance config. Deletion is only allowed for custom instance configs and when no instances are using the
    * configuration. If any instances are using the config, a SpannerException is thrown.
    *
    * <p>Only user managed configurations can be deleted.
