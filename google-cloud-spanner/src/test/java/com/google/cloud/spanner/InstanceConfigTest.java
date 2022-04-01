@@ -76,44 +76,43 @@ public class InstanceConfigTest {
 
     assertEquals(
         new InstanceConfig(
-            (InstanceConfig.Builder)
-                new InstanceConfig.Builder(
-                        client, InstanceConfigId.of("my-project", "my-instance-config"))
-                    .setDisplayName("Display Name")
-                    .addAllReplicas(
-                        Arrays.asList(
-                            ReplicaInfo.newBuilder()
-                                .setLocation("Replica Location 1")
-                                .setType(ReplicaInfo.ReplicaType.READ_WRITE)
-                                .setDefaultLeaderLocation(true)
-                                .build(),
-                            ReplicaInfo.newBuilder()
-                                .setLocation("Replica Location 2")
-                                .setType(ReplicaInfo.ReplicaType.READ_ONLY)
-                                .setDefaultLeaderLocation(false)
-                                .build(),
-                            ReplicaInfo.newBuilder()
-                                .setLocation("Replica Location 3")
-                                .setType(ReplicaInfo.ReplicaType.WITNESS)
-                                .setDefaultLeaderLocation(false)
-                                .build()))
-                    .addAllLeaderOptions(Arrays.asList("Leader Option 1", "Leader Option 2"))
-                    .addAllOptionalReplicas(
-                        Arrays.asList(
-                            ReplicaInfo.newBuilder()
-                                .setLocation("Optional Replica Location 1")
-                                .setType(ReplicaInfo.ReplicaType.READ_ONLY)
-                                .setDefaultLeaderLocation(true)
-                                .build(),
-                            ReplicaInfo.newBuilder()
-                                .setLocation("Optional Replica Location 2")
-                                .setType(ReplicaInfo.ReplicaType.READ_ONLY)
-                                .setDefaultLeaderLocation(false)
-                                .build()))
-                    .setBaseConfig(
-                        new InstanceConfigInfo.BuilderImpl(
-                                InstanceConfigId.of("my-project", "custom-base-config"))
-                            .build())),
+            (InstanceConfig.Builder) new InstanceConfig.Builder(
+                    client, InstanceConfigId.of("my-project", "my-instance-config"))
+                .setDisplayName("Display Name")
+                .setReplicas(
+                    Arrays.asList(
+                        ReplicaInfo.newBuilder()
+                            .setLocation("Replica Location 1")
+                            .setType(ReplicaInfo.ReplicaType.READ_WRITE)
+                            .setDefaultLeaderLocation(true)
+                            .build(),
+                        ReplicaInfo.newBuilder()
+                            .setLocation("Replica Location 2")
+                            .setType(ReplicaInfo.ReplicaType.READ_ONLY)
+                            .setDefaultLeaderLocation(false)
+                            .build(),
+                        ReplicaInfo.newBuilder()
+                            .setLocation("Replica Location 3")
+                            .setType(ReplicaInfo.ReplicaType.WITNESS)
+                            .setDefaultLeaderLocation(false)
+                            .build()))
+                .setLeaderOptions(Arrays.asList("Leader Option 1", "Leader Option 2"))
+                .setOptionalReplicas(
+                    Arrays.asList(
+                        ReplicaInfo.newBuilder()
+                            .setLocation("Optional Replica Location 1")
+                            .setType(ReplicaInfo.ReplicaType.READ_ONLY)
+                            .setDefaultLeaderLocation(true)
+                            .build(),
+                        ReplicaInfo.newBuilder()
+                            .setLocation("Optional Replica Location 2")
+                            .setType(ReplicaInfo.ReplicaType.READ_ONLY)
+                            .setDefaultLeaderLocation(false)
+                            .build()))
+                .setBaseConfig(
+                    new InstanceConfigInfo.BuilderImpl(
+                            InstanceConfigId.of("my-project", "custom-base-config"))
+                        .build())),
         instanceConfig);
   }
 
