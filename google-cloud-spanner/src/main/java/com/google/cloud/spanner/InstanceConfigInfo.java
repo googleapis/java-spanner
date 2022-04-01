@@ -189,7 +189,11 @@ public class InstanceConfigInfo {
 
     public abstract Builder putAllLabels(Map<String, String> labels);
 
-    public abstract Builder addAllReadOnlyReplicas(List<ReplicaInfo> readOnlyReplicas);
+    /**
+     * Adds the read only replicas to the set of replicas for a custom instance config. Called with
+     * one or more of the optional replicas of the base config.
+     */
+    public abstract Builder addReadOnlyReplicas(List<ReplicaInfo> readOnlyReplicas);
 
     public abstract InstanceConfigInfo build();
   }
@@ -315,7 +319,7 @@ public class InstanceConfigInfo {
     }
 
     @Override
-    public Builder addAllReadOnlyReplicas(List<ReplicaInfo> readOnlyReplicas) {
+    public Builder addReadOnlyReplicas(List<ReplicaInfo> readOnlyReplicas) {
       this.replicas.addAll(readOnlyReplicas);
       return this;
     }
