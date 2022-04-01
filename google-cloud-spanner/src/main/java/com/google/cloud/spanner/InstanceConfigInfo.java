@@ -118,7 +118,7 @@ public class InstanceConfigInfo {
 
   /**
    * Base configuration, e.g. projects/<project_name>/instanceConfigs/nam3, based on which this
-   * configuration is created. Only set for user managed configurations. base_config must refer to a
+   * configuration is created. Only set for user managed configurations. The base config must refer to a
    * configuration of type GOOGLE_MANAGED.
    */
   public InstanceConfigInfo getBaseConfig() {
