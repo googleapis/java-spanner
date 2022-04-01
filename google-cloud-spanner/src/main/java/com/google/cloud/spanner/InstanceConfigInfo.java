@@ -169,7 +169,7 @@ public class InstanceConfigInfo {
 
     protected abstract Builder setOptionalReplicas(List<ReplicaInfo> optionalReplicas);
 
-    public abstract Builder setBaseConfig(InstanceConfigInfo baseConfig);
+    protected abstract Builder setBaseConfig(InstanceConfigInfo baseConfig);
 
     /**
      * Sets the allowed values of the "default_leader" schema option for databases in instances that
@@ -273,7 +273,7 @@ public class InstanceConfigInfo {
     }
 
     @Override
-    public Builder setBaseConfig(InstanceConfigInfo baseConfig) {
+    protected Builder setBaseConfig(InstanceConfigInfo baseConfig) {
       this.baseConfig = baseConfig;
       return this;
     }
