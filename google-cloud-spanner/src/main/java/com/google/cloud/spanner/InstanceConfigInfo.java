@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-
 import com.google.cloud.FieldSelector;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.FieldMask;
@@ -166,13 +165,17 @@ public class InstanceConfigInfo {
   public abstract static class Builder {
     public abstract Builder setDisplayName(String displayName);
 
-    public abstract Builder addAllReplicas(List<ReplicaInfo> replicas);
+    protected abstract Builder setReplicas(List<ReplicaInfo> replicas);
 
-    protected abstract Builder addAllOptionalReplicas(List<ReplicaInfo> optionalReplicas);
+    protected abstract Builder setOptionalReplicas(List<ReplicaInfo> optionalReplicas);
 
     public abstract Builder setBaseConfig(InstanceConfigInfo baseConfig);
 
-    public abstract Builder addAllLeaderOptions(List<String> leaderOptions);
+    /**
+     * Sets the allowed values of the "default_leader" schema option for databases in instances that
+     * use this instance configuration.
+     */
+    public abstract Builder setLeaderOptions(List<String> leaderOptions);
 
     protected abstract Builder setConfigType(Type configType);
 
@@ -186,7 +189,7 @@ public class InstanceConfigInfo {
 
     public abstract Builder putAllLabels(Map<String, String> labels);
 
-    public abstract Builder addReadOnlyReplicas(List<ReplicaInfo> readOnlyReplicas);
+    public abstract Builder addAllReadOnlyReplicas(List<ReplicaInfo> readOnlyReplicas);
 
     public abstract InstanceConfigInfo build();
   }
@@ -234,22 +237,15 @@ public class InstanceConfigInfo {
     BuilderImpl(InstanceConfigInfo instanceConfigInfo) {
       this.id = instanceConfigInfo.id;
       this.displayName = instanceConfigInfo.displayName;
-      this.replicas = instanceConfigInfo.replicas;
-      this.leaderOptions = instanceConfigInfo.leaderOptions;
-      this.optionalReplicas = instanceConfigInfo.optionalReplicas;
+      this.replicas = new ArrayList<>(instanceConfigInfo.replicas);
+      this.leaderOptions = new ArrayList<>(instanceConfigInfo.leaderOptions);
+      this.optionalReplicas = new ArrayList<>(instanceConfigInfo.optionalReplicas);
       this.baseConfig = instanceConfigInfo.baseConfig;
       this.configType = instanceConfigInfo.configType;
       this.etag = instanceConfigInfo.etag;
       this.reconciling = instanceConfigInfo.reconciling;
       this.state = instanceConfigInfo.state;
       this.labels = new HashMap<>(instanceConfigInfo.labels);
-    }
-
-    private void addAllReplicasFromBaseConfig() {
-      // Custom configurations contain all the replicas of the base config and at least one optional
-      // replica.
-      this.replicas = this.baseConfig.getReplicas();
-      this.replicas.add(baseConfig.getOptionalReplicas().get(0));
     }
 
     @Override
@@ -259,19 +255,19 @@ public class InstanceConfigInfo {
     }
 
     @Override
-    public Builder addAllReplicas(List<ReplicaInfo> replicas) {
+    protected Builder setReplicas(List<ReplicaInfo> replicas) {
       this.replicas = replicas;
       return this;
     }
 
     @Override
-    public Builder addAllLeaderOptions(List<String> leaderOptions) {
+    public Builder setLeaderOptions(List<String> leaderOptions) {
       this.leaderOptions = leaderOptions;
       return this;
     }
 
     @Override
-    protected Builder addAllOptionalReplicas(List<ReplicaInfo> optionalReplicas) {
+    protected Builder setOptionalReplicas(List<ReplicaInfo> optionalReplicas) {
       this.optionalReplicas = optionalReplicas;
       return this;
     }
@@ -319,7 +315,7 @@ public class InstanceConfigInfo {
     }
 
     @Override
-    public Builder addReadOnlyReplicas(List<ReplicaInfo> readOnlyReplicas) {
+    public Builder addAllReadOnlyReplicas(List<ReplicaInfo> readOnlyReplicas) {
       this.replicas.addAll(readOnlyReplicas);
       return this;
     }
@@ -351,17 +347,17 @@ public class InstanceConfigInfo {
         (BuilderImpl)
             newBuilder(id)
                 .setDisplayName(displayName)
-                .addAllReplicas(replicas)
-                .addAllLeaderOptions(leaderOptions));
+                .setReplicas(replicas)
+                .setLeaderOptions(leaderOptions));
   }
 
   InstanceConfigInfo(BuilderImpl builder) {
     this.id = builder.id;
     this.displayName = builder.displayName;
-    this.replicas = builder.replicas;
-    this.leaderOptions = builder.leaderOptions;
+    this.replicas = new ArrayList<>(builder.replicas);
+    this.leaderOptions = new ArrayList<>(builder.leaderOptions);
     this.baseConfig = builder.baseConfig;
-    this.optionalReplicas = builder.optionalReplicas;
+    this.optionalReplicas = new ArrayList<>(builder.optionalReplicas);
     this.configType = builder.configType;
     this.etag = builder.etag;
     this.reconciling = builder.reconciling;
@@ -486,15 +482,15 @@ public class InstanceConfigInfo {
             new com.google.cloud.spanner.InstanceConfig.Builder(
                     client, InstanceConfigId.of(proto.getName()))
                 .setReconciling(proto.getReconciling())
-                .addAllReplicas(
+                .setReplicas(
                     proto.getReplicasList().stream()
                         .map(ReplicaInfo::fromProto)
                         .collect(Collectors.toList()))
                 .setDisplayName(proto.getDisplayName())
                 .putAllLabels(proto.getLabelsMap())
                 .setEtag(proto.getEtag())
-                .addAllLeaderOptions(proto.getLeaderOptionsList())
-                .addAllOptionalReplicas(
+                .setLeaderOptions(proto.getLeaderOptionsList())
+                .setOptionalReplicas(
                     proto.getOptionalReplicasList().stream()
                         .map(ReplicaInfo::fromProto)
                         .collect(Collectors.toList()))

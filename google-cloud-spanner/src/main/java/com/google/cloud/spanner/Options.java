@@ -170,10 +170,29 @@ public final class Options implements Serializable {
     return new FilterOption(filter);
   }
 
+  /**
+   * Specifying this will help in optimistic concurrency control as a way to help prevent
+   * simultaneous deletes of an instance config from overwriting each other. Operations that support
+   * this option are:
+   *
+   * <ul>
+   *   <li>{@link InstanceAdminClient#deleteInstanceConfig}
+   * </ul>
+   */
   public static DeleteAdminAPIOption etag(String etag) {
     return new EtagOption(etag);
   }
 
+  /**
+   * Specifying this will not actually execute a request, and provide the same response. Operations
+   * that support this option are:
+   *
+   * <ul>
+   *   <li>{@link InstanceAdminClient#createInstanceConfig}
+   *   <li>{@link InstanceAdminClient#updateInstanceConfig}
+   *   <li>{@link InstanceAdminClient#deleteInstanceConfig}
+   * </ul>
+   */
   public static CreateUpdateDeleteAdminAPIOption validateOnly(Boolean validateOnly) {
     return new ValidateOnlyOption(validateOnly);
   }
