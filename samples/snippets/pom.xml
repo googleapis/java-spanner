@@ -44,17 +44,6 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.20.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.api.grpc</groupId>
-      <artifactId>grpc-google-cloud-spanner-admin-instance-v1</artifactId>
-      <version>6.20.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.api.grpc</groupId>
-      <artifactId>proto-google-cloud-spanner-admin-instance-v1</artifactId>
-      <version>6.20.1-SNAPSHOT</version>
     </dependency>
     <!-- [END spanner_install_with_bom] -->
 
@@ -160,7 +149,6 @@
             <spanner.test.instance>spanner-testing-east1</spanner.test.instance>
             <spanner.test.instance.mr>spanner-mr-testing</spanner.test.instance.mr>
             <spanner.test.instance.config>nam6</spanner.test.instance.config>
-            <spanner.test.instance.config.cmmr>nam3-cmmr</spanner.test.instance.config.cmmr>
             <spanner.test.key.location>us-east1</spanner.test.key.location>
             <spanner.test.key.ring>cmek-test-key-ring</spanner.test.key.ring>
             <spanner.test.key.name>cmek-test-key</spanner.test.key.name>
