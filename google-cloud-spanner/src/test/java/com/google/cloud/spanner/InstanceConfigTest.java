@@ -76,7 +76,7 @@ public class InstanceConfigTest {
 
     assertEquals(
         new InstanceConfig(
-            (InstanceConfig.Builder) new InstanceConfig.Builder(
+            new InstanceConfig.Builder(
                     client, InstanceConfigId.of("my-project", "my-instance-config"))
                 .setDisplayName("Display Name")
                 .setReplicas(

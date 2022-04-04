@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a Cloud Spanner instance config.{@code InstanceConfig} adds a layer of service related
@@ -39,6 +40,78 @@ public class InstanceConfig extends InstanceConfigInfo {
     Builder(InstanceAdminClient client, InstanceConfigId id) {
       super(id);
       this.client = client;
+    }
+
+    @Override
+    public Builder setDisplayName(String displayName) {
+      super.setDisplayName(displayName);
+      return this;
+    }
+
+    @Override
+    protected Builder setReplicas(List<ReplicaInfo> replicas) {
+      super.setReplicas(replicas);
+      return this;
+    }
+
+    @Override
+    public Builder setLeaderOptions(List<String> leaderOptions) {
+      super.setLeaderOptions(leaderOptions);
+      return this;
+    }
+
+    @Override
+    protected Builder setOptionalReplicas(List<ReplicaInfo> optionalReplicas) {
+      super.setOptionalReplicas(optionalReplicas);
+      return this;
+    }
+
+    @Override
+    protected Builder setBaseConfig(InstanceConfigInfo baseConfig) {
+      super.setBaseConfig(baseConfig);
+      return this;
+    }
+
+    @Override
+    protected Builder setConfigType(Type configType) {
+      super.setConfigType(configType);
+      return this;
+    }
+
+    @Override
+    protected Builder setState(State state) {
+      super.setState(state);
+      return this;
+    }
+
+    @Override
+    public Builder setEtag(String etag) {
+      super.setEtag(etag);
+      return this;
+    }
+
+    @Override
+    protected Builder setReconciling(boolean reconciling) {
+      super.setReconciling(reconciling);
+      return this;
+    }
+
+    @Override
+    public Builder addLabel(String key, String value) {
+      super.addLabel(key, value);
+      return this;
+    }
+
+    @Override
+    public Builder putAllLabels(Map<String, String> labels) {
+      super.putAllLabels(labels);
+      return this;
+    }
+
+    @Override
+    public Builder addReadOnlyReplicas(List<ReplicaInfo> readOnlyReplicas) {
+      super.addReadOnlyReplicas(readOnlyReplicas);
+      return this;
     }
 
     @Override

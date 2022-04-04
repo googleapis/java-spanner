@@ -468,30 +468,27 @@ public class InstanceConfigInfo {
   static com.google.cloud.spanner.InstanceConfig fromProto(
       com.google.spanner.admin.instance.v1.InstanceConfig proto, InstanceAdminClient client) {
     com.google.cloud.spanner.InstanceConfig.Builder builder =
-        (com.google.cloud.spanner.InstanceConfig.Builder)
-            com.google.cloud.spanner.InstanceConfig.newBuilder(
-                client, InstanceConfigId.of(proto.getName()))
-                .setReconciling(proto.getReconciling())
-                .setReplicas(
-                    proto.getReplicasList().stream()
-                        .map(ReplicaInfo::fromProto)
-                        .collect(Collectors.toList()))
-                .setDisplayName(proto.getDisplayName())
-                .putAllLabels(proto.getLabelsMap())
-                .setEtag(proto.getEtag())
-                .setLeaderOptions(proto.getLeaderOptionsList())
-                .setOptionalReplicas(
-                    proto.getOptionalReplicasList().stream()
-                        .map(ReplicaInfo::fromProto)
-                        .collect(Collectors.toList()))
-                .setState(fromProtoState(proto.getState()))
-                .setConfigType(fromProtoConfigType(proto.getConfigType()));
+        com.google.cloud.spanner.InstanceConfig.newBuilder(
+            client, InstanceConfigId.of(proto.getName()))
+            .setReconciling(proto.getReconciling())
+            .setReplicas(
+                proto.getReplicasList().stream()
+                    .map(ReplicaInfo::fromProto)
+                    .collect(Collectors.toList()))
+            .setDisplayName(proto.getDisplayName())
+            .putAllLabels(proto.getLabelsMap())
+            .setEtag(proto.getEtag())
+            .setLeaderOptions(proto.getLeaderOptionsList())
+            .setOptionalReplicas(
+                proto.getOptionalReplicasList().stream()
+                    .map(ReplicaInfo::fromProto)
+                    .collect(Collectors.toList()))
+            .setState(fromProtoState(proto.getState()))
+            .setConfigType(fromProtoConfigType(proto.getConfigType()));
 
     if (!proto.getBaseConfig().isEmpty()) {
       builder.setBaseConfig(
-          new com.google.cloud.spanner.InstanceConfigInfo.BuilderImpl(
-                  InstanceConfigId.of(proto.getBaseConfig()))
-              .build());
+          newBuilder(InstanceConfigId.of(proto.getBaseConfig())).build());
     }
 
     return builder.build();
