@@ -16,8 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
-import static com.google.common.truth.Truth.assertWithMessage;
-import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
@@ -172,14 +172,12 @@ public class SqlScriptVerifier extends AbstractSqlScriptVerifier {
 
   @Override
   protected void verifyExpectedException(
-      String statement, Exception e, String code, String messagePrefix) {
-    assertThat(e).isInstanceOf(SpannerException.class);
+          String statement, Exception e, String code, String messagePrefix) {
+    assertTrue(e instanceof SpannerException);
     SpannerException spannerException = (SpannerException) e;
-    assertWithMessage(statement + " resulted in " + spannerException).that(
-        spannerException.getErrorCode()).isEqualTo(ErrorCode.valueOf(code));
-    if (messagePrefix != null) {
-      assertWithMessage(statement).that(e.getMessage())
-          .startsWith(messagePrefix.substring(1, messagePrefix.length() - 1));
+    assertEquals(statement + " resulted in " + spannerException, ErrorCode.valueOf(code), spannerException.getErrorCode());
+    if (messagePrefix!=null) {
+      assertTrue(statement, e.getMessage().startsWith(messagePrefix.substring(1, messagePrefix.length() - 1)));
     }
   }
 }
