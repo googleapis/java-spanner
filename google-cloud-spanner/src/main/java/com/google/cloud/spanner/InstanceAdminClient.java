@@ -19,10 +19,10 @@ package com.google.cloud.spanner;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
-import com.google.cloud.spanner.Options.CreateAdminAPIOption;
-import com.google.cloud.spanner.Options.DeleteAdminAPIOption;
+import com.google.cloud.spanner.Options.CreateAdminApiOption;
+import com.google.cloud.spanner.Options.DeleteAdminApiOption;
 import com.google.cloud.spanner.Options.ListOption;
-import com.google.cloud.spanner.Options.UpdateAdminAPIOption;
+import com.google.cloud.spanner.Options.UpdateAdminApiOption;
 import com.google.longrunning.Operation;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
@@ -82,13 +82,13 @@ public interface InstanceAdminClient {
    * final OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> operation =
    *     instanceAdminClient.createInstanceConfig(instanceConfigInfo);
    *
-   * InstanceConfig instanceConfig = op.get(10, TimeUnit.MINUTES)
+   * InstanceConfig instanceConfig = op.get(5, TimeUnit.MINUTES)
    * }</pre>
    *
    * <!--SNIPPET instance_admin_client_create_instance_config-->
    */
   default OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
-      InstanceConfigInfo instanceConfig, CreateAdminAPIOption... options) throws SpannerException {
+      InstanceConfigInfo instanceConfig, CreateAdminApiOption... options) throws SpannerException {
     throw new UnsupportedOperationException("Not implemented");
   }
 
@@ -148,7 +148,7 @@ public interface InstanceAdminClient {
   default OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
       InstanceConfigInfo instanceConfig,
       Iterable<InstanceConfigInfo.InstanceConfigField> fieldsToUpdate,
-      UpdateAdminAPIOption... options)
+      UpdateAdminApiOption... options)
       throws SpannerException {
     throw new UnsupportedOperationException("Not implemented");
   }
@@ -179,7 +179,7 @@ public interface InstanceAdminClient {
    *
    * <!--SNIPPET instance_admin_client_delete_instance_config-->
    */
-  default void deleteInstanceConfig(String instanceConfigId, DeleteAdminAPIOption... options)
+  default void deleteInstanceConfig(String instanceConfigId, DeleteAdminApiOption... options)
       throws SpannerException {
     throw new UnsupportedOperationException("Not implemented");
   }

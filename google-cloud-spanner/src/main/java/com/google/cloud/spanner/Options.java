@@ -55,17 +55,17 @@ public final class Options implements Serializable {
    * Marker interface to mark options applicable to Create, Update and Delete operations in admin
    * API.
    */
-  public interface CreateUpdateDeleteAdminAPIOption
-      extends CreateAdminAPIOption, UpdateAdminAPIOption, DeleteAdminAPIOption {}
+  public interface CreateUpdateDeleteAdminApiOption
+      extends CreateAdminApiOption, UpdateAdminApiOption, DeleteAdminApiOption {}
 
   /** Marker interface to mark options applicable to Create operations in admin API. */
-  public interface CreateAdminAPIOption extends AdminAPIOption {}
+  public interface CreateAdminApiOption extends AdminApiOption {}
 
   /** Marker interface to mark options applicable to Delete operations in admin API. */
-  public interface DeleteAdminAPIOption extends AdminAPIOption {}
+  public interface DeleteAdminApiOption extends AdminApiOption {}
 
   /** Marker interface to mark options applicable to Update operations in admin API. */
-  public interface UpdateAdminAPIOption extends AdminAPIOption {}
+  public interface UpdateAdminApiOption extends AdminApiOption {}
 
   /** Marker interface to mark options applicable to query operation. */
   public interface QueryOption {}
@@ -80,7 +80,7 @@ public final class Options implements Serializable {
   public interface ListOption {}
 
   /** Marker interface to mark options applicable to operations in admin API. */
-  public interface AdminAPIOption {}
+  public interface AdminApiOption {}
 
   /** Specifying this instructs the transaction to request {@link CommitStats} from the backend. */
   public static TransactionOption commitStats() {
@@ -179,7 +179,7 @@ public final class Options implements Serializable {
    *   <li>{@link InstanceAdminClient#deleteInstanceConfig}
    * </ul>
    */
-  public static DeleteAdminAPIOption etag(String etag) {
+  public static DeleteAdminApiOption etag(String etag) {
     return new EtagOption(etag);
   }
 
@@ -193,7 +193,7 @@ public final class Options implements Serializable {
    *   <li>{@link InstanceAdminClient#deleteInstanceConfig}
    * </ul>
    */
-  public static CreateUpdateDeleteAdminAPIOption validateOnly(Boolean validateOnly) {
+  public static CreateUpdateDeleteAdminApiOption validateOnly(Boolean validateOnly) {
     return new ValidateOnlyOption(validateOnly);
   }
 
@@ -261,7 +261,7 @@ public final class Options implements Serializable {
     }
   }
 
-  static final class EtagOption extends InternalOption implements DeleteAdminAPIOption {
+  static final class EtagOption extends InternalOption implements DeleteAdminApiOption {
     private final String etag;
 
     EtagOption(String etag) {
@@ -275,7 +275,7 @@ public final class Options implements Serializable {
   }
 
   static final class ValidateOnlyOption extends InternalOption
-      implements CreateUpdateDeleteAdminAPIOption {
+      implements CreateUpdateDeleteAdminApiOption {
     private final Boolean validateOnly;
 
     ValidateOnlyOption(Boolean validateOnly) {
@@ -545,14 +545,14 @@ public final class Options implements Serializable {
     return listOptions;
   }
 
-  static Options fromAdminAPIOptions(AdminAPIOption... options) {
-    Options adminAPIOptions = new Options();
-    for (AdminAPIOption option : options) {
+  static Options fromAdminApiOptions(AdminApiOption... options) {
+    Options adminApiOptions = new Options();
+    for (AdminApiOption option : options) {
       if (option instanceof InternalOption) {
-        ((InternalOption) option).appendToOptions(adminAPIOptions);
+        ((InternalOption) option).appendToOptions(adminApiOptions);
       }
     }
-    return adminAPIOptions;
+    return adminApiOptions;
   }
 
   private abstract static class InternalOption {

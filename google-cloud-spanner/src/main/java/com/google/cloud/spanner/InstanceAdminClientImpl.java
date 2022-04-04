@@ -23,10 +23,10 @@ import com.google.api.gax.paging.Page;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.Policy;
 import com.google.cloud.Policy.DefaultMarshaller;
-import com.google.cloud.spanner.Options.CreateAdminAPIOption;
-import com.google.cloud.spanner.Options.DeleteAdminAPIOption;
+import com.google.cloud.spanner.Options.CreateAdminApiOption;
+import com.google.cloud.spanner.Options.DeleteAdminApiOption;
 import com.google.cloud.spanner.Options.ListOption;
-import com.google.cloud.spanner.Options.UpdateAdminAPIOption;
+import com.google.cloud.spanner.Options.UpdateAdminApiOption;
 import com.google.cloud.spanner.SpannerImpl.PageFetcher;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
@@ -67,8 +67,8 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
 
   @Override
   public OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
-      InstanceConfigInfo instanceConfig, CreateAdminAPIOption... options) throws SpannerException {
-    final Options createAdminAPIOptions = Options.fromAdminAPIOptions(options);
+      InstanceConfigInfo instanceConfig, CreateAdminApiOption... options) throws SpannerException {
+    final Options createAdminApiOptions = Options.fromAdminApiOptions(options);
     String projectName = PROJECT_NAME_TEMPLATE.instantiate("project", projectId);
     OperationFuture<
             com.google.spanner.admin.instance.v1.InstanceConfig, CreateInstanceConfigMetadata>
@@ -77,7 +77,7 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
                 projectName,
                 instanceConfig.getId().getInstanceConfig(),
                 instanceConfig.toProto(),
-                createAdminAPIOptions.validateOnly());
+                createAdminApiOptions.validateOnly());
 
     return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
@@ -98,16 +98,16 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
   public OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
       InstanceConfigInfo instanceConfig,
       Iterable<InstanceConfigInfo.InstanceConfigField> fieldsToUpdate,
-      UpdateAdminAPIOption... options)
+      UpdateAdminApiOption... options)
       throws SpannerException {
-    final Options deleteAdminAPIOptions = Options.fromAdminAPIOptions(options);
+    final Options deleteAdminApiOptions = Options.fromAdminApiOptions(options);
     FieldMask fieldMask = InstanceConfigInfo.InstanceConfigField.toFieldMask(fieldsToUpdate);
 
     OperationFuture<
             com.google.spanner.admin.instance.v1.InstanceConfig, UpdateInstanceConfigMetadata>
         rawOperationFuture =
             rpc.updateInstanceConfig(
-                instanceConfig.toProto(), deleteAdminAPIOptions.validateOnly(), fieldMask);
+                instanceConfig.toProto(), deleteAdminApiOptions.validateOnly(), fieldMask);
     return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
@@ -131,13 +131,13 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
   }
 
   @Override
-  public void deleteInstanceConfig(final String instanceConfigId, DeleteAdminAPIOption... options)
+  public void deleteInstanceConfig(final String instanceConfigId, DeleteAdminApiOption... options)
       throws SpannerException {
-    final Options deleteAdminAPIOptions = Options.fromAdminAPIOptions(options);
+    final Options deleteAdminApiOptions = Options.fromAdminApiOptions(options);
     rpc.deleteInstanceConfig(
         new InstanceConfigId(projectId, instanceConfigId).getName(),
-        deleteAdminAPIOptions.etag(),
-        deleteAdminAPIOptions.validateOnly());
+        deleteAdminApiOptions.etag(),
+        deleteAdminApiOptions.validateOnly());
   }
 
   @Override
