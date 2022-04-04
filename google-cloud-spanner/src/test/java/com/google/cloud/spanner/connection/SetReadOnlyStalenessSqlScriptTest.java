@@ -19,10 +19,19 @@ package com.google.cloud.spanner.connection;
 import org.junit.Test;
 
 public class SetReadOnlyStalenessSqlScriptTest extends AbstractSqlScriptTest {
+  private String getFileName() {
+    switch (dialect) {
+      case POSTGRESQL:
+        return "postgresql/SetReadOnlyStalenessTest.sql";
+      case GOOGLE_STANDARD_SQL:
+      default:
+        return "SetReadOnlyStalenessTest.sql";
+    }
+  }
 
   @Test
   public void testSetReadOnlyStalenessScript() throws Exception {
     SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider(dialect));
-    verifier.verifyStatementsInFile("SetReadOnlyStalenessTest.sql", getClass(), true);
+    verifier.verifyStatementsInFile(getFileName(), getClass(), true);
   }
 }

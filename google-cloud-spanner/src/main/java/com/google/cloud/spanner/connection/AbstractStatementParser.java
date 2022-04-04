@@ -22,13 +22,11 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -322,14 +320,9 @@ public abstract class AbstractStatementParser {
   private final Dialect dialect;
   private final Set<ClientSideStatementImpl> statements;
 
-  AbstractStatementParser(Dialect dialect) {
+  AbstractStatementParser(Dialect dialect, Set<ClientSideStatementImpl> statements) {
     this.dialect = dialect;
-    try {
-      statements =
-          Collections.unmodifiableSet(ClientSideStatements.INSTANCE.getCompiledStatements());
-    } catch (CompileException e) {
-      throw new RuntimeException(e);
-    }
+    this.statements = statements;
   }
 
   /**

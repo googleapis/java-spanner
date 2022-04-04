@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.TransactionModeConverter;
 import org.junit.Test;
@@ -34,7 +35,8 @@ public class TransactionModeConverterTest {
   @Test
   public void testConvert() throws CompileException {
     String allowedValues =
-        ReadOnlyStalenessConverterTest.getAllowedValues(TransactionModeConverter.class);
+        ReadOnlyStalenessConverterTest.getAllowedValues(
+            TransactionModeConverter.class, Dialect.GOOGLE_STANDARD_SQL);
     assertThat(allowedValues, is(notNullValue()));
     TransactionModeConverter converter = new TransactionModeConverter(allowedValues);
     assertThat(

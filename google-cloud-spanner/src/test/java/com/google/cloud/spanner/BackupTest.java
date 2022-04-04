@@ -17,10 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -47,6 +44,8 @@ public class BackupTest {
 
   private static final String NAME =
       "projects/test-project/instances/test-instance/backups/backup-1";
+  private static final String REFERENCING_BACKUP_NAME =
+      "projects/test-project/instances/test-instance/backups/backup-2";
   private static final String DB = "projects/test-project/instances/test-instance/databases/db-1";
   private static final Timestamp EXP_TIME = Timestamp.ofTimeSecondsAndNanos(1000L, 1000);
   private static final Timestamp VERSION_TIME = Timestamp.ofTimeSecondsAndNanos(2000L, 2000);
@@ -293,9 +292,11 @@ public class BackupTest {
   public void testEqualsAndHashCode() {
     final Backup backup1 = createBackup();
     final Backup backup2 = createBackup();
+    final Backup copyBackup1 = copyBackup();
 
     assertEquals(backup1, backup2);
     assertEquals(backup1.hashCode(), backup2.hashCode());
+    assertEquals(backup1.hashCode(), copyBackup1.hashCode());
   }
 
   private Backup createBackup() {
@@ -309,6 +310,27 @@ public class BackupTest {
                 com.google.protobuf.Timestamp.newBuilder().setSeconds(2000L).setNanos(2000).build())
             .setEncryptionInfo(ENCRYPTION_INFO)
             .setState(com.google.spanner.admin.database.v1.Backup.State.CREATING)
+            .setMaxExpireTime(
+                com.google.protobuf.Timestamp.newBuilder().setSeconds(3000L).setNanos(3000).build())
+            .addAllReferencingBackups(Collections.singletonList(REFERENCING_BACKUP_NAME))
+            .build();
+    return Backup.fromProto(proto, dbClient);
+  }
+
+  private Backup copyBackup() {
+    com.google.spanner.admin.database.v1.Backup proto =
+        com.google.spanner.admin.database.v1.Backup.newBuilder()
+            .setName(NAME)
+            .setDatabase(DB)
+            .setExpireTime(
+                com.google.protobuf.Timestamp.newBuilder().setSeconds(1000L).setNanos(1000).build())
+            .setVersionTime(
+                com.google.protobuf.Timestamp.newBuilder().setSeconds(2000L).setNanos(2000).build())
+            .setEncryptionInfo(ENCRYPTION_INFO)
+            .setState(com.google.spanner.admin.database.v1.Backup.State.CREATING)
+            .setMaxExpireTime(
+                com.google.protobuf.Timestamp.newBuilder().setSeconds(3000L).setNanos(3000).build())
+            .addAllReferencingBackups(Collections.singletonList(REFERENCING_BACKUP_NAME))
             .build();
     return Backup.fromProto(proto, dbClient);
   }

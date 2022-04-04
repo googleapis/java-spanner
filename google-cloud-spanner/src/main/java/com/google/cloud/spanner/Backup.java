@@ -183,6 +183,8 @@ public class Backup extends BackupInfo {
         .setDatabase(DatabaseId.of(proto.getDatabase()))
         .setEncryptionInfo(EncryptionInfo.fromProtoOrNull(proto.getEncryptionInfo()))
         .setProto(proto)
+        .setMaxExpireTime(Timestamp.fromProto(proto.getMaxExpireTime()))
+        .addAllReferencingBackups(proto.getReferencingBackupsList())
         .build();
   }
 

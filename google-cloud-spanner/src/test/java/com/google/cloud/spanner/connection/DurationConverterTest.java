@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.DurationConverter;
 import com.google.protobuf.Duration;
@@ -32,10 +33,11 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class DurationConverterTest {
-
   @Test
   public void testConvert() throws CompileException {
-    String allowedValues = ReadOnlyStalenessConverterTest.getAllowedValues(DurationConverter.class);
+    String allowedValues =
+        ReadOnlyStalenessConverterTest.getAllowedValues(
+            DurationConverter.class, Dialect.GOOGLE_STANDARD_SQL);
     assertThat(allowedValues, is(notNullValue()));
     DurationConverter converter = new DurationConverter(allowedValues);
     assertThat(
