@@ -330,6 +330,8 @@ public class InstanceConfigInfo {
     }
   }
 
+  /** Use {@link #newBuilder} instead */
+  @Deprecated
   public InstanceConfigInfo(InstanceConfigId id, String displayName) {
     this((BuilderImpl) newBuilder(id).setDisplayName(displayName));
   }
@@ -342,6 +344,8 @@ public class InstanceConfigInfo {
     return new BuilderImpl(id, baseConfig);
   }
 
+  /** Use {@link #newBuilder} instead */
+  @Deprecated
   public InstanceConfigInfo(
       InstanceConfigId id,
       String displayName,
@@ -483,8 +487,8 @@ public class InstanceConfigInfo {
       com.google.spanner.admin.instance.v1.InstanceConfig proto, InstanceAdminClient client) {
     com.google.cloud.spanner.InstanceConfig.Builder builder =
         (com.google.cloud.spanner.InstanceConfig.Builder)
-            new com.google.cloud.spanner.InstanceConfig.Builder(
-                    client, InstanceConfigId.of(proto.getName()))
+            com.google.cloud.spanner.InstanceConfig.newBuilder(
+                client, InstanceConfigId.of(proto.getName()))
                 .setReconciling(proto.getReconciling())
                 .setReplicas(
                     proto.getReplicasList().stream()

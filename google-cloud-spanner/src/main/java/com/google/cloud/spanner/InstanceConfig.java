@@ -47,10 +47,22 @@ public class InstanceConfig extends InstanceConfigInfo {
     }
   }
 
+  public static Builder newBuilder(InstanceConfig instanceConfig) {
+    return new Builder(instanceConfig);
+  }
+
+  public static Builder newBuilder(InstanceAdminClient client, InstanceConfigId instanceConfigId) {
+    return new Builder(client, instanceConfigId);
+  }
+
+  /** Use {@link #newBuilder} instead */
+  @Deprecated
   public InstanceConfig(InstanceConfigId id, String displayName, InstanceAdminClient client) {
     this(id, displayName, Collections.emptyList(), Collections.emptyList(), client);
   }
 
+  /** Use {@link #newBuilder} instead */
+  @Deprecated
   public InstanceConfig(
       InstanceConfigId id,
       String displayName,
