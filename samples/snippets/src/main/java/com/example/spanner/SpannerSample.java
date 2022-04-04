@@ -56,8 +56,8 @@ import com.google.cloud.spanner.Value;
 import com.google.common.io.BaseEncoding;
 import com.google.longrunning.Operation;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CopyBackupMetadata;
+import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
@@ -1669,12 +1669,14 @@ public class SpannerSample {
         TimeUnit.HOURS), 0);
     String filter =
         String.format(
-                "(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) "
+                "(metadata.@type:type.googleapis.com/"
+                        + "google.spanner.admin.database.v1.CreateBackupMetadata) "
                         + "AND (metadata.database:%s)",
                 databaseId.getName());
-      Page<Operation> createBackupOperations = instance.listBackupOperations(Options.filter(filter));
-      System.out.println("Create Backup Operations:");
-      for (Operation op : createBackupOperations.iterateAll()) {
+    Page<Operation> createBackupOperations = instance.listBackupOperations(
+              Options.filter(filter));
+    System.out.println("Create Backup Operations:");
+    for (Operation op : createBackupOperations.iterateAll()) {
       try {
         CreateBackupMetadata metadata = op.getMetadata().unpack(CreateBackupMetadata.class);
         System.out.println(
@@ -1688,29 +1690,30 @@ public class SpannerSample {
         System.err.println(e.getMessage());
       }
     }
-      // Get copy backup operations for the sample database.
-      filter =
+    // Get copy backup operations for the sample database.
+    filter =
               String.format(
                       "(metadata.@type:type.googleapis.com/"
                               + "google.spanner.admin.database.v1.CopyBackupMetadata) "
                               + "AND (metadata.source_backup:%s)",
                       backupId.getName());
-      Page<Operation>  copyBackupOperations = instance.listBackupOperations(Options.filter(filter));
-      System.out.println("Copy Backup Operations:");
-      for (Operation op : copyBackupOperations.iterateAll()) {
-          try {
-              CopyBackupMetadata copyBackupMetadata = op.getMetadata().unpack(CopyBackupMetadata.class);
-              System.out.println(
+    Page<Operation>  copyBackupOperations = instance.listBackupOperations(Options.filter(filter));
+    System.out.println("Copy Backup Operations:");
+    for (Operation op : copyBackupOperations.iterateAll()) {
+      try {
+        CopyBackupMetadata copyBackupMetadata =
+                op.getMetadata().unpack(CopyBackupMetadata.class);
+        System.out.println(
                       String.format(
                               "Copy Backup %s on backup %s pending: %d%% complete",
                               copyBackupMetadata.getName(),
                               copyBackupMetadata.getSourceBackup(),
                               copyBackupMetadata.getProgress().getProgressPercent()));
-          } catch (InvalidProtocolBufferException e) {
-              // The returned operation does not contain CopyBackupMetadata.
-              System.err.println(e.getMessage());
-          }
+      } catch (InvalidProtocolBufferException e) {
+        // The returned operation does not contain CopyBackupMetadata.
+        System.err.println(e.getMessage());
       }
+    }
   }
   // [END spanner_list_backup_operations]
 
@@ -1864,18 +1867,19 @@ public class SpannerSample {
             TimeUnit.SECONDS.toMicros(backup.getExpireTime().getSeconds())
                 + TimeUnit.NANOSECONDS.toMicros(backup.getExpireTime().getNanos())
                 + TimeUnit.DAYS.toMicros(30L));
-      // New Expire Time must be less than Max Expire Time
-      expireTime = expireTime.compareTo(backup.getMaxExpireTime())<0?expireTime:backup.getMaxExpireTime();
-      int timeDiff = expireTime.compareTo(backup.getExpireTime());
-      Timestamp newExpireTime = (timeDiff < 0) ? expireTime : backup.getExpireTime();
+    // New Expire Time must be less than Max Expire Time
+    expireTime = expireTime.compareTo(backup.getMaxExpireTime())
+            < 0 ? expireTime : backup.getMaxExpireTime();
+    int timeDiff = expireTime.compareTo(backup.getExpireTime());
+    Timestamp newExpireTime = (timeDiff < 0) ? expireTime : backup.getExpireTime();
 
-      System.out.println(String.format(
+    System.out.println(String.format(
         "Updating expire time of backup [%s] to %s...",
         backupId.toString(),
         LocalDateTime.ofEpochSecond(
-            expireTime.getSeconds(),
-            expireTime.getNanos(),
-            OffsetDateTime.now().getOffset()).toString()));
+          expireTime.getSeconds(),
+          expireTime.getNanos(),
+          OffsetDateTime.now().getOffset()).toString()));
 
     // Update expire time.
     backup = backup.toBuilder().setExpireTime(expireTime).build();
@@ -2180,7 +2184,7 @@ public class SpannerSample {
   }
 
   public static void main(String[] args) throws Exception {
-      if (args.length != 3 && args.length != 4) {
+    if (args.length != 3 && args.length != 4) {
       printUsageAndExit();
     }
     // [START init_client]
@@ -2205,8 +2209,8 @@ public class SpannerSample {
               "%s_%02d",
               db.getDatabase(), LocalDate.now().get(ChronoField.ALIGNED_WEEK_OF_YEAR));
       BackupId backup = BackupId.of(db.getInstanceId(), backupName);
-      if( args.length == 4) {
-          backupName = args[3];
+      if (args.length == 4) {
+        backupName = args[3];
       }
 
       // [START init_client]
