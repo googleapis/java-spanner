@@ -467,7 +467,7 @@ public class ITBackupTest {
         }
         try {
           client.cancelOperation(op.getName());
-        } catch (SpannerException e) {
+        } catch (SpannerException | ExecutionException e) {
           // Ignore, this can happen, as the restore operation sometimes fails to start if there
           // is already a restore operation running on the instance.
         }

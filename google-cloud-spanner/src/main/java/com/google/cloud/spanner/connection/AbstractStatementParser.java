@@ -460,7 +460,7 @@ public abstract class AbstractStatementParser {
   static final char HYPHEN = '-';
   static final char DASH = '#';
   static final char SLASH = '/';
-  static final char ASTERIKS = '*';
+  static final char ASTERISK = '*';
   static final char DOLLAR = '$';
 
   /**
