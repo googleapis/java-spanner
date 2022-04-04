@@ -43,7 +43,7 @@ public class ConnectionImplAutocommitReadOnlyTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=TRUE;");
+      logWithNamespace("SET %sREADONLY=TRUE;");
       connection.setReadOnly(true);
       log("SET AUTOCOMMIT=TRUE;");
       connection.setAutocommit(true);
@@ -190,7 +190,7 @@ public class ConnectionImplAutocommitReadOnlyTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=TRUE;");
+      logWithNamespace("SET %sREADONLY=TRUE;");
       connection.setReadOnly(true);
       log("SET AUTOCOMMIT=TRUE;");
       connection.setAutocommit(true);
@@ -341,7 +341,7 @@ public class ConnectionImplAutocommitReadOnlyTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=TRUE;");
+      logWithNamespace("SET %sREADONLY=TRUE;");
       connection.setReadOnly(true);
       log("SET AUTOCOMMIT=TRUE;");
       connection.setAutocommit(true);
@@ -490,7 +490,7 @@ public class ConnectionImplAutocommitReadOnlyTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=TRUE;");
+      logWithNamespace("SET %sREADONLY=TRUE;");
       connection.setReadOnly(true);
       log("SET AUTOCOMMIT=TRUE;");
       connection.setAutocommit(true);
@@ -640,7 +640,7 @@ public class ConnectionImplAutocommitReadOnlyTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=TRUE;");
+      logWithNamespace("SET %sREADONLY=TRUE;");
       connection.setReadOnly(true);
       log("SET AUTOCOMMIT=TRUE;");
       connection.setAutocommit(true);
@@ -794,13 +794,13 @@ public class ConnectionImplAutocommitReadOnlyTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=TRUE;");
+      logWithNamespace("SET %sREADONLY=TRUE;");
       connection.setReadOnly(true);
       log("SET AUTOCOMMIT=TRUE;");
       connection.setAutocommit(true);
       TimestampBound staleness = TimestampBound.ofMaxStaleness(10L, TimeUnit.SECONDS);
-      log(
-          "SET READ_ONLY_STALENESS='"
+      logWithNamespace(
+          "SET %sREAD_ONLY_STALENESS='"
               + ReadOnlyStalenessUtil.timestampBoundToString(staleness)
               + "';");
       connection.setReadOnlyStaleness(staleness);

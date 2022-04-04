@@ -22,18 +22,28 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.BooleanConverter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class BooleanConverterTest {
+  @Parameter public Dialect dialect;
+
+  @Parameters(name = "dialect = {0}")
+  public static Object[] data() {
+    return Dialect.values();
+  }
 
   @Test
   public void testConvert() throws CompileException {
-    String allowedValues = ReadOnlyStalenessConverterTest.getAllowedValues(BooleanConverter.class);
+    String allowedValues =
+        ReadOnlyStalenessConverterTest.getAllowedValues(BooleanConverter.class, dialect);
     assertThat(allowedValues, is(notNullValue()));
     BooleanConverter converter = new BooleanConverter(allowedValues);
     assertThat(converter.convert("true"), is(equalTo(Boolean.TRUE)));

@@ -42,7 +42,7 @@ public class ConnectionImplAutocommitReadWriteTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=FALSE;");
+      logWithNamespace("SET %sREADONLY=FALSE;");
       connection.setReadOnly(false);
       log("SET AUTOCOMMIT=TRUE;");
       connection.setAutocommit(true);
@@ -187,7 +187,7 @@ public class ConnectionImplAutocommitReadWriteTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=FALSE;");
+      logWithNamespace("SET %sREADONLY=FALSE;");
       connection.setReadOnly(false);
       log("SET AUTOCOMMIT=TRUE;");
       connection.setAutocommit(true);
@@ -336,7 +336,7 @@ public class ConnectionImplAutocommitReadWriteTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=FALSE;");
+      logWithNamespace("SET %sREADONLY=FALSE;");
       connection.setReadOnly(false);
       log("SET AUTOCOMMIT=TRUE;");
       connection.setAutocommit(true);
@@ -485,7 +485,7 @@ public class ConnectionImplAutocommitReadWriteTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=FALSE;");
+      logWithNamespace("SET %sREADONLY=FALSE;");
       connection.setReadOnly(false);
       log("SET AUTOCOMMIT=TRUE;");
       connection.setAutocommit(true);
@@ -631,7 +631,7 @@ public class ConnectionImplAutocommitReadWriteTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=FALSE;");
+      logWithNamespace("SET %sREADONLY=FALSE;");
       connection.setReadOnly(false);
       log("SET AUTOCOMMIT=TRUE;");
       connection.setAutocommit(true);
@@ -777,7 +777,7 @@ public class ConnectionImplAutocommitReadWriteTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=FALSE;");
+      logWithNamespace("SET %sREADONLY=FALSE;");
       connection.setReadOnly(false);
       log("SET AUTOCOMMIT=TRUE;");
       connection.setAutocommit(true);
@@ -926,7 +926,7 @@ public class ConnectionImplAutocommitReadWriteTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=FALSE;");
+      logWithNamespace("SET %sREADONLY=FALSE;");
       connection.setReadOnly(false);
       log("SET AUTOCOMMIT=TRUE;");
       connection.setAutocommit(true);
@@ -1075,7 +1075,7 @@ public class ConnectionImplAutocommitReadWriteTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=FALSE;");
+      logWithNamespace("SET %sREADONLY=FALSE;");
       connection.setReadOnly(false);
       log("SET AUTOCOMMIT=TRUE;");
       connection.setAutocommit(true);
@@ -1225,7 +1225,7 @@ public class ConnectionImplAutocommitReadWriteTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=FALSE;");
+      logWithNamespace("SET %sREADONLY=FALSE;");
       connection.setReadOnly(false);
       log("SET AUTOCOMMIT=TRUE;");
       connection.setAutocommit(true);

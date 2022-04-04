@@ -21,6 +21,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.encryption.BackupEncryptionConfig;
 import com.google.cloud.spanner.encryption.EncryptionInfo;
 import com.google.spanner.admin.database.v1.Database;
+import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
@@ -84,6 +85,24 @@ public class BackupInfo {
 
     /** Builds the backup from this builder. */
     public abstract Backup build();
+
+    /**
+     * Output Only.
+     *
+     * <p>Returns the max allowed expiration time of the backup, with microseconds granularity.
+     */
+    protected Builder setMaxExpireTime(Timestamp maxExpireTime) {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
+
+    /**
+     * Output Only.
+     *
+     * <p>Returns the names of the destination backups being created by copying this source backup.
+     */
+    protected Builder addAllReferencingBackups(List<String> referencingBackups) {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
   }
 
   abstract static class BuilderImpl extends Builder {
@@ -96,6 +115,8 @@ public class BackupInfo {
     private BackupEncryptionConfig encryptionConfig;
     private EncryptionInfo encryptionInfo;
     private com.google.spanner.admin.database.v1.Backup proto;
+    private Timestamp maxExpireTime;
+    private List<String> referencingBackups;
 
     BuilderImpl(BackupId id) {
       this.id = Preconditions.checkNotNull(id);
@@ -111,6 +132,8 @@ public class BackupInfo {
       this.encryptionConfig = other.encryptionConfig;
       this.encryptionInfo = other.encryptionInfo;
       this.proto = other.proto;
+      this.maxExpireTime = other.maxExpireTime;
+      this.referencingBackups = other.referencingBackups;
     }
 
     @Override
@@ -163,6 +186,18 @@ public class BackupInfo {
       this.proto = proto;
       return this;
     }
+
+    @Override
+    protected Builder setMaxExpireTime(Timestamp maxExpireTime) {
+      this.maxExpireTime = Preconditions.checkNotNull(maxExpireTime);
+      return this;
+    }
+
+    @Override
+    protected Builder addAllReferencingBackups(List<String> referencingBackups) {
+      this.referencingBackups = Preconditions.checkNotNull(referencingBackups);
+      return this;
+    }
   }
 
   /** State of the backup. */
@@ -184,6 +219,8 @@ public class BackupInfo {
   private final BackupEncryptionConfig encryptionConfig;
   private final EncryptionInfo encryptionInfo;
   private final com.google.spanner.admin.database.v1.Backup proto;
+  private final Timestamp maxExpireTime;
+  private final List<String> referencingBackups;
 
   BackupInfo(BuilderImpl builder) {
     this.id = builder.id;
@@ -195,6 +232,8 @@ public class BackupInfo {
     this.versionTime = builder.versionTime;
     this.database = builder.database;
     this.proto = builder.proto;
+    this.maxExpireTime = builder.maxExpireTime;
+    this.referencingBackups = builder.referencingBackups;
   }
 
   /** Returns the backup id. */
@@ -253,6 +292,19 @@ public class BackupInfo {
     return proto;
   }
 
+  /** Returns the max expire time of this {@link Backup}. */
+  public Timestamp getMaxExpireTime() {
+    return maxExpireTime;
+  }
+
+  /**
+   * Returns the names of the destination backups being created by copying this source backup {@link
+   * Backup}.
+   */
+  public List<String> getReferencingBackups() {
+    return referencingBackups;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -269,19 +321,30 @@ public class BackupInfo {
         && Objects.equals(encryptionInfo, that.encryptionInfo)
         && Objects.equals(expireTime, that.expireTime)
         && Objects.equals(versionTime, that.versionTime)
-        && Objects.equals(database, that.database);
+        && Objects.equals(database, that.database)
+        && Objects.equals(maxExpireTime, that.maxExpireTime)
+        && Objects.equals(referencingBackups, that.referencingBackups);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        id, state, size, encryptionConfig, encryptionInfo, expireTime, versionTime, database);
+        id,
+        state,
+        size,
+        encryptionConfig,
+        encryptionInfo,
+        expireTime,
+        versionTime,
+        database,
+        maxExpireTime,
+        referencingBackups);
   }
 
   @Override
   public String toString() {
     return String.format(
-        "Backup[%s, %s, %d, %s, %s, %s, %s, %s]",
+        "Backup[%s, %s, %d, %s, %s, %s, %s, %s, %s, %s]",
         id.getName(),
         state,
         size,
@@ -289,6 +352,8 @@ public class BackupInfo {
         encryptionInfo,
         expireTime,
         versionTime,
-        database);
+        database,
+        maxExpireTime,
+        referencingBackups);
   }
 }
