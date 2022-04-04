@@ -1,5 +1,42 @@
 # Changelog
 
+### [6.23.1](https://github.com/googleapis/java-spanner/compare/v6.23.0...v6.23.1) (2022-03-29)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.2.6 ([#1797](https://github.com/googleapis/java-spanner/issues/1797)) ([48097de](https://github.com/googleapis/java-spanner/commit/48097dec5fd6c748d32cb666f82b8e9bfcfffe46))
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v2.9.0 ([#1791](https://github.com/googleapis/java-spanner/issues/1791)) ([603e91c](https://github.com/googleapis/java-spanner/commit/603e91c7be63caf563d415b6f8b301b5edf7bb5e))
+
+## [6.23.0](https://github.com/googleapis/java-spanner/compare/v6.22.0...v6.23.0) (2022-03-28)
+
+
+### Features
+
+* Copy Backup Support ([#1778](https://github.com/googleapis/java-spanner/issues/1778)) ([dc79366](https://github.com/googleapis/java-spanner/commit/dc79366f05f28d4b1a68240989b5ad06621e4a01))
+
+## [6.22.0](https://github.com/googleapis/java-spanner/compare/v6.21.2...v6.22.0) (2022-03-25)
+
+
+### Features
+
+* Cross Region backup proto changes ([#1754](https://github.com/googleapis/java-spanner/issues/1754)) ([6d64104](https://github.com/googleapis/java-spanner/commit/6d641044fae595acaafd6020359598c0efd4551f))
+* support PG show transaction isolation level ([#1777](https://github.com/googleapis/java-spanner/issues/1777)) ([111f74c](https://github.com/googleapis/java-spanner/commit/111f74c36776a481452ccb9b631a017cab592189))
+
+
+### Bug Fixes
+
+* Correct recording values in opencensus measureMap in HeaderInterceptor ([#1726](https://github.com/googleapis/java-spanner/issues/1726)) ([bdb2b89](https://github.com/googleapis/java-spanner/commit/bdb2b89e17fe0957e393aea3a0b2f310158dc1e8))
+* return errors from BatchCreateSession to dialect detection ([#1760](https://github.com/googleapis/java-spanner/issues/1760)) ([6550a9d](https://github.com/googleapis/java-spanner/commit/6550a9d64b3e5525085f26bf1344e4524f8d0ffb)), closes [#1759](https://github.com/googleapis/java-spanner/issues/1759)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-trace to v2.1.7 ([#1748](https://github.com/googleapis/java-spanner/issues/1748)) ([a794387](https://github.com/googleapis/java-spanner/commit/a7943878ccebb2e48431fb50a0e9f3974e21dcfa))
+* update dependency com.google.cloud:google-cloud-trace to v2.1.8 ([#1757](https://github.com/googleapis/java-spanner/issues/1757)) ([2b54949](https://github.com/googleapis/java-spanner/commit/2b54949ec5082f1aab4b3b5b46bf0bef94f73d9e))
+* update dependency com.google.cloud:google-cloud-trace to v2.1.9 ([#1782](https://github.com/googleapis/java-spanner/issues/1782)) ([d623b7e](https://github.com/googleapis/java-spanner/commit/d623b7e40592fd02e2f08355a002205fbbce14f5))
+* update dependency org.json:json to v20220320 ([#1761](https://github.com/googleapis/java-spanner/issues/1761)) ([6eee5eb](https://github.com/googleapis/java-spanner/commit/6eee5ebf5117d59e001e85546bf046970f367505))
+
 ### [6.21.2](https://github.com/googleapis/java-spanner/compare/v6.21.1...v6.21.2) (2022-03-10)
 
 

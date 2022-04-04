@@ -38,6 +38,8 @@ import com.google.longrunning.Operation;
 import com.google.longrunning.stub.GrpcOperationsStub;
 import com.google.protobuf.Empty;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
+import com.google.spanner.admin.database.v1.CopyBackupRequest;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
@@ -171,6 +173,14 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
               .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
               .build();
 
+  private static final MethodDescriptor<CopyBackupRequest, Operation> copyBackupMethodDescriptor =
+      MethodDescriptor.<CopyBackupRequest, Operation>newBuilder()
+          .setType(MethodDescriptor.MethodType.UNARY)
+          .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/CopyBackup")
+          .setRequestMarshaller(ProtoUtils.marshaller(CopyBackupRequest.getDefaultInstance()))
+          .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+          .build();
+
   private static final MethodDescriptor<GetBackupRequest, Backup> getBackupMethodDescriptor =
       MethodDescriptor.<GetBackupRequest, Backup>newBuilder()
           .setType(MethodDescriptor.MethodType.UNARY)
@@ -260,6 +270,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
   private final UnaryCallable<CreateBackupRequest, Operation> createBackupCallable;
   private final OperationCallable<CreateBackupRequest, Backup, CreateBackupMetadata>
       createBackupOperationCallable;
+  private final UnaryCallable<CopyBackupRequest, Operation> copyBackupCallable;
+  private final OperationCallable<CopyBackupRequest, Backup, CopyBackupMetadata>
+      copyBackupOperationCallable;
   private final UnaryCallable<GetBackupRequest, Backup> getBackupCallable;
   private final UnaryCallable<UpdateBackupRequest, Backup> updateBackupCallable;
   private final UnaryCallable<DeleteBackupRequest, Empty> deleteBackupCallable;
@@ -422,6 +435,16 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   return params.build();
                 })
             .build();
+    GrpcCallSettings<CopyBackupRequest, Operation> copyBackupTransportSettings =
+        GrpcCallSettings.<CopyBackupRequest, Operation>newBuilder()
+            .setMethodDescriptor(copyBackupMethodDescriptor)
+            .setParamsExtractor(
+                request -> {
+                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
+                  params.put("parent", String.valueOf(request.getParent()));
+                  return params.build();
+                })
+            .build();
     GrpcCallSettings<GetBackupRequest, Backup> getBackupTransportSettings =
         GrpcCallSettings.<GetBackupRequest, Backup>newBuilder()
             .setMethodDescriptor(getBackupMethodDescriptor)
@@ -551,6 +574,15 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             settings.createBackupOperationSettings(),
             clientContext,
             operationsStub);
+    this.copyBackupCallable =
+        callableFactory.createUnaryCallable(
+            copyBackupTransportSettings, settings.copyBackupSettings(), clientContext);
+    this.copyBackupOperationCallable =
+        callableFactory.createOperationCallable(
+            copyBackupTransportSettings,
+            settings.copyBackupOperationSettings(),
+            clientContext,
+            operationsStub);
     this.getBackupCallable =
         callableFactory.createUnaryCallable(
             getBackupTransportSettings, settings.getBackupSettings(), clientContext);
@@ -677,6 +709,17 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
   public OperationCallable<CreateBackupRequest, Backup, CreateBackupMetadata>
       createBackupOperationCallable() {
     return createBackupOperationCallable;
+  }
+
+  @Override
+  public UnaryCallable<CopyBackupRequest, Operation> copyBackupCallable() {
+    return copyBackupCallable;
+  }
+
+  @Override
+  public OperationCallable<CopyBackupRequest, Backup, CopyBackupMetadata>
+      copyBackupOperationCallable() {
+    return copyBackupOperationCallable;
   }
 
   @Override
