@@ -457,7 +457,7 @@ public class InstanceConfigInfo {
     return builder.build();
   }
 
-  static InstanceConfig.Type toProtoConfigType(Type type) {
+  private static InstanceConfig.Type toProtoConfigType(Type type) {
     switch (type) {
       case TYPE_UNSPECIFIED:
         return com.google.spanner.admin.instance.v1.InstanceConfig.Type.TYPE_UNSPECIFIED;
@@ -470,7 +470,7 @@ public class InstanceConfigInfo {
     }
   }
 
-  static InstanceConfig.State toProtoState(State state) {
+  private static InstanceConfig.State toProtoState(State state) {
     switch (state) {
       case STATE_UNSPECIFIED:
         return com.google.spanner.admin.instance.v1.InstanceConfig.State.STATE_UNSPECIFIED;
@@ -515,7 +515,7 @@ public class InstanceConfigInfo {
     return builder.build();
   }
 
-  static State fromProtoState(com.google.spanner.admin.instance.v1.InstanceConfig.State state) {
+  private static State fromProtoState(com.google.spanner.admin.instance.v1.InstanceConfig.State state) {
     switch (state) {
       case STATE_UNSPECIFIED:
         return State.STATE_UNSPECIFIED;
@@ -528,7 +528,7 @@ public class InstanceConfigInfo {
     }
   }
 
-  static Type fromProtoConfigType(com.google.spanner.admin.instance.v1.InstanceConfig.Type type) {
+  private static Type fromProtoConfigType(com.google.spanner.admin.instance.v1.InstanceConfig.Type type) {
     switch (type) {
       case TYPE_UNSPECIFIED:
         return Type.TYPE_UNSPECIFIED;
