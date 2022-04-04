@@ -200,42 +200,24 @@ public class InstanceConfigInfo {
 
   static class BuilderImpl extends Builder {
     private InstanceConfigId id;
-    private String displayName;
-    private List<ReplicaInfo> replicas;
-    private List<String> leaderOptions;
-    private List<ReplicaInfo> optionalReplicas;
+    private String displayName = "";
+    private List<ReplicaInfo> replicas = new ArrayList<>();
+    private List<String> leaderOptions = new ArrayList<>();
+    private List<ReplicaInfo> optionalReplicas = new ArrayList<>();
     private InstanceConfigInfo baseConfig;
-    private Type configType;
-    private String etag;
-    private boolean reconciling;
-    private State state;
-    private Map<String, String> labels;
+    private Type configType = Type.TYPE_UNSPECIFIED;
+    private String etag = "";
+    private boolean reconciling = false;
+    private State state = State.STATE_UNSPECIFIED;
+    private Map<String, String> labels = new HashMap<>();
 
     BuilderImpl(InstanceConfigId id) {
       this.id = id;
-      this.labels = new HashMap<>();
-      this.replicas = new ArrayList<>();
-      this.leaderOptions = new ArrayList<>();
-      this.optionalReplicas = new ArrayList<>();
-      this.state = State.STATE_UNSPECIFIED;
-      this.reconciling = false;
-      this.configType = Type.TYPE_UNSPECIFIED;
-      this.displayName = "";
-      this.etag = "";
     }
 
     BuilderImpl(InstanceConfigId id, InstanceConfigInfo baseConfig) {
       this.id = id;
       this.baseConfig = baseConfig;
-      this.labels = new HashMap<>();
-      this.replicas = baseConfig.replicas;
-      this.leaderOptions = new ArrayList<>();
-      this.optionalReplicas = new ArrayList<>();
-      this.state = State.STATE_UNSPECIFIED;
-      this.reconciling = false;
-      this.configType = Type.TYPE_UNSPECIFIED;
-      this.displayName = "";
-      this.etag = "";
     }
 
     BuilderImpl(InstanceConfigInfo instanceConfigInfo) {
