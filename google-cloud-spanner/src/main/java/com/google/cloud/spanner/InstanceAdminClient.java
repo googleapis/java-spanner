@@ -74,7 +74,7 @@ public interface InstanceAdminClient {
    * List<ReplicaInfo> readOnlyReplicas = ImmutableList.of(baseConfig.getOptionalReplicas().get(0));
    *
    * InstanceConfigInfo instanceConfigInfo =
-   *     InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId), baseConfig)
+   *     InstanceConfigInfo.newBuilder(InstanceConfigId.of(projectId, instanceConfigId), baseConfig)
    *         .setDisplayName(instanceConfigId)
    *         .addReadOnlyReplicas(readOnlyReplicas)
    *         .build();
@@ -131,7 +131,7 @@ public interface InstanceAdminClient {
    * String displayName = "my-display-name";
    *
    * InstanceConfigInfo instanceConfigInfo =
-   *     InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId))
+   *     InstanceConfigInfo.newBuilder(InstanceConfigId.of(projectId, instanceConfigId))
    *         .setDisplayName(displayName)
    *         .build();
    *
