@@ -99,7 +99,7 @@ public class CopyBackupSample {
     } catch (InterruptedException e) {
       throw SpannerExceptionFactory.propagateInterrupt(e);
     }
-    // Reload the metadata of the backup from the server.
+    // Load the metadata of the new backup from the server.
     destinationBackup = destinationBackup.reload();
     System.out.println(
               String.format(
