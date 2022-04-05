@@ -17,6 +17,7 @@
 package com.example.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Backup;
@@ -328,9 +329,8 @@ public class SpannerSampleIT {
               "Backup %s on database %s pending:",
               backupId.getName(),
               dbId.getName()));
-      assertThat(out).contains(
-              "Copy Backup Operations"
-      );
+      assertTrue("Out does not contain copy backup operations", out.contains(
+              "Copy Backup Operations"));
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).contains("Cannot evaluate filter expression");
