@@ -1696,7 +1696,7 @@ public class SpannerSample {
                               + "google.spanner.admin.database.v1.CopyBackupMetadata) "
                               + "AND (metadata.source_backup:%s)",
                       backupId.getName());
-    Page<Operation>  copyBackupOperations = instance.listBackupOperations(Options.filter(filter));
+    Page<Operation> copyBackupOperations = instance.listBackupOperations(Options.filter(filter));
     System.out.println("Copy Backup Operations:");
     for (Operation op : copyBackupOperations.iterateAll()) {
       try {
