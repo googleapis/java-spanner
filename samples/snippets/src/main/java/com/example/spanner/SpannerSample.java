@@ -95,7 +95,6 @@ public class SpannerSample {
 
   /** Class to contain singer sample data. */
   static class Singer {
-
     final long singerId;
     final String firstName;
     final String lastName;

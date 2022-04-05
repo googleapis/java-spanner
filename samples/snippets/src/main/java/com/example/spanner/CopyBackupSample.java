@@ -34,25 +34,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class CopyBackupSample {
-  public static void main(String[] args) {
-    if (args.length != 4) {
-      throw new IllegalArgumentException(
-              "Invalid number of arguments. "
-                      + "Usage: CopyBackupSample "
-                      + "<project-id> <instance-id> <source-backup-id> <destination-backup-id>");
-    }
-    String projectId = args[0];
-    String instanceId = args[1];
-    String sourceBackupId = args[2];
-    String destinationBackupId = args[3];
-
-    try (Spanner spanner =
-                 SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
-      copyBackup(databaseAdminClient, projectId, instanceId, sourceBackupId, destinationBackupId);
-    }
-  }
-
   static void copyBackup() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
@@ -87,12 +68,12 @@ public class CopyBackupSample {
 
     // Initiate the request which returns an OperationFuture.
     System.out.println("Copying backup [" + destinationBackup.getId() + "]...");
-    OperationFuture<Backup, CopyBackupMetadata> op =
+    OperationFuture<Backup, CopyBackupMetadata> operation =
           databaseAdminClient.copyBackup(
                   BackupId.of(projectId, instanceId, sourceBackupId), destinationBackup);
     try {
       // Wait for the backup operation to complete.
-      destinationBackup = op.get();
+      destinationBackup = operation.get();
       System.out.println("Copied backup [" + destinationBackup.getId() + "]");
     } catch (ExecutionException e) {
       throw (SpannerException) e.getCause();
@@ -114,7 +95,7 @@ public class CopyBackupSample {
                               destinationBackup.getProto().getVersionTime().getSeconds(),
                               destinationBackup.getProto().getVersionTime().getNanos(),
                               OffsetDateTime.now().getOffset())));
-    return null;
+    return;
   }
 }
 // [END spanner_copy_backup]
