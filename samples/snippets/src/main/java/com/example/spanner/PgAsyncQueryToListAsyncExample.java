@@ -87,3 +87,4 @@ public class PgAsyncQueryToListAsyncExample {
     executor.shutdown();
   }
 }
+//[END spanner_pg_async_query_to_list]
