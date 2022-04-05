@@ -16,7 +16,7 @@
 
 package com.example.spanner;
 
-// [START spanner_async_query_to_list]
+// [START spanner_pg_async_query_to_list]
 import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.DatabaseClient;
@@ -31,10 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-/**
- * Example code for using Async query on Cloud Spanner and convert it to list.
- */
-class AsyncQueryToListAsyncExample {
+public class PgAsyncQueryToListAsyncExample {
   static class Album {
     final long singerId;
     final long albumId;
@@ -54,7 +51,7 @@ class AsyncQueryToListAsyncExample {
     String databaseId = "my-database";
 
     try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
+             SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
       asyncQueryToList(client);
@@ -65,16 +62,18 @@ class AsyncQueryToListAsyncExample {
   static void asyncQueryToList(DatabaseClient client)
       throws InterruptedException, ExecutionException, TimeoutException {
     ExecutorService executor = Executors.newSingleThreadExecutor();
-    ApiFuture<? extends List<Album>> albums;
+    ApiFuture<? extends List<AsyncQueryToListAsyncExample.Album>> albums;
     try (AsyncResultSet resultSet =
-        client
-            .singleUse()
-            .executeQueryAsync(Statement.of("SELECT SingerId, AlbumId, AlbumTitle FROM Albums"))) {
+             client
+                 .singleUse()
+                 .executeQueryAsync(Statement.of("SELECT singerid as \"SingerId\", "
+                     + "albumid as \"AlbumId\", albumtitle as \"AlbumTitle\" "
+                     + "FROM Albums"))) {
       // Convert the result set to a list of Albums asynchronously.
       albums =
           resultSet.toListAsync(
               reader -> {
-                return new Album(
+                return new AsyncQueryToListAsyncExample.Album(
                     reader.getLong("SingerId"),
                     reader.getLong("AlbumId"),
                     reader.getString("AlbumTitle"));
@@ -82,10 +81,9 @@ class AsyncQueryToListAsyncExample {
               executor);
     }
 
-    for (Album album : albums.get(30L, TimeUnit.SECONDS)) {
+    for (AsyncQueryToListAsyncExample.Album album : albums.get(30L, TimeUnit.SECONDS)) {
       System.out.printf("%d %d %s%n", album.singerId, album.albumId, album.albumTitle);
     }
     executor.shutdown();
   }
 }
-//[END spanner_async_query_to_list]

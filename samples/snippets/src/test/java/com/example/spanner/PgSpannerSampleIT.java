@@ -35,7 +35,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@code PgSpannerSample} */
+/**
+ * Unit tests for {@code PgSpannerSample}
+ */
 @RunWith(JUnit4.class)
 @SuppressWarnings("checkstyle:abbreviationaswordinname")
 public class PgSpannerSampleIT {
@@ -194,5 +196,106 @@ public class PgSpannerSampleIT {
     out = runSample("readonlytransaction");
     assertThat(out.replaceAll("[\r\n]+", " "))
         .containsMatch("(Total Junk.*){2}");
+
+    out = runSample("addlastupdatetimestampcolumn");
+    assertThat(out).contains("Added LastUpdateTime as a timestamp column");
+
+    runSample("updatewithtimestamp");
+    out = runSample("querywithtimestamp");
+    assertThat(out).contains("1 1 1000000");
+    assertThat(out).contains("2 2 750000");
+
+    out = runSample("createtablewithtimestamp");
+    assertThat(out).contains("Created Performances table in database");
+
+    System.out.println("Write with Timestamp ...");
+    runSample("writewithtimestamp");
+    out = runSample("queryperformancestable");
+    assertThat(out).contains("1 4 11000");
+    assertThat(out).contains("1 19 15000");
+    assertThat(out).contains("2 42 7000");
+
+    System.out.println("Write using DML ...");
+    runSample("insertusingdml");
+    out = runSample("querysingerstable");
+    assertThat(out).contains("Virginia Watson");
+
+    System.out.println("Update using DML ...");
+    runSample("updateusingdml");
+    out = runSample("querymarketingbudget");
+    assertThat(out).contains("1 1 2000000");
+
+    System.out.println("Delete using DML ...");
+    runSample("deleteusingdml");
+    out = runSample("querysingerstable");
+    assertThat(out).doesNotContain("Alice Trentor");
+
+    System.out.println("Write and Read using DML ...");
+    out = runSample("writeandreadusingdml");
+    assertThat(out).contains("Timothy Campbell");
+
+    System.out.println("Update using partitioned DML ...");
+    runSample("updateusingpartitioneddml");
+    out = runSample("querymarketingbudget");
+    assertThat(out).contains("2 2 100000");
+    assertThat(out).contains("1 1 2000000");
+
+    System.out.println("Delete using Partitioned DML ...");
+    runSample("deleteusingpartitioneddml");
+    out = runSample("querysingerstable");
+    assertThat(out).doesNotContain("Timothy Grant");
+    assertThat(out).doesNotContain("Melissa Garcia");
+    assertThat(out).doesNotContain("Russell Morales");
+    assertThat(out).doesNotContain("Jacqueline Long");
+    assertThat(out).doesNotContain("Dylan Shaw");
+
+    System.out.println("Update in Batch using DML ...");
+    out = runSample("updateusingbatchdml");
+    assertThat(out).contains("1 record updated by stmt 0");
+    assertThat(out).contains("1 record updated by stmt 1");
+
+    System.out.println("Create table with data types ...");
+    out = runSample("createtablewithdatatypes");
+    assertThat(out).contains("Created Venues table in database");
+
+    System.out.println("Write into table and Query Boolean Type ...");
+    runSample("writedatatypesdata");
+    out = runSample("querywithbool");
+    assertThat(out).contains("19 Venue 19 true");
+
+    System.out.println("Query with Bytes ...");
+    out = runSample("querywithbytes");
+    assertThat(out).contains("4 Venue 4");
+
+    System.out.println("Query with Float ...");
+    out = runSample("querywithfloat");
+    assertThat(out).contains("4 Venue 4 0.8");
+    assertThat(out).contains("19 Venue 19 0.9");
+
+    System.out.println("Query with Int ...");
+    out = runSample("querywithint");
+    assertThat(out).contains("19 Venue 19 6300");
+    assertThat(out).contains("42 Venue 42 3000");
+
+    System.out.println("Query with String ...");
+    out = runSample("querywithstring");
+    assertThat(out).contains("42 Venue 42");
+
+    System.out.println("Query with Timestamp parameter ...");
+    out = runSample("querywithtimestampparameter");
+    assertThat(out).contains("4 Venue 4");
+    assertThat(out).contains("19 Venue 19");
+    assertThat(out).contains("42 Venue 42");
+
+    System.out.println("Query with Numeric Type ...");
+    out = runSample("querywithnumeric");
+    assertThat(out).contains("19 Venue 19 1200100");
+    assertThat(out).contains("42 Venue 42 390650.99");
+
+    System.out.println("Query options ...");
+    out = runSample("clientwithqueryoptions");
+    assertThat(out).contains("1 1 Total Junk");
+    out = runSample("querywithqueryoptions");
+    assertThat(out).contains("1 1 Total Junk");
   }
 }
