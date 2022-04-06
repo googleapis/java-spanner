@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.anyMap;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -66,6 +67,7 @@ public final class BatchClientImplTest {
     initMocks(this);
     DatabaseId db = DatabaseId.of(DB_NAME);
     when(spannerOptions.getNumChannels()).thenReturn(4);
+    when(spannerOptions.getCreatorRole()).thenReturn("role");
     when(spannerOptions.getPrefetchChunks()).thenReturn(1);
     when(spannerOptions.getRetrySettings()).thenReturn(RetrySettings.newBuilder().build());
     when(spannerOptions.getClock()).thenReturn(NanoClock.getDefaultClock());
@@ -83,7 +85,7 @@ public final class BatchClientImplTest {
   @Test
   public void testBatchReadOnlyTxnWithBound() throws Exception {
     Session sessionProto = Session.newBuilder().setName(SESSION_NAME).build();
-    when(gapicRpc.createSession(eq(DB_NAME), anyMap(), optionsCaptor.capture()))
+    when(gapicRpc.createSession(eq(DB_NAME), anyString(), anyMap(), optionsCaptor.capture()))
         .thenReturn(sessionProto);
     com.google.protobuf.Timestamp timestamp = Timestamps.parse(TIMESTAMP);
     Transaction txnMetadata =

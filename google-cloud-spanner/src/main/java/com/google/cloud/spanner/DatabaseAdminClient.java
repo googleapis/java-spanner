@@ -22,12 +22,8 @@ import com.google.cloud.Policy;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.ListOption;
 import com.google.longrunning.Operation;
-import com.google.spanner.admin.database.v1.CopyBackupMetadata;
-import com.google.spanner.admin.database.v1.CreateBackupMetadata;
-import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
-import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
-import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+
+import com.google.spanner.admin.database.v1.*;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -305,6 +301,9 @@ public interface DatabaseAdminClient {
 
   /** Lists long-running database operations on the specified instance. */
   Page<Operation> listDatabaseOperations(String instanceId, ListOption... options);
+
+  /** Lists database roles on the specified instance. */
+  Page<DatabaseRole> listDatabaseRoles(String instanceId, ListOption... options);
 
   /** Lists long-running backup operations on the specified instance. */
   Page<Operation> listBackupOperations(String instanceId, ListOption... options);

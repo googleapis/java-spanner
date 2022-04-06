@@ -78,6 +78,7 @@ public class SessionImplTest {
     MockitoAnnotations.initMocks(this);
     when(spannerOptions.getNumChannels()).thenReturn(4);
     when(spannerOptions.getPrefetchChunks()).thenReturn(1);
+    when(spannerOptions.getCreatorRole()).thenReturn("role");
     when(spannerOptions.getRetrySettings()).thenReturn(RetrySettings.newBuilder().build());
     when(spannerOptions.getClock()).thenReturn(NanoClock.getDefaultClock());
     when(spannerOptions.getSessionLabels()).thenReturn(Collections.emptyMap());
@@ -92,7 +93,9 @@ public class SessionImplTest {
     DatabaseId db = DatabaseId.of(dbName);
 
     Session sessionProto = Session.newBuilder().setName(sessionName).build();
-    Mockito.when(rpc.createSession(Mockito.eq(dbName), Mockito.anyMap(), optionsCaptor.capture()))
+    Mockito.when(
+            rpc.createSession(
+                Mockito.eq(dbName), Mockito.anyString(), Mockito.anyMap(), optionsCaptor.capture()))
         .thenReturn(sessionProto);
     Transaction txn = Transaction.newBuilder().setId(ByteString.copyFromUtf8("TEST")).build();
     Mockito.when(

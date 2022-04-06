@@ -99,6 +99,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final int prefetchChunks;
   private final int numChannels;
   private final String transportChannelExecutorThreadNameFormat;
+  private final String creatorRole;
   private final ImmutableMap<String, String> sessionLabels;
   private final SpannerStubSettings spannerStubSettings;
   private final InstanceAdminStubSettings instanceAdminStubSettings;
@@ -564,6 +565,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
             ? builder.sessionPoolOptions
             : SessionPoolOptions.newBuilder().build();
     prefetchChunks = builder.prefetchChunks;
+    creatorRole = builder.creatorRole;
     sessionLabels = builder.sessionLabels;
     try {
       spannerStubSettings = builder.spannerStubSettingsBuilder.build();
@@ -674,6 +676,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     private int prefetchChunks = DEFAULT_PREFETCH_CHUNKS;
     private SessionPoolOptions sessionPoolOptions;
+    private String creatorRole;
     private ImmutableMap<String, String> sessionLabels;
     private SpannerStubSettings.Builder spannerStubSettingsBuilder =
         SpannerStubSettings.newBuilder();
@@ -730,6 +733,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
           options.transportChannelExecutorThreadNameFormat;
       this.sessionPoolOptions = options.sessionPoolOptions;
       this.prefetchChunks = options.prefetchChunks;
+      this.creatorRole = options.creatorRole;
       this.sessionLabels = options.sessionLabels;
       this.spannerStubSettingsBuilder = options.spannerStubSettings.toBuilder();
       this.instanceAdminStubSettingsBuilder = options.instanceAdminStubSettings.toBuilder();
@@ -827,6 +831,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setSessionPoolOption(SessionPoolOptions sessionPoolOptions) {
       this.sessionPoolOptions = sessionPoolOptions;
+      return this;
+    }
+
+    /** Sets the creator role that should be used by this instance. */
+    Builder setCreatorRole(String creatorRole) {
+      this.creatorRole = creatorRole;
       return this;
     }
 
@@ -1213,6 +1223,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public SessionPoolOptions getSessionPoolOptions() {
     return sessionPoolOptions;
+  }
+
+  public String getCreatorRole() {
+    return creatorRole;
   }
 
   public Map<String, String> getSessionLabels() {

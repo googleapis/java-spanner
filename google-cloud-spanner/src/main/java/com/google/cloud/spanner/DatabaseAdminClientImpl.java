@@ -33,6 +33,7 @@ import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.database.v1.*;
+
 import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -284,6 +285,31 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
             return proto;
           }
         };
+    if (listOptions.hasPageToken()) {
+      pageFetcher.setNextPageToken(listOptions.pageToken());
+    }
+    return pageFetcher.getNextPage();
+  }
+
+  @Override
+  public final Page<DatabaseRole> listDatabaseRoles(String instanceId, ListOption... options) {
+    final String instanceName = getInstanceName(instanceId);
+    final Options listOptions = Options.fromListOptions(options);
+    final int pageSize = listOptions.hasPageSize() ? listOptions.pageSize() : 0;
+    final String pageToken = listOptions.hasPageToken() ? listOptions.pageToken() : null;
+
+    PageFetcher<DatabaseRole, DatabaseRole> pageFetcher =
+            new PageFetcher<DatabaseRole, DatabaseRole>() {
+              @Override
+              public Paginated<DatabaseRole> getNextPage(String nextPageToken) {
+                return rpc.listDatabaseRoles(instanceName, pageSize, pageToken);
+              }
+
+              @Override
+              public DatabaseRole fromProto(DatabaseRole proto) {
+                return proto;
+              }
+            };
     if (listOptions.hasPageToken()) {
       pageFetcher.setNextPageToken(listOptions.pageToken());
     }

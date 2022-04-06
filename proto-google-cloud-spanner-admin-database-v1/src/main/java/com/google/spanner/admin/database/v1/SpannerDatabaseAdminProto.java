@@ -99,6 +99,18 @@ public final class SpannerDatabaseAdminProto {
       internal_static_google_spanner_admin_database_v1_OptimizeRestoredDatabaseMetadata_descriptor;
   static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_google_spanner_admin_database_v1_OptimizeRestoredDatabaseMetadata_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_admin_database_v1_DatabaseRole_descriptor;
+  static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_google_spanner_admin_database_v1_DatabaseRole_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_admin_database_v1_ListDatabaseRolesRequest_descriptor;
+  static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_google_spanner_admin_database_v1_ListDatabaseRolesRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_admin_database_v1_ListDatabaseRolesResponse_descriptor;
+  static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_google_spanner_admin_database_v1_ListDatabaseRolesResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor getDescriptor() {
     return descriptor;
@@ -371,7 +383,6 @@ public final class SpannerDatabaseAdminProto {
               "VersionRetentionPeriod",
               "EarliestVersionTime",
               "DefaultLeader",
-              "DatabaseDialect",
             });
     internal_static_google_spanner_admin_database_v1_ListDatabasesRequest_descriptor =
         getDescriptor().getMessageTypes().get(2);
@@ -395,7 +406,7 @@ public final class SpannerDatabaseAdminProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_CreateDatabaseRequest_descriptor,
             new java.lang.String[] {
-              "Parent", "CreateStatement", "ExtraStatements", "EncryptionConfig", "DatabaseDialect",
+              "Parent", "CreateStatement", "ExtraStatements", "EncryptionConfig",
             });
     internal_static_google_spanner_admin_database_v1_CreateDatabaseMetadata_descriptor =
         getDescriptor().getMessageTypes().get(5);
@@ -506,6 +517,30 @@ public final class SpannerDatabaseAdminProto {
             internal_static_google_spanner_admin_database_v1_OptimizeRestoredDatabaseMetadata_descriptor,
             new java.lang.String[] {
               "Name", "Progress",
+            });
+    internal_static_google_spanner_admin_database_v1_DatabaseRole_descriptor =
+        getDescriptor().getMessageTypes().get(18);
+    internal_static_google_spanner_admin_database_v1_DatabaseRole_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+            internal_static_google_spanner_admin_database_v1_DatabaseRole_descriptor,
+            new java.lang.String[] {
+              "Name",
+            });
+    internal_static_google_spanner_admin_database_v1_ListDatabaseRolesRequest_descriptor =
+        getDescriptor().getMessageTypes().get(19);
+    internal_static_google_spanner_admin_database_v1_ListDatabaseRolesRequest_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+            internal_static_google_spanner_admin_database_v1_ListDatabaseRolesRequest_descriptor,
+            new java.lang.String[] {
+              "Parent", "PageSize", "PageToken",
+            });
+    internal_static_google_spanner_admin_database_v1_ListDatabaseRolesResponse_descriptor =
+        getDescriptor().getMessageTypes().get(20);
+    internal_static_google_spanner_admin_database_v1_ListDatabaseRolesResponse_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+            internal_static_google_spanner_admin_database_v1_ListDatabaseRolesResponse_descriptor,
+            new java.lang.String[] {
+              "DatabaseRoles", "NextPageToken",
             });
     com.google.protobuf.ExtensionRegistry registry =
         com.google.protobuf.ExtensionRegistry.newInstance();

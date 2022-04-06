@@ -159,6 +159,7 @@ public class ConnectionOptions {
   private static final String DEFAULT_MAX_SESSIONS = null;
   private static final String DEFAULT_NUM_CHANNELS = null;
   private static final String DEFAULT_CHANNEL_PROVIDER = null;
+  private static final String DEFAULT_CREATOR_ROLE = null;
   private static final String DEFAULT_USER_AGENT = null;
   private static final String DEFAULT_OPTIMIZER_VERSION = "";
   private static final String DEFAULT_OPTIMIZER_STATISTICS_PACKAGE = "";
@@ -188,7 +189,7 @@ public class ConnectionOptions {
   public static final String OAUTH_TOKEN_PROPERTY_NAME = "oauthToken";
   /** Name of the 'minSessions' connection property. */
   public static final String MIN_SESSIONS_PROPERTY_NAME = "minSessions";
-  /** Name of the 'numChannels' connection property. */
+  /** Name of the 'maxSessions' connection property. */
   public static final String MAX_SESSIONS_PROPERTY_NAME = "maxSessions";
   /** Name of the 'numChannels' connection property. */
   public static final String NUM_CHANNELS_PROPERTY_NAME = "numChannels";
@@ -207,6 +208,8 @@ public class ConnectionOptions {
   public static final String RPC_PRIORITY_NAME = "rpcPriority";
   /** Dialect to use for a connection. */
   private static final String DIALECT_PROPERTY_NAME = "dialect";
+  /** Name of the 'creatorRole' connection property. */
+  public static final String CREATOR_ROLE_PROPERTY_NAME = "creatorRole";
 
   /** All valid connection properties. */
   public static final Set<ConnectionProperty> VALID_PROPERTIES =
@@ -271,7 +274,10 @@ public class ConnectionOptions {
                       RPC_PRIORITY_NAME,
                       "Sets the priority for all RPC invocations from this connection (HIGH/MEDIUM/LOW). The default is HIGH."),
                   ConnectionProperty.createStringProperty(
-                      DIALECT_PROPERTY_NAME, "Sets the dialect to use for this connection."))));
+                      DIALECT_PROPERTY_NAME, "Sets the dialect to use for this connection."),
+                  ConnectionProperty.createStringProperty(
+                      CREATOR_ROLE_PROPERTY_NAME,
+                      "Sets the default creator role to use for this connection."))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -515,6 +521,7 @@ public class ConnectionOptions {
   private final String channelProvider;
   private final Integer minSessions;
   private final Integer maxSessions;
+  private final String creatorRole;
   private final String userAgent;
   private final QueryOptions queryOptions;
   private final boolean returnCommitStats;
@@ -592,6 +599,7 @@ public class ConnectionOptions {
     this.numChannels =
         parseIntegerProperty(NUM_CHANNELS_PROPERTY_NAME, parseNumChannels(builder.uri));
     this.channelProvider = parseChannelProvider(builder.uri);
+    this.creatorRole = parseCreatorRole(this.uri);
 
     String projectId = matcher.group(Builder.PROJECT_GROUP);
     if (Builder.DEFAULT_PROJECT_ID_PLACEHOLDER.equalsIgnoreCase(projectId)) {
@@ -729,6 +737,11 @@ public class ConnectionOptions {
   static String parseChannelProvider(String uri) {
     String value = parseUriProperty(uri, CHANNEL_PROVIDER_PROPERTY_NAME);
     return value != null ? value : DEFAULT_CHANNEL_PROVIDER;
+}
+  @VisibleForTesting
+  static String parseCreatorRole(String uri) {
+    String value = parseUriProperty(uri, CREATOR_ROLE_PROPERTY_NAME);
+    return value != null ? value : DEFAULT_CREATOR_ROLE;
   }
 
   @VisibleForTesting
@@ -877,6 +890,7 @@ public class ConnectionOptions {
     return numChannels;
   }
 
+
   /** Calls the getChannelProvider() method from the supplied class. */
   public TransportChannelProvider getChannelProvider() {
     if (channelProvider == null) {
@@ -894,6 +908,10 @@ public class ConnectionOptions {
               "%s : Failed to create channel with external provider: %s",
               e.toString(), channelProvider));
     }
+    }
+  /** The creator role to use for the connection. */
+  public String getCreatorRole() {
+    return creatorRole;
   }
 
   /** The host and port number that this {@link ConnectionOptions} will connect to */

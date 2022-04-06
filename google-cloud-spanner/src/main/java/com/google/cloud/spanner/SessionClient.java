@@ -211,7 +211,11 @@ class SessionClient implements AutoCloseable {
       com.google.spanner.v1.Session session =
           spanner
               .getRpc()
-              .createSession(db.getName(), spanner.getOptions().getSessionLabels(), options);
+              .createSession(
+                  db.getName(),
+                  spanner.getOptions().getCreatorRole(),
+                  spanner.getOptions().getSessionLabels(),
+                  options);
       return new SessionImpl(spanner, session.getName(), options);
     } catch (RuntimeException e) {
       TraceUtil.setWithFailure(span, e);
@@ -297,7 +301,11 @@ class SessionClient implements AutoCloseable {
           spanner
               .getRpc()
               .batchCreateSessions(
-                  db.getName(), sessionCount, spanner.getOptions().getSessionLabels(), options);
+                  db.getName(),
+                  sessionCount,
+                  spanner.getOptions().getCreatorRole(),
+                  spanner.getOptions().getSessionLabels(),
+                  options);
       span.addAnnotation(
           String.format(
               "Request for %d sessions returned %d sessions", sessionCount, sessions.size()));

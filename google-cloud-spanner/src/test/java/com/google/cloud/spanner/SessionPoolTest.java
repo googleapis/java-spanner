@@ -140,6 +140,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     when(client.getOptions()).thenReturn(spannerOptions);
     when(client.getSessionClient(db)).thenReturn(sessionClient);
     when(spannerOptions.getNumChannels()).thenReturn(4);
+    when(spannerOptions.getCreatorRole()).thenReturn("role");
     options =
         SessionPoolOptions.newBuilder()
             .setMinSessions(minSessions)
@@ -847,6 +848,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       SpannerOptions spannerOptions = mock(SpannerOptions.class);
       when(spannerOptions.getSessionPoolOptions()).thenReturn(options);
       when(spannerOptions.getNumChannels()).thenReturn(4);
+      when(spannerOptions.getCreatorRole()).thenReturn("role");
       when(spanner.getOptions()).thenReturn(spannerOptions);
       SessionPool pool =
           SessionPool.createPool(options, new TestExecutorFactory(), spanner.getSessionClient(db));

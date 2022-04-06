@@ -102,33 +102,7 @@ import com.google.protobuf.FieldMask;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.Timestamp;
-import com.google.spanner.admin.database.v1.Backup;
-import com.google.spanner.admin.database.v1.CopyBackupMetadata;
-import com.google.spanner.admin.database.v1.CopyBackupRequest;
-import com.google.spanner.admin.database.v1.CreateBackupMetadata;
-import com.google.spanner.admin.database.v1.CreateBackupRequest;
-import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
-import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
-import com.google.spanner.admin.database.v1.Database;
-import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
-import com.google.spanner.admin.database.v1.DeleteBackupRequest;
-import com.google.spanner.admin.database.v1.DropDatabaseRequest;
-import com.google.spanner.admin.database.v1.GetBackupRequest;
-import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
-import com.google.spanner.admin.database.v1.GetDatabaseRequest;
-import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
-import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
-import com.google.spanner.admin.database.v1.ListBackupsRequest;
-import com.google.spanner.admin.database.v1.ListBackupsResponse;
-import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
-import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
-import com.google.spanner.admin.database.v1.ListDatabasesRequest;
-import com.google.spanner.admin.database.v1.ListDatabasesResponse;
-import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
-import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
-import com.google.spanner.admin.database.v1.UpdateBackupRequest;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.*;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
@@ -1003,6 +977,32 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public Paginated<DatabaseRole> listDatabaseRoles(
+          String instanceName, int pageSize, @Nullable String pageToken) {
+    acquireAdministrativeRequestsRateLimiter();
+    ListDatabaseRolesRequest.Builder requestBuilder =
+            ListDatabaseRolesRequest.newBuilder().setParent(instanceName).setPageSize(pageSize);
+
+    if (pageToken != null) {
+      requestBuilder.setPageToken(pageToken);
+    }
+    final ListDatabaseRolesRequest request = requestBuilder.build();
+
+    final GrpcCallContext context =
+            newCallContext(
+                    null, instanceName, request, DatabaseAdminGrpc.getListDatabaseRolesMethod());
+    ListDatabaseRolesResponse response =
+            runWithRetryOnAdministrativeRequestsExceeded(
+                    () ->
+                            get(
+                                    databaseAdminStub
+                                            .listDatabaseRolesCallable()
+                                            .futureCall(request, context)));
+
+    return new Paginated<>(response.getDatabaseRolesList(), response.getNextPageToken());
+  }
+
+  @Override
   public Paginated<Backup> listBackups(
       String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken)
       throws SpannerException {
@@ -1450,6 +1450,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   public List<Session> batchCreateSessions(
       String databaseName,
       int sessionCount,
+      @Nullable String creatorRole,
       @Nullable Map<String, String> labels,
       @Nullable Map<Option, ?> options)
       throws SpannerException {
@@ -1457,10 +1458,14 @@ public class GapicSpannerRpc implements SpannerRpc {
         BatchCreateSessionsRequest.newBuilder()
             .setDatabase(databaseName)
             .setSessionCount(sessionCount);
+    Session.Builder sessionBuilder = Session.newBuilder();
     if (labels != null && !labels.isEmpty()) {
-      Session.Builder session = Session.newBuilder().putAllLabels(labels);
-      requestBuilder.setSessionTemplate(session);
+      sessionBuilder.putAllLabels(labels);
     }
+    if (creatorRole != null && !creatorRole.isEmpty()) {
+      sessionBuilder.setCreatorRole(creatorRole);
+    }
+    requestBuilder.setSessionTemplate(sessionBuilder);
     BatchCreateSessionsRequest request = requestBuilder.build();
     GrpcCallContext context =
         newCallContext(options, databaseName, request, SpannerGrpc.getBatchCreateSessionsMethod());
@@ -1470,14 +1475,21 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public Session createSession(
-      String databaseName, @Nullable Map<String, String> labels, @Nullable Map<Option, ?> options)
+      String databaseName,
+      @Nullable String creatorRole,
+      @Nullable Map<String, String> labels,
+      @Nullable Map<Option, ?> options)
       throws SpannerException {
     CreateSessionRequest.Builder requestBuilder =
         CreateSessionRequest.newBuilder().setDatabase(databaseName);
+    Session.Builder sessionBuilder = Session.newBuilder();
     if (labels != null && !labels.isEmpty()) {
-      Session.Builder session = Session.newBuilder().putAllLabels(labels);
-      requestBuilder.setSession(session);
+      sessionBuilder.putAllLabels(labels);
     }
+    if (creatorRole != null && !creatorRole.isEmpty()) {
+      sessionBuilder.setCreatorRole(creatorRole);
+    }
+    requestBuilder.setSession(sessionBuilder);
     CreateSessionRequest request = requestBuilder.build();
     GrpcCallContext context =
         newCallContext(options, databaseName, request, SpannerGrpc.getCreateSessionMethod());

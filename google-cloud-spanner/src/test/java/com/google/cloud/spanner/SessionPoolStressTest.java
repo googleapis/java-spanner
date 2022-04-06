@@ -89,6 +89,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     mockSpanner = mock(SpannerImpl.class);
     spannerOptions = mock(SpannerOptions.class);
     when(spannerOptions.getNumChannels()).thenReturn(4);
+    when(spannerOptions.getCreatorRole()).thenReturn("role");
     SessionClient sessionClient = mock(SessionClient.class);
     when(mockSpanner.getSessionClient(db)).thenReturn(sessionClient);
     when(mockSpanner.getOptions()).thenReturn(spannerOptions);

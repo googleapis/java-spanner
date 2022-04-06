@@ -51,6 +51,7 @@ import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseName;
+import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
 import com.google.spanner.admin.database.v1.GetBackupRequest;
@@ -64,6 +65,8 @@ import com.google.spanner.admin.database.v1.ListBackupsRequest;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
@@ -2950,6 +2953,148 @@ public class DatabaseAdminClient implements BackgroundResource {
     return stub.listBackupOperationsCallable();
   }
 
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists Cloud Spanner database roles.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   DatabaseName parent = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   for (DatabaseRole element : databaseAdminClient.listDatabaseRoles(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The database whose roles should be listed. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListDatabaseRolesPagedResponse listDatabaseRoles(DatabaseName parent) {
+    ListDatabaseRolesRequest request =
+        ListDatabaseRolesRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .build();
+    return listDatabaseRoles(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists Cloud Spanner database roles.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String parent = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   for (DatabaseRole element : databaseAdminClient.listDatabaseRoles(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The database whose roles should be listed. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListDatabaseRolesPagedResponse listDatabaseRoles(String parent) {
+    ListDatabaseRolesRequest request =
+        ListDatabaseRolesRequest.newBuilder().setParent(parent).build();
+    return listDatabaseRoles(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists Cloud Spanner database roles.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ListDatabaseRolesRequest request =
+   *       ListDatabaseRolesRequest.newBuilder()
+   *           .setParent(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   for (DatabaseRole element : databaseAdminClient.listDatabaseRoles(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListDatabaseRolesPagedResponse listDatabaseRoles(ListDatabaseRolesRequest request) {
+    return listDatabaseRolesPagedCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists Cloud Spanner database roles.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ListDatabaseRolesRequest request =
+   *       ListDatabaseRolesRequest.newBuilder()
+   *           .setParent(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   ApiFuture<DatabaseRole> future =
+   *       databaseAdminClient.listDatabaseRolesPagedCallable().futureCall(request);
+   *   // Do something.
+   *   for (DatabaseRole element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesPagedResponse>
+      listDatabaseRolesPagedCallable() {
+    return stub.listDatabaseRolesPagedCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists Cloud Spanner database roles.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ListDatabaseRolesRequest request =
+   *       ListDatabaseRolesRequest.newBuilder()
+   *           .setParent(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   while (true) {
+   *     ListDatabaseRolesResponse response =
+   *         databaseAdminClient.listDatabaseRolesCallable().call(request);
+   *     for (DatabaseRole element : response.getResponsesList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesResponse>
+      listDatabaseRolesCallable() {
+    return stub.listDatabaseRolesCallable();
+  }
+
   @Override
   public final void close() {
     stub.close();
@@ -3290,6 +3435,86 @@ public class DatabaseAdminClient implements BackgroundResource {
     protected ListBackupOperationsFixedSizeCollection createCollection(
         List<ListBackupOperationsPage> pages, int collectionSize) {
       return new ListBackupOperationsFixedSizeCollection(pages, collectionSize);
+    }
+  }
+
+  public static class ListDatabaseRolesPagedResponse
+      extends AbstractPagedListResponse<
+          ListDatabaseRolesRequest,
+          ListDatabaseRolesResponse,
+          DatabaseRole,
+          ListDatabaseRolesPage,
+          ListDatabaseRolesFixedSizeCollection> {
+
+    public static ApiFuture<ListDatabaseRolesPagedResponse> createAsync(
+        PageContext<ListDatabaseRolesRequest, ListDatabaseRolesResponse, DatabaseRole> context,
+        ApiFuture<ListDatabaseRolesResponse> futureResponse) {
+      ApiFuture<ListDatabaseRolesPage> futurePage =
+          ListDatabaseRolesPage.createEmptyPage().createPageAsync(context, futureResponse);
+      return ApiFutures.transform(
+          futurePage,
+          input -> new ListDatabaseRolesPagedResponse(input),
+          MoreExecutors.directExecutor());
+    }
+
+    private ListDatabaseRolesPagedResponse(ListDatabaseRolesPage page) {
+      super(page, ListDatabaseRolesFixedSizeCollection.createEmptyCollection());
+    }
+  }
+
+  public static class ListDatabaseRolesPage
+      extends AbstractPage<
+          ListDatabaseRolesRequest,
+          ListDatabaseRolesResponse,
+          DatabaseRole,
+          ListDatabaseRolesPage> {
+
+    private ListDatabaseRolesPage(
+        PageContext<ListDatabaseRolesRequest, ListDatabaseRolesResponse, DatabaseRole> context,
+        ListDatabaseRolesResponse response) {
+      super(context, response);
+    }
+
+    private static ListDatabaseRolesPage createEmptyPage() {
+      return new ListDatabaseRolesPage(null, null);
+    }
+
+    @Override
+    protected ListDatabaseRolesPage createPage(
+        PageContext<ListDatabaseRolesRequest, ListDatabaseRolesResponse, DatabaseRole> context,
+        ListDatabaseRolesResponse response) {
+      return new ListDatabaseRolesPage(context, response);
+    }
+
+    @Override
+    public ApiFuture<ListDatabaseRolesPage> createPageAsync(
+        PageContext<ListDatabaseRolesRequest, ListDatabaseRolesResponse, DatabaseRole> context,
+        ApiFuture<ListDatabaseRolesResponse> futureResponse) {
+      return super.createPageAsync(context, futureResponse);
+    }
+  }
+
+  public static class ListDatabaseRolesFixedSizeCollection
+      extends AbstractFixedSizeCollection<
+          ListDatabaseRolesRequest,
+          ListDatabaseRolesResponse,
+          DatabaseRole,
+          ListDatabaseRolesPage,
+          ListDatabaseRolesFixedSizeCollection> {
+
+    private ListDatabaseRolesFixedSizeCollection(
+        List<ListDatabaseRolesPage> pages, int collectionSize) {
+      super(pages, collectionSize);
+    }
+
+    private static ListDatabaseRolesFixedSizeCollection createEmptyCollection() {
+      return new ListDatabaseRolesFixedSizeCollection(null, 0);
+    }
+
+    @Override
+    protected ListDatabaseRolesFixedSizeCollection createCollection(
+        List<ListDatabaseRolesPage> pages, int collectionSize) {
+      return new ListDatabaseRolesFixedSizeCollection(pages, collectionSize);
     }
   }
 }

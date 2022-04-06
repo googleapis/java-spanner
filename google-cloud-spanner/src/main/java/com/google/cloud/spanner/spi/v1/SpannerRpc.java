@@ -253,6 +253,9 @@ public interface SpannerRpc extends ServiceRpc {
   Paginated<Operation> listDatabaseOperations(
       String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken);
 
+  Paginated<DatabaseRole> listDatabaseRoles(
+          String instanceName, int pageSize, @Nullable String pageToken);
+
   /** Retrieves a long running operation. */
   Operation getOperation(String name) throws SpannerException;
 
@@ -262,12 +265,16 @@ public interface SpannerRpc extends ServiceRpc {
   List<Session> batchCreateSessions(
       String databaseName,
       int sessionCount,
+      @Nullable String creatorRole,
       @Nullable Map<String, String> labels,
       @Nullable Map<Option, ?> options)
       throws SpannerException;
 
   Session createSession(
-      String databaseName, @Nullable Map<String, String> labels, @Nullable Map<Option, ?> options)
+      String databaseName,
+      @Nullable String creatorRole,
+      @Nullable Map<String, String> labels,
+      @Nullable Map<Option, ?> options)
       throws SpannerException;
 
   void deleteSession(String sessionName, @Nullable Map<Option, ?> options) throws SpannerException;

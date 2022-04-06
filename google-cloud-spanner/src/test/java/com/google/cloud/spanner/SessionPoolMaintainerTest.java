@@ -59,6 +59,7 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     when(client.getOptions()).thenReturn(spannerOptions);
     when(client.getSessionClient(db)).thenReturn(sessionClient);
     when(spannerOptions.getNumChannels()).thenReturn(4);
+    when(spannerOptions.getCreatorRole()).thenReturn("role");
     setupMockSessionCreation();
     options =
         SessionPoolOptions.newBuilder()

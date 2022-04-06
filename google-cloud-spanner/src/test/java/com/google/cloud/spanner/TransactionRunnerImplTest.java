@@ -142,11 +142,16 @@ public class TransactionRunnerImplTest {
         SessionPoolOptions.newBuilder().setMinSessions(0).setIncStep(1).build();
     when(options.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     when(options.getSessionLabels()).thenReturn(Collections.emptyMap());
+    when(options.getCreatorRole()).thenReturn("role");
     SpannerRpc rpc = mock(SpannerRpc.class);
     when(rpc.asyncDeleteSession(Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
     when(rpc.batchCreateSessions(
-            Mockito.anyString(), Mockito.eq(1), Mockito.anyMap(), Mockito.anyMap()))
+            Mockito.anyString(),
+            Mockito.eq(1),
+            Mockito.anyString(),
+            Mockito.anyMap(),
+            Mockito.anyMap()))
         .thenAnswer(
             invocation ->
                 Collections.singletonList(

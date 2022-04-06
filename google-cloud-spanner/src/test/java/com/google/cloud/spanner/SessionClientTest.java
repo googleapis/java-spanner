@@ -105,6 +105,7 @@ public class SessionClientTest {
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);
     when(spannerOptions.getNumChannels()).thenReturn(numChannels);
     when(spannerOptions.getPrefetchChunks()).thenReturn(1);
+    when(spannerOptions.getCreatorRole()).thenReturn("role");
     when(spannerOptions.getRetrySettings()).thenReturn(RetrySettings.newBuilder().build());
     when(spannerOptions.getClock()).thenReturn(NanoClock.getDefaultClock());
     when(spanner.getOptions()).thenReturn(spannerOptions);
@@ -117,13 +118,16 @@ public class SessionClientTest {
     String sessionName = dbName + "/sessions/s1";
     Map<String, String> labels = new HashMap<>();
     labels.put("env", "dev");
+    String creatorRole = "role";
     when(spannerOptions.getSessionLabels()).thenReturn(labels);
+    when(spannerOptions.getCreatorRole()).thenReturn(creatorRole);
     com.google.spanner.v1.Session sessionProto =
         com.google.spanner.v1.Session.newBuilder()
             .setName(sessionName)
             .putAllLabels(labels)
             .build();
-    when(rpc.createSession(Mockito.eq(dbName), Mockito.eq(labels), options.capture()))
+    when(rpc.createSession(
+            Mockito.eq(dbName), Mockito.eq(creatorRole), Mockito.eq(labels), options.capture()))
         .thenReturn(sessionProto);
 
     try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
@@ -144,12 +148,18 @@ public class SessionClientTest {
     final Map<String, String> labels = new HashMap<>();
     labels.put("env", "dev");
     when(spannerOptions.getSessionLabels()).thenReturn(labels);
+    String creatorRole = new String("role");
+    when(spannerOptions.getCreatorRole()).thenReturn(creatorRole);
     final List<Long> usedChannels = Collections.synchronizedList(new ArrayList<>());
     when(rpc.batchCreateSessions(
-            Mockito.eq(dbName), Mockito.anyInt(), Mockito.eq(labels), Mockito.anyMap()))
+            Mockito.eq(dbName),
+            Mockito.anyInt(),
+            Mockito.eq(creatorRole),
+            Mockito.eq(labels),
+            Mockito.anyMap()))
         .then(
             invocation -> {
-              Map<Option, Object> options = invocation.getArgument(3, Map.class);
+              Map<Option, Object> options = invocation.getArgument(4, Map.class);
               Long channelHint = (Long) options.get(Option.CHANNEL_HINT);
               usedChannels.add(channelHint);
               int sessionCount = invocation.getArgument(1, Integer.class);
@@ -204,12 +214,17 @@ public class SessionClientTest {
     final String sessionName = dbName + "/sessions/s%d";
     final Map<String, String> labels = Collections.emptyMap();
     when(spannerOptions.getSessionLabels()).thenReturn(labels);
+    when(spannerOptions.getCreatorRole()).thenReturn("role");
     final Set<Long> usedChannelHints = Collections.synchronizedSet(new HashSet<>());
     when(rpc.batchCreateSessions(
-            Mockito.eq(dbName), Mockito.anyInt(), Mockito.eq(labels), Mockito.anyMap()))
+            Mockito.eq(dbName),
+            Mockito.anyInt(),
+            Mockito.anyString(),
+            Mockito.eq(labels),
+            Mockito.anyMap()))
         .then(
             invocation -> {
-              Map<Option, Object> options = invocation.getArgument(3, Map.class);
+              Map<Option, Object> options = invocation.getArgument(4, Map.class);
               Long channelHint = (Long) options.get(Option.CHANNEL_HINT);
               usedChannelHints.add(channelHint);
               int sessionCount = invocation.getArgument(1, Integer.class);
@@ -219,6 +234,7 @@ public class SessionClientTest {
                     com.google.spanner.v1.Session.newBuilder()
                         .setName(String.format(sessionName, i))
                         .putAllLabels(labels)
+                        .setCreatorRole("role")
                         .build());
               }
               return res;
@@ -287,10 +303,14 @@ public class SessionClientTest {
         DatabaseId db = DatabaseId.of(dbName);
         final String sessionName = dbName + "/sessions/s%d";
         when(rpc.batchCreateSessions(
-                Mockito.eq(dbName), Mockito.anyInt(), Mockito.anyMap(), Mockito.anyMap()))
+                Mockito.eq(dbName),
+                Mockito.anyInt(),
+                Mockito.anyString(),
+                Mockito.anyMap(),
+                Mockito.anyMap()))
             .then(
                 invocation -> {
-                  Map<Option, Object> options = invocation.getArgument(3, Map.class);
+                  Map<Option, Object> options = invocation.getArgument(4, Map.class);
                   Long channelHint = (Long) options.get(Option.CHANNEL_HINT);
                   if (errorOnChannels.contains(channelHint)) {
                     throw SpannerExceptionFactory.newSpannerException(
@@ -351,7 +371,11 @@ public class SessionClientTest {
     DatabaseId db = DatabaseId.of(dbName);
     final String sessionName = dbName + "/sessions/s%d";
     when(rpc.batchCreateSessions(
-            Mockito.eq(dbName), Mockito.anyInt(), Mockito.anyMap(), Mockito.anyMap()))
+            Mockito.eq(dbName),
+            Mockito.anyInt(),
+            Mockito.anyString(),
+            Mockito.anyMap(),
+            Mockito.anyMap()))
         .then(
             invocation -> {
               int sessionCount = invocation.getArgument(1, Integer.class);
