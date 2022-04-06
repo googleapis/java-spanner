@@ -254,7 +254,7 @@ public interface SpannerRpc extends ServiceRpc {
       String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken);
 
   Paginated<DatabaseRole> listDatabaseRoles(
-          String instanceName, int pageSize, @Nullable String pageToken);
+      String instanceName, int pageSize, @Nullable String pageToken);
 
   /** Retrieves a long running operation. */
   Operation getOperation(String name) throws SpannerException;

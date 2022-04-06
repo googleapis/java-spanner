@@ -978,10 +978,10 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public Paginated<DatabaseRole> listDatabaseRoles(
-          String instanceName, int pageSize, @Nullable String pageToken) {
+      String instanceName, int pageSize, @Nullable String pageToken) {
     acquireAdministrativeRequestsRateLimiter();
     ListDatabaseRolesRequest.Builder requestBuilder =
-            ListDatabaseRolesRequest.newBuilder().setParent(instanceName).setPageSize(pageSize);
+        ListDatabaseRolesRequest.newBuilder().setParent(instanceName).setPageSize(pageSize);
 
     if (pageToken != null) {
       requestBuilder.setPageToken(pageToken);
@@ -989,15 +989,10 @@ public class GapicSpannerRpc implements SpannerRpc {
     final ListDatabaseRolesRequest request = requestBuilder.build();
 
     final GrpcCallContext context =
-            newCallContext(
-                    null, instanceName, request, DatabaseAdminGrpc.getListDatabaseRolesMethod());
+        newCallContext(null, instanceName, request, DatabaseAdminGrpc.getListDatabaseRolesMethod());
     ListDatabaseRolesResponse response =
-            runWithRetryOnAdministrativeRequestsExceeded(
-                    () ->
-                            get(
-                                    databaseAdminStub
-                                            .listDatabaseRolesCallable()
-                                            .futureCall(request, context)));
+        runWithRetryOnAdministrativeRequestsExceeded(
+            () -> get(databaseAdminStub.listDatabaseRolesCallable().futureCall(request, context)));
 
     return new Paginated<>(response.getDatabaseRolesList(), response.getNextPageToken());
   }

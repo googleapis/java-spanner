@@ -33,7 +33,6 @@ import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.database.v1.*;
-
 import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -295,21 +294,34 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   public final Page<DatabaseRole> listDatabaseRoles(String instanceId, ListOption... options) {
     final String instanceName = getInstanceName(instanceId);
     final Options listOptions = Options.fromListOptions(options);
+    Preconditions.checkArgument(
+        !listOptions.hasFilter(), "Filter option is not supported by listDatabasesRoles");
     final int pageSize = listOptions.hasPageSize() ? listOptions.pageSize() : 0;
-    final String pageToken = listOptions.hasPageToken() ? listOptions.pageToken() : null;
 
-    PageFetcher<DatabaseRole, DatabaseRole> pageFetcher =
-            new PageFetcher<DatabaseRole, DatabaseRole>() {
-              @Override
-              public Paginated<DatabaseRole> getNextPage(String nextPageToken) {
-                return rpc.listDatabaseRoles(instanceName, pageSize, pageToken);
-              }
+    PageFetcher<DatabaseRole, com.google.spanner.admin.database.v1.DatabaseRole> pageFetcher =
+        new PageFetcher<DatabaseRole, com.google.spanner.admin.database.v1.DatabaseRole>() {
+          @Override
+          public Paginated<com.google.spanner.admin.database.v1.DatabaseRole> getNextPage(
+              String nextPageToken) {
+            try {
+              return rpc.listDatabaseRoles(instanceName, pageSize, nextPageToken);
+            } catch (SpannerException e) {
+              throw SpannerExceptionFactory.newSpannerException(
+                  e.getErrorCode(),
+                  String.format(
+                      "Failed to list the databases roles of %s with pageToken %s: %s",
+                      instanceName,
+                      MoreObjects.firstNonNull(nextPageToken, "<null>"),
+                      e.getMessage()),
+                  e);
+            }
+          }
 
-              @Override
-              public DatabaseRole fromProto(DatabaseRole proto) {
-                return proto;
-              }
-            };
+          @Override
+          public DatabaseRole fromProto(com.google.spanner.admin.database.v1.DatabaseRole proto) {
+            return DatabaseRole.fromProto(proto);
+          }
+        };
     if (listOptions.hasPageToken()) {
       pageFetcher.setNextPageToken(listOptions.pageToken());
     }
