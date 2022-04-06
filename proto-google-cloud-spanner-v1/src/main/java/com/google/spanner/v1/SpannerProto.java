@@ -403,7 +403,7 @@ public final class SpannerProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_Session_descriptor,
             new java.lang.String[] {
-              "Name", "Labels", "CreateTime", "ApproximateLastUseTime",
+              "Name", "Labels", "CreateTime", "ApproximateLastUseTime", "CreatorRole",
             });
     internal_static_google_spanner_v1_Session_LabelsEntry_descriptor =
         internal_static_google_spanner_v1_Session_descriptor.getNestedTypes().get(0);

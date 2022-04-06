@@ -213,4 +213,29 @@ public interface SessionOrBuilder
    * </code>
    */
   com.google.protobuf.TimestampOrBuilder getApproximateLastUseTimeOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * The database role which created this session.
+   * </pre>
+   *
+   * <code>string creator_role = 5;</code>
+   *
+   * @return The creatorRole.
+   */
+  java.lang.String getCreatorRole();
+  /**
+   *
+   *
+   * <pre>
+   * The database role which created this session.
+   * </pre>
+   *
+   * <code>string creator_role = 5;</code>
+   *
+   * @return The bytes for creatorRole.
+   */
+  com.google.protobuf.ByteString getCreatorRoleBytes();
 }

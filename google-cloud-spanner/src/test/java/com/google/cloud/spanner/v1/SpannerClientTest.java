@@ -134,6 +134,7 @@ public class SpannerClientTest {
             .putAllLabels(new HashMap<String, String>())
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
+            .setCreatorRole("creatorRole-190742846")
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -176,6 +177,7 @@ public class SpannerClientTest {
             .putAllLabels(new HashMap<String, String>())
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
+            .setCreatorRole("creatorRole-190742846")
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -296,6 +298,7 @@ public class SpannerClientTest {
             .putAllLabels(new HashMap<String, String>())
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
+            .setCreatorRole("creatorRole-190742846")
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -338,6 +341,7 @@ public class SpannerClientTest {
             .putAllLabels(new HashMap<String, String>())
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
+            .setCreatorRole("creatorRole-190742846")
             .build();
     mockSpanner.addResponse(expectedResponse);
 
