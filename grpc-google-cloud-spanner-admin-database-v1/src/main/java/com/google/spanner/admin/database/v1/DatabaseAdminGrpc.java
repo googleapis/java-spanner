@@ -2638,7 +2638,6 @@ public final class DatabaseAdminGrpc {
   private static final int METHODID_LIST_BACKUP_OPERATIONS = 17;
   private static final int METHODID_LIST_DATABASE_ROLES = 18;
 
-
   private static final class MethodHandlers<Req, Resp>
       implements io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
           io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,

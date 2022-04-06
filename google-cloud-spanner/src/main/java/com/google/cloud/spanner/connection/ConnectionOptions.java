@@ -737,7 +737,8 @@ public class ConnectionOptions {
   static String parseChannelProvider(String uri) {
     String value = parseUriProperty(uri, CHANNEL_PROVIDER_PROPERTY_NAME);
     return value != null ? value : DEFAULT_CHANNEL_PROVIDER;
-}
+  }
+
   @VisibleForTesting
   static String parseCreatorRole(String uri) {
     String value = parseUriProperty(uri, CREATOR_ROLE_PROPERTY_NAME);
@@ -890,7 +891,6 @@ public class ConnectionOptions {
     return numChannels;
   }
 
-
   /** Calls the getChannelProvider() method from the supplied class. */
   public TransportChannelProvider getChannelProvider() {
     if (channelProvider == null) {
@@ -908,7 +908,7 @@ public class ConnectionOptions {
               "%s : Failed to create channel with external provider: %s",
               e.toString(), channelProvider));
     }
-    }
+  }
   /** The creator role to use for the connection. */
   public String getCreatorRole() {
     return creatorRole;
