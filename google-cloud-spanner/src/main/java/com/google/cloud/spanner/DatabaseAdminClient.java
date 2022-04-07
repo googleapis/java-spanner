@@ -98,7 +98,7 @@ public interface DatabaseAdminClient {
    * Database db = op.waitFor().getResult();
    * }</pre>
    *
-   * @see also #createDatabase(String, String, Iterable)
+   * @see #createDatabase(String, String, Iterable)
    */
   OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       Database database, Iterable<String> statements) throws SpannerException;

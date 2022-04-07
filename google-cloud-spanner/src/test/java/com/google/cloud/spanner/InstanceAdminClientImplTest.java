@@ -49,7 +49,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 
-/** Unit tests for {@link com.google.cloud.spanner.SpannerImpl.InstanceAdminClientImpl}. */
+/** Unit tests for {@link com.google.cloud.spanner.InstanceAdminClientImpl}. */
 @RunWith(JUnit4.class)
 public class InstanceAdminClientImplTest {
   private static final String PROJECT_ID = "my-project";
