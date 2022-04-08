@@ -60,14 +60,12 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 
 @RunWith(JUnit4.class)
-//@Ignore("Database creation with mock is failing.")
 public class DatabaseAdminClientImplTest {
   private static final String PROJECT_ID = "my-project";
   private static final String INSTANCE_ID = "my-instance";
