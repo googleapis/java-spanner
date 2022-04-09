@@ -73,6 +73,11 @@ integration)
       verify
     RETURN_CODE=$?
     ;;
+graalvm)
+    # Run Unit and Integration Tests with Native Image
+    mvn test -Pnative -Penable-integration-tests
+    RETURN_CODE=$?
+    ;;
 slowtests)
   mvn -B ${INTEGRATION_TEST_ARGS} \
     -ntp \
