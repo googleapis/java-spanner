@@ -17,8 +17,8 @@
     <site.installationModule>google-cloud-spanner</site.installationModule>
     <opencensus.version>0.31.0</opencensus.version>
     <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
-    <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing-east1</spanner.testenv.instance>
-    <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
+    <spanner.testenv.instance>projects/mpeddada-test/instances/spanner-testing</spanner.testenv.instance>
+    <spanner.gce.config.project_id>mpeddada-test</spanner.gce.config.project_id>
     <spanner.testenv.kms_key.name>projects/gcloud-devel/locations/us-east1/keyRings/cmek-test-key-ring/cryptoKeys/cmek-test-key</spanner.testenv.kms_key.name>
   </properties>
 
@@ -56,6 +56,16 @@
             <id>default-test</id>
             <configuration>
               <excludedGroups>com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.IntegrationTest</excludedGroups>
+
+              <!-- These configurations are only needed for native tests. The native profile
+               in shared-config uses maven-surefire to run both unit tests and integration tests-->
+              <systemPropertyVariables>
+                  <spanner.testenv.config.class>${spanner.testenv.config.class}</spanner.testenv.config.class>
+                  <spanner.testenv.instance>${spanner.testenv.instance}</spanner.testenv.instance>
+                  <spanner.gce.config.project_id>${spanner.gce.config.project_id}</spanner.gce.config.project_id>
+                  <spanner.testenv.kms_key.name>${spanner.testenv.kms_key.name}</spanner.testenv.kms_key.name>
+                </systemPropertyVariables>
+              
             </configuration>
           </execution>
           <execution>
@@ -104,21 +114,19 @@
           </execution>
         </executions>
       </plugin>
-
-  <!--Configurations for native image tests-->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <systemPropertyVariables>
-            <spanner.testenv.config.class>${spanner.testenv.config.class}</spanner.testenv.config.class>
-            <spanner.testenv.instance>${spanner.testenv.instance}</spanner.testenv.instance>
-            <spanner.gce.config.project_id>${spanner.gce.config.project_id}</spanner.gce.config.project_id>
-            <spanner.testenv.kms_key.name>${spanner.testenv.kms_key.name}</spanner.testenv.kms_key.name>
-          </systemPropertyVariables>
-          <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
-        </configuration>
-      </plugin>
+<!--      <plugin>-->
+<!--        <groupId>org.apache.maven.plugins</groupId>-->
+<!--        <artifactId>maven-surefire-plugin</artifactId>-->
+<!--        <configuration>-->
+<!--          <systemPropertyVariables>-->
+<!--            <spanner.testenv.config.class>${spanner.testenv.config.class}</spanner.testenv.config.class>-->
+<!--            <spanner.testenv.instance>${spanner.testenv.instance}</spanner.testenv.instance>-->
+<!--            <spanner.gce.config.project_id>${spanner.gce.config.project_id}</spanner.gce.config.project_id>-->
+<!--            <spanner.testenv.kms_key.name>${spanner.testenv.kms_key.name}</spanner.testenv.kms_key.name>-->
+<!--          </systemPropertyVariables>-->
+<!--          <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>-->
+<!--        </configuration>-->
+<!--      </plugin>-->
       <plugin>
         <groupId>org.graalvm.buildtools</groupId>
         <artifactId>native-maven-plugin</artifactId>
@@ -128,7 +136,6 @@
           </buildArgs>
         </configuration>
       </plugin>
-      <!--Configurations for native image tests-->
 
       <plugin>
         <?m2e ignore?>
