@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2022 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package com.example.spanner;
 
-// [START spanner_query_with_numeric_parameter]
+// [START spanner_postgresql_query_with_numeric_parameter]
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ResultSet;
@@ -57,4 +57,4 @@ class PgQueryWithNumericParameterSample {
     }
   }
 }
-// [END spanner_query_with_numeric_parameter]
+// [END spanner_postgresql_query_with_numeric_parameter]

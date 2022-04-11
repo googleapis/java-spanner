@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Google Inc.
+ * Copyright 2022 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,7 +130,7 @@ public class PgSpannerSampleIT {
     assertThat(databaseId).isNotNull();
 
     System.out.println("Create Database ...");
-    String out = runSample("createdatabase");
+    String out = runSample("createpgdatabase");
     assertThat(out).contains("Created database");
     assertThat(out).contains(dbId.getName());
 
@@ -197,14 +197,17 @@ public class PgSpannerSampleIT {
     assertThat(out.replaceAll("[\r\n]+", " "))
         .containsMatch("(Total Junk.*){2}");
 
+    System.out.println("Add Timestamp column ...");
     out = runSample("addlastupdatetimestampcolumn");
     assertThat(out).contains("Added LastUpdateTime as a timestamp column");
 
+    System.out.println("Update values in Timestamp column ...");
     runSample("updatewithtimestamp");
     out = runSample("querywithtimestamp");
     assertThat(out).contains("1 1 1000000");
     assertThat(out).contains("2 2 750000");
 
+    System.out.println("Create table with Timestamp column ...");
     out = runSample("createtablewithtimestamp");
     assertThat(out).contains("Created Performances table in database");
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2022 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@
 
 package com.example.spanner;
 
-//[START spanner_async_transaction_manager]
-import com.google.api.core.ApiFunction;
+//[START spanner_postgresql_async_transaction_manager]
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.AbortedException;
@@ -34,7 +33,6 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -133,16 +131,10 @@ class PgAsyncTransactionManagerExample {
     ApiFuture<Long> totalUpdateCount =
         ApiFutures.transform(
             updateCounts,
-            new ApiFunction<long[], Long>() {
-              @SuppressFBWarnings("UVA_USE_VAR_ARGS")
-              @Override
-              public Long apply(long[] input) {
-                return Arrays.stream(input).sum();
-              }
-            },
+            input -> Arrays.stream(input).sum(),
             MoreExecutors.directExecutor());
     System.out.printf("%d records updated.%n", totalUpdateCount.get(30L, TimeUnit.SECONDS));
     executor.shutdown();
   }
 }
-//[END spanner_async_transaction_manager]
+//[END spanner_postgresql_async_transaction_manager]

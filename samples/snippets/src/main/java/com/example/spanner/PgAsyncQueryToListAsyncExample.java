@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2022 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package com.example.spanner;
 
-// [START spanner_pg_async_query_to_list]
+// [START spanner_postgresql_async_query_to_list]
 import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.DatabaseClient;
@@ -62,7 +62,7 @@ public class PgAsyncQueryToListAsyncExample {
   static void asyncQueryToList(DatabaseClient client)
       throws InterruptedException, ExecutionException, TimeoutException {
     ExecutorService executor = Executors.newSingleThreadExecutor();
-    ApiFuture<? extends List<AsyncQueryToListAsyncExample.Album>> albums;
+    ApiFuture<? extends List<Album>> albums;
     try (AsyncResultSet resultSet =
              client
                  .singleUse()
@@ -73,7 +73,7 @@ public class PgAsyncQueryToListAsyncExample {
       albums =
           resultSet.toListAsync(
               reader -> {
-                return new AsyncQueryToListAsyncExample.Album(
+                return new Album(
                     reader.getLong("SingerId"),
                     reader.getLong("AlbumId"),
                     reader.getString("AlbumTitle"));
@@ -81,10 +81,10 @@ public class PgAsyncQueryToListAsyncExample {
               executor);
     }
 
-    for (AsyncQueryToListAsyncExample.Album album : albums.get(30L, TimeUnit.SECONDS)) {
+    for (Album album : albums.get(30L, TimeUnit.SECONDS)) {
       System.out.printf("%d %d %s%n", album.singerId, album.albumId, album.albumTitle);
     }
     executor.shutdown();
   }
 }
-//[END spanner_pg_async_query_to_list]
+//[END spanner_postgresql_async_query_to_list]
