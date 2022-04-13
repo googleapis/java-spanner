@@ -1,5 +1,13 @@
 # Changelog
 
+### [6.23.2](https://github.com/googleapis/java-spanner/compare/v6.23.1...v6.23.2) (2022-04-11)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.2.7 ([#1810](https://github.com/googleapis/java-spanner/issues/1810)) ([0acb53d](https://github.com/googleapis/java-spanner/commit/0acb53d430a0e7170fccc0cf936de9123d9b1689))
+* update dependency org.openjdk.jmh:jmh-core to v1.35 ([#1789](https://github.com/googleapis/java-spanner/issues/1789)) ([3511fe6](https://github.com/googleapis/java-spanner/commit/3511fe6cd1b929b916048dc95ba3c966138730a7))
+
 ### [6.23.1](https://github.com/googleapis/java-spanner/compare/v6.23.0...v6.23.1) (2022-03-29)
 
 
