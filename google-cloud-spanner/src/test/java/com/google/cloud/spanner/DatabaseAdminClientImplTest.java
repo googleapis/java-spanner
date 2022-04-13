@@ -308,9 +308,9 @@ public class DatabaseAdminClientImplTest {
   @Test
   public void listDatabaseRoles() {
     String pageToken = "token";
-    when(rpc.listDatabaseRoles(INSTANCE_NAME, 1, null))
+    when(rpc.listDatabaseRoles(DB_NAME, 1, null))
         .thenReturn(new Paginated<>(ImmutableList.of(getDatabaseRoleProto()), pageToken));
-    when(rpc.listDatabaseRoles(INSTANCE_NAME, 1, pageToken))
+    when(rpc.listDatabaseRoles(DB_NAME, 1, pageToken))
         .thenReturn(new Paginated<>(ImmutableList.of(getAnotherDatabaseRoleProto()), ""));
 
     ArrayList<com.google.cloud.spanner.DatabaseRole> databaseRoles =
@@ -323,7 +323,7 @@ public class DatabaseAdminClientImplTest {
 
   @Test
   public void listDatabaseRolesError() {
-    when(rpc.listDatabaseRoles(INSTANCE_NAME, 1, null))
+    when(rpc.listDatabaseRoles(DB_NAME, 1, null))
         .thenThrow(
             SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Test error"));
     SpannerException e =
@@ -338,9 +338,9 @@ public class DatabaseAdminClientImplTest {
   @Test
   public void listDatabaseRolesErrorWithToken() {
     String pageToken = "token";
-    when(rpc.listDatabaseRoles(INSTANCE_NAME, 1, null))
+    when(rpc.listDatabaseRoles(DB_NAME, 1, null))
         .thenReturn(new Paginated<>(ImmutableList.of(getDatabaseRoleProto()), pageToken));
-    when(rpc.listDatabaseRoles(INSTANCE_NAME, 1, pageToken))
+    when(rpc.listDatabaseRoles(DB_NAME, 1, pageToken))
         .thenThrow(
             SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Test error"));
     SpannerException e =
