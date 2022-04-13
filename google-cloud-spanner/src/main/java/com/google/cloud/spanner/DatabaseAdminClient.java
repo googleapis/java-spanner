@@ -301,8 +301,8 @@ public interface DatabaseAdminClient {
   /** Lists long-running database operations on the specified instance. */
   Page<Operation> listDatabaseOperations(String instanceId, ListOption... options);
 
-  /** Lists database roles on the specified instance. */
-  Page<DatabaseRole> listDatabaseRoles(String instanceId, ListOption... options);
+  /** Lists database roles on the specified database. */
+  Page<DatabaseRole> listDatabaseRoles(String instanceId, String databaseId, ListOption... options);
 
   /** Lists long-running backup operations on the specified instance. */
   Page<Operation> listBackupOperations(String instanceId, ListOption... options);

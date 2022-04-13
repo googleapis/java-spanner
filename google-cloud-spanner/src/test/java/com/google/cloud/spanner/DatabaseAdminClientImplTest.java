@@ -314,7 +314,8 @@ public class DatabaseAdminClientImplTest {
         .thenReturn(new Paginated<>(ImmutableList.of(getAnotherDatabaseRoleProto()), ""));
 
     ArrayList<com.google.cloud.spanner.DatabaseRole> databaseRoles =
-        Lists.newArrayList(client.listDatabaseRoles(INSTANCE_ID, Options.pageSize(1)).iterateAll());
+        Lists.newArrayList(
+            client.listDatabaseRoles(INSTANCE_ID, DB_ID, Options.pageSize(1)).iterateAll());
     assertThat(databaseRoles.get(0).getName()).isEqualTo(DB_ROLE);
     assertThat(databaseRoles.get(1).getName()).isEqualTo(DB_ROLE2);
     assertThat(databaseRoles.size()).isEqualTo(2);
@@ -328,7 +329,7 @@ public class DatabaseAdminClientImplTest {
     SpannerException e =
         assertThrows(
             SpannerException.class,
-            () -> client.listDatabaseRoles(INSTANCE_ID, Options.pageSize(1)));
+            () -> client.listDatabaseRoles(INSTANCE_ID, DB_ID, Options.pageSize(1)));
     assertThat(e.getMessage()).contains(INSTANCE_NAME);
     // Assert that the call was done without a page token.
     assertThat(e.getMessage()).contains("with pageToken <null>");
@@ -347,7 +348,9 @@ public class DatabaseAdminClientImplTest {
             SpannerException.class,
             () ->
                 Lists.newArrayList(
-                    client.listDatabaseRoles(INSTANCE_ID, Options.pageSize(1)).iterateAll()));
+                    client
+                        .listDatabaseRoles(INSTANCE_ID, DB_ID, Options.pageSize(1))
+                        .iterateAll()));
     assertThat(e.getMessage()).contains(INSTANCE_NAME);
     // Assert that the call was done without a page token.
     assertThat(e.getMessage()).contains(String.format("with pageToken %s", pageToken));

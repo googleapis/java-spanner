@@ -291,8 +291,9 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   }
 
   @Override
-  public final Page<DatabaseRole> listDatabaseRoles(String instanceId, ListOption... options) {
-    final String instanceName = getInstanceName(instanceId);
+  public final Page<DatabaseRole> listDatabaseRoles(
+      String instanceId, String databaseId, ListOption... options) {
+    final String databaseName = getDatabaseName(instanceId, databaseId);
     final Options listOptions = Options.fromListOptions(options);
     Preconditions.checkArgument(
         !listOptions.hasFilter(), "Filter option is not supported by listDatabasesRoles");
@@ -304,13 +305,13 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
           public Paginated<com.google.spanner.admin.database.v1.DatabaseRole> getNextPage(
               String nextPageToken) {
             try {
-              return rpc.listDatabaseRoles(instanceName, pageSize, nextPageToken);
+              return rpc.listDatabaseRoles(databaseName, pageSize, nextPageToken);
             } catch (SpannerException e) {
               throw SpannerExceptionFactory.newSpannerException(
                   e.getErrorCode(),
                   String.format(
                       "Failed to list the databases roles of %s with pageToken %s: %s",
-                      instanceName,
+                      databaseName,
                       MoreObjects.firstNonNull(nextPageToken, "<null>"),
                       e.getMessage()),
                   e);

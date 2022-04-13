@@ -835,7 +835,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /** Sets the creator role that should be used by this instance. */
-    Builder setCreatorRole(String creatorRole) {
+    public Builder setCreatorRole(String creatorRole) {
       this.creatorRole = creatorRole;
       return this;
     }

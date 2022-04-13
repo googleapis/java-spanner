@@ -50,6 +50,8 @@ public class RemoteSpannerHelper {
   private final InstanceId instanceId;
   private static int dbSeq;
   private static int dbPrefix = new Random().nextInt(Integer.MAX_VALUE);
+  private static int dbRoleSeq;
+  private static int dbRolePrefix = new Random().nextInt(Integer.MAX_VALUE);
   private static final AtomicInteger backupSeq = new AtomicInteger();
   private static int backupPrefix = new Random().nextInt(Integer.MAX_VALUE);
   private final List<Database> dbs = new ArrayList<>();
@@ -105,6 +107,14 @@ public class RemoteSpannerHelper {
    */
   public String getUniqueDatabaseId() {
     return String.format("testdb_%d_%04d", dbPrefix, dbSeq++);
+  }
+
+  /**
+   * Returns a database role name which is guaranteed to be unique within the context of this
+   * environment.
+   */
+  public String getUniqueDatabaseRole() {
+    return String.format("testdbrole_%d_%04d", dbRolePrefix, dbRoleSeq++);
   }
 
   /**

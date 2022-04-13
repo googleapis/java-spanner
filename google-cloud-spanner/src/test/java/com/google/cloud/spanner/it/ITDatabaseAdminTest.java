@@ -25,6 +25,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.DatabaseRole;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
@@ -204,5 +205,65 @@ public class ITDatabaseAdminTest {
       page = page.getNextPage();
     }
     assertThat(dbIdsGot).containsAtLeastElementsIn(dbIds);
+  }
+
+  @Test
+  public void createAndListDatabaseRoles() throws Exception {
+    List<String> dbRoles =
+        ImmutableList.of(
+            testHelper.getUniqueDatabaseRole(),
+            testHelper.getUniqueDatabaseRole(),
+            testHelper.getUniqueDatabaseRole());
+
+    String instanceId = testHelper.getInstanceId().getInstance();
+    Database database =
+        dbAdminClient
+            .createDatabase(instanceId, testHelper.getUniqueDatabaseId(), ImmutableList.of())
+            .get();
+
+    // Create the roles in Db.
+    List<String> dbRolesCreateStatements = new ArrayList<>();
+    for (String dbRole : dbRoles) {
+      dbRolesCreateStatements.add(String.format("CREATE ROLE %s", dbRole));
+    }
+    dbAdminClient
+        .updateDatabaseDdl(
+            instanceId, database.getId().getDatabase(), dbRolesCreateStatements, null)
+        .get();
+
+    // List roles from Db.
+    Page<DatabaseRole> page =
+        dbAdminClient.listDatabaseRoles(instanceId, database.getId().getDatabase());
+    List<String> dbRolesGot = new ArrayList<>();
+    while (page != null && page.getValues().iterator().hasNext()) {
+      for (DatabaseRole value : page.getValues()) {
+        String[] split = value.getName().split("/");
+        dbRolesGot.add(split[split.length - 1]);
+      }
+      page = page.getNextPage();
+    }
+    assertThat(dbRolesGot).containsAtLeastElementsIn(dbRoles);
+
+    // Delete the created roles.
+    List<String> dbRolesDropStatements = new ArrayList<>();
+    for (String dbRole : dbRoles) {
+      dbRolesDropStatements.add(String.format("DROP ROLE %s", dbRole));
+    }
+    dbAdminClient
+        .updateDatabaseDdl(instanceId, database.getId().getDatabase(), dbRolesDropStatements, null)
+        .get();
+
+    // List roles from Db. Deleted roles should not be present in list.
+    Page<DatabaseRole> pageRemainingRoles =
+        dbAdminClient.listDatabaseRoles(instanceId, database.getId().getDatabase());
+    List<String> dbRolesRemaining = new ArrayList<>();
+    while (pageRemainingRoles != null && pageRemainingRoles.getValues().iterator().hasNext()) {
+      for (DatabaseRole value : pageRemainingRoles.getValues()) {
+        String[] split = value.getName().split("/");
+        dbRolesRemaining.add(split[split.length - 1]);
+      }
+      pageRemainingRoles = pageRemainingRoles.getNextPage();
+    }
+    assertThat(dbRolesRemaining).containsNoneIn(dbRoles);
   }
 }
