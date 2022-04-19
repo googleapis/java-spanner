@@ -1,8 +1,0 @@
-{
-  "resources":{
-  "includes":[
-    {
-      "pattern":"\\Qcom/google/cloud/spanner/connection/PG_ClientSideStatements.json\\E"
-    }
-  ]}
-}
