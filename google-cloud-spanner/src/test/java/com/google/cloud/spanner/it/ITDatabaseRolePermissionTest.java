@@ -17,15 +17,28 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.google.api.gax.rpc.PermissionDeniedException;
-import com.google.cloud.spanner.*;
+import com.google.cloud.spanner.Database;
+import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.IntegrationTestEnv;
+import com.google.cloud.spanner.ParallelIntegrationTest;
+import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -82,11 +95,12 @@ public class ITDatabaseRolePermissionTest {
     }
 
     // Revoke select Permission for dbRoleParent.
-    final String revokeSelectOnTableToParent =
+    final String revokeSelectOnTableFromParent =
         String.format("REVOKE SELECT ON TABLE T FROM ROLE %s", dbRoleParent);
 
     dbAdminClient
-        .updateDatabaseDdl(instanceId, databaseId, Arrays.asList(revokeSelectOnTableToParent), null)
+        .updateDatabaseDdl(
+            instanceId, databaseId, Arrays.asList(revokeSelectOnTableFromParent), null)
         .get();
 
     // Test SELECT permissions to role dbRoleParent on table T.
