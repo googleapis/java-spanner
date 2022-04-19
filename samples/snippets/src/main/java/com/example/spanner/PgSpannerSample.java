@@ -193,7 +193,7 @@ public class PgSpannerSample {
   }
 
   // [START spanner_postgresql_create_database]
-  static void createPostgreSQLDatabase(DatabaseAdminClient dbAdminClient, DatabaseId id) {
+  static void createPostgreSqlDatabase(DatabaseAdminClient dbAdminClient, DatabaseId id) {
     OperationFuture<Database, CreateDatabaseMetadata> op = dbAdminClient.createDatabase(
         dbAdminClient.newDatabaseBuilder(id).setDialect(Dialect.POSTGRESQL).build(),
         Collections.emptyList());
@@ -1237,8 +1237,8 @@ public class PgSpannerSample {
                          .withQueryOptions(ExecuteSqlRequest.QueryOptions
                              .newBuilder()
                              .setOptimizerVersion("1")
-                             // The list of available statistics packages can be found by
-                             // querying the "INFORMATION_SCHEMA.spanner_postgresql_STATISTICS" table.
+                             // The list of available statistics packages can be found by querying
+                             // the "INFORMATION_SCHEMA.spanner_postgresql_STATISTICS" table.
                              .setOptimizerStatisticsPackage("latest")
                              .build())
                          .build())) {
@@ -1320,7 +1320,7 @@ public class PgSpannerSample {
       DatabaseId database) {
     switch (command) {
       case "createpgdatabase":
-        createPostgreSQLDatabase(dbAdminClient, database);
+        createPostgreSqlDatabase(dbAdminClient, database);
         break;
       case "write":
         writeExampleData(dbClient);
