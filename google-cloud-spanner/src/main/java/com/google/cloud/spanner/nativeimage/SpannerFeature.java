@@ -94,16 +94,16 @@ final class SpannerFeature implements Feature {
       // Resources
       ResourcesRegistry resourcesRegistry = ImageSingletons.lookup(ResourcesRegistry.class);
       resourcesRegistry.addResources(
-              ConfigurationCondition.alwaysTrue(),
-              "\\Qcom/google/cloud/spanner/connection/ClientSideStatements.json\\E");
+          ConfigurationCondition.alwaysTrue(),
+          "\\Qcom/google/cloud/spanner/connection/ClientSideStatements.json\\E");
       resourcesRegistry.addResources(
-              ConfigurationCondition.alwaysTrue(),
-              "\\Qcom/google/cloud/spanner/connection/PG_ClientSideStatements.json\\E");
+          ConfigurationCondition.alwaysTrue(),
+          "\\Qcom/google/cloud/spanner/connection/PG_ClientSideStatements.json\\E");
       resourcesRegistry.addResources(
-              "\\Qcom/google/cloud/spanner/spi/v1/grpc-gcp-apiconfig.json\\E");
+          "\\Qcom/google/cloud/spanner/spi/v1/grpc-gcp-apiconfig.json\\E");
       resourcesRegistry.addResources(
-              ConfigurationCondition.alwaysTrue(),
-              "\\Qcom/google/cloud/spanner/connection/ITSqlScriptTest_TestQueryOptions.sql\\E");
+          ConfigurationCondition.alwaysTrue(),
+          "\\Qcom/google/cloud/spanner/connection/ITSqlScriptTest_TestQueryOptions.sql\\E");
     }
   }
 
