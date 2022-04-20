@@ -16,28 +16,13 @@
 
 package com.google.cloud.spanner.it;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.Assert.*;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.Dialect;
-import com.google.cloud.spanner.IntegrationTestEnv;
-import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.ParallelIntegrationTest;
-import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.Struct;
-import com.google.cloud.spanner.Type;
+import com.google.cloud.spanner.*;
 import com.google.cloud.spanner.Type.StructField;
-import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.primitives.Doubles;
@@ -48,12 +33,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import org.junit.AfterClass;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -128,7 +108,17 @@ public class ITResultSetGetValue {
                           + "float64 DOUBLE PRECISION,"
                           + "numeric NUMERIC,"
                           + "string VARCHAR,"
-                          + "bytes BYTEA"
+                          + "bytes BYTEA,"
+                          + "timestamp TIMESTAMPTZ,"
+                          + "date DATE,"
+                          + "boolArray BOOL[],"
+                          + "int64Array BIGINT[],"
+                          + "float64Array DOUBLE PRECISION[],"
+                          + "numericArray NUMERIC[],"
+                          + "stringArray VARCHAR[],"
+                          + "bytesArray BYTEA[],"
+                          + "dateArray DATE[],"
+                          + "timestampArray TIMESTAMPTZ[]"
                           + ")"));
       postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
     }
@@ -264,6 +254,32 @@ public class ITResultSetGetValue {
                 .to("stringValue")
                 .set("bytes")
                 .to(ByteArray.copyFrom("bytesValue"))
+                .set("date")
+                .to(Date.fromYearMonthDay(2021, 1, 2))
+                .set("timestamp")
+                .to(Timestamp.ofTimeSecondsAndNanos(1, 0))
+                .set("boolArray")
+                .toBoolArray(new boolean[] {false, true})
+                .set("int64Array")
+                .toInt64Array(new long[] {100L, 200L})
+                .set("float64Array")
+                .toFloat64Array(new double[] {1000D, 2000D})
+                .set("numericArray")
+                .toNumericArray(Arrays.asList(new BigDecimal("10000"), new BigDecimal("20000")))
+                .set("stringArray")
+                .toStringArray(Arrays.asList("string1", "string2"))
+                .set("bytesArray")
+                .toBytesArray(
+                    Arrays.asList(ByteArray.copyFrom("bytes1"), ByteArray.copyFrom("bytes2")))
+                .set("timestampArray")
+                .toTimestampArray(
+                    Arrays.asList(
+                        Timestamp.ofTimeSecondsAndNanos(10, 0),
+                        Timestamp.ofTimeSecondsAndNanos(20, 0)))
+                .set("dateArray")
+                .toDateArray(
+                    Arrays.asList(
+                        Date.fromYearMonthDay(2021, 2, 3), Date.fromYearMonthDay(2021, 3, 4)))
                 .build()));
 
     try (ResultSet resultSet =
@@ -278,6 +294,34 @@ public class ITResultSetGetValue {
       assertEquals(Value.pgNumeric("30"), resultSet.getValue("numeric"));
       assertEquals(Value.string("stringValue"), resultSet.getValue("string"));
       assertEquals(Value.bytes(ByteArray.copyFrom("bytesValue")), resultSet.getValue("bytes"));
+      assertEquals(
+          Value.timestamp(Timestamp.ofTimeSecondsAndNanos(1, 0)), resultSet.getValue("timestamp"));
+      assertEquals(Value.date(Date.fromYearMonthDay(2021, 1, 2)), resultSet.getValue("date"));
+      assertEquals(Value.boolArray(new boolean[] {false, true}), resultSet.getValue("boolarray"));
+      assertEquals(Value.int64Array(new long[] {100L, 200L}), resultSet.getValue("int64array"));
+      assertArrayEquals(
+          new double[] {1000D, 2000D},
+          Doubles.toArray(resultSet.getValue("float64array").getFloat64Array()),
+          1e-15);
+      assertEquals(
+          Value.pgNumericArray(Arrays.asList("10000", "20000")),
+          resultSet.getValue("numericarray"));
+      assertEquals(
+          Value.stringArray(Arrays.asList("string1", "string2")),
+          resultSet.getValue("stringarray"));
+      assertEquals(
+          Value.bytesArray(
+              Arrays.asList(ByteArray.copyFrom("bytes1"), ByteArray.copyFrom("bytes2"))),
+          resultSet.getValue("bytesarray"));
+      assertEquals(
+          Value.timestampArray(
+              Arrays.asList(
+                  Timestamp.ofTimeSecondsAndNanos(10, 0), Timestamp.ofTimeSecondsAndNanos(20, 0))),
+          resultSet.getValue("timestamparray"));
+      assertEquals(
+          Value.dateArray(
+              Arrays.asList(Date.fromYearMonthDay(2021, 2, 3), Date.fromYearMonthDay(2021, 3, 4))),
+          resultSet.getValue("datearray"));
     }
   }
 
@@ -367,12 +411,42 @@ public class ITResultSetGetValue {
       assertThrows(IllegalStateException.class, () -> resultSet.getValue("string").getString());
       assertTrue(resultSet.getValue("bytes").isNull());
       assertThrows(IllegalStateException.class, () -> resultSet.getValue("bytes").getBytes());
+      assertTrue(resultSet.getValue("timestamp").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("timestamp").getTimestamp());
+      assertTrue(resultSet.getValue("date").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("date").getDate());
+      assertTrue(resultSet.getValue("boolarray").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("boolarray").getBoolArray());
+      assertTrue(resultSet.getValue("int64array").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("int64array").getInt64Array());
+      assertTrue(resultSet.getValue("float64array").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("float64array").getFloat64Array());
+      assertTrue(resultSet.getValue("numericarray").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("numericarray").getNumericArray());
+      assertTrue(resultSet.getValue("stringarray").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("stringarray").getStringArray());
+      assertTrue(resultSet.getValue("bytesarray").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("bytesarray").getBytesArray());
+      assertTrue(resultSet.getValue("timestamparray").isNull());
+      assertThrows(
+          IllegalStateException.class,
+          () -> resultSet.getValue("timestamparray").getTimestampArray());
+      assertTrue(resultSet.getValue("datearray").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("datearray").getDateArray());
     }
   }
 
   @Test
-  public void testReadNullValuesInArrays() {
-    assumeFalse("PostgreSQL does not yet support Arrays", dialect.dialect == Dialect.POSTGRESQL);
+  public void testReadNullValuesInArraysGoogleStandardSQL() {
+    Assume.assumeTrue(dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
     databaseClient.write(
         Collections.singletonList(
             Mutation.newInsertBuilder(TABLE_NAME)
@@ -426,6 +500,59 @@ public class ITResultSetGetValue {
       assertEquals(
           Value.jsonArray(Arrays.asList("{\"key1\":\"value1\"}", null)),
           resultSet.getValue("jsonArray"));
+    }
+  }
+
+  @Test
+  public void testReadNullValuesInArraysPostgreSQL() {
+    Assume.assumeTrue(dialect.dialect == Dialect.POSTGRESQL);
+    databaseClient.write(
+        Collections.singletonList(
+            Mutation.newInsertBuilder(TABLE_NAME)
+                .set("Id")
+                .to(3L)
+                .set("boolArray")
+                .toBoolArray(Arrays.asList(true, null))
+                .set("int64Array")
+                .toInt64Array(Arrays.asList(null, 2L))
+                .set("float64Array")
+                .toFloat64Array(Arrays.asList(null, 10D))
+                .set("numericArray")
+                .toNumericArray(Arrays.asList(new BigDecimal("10000"), null))
+                .set("stringArray")
+                .toStringArray(Arrays.asList(null, "string2"))
+                .set("bytesArray")
+                .toBytesArray(Arrays.asList(ByteArray.copyFrom("bytes1"), null))
+                .set("timestampArray")
+                .toTimestampArray(Arrays.asList(null, Timestamp.ofTimeSecondsAndNanos(20, 0)))
+                .set("dateArray")
+                .toDateArray(Arrays.asList(Date.fromYearMonthDay(2021, 2, 3), null))
+                .build()));
+
+    try (ResultSet resultSet =
+        databaseClient
+            .singleUse()
+            .executeQuery(Statement.of("SELECT * FROM " + TABLE_NAME + " WHERE Id = 3"))) {
+      resultSet.next();
+
+      assertEquals(Value.int64(3L), resultSet.getValue("id"));
+      assertEquals(Value.boolArray(Arrays.asList(true, null)), resultSet.getValue("boolarray"));
+      assertEquals(Value.int64Array(Arrays.asList(null, 2L)), resultSet.getValue("int64array"));
+      assertNull(resultSet.getValue("float64array").getFloat64Array().get(0));
+      assertEquals(10D, resultSet.getValue("float64array").getFloat64Array().get(1), DELTA);
+      assertEquals(
+          Value.pgNumericArray(Arrays.asList("10000", null)), resultSet.getValue("numericarray"));
+      assertEquals(
+          Value.stringArray(Arrays.asList(null, "string2")), resultSet.getValue("stringarray"));
+      assertEquals(
+          Value.bytesArray(Arrays.asList(ByteArray.copyFrom("bytes1"), null)),
+          resultSet.getValue("bytesarray"));
+      assertEquals(
+          Value.timestampArray(Arrays.asList(null, Timestamp.ofTimeSecondsAndNanos(20, 0))),
+          resultSet.getValue("timestamparray"));
+      assertEquals(
+          Value.dateArray(Arrays.asList(Date.fromYearMonthDay(2021, 2, 3), null)),
+          resultSet.getValue("datearray"));
     }
   }
 
@@ -570,7 +697,16 @@ public class ITResultSetGetValue {
                         + "1 AS int64,"
                         + "CAST('100' AS numeric) AS numeric,"
                         + "'stringValue' AS string,"
-                        + "CAST('bytesValue' AS BYTEA) AS bytes"))) {
+                        + "CAST('bytesValue' AS BYTEA) AS bytes,"
+                        + "CAST('1970-01-01T00:00:01 UTC' AS TIMESTAMPTZ) AS timestamp,"
+                        + "CAST('2021-02-03' AS DATE) AS date,"
+                        + "ARRAY[false, true] AS boolArray,"
+                        + "ARRAY[1, 2] AS int64Array,"
+                        + "ARRAY[CAST('100' AS NUMERIC), CAST('200' AS NUMERIC)] AS numericArray,"
+                        + "ARRAY['string1', 'string2'] AS stringArray,"
+                        + "ARRAY[CAST('bytes1' AS BYTEA), CAST('bytes2' AS BYTEA)] AS bytesArray,"
+                        + "ARRAY[CAST('1970-01-01T00:00:01 UTC' AS TIMESTAMPTZ), CAST('1970-01-01T00:00:02 UTC' AS TIMESTAMPTZ)] AS timestampArray,"
+                        + "ARRAY[CAST('2020-01-02' AS DATE), CAST('2021-02-03' AS DATE)] AS dateArray"))) {
       resultSet.next();
 
       assertEquals(Value.bool(true), resultSet.getValue("bool"));
@@ -578,6 +714,29 @@ public class ITResultSetGetValue {
       assertEquals(Value.pgNumeric("100"), resultSet.getValue("numeric"));
       assertEquals(Value.string("stringValue"), resultSet.getValue("string"));
       assertEquals(Value.bytes(ByteArray.copyFrom("bytesValue")), resultSet.getValue("bytes"));
+      assertEquals(
+          Value.timestamp(Timestamp.ofTimeSecondsAndNanos(1, 0)), resultSet.getValue("timestamp"));
+      assertEquals(Value.date(Date.fromYearMonthDay(2021, 2, 3)), resultSet.getValue("date"));
+      assertEquals(Value.boolArray(new boolean[] {false, true}), resultSet.getValue("boolarray"));
+      assertEquals(Value.int64Array(new long[] {1L, 2L}), resultSet.getValue("int64array"));
+      assertEquals(
+          Value.pgNumericArray(Arrays.asList("100", "200")), resultSet.getValue("numericarray"));
+      assertEquals(
+          Value.stringArray(Arrays.asList("string1", "string2")),
+          resultSet.getValue("stringarray"));
+      assertEquals(
+          Value.bytesArray(
+              Arrays.asList(ByteArray.copyFrom("bytes1"), ByteArray.copyFrom("bytes2"))),
+          resultSet.getValue("bytesarray"));
+      assertEquals(
+          Value.timestampArray(
+              Arrays.asList(
+                  Timestamp.ofTimeSecondsAndNanos(1, 0), Timestamp.ofTimeSecondsAndNanos(2, 0))),
+          resultSet.getValue("timestamparray"));
+      assertEquals(
+          Value.dateArray(
+              Arrays.asList(Date.fromYearMonthDay(2020, 1, 2), Date.fromYearMonthDay(2021, 2, 3))),
+          resultSet.getValue("datearray"));
     }
   }
 
@@ -615,9 +774,16 @@ public class ITResultSetGetValue {
   public void testReadFloat64LiteralsPostgreSQL() {
     Assume.assumeTrue(dialect.dialect == Dialect.POSTGRESQL);
     try (ResultSet resultSet =
-        databaseClient.singleUse().executeQuery(Statement.of("SELECT 10.0 AS float64"))) {
+        databaseClient
+            .singleUse()
+            .executeQuery(
+                Statement.of("SELECT 10.0 AS float64, " + "ARRAY[20.0, 30.0] AS float64Array"))) {
       resultSet.next();
       assertEquals(10D, resultSet.getValue("float64").getFloat64(), DELTA);
+      assertArrayEquals(
+          new double[] {20D, 30D},
+          Doubles.toArray(resultSet.getValue("float64array").getFloat64Array()),
+          DELTA);
     }
   }
 }

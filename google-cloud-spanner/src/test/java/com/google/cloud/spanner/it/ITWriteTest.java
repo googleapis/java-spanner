@@ -21,54 +21,22 @@ import static com.google.cloud.spanner.Type.array;
 import static com.google.cloud.spanner.Type.json;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.CommitResponse;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.Dialect;
-import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.IntegrationTestEnv;
-import com.google.cloud.spanner.Key;
-import com.google.cloud.spanner.KeySet;
-import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.Options;
-import com.google.cloud.spanner.ParallelIntegrationTest;
-import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.SpannerException;
-import com.google.cloud.spanner.Struct;
-import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.Value;
+import com.google.cloud.spanner.*;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import io.grpc.Context;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.*;
+import java.util.concurrent.*;
 import org.hamcrest.MatcherAssert;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -126,7 +94,17 @@ public class ITWriteTest {
           + "  Float64Value        DOUBLE PRECISION,"
           + "  StringValue         VARCHAR,"
           + "  BytesValue          BYTEA,"
-          + "  NumericValue        NUMERIC"
+          + "  TimestampValue      TIMESTAMPTZ,"
+          + "  DateValue           DATE,"
+          + "  NumericValue        NUMERIC,"
+          + "  BoolArrayValue      BOOL[],"
+          + "  Int64ArrayValue     BIGINT[],"
+          + "  Float64ArrayValue   DOUBLE PRECISION[],"
+          + "  StringArrayValue    VARCHAR[],"
+          + "  BytesArrayValue     BYTEA[],"
+          + "  TimestampArrayValue TIMESTAMPTZ[],"
+          + "  DateArrayValue      DATE[],"
+          + "  NumericArrayValue   NUMERIC[]"
           + ")";
 
   private static final String GOOGLE_STANDARD_SQL_SCHEMA_WITHOUT_NUMERIC_AND_JSON =
@@ -492,7 +470,6 @@ public class ITWriteTest {
 
   @Test
   public void writeTimestampNull() {
-    assumeFalse("PostgreSQL does not yet support Timestamp", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("TimestampValue").to((Timestamp) null).build());
     Struct row = readLastRow("TimestampValue");
     assertThat(row.isNull(0)).isTrue();
@@ -500,7 +477,8 @@ public class ITWriteTest {
 
   @Test
   public void writeCommitTimestamp() {
-    assumeFalse("PostgreSQL does not yet support Timestamp", dialect.dialect == Dialect.POSTGRESQL);
+    assumeFalse(
+        "PostgreSQL does not yet support Commit Timestamp", dialect.dialect == Dialect.POSTGRESQL);
     Timestamp commitTimestamp =
         write(baseInsert().set("TimestampValue").to(Value.COMMIT_TIMESTAMP).build());
     Struct row = readLastRow("TimestampValue");
@@ -509,7 +487,6 @@ public class ITWriteTest {
 
   @Test
   public void writeDate() {
-    assumeFalse("PostgreSQL does not yet support Date", dialect.dialect == Dialect.POSTGRESQL);
     Date date = Date.parseDate("2016-09-15");
     write(baseInsert().set("DateValue").to(date).build());
     Struct row = readLastRow("DateValue");
@@ -519,7 +496,6 @@ public class ITWriteTest {
 
   @Test
   public void writeDateNull() {
-    assumeFalse("PostgreSQL does not yet support Date", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("DateValue").to((Date) null).build());
     Struct row = readLastRow("DateValue");
     assertThat(row.isNull(0)).isTrue();
@@ -548,7 +524,6 @@ public class ITWriteTest {
 
   @Test
   public void writeBoolArrayNull() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("BoolArrayValue").toBoolArray((boolean[]) null).build());
     Struct row = readLastRow("BoolArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -556,7 +531,6 @@ public class ITWriteTest {
 
   @Test
   public void writeBoolArrayEmpty() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("BoolArrayValue").toBoolArray(new boolean[] {}).build());
     Struct row = readLastRow("BoolArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -565,7 +539,6 @@ public class ITWriteTest {
 
   @Test
   public void writeBoolArray() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("BoolArrayValue").toBoolArray(Arrays.asList(true, null, false)).build());
     Struct row = readLastRow("BoolArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -580,7 +553,6 @@ public class ITWriteTest {
 
   @Test
   public void writeBoolArrayNoNulls() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("BoolArrayValue").toBoolArray(Arrays.asList(true, false)).build());
     Struct row = readLastRow("BoolArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -589,7 +561,6 @@ public class ITWriteTest {
 
   @Test
   public void writeInt64ArrayNull() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("Int64ArrayValue").toInt64Array((long[]) null).build());
     Struct row = readLastRow("Int64ArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -597,7 +568,6 @@ public class ITWriteTest {
 
   @Test
   public void writeInt64ArrayEmpty() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("Int64ArrayValue").toInt64Array(new long[] {}).build());
     Struct row = readLastRow("Int64ArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -606,7 +576,6 @@ public class ITWriteTest {
 
   @Test
   public void writeInt64Array() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("Int64ArrayValue").toInt64Array(Arrays.asList(1L, 2L, null)).build());
     Struct row = readLastRow("Int64ArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -621,7 +590,6 @@ public class ITWriteTest {
 
   @Test
   public void writeInt64ArrayNoNulls() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("Int64ArrayValue").toInt64Array(Arrays.asList(1L, 2L)).build());
     Struct row = readLastRow("Int64ArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -630,7 +598,6 @@ public class ITWriteTest {
 
   @Test
   public void writeFloat64ArrayNull() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("Float64ArrayValue").toFloat64Array((double[]) null).build());
     Struct row = readLastRow("Float64ArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -638,7 +605,6 @@ public class ITWriteTest {
 
   @Test
   public void writeFloat64ArrayEmpty() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("Float64ArrayValue").toFloat64Array(new double[] {}).build());
     Struct row = readLastRow("Float64ArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -647,7 +613,6 @@ public class ITWriteTest {
 
   @Test
   public void writeFloat64Array() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(
         baseInsert()
             .set("Float64ArrayValue")
@@ -666,7 +631,6 @@ public class ITWriteTest {
 
   @Test
   public void writeFloat64ArrayNoNulls() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("Float64ArrayValue").toFloat64Array(Arrays.asList(1.0, 2.0)).build());
     Struct row = readLastRow("Float64ArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -677,7 +641,6 @@ public class ITWriteTest {
 
   @Test
   public void writeStringArrayNull() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("StringArrayValue").toStringArray(null).build());
     Struct row = readLastRow("StringArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -685,7 +648,6 @@ public class ITWriteTest {
 
   @Test
   public void writeStringArrayEmpty() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("StringArrayValue").toStringArray(Collections.emptyList()).build());
     Struct row = readLastRow("StringArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -694,7 +656,6 @@ public class ITWriteTest {
 
   @Test
   public void writeStringArray() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(
         baseInsert().set("StringArrayValue").toStringArray(Arrays.asList("a", null, "b")).build());
     Struct row = readLastRow("StringArrayValue");
@@ -753,7 +714,6 @@ public class ITWriteTest {
 
   @Test
   public void writeBytesArrayNull() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("BytesArrayValue").toBytesArray(null).build());
     Struct row = readLastRow("BytesArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -761,7 +721,6 @@ public class ITWriteTest {
 
   @Test
   public void writeBytesArrayEmpty() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("BytesArrayValue").toBytesArray(Collections.emptyList()).build());
     Struct row = readLastRow("BytesArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -770,7 +729,6 @@ public class ITWriteTest {
 
   @Test
   public void writeBytesArray() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     List<ByteArray> data = Arrays.asList(ByteArray.copyFrom("a"), ByteArray.copyFrom("b"), null);
     write(baseInsert().set("BytesArrayValue").toBytesArray(data).build());
     Struct row = readLastRow("BytesArrayValue");
@@ -780,7 +738,6 @@ public class ITWriteTest {
 
   @Test
   public void writeTimestampArrayNull() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("TimestampArrayValue").toTimestampArray(null).build());
     Struct row = readLastRow("TimestampArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -788,7 +745,6 @@ public class ITWriteTest {
 
   @Test
   public void writeTimestampArrayEmpty() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(
         baseInsert().set("TimestampArrayValue").toTimestampArray(Collections.emptyList()).build());
     Struct row = readLastRow("TimestampArrayValue");
@@ -798,7 +754,6 @@ public class ITWriteTest {
 
   @Test
   public void writeTimestampArray() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     Timestamp t1 = Timestamp.parseTimestamp("2016-09-18T00:00:00Z");
     Timestamp t2 = Timestamp.parseTimestamp("2016-09-19T00:00:00Z");
     write(
@@ -813,7 +768,6 @@ public class ITWriteTest {
 
   @Test
   public void writeDateArrayNull() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("DateArrayValue").toDateArray(null).build());
     Struct row = readLastRow("DateArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -821,7 +775,6 @@ public class ITWriteTest {
 
   @Test
   public void writeDateArrayEmpty() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("DateArrayValue").toDateArray(Collections.emptyList()).build());
     Struct row = readLastRow("DateArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -830,7 +783,6 @@ public class ITWriteTest {
 
   @Test
   public void writeDateArray() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     Date d1 = Date.parseDate("2016-09-18");
     Date d2 = Date.parseDate("2016-09-19");
     write(baseInsert().set("DateArrayValue").toDateArray(Arrays.asList(d1, null, d2)).build());
@@ -841,7 +793,6 @@ public class ITWriteTest {
 
   @Test
   public void writeNumericArrayNull() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     write(baseInsert().set("NumericArrayValue").toNumericArray(null).build());
     Struct row = readLastRow("NumericArrayValue");
@@ -850,17 +801,19 @@ public class ITWriteTest {
 
   @Test
   public void writeNumericArrayEmpty() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     write(baseInsert().set("NumericArrayValue").toNumericArray(ImmutableList.of()).build());
     Struct row = readLastRow("NumericArrayValue");
     assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getBigDecimalList(0)).containsExactly();
+    if (dialect.dialect == Dialect.GOOGLE_STANDARD_SQL) {
+      assertThat(row.getBigDecimalList(0)).containsExactly();
+    } else {
+      assertThat(row.getStringList(0)).containsExactly();
+    }
   }
 
   @Test
   public void writeNumericArray() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     write(
         baseInsert()
@@ -870,14 +823,16 @@ public class ITWriteTest {
             .build());
     Struct row = readLastRow("NumericArrayValue");
     assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getBigDecimalList(0))
-        .containsExactly(BigDecimal.valueOf(3141592, 6), BigDecimal.valueOf(6626, 3), null)
-        .inOrder();
+    if (dialect.dialect == Dialect.GOOGLE_STANDARD_SQL) {
+      assertThat(row.getBigDecimalList(0))
+          .containsExactly(BigDecimal.valueOf(3141592, 6), BigDecimal.valueOf(6626, 3), null);
+    } else {
+      assertThat(row.getStringList(0)).containsExactly("3.141592", "6.626", null).inOrder();
+    }
   }
 
   @Test
   public void writeNumericArrayNoNulls() {
-    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     write(
         baseInsert()
@@ -886,9 +841,15 @@ public class ITWriteTest {
             .build());
     Struct row = readLastRow("NumericArrayValue");
     assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getBigDecimalList(0))
-        .containsExactly(BigDecimal.valueOf(3141592, 6), BigDecimal.valueOf(6626, 3))
-        .inOrder();
+    if (dialect.dialect == Dialect.GOOGLE_STANDARD_SQL) {
+      assertThat(row.getBigDecimalList(0))
+          .containsExactly(BigDecimal.valueOf(3141592, 6), BigDecimal.valueOf(6626, 3));
+    } else {
+      assertThat(row.getStringList(0))
+          .containsExactly(
+              BigDecimal.valueOf(3141592, 6).toString(), BigDecimal.valueOf(6626, 3).toString())
+          .inOrder();
+    }
   }
 
   @Test

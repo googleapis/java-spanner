@@ -19,31 +19,15 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.Dialect;
-import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.IntegrationTestEnv;
-import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.ParallelIntegrationTest;
+import com.google.cloud.spanner.*;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
-import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.SpannerException;
-import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.Struct;
-import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
-import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.base.Joiner;
@@ -54,12 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -355,7 +334,6 @@ public class ITQueryTest {
 
   @Test
   public void bindDate() {
-    assumeFalse("date type is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Date d = Date.parseDate("2016-09-18");
     Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(d), Type.date());
     assertThat(row.isNull(0)).isFalse();
@@ -364,7 +342,6 @@ public class ITQueryTest {
 
   @Test
   public void bindDateNull() {
-    assumeFalse("date type is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct row =
         execute(Statement.newBuilder(selectValueQuery).bind("p1").to((Date) null), Type.date());
     assertThat(row.isNull(0)).isTrue();
@@ -682,13 +659,12 @@ public class ITQueryTest {
 
   @Test
   public void bindDateArray() {
-    assumeFalse("date type is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Date d1 = Date.parseDate("2016-09-18");
     Date d2 = Date.parseDate("2016-09-19");
 
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toDateArray(asList(d1, d2, null)),
+            Statement.newBuilder(selectValueQuery).bind("p1").toDateArray(asList(d1, d2, null)),
             Type.array(Type.date()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getDateList(0)).containsExactly(d1, d2, null).inOrder();
@@ -696,10 +672,9 @@ public class ITQueryTest {
 
   @Test
   public void bindDateArrayEmpty() {
-    assumeFalse("date type is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toDateArray(Collections.emptyList()),
+            Statement.newBuilder(selectValueQuery).bind("p1").toDateArray(Collections.emptyList()),
             Type.array(Type.date()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getDateList(0)).containsExactly();
@@ -707,10 +682,10 @@ public class ITQueryTest {
 
   @Test
   public void bindDateArrayNull() {
-    assumeFalse("date type is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toDateArray(null), Type.array(Type.date()));
+            Statement.newBuilder(selectValueQuery).bind("p1").toDateArray(null),
+            Type.array(Type.date()));
     assertThat(row.isNull(0)).isTrue();
   }
 
@@ -771,7 +746,7 @@ public class ITQueryTest {
 
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toNumericArray(asList(b1, b2, null)),
+            Statement.newBuilder(selectValueQuery).bind("p1").toNumericArray(asList(b1, b2, null)),
             Type.array(Type.numeric()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBigDecimalList(0))
