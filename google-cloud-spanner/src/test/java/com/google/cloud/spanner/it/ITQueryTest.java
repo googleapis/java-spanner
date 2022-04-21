@@ -16,6 +16,15 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
+import static com.google.common.truth.Truth.assertThat;
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
+
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -40,6 +49,11 @@ import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.spanner.v1.ResultSetStats;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -49,21 +63,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
-import static com.google.common.truth.Truth.assertThat;
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
 
 /** Integration tests for query execution. */
 @Category(ParallelIntegrationTest.class)

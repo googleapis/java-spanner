@@ -16,6 +16,16 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
+import static com.google.cloud.spanner.Type.array;
+import static com.google.cloud.spanner.Type.json;
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
+
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -39,17 +49,6 @@ import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import io.grpc.Context;
-import org.hamcrest.MatcherAssert;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,16 +62,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
-import static com.google.cloud.spanner.Type.array;
-import static com.google.cloud.spanner.Type.json;
-import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
+import org.hamcrest.MatcherAssert;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /** Integration test for writing data to Cloud Spanner. */
 @Category(ParallelIntegrationTest.class)
