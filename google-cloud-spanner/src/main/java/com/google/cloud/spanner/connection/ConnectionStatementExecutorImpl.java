@@ -59,10 +59,12 @@ import static com.google.cloud.spanner.connection.StatementResultImpl.resultSet;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.CommitStats;
 import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
@@ -72,19 +74,26 @@ import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGe
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.Duration;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+
 
 /**
  * The methods in this class are called by the different {@link ClientSideStatement}s. These method
  * calls are then forwarded into a {@link Connection}.
  */
 class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
+
+
+  private final Set<String> explainOptions = ImmutableSet.of("VERBOSE", "COSTS", "SETTINGS", "BUFFERS", "WAL", "TIMING", "SUMMARY", "FORMAT");
+
   static final class StatementTimeoutGetter implements DurationValueGetter {
     private final Connection connection;
 
@@ -447,10 +456,16 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public ResultSet statementExplain(String sql){
-    sql = sql.trim();
-    String firstWord = sql.split(" ")[0];
 
-    if(firstWord.equalsIgnoreCase("analyze")) {
+    sql = sql.trim();
+    String firstString = sql.split(" ")[0].toLowerCase();
+
+    if(explainOptions.contains(firstString)){
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", firstString));
+    }
+
+    if(firstString.equals("analyze") || firstString.equals("analyse")) {
       sql = sql.split(" ",2)[1];
       Statement statement = Statement.newBuilder(sql).build();
       return getConnection().analyzeQuery(statement, QueryAnalyzeMode.PROFILE);
@@ -458,7 +473,6 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     else{
       Statement statement = Statement.newBuilder(sql).build();
       return getConnection().analyzeQuery(statement, QueryAnalyzeMode.PLAN);
-
     }
 
 
