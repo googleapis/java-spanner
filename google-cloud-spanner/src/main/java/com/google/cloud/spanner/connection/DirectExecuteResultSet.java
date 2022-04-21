@@ -96,31 +96,26 @@ class DirectExecuteResultSet implements ResultSet {
 
   @Override
   public Type getType() {
-    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getType();
   }
 
   @Override
   public int getColumnCount() {
-    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getColumnCount();
   }
 
   @Override
   public int getColumnIndex(String columnName) {
-    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getColumnIndex(columnName);
   }
 
   @Override
   public Type getColumnType(int columnIndex) {
-    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getColumnType(columnIndex);
   }
 
   @Override
   public Type getColumnType(String columnName) {
-    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getColumnType(columnName);
   }
 
@@ -194,6 +189,18 @@ class DirectExecuteResultSet implements ResultSet {
   public String getString(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getString(columnName);
+  }
+
+  @Override
+  public String getJson(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getJson(columnIndex);
+  }
+
+  @Override
+  public String getJson(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getJson(columnName);
   }
 
   @Override
@@ -338,6 +345,18 @@ class DirectExecuteResultSet implements ResultSet {
   public List<String> getStringList(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getStringList(columnName);
+  }
+
+  @Override
+  public List<String> getJsonList(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getJsonList(columnIndex);
+  }
+
+  @Override
+  public List<String> getJsonList(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getJsonList(columnName);
   }
 
   @Override

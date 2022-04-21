@@ -17,10 +17,11 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.ReadWriteTransaction.RetriableStatement;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
 
 /**
@@ -31,13 +32,19 @@ final class RetriableUpdate implements RetriableStatement {
   private final ReadWriteTransaction transaction;
   private final ParsedStatement statement;
   private final long updateCount;
+  private final UpdateOption[] options;
 
-  RetriableUpdate(ReadWriteTransaction transaction, ParsedStatement statement, long updateCount) {
+  RetriableUpdate(
+      ReadWriteTransaction transaction,
+      ParsedStatement statement,
+      long updateCount,
+      UpdateOption... options) {
     Preconditions.checkNotNull(transaction);
     Preconditions.checkNotNull(statement);
     this.transaction = transaction;
     this.statement = statement;
     this.updateCount = updateCount;
+    this.options = options;
   }
 
   @Override
@@ -47,7 +54,7 @@ final class RetriableUpdate implements RetriableStatement {
       transaction
           .getStatementExecutor()
           .invokeInterceptors(statement, StatementExecutionStep.RETRY_STATEMENT, transaction);
-      newCount = transaction.getReadContext().executeUpdate(statement.getStatement());
+      newCount = transaction.getReadContext().executeUpdate(statement.getStatement(), options);
     } catch (AbortedException e) {
       // Just re-throw the AbortedException and let the retry logic determine whether another try
       // should be executed or not.

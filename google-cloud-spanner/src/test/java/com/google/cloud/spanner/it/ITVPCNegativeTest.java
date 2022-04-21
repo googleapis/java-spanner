@@ -35,10 +35,10 @@ import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceId;
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SerialIntegrationTest;
 import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
@@ -62,7 +62,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Integration tests for VPC-SC */
-@Category(IntegrationTest.class)
+@Category(SerialIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITVPCNegativeTest {
   private static final Logger logger = Logger.getLogger(ITVPCNegativeTest.class.getName());

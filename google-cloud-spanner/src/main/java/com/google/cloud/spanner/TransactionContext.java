@@ -91,12 +91,22 @@ public interface TransactionContext extends ReadContext {
    */
   void buffer(Mutation mutation);
 
+  /** Same as {@link #buffer(Mutation)}, but is guaranteed to be non-blocking. */
+  default ApiFuture<Void> bufferAsync(Mutation mutation) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
   /**
    * Buffers mutations to be applied if the transaction commits successfully. The effects of the
    * mutations will not be visible to subsequent operations in the transaction. All buffered
    * mutations will be applied atomically.
    */
   void buffer(Iterable<Mutation> mutations);
+
+  /** Same as {@link #buffer(Iterable)}, but is guaranteed to be non-blocking. */
+  default ApiFuture<Void> bufferAsync(Iterable<Mutation> mutations) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
   /**
    * Executes the DML statement(s) and returns the number of rows modified. For non-DML statements,

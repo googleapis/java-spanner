@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.TimestampBound;
 import com.google.protobuf.Duration;
+import com.google.spanner.v1.RequestOptions.Priority;
 
 /**
  * The Cloud Spanner JDBC driver supports a number of client side statements that are interpreted by
@@ -66,17 +67,36 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowOptimizerVersion();
 
+  StatementResult statementSetOptimizerStatisticsPackage(String optimizerStatisticsPackage);
+
+  StatementResult statementShowOptimizerStatisticsPackage();
+
   StatementResult statementSetReturnCommitStats(Boolean returnCommitStats);
 
   StatementResult statementShowReturnCommitStats();
 
+  StatementResult statementSetStatementTag(String tag);
+
+  StatementResult statementShowStatementTag();
+
+  StatementResult statementSetTransactionTag(String tag);
+
+  StatementResult statementShowTransactionTag();
+
   StatementResult statementBeginTransaction();
+
+  StatementResult statementBeginPgTransaction(PgTransactionMode transactionMode);
 
   StatementResult statementCommit();
 
   StatementResult statementRollback();
 
   StatementResult statementSetTransactionMode(TransactionMode mode);
+
+  StatementResult statementSetPgTransactionMode(PgTransactionMode transactionMode);
+
+  StatementResult statementSetPgSessionCharacteristicsTransactionMode(
+      PgTransactionMode transactionMode);
 
   StatementResult statementStartBatchDdl();
 
@@ -95,4 +115,11 @@ interface ConnectionStatementExecutor {
   StatementResult statementAlterDatabase(String database);
 
   StatementResult statementDropDatabase(String database);
+
+  StatementResult statementSetRPCPriority(Priority priority);
+
+  StatementResult statementShowRPCPriority();
+
+  StatementResult statementShowTransactionIsolationLevel();
+
 }

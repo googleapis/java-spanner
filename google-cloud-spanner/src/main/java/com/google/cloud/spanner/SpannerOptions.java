@@ -29,10 +29,9 @@ import com.google.cloud.ServiceDefaults;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.TransportOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.Options.QueryOption;
-import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
-import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
@@ -81,6 +80,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static final String JDBC_API_CLIENT_LIB_TOKEN = "sp-jdbc";
   private static final String HIBERNATE_API_CLIENT_LIB_TOKEN = "sp-hib";
   private static final String LIQUIBASE_API_CLIENT_LIB_TOKEN = "sp-liq";
+  private static final String PG_ADAPTER_CLIENT_LIB_TOKEN = "pg-adapter";
 
   private static final String API_SHORT_NAME = "Spanner";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
@@ -98,12 +98,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final SessionPoolOptions sessionPoolOptions;
   private final int prefetchChunks;
   private final int numChannels;
+  private final String transportChannelExecutorThreadNameFormat;
   private final ImmutableMap<String, String> sessionLabels;
   private final SpannerStubSettings spannerStubSettings;
   private final InstanceAdminStubSettings instanceAdminStubSettings;
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final Duration partitionedDmlTimeout;
+  private final boolean grpcGcpExtensionEnabled;
+  private final GcpManagedChannelOptions grpcGcpOptions;
   private final boolean autoThrottleAdministrativeRequests;
+  private final RetrySettings retryAdministrativeRequestsSettings;
   private final boolean trackTransactionStarter;
   /**
    * These are the default {@link QueryOptions} defined by the user on this {@link SpannerOptions}.
@@ -469,13 +473,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static final AtomicInteger DEFAULT_POOL_COUNT = new AtomicInteger();
 
   /** {@link ExecutorProvider} that is used for {@link AsyncResultSet}. */
-  interface CloseableExecutorProvider extends ExecutorProvider, AutoCloseable {
+  public interface CloseableExecutorProvider extends ExecutorProvider, AutoCloseable {
     /** Overridden to suppress the throws declaration of the super interface. */
     @Override
     void close();
   }
 
-  static class FixedCloseableExecutorProvider implements CloseableExecutorProvider {
+  /**
+   * Implementation of {@link CloseableExecutorProvider} that uses a fixed single {@link
+   * ScheduledExecutorService}.
+   */
+  public static class FixedCloseableExecutorProvider implements CloseableExecutorProvider {
     private final ScheduledExecutorService executor;
 
     private FixedCloseableExecutorProvider(ScheduledExecutorService executor) {
@@ -498,7 +506,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /** Creates a FixedCloseableExecutorProvider. */
-    static FixedCloseableExecutorProvider create(ScheduledExecutorService executor) {
+    public static FixedCloseableExecutorProvider create(ScheduledExecutorService executor) {
       return new FixedCloseableExecutorProvider(executor);
     }
   }
@@ -514,8 +522,19 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return createAsyncExecutorProvider(8, 60L, TimeUnit.SECONDS);
   }
 
-  @VisibleForTesting
-  static CloseableExecutorProvider createAsyncExecutorProvider(
+  /**
+   * Creates a {@link CloseableExecutorProvider} that can be used as an {@link ExecutorProvider} for
+   * the async API. The {@link ExecutorProvider} will lazily create up to poolSize threads. The
+   * backing threads will automatically be shutdown if they have not been used during the keep-alive
+   * time. The backing threads are created as daemon threads.
+   *
+   * @param poolSize the maximum number of threads to create in the pool
+   * @param keepAliveTime the time that an unused thread in the pool should be kept alive
+   * @param unit the time unit used for the keepAliveTime
+   * @return a {@link CloseableExecutorProvider} that can be used for {@link
+   *     SpannerOptions.Builder#setAsyncExecutorProvider(CloseableExecutorProvider)}
+   */
+  public static CloseableExecutorProvider createAsyncExecutorProvider(
       int poolSize, long keepAliveTime, TimeUnit unit) {
     String format =
         String.format("spanner-async-pool-%d-thread-%%d", DEFAULT_POOL_COUNT.incrementAndGet());
@@ -536,6 +555,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         MAX_CHANNELS,
         numChannels);
 
+    transportChannelExecutorThreadNameFormat = builder.transportChannelExecutorThreadNameFormat;
     channelProvider = builder.channelProvider;
     channelConfigurator = builder.channelConfigurator;
     interceptorProvider = builder.interceptorProvider;
@@ -553,7 +573,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
     partitionedDmlTimeout = builder.partitionedDmlTimeout;
+    grpcGcpExtensionEnabled = builder.grpcGcpExtensionEnabled;
+    grpcGcpOptions = builder.grpcGcpOptions;
     autoThrottleAdministrativeRequests = builder.autoThrottleAdministrativeRequests;
+    retryAdministrativeRequestsSettings = builder.retryAdministrativeRequestsSettings;
     trackTransactionStarter = builder.trackTransactionStarter;
     defaultQueryOptions = builder.defaultQueryOptions;
     envQueryOptions = builder.getEnvironmentQueryOptions();
@@ -583,6 +606,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     @Nonnull
     String getOptimizerVersion();
+
+    /**
+     * The optimizer statistics package to use. Must return an empty string to indicate that no
+     * value has been set.
+     */
+    @Nonnull
+    default String getOptimizerStatisticsPackage() {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
   }
 
   /**
@@ -592,12 +624,20 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static class SpannerEnvironmentImpl implements SpannerEnvironment {
     private static final SpannerEnvironmentImpl INSTANCE = new SpannerEnvironmentImpl();
     private static final String SPANNER_OPTIMIZER_VERSION_ENV_VAR = "SPANNER_OPTIMIZER_VERSION";
+    private static final String SPANNER_OPTIMIZER_STATISTICS_PACKAGE_ENV_VAR =
+        "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
 
     private SpannerEnvironmentImpl() {}
 
     @Override
     public String getOptimizerVersion() {
       return MoreObjects.firstNonNull(System.getenv(SPANNER_OPTIMIZER_VERSION_ENV_VAR), "");
+    }
+
+    @Override
+    public String getOptimizerStatisticsPackage() {
+      return MoreObjects.firstNonNull(
+          System.getenv(SPANNER_OPTIMIZER_STATISTICS_PACKAGE_ENV_VAR), "");
     }
   }
 
@@ -606,12 +646,20 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       extends ServiceOptions.Builder<Spanner, SpannerOptions, SpannerOptions.Builder> {
     static final int DEFAULT_PREFETCH_CHUNKS = 4;
     static final QueryOptions DEFAULT_QUERY_OPTIONS = QueryOptions.getDefaultInstance();
+    static final RetrySettings DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
+        RetrySettings.newBuilder()
+            .setInitialRetryDelay(Duration.ofSeconds(5L))
+            .setRetryDelayMultiplier(2.0)
+            .setMaxRetryDelay(Duration.ofSeconds(60L))
+            .setMaxAttempts(10)
+            .build();
     private final ImmutableSet<String> allowedClientLibTokens =
         ImmutableSet.of(
             ServiceOptions.getGoogApiClientLibName(),
             JDBC_API_CLIENT_LIB_TOKEN,
             HIBERNATE_API_CLIENT_LIB_TOKEN,
-            LIQUIBASE_API_CLIENT_LIB_TOKEN);
+            LIQUIBASE_API_CLIENT_LIB_TOKEN,
+            PG_ADAPTER_CLIENT_LIB_TOKEN);
     private TransportChannelProvider channelProvider;
 
     @SuppressWarnings("rawtypes")
@@ -621,6 +669,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /** By default, we create 4 channels per {@link SpannerOptions} */
     private int numChannels = 4;
+
+    private String transportChannelExecutorThreadNameFormat = "Cloud-Spanner-TransportChannel-%d";
 
     private int prefetchChunks = DEFAULT_PREFETCH_CHUNKS;
     private SessionPoolOptions sessionPoolOptions;
@@ -632,6 +682,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private DatabaseAdminStubSettings.Builder databaseAdminStubSettingsBuilder =
         DatabaseAdminStubSettings.newBuilder();
     private Duration partitionedDmlTimeout = Duration.ofHours(2L);
+    private boolean grpcGcpExtensionEnabled = false;
+    private GcpManagedChannelOptions grpcGcpOptions;
+    private RetrySettings retryAdministrativeRequestsSettings =
+        DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS;
     private boolean autoThrottleAdministrativeRequests = false;
     private boolean trackTransactionStarter = false;
     private Map<DatabaseId, QueryOptions> defaultQueryOptions = new HashMap<>();
@@ -672,6 +726,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.emulatorHost = null;
       }
       this.numChannels = options.numChannels;
+      this.transportChannelExecutorThreadNameFormat =
+          options.transportChannelExecutorThreadNameFormat;
       this.sessionPoolOptions = options.sessionPoolOptions;
       this.prefetchChunks = options.prefetchChunks;
       this.sessionLabels = options.sessionLabels;
@@ -679,7 +735,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.instanceAdminStubSettingsBuilder = options.instanceAdminStubSettings.toBuilder();
       this.databaseAdminStubSettingsBuilder = options.databaseAdminStubSettings.toBuilder();
       this.partitionedDmlTimeout = options.partitionedDmlTimeout;
+      this.grpcGcpExtensionEnabled = options.grpcGcpExtensionEnabled;
+      this.grpcGcpOptions = options.grpcGcpOptions;
       this.autoThrottleAdministrativeRequests = options.autoThrottleAdministrativeRequests;
+      this.retryAdministrativeRequestsSettings = options.retryAdministrativeRequestsSettings;
       this.trackTransactionStarter = options.trackTransactionStarter;
       this.defaultQueryOptions = options.defaultQueryOptions;
       this.callCredentialsProvider = options.callCredentialsProvider;
@@ -707,6 +766,19 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     /**
      * Sets the {@code ChannelProvider}. {@link GapicSpannerRpc} would create a default one if none
      * is provided.
+     *
+     * <p>Setting a custom {@link TransportChannelProvider} also overrides any other settings that
+     * affect the default channel provider. These must be set manually on the custom {@link
+     * TransportChannelProvider} instead of on {@link SpannerOptions}. The settings of {@link
+     * SpannerOptions} that have no effect if you set a custom {@link TransportChannelProvider} are:
+     *
+     * <ol>
+     *   <li>{@link #setChannelConfigurator(ApiFunction)}
+     *   <li>{@link #setHost(String)}
+     *   <li>{@link #setNumChannels(int)}
+     *   <li>{@link #setInterceptorProvider(GrpcInterceptorProvider)}
+     *   <li>{@link #setHeaderProvider(com.google.api.gax.rpc.HeaderProvider)}
+     * </ol>
      */
     public Builder setChannelProvider(TransportChannelProvider channelProvider) {
       this.channelProvider = channelProvider;
@@ -739,6 +811,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setNumChannels(int numChannels) {
       this.numChannels = numChannels;
+      return this;
+    }
+
+    /** Sets the name format for transport channel threads that should be used by this instance. */
+    Builder setTransportChannelExecutorThreadNameFormat(
+        String transportChannelExecutorThreadNameFormat) {
+      this.transportChannelExecutorThreadNameFormat = transportChannelExecutorThreadNameFormat;
       return this;
     }
 
@@ -893,6 +972,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets the retry settings for retrying administrative requests when the quote of administrative
+     * requests per minute has been exceeded.
+     */
+    Builder setRetryAdministrativeRequestsSettings(
+        RetrySettings retryAdministrativeRequestsSettings) {
+      this.retryAdministrativeRequestsSettings = retryAdministrativeRequestsSettings;
+      return this;
+    }
+
+    /**
      * Instructs the client library to track the first request of each read/write transaction. This
      * statement will include a BeginTransaction option and will return a transaction id as part of
      * its result. All other statements in the same transaction must wait for this first statement
@@ -935,6 +1024,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     QueryOptions getEnvironmentQueryOptions() {
       return QueryOptions.newBuilder()
           .setOptimizerVersion(environment.getOptimizerVersion())
+          .setOptimizerStatisticsPackage(environment.getOptimizerStatisticsPackage())
           .build();
     }
 
@@ -972,6 +1062,26 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets the {@link ExecutorProvider} to use for high-level async calls that need an executor,
+     * such as fetching results for an {@link AsyncResultSet}.
+     *
+     * <p>Async methods will use a sensible default if no custom {@link ExecutorProvider} has been
+     * set. The default {@link ExecutorProvider} uses a cached thread pool containing a maximum of 8
+     * threads. The pool is lazily initialized and will not create any threads if the user
+     * application does not use any async methods. It will also scale down the thread usage if the
+     * async load allows for that.
+     *
+     * <p>Call {@link SpannerOptions#createAsyncExecutorProvider(int, long, TimeUnit)} to create a
+     * provider with a custom pool size or call {@link
+     * FixedCloseableExecutorProvider#create(ScheduledExecutorService)} to create a {@link
+     * CloseableExecutorProvider} from a standard Java {@link ScheduledExecutorService}.
+     */
+    public Builder setAsyncExecutorProvider(CloseableExecutorProvider provider) {
+      this.asyncExecutorProvider = provider;
+      return this;
+    }
+
+    /**
      * Specifying this will allow the client to prefetch up to {@code prefetchChunks} {@code
      * PartialResultSet} chunks for each read and query. The data size of each chunk depends on the
      * server implementation but a good rule of thumb is that each chunk will be up to 1 MiB. Larger
@@ -995,6 +1105,28 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /** Enables gRPC-GCP extension with the default settings. */
+    public Builder enableGrpcGcpExtension() {
+      this.grpcGcpExtensionEnabled = true;
+      return this;
+    }
+
+    /**
+     * Enables gRPC-GCP extension and uses provided options for configuration. The metric registry
+     * and default Spanner metric labels will be added automatically.
+     */
+    public Builder enableGrpcGcpExtension(GcpManagedChannelOptions options) {
+      this.grpcGcpExtensionEnabled = true;
+      this.grpcGcpOptions = options;
+      return this;
+    }
+
+    /** Disables gRPC-GCP extension. */
+    public Builder disableGrpcGcpExtension() {
+      this.grpcGcpExtensionEnabled = false;
+      return this;
+    }
+
     /**
      * Sets the host of an emulator to use. By default the value is read from an environment
      * variable. If the environment variable is not set, this will be <code>null</code>.
@@ -1004,6 +1136,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
       // Set the host of emulator has been set.
@@ -1047,6 +1180,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     SpannerOptions.environment = SpannerEnvironmentImpl.INSTANCE;
   }
 
+  @Override
+  protected String getDefaultProject() {
+    String projectId = getDefaultProjectId();
+    // The project id does not matter if we are using the emulator.
+    if (projectId == null && System.getenv("SPANNER_EMULATOR_HOST") != null) {
+      return "emulator-project";
+    }
+    return projectId;
+  }
+
   public TransportChannelProvider getChannelProvider() {
     return channelProvider;
   }
@@ -1062,6 +1205,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public int getNumChannels() {
     return numChannels;
+  }
+
+  public String getTransportChannelExecutorThreadNameFormat() {
+    return transportChannelExecutorThreadNameFormat;
   }
 
   public SessionPoolOptions getSessionPoolOptions() {
@@ -1088,8 +1235,20 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return partitionedDmlTimeout;
   }
 
+  public boolean isGrpcGcpExtensionEnabled() {
+    return grpcGcpExtensionEnabled;
+  }
+
+  public GcpManagedChannelOptions getGrpcGcpOptions() {
+    return grpcGcpOptions;
+  }
+
   public boolean isAutoThrottleAdministrativeRequests() {
     return autoThrottleAdministrativeRequests;
+  }
+
+  public RetrySettings getRetryAdministrativeRequestsSettings() {
+    return retryAdministrativeRequestsSettings;
   }
 
   public boolean isTrackTransactionStarter() {
@@ -1117,7 +1276,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return options;
   }
 
-  CloseableExecutorProvider getAsyncExecutorProvider() {
+  public CloseableExecutorProvider getAsyncExecutorProvider() {
     return asyncExecutorProvider;
   }
 

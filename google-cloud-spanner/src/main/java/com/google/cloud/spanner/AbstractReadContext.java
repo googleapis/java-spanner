@@ -385,7 +385,7 @@ abstract class AbstractReadContext
   private boolean isValid = true;
 
   @GuardedBy("lock")
-  private boolean isClosed = false;
+  protected boolean isClosed = false;
 
   // A per-transaction sequence number used to identify this ExecuteSqlRequests. Required for DML,
   // ignored for query by the server.
@@ -583,8 +583,10 @@ abstract class AbstractReadContext
     if (!stmtParameters.isEmpty()) {
       com.google.protobuf.Struct.Builder paramsBuilder = builder.getParamsBuilder();
       for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
-        paramsBuilder.putFields(param.getKey(), param.getValue().toProto());
-        builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
+        paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
+        if (param.getValue() != null) {
+          builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
+        }
       }
     }
     if (withTransactionSelector) {
@@ -612,10 +614,12 @@ abstract class AbstractReadContext
         com.google.protobuf.Struct.Builder paramsBuilder =
             builder.getStatementsBuilder(idx).getParamsBuilder();
         for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
-          paramsBuilder.putFields(param.getKey(), param.getValue().toProto());
-          builder
-              .getStatementsBuilder(idx)
-              .putParamTypes(param.getKey(), param.getValue().getType().toProto());
+          paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
+          if (param.getValue() != null) {
+            builder
+                .getStatementsBuilder(idx)
+                .putParamTypes(param.getKey(), param.getValue().getType().toProto());
+          }
         }
       }
       idx++;
@@ -790,7 +794,7 @@ abstract class AbstractReadContext
             SpannerRpc.StreamingCall call =
                 rpc.read(builder.build(), stream.consumer(), session.getOptions());
             call.request(prefetchChunks);
-            stream.setCall(call, selector != null && selector.hasBegin());
+            stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
             return stream;
           }
         };

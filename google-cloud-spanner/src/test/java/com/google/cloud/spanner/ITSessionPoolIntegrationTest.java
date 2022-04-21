@@ -40,7 +40,7 @@ import org.junit.runners.JUnit4;
  * <p>See also {@code it/WriteIntegrationTest}, which provides coverage of writing and reading back
  * all Cloud Spanner types.
  */
-@Category(IntegrationTest.class)
+@Category(SerialIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITSessionPoolIntegrationTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();

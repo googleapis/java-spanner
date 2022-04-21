@@ -27,6 +27,7 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.Value;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.io.ByteArrayOutputStream;
@@ -90,8 +91,9 @@ public class SpannerStandaloneExamplesIT {
                     + "  SingerInfo BYTES(MAX)"
                     + ") PRIMARY KEY (SingerId)",
                 "CREATE TABLE Venues ("
-                    + "VenueId INT64 NOT NULL,"
-                    + "Revenue NUMERIC"
+                    + "VenueId      INT64 NOT NULL,"
+                    + "Revenue      NUMERIC,"
+                    + "VenueDetails JSON"
                     + ") PRIMARY KEY (VenueId)"))
         .get();
   }
@@ -198,5 +200,80 @@ public class SpannerStandaloneExamplesIT {
     String out =
         runExample(() -> QueryWithNumericParameterSample.queryWithNumericParameter(client));
     assertThat(out).contains("4 35000");
+  }
+
+  @Test
+  public void addJsonColumn_shouldSuccessfullyAddColumn()
+      throws InterruptedException, ExecutionException {
+    OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
+        spanner
+            .getDatabaseAdminClient()
+            .updateDatabaseDdl(
+                instanceId,
+                databaseId,
+                ImmutableList.of("ALTER TABLE Venues DROP COLUMN VenueDetails"),
+                null);
+    operation.get();
+    String out =
+        runExample(
+            () -> {
+              try {
+                AddJsonColumnSample.addJsonColumn(
+                    spanner.getDatabaseAdminClient(), instanceId, databaseId);
+              } catch (ExecutionException e) {
+                System.out.printf(
+                    "Adding column `VenueDetails` failed: %s%n", e.getCause().getMessage());
+              } catch (InterruptedException e) {
+                System.out.printf("Adding column `VenueDetails` was interrupted%n");
+              }
+            });
+    assertThat(out).contains("Successfully added column `VenueDetails`");
+  }
+
+  @Test
+  public void updateJsonData_shouldWriteData() {
+    String projectId = spanner.getOptions().getProjectId();
+    String out =
+        runExample(
+            () ->
+                UpdateJsonDataSample.updateJsonData(
+                    spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId))));
+    assertThat(out).contains("Venues successfully updated");
+  }
+
+  @Test
+  public void queryWithJsonParameter_shouldReturnResults() {
+    String projectId = spanner.getOptions().getProjectId();
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+    client.write(
+        ImmutableList.of(
+            Mutation.newInsertOrUpdateBuilder("Venues")
+                .set("VenueId")
+                .to(4L)
+                .set("VenueDetails")
+                .to(
+                    Value.json(
+                        "[{\"name\":\"room 1\",\"open\":true},"
+                            + "{\"name\":\"room 2\",\"open\":false}]"))
+                .build(),
+            Mutation.newInsertOrUpdateBuilder("Venues")
+                .set("VenueId")
+                .to(19L)
+                .set("VenueDetails")
+                .to(Value.json("{\"rating\":9,\"open\":true}"))
+                .build(),
+            Mutation.newInsertOrUpdateBuilder("Venues")
+                .set("VenueId")
+                .to(42L)
+                .set("VenueDetails")
+                .to(
+                    Value.json(
+                        "{\"name\":null,"
+                            + "\"open\":{\"Monday\":true,\"Tuesday\":false},"
+                            + "\"tags\":[\"large\",\"airy\"]}"))
+                .build()));
+    String out = runExample(() -> QueryWithJsonParameterSample.queryWithJsonParameter(client));
+    assertThat(out).contains("VenueId: 19, VenueDetails: {\"open\":true,\"rating\":9}");
   }
 }

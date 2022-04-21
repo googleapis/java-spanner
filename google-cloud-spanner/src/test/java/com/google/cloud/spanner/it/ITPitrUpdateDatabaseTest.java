@@ -51,7 +51,7 @@ import org.threeten.bp.Duration;
 @RunWith(JUnit4.class)
 public class ITPitrUpdateDatabaseTest {
 
-  private static final Duration OPERATION_TIMEOUT = Duration.ofMinutes(2);
+  private static final Duration OPERATION_TIMEOUT = Duration.ofMinutes(20);
   private static final String VERSION_RETENTION_PERIOD = "7d";
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();

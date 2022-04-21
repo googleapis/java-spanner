@@ -246,10 +246,10 @@ public class SessionName implements ResourceName {
     }
 
     private Builder(SessionName sessionName) {
-      project = sessionName.project;
-      instance = sessionName.instance;
-      database = sessionName.database;
-      session = sessionName.session;
+      this.project = sessionName.project;
+      this.instance = sessionName.instance;
+      this.database = sessionName.database;
+      this.session = sessionName.session;
     }
 
     public SessionName build() {

@@ -676,6 +676,11 @@ class SessionPool {
     }
 
     @Override
+    public ApiFuture<Void> bufferAsync(Mutation mutation) {
+      return delegate.bufferAsync(mutation);
+    }
+
+    @Override
     public Struct readRowUsingIndex(String table, String index, Key key, Iterable<String> columns) {
       try {
         return delegate.readRowUsingIndex(table, index, key, columns);
@@ -701,6 +706,11 @@ class SessionPool {
     @Override
     public void buffer(Iterable<Mutation> mutations) {
       delegate.buffer(mutations);
+    }
+
+    @Override
+    public ApiFuture<Void> bufferAsync(Iterable<Mutation> mutations) {
+      return delegate.bufferAsync(mutations);
     }
 
     @Override
@@ -1240,25 +1250,27 @@ class SessionPool {
 
     @Override
     public void close() {
-      synchronized (lock) {
-        leakedException = null;
-        checkedOutSessions.remove(this);
-      }
-      PooledSession delegate = getOrNull();
-      if (delegate != null) {
-        delegate.close();
+      try {
+        asyncClose().get();
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      } catch (ExecutionException e) {
+        throw SpannerExceptionFactory.asSpannerException(e.getCause());
       }
     }
 
     @Override
     public ApiFuture<Empty> asyncClose() {
-      synchronized (lock) {
-        leakedException = null;
-        checkedOutSessions.remove(this);
-      }
-      PooledSession delegate = getOrNull();
-      if (delegate != null) {
-        return delegate.asyncClose();
+      try {
+        PooledSession delegate = getOrNull();
+        if (delegate != null) {
+          return delegate.asyncClose();
+        }
+      } finally {
+        synchronized (lock) {
+          leakedException = null;
+          checkedOutSessions.remove(this);
+        }
       }
       return ApiFutures.immediateFuture(Empty.getDefaultInstance());
     }
@@ -1469,6 +1481,34 @@ class SessionPool {
         resultSet.next();
       } finally {
         delegate.setCurrentSpan(previousSpan);
+      }
+    }
+
+    private void determineDialectAsync(final SettableFuture<Dialect> dialect) {
+      Preconditions.checkNotNull(dialect);
+      executor.submit(
+          () -> {
+            try {
+              dialect.set(determineDialect());
+            } catch (Throwable t) {
+              // Catch-all as we want to propagate all exceptions to anyone who might be interested
+              // in the database dialect, and there's nothing sensible that we can do with it here.
+              dialect.setException(t);
+            } finally {
+              releaseSession(this, Position.FIRST);
+            }
+          });
+    }
+
+    private Dialect determineDialect() {
+      try (ResultSet dialectResultSet =
+          delegate.singleUse().executeQuery(DETERMINE_DIALECT_STATEMENT)) {
+        if (dialectResultSet.next()) {
+          return Dialect.fromName(dialectResultSet.getString(0));
+        } else {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.NOT_FOUND, "No dialect found for database");
+        }
       }
     }
 
@@ -1712,7 +1752,27 @@ class SessionPool {
     RANDOM
   }
 
+  /**
+   * This statement is (currently) used to determine the dialect of the database that is used by the
+   * session pool. This statement is subject to change when the INFORMATION_SCHEMA contains a table
+   * where the dialect of the database can be read directly, and any tests that want to detect the
+   * specific 'determine dialect statement' should rely on this constant instead of the actual
+   * value.
+   */
+  @VisibleForTesting
+  static final Statement DETERMINE_DIALECT_STATEMENT =
+      Statement.newBuilder(
+              "SELECT 'POSTGRESQL' AS DIALECT\n"
+                  + "FROM INFORMATION_SCHEMA.SCHEMATA\n"
+                  + "WHERE SCHEMA_NAME='information_schema'\n"
+                  + "UNION ALL\n"
+                  + "SELECT 'GOOGLE_STANDARD_SQL' AS DIALECT\n"
+                  + "FROM INFORMATION_SCHEMA.SCHEMATA\n"
+                  + "WHERE SCHEMA_NAME='INFORMATION_SCHEMA' AND CATALOG_NAME=''")
+          .build();
+
   private final SessionPoolOptions options;
+  private final SettableFuture<Dialect> dialect = SettableFuture.create();
   private final SessionClient sessionClient;
   private final ScheduledExecutorService executor;
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
@@ -1721,6 +1781,9 @@ class SessionPool {
   private final Clock clock;
   private final Object lock = new Object();
   private final Random random = new Random();
+
+  @GuardedBy("lock")
+  private boolean detectDialectStarted;
 
   @GuardedBy("lock")
   private int pendingClosure;
@@ -1767,7 +1830,8 @@ class SessionPool {
   private final Set<PooledSession> allSessions = new HashSet<>();
 
   @GuardedBy("lock")
-  private final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
+  @VisibleForTesting
+  final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
 
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
 
@@ -1846,6 +1910,39 @@ class SessionPool {
     this.clock = clock;
     this.poolMaintainer = new PoolMaintainer();
     this.initMetricsCollection(metricRegistry, labelValues);
+  }
+
+  /**
+   * @return the {@link Dialect} of the underlying database. This method will block until the
+   *     dialect is available. It will potentially execute one or two RPCs to get the dialect if
+   *     necessary: One to create a session if there are no sessions in the pool (yet), and one to
+   *     query the database for the dialect that is used. It is recommended that clients that always
+   *     need to know the dialect set {@link
+   *     SessionPoolOptions.Builder#setAutoDetectDialect(boolean)} to true. This will ensure that
+   *     the dialect is fetched automatically in a background task when a session pool is created.
+   */
+  Dialect getDialect() {
+    boolean mustDetectDialect = false;
+    synchronized (lock) {
+      if (!detectDialectStarted) {
+        mustDetectDialect = true;
+        detectDialectStarted = true;
+      }
+    }
+    if (mustDetectDialect) {
+      try (PooledSessionFuture session = getSession()) {
+        dialect.set(session.get().determineDialect());
+      }
+    }
+    try {
+      return dialect.get(60L, TimeUnit.SECONDS);
+    } catch (ExecutionException executionException) {
+      throw SpannerExceptionFactory.asSpannerException(executionException);
+    } catch (InterruptedException interruptedException) {
+      throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
+    } catch (TimeoutException timeoutException) {
+      throw SpannerExceptionFactory.propagateTimeout(timeoutException);
+    }
   }
 
   @VisibleForTesting
@@ -2113,6 +2210,9 @@ class SessionPool {
           break;
         }
       }
+      if (!dialect.isDone()) {
+        dialect.setException(e);
+      }
       if (isDatabaseOrInstanceNotFound(e)) {
         setResourceNotFoundException((ResourceNotFoundException) e);
         poolMaintainer.close();
@@ -2277,10 +2377,17 @@ class SessionPool {
         } else {
           Preconditions.checkState(totalSessions() <= options.getMaxSessions() - 1);
           allSessions.add(pooledSession);
-          // Release the session to a random position in the pool to prevent the case that a batch
-          // of sessions that are affiliated with the same channel are all placed sequentially in
-          // the pool.
-          releaseSession(pooledSession, Position.RANDOM);
+          if (options.isAutoDetectDialect() && !detectDialectStarted) {
+            // Get the dialect of the underlying database if that has not yet been done. Note that
+            // this method will release the session into the pool once it is done.
+            detectDialectStarted = true;
+            pooledSession.determineDialectAsync(SessionPool.this.dialect);
+          } else {
+            // Release the session to a random position in the pool to prevent the case that a batch
+            // of sessions that are affiliated with the same channel are all placed sequentially in
+            // the pool.
+            releaseSession(pooledSession, Position.RANDOM);
+          }
         }
       }
       if (closeSession) {

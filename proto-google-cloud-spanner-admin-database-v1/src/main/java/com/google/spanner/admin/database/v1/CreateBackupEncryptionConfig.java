@@ -437,7 +437,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
             .getNumber()) {
       output.writeEnum(1, encryptionType_);
     }
-    if (!getKmsKeyNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(kmsKeyName_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, kmsKeyName_);
     }
     unknownFields.writeTo(output);
@@ -455,7 +455,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
             .getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(1, encryptionType_);
     }
-    if (!getKmsKeyNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(kmsKeyName_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, kmsKeyName_);
     }
     size += unknownFields.getSerializedSize();

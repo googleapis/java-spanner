@@ -16,18 +16,26 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
+import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.truth.Truth;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -36,8 +44,14 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
+@RunWith(Parameterized.class)
 public class StatementParserTest {
   public static final String COPYRIGHT_PATTERN =
       "\\/\\*\n"
@@ -55,12 +69,32 @@ public class StatementParserTest {
           + " \\* See the License for the specific language governing permissions and\n"
           + " \\* limitations under the License.\n"
           + " \\*\\/\n";
-  private final StatementParser parser = StatementParser.INSTANCE;
   private static final Pattern EXPECT_PATTERN = Pattern.compile("(?is)\\s*(?:@EXPECT)\\s+'(.*)'");
 
+  @Parameter public Dialect dialect;
+
+  @Parameters(name = "dialect = {0}")
+  public static Object[] data() {
+    return Dialect.values();
+  }
+
+  private AbstractStatementParser parser;
+
+  @Before
+  public void setupParser() {
+    parser = AbstractStatementParser.getInstance(dialect);
+  }
+
+  private static final ImmutableMap<Dialect, String> COMMENTS_SCRIPTS =
+      ImmutableMap.of(
+          Dialect.GOOGLE_STANDARD_SQL,
+          "CommentsTest.sql",
+          Dialect.POSTGRESQL,
+          "postgresql/CommentsTest.sql");
+
   @Test
-  public void testRemoveComments() {
-    List<String> statements = readStatementsFromFile("CommentsTest.sql");
+  public void testRemoveCommentsInScript() {
+    List<String> statements = readStatementsFromFile(COMMENTS_SCRIPTS.get(dialect));
     String currentlyExpected = "";
     for (String statement : statements) {
       String sql = statement.trim();
@@ -72,30 +106,105 @@ public class StatementParserTest {
           throw new IllegalArgumentException("Unknown @EXPECT statement: " + sql);
         }
       } else {
-        assertThat(
-            StatementParser.removeCommentsAndTrim(statement), is(equalTo(currentlyExpected)));
+        assertThat(parser.removeCommentsAndTrim(statement)).isEqualTo(currentlyExpected);
       }
     }
+  }
 
-    assertThat(StatementParser.removeCommentsAndTrim(""), is(equalTo("")));
+  @Test
+  public void testRemoveComments() {
+    assertThat(parser.removeCommentsAndTrim("")).isEqualTo("");
+    assertThat(parser.removeCommentsAndTrim("SELECT * FROM FOO")).isEqualTo("SELECT * FROM FOO");
+    assertThat(parser.removeCommentsAndTrim("-- This is a one line comment\nSELECT * FROM FOO"))
+        .isEqualTo("SELECT * FROM FOO");
     assertThat(
-        StatementParser.removeCommentsAndTrim("SELECT * FROM FOO"),
-        is(equalTo("SELECT * FROM FOO")));
+            parser.removeCommentsAndTrim(
+                "/* This is a simple multi line comment */\nSELECT * FROM FOO"))
+        .isEqualTo("SELECT * FROM FOO");
     assertThat(
-        StatementParser.removeCommentsAndTrim("-- This is a one line comment\nSELECT * FROM FOO"),
-        is(equalTo("SELECT * FROM FOO")));
+            parser.removeCommentsAndTrim("/* This is a \nmulti line comment */\nSELECT * FROM FOO"))
+        .isEqualTo("SELECT * FROM FOO");
     assertThat(
-        StatementParser.removeCommentsAndTrim(
-            "/* This is a simple multi line comment */\nSELECT * FROM FOO"),
-        is(equalTo("SELECT * FROM FOO")));
+            parser.removeCommentsAndTrim(
+                "/* This\nis\na\nmulti\nline\ncomment */\nSELECT * FROM FOO"))
+        .isEqualTo("SELECT * FROM FOO");
+
+    assertEquals(
+        "SELECT \"FOO\" FROM \"BAR\" WHERE name='test'",
+        parser.removeCommentsAndTrim(
+            "-- Single line comment\nSELECT \"FOO\" FROM \"BAR\" WHERE name='test'"));
+    assertEquals(
+        "SELECT \"FOO\" FROM \"BAR\" WHERE name='test' and id=1",
+        parser.removeCommentsAndTrim(
+            "/* Multi\n"
+                + "line\n"
+                + "comment\n"
+                + "*/SELECT \"FOO\" FROM \"BAR\" WHERE name='test' and id=1"));
+
+    if (dialect == Dialect.POSTGRESQL) {
+      // PostgreSQL allows string literals and quoted identifiers to contain newline characters.
+      assertEquals(
+          "SELECT \"FOO\nBAR\" FROM \"BAR\" WHERE name='test\ntest'",
+          parser.removeCommentsAndTrim(
+              "-- Single line comment\nSELECT \"FOO\nBAR\" FROM \"BAR\" WHERE name='test\ntest'"));
+      assertEquals(
+          "SELECT \"FOO\nBAR\" FROM \"BAR\" WHERE name='test\ntest' and id=1",
+          parser.removeCommentsAndTrim(
+              "/* Multi\n"
+                  + "line\n"
+                  + "comment\n"
+                  + "*/SELECT \"FOO\nBAR\" FROM \"BAR\" WHERE name='test\ntest' and id=1"));
+    }
+  }
+
+  @Test
+  public void testGoogleStandardSQLRemoveCommentsGsql() {
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+
+    assertThat(parser.removeCommentsAndTrim("/*GSQL*/")).isEqualTo("");
+    assertThat(parser.removeCommentsAndTrim("/*GSQL*/SELECT * FROM FOO"))
+        .isEqualTo("SELECT * FROM FOO");
     assertThat(
-        StatementParser.removeCommentsAndTrim(
-            "/* This is a \nmulti line comment */\nSELECT * FROM FOO"),
-        is(equalTo("SELECT * FROM FOO")));
+            parser.removeCommentsAndTrim(
+                "/*GSQL*/-- This is a one line comment\nSELECT * FROM FOO"))
+        .isEqualTo("SELECT * FROM FOO");
     assertThat(
-        StatementParser.removeCommentsAndTrim(
-            "/* This\nis\na\nmulti\nline\ncomment */\nSELECT * FROM FOO"),
-        is(equalTo("SELECT * FROM FOO")));
+            parser.removeCommentsAndTrim(
+                "/*GSQL*//* This is a simple multi line comment */\nSELECT * FROM FOO"))
+        .isEqualTo("SELECT * FROM FOO");
+    assertThat(
+            parser.removeCommentsAndTrim(
+                "/*GSQL*//* This is a \nmulti line comment */\nSELECT * FROM FOO"))
+        .isEqualTo("SELECT * FROM FOO");
+    assertThat(
+            parser.removeCommentsAndTrim(
+                "/*GSQL*//* This\nis\na\nmulti\nline\ncomment */\nSELECT * FROM FOO"))
+        .isEqualTo("SELECT * FROM FOO");
+  }
+
+  @Test
+  public void testPostgreSQLDialectRemoveCommentsGsql() {
+    assumeTrue(dialect == Dialect.POSTGRESQL);
+
+    assertThat(parser.removeCommentsAndTrim("/*GSQL*/")).isEqualTo("/*GSQL*/");
+    assertThat(parser.removeCommentsAndTrim("/*GSQL*/SELECT * FROM FOO"))
+        .isEqualTo("/*GSQL*/SELECT * FROM FOO");
+    assertThat(
+            parser.removeCommentsAndTrim(
+                "/*GSQL*/-- This is a one line comment\nSELECT * FROM FOO"))
+        .isEqualTo("/*GSQL*/SELECT * FROM FOO");
+    assertThat(
+            parser.removeCommentsAndTrim(
+                "/*GSQL*//* This is a simple multi line comment */\nSELECT * FROM FOO"))
+        .isEqualTo("/*GSQL*/SELECT * FROM FOO");
+    assertThat(
+            parser.removeCommentsAndTrim(
+                "/*GSQL*//* This is a \nmulti line comment */\nSELECT * FROM FOO"))
+        .isEqualTo("/*GSQL*/SELECT * FROM FOO");
+    assertThat(
+            parser.removeCommentsAndTrim(
+                "/*GSQL*//* This\nis\na\nmulti\nline\ncomment */\nSELECT * FROM FOO"))
+        .isEqualTo("/*GSQL*/SELECT * FROM FOO");
   }
 
   @Test
@@ -127,7 +236,7 @@ public class StatementParserTest {
             + "  UPDATE SET FirstName = v.column2,\n"
             + "             LastName = v.column3";
     ParsedStatement statement = parser.parse(Statement.of(sql));
-    assertThat(statement.getSqlWithoutComments(), is(equalTo(sqlWithoutComments)));
+    assertThat(statement.getSqlWithoutComments()).isEqualTo(sqlWithoutComments);
   }
 
   @Test
@@ -160,165 +269,362 @@ public class StatementParserTest {
             + "  UPDATE SET FirstName = v.column2,\n"
             + "             LastName = v.column3";
     ParsedStatement statement = parser.parse(Statement.of(sql));
-    assertThat(statement.getSqlWithoutComments(), is(equalTo(sqlWithoutComments)));
+    assertThat(statement.getSqlWithoutComments()).isEqualTo(sqlWithoutComments);
   }
 
   @Test
-  public void testStatementWithHashTagSingleLineComment() {
+  public void testPostgresSQLDialectDollarQuoted() {
+    assumeTrue(dialect == Dialect.POSTGRESQL);
+
+    assertThat(parser.removeCommentsAndTrim("$$foo$$")).isEqualTo("$$foo$$");
+    assertThat(parser.removeCommentsAndTrim("$$--foo$$")).isEqualTo("$$--foo$$");
+    assertThat(parser.removeCommentsAndTrim("$$\nline 1\n--line2$$"))
+        .isEqualTo("$$\nline 1\n--line2$$");
+    assertThat(parser.removeCommentsAndTrim("$bar$--foo$bar$")).isEqualTo("$bar$--foo$bar$");
     assertThat(
-        parser
-            .parse(Statement.of("# this is a comment\nselect * from foo"))
-            .getSqlWithoutComments(),
-        is(equalTo("select * from foo")));
+            parser.removeCommentsAndTrim(
+                "$bar$\nThis is a valid string\n -- That could contain special characters$bar$"))
+        .isEqualTo("$bar$\nThis is a valid string\n -- That could contain special characters$bar$");
+
+    assertThat(parser.removeCommentsAndTrim("SELECT FOO$BAR FROM SOME_TABLE"))
+        .isEqualTo("SELECT FOO$BAR FROM SOME_TABLE");
+    assertThat(parser.removeCommentsAndTrim("SELECT FOO$BAR -- This is a comment\nFROM SOME_TABLE"))
+        .isEqualTo("SELECT FOO$BAR \nFROM SOME_TABLE");
     assertThat(
-        parser.parse(Statement.of("select * from foo\n#this is a comment")).getSqlWithoutComments(),
-        is(equalTo("select * from foo")));
+            parser.removeCommentsAndTrim("SELECT FOO, $BAR -- This is a comment\nFROM SOME_TABLE"))
+        .isEqualTo("SELECT FOO, $BAR \nFROM SOME_TABLE");
+  }
+
+  @Test
+  public void testPostgreSQLDialectSupportsEmbeddedComments() {
+    assumeTrue(dialect == Dialect.POSTGRESQL);
+
+    final String sql =
+        "/* This is a comment /* This is an embedded comment */ This is after the embedded comment */ SELECT 1";
+    assertEquals("SELECT 1", parser.removeCommentsAndTrim(sql));
+  }
+
+  @Test
+  public void testGoogleStandardSQLDialectDoesNotSupportEmbeddedComments() {
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+
+    final String sql =
+        "/* This is a comment /* This is an embedded comment */ This is after the embedded comment */ SELECT 1";
+    assertEquals(
+        "This is after the embedded comment */ SELECT 1", parser.removeCommentsAndTrim(sql));
+  }
+
+  @Test
+  public void testPostgreSQLDialectUnterminatedComment() {
+    assumeTrue(dialect == Dialect.POSTGRESQL);
+
+    final String sql =
+        "/* This is a comment /* This is still a comment */ this is unterminated SELECT 1";
+    try {
+      // Cloud Spanner would see this as a valid comment, while PostgreSQL
+      // requires 'embedded' comments to be properly terminated.
+      parser.removeCommentsAndTrim(sql);
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+      assertTrue(
+          "Message should contain 'unterminated block comment'",
+          e.getMessage().contains("unterminated block comment"));
+    }
+  }
+
+  @Test
+  public void testGoogleStandardSqlDialectDialectUnterminatedComment() {
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+
+    final String sql =
+        "/* This is a comment /* This is still a comment */ this is unterminated SELECT 1";
+    assertEquals("this is unterminated SELECT 1", parser.removeCommentsAndTrim(sql));
+  }
+
+  @Test
+  public void testShowStatements() {
+    assertThat(parser.parse(Statement.of("show variable autocommit bar")).getType())
+        .isEqualTo(StatementType.QUERY);
+    assertThat(parser.parse(Statement.of("show variable autocommit")).getType())
+        .isEqualTo(StatementType.CLIENT_SIDE);
+    if (dialect == Dialect.POSTGRESQL) {
+      assertThat(parser.parse(Statement.of("show autocommit")).getType())
+          .isEqualTo(StatementType.CLIENT_SIDE);
+      assertThat(
+              parser.parse(Statement.of("show variable spanner.retry_aborts_internally")).getType())
+          .isEqualTo(StatementType.CLIENT_SIDE);
+    } else {
+      assertThat(parser.parse(Statement.of("show autocommit")).getType())
+          .isEqualTo(StatementType.QUERY);
+      assertThat(parser.parse(Statement.of("show variable retry_aborts_internally")).getType())
+          .isEqualTo(StatementType.CLIENT_SIDE);
+    }
+
+    assertThat(parser.parse(Statement.of("show variable retry_aborts_internally bar")).getType())
+        .isEqualTo(StatementType.QUERY);
+  }
+
+  @Test
+  public void testGoogleStandardSQLDialectStatementWithHashTagSingleLineComment() {
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+
+    // Supports # based comments
     assertThat(
-        parser
-            .parse(Statement.of("select *\nfrom foo # this is a comment\nwhere bar=1"))
-            .getSqlWithoutComments(),
-        is(equalTo("select *\nfrom foo \nwhere bar=1")));
+            parser
+                .parse(Statement.of("# this is a comment\nselect * from foo"))
+                .getSqlWithoutComments())
+        .isEqualTo("select * from foo");
+    assertThat(
+            parser
+                .parse(Statement.of("select * from foo\n#this is a comment"))
+                .getSqlWithoutComments())
+        .isEqualTo("select * from foo");
+    assertThat(
+            parser
+                .parse(Statement.of("select *\nfrom foo # this is a comment\nwhere bar=1"))
+                .getSqlWithoutComments())
+        .isEqualTo("select *\nfrom foo \nwhere bar=1");
+  }
+
+  @Test
+  public void testPostgreSQLDialectStatementWithHashTagSingleLineComment() {
+    assumeTrue(dialect == Dialect.POSTGRESQL);
+
+    // Does not support # based comments
+    assertThat(
+            parser
+                .parse(Statement.of("# this is a comment\nselect * from foo"))
+                .getSqlWithoutComments())
+        .isEqualTo("# this is a comment\nselect * from foo");
+    assertThat(
+            parser
+                .parse(Statement.of("select * from foo\n#this is a comment"))
+                .getSqlWithoutComments())
+        .isEqualTo("select * from foo\n#this is a comment");
+    assertThat(
+            parser
+                .parse(Statement.of("select *\nfrom foo # this is a comment\nwhere bar=1"))
+                .getSqlWithoutComments())
+        .isEqualTo("select *\nfrom foo # this is a comment\nwhere bar=1");
   }
 
   @Test
   public void testIsDdlStatement() {
-    assertFalse(parser.isDdlStatement(""));
-    assertFalse(parser.isDdlStatement("random text"));
-    assertFalse(parser.isDdlStatement("CREATETABLE"));
-    assertFalse(parser.isDdlStatement("CCREATE TABLE"));
-    assertFalse(parser.isDdlStatement("SELECT 1"));
-    assertFalse(parser.isDdlStatement("SELECT FOO FROM BAR"));
-    assertFalse(parser.isDdlStatement("INSERT INTO FOO (ID, NAME) VALUES (1, 'NAME')"));
-    assertFalse(parser.isDdlStatement("UPDATE FOO SET NAME='NAME' WHERE ID=1"));
-    assertFalse(parser.isDdlStatement("DELETE FROM FOO"));
+    assertThat(parser.isDdlStatement("")).isFalse();
+    assertThat(parser.isDdlStatement("random text")).isFalse();
+    assertThat(parser.isDdlStatement("CREATETABLE")).isFalse();
+    assertThat(parser.isDdlStatement("CCREATE TABLE")).isFalse();
+    assertThat(parser.isDdlStatement("SELECT 1")).isFalse();
+    assertThat(parser.isDdlStatement("SELECT FOO FROM BAR")).isFalse();
+    assertThat(parser.isDdlStatement("INSERT INTO FOO (ID, NAME) VALUES (1, 'NAME')")).isFalse();
+    assertThat(parser.isDdlStatement("UPDATE FOO SET NAME='NAME' WHERE ID=1")).isFalse();
+    assertThat(parser.isDdlStatement("DELETE FROM FOO")).isFalse();
+
+    assertThat(
+            parser.isDdlStatement("CREATE TABLE FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+        .isTrue();
+    assertThat(parser.isDdlStatement("alter table foo add Description string(100)")).isTrue();
+    assertThat(parser.isDdlStatement("drop table foo")).isTrue();
+    assertThat(parser.isDdlStatement("Create index BAR on foo (name)")).isTrue();
+
+    assertThat(
+            parser
+                .parse(
+                    Statement.of(
+                        "\t\tCREATE\n\t   TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                .isDdl())
+        .isTrue();
+    assertThat(
+            parser
+                .parse(
+                    Statement.of(
+                        "\n\n\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                .isDdl())
+        .isTrue();
+    assertThat(
+            parser
+                .parse(
+                    Statement.of(
+                        "-- this is a comment\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                .isDdl())
+        .isTrue();
+    assertThat(
+            parser
+                .parse(
+                    Statement.of(
+                        "/* multi line comment\n* with more information on the next line\n*/\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                .isDdl())
+        .isTrue();
+    assertThat(
+            parser
+                .parse(
+                    Statement.of(
+                        "/** java doc comment\n* with more information on the next line\n*/\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                .isDdl())
+        .isTrue();
+    assertThat(
+            parser
+                .parse(
+                    Statement.of(
+                        "-- SELECT in a single line comment \nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                .isDdl())
+        .isTrue();
+    assertThat(
+            parser
+                .parse(
+                    Statement.of(
+                        "/* SELECT in a multi line comment\n* with more information on the next line\n*/\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                .isDdl())
+        .isTrue();
+    assertThat(
+            parser
+                .parse(
+                    Statement.of(
+                        "/** SELECT in a java doc comment\n* with more information on the next line\n*/\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                .isDdl())
+        .isTrue();
 
     assertTrue(
-        parser.isDdlStatement("CREATE TABLE FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
-    assertTrue(parser.isDdlStatement("alter table foo add Description string(100)"));
-    assertTrue(parser.isDdlStatement("drop table foo"));
-    assertTrue(parser.isDdlStatement("Create index BAR on foo (name)"));
-
-    assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "\t\tCREATE\n\t   TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                    "CREATE VIEW SingerNames\n"
+                        + "SQL SECURITY INVOKER\n"
+                        + "AS SELECT SingerId as SingerId,\n"
+                        + "          CONCAT(Singers.FirstName, Singers.LastName) as Name\n"
+                        + "   FROM Singers"))
+            .isDdl());
+    assertTrue(
+        parser
+            .parse(Statement.of("create view SingerNames as select FullName from Singers"))
             .isDdl());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "\n\n\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                    "/* this is a comment */ create view SingerNames as select FullName from Singers"))
             .isDdl());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "-- this is a comment\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                    "create /* this is a comment */ view SingerNames as select FullName from Singers"))
             .isDdl());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "/* multi line comment\n* with more information on the next line\n*/\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                    "create \n -- This is a comment \n view SingerNames as select FullName from Singers"))
             .isDdl());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "/** java doc comment\n* with more information on the next line\n*/\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                    " \t \n create   \n \t  view \n  \t SingerNames as select FullName from Singers"))
             .isDdl());
+    assertTrue(parser.parse(Statement.of("DROP VIEW SingerNames")).isDdl());
     assertTrue(
         parser
             .parse(
                 Statement.of(
-                    "-- SELECT in a single line comment \nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
-            .isDdl());
-    assertTrue(
-        parser
-            .parse(
-                Statement.of(
-                    "/* SELECT in a multi line comment\n* with more information on the next line\n*/\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
-            .isDdl());
-    assertTrue(
-        parser
-            .parse(
-                Statement.of(
-                    "/** SELECT in a java doc comment\n* with more information on the next line\n*/\nCREATE TABLE   FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+                    "ALTER VIEW SingerNames\n"
+                        + "AS SELECT SingerId as SingerId,\n"
+                        + "          CONCAT(Singers.FirstName, Singers.LastName) as Name\n"
+                        + "   FROM Singers"))
             .isDdl());
   }
 
   @Test
   public void testIsQuery() {
-    assertFalse(parser.isQuery(""));
-    assertFalse(parser.isQuery("random text"));
-    assertFalse(parser.isQuery("SELECT1"));
-    assertFalse(parser.isQuery("SSELECT 1"));
-    assertTrue(parser.isQuery("SELECT 1"));
-    assertTrue(parser.isQuery("select 1"));
-    assertTrue(parser.isQuery("SELECT foo FROM bar WHERE id=@id"));
-    assertFalse(parser.isQuery("INSERT INTO FOO (ID, NAME) VALUES (1, 'NAME')"));
-    assertFalse(parser.isQuery("UPDATE FOO SET NAME='NAME' WHERE ID=1"));
-    assertFalse(parser.isQuery("DELETE FROM FOO"));
-    assertFalse(parser.isQuery("CREATE TABLE FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"));
-    assertFalse(parser.isQuery("alter table foo add Description string(100)"));
-    assertFalse(parser.isQuery("drop table foo"));
-    assertFalse(parser.isQuery("Create index BAR on foo (name)"));
-    assertTrue(parser.isQuery("select * from foo"));
-    assertFalse(parser.isQuery("INSERT INTO FOO (ID, NAME) SELECT ID+1, NAME FROM FOO"));
+    assertThat(parser.isQuery("")).isFalse();
+    assertThat(parser.isQuery("random text")).isFalse();
+    assertThat(parser.isQuery("SELECT1")).isFalse();
+    assertThat(parser.isQuery("SSELECT 1")).isFalse();
 
-    assertTrue(
-        parser.isQuery(
-            "WITH subQ1 AS (SELECT SchoolID FROM Roster),\n"
-                + "     subQ2 AS (SELECT OpponentID FROM PlayerStats)\n"
-                + "SELECT * FROM subQ1\n"
-                + "UNION ALL\n"
-                + "SELECT * FROM subQ2"));
-    assertTrue(
-        parser.isQuery(
-            "with subQ1 AS (SELECT SchoolID FROM Roster),\n"
-                + "     subQ2 AS (SELECT OpponentID FROM PlayerStats)\n"
-                + "select * FROM subQ1\n"
-                + "UNION ALL\n"
-                + "SELECT * FROM subQ2"));
-    assertTrue(
-        parser
-            .parse(
-                Statement.of(
-                    "-- this is a comment\nwith foo as (select * from bar)\nselect * from foo"))
-            .isQuery());
+    assertThat(parser.isQuery("SELECT 1")).isTrue();
+    assertThat(parser.isQuery("select 1")).isTrue();
+    assertThat(parser.isQuery("SELECT foo FROM bar WHERE id=@id")).isTrue();
 
-    assertTrue(parser.parse(Statement.of("-- this is a comment\nselect * from foo")).isQuery());
-    assertTrue(
-        parser
-            .parse(
-                Statement.of(
-                    "/* multi line comment\n* with more information on the next line\n*/\nSELECT ID, NAME\nFROM\tTEST\n\tWHERE ID=1"))
-            .isQuery());
-    assertTrue(
-        parser
-            .parse(
-                Statement.of(
-                    "/** java doc comment\n* with more information on the next line\n*/\nselect max(id) from test"))
-            .isQuery());
-    assertTrue(
-        parser.parse(Statement.of("-- INSERT in a single line comment \n    select 1")).isQuery());
-    assertTrue(
-        parser
-            .parse(
-                Statement.of(
-                    "/* UPDATE in a multi line comment\n* with more information on the next line\n*/\nSELECT 1"))
-            .isQuery());
-    assertTrue(
-        parser
-            .parse(
-                Statement.of(
-                    "/** DELETE in a java doc comment\n* with more information on the next line\n*/\n\n\n\n -- UPDATE test\nSELECT 1"))
-            .isQuery());
+    assertThat(parser.isQuery("INSERT INTO FOO (ID, NAME) VALUES (1, 'NAME')")).isFalse();
+    assertThat(parser.isQuery("UPDATE FOO SET NAME='NAME' WHERE ID=1")).isFalse();
+    assertThat(parser.isQuery("DELETE FROM FOO")).isFalse();
+    assertThat(parser.isQuery("CREATE TABLE FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID)"))
+        .isFalse();
+    assertThat(parser.isQuery("alter table foo add Description string(100)")).isFalse();
+    assertThat(parser.isQuery("drop table foo")).isFalse();
+    assertThat(parser.isQuery("Create index BAR on foo (name)")).isFalse();
+
+    assertThat(parser.isQuery("select * from foo")).isTrue();
+
+    assertThat(parser.isQuery("INSERT INTO FOO (ID, NAME) SELECT ID+1, NAME FROM FOO")).isFalse();
+
+    assertThat(
+            parser.isQuery(
+                "WITH subQ1 AS (SELECT SchoolID FROM Roster),\n"
+                    + "     subQ2 AS (SELECT OpponentID FROM PlayerStats)\n"
+                    + "SELECT * FROM subQ1\n"
+                    + "UNION ALL\n"
+                    + "SELECT * FROM subQ2"))
+        .isTrue();
+    assertThat(
+            parser.isQuery(
+                "with subQ1 AS (SELECT SchoolID FROM Roster),\n"
+                    + "     subQ2 AS (SELECT OpponentID FROM PlayerStats)\n"
+                    + "select * FROM subQ1\n"
+                    + "UNION ALL\n"
+                    + "SELECT * FROM subQ2"))
+        .isTrue();
+    assertThat(
+            parser
+                .parse(
+                    Statement.of(
+                        "-- this is a comment\nwith foo as (select * from bar)\nselect * from foo"))
+                .isQuery())
+        .isTrue();
+
+    assertThat(parser.parse(Statement.of("-- this is a comment\nselect * from foo")).isQuery())
+        .isTrue();
+    assertThat(
+            parser
+                .parse(
+                    Statement.of(
+                        "/* multi line comment\n* with more information on the next line\n*/\nSELECT ID, NAME\nFROM\tTEST\n\tWHERE ID=1"))
+                .isQuery())
+        .isTrue();
+    assertThat(
+            parser
+                .parse(
+                    Statement.of(
+                        "/** java doc comment\n* with more information on the next line\n*/\nselect max(id) from test"))
+                .isQuery())
+        .isTrue();
+    assertThat(
+            parser
+                .parse(Statement.of("-- INSERT in a single line comment \n    select 1"))
+                .isQuery())
+        .isTrue();
+    assertThat(
+            parser
+                .parse(
+                    Statement.of(
+                        "/* UPDATE in a multi line comment\n* with more information on the next line\n*/\nSELECT 1"))
+                .isQuery())
+        .isTrue();
+    assertThat(
+            parser
+                .parse(
+                    Statement.of(
+                        "/** DELETE in a java doc comment\n* with more information on the next line\n*/\n\n\n\n -- UPDATE test\nSELECT 1"))
+                .isQuery())
+        .isTrue();
   }
 
   @Test
-  public void testIsQuery_QueryHints() {
+  public void testGoogleStandardSQLDialectIsQuery_QueryHints() {
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+
+    // Supports query hints, PostgreSQL dialect does NOT
     // Valid query hints.
     assertTrue(parser.isQuery("@{JOIN_METHOD=HASH_JOIN} SELECT * FROM PersonsTable"));
     assertTrue(parser.isQuery("@ {JOIN_METHOD=HASH_JOIN} SELECT * FROM PersonsTable"));
@@ -342,13 +648,11 @@ public class StatementParserTest {
 
     // Multiple query hints.
     assertTrue(
-        StatementParser.INSTANCE.isQuery(
-            "@{FORCE_INDEX=index_name} @{JOIN_METHOD=HASH_JOIN} SELECT * FROM tbl"));
+        parser.isQuery("@{FORCE_INDEX=index_name} @{JOIN_METHOD=HASH_JOIN} SELECT * FROM tbl"));
     assertTrue(
-        StatementParser.INSTANCE.isQuery(
-            "@{FORCE_INDEX=index_name} @{JOIN_METHOD=HASH_JOIN} Select * FROM tbl"));
+        parser.isQuery("@{FORCE_INDEX=index_name} @{JOIN_METHOD=HASH_JOIN} Select * FROM tbl"));
     assertTrue(
-        StatementParser.INSTANCE.isQuery(
+        parser.isQuery(
             "@{FORCE_INDEX=index_name}\n@{JOIN_METHOD=HASH_JOIN}\nWITH subQ1 AS (SELECT SchoolID FROM Roster),\n"
                 + "     subQ2 AS (SELECT OpponentID FROM PlayerStats)\n"
                 + "SELECT * FROM subQ1\n"
@@ -359,10 +663,16 @@ public class StatementParserTest {
     assertFalse(parser.isQuery("@{JOIN_METHOD=HASH_JOIN SELECT * FROM PersonsTable"));
     assertFalse(parser.isQuery("@JOIN_METHOD=HASH_JOIN} SELECT * FROM PersonsTable"));
     assertFalse(parser.isQuery("@JOIN_METHOD=HASH_JOIN SELECT * FROM PersonsTable"));
+    assertFalse(
+        parser.isQuery(
+            "@{FORCE_INDEX=index_name} @{JOIN_METHOD=HASH_JOIN} UPDATE tbl set FOO=1 WHERE ID=2"));
   }
 
   @Test
   public void testIsUpdate_QueryHints() {
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+
+    // Supports query hints, PostgreSQL dialect does NOT
     // Valid query hints.
     assertTrue(
         parser.isUpdateStatement(
@@ -391,7 +701,7 @@ public class StatementParserTest {
 
     // Multiple query hints.
     assertTrue(
-        StatementParser.INSTANCE.isUpdateStatement(
+        parser.isUpdateStatement(
             "@{LOCK_SCANNED_RANGES=exclusive} @{USE_ADDITIONAL_PARALLELISM=TRUE} UPDATE FOO SET NAME='foo' WHERE ID=1"));
 
     // Invalid query hints.
@@ -600,85 +910,88 @@ public class StatementParserTest {
 
   @Test
   public void testTrimAndUnquoteIdentifier() {
-    assertEquals("test", StatementParser.trimAndUnquoteIdentifier("test"));
-    assertEquals("my-database", StatementParser.trimAndUnquoteIdentifier("my-database"));
-    assertEquals("test", StatementParser.trimAndUnquoteIdentifier("  test  "));
-    assertEquals("test", StatementParser.trimAndUnquoteIdentifier("\n\t test\n\t "));
-    assertEquals("test", StatementParser.trimAndUnquoteIdentifier("`test`"));
-    assertEquals("test", StatementParser.trimAndUnquoteIdentifier("```test```"));
-    assertEquals("test test", StatementParser.trimAndUnquoteIdentifier("```test test```"));
-    assertEquals("test ` ", StatementParser.trimAndUnquoteIdentifier("```test ` ```"));
-    assertEquals("test test", StatementParser.trimAndUnquoteIdentifier("`test test`"));
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+
+    assertEquals("test", parser.trimAndUnquoteIdentifier("test"));
+    assertEquals("my-database", parser.trimAndUnquoteIdentifier("my-database"));
+    assertEquals("test", parser.trimAndUnquoteIdentifier("  test  "));
+    assertEquals("test", parser.trimAndUnquoteIdentifier("\n\t test\n\t "));
+    assertEquals("test", parser.trimAndUnquoteIdentifier("`test`"));
+    assertEquals("test", parser.trimAndUnquoteIdentifier("```test```"));
+    assertEquals("test test", parser.trimAndUnquoteIdentifier("```test test```"));
+    assertEquals("test ` ", parser.trimAndUnquoteIdentifier("```test ` ```"));
+    assertEquals("test test", parser.trimAndUnquoteIdentifier("`test test`"));
     assertEquals(
         "my-database",
-        StatementParser.trimAndUnquoteIdentifier(
+        parser.trimAndUnquoteIdentifier(
             " /* comment that should be removed */ my-database"));
     assertEquals(
         "my-database",
-        StatementParser.trimAndUnquoteIdentifier(
+        parser.trimAndUnquoteIdentifier(
             " -- comment that should be removed \nmy-database"));
     assertEquals(
         "my-database",
-        StatementParser.trimAndUnquoteIdentifier(
+        parser.trimAndUnquoteIdentifier(
             " # comment that should be removed \nmy-database"));
   }
 
   @Test
   public void testParseIdentifier() {
-    assertEquals("test", StatementParser.parseIdentifier("test"));
-    assertEquals("my-database", StatementParser.parseIdentifier("my-database"));
-    assertEquals("test", StatementParser.parseIdentifier("  test  "));
-    assertEquals("test", StatementParser.parseIdentifier("\n\t test\n\t "));
-    assertEquals("test", StatementParser.parseIdentifier("`test`"));
-    assertEquals("test", StatementParser.parseIdentifier("```test```"));
-    assertEquals("test test", StatementParser.parseIdentifier("```test test```"));
-    assertEquals("test ` ", StatementParser.parseIdentifier("```test ` ```"));
-    assertEquals("test test", StatementParser.parseIdentifier("`test test`"));
-    assertEquals(
-        "my-database",
-        StatementParser.parseIdentifier(" /* comment that should be removed */ my-database"));
-    assertEquals(
-        "my-database",
-        StatementParser.parseIdentifier(" -- comment that should be removed \nmy-database"));
-    assertEquals(
-        "my-database",
-        StatementParser.parseIdentifier(" # comment that should be removed \nmy-database"));
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
 
-    assertEquals("test", StatementParser.parseIdentifier("test test"));
-    assertEquals("my-database", StatementParser.parseIdentifier("my-database test"));
-    assertEquals("test", StatementParser.parseIdentifier("  test  test"));
-    assertEquals("test", StatementParser.parseIdentifier("\n\t test\n\t test"));
-    assertEquals("test", StatementParser.parseIdentifier("`test`test"));
-    assertEquals("test", StatementParser.parseIdentifier("```test```test"));
-    assertEquals("test test", StatementParser.parseIdentifier("```test test```test"));
-    assertEquals("test ` ", StatementParser.parseIdentifier("```test ` ```test"));
-    assertEquals("test test", StatementParser.parseIdentifier("`test test`test"));
+    assertEquals("test", parser.parseIdentifier("test"));
+    assertEquals("my-database", parser.parseIdentifier("my-database"));
+    assertEquals("test", parser.parseIdentifier("  test  "));
+    assertEquals("test", parser.parseIdentifier("\n\t test\n\t "));
+    assertEquals("test", parser.parseIdentifier("`test`"));
+    assertEquals("test", parser.parseIdentifier("```test```"));
+    assertEquals("test test", parser.parseIdentifier("```test test```"));
+    assertEquals("test ` ", parser.parseIdentifier("```test ` ```"));
+    assertEquals("test test", parser.parseIdentifier("`test test`"));
     assertEquals(
         "my-database",
-        StatementParser.parseIdentifier(" /* comment that should be removed */ my-database test"));
+        parser.parseIdentifier(" /* comment that should be removed */ my-database"));
     assertEquals(
         "my-database",
-        StatementParser.parseIdentifier(" -- comment that should be removed \nmy-database test"));
+        parser.parseIdentifier(" -- comment that should be removed \nmy-database"));
     assertEquals(
         "my-database",
-        StatementParser.parseIdentifier(" # comment that should be removed \nmy-database test"));
+        parser.parseIdentifier(" # comment that should be removed \nmy-database"));
+
+    assertEquals("test", parser.parseIdentifier("test test"));
+    assertEquals("my-database", parser.parseIdentifier("my-database test"));
+    assertEquals("test", parser.parseIdentifier("  test  test"));
+    assertEquals("test", parser.parseIdentifier("\n\t test\n\t test"));
+    assertEquals("test", parser.parseIdentifier("`test`test"));
+    assertEquals("test", parser.parseIdentifier("```test```test"));
+    assertEquals("test test", parser.parseIdentifier("```test test```test"));
+    assertEquals("test ` ", parser.parseIdentifier("```test ` ```test"));
+    assertEquals("test test", parser.parseIdentifier("`test test`test"));
+    assertEquals(
+        "my-database",
+        parser.parseIdentifier(" /* comment that should be removed */ my-database test"));
+    assertEquals(
+        "my-database",
+        parser.parseIdentifier(" -- comment that should be removed \nmy-database test"));
+    assertEquals(
+        "my-database",
+        parser.parseIdentifier(" # comment that should be removed \nmy-database test"));
   }
 
   private Set<ClientSideStatementImpl> getAllStatements() throws CompileException {
-    return ClientSideStatements.INSTANCE.getCompiledStatements();
+    return ClientSideStatements.getInstance(dialect).getCompiledStatements();
   }
 
   private <T extends ClientSideStatementImpl> void assertParsing(
       String value, Class<T> statementClass) {
-    assertThat(this.<T>parse(value), is(equalTo(statementClass)));
+    assertThat(this.<T>parse(value)).isEqualTo(statementClass);
   }
 
   private <T extends ClientSideStatementImpl> void testParseStatement(
       String statement, Class<T> statementClass) {
-    assertThat(
-        "\"" + statement + "\" should be " + statementClass.getName(),
-        this.<T>parse(statement),
-        is(equalTo(statementClass)));
+    Truth.assertWithMessage("\"" + statement + "\" should be " + statementClass.getName())
+        .that(this.<T>parse(statement))
+        .isEqualTo(statementClass);
     assertParsing(upper(statement), statementClass);
     assertParsing(lower(statement), statementClass);
     assertParsing(withSpaces(statement), statementClass);
@@ -691,39 +1004,37 @@ public class StatementParserTest {
     assertParsing(withTrailingTabs(statement), statementClass);
     assertParsing(withTrailingLinefeeds(statement), statementClass);
 
-    assertThat(parse(withInvalidPrefix(statement)), is(nullValue()));
-    assertThat(parse(withInvalidSuffix(statement)), is(nullValue()));
+    assertThat(parse(withInvalidPrefix(statement))).isNull();
+    assertThat(parse(withInvalidSuffix(statement))).isNull();
 
-    assertNull(parse(withPrefix("%", statement)));
-    assertNull(parse(withPrefix("_", statement)));
-    assertNull(parse(withPrefix("&", statement)));
-    assertNull(parse(withPrefix("$", statement)));
-    assertNull(parse(withPrefix("@", statement)));
-    assertNull(parse(withPrefix("!", statement)));
-    assertNull(parse(withPrefix("*", statement)));
-    assertNull(parse(withPrefix("(", statement)));
-    assertNull(parse(withPrefix(")", statement)));
+    assertThat(parse(withPrefix("%", statement))).isNull();
+    assertThat(parse(withPrefix("_", statement))).isNull();
+    assertThat(parse(withPrefix("&", statement))).isNull();
+    assertThat(parse(withPrefix("$", statement))).isNull();
+    assertThat(parse(withPrefix("@", statement))).isNull();
+    assertThat(parse(withPrefix("!", statement))).isNull();
+    assertThat(parse(withPrefix("*", statement))).isNull();
+    assertThat(parse(withPrefix("(", statement))).isNull();
+    assertThat(parse(withPrefix(")", statement))).isNull();
 
-    assertThat(
-        withSuffix("%", statement) + " is not a valid statement",
-        parse(withSuffix("%", statement)),
-        is(nullValue()));
-    assertNull(parse(withSuffix("_", statement)));
-    assertNull(parse(withSuffix("&", statement)));
-    assertNull(parse(withSuffix("$", statement)));
-    assertNull(parse(withSuffix("@", statement)));
-    assertNull(parse(withSuffix("!", statement)));
-    assertNull(parse(withSuffix("*", statement)));
-    assertNull(parse(withSuffix("(", statement)));
-    assertNull(parse(withSuffix(")", statement)));
+    Truth.assertWithMessage(withSuffix("%", statement) + " is not a valid statement")
+        .that(parse(withSuffix("%", statement)))
+        .isNull();
+    assertThat(parse(withSuffix("_", statement))).isNull();
+    assertThat(parse(withSuffix("&", statement))).isNull();
+    assertThat(parse(withSuffix("$", statement))).isNull();
+    assertThat(parse(withSuffix("@", statement))).isNull();
+    assertThat(parse(withSuffix("!", statement))).isNull();
+    assertThat(parse(withSuffix("*", statement))).isNull();
+    assertThat(parse(withSuffix("(", statement))).isNull();
+    assertThat(parse(withSuffix(")", statement))).isNull();
   }
 
   private <T extends ClientSideStatementImpl> void testParseStatementWithOneParameterAtTheEnd(
       String statement, Class<T> statementClass) {
-    assertThat(
-        "\"" + statement + "\" should be " + statementClass.getName(),
-        this.<T>parse(statement),
-        is(equalTo(statementClass)));
+    Truth.assertWithMessage("\"" + statement + "\" should be " + statementClass.getName())
+        .that(this.<T>parse(statement))
+        .isEqualTo(statementClass);
     assertParsing(upper(statement), statementClass);
     assertParsing(lower(statement), statementClass);
     assertParsing(withSpaces(statement), statementClass);
@@ -736,18 +1047,18 @@ public class StatementParserTest {
     assertParsing(withTrailingTabs(statement), statementClass);
     assertParsing(withTrailingLinefeeds(statement), statementClass);
 
-    assertNull(parse(withInvalidPrefix(statement)));
+    assertThat(parse(withInvalidPrefix(statement))).isNull();
     assertParsing(withInvalidSuffix(statement), statementClass);
 
-    assertNull(parse(withPrefix("%", statement)));
-    assertNull(parse(withPrefix("_", statement)));
-    assertNull(parse(withPrefix("&", statement)));
-    assertNull(parse(withPrefix("$", statement)));
-    assertNull(parse(withPrefix("@", statement)));
-    assertNull(parse(withPrefix("!", statement)));
-    assertNull(parse(withPrefix("*", statement)));
-    assertNull(parse(withPrefix("(", statement)));
-    assertNull(parse(withPrefix(")", statement)));
+    assertThat(parse(withPrefix("%", statement))).isNull();
+    assertThat(parse(withPrefix("_", statement))).isNull();
+    assertThat(parse(withPrefix("&", statement))).isNull();
+    assertThat(parse(withPrefix("$", statement))).isNull();
+    assertThat(parse(withPrefix("@", statement))).isNull();
+    assertThat(parse(withPrefix("!", statement))).isNull();
+    assertThat(parse(withPrefix("*", statement))).isNull();
+    assertThat(parse(withPrefix("(", statement))).isNull();
+    assertThat(parse(withPrefix(")", statement))).isNull();
 
     assertParsing(withSuffix("%", statement), statementClass);
     assertParsing(withSuffix("_", statement), statementClass);
@@ -758,6 +1069,363 @@ public class StatementParserTest {
     assertParsing(withSuffix("*", statement), statementClass);
     assertParsing(withSuffix("(", statement), statementClass);
     assertParsing(withSuffix(")", statement), statementClass);
+  }
+
+  @Test
+  public void testConvertPositionalParametersToNamedParametersWithGsqlException() {
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters(
+                    '?', "/*GSQL*/select * from foo where name=?")
+                .sqlWithNamedParameters)
+        .isEqualTo("/*GSQL*/select * from foo where name=@p1");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters(
+                    '?', "/*GSQL*/?'?test?\"?test?\"?'?")
+                .sqlWithNamedParameters)
+        .isEqualTo("/*GSQL*/@p1'?test?\"?test?\"?'@p2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "/*GSQL*/?'?it\\'?s'?")
+                .sqlWithNamedParameters)
+        .isEqualTo("/*GSQL*/@p1'?it\\'?s'@p2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "/*GSQL*/?'?it\\\"?s'?")
+                .sqlWithNamedParameters)
+        .isEqualTo("/*GSQL*/@p1'?it\\\"?s'@p2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "/*GSQL*/?\"?it\\\"?s\"?")
+                .sqlWithNamedParameters)
+        .isEqualTo("/*GSQL*/@p1\"?it\\\"?s\"@p2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "/*GSQL*/?'''?it\\'?s'''?")
+                .sqlWithNamedParameters)
+        .isEqualTo("/*GSQL*/@p1'''?it\\'?s'''@p2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters(
+                    '?', "/*GSQL*/?\"\"\"?it\\\"?s\"\"\"?")
+                .sqlWithNamedParameters)
+        .isEqualTo("/*GSQL*/@p1\"\"\"?it\\\"?s\"\"\"@p2");
+
+    assertThat(
+        parser.convertPositionalParametersToNamedParameters(
+                '?',
+                "/*GSQL*/select 1, ?, 'test?test', \"test?test\", foo.* from `foo` where col1=? and col2='test' and col3=? and col4='?' and col5=\"?\" and col6='?''?''?'")
+            .sqlWithNamedParameters,
+        is(
+            equalTo(
+                "/*GSQL*/select 1, @p1, 'test?test', \"test?test\", foo.* from `foo` where col1=@p2 and col2='test' and col3=@p3 and col4='?' and col5=\"?\" and col6='?''?''?'")));
+
+    assertThat(
+        parser.convertPositionalParametersToNamedParameters(
+                '?',
+                "/*GSQL*/select * "
+                    + "from foo "
+                    + "where name=? "
+                    + "and col2 like ? "
+                    + "and col3 > ?")
+            .sqlWithNamedParameters,
+        is(
+            equalTo(
+                "/*GSQL*/select * "
+                    + "from foo "
+                    + "where name=@p1 "
+                    + "and col2 like @p2 "
+                    + "and col3 > @p3")));
+    assertThat(
+        parser.convertPositionalParametersToNamedParameters(
+                '?', "/*GSQL*/select * " + "from foo " + "where id between ? and ?")
+            .sqlWithNamedParameters,
+        is(equalTo("/*GSQL*/select * " + "from foo " + "where id between @p1 and @p2")));
+    assertThat(
+        parser.convertPositionalParametersToNamedParameters(
+                '?', "/*GSQL*/select * " + "from foo " + "limit ? offset ?")
+            .sqlWithNamedParameters,
+        is(equalTo("/*GSQL*/select * " + "from foo " + "limit @p1 offset @p2")));
+    assertThat(
+        parser.convertPositionalParametersToNamedParameters(
+                '?',
+                "/*GSQL*/select * "
+                    + "from foo "
+                    + "where col1=? "
+                    + "and col2 like ? "
+                    + "and col3 > ? "
+                    + "and col4 < ? "
+                    + "and col5 != ? "
+                    + "and col6 not in (?, ?, ?) "
+                    + "and col7 in (?, ?, ?) "
+                    + "and col8 between ? and ?")
+            .sqlWithNamedParameters,
+        is(
+            equalTo(
+                "/*GSQL*/select * "
+                    + "from foo "
+                    + "where col1=@p1 "
+                    + "and col2 like @p2 "
+                    + "and col3 > @p3 "
+                    + "and col4 < @p4 "
+                    + "and col5 != @p5 "
+                    + "and col6 not in (@p6, @p7, @p8) "
+                    + "and col7 in (@p9, @p10, @p11) "
+                    + "and col8 between @p12 and @p13")));
+  }
+
+  @Test
+  public void testGoogleStandardSQLDialectConvertPositionalParametersToNamedParameters() {
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters(
+                    '?', "select * from foo where name=?")
+                .sqlWithNamedParameters)
+        .isEqualTo("select * from foo where name=@p1");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?'?test?\"?test?\"?'?")
+                .sqlWithNamedParameters)
+        .isEqualTo("@p1'?test?\"?test?\"?'@p2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?'?it\\'?s'?")
+                .sqlWithNamedParameters)
+        .isEqualTo("@p1'?it\\'?s'@p2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?'?it\\\"?s'?")
+                .sqlWithNamedParameters)
+        .isEqualTo("@p1'?it\\\"?s'@p2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?\"?it\\\"?s\"?")
+                .sqlWithNamedParameters)
+        .isEqualTo("@p1\"?it\\\"?s\"@p2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?'''?it\\'?s'''?")
+                .sqlWithNamedParameters)
+        .isEqualTo("@p1'''?it\\'?s'''@p2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?\"\"\"?it\\\"?s\"\"\"?")
+                .sqlWithNamedParameters)
+        .isEqualTo("@p1\"\"\"?it\\\"?s\"\"\"@p2");
+
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?`?it\\`?s`?")
+                .sqlWithNamedParameters)
+        .isEqualTo("@p1`?it\\`?s`@p2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?```?it\\`?s```?")
+                .sqlWithNamedParameters)
+        .isEqualTo("@p1```?it\\`?s```@p2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?'''?it\\'?s \n ?it\\'?s'''?")
+                .sqlWithNamedParameters)
+        .isEqualTo("@p1'''?it\\'?s \n ?it\\'?s'''@p2");
+
+    assertUnclosedLiteral("?'?it\\'?s \n ?it\\'?s'?");
+    assertUnclosedLiteral("?'?it\\'?s \n ?it\\'?s?");
+    assertUnclosedLiteral("?'''?it\\'?s \n ?it\\'?s'?");
+
+    assertThat(
+        parser.convertPositionalParametersToNamedParameters(
+                '?',
+                "select 1, ?, 'test?test', \"test?test\", foo.* from `foo` where col1=? and col2='test' and col3=? and col4='?' and col5=\"?\" and col6='?''?''?'")
+            .sqlWithNamedParameters,
+        is(
+            equalTo(
+                "select 1, @p1, 'test?test', \"test?test\", foo.* from `foo` where col1=@p2 and col2='test' and col3=@p3 and col4='?' and col5=\"?\" and col6='?''?''?'")));
+
+    assertThat(
+        parser.convertPositionalParametersToNamedParameters(
+                '?',
+                "select * " + "from foo " + "where name=? " + "and col2 like ? " + "and col3 > ?")
+            .sqlWithNamedParameters,
+        is(
+            equalTo(
+                "select * "
+                    + "from foo "
+                    + "where name=@p1 "
+                    + "and col2 like @p2 "
+                    + "and col3 > @p3")));
+    assertThat(
+        parser.convertPositionalParametersToNamedParameters(
+                '?', "select * " + "from foo " + "where id between ? and ?")
+            .sqlWithNamedParameters,
+        is(equalTo("select * " + "from foo " + "where id between @p1 and @p2")));
+    assertThat(
+        parser.convertPositionalParametersToNamedParameters(
+                '?', "select * " + "from foo " + "limit ? offset ?")
+            .sqlWithNamedParameters,
+        is(equalTo("select * " + "from foo " + "limit @p1 offset @p2")));
+    assertThat(
+        parser.convertPositionalParametersToNamedParameters(
+                '?',
+                "select * "
+                    + "from foo "
+                    + "where col1=? "
+                    + "and col2 like ? "
+                    + "and col3 > ? "
+                    + "and col4 < ? "
+                    + "and col5 != ? "
+                    + "and col6 not in (?, ?, ?) "
+                    + "and col7 in (?, ?, ?) "
+                    + "and col8 between ? and ?")
+            .sqlWithNamedParameters,
+        is(
+            equalTo(
+                "select * "
+                    + "from foo "
+                    + "where col1=@p1 "
+                    + "and col2 like @p2 "
+                    + "and col3 > @p3 "
+                    + "and col4 < @p4 "
+                    + "and col5 != @p5 "
+                    + "and col6 not in (@p6, @p7, @p8) "
+                    + "and col7 in (@p9, @p10, @p11) "
+                    + "and col8 between @p12 and @p13")));
+  }
+
+  @Test
+  public void testPostgreSQLDialectDialectConvertPositionalParametersToNamedParameters() {
+    assumeTrue(dialect == Dialect.POSTGRESQL);
+
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters(
+                    '?', "select * from foo where name=?")
+                .sqlWithNamedParameters)
+        .isEqualTo("select * from foo where name=$1");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?'?test?\"?test?\"?'?")
+                .sqlWithNamedParameters)
+        .isEqualTo("$1'?test?\"?test?\"?'$2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?'?it\\'?s'?")
+                .sqlWithNamedParameters)
+        .isEqualTo("$1'?it\\'?s'$2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?'?it\\\"?s'?")
+                .sqlWithNamedParameters)
+        .isEqualTo("$1'?it\\\"?s'$2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?\"?it\\\"?s\"?")
+                .sqlWithNamedParameters)
+        .isEqualTo("$1\"?it\\\"?s\"$2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?'''?it\\'?s'''?")
+                .sqlWithNamedParameters)
+        .isEqualTo("$1'''?it\\'?s'''$2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?\"\"\"?it\\\"?s\"\"\"?")
+                .sqlWithNamedParameters)
+        .isEqualTo("$1\"\"\"?it\\\"?s\"\"\"$2");
+
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?$$?it$?s$$?")
+                .sqlWithNamedParameters)
+        .isEqualTo("$1$$?it$?s$$$2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?$tag$?it$$?s$tag$?")
+                .sqlWithNamedParameters)
+        .isEqualTo("$1$tag$?it$$?s$tag$$2");
+    assertThat(
+            parser.convertPositionalParametersToNamedParameters('?', "?$$?it\\'?s \n ?it\\'?s$$?")
+                .sqlWithNamedParameters)
+        .isEqualTo("$1$$?it\\'?s \n ?it\\'?s$$$2");
+
+    // Note: PostgreSQL allows a single-quoted string literal to contain line feeds.
+    assertEquals(
+        "$1'?it\\'?s \n ?it\\'?s'$2",
+        parser.convertPositionalParametersToNamedParameters('?', "?'?it\\'?s \n ?it\\'?s'?")
+            .sqlWithNamedParameters);
+    assertUnclosedLiteral("?'?it\\'?s \n ?it\\'?s?");
+    assertEquals(
+        "$1'''?it\\'?s \n ?it\\'?s'$2",
+        parser.convertPositionalParametersToNamedParameters('?', "?'''?it\\'?s \n ?it\\'?s'?")
+            .sqlWithNamedParameters);
+
+    assertThat(
+        parser.convertPositionalParametersToNamedParameters(
+                '?',
+                "select 1, ?, 'test?test', \"test?test\", foo.* from `foo` where col1=? and col2='test' and col3=? and col4='?' and col5=\"?\" and col6='?''?''?'")
+            .sqlWithNamedParameters,
+        is(
+            equalTo(
+                "select 1, $1, 'test?test', \"test?test\", foo.* from `foo` where col1=$2 and col2='test' and col3=$3 and col4='?' and col5=\"?\" and col6='?''?''?'")));
+
+    assertThat(
+        parser.convertPositionalParametersToNamedParameters(
+                '?',
+                "select * " + "from foo " + "where name=? " + "and col2 like ? " + "and col3 > ?")
+            .sqlWithNamedParameters,
+        is(
+            equalTo(
+                "select * "
+                    + "from foo "
+                    + "where name=$1 "
+                    + "and col2 like $2 "
+                    + "and col3 > $3")));
+    assertThat(
+        parser.convertPositionalParametersToNamedParameters(
+                '?', "select * " + "from foo " + "where id between ? and ?")
+            .sqlWithNamedParameters,
+        is(equalTo("select * " + "from foo " + "where id between $1 and $2")));
+    assertThat(
+        parser.convertPositionalParametersToNamedParameters(
+                '?', "select * " + "from foo " + "limit ? offset ?")
+            .sqlWithNamedParameters,
+        is(equalTo("select * " + "from foo " + "limit $1 offset $2")));
+    assertThat(
+        parser.convertPositionalParametersToNamedParameters(
+                '?',
+                "select * "
+                    + "from foo "
+                    + "where col1=? "
+                    + "and col2 like ? "
+                    + "and col3 > ? "
+                    + "and col4 < ? "
+                    + "and col5 != ? "
+                    + "and col6 not in (?, ?, ?) "
+                    + "and col7 in (?, ?, ?) "
+                    + "and col8 between ? and ?")
+            .sqlWithNamedParameters,
+        is(
+            equalTo(
+                "select * "
+                    + "from foo "
+                    + "where col1=$1 "
+                    + "and col2 like $2 "
+                    + "and col3 > $3 "
+                    + "and col4 < $4 "
+                    + "and col5 != $5 "
+                    + "and col6 not in ($6, $7, $8) "
+                    + "and col7 in ($9, $10, $11) "
+                    + "and col8 between $12 and $13")));
+  }
+
+  @Test
+  public void testPostgreSQLGetQueryParameters() {
+    assumeTrue(dialect == Dialect.POSTGRESQL);
+
+    PostgreSQLStatementParser parser = (PostgreSQLStatementParser) this.parser;
+    assertEquals(ImmutableSet.of(), parser.getQueryParameters("select * from foo"));
+    assertEquals(
+        ImmutableSet.of("$1"), parser.getQueryParameters("select * from foo where bar=$1"));
+    assertEquals(
+        ImmutableSet.of("$1", "$2", "$3"),
+        parser.getQueryParameters("select $2 from foo where bar=$1 and baz=$3"));
+    assertEquals(
+        ImmutableSet.of("$1", "$3"),
+        parser.getQueryParameters("select '$2' from foo where bar=$1 and baz in ($1, $3)"));
+    assertEquals(
+        ImmutableSet.of("$1"),
+        parser.getQueryParameters("select '$2' from foo where bar=$1 and baz=$foo"));
+  }
+
+  private void assertUnclosedLiteral(String sql) {
+    try {
+      parser.convertPositionalParametersToNamedParameters('?', sql);
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isSameInstanceAs(ErrorCode.INVALID_ARGUMENT);
+      assertThat(e.getMessage())
+          .startsWith(
+              ErrorCode.INVALID_ARGUMENT.name()
+                  + ": SQL statement contains an unclosed literal: "
+                  + sql);
+    }
   }
 
   @SuppressWarnings("unchecked")

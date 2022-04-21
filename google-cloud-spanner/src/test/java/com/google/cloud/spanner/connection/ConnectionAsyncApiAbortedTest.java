@@ -50,6 +50,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -105,6 +106,13 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   public static void stopExecutor() {
     singleThreadedExecutor.shutdown();
     multiThreadedExecutor.shutdown();
+  }
+
+  @Before
+  public void setup() {
+    try (Connection connection = createConnection()) {
+      connection.getDialect();
+    }
   }
 
   @After

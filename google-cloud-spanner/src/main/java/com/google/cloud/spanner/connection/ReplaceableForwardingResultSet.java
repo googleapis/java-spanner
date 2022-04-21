@@ -197,6 +197,18 @@ class ReplaceableForwardingResultSet implements ResultSet {
   }
 
   @Override
+  public String getJson(int columnIndex) {
+    checkClosed();
+    return delegate.getJson(columnIndex);
+  }
+
+  @Override
+  public String getJson(String columnName) {
+    checkClosed();
+    return delegate.getJson(columnName);
+  }
+
+  @Override
   public ByteArray getBytes(int columnIndex) {
     checkClosed();
     return delegate.getBytes(columnIndex);
@@ -338,6 +350,18 @@ class ReplaceableForwardingResultSet implements ResultSet {
   public List<String> getStringList(String columnName) {
     checkClosed();
     return delegate.getStringList(columnName);
+  }
+
+  @Override
+  public List<String> getJsonList(int columnIndex) {
+    checkClosed();
+    return delegate.getJsonList(columnIndex);
+  }
+
+  @Override
+  public List<String> getJsonList(String columnName) {
+    checkClosed();
+    return delegate.getJsonList(columnName);
   }
 
   @Override

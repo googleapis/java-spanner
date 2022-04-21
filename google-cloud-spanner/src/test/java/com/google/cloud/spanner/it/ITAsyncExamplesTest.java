@@ -29,12 +29,12 @@ import com.google.cloud.spanner.AsyncRunner;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ReadOnlyTransaction;
+import com.google.cloud.spanner.SerialIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
@@ -59,7 +59,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Integration tests for asynchronous APIs. */
-@Category(IntegrationTest.class)
+@Category(SerialIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITAsyncExamplesTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();

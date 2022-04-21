@@ -33,7 +33,8 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
   private static final List<ClientInterceptor> defaultInterceptors =
       ImmutableList.of(
           new SpannerErrorInterceptor(),
-          new LoggingInterceptor(Logger.getLogger(GapicSpannerRpc.class.getName()), Level.FINER));
+          new LoggingInterceptor(Logger.getLogger(GapicSpannerRpc.class.getName()), Level.FINER),
+          new HeaderInterceptor());
 
   private final List<ClientInterceptor> clientInterceptors;
 

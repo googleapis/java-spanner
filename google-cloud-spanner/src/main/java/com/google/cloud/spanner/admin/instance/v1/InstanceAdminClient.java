@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.admin.instance.v1;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.BetaApi;
@@ -1720,12 +1719,7 @@ public class InstanceAdminClient implements BackgroundResource {
           ListInstanceConfigsPage.createEmptyPage().createPageAsync(context, futureResponse);
       return ApiFutures.transform(
           futurePage,
-          new ApiFunction<ListInstanceConfigsPage, ListInstanceConfigsPagedResponse>() {
-            @Override
-            public ListInstanceConfigsPagedResponse apply(ListInstanceConfigsPage input) {
-              return new ListInstanceConfigsPagedResponse(input);
-            }
-          },
+          input -> new ListInstanceConfigsPagedResponse(input),
           MoreExecutors.directExecutor());
     }
 
@@ -1808,12 +1802,7 @@ public class InstanceAdminClient implements BackgroundResource {
           ListInstancesPage.createEmptyPage().createPageAsync(context, futureResponse);
       return ApiFutures.transform(
           futurePage,
-          new ApiFunction<ListInstancesPage, ListInstancesPagedResponse>() {
-            @Override
-            public ListInstancesPagedResponse apply(ListInstancesPage input) {
-              return new ListInstancesPagedResponse(input);
-            }
-          },
+          input -> new ListInstancesPagedResponse(input),
           MoreExecutors.directExecutor());
     }
 

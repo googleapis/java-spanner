@@ -26,8 +26,10 @@ import com.google.cloud.Timestamp;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
@@ -205,6 +207,67 @@ public class MutationTest {
     tester.addEqualityGroup(Mutation.delete("T1", KeySet.all()));
     tester.addEqualityGroup(
         Mutation.delete("T1", KeySet.singleKey(Key.of("k"))), Mutation.delete("T1", Key.of("k")));
+
+    // Test NaNs
+    tester.addEqualityGroup(
+        Mutation.newInsertBuilder("T1").set("C").to(Double.NaN).build(),
+        Mutation.newInsertBuilder("T1").set("C").to(Value.float64(Double.NaN)).build(),
+        Mutation.newInsertBuilder("T1").set("C").to(Float.NaN).build(),
+        Mutation.newInsertBuilder("T1").set("C").to(Value.float64(Float.NaN)).build());
+
+    tester.addEqualityGroup(
+        Mutation.newInsertBuilder("T1").set("C").toFloat64Array(new double[] {Double.NaN}).build(),
+        Mutation.newInsertBuilder("T1").set("C").toFloat64Array(new double[] {Float.NaN}).build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(new double[] {Double.NaN}, 0, 1)
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(new double[] {Float.NaN}, 0, 1)
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(Collections.singletonList(Double.NaN))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(Collections.singletonList((double) Float.NaN))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .to(Value.float64Array(new double[] {Double.NaN}))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .to(Value.float64Array(new double[] {Float.NaN}))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .to(Value.float64Array(new double[] {Double.NaN}, 0, 1))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .to(Value.float64Array(new double[] {Float.NaN}, 0, 1))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .to(Value.float64Array(Collections.singletonList(Double.NaN)))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .to(Value.float64Array(Collections.singletonList((double) Float.NaN)))
+            .build());
+    // Test NaNs and nulls
+    tester.addEqualityGroup(
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(Arrays.asList(null, Double.NaN))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat64Array(Arrays.asList(null, (double) Float.NaN))
+            .build());
 
     tester.testEquals();
   }
@@ -450,54 +513,99 @@ public class MutationTest {
         .to(true)
         .set("boolNull")
         .to((Boolean) null)
+        .set("boolValue")
+        .to(Value.bool(false))
         .set("int")
         .to(42)
         .set("intNull")
         .to((Long) null)
+        .set("intValue")
+        .to(Value.int64(1L))
         .set("float")
         .to(42.1)
         .set("floatNull")
         .to((Double) null)
+        .set("floatValue")
+        .to(Value.float64(10D))
         .set("string")
         .to("str")
         .set("stringNull")
         .to((String) null)
-        .set("boolArr")
-        .toBoolArray(new boolean[] {true, false})
-        .set("boolArrNull")
-        .toBoolArray((boolean[]) null)
-        .set("intArr")
-        .toInt64Array(new long[] {1, 2, 3})
-        .set("intArrNull")
-        .toInt64Array((long[]) null)
-        .set("floatArr")
-        .toFloat64Array(new double[] {1.1, 2.2, 3.3})
-        .set("floatArrNull")
-        .toFloat64Array((double[]) null)
-        .set("nullStr")
-        .to((String) null)
+        .set("stringValue")
+        .to(Value.string("strValue"))
+        .set("bigDecimal")
+        .to(BigDecimal.valueOf(123, 2))
+        .set("bigDecimalNull")
+        .to((BigDecimal) null)
+        .set("bigDecimalValueAsNumeric")
+        .to(Value.numeric(BigDecimal.TEN))
+        .set("pgNumericValue")
+        .to(Value.pgNumeric("4.2"))
         .set("timestamp")
         .to(Timestamp.MAX_VALUE)
         .set("timestampNull")
         .to((Timestamp) null)
+        .set("timestampValue")
+        .to(Value.timestamp(Timestamp.MIN_VALUE))
         .set("date")
         .to(Date.fromYearMonthDay(2017, 4, 17))
         .set("dateNull")
         .to((Date) null)
+        .set("dateValue")
+        .to(Value.date(Date.fromYearMonthDay(2021, 1, 2)))
+        .set("boolArr")
+        .toBoolArray(new boolean[] {true, false})
+        .set("boolArrNull")
+        .toBoolArray((boolean[]) null)
+        .set("boolArrValue")
+        .to(Value.boolArray(ImmutableList.of(false, true)))
+        .set("intArr")
+        .toInt64Array(new long[] {1, 2, 3})
+        .set("intArrNull")
+        .toInt64Array((long[]) null)
+        .set("intArrValue")
+        .to(Value.int64Array(ImmutableList.of(1L, 2L)))
+        .set("floatArr")
+        .toFloat64Array(new double[] {1.1, 2.2, 3.3})
+        .set("floatArrNull")
+        .toFloat64Array((double[]) null)
+        .set("floatArrValue")
+        .to(Value.float64Array(ImmutableList.of(10.1D, 10.2D, 10.3D)))
         .set("stringArr")
         .toStringArray(ImmutableList.of("one", "two"))
         .set("stringArrNull")
         .toStringArray(null)
+        .set("stringArrValue")
+        .to(Value.stringArray(ImmutableList.of("uno", "dos")))
+        .set("numericArr")
+        .toNumericArray(ImmutableList.of(BigDecimal.ONE, BigDecimal.TEN))
+        .set("numericArrNull")
+        .toNumericArray(null)
+        .set("numericArrValue")
+        .to(Value.numericArray(ImmutableList.of(BigDecimal.ZERO, BigDecimal.valueOf(234, 2))))
+        .set("pgNumericArr")
+        .toPgNumericArray(ImmutableList.of("1.23", "2.34"))
+        .set("pgNumericArrNull")
+        .toPgNumericArray(null)
+        .set("pgNumericArrValue")
+        .to(Value.pgNumericArray(ImmutableList.of("10.20", "20.30")))
         .set("timestampArr")
         .toTimestampArray(ImmutableList.of(Timestamp.MAX_VALUE, Timestamp.MAX_VALUE))
         .set("timestampArrNull")
         .toTimestampArray(null)
+        .set("timestampArrValue")
+        .to(Value.timestampArray(ImmutableList.of(Timestamp.MIN_VALUE, Timestamp.MAX_VALUE)))
         .set("dateArr")
         .toDateArray(
             ImmutableList.of(
                 Date.fromYearMonthDay(2017, 4, 17), Date.fromYearMonthDay(2017, 4, 18)))
         .set("dateArrNull")
-        .toDateArray(null);
+        .toDateArray(null)
+        .set("dateArrValue")
+        .to(
+            Value.dateArray(
+                ImmutableList.of(
+                    Date.fromYearMonthDay(2021, 1, 2), Date.fromYearMonthDay(2022, 2, 3))));
   }
 
   static Matcher<com.google.spanner.v1.Mutation> matchesProto(String expected) {

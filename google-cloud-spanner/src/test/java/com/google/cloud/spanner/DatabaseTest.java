@@ -16,8 +16,10 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.DatabaseInfo.State.CREATING;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -30,6 +32,7 @@ import com.google.cloud.spanner.DatabaseInfo.State;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import com.google.spanner.admin.database.v1.DatabaseDialect;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
 import java.util.Collections;
 import java.util.List;
@@ -61,6 +64,8 @@ public class DatabaseTest {
               .setEncryptionStatus(Status.newBuilder().setCode(Code.OK.getNumber()))
               .setKmsKeyVersion(KMS_KEY_VERSION)
               .build());
+  private static final String DEFAULT_LEADER = "default-leader";
+  private static final DatabaseDialect DEFAULT_DIALECT = DatabaseDialect.GOOGLE_STANDARD_SQL;
 
   @Mock DatabaseAdminClient dbClient;
 
@@ -98,29 +103,42 @@ public class DatabaseTest {
   }
 
   @Test
-  public void fromProto() {
-    Database db = createDatabase();
-    assertThat(db.getId().getName()).isEqualTo(NAME);
-    assertThat(db.getState()).isEqualTo(DatabaseInfo.State.CREATING);
-    assertThat(db.getVersionRetentionPeriod()).isEqualTo(VERSION_RETENTION_PERIOD);
-    assertThat(db.getEarliestVersionTime()).isEqualTo(EARLIEST_VERSION_TIME);
-    assertThat(db.getEncryptionConfig())
-        .isEqualTo(EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME));
+  public void testFromProto() {
+    final Database database = createDatabase();
+    assertEquals(NAME, database.getId().getName());
+    assertEquals(CREATING, database.getState());
+    assertEquals(VERSION_RETENTION_PERIOD, database.getVersionRetentionPeriod());
+    assertEquals(EARLIEST_VERSION_TIME, database.getEarliestVersionTime());
+    assertEquals(
+        EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME), database.getEncryptionConfig());
+    assertEquals(DEFAULT_LEADER, database.getDefaultLeader());
+    assertEquals(Dialect.GOOGLE_STANDARD_SQL, database.getDialect());
   }
 
   @Test
-  public void testFromProtoWithEncryptionConfig() {
-    com.google.spanner.admin.database.v1.Database proto =
-        com.google.spanner.admin.database.v1.Database.newBuilder()
-            .setName(NAME)
-            .setEncryptionConfig(
-                com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder()
-                    .setKmsKeyName("some-key")
-                    .build())
-            .build();
-    Database db = Database.fromProto(proto, dbClient);
-    assertThat(db.getEncryptionConfig()).isNotNull();
-    assertThat(db.getEncryptionConfig().getKmsKeyName()).isEqualTo("some-key");
+  public void testUnspecifiedDialectDefaultsToGoogleStandardSqlDialect() {
+    final Database database =
+        Database.fromProto(
+            defaultProtoDatabase()
+                .toBuilder()
+                .setDatabaseDialect(DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED)
+                .build(),
+            dbClient);
+
+    assertEquals(Dialect.GOOGLE_STANDARD_SQL, database.getDialect());
+  }
+
+  @Test
+  public void testUnrecognizedDialectThrowsException() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            Database.fromProto(
+                defaultProtoDatabase()
+                    .toBuilder()
+                    .setDatabaseDialect(DatabaseDialect.UNRECOGNIZED)
+                    .build(),
+                dbClient));
   }
 
   @Test
@@ -136,6 +154,28 @@ public class DatabaseTest {
     assertThat(db.getEncryptionConfig().getKmsKeyName())
         .isEqualTo(
             "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key");
+  }
+
+  @Test
+  public void testBuildWithDefaultLeader() {
+    Database db =
+        dbClient
+            .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+            .setDefaultLeader(DEFAULT_LEADER)
+            .build();
+
+    assertEquals(DEFAULT_LEADER, db.getDefaultLeader());
+  }
+
+  @Test
+  public void testBuildWithDatabaseDialect() {
+    final Database database =
+        dbClient
+            .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+            .setDialect(Dialect.GOOGLE_STANDARD_SQL)
+            .build();
+
+    assertEquals(Dialect.GOOGLE_STANDARD_SQL, database.getDialect());
   }
 
   @Test
@@ -178,15 +218,19 @@ public class DatabaseTest {
   }
 
   private Database createDatabase() {
-    com.google.spanner.admin.database.v1.Database proto =
-        com.google.spanner.admin.database.v1.Database.newBuilder()
-            .setName(NAME)
-            .setState(com.google.spanner.admin.database.v1.Database.State.CREATING)
-            .setEarliestVersionTime(EARLIEST_VERSION_TIME.toProto())
-            .setVersionRetentionPeriod(VERSION_RETENTION_PERIOD)
-            .setEncryptionConfig(ENCRYPTION_CONFIG)
-            .addAllEncryptionInfo(ENCRYPTION_INFOS)
-            .build();
-    return Database.fromProto(proto, dbClient);
+    return Database.fromProto(defaultProtoDatabase(), dbClient);
+  }
+
+  private com.google.spanner.admin.database.v1.Database defaultProtoDatabase() {
+    return com.google.spanner.admin.database.v1.Database.newBuilder()
+        .setName(NAME)
+        .setState(com.google.spanner.admin.database.v1.Database.State.CREATING)
+        .setEarliestVersionTime(EARLIEST_VERSION_TIME.toProto())
+        .setVersionRetentionPeriod(VERSION_RETENTION_PERIOD)
+        .setEncryptionConfig(ENCRYPTION_CONFIG)
+        .addAllEncryptionInfo(ENCRYPTION_INFOS)
+        .setDefaultLeader(DEFAULT_LEADER)
+        .setDatabaseDialect(DEFAULT_DIALECT)
+        .build();
   }
 }

@@ -27,6 +27,8 @@ import static org.mockito.Mockito.when;
 
 import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
@@ -271,14 +273,22 @@ public class SpannerPoolTest {
 
   @Test
   public void testLeakedConnection() {
+    attachLogCapturer();
     ConnectionOptions options =
         ConnectionOptions.newBuilder()
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOptions(SessionPoolOptions.newBuilder().setMinSessions(0).build())
+            .setSessionPoolOptions(
+                SessionPoolOptions.newBuilder()
+                    .setMinSessions(0)
+                    .setAutoDetectDialect(false)
+                    .build())
             .setUri(URI)
             .build();
+    DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     // create an actual connection object but not in a try-with-resources block
-    Connection connection = options.getConnection();
+    Connection connection = new ConnectionImpl(options, SpannerPool.INSTANCE, ddlClient, dbClient);
     // try to close the application which should fail
     try {
       ConnectionOptions.closeSpanner();

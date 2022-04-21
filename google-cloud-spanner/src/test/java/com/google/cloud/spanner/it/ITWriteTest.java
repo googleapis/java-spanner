@@ -17,6 +17,8 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.SpannerMatchers.isSpannerException;
+import static com.google.cloud.spanner.Type.array;
+import static com.google.cloud.spanner.Type.json;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -30,6 +32,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
@@ -42,42 +45,64 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Value;
+import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import io.grpc.Context;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.hamcrest.MatcherAssert;
+import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
 
 /** Integration test for writing data to Cloud Spanner. */
 @Category(ParallelIntegrationTest.class)
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class ITWriteTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
-  // TODO: Remove when the emulator supports NUMERIC
-  private static final String SCHEMA_WITH_NUMERIC =
+  @Parameterized.Parameters(name = "Dialect = {0}")
+  public static List<DialectTestParameter> data() {
+    List<DialectTestParameter> params = new ArrayList<>();
+    params.add(new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL));
+    if (!EmulatorSpannerHelper.isUsingEmulator()) {
+      params.add(new DialectTestParameter(Dialect.POSTGRESQL));
+    }
+    return params;
+  }
+
+  @Parameterized.Parameter() public DialectTestParameter dialect;
+
+  private static DatabaseClient googleStandardSQLClient;
+  private static DatabaseClient postgreSQLClient;
+
+  // TODO: Remove when the emulator supports NUMERIC and JSON
+  private static final String GOOGLE_STANDARD_SQL_SCHEMA_WITH_NUMERIC_AND_JSON =
       "CREATE TABLE T ("
           + "  K                   STRING(MAX) NOT NULL,"
           + "  BoolValue           BOOL,"
           + "  Int64Value          INT64,"
           + "  Float64Value        FLOAT64,"
           + "  StringValue         STRING(MAX),"
+          + "  JsonValue           JSON,"
           + "  BytesValue          BYTES(MAX),"
           + "  TimestampValue      TIMESTAMP OPTIONS (allow_commit_timestamp = true),"
           + "  DateValue           DATE,"
@@ -86,12 +111,25 @@ public class ITWriteTest {
           + "  Int64ArrayValue     ARRAY<INT64>,"
           + "  Float64ArrayValue   ARRAY<FLOAT64>,"
           + "  StringArrayValue    ARRAY<STRING(MAX)>,"
+          + "  JsonArrayValue      ARRAY<JSON>,"
           + "  BytesArrayValue     ARRAY<BYTES(MAX)>,"
           + "  TimestampArrayValue ARRAY<TIMESTAMP>,"
           + "  DateArrayValue      ARRAY<DATE>,"
           + "  NumericArrayValue   ARRAY<NUMERIC>,"
           + ") PRIMARY KEY (K)";
-  private static final String SCHEMA_WITHOUT_NUMERIC =
+
+  private static final String POSTGRESQL_SCHEMA_WITH_NUMERIC =
+      "CREATE TABLE T ("
+          + "  K                   VARCHAR PRIMARY KEY,"
+          + "  BoolValue           BOOL,"
+          + "  Int64Value          BIGINT,"
+          + "  Float64Value        DOUBLE PRECISION,"
+          + "  StringValue         VARCHAR,"
+          + "  BytesValue          BYTEA,"
+          + "  NumericValue        NUMERIC"
+          + ")";
+
+  private static final String GOOGLE_STANDARD_SQL_SCHEMA_WITHOUT_NUMERIC_AND_JSON =
       "CREATE TABLE T ("
           + "  K                   STRING(MAX) NOT NULL,"
           + "  BoolValue           BOOL,"
@@ -110,21 +148,42 @@ public class ITWriteTest {
           + "  DateArrayValue      ARRAY<DATE>,"
           + ") PRIMARY KEY (K)";
 
-  private static Database db;
   /** Sequence used to generate unique keys. */
   private static int seq;
 
   private static DatabaseClient client;
 
   @BeforeClass
-  public static void setUpDatabase() {
+  public static void setUpDatabase()
+      throws ExecutionException, InterruptedException, TimeoutException {
     if (EmulatorSpannerHelper.isUsingEmulator()) {
-      // The emulator does not yet support NUMERIC.
-      db = env.getTestHelper().createTestDatabase(SCHEMA_WITHOUT_NUMERIC);
+      Database googleStandardSQLDatabase =
+          env.getTestHelper()
+              .createTestDatabase(GOOGLE_STANDARD_SQL_SCHEMA_WITHOUT_NUMERIC_AND_JSON);
+
+      googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSQLDatabase);
     } else {
-      db = env.getTestHelper().createTestDatabase(SCHEMA_WITH_NUMERIC);
+      Database googleStandardSQLDatabase =
+          env.getTestHelper().createTestDatabase(GOOGLE_STANDARD_SQL_SCHEMA_WITH_NUMERIC_AND_JSON);
+
+      googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSQLDatabase);
+      Database postgreSQLDatabase =
+          env.getTestHelper()
+              .createTestDatabase(
+                  Dialect.POSTGRESQL, Collections.singletonList(POSTGRESQL_SCHEMA_WITH_NUMERIC));
+      postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
     }
-    client = env.getTestHelper().getDatabaseClient(db);
+  }
+
+  @Before
+  public void before() {
+    client =
+        dialect.dialect == Dialect.GOOGLE_STANDARD_SQL ? googleStandardSQLClient : postgreSQLClient;
+  }
+
+  @AfterClass
+  public static void teardown() {
+    ConnectionOptions.closeSpanner();
   }
 
   private static String uniqueString() {
@@ -322,6 +381,38 @@ public class ITWriteTest {
   }
 
   @Test
+  public void writeJson() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    assumeFalse("PostgreSQL does not yet support JSON", dialect.dialect == Dialect.POSTGRESQL);
+    write(baseInsert().set("JsonValue").to(Value.json("{\"rating\":9,\"open\":true}")).build());
+    Struct row = readLastRow("JsonValue");
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getColumnType("JsonValue")).isEqualTo(json());
+    assertThat(row.getJson(0)).isEqualTo("{\"open\":true,\"rating\":9}");
+  }
+
+  @Test
+  public void writeJsonEmpty() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    assumeFalse("PostgreSQL does not yet support JSON", dialect.dialect == Dialect.POSTGRESQL);
+    write(baseInsert().set("JsonValue").to(Value.json("{}")).build());
+    Struct row = readLastRow("JsonValue");
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getColumnType("JsonValue")).isEqualTo(json());
+    assertThat(row.getJson(0)).isEqualTo("{}");
+  }
+
+  @Test
+  public void writeJsonNull() {
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    assumeFalse("PostgreSQL does not yet support JSON", dialect.dialect == Dialect.POSTGRESQL);
+    write(baseInsert().set("JsonValue").to(Value.json(null)).build());
+    Struct row = readLastRow("JsonValue");
+    assertThat(row.isNull(0)).isTrue();
+    assertThat(row.getColumnType("JsonValue")).isEqualTo(json());
+  }
+
+  @Test
   public void writeBytes() {
     ByteArray data = ByteArray.copyFrom("V1");
     write(baseInsert().set("BytesValue").to(data).build());
@@ -390,6 +481,8 @@ public class ITWriteTest {
 
   @Test
   public void writeTimestamp() {
+    assumeFalse(
+        "PostgresSQL does not yet support Timestamp", dialect.dialect == Dialect.POSTGRESQL);
     Timestamp timestamp = Timestamp.parseTimestamp("2016-09-15T00:00:00.111111Z");
     write(baseInsert().set("TimestampValue").to(timestamp).build());
     Struct row = readLastRow("TimestampValue");
@@ -399,6 +492,7 @@ public class ITWriteTest {
 
   @Test
   public void writeTimestampNull() {
+    assumeFalse("PostgreSQL does not yet support Timestamp", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("TimestampValue").to((Timestamp) null).build());
     Struct row = readLastRow("TimestampValue");
     assertThat(row.isNull(0)).isTrue();
@@ -406,6 +500,7 @@ public class ITWriteTest {
 
   @Test
   public void writeCommitTimestamp() {
+    assumeFalse("PostgreSQL does not yet support Timestamp", dialect.dialect == Dialect.POSTGRESQL);
     Timestamp commitTimestamp =
         write(baseInsert().set("TimestampValue").to(Value.COMMIT_TIMESTAMP).build());
     Struct row = readLastRow("TimestampValue");
@@ -414,6 +509,7 @@ public class ITWriteTest {
 
   @Test
   public void writeDate() {
+    assumeFalse("PostgreSQL does not yet support Date", dialect.dialect == Dialect.POSTGRESQL);
     Date date = Date.parseDate("2016-09-15");
     write(baseInsert().set("DateValue").to(date).build());
     Struct row = readLastRow("DateValue");
@@ -423,6 +519,7 @@ public class ITWriteTest {
 
   @Test
   public void writeDateNull() {
+    assumeFalse("PostgreSQL does not yet support Date", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("DateValue").to((Date) null).build());
     Struct row = readLastRow("DateValue");
     assertThat(row.isNull(0)).isTrue();
@@ -431,22 +528,27 @@ public class ITWriteTest {
   @Test
   public void writeNumeric() {
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
-    write(baseInsert().set("NumericValue").to(new BigDecimal("3.141592")).build());
+    write(baseInsert().set("NumericValue").to("3.141592").build());
     Struct row = readLastRow("NumericValue");
     assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getBigDecimal(0)).isEqualTo(BigDecimal.valueOf(3141592, 6));
+    if (dialect.dialect == Dialect.GOOGLE_STANDARD_SQL) {
+      assertThat(row.getBigDecimal(0)).isEqualTo(BigDecimal.valueOf(3141592, 6));
+    } else {
+      assertThat(row.getString(0)).isEqualTo("3.141592");
+    }
   }
 
   @Test
   public void writeNumericNull() {
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
-    write(baseInsert().set("NumericValue").to((Long) null).build());
+    write(baseInsert().set("NumericValue").to((String) null).build());
     Struct row = readLastRow("NumericValue");
     assertThat(row.isNull(0)).isTrue();
   }
 
   @Test
   public void writeBoolArrayNull() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("BoolArrayValue").toBoolArray((boolean[]) null).build());
     Struct row = readLastRow("BoolArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -454,6 +556,7 @@ public class ITWriteTest {
 
   @Test
   public void writeBoolArrayEmpty() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("BoolArrayValue").toBoolArray(new boolean[] {}).build());
     Struct row = readLastRow("BoolArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -462,6 +565,7 @@ public class ITWriteTest {
 
   @Test
   public void writeBoolArray() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("BoolArrayValue").toBoolArray(Arrays.asList(true, null, false)).build());
     Struct row = readLastRow("BoolArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -476,6 +580,7 @@ public class ITWriteTest {
 
   @Test
   public void writeBoolArrayNoNulls() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("BoolArrayValue").toBoolArray(Arrays.asList(true, false)).build());
     Struct row = readLastRow("BoolArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -484,6 +589,7 @@ public class ITWriteTest {
 
   @Test
   public void writeInt64ArrayNull() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("Int64ArrayValue").toInt64Array((long[]) null).build());
     Struct row = readLastRow("Int64ArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -491,6 +597,7 @@ public class ITWriteTest {
 
   @Test
   public void writeInt64ArrayEmpty() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("Int64ArrayValue").toInt64Array(new long[] {}).build());
     Struct row = readLastRow("Int64ArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -499,6 +606,7 @@ public class ITWriteTest {
 
   @Test
   public void writeInt64Array() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("Int64ArrayValue").toInt64Array(Arrays.asList(1L, 2L, null)).build());
     Struct row = readLastRow("Int64ArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -513,6 +621,7 @@ public class ITWriteTest {
 
   @Test
   public void writeInt64ArrayNoNulls() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("Int64ArrayValue").toInt64Array(Arrays.asList(1L, 2L)).build());
     Struct row = readLastRow("Int64ArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -521,6 +630,7 @@ public class ITWriteTest {
 
   @Test
   public void writeFloat64ArrayNull() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("Float64ArrayValue").toFloat64Array((double[]) null).build());
     Struct row = readLastRow("Float64ArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -528,6 +638,7 @@ public class ITWriteTest {
 
   @Test
   public void writeFloat64ArrayEmpty() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("Float64ArrayValue").toFloat64Array(new double[] {}).build());
     Struct row = readLastRow("Float64ArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -536,6 +647,7 @@ public class ITWriteTest {
 
   @Test
   public void writeFloat64Array() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(
         baseInsert()
             .set("Float64ArrayValue")
@@ -554,6 +666,7 @@ public class ITWriteTest {
 
   @Test
   public void writeFloat64ArrayNoNulls() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("Float64ArrayValue").toFloat64Array(Arrays.asList(1.0, 2.0)).build());
     Struct row = readLastRow("Float64ArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -564,6 +677,7 @@ public class ITWriteTest {
 
   @Test
   public void writeStringArrayNull() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("StringArrayValue").toStringArray(null).build());
     Struct row = readLastRow("StringArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -571,6 +685,7 @@ public class ITWriteTest {
 
   @Test
   public void writeStringArrayEmpty() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("StringArrayValue").toStringArray(Collections.emptyList()).build());
     Struct row = readLastRow("StringArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -579,6 +694,7 @@ public class ITWriteTest {
 
   @Test
   public void writeStringArray() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(
         baseInsert().set("StringArrayValue").toStringArray(Arrays.asList("a", null, "b")).build());
     Struct row = readLastRow("StringArrayValue");
@@ -587,7 +703,57 @@ public class ITWriteTest {
   }
 
   @Test
+  public void writeJsonArrayNull() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    write(baseInsert().set("JsonArrayValue").toJsonArray(null).build());
+    Struct row = readLastRow("JsonArrayValue");
+    assertThat(row.isNull(0)).isTrue();
+    assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
+  }
+
+  @Test
+  public void writeJsonArrayEmpty() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    write(baseInsert().set("JsonArrayValue").toJsonArray(Collections.emptyList()).build());
+    Struct row = readLastRow("JsonArrayValue");
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
+    assertThat(row.getJsonList(0)).containsExactly();
+  }
+
+  @Test
+  public void writeJsonArray() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    write(baseInsert().set("JsonArrayValue").toJsonArray(Arrays.asList("[]", null, "{}")).build());
+    Struct row = readLastRow("JsonArrayValue");
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
+    assertThat(row.getJsonList(0)).containsExactly("[]", null, "{}").inOrder();
+  }
+
+  @Test
+  public void writeJsonArrayNoNulls() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    write(
+        baseInsert()
+            .set("JsonArrayValue")
+            .toJsonArray(Arrays.asList("[]", "{\"color\":\"red\",\"value\":\"#f00\"}", "{}"))
+            .build());
+    Struct row = readLastRow("JsonArrayValue");
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getColumnType("JsonArrayValue")).isEqualTo(array(json()));
+    assertThat(row.getJsonList(0))
+        .containsExactly("[]", "{\"color\":\"red\",\"value\":\"#f00\"}", "{}")
+        .inOrder();
+  }
+
+  @Test
   public void writeBytesArrayNull() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("BytesArrayValue").toBytesArray(null).build());
     Struct row = readLastRow("BytesArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -595,6 +761,7 @@ public class ITWriteTest {
 
   @Test
   public void writeBytesArrayEmpty() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("BytesArrayValue").toBytesArray(Collections.emptyList()).build());
     Struct row = readLastRow("BytesArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -603,6 +770,7 @@ public class ITWriteTest {
 
   @Test
   public void writeBytesArray() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     List<ByteArray> data = Arrays.asList(ByteArray.copyFrom("a"), ByteArray.copyFrom("b"), null);
     write(baseInsert().set("BytesArrayValue").toBytesArray(data).build());
     Struct row = readLastRow("BytesArrayValue");
@@ -612,6 +780,7 @@ public class ITWriteTest {
 
   @Test
   public void writeTimestampArrayNull() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("TimestampArrayValue").toTimestampArray(null).build());
     Struct row = readLastRow("TimestampArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -619,6 +788,7 @@ public class ITWriteTest {
 
   @Test
   public void writeTimestampArrayEmpty() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(
         baseInsert().set("TimestampArrayValue").toTimestampArray(Collections.emptyList()).build());
     Struct row = readLastRow("TimestampArrayValue");
@@ -628,6 +798,7 @@ public class ITWriteTest {
 
   @Test
   public void writeTimestampArray() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     Timestamp t1 = Timestamp.parseTimestamp("2016-09-18T00:00:00Z");
     Timestamp t2 = Timestamp.parseTimestamp("2016-09-19T00:00:00Z");
     write(
@@ -642,6 +813,7 @@ public class ITWriteTest {
 
   @Test
   public void writeDateArrayNull() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("DateArrayValue").toDateArray(null).build());
     Struct row = readLastRow("DateArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -649,6 +821,7 @@ public class ITWriteTest {
 
   @Test
   public void writeDateArrayEmpty() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     write(baseInsert().set("DateArrayValue").toDateArray(Collections.emptyList()).build());
     Struct row = readLastRow("DateArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -657,6 +830,7 @@ public class ITWriteTest {
 
   @Test
   public void writeDateArray() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     Date d1 = Date.parseDate("2016-09-18");
     Date d2 = Date.parseDate("2016-09-19");
     write(baseInsert().set("DateArrayValue").toDateArray(Arrays.asList(d1, null, d2)).build());
@@ -667,6 +841,7 @@ public class ITWriteTest {
 
   @Test
   public void writeNumericArrayNull() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     write(baseInsert().set("NumericArrayValue").toNumericArray(null).build());
     Struct row = readLastRow("NumericArrayValue");
@@ -675,6 +850,7 @@ public class ITWriteTest {
 
   @Test
   public void writeNumericArrayEmpty() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     write(baseInsert().set("NumericArrayValue").toNumericArray(ImmutableList.of()).build());
     Struct row = readLastRow("NumericArrayValue");
@@ -684,6 +860,7 @@ public class ITWriteTest {
 
   @Test
   public void writeNumericArray() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     write(
         baseInsert()
@@ -700,6 +877,7 @@ public class ITWriteTest {
 
   @Test
   public void writeNumericArrayNoNulls() {
+    assumeFalse("PostgreSQL does not yet support Array", dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     write(
         baseInsert()

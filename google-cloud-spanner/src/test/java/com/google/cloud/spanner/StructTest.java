@@ -22,6 +22,7 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.common.testing.EqualsTester;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -206,6 +207,32 @@ public class StructTest {
     tester.addEqualityGroup(emptyFieldStruct1, emptyFieldStruct2);
 
     tester.testEquals();
+
+    // PgNumeric
+    tester.addEqualityGroup(
+        Struct.newBuilder().set("x").to(Value.pgNumeric("1.23")).build(),
+        Struct.newBuilder().set("x").to(Value.pgNumeric("1.23")).build());
+    tester.addEqualityGroup(
+        Struct.newBuilder().set("x").to(Value.pgNumeric("NaN")).build(),
+        Struct.newBuilder().set("x").to(Value.pgNumeric("NaN")).build());
+    tester.addEqualityGroup(
+        Struct.newBuilder().set("x").to(Value.pgNumeric(null)).build(),
+        Struct.newBuilder().set("x").to(Value.pgNumeric(null)).build());
+    tester.addEqualityGroup(
+        Struct.newBuilder()
+            .set("x")
+            .to(Value.pgNumericArray(Arrays.asList(null, "1.23", "NaN")))
+            .build(),
+        Struct.newBuilder()
+            .set("x")
+            .to(Value.pgNumericArray(Arrays.asList(null, "1.23", "NaN")))
+            .build());
+    tester.addEqualityGroup(
+        Struct.newBuilder().set("x").to(Value.pgNumericArray(Collections.emptyList())).build(),
+        Struct.newBuilder().set("x").to(Value.pgNumericArray(Collections.emptyList())).build());
+    tester.addEqualityGroup(
+        Struct.newBuilder().set("x").to(Value.pgNumericArray(null)).build(),
+        Struct.newBuilder().set("x").to(Value.pgNumericArray(null)).build());
   }
 
   @Test

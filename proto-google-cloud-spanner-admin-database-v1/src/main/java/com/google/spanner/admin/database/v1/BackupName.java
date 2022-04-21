@@ -211,9 +211,9 @@ public class BackupName implements ResourceName {
     }
 
     private Builder(BackupName backupName) {
-      project = backupName.project;
-      instance = backupName.instance;
-      backup = backupName.backup;
+      this.project = backupName.project;
+      this.instance = backupName.instance;
+      this.backup = backupName.backup;
     }
 
     public BackupName build() {

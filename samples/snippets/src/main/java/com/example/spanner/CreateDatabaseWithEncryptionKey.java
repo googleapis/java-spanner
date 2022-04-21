@@ -54,7 +54,7 @@ public class CreateDatabaseWithEncryptionKey {
     }
   }
 
-  static Void createDatabaseWithEncryptionKey(DatabaseAdminClient adminClient,
+  static void createDatabaseWithEncryptionKey(DatabaseAdminClient adminClient,
       String projectId, String instanceId, String databaseId, String kmsKeyName) {
     final Database databaseToCreate = adminClient
         .newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
@@ -95,7 +95,6 @@ public class CreateDatabaseWithEncryptionKey {
       // If the operation timed out propagates the timeout
       throw SpannerExceptionFactory.propagateTimeout(e);
     }
-    return null;
   }
 }
 // [END spanner_create_database_with_encryption_key]

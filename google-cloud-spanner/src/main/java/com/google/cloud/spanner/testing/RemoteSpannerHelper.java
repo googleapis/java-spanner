@@ -20,14 +20,18 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.common.collect.Iterables;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -93,7 +97,7 @@ public class RemoteSpannerHelper {
    * accordingly.
    */
   public Database createTestDatabase(String... statements) throws SpannerException {
-    return createTestDatabase(Arrays.asList(statements));
+    return createTestDatabase(Dialect.GOOGLE_STANDARD_SQL, Arrays.asList(statements));
   }
 
   /**
@@ -115,20 +119,38 @@ public class RemoteSpannerHelper {
    * DATABASE ...} statement should not be included; an appropriate name will be chosen and the
    * statement generated accordingly.
    */
-  public Database createTestDatabase(Iterable<String> statements) throws SpannerException {
+  public Database createTestDatabase(Dialect dialect, Iterable<String> statements)
+      throws SpannerException {
     String dbId = getUniqueDatabaseId();
+    Database databaseToCreate =
+        client
+            .getDatabaseAdminClient()
+            .newDatabaseBuilder(
+                DatabaseId.of(instanceId.getProject(), instanceId.getInstance(), dbId))
+            .setDialect(dialect)
+            .build();
     try {
+      Iterable<String> ddlStatements =
+          dialect == Dialect.POSTGRESQL ? Collections.emptyList() : statements;
       OperationFuture<Database, CreateDatabaseMetadata> op =
-          client
-              .getDatabaseAdminClient()
-              .createDatabase(instanceId.getInstance(), dbId, statements);
+          client.getDatabaseAdminClient().createDatabase(databaseToCreate, ddlStatements);
       Database db = op.get();
+      if (dialect == Dialect.POSTGRESQL && Iterables.size(statements) > 0) {
+        client
+            .getDatabaseAdminClient()
+            .updateDatabaseDdl(instanceId.getInstance(), dbId, statements, null)
+            .get();
+      }
       logger.log(Level.FINE, "Created test database {0}", db.getId());
       dbs.add(db);
       return db;
     } catch (Exception e) {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
+  }
+
+  public Database createTestDatabase(Iterable<String> statements) throws SpannerException {
+    return createTestDatabase(Dialect.GOOGLE_STANDARD_SQL, statements);
   }
 
   /** Deletes all the databases created via {@code createTestDatabase}. Shuts down the client. */

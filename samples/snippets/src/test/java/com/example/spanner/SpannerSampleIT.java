@@ -19,20 +19,27 @@ package com.example.spanner;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Backup;
 import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.InstanceAdminClient;
+import com.google.cloud.spanner.InstanceConfigId;
 import com.google.cloud.spanner.InstanceId;
+import com.google.cloud.spanner.InstanceInfo;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -50,10 +57,20 @@ public class SpannerSampleIT {
   // The instance needs to exist for tests to pass.
   private static final String instanceId = System.getProperty("spanner.test.instance");
   private static final String baseDbId = System.getProperty("spanner.sample.database");
+  private static final String keyLocation =
+      Preconditions.checkNotNull(System.getProperty("spanner.test.key.location"));
+  private static final String keyRing =
+      Preconditions.checkNotNull(System.getProperty("spanner.test.key.ring"));
+  private static final String keyName =
+      Preconditions.checkNotNull(System.getProperty("spanner.test.key.name"));
   private static final String databaseId = formatForTest(baseDbId);
+  private static final String encryptedDatabaseId = formatForTest(baseDbId);
+  private static final String encryptedBackupId = formatForTest(baseDbId);
+  private static final String encryptedRestoreId = formatForTest(baseDbId);
   static Spanner spanner;
   static DatabaseId dbId;
   static DatabaseAdminClient dbClient;
+  private static String key;
   private long lastUpdateDataTimeInMillis;
 
   private String runSample(String command) throws Exception {
@@ -75,6 +92,8 @@ public class SpannerSampleIT {
     dbId = DatabaseId.of(options.getProjectId(), instanceId, databaseId);
     // Delete stale test databases that have been created earlier by this test, but not deleted.
     deleteStaleTestDatabases(instanceId, baseDbId);
+    key = String.format("projects/%s/locations/%s/keyRings/%s/cryptoKeys/%s",
+        options.getProjectId(), keyLocation, keyRing, keyName);
   }
   
   static void deleteStaleTestDatabases(String instanceId, String baseDbId) {
@@ -102,6 +121,9 @@ public class SpannerSampleIT {
     dbClient.dropDatabase(dbId.getInstanceId().getInstance(), dbId.getDatabase());
     dbClient.dropDatabase(
         dbId.getInstanceId().getInstance(), SpannerSample.createRestoredSampleDbId(dbId));
+    dbClient.dropDatabase(instanceId, encryptedDatabaseId);
+    dbClient.dropDatabase(instanceId, encryptedRestoreId);
+    dbClient.deleteBackup(instanceId, encryptedBackupId);
     spanner.close();
   }
 
@@ -296,7 +318,7 @@ public class SpannerSampleIT {
 
     out = runSample("cancelcreatebackup");
     assertThat(out).contains(
-        "Backup operation for [" + backupId + "_cancel] successfully cancelled");
+        "Backup operation for [" + backupId + "_cancel] successfully");
 
     // TODO: remove try-catch when filtering on metadata fields works.
     try {
@@ -385,6 +407,76 @@ public class SpannerSampleIT {
     out = runSample("deletebackup");
     assertThat(out).contains("Deleted backup [" + backupId + "]");
   }
+  
+  @Test
+  public void testEncryptedDatabaseAndBackupSamples() throws Exception {
+    String projectId = spanner.getOptions().getProjectId();
+    // Create a separate instance for this test to prevent multiple parallel backup operations on
+    // the same instance that need to wait for each other.
+    String instanceId = String.format("encrypted-test-%s", UUID.randomUUID());
+    InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
+    instanceAdminClient
+        .createInstance(InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
+            .setDisplayName("Encrypted test instance")
+            .setInstanceConfigId(InstanceConfigId.of(projectId, "regional-" + keyLocation))
+            .setNodeCount(1).build())
+        .get();
+    try {
+      String out = SampleRunner
+          .runSample(() -> CreateDatabaseWithEncryptionKey.createDatabaseWithEncryptionKey(dbClient,
+              projectId, instanceId, encryptedDatabaseId, key));
+      assertThat(out).contains(String.format(
+          "Database projects/%s/instances/%s/databases/%s created with encryption key %s",
+          projectId, instanceId, encryptedDatabaseId, key));
+
+      out = SampleRunner.runSampleWithRetry(
+          () -> CreateBackupWithEncryptionKey.createBackupWithEncryptionKey(dbClient, projectId,
+              instanceId, encryptedDatabaseId, encryptedBackupId, key),
+          new ShouldRetryBackupOperation());
+      assertThat(out).containsMatch(String.format(
+          "Backup projects/%s/instances/%s/backups/%s of size \\d+ bytes "
+              + "was created at (.*) using encryption key %s",
+          projectId, instanceId, encryptedBackupId, key));
+
+      out = SampleRunner.runSampleWithRetry(
+          () -> RestoreBackupWithEncryptionKey.restoreBackupWithEncryptionKey(dbClient, projectId,
+              instanceId, encryptedBackupId, encryptedRestoreId, key),
+          new ShouldRetryBackupOperation());
+      assertThat(out).contains(String.format(
+          "Database projects/%s/instances/%s/databases/%s"
+              + " restored to projects/%s/instances/%s/databases/%s"
+              + " from backup projects/%s/instances/%s/backups/%s" + " using encryption key %s",
+          projectId, instanceId, encryptedDatabaseId, projectId, instanceId, encryptedRestoreId,
+          projectId, instanceId, encryptedBackupId, key));
+    } finally {
+      // Delete the backups from the test instance first, as the instance can only be deleted once
+      // all backups have been deleted.
+      deleteAllBackups(instanceId);
+      instanceAdminClient.deleteInstance(instanceId);
+    }
+  }
+
+  private void deleteAllBackups(String instanceId) throws InterruptedException {
+    for (Backup backup : dbClient.listBackups(instanceId).iterateAll()) {
+      int attempts = 0;
+      while (attempts < 30) {
+        try {
+          attempts++;
+          backup.delete();
+          break;
+        } catch (SpannerException e) {
+          if (e.getErrorCode() == ErrorCode.FAILED_PRECONDITION && e.getMessage()
+              .contains("Please try deleting the backup once the restore or post-restore optimize "
+                  + "operations have completed on these databases.")) {
+            // Wait 30 seconds and then retry.
+            Thread.sleep(30_000L);
+          } else {
+            throw e;
+          }
+        }
+      }
+    }
+  }
 
   private String runSampleRunnable(Runnable sample) {
     PrintStream stdOut = System.out;
@@ -434,5 +526,29 @@ public class SpannerSampleIT {
   
   static String formatForTest(String name) {
     return name + "-" + UUID.randomUUID().toString().substring(0, DBID_LENGTH);
+  }
+
+  static class ShouldRetryBackupOperation implements Predicate<SpannerException> {
+    private static final int MAX_ATTEMPTS = 20;
+    private int attempts = 0;
+
+    @Override
+    public boolean test(SpannerException e) {
+      if (e.getErrorCode() == ErrorCode.FAILED_PRECONDITION
+          && e.getMessage().contains("Please retry the operation once the pending")) {
+        attempts++;
+        if (attempts == MAX_ATTEMPTS) {
+          // Throw custom exception so it is easier to locate in the log why it went wrong.
+          throw SpannerExceptionFactory.newSpannerException(ErrorCode.DEADLINE_EXCEEDED,
+              String.format("Operation failed %d times because of other pending operations. "
+                  + "Giving up operation.\n", attempts),
+              e);
+        }
+        // Wait one minute before retrying.
+        Uninterruptibles.sleepUninterruptibly(60L, TimeUnit.SECONDS);
+        return true;
+      }
+      return false;
+    }
   }
 }

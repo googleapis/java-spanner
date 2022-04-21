@@ -21,12 +21,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
@@ -36,61 +38,116 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.Value;
-import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import com.google.cloud.spanner.connection.ConnectionOptions;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.primitives.Doubles;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import org.junit.AfterClass;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
 
 @Category(ParallelIntegrationTest.class)
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class ITResultSetGetValue {
+
+  @Parameterized.Parameters(name = "Dialect = {0}")
+  public static List<DialectTestParameter> data() {
+    List<DialectTestParameter> params = new ArrayList<>();
+    params.add(new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL));
+    if (!EmulatorSpannerHelper.isUsingEmulator()) {
+      params.add(new DialectTestParameter(Dialect.POSTGRESQL));
+    }
+    return params;
+  }
+
+  @Parameterized.Parameter() public DialectTestParameter dialect;
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
   // For floats / doubles comparison
   private static final double DELTA = 1e-15;
   private static final String TABLE_NAME = "TestTable";
-  private static DatabaseClient databaseClient;
+  private static DatabaseClient googleStandardSQLClient;
+  private static DatabaseClient postgreSQLClient;
+  private DatabaseClient databaseClient;
 
   @BeforeClass
-  public static void beforeClass() {
-    final RemoteSpannerHelper testHelper = env.getTestHelper();
-    final Database database =
-        testHelper.createTestDatabase(
-            "CREATE TABLE "
-                + TABLE_NAME
-                + "("
-                + "Id INT64 NOT NULL,"
-                + "bool BOOL,"
-                + "int64 INT64,"
-                + "float64 FLOAT64,"
-                + "numeric NUMERIC,"
-                + "string STRING(MAX),"
-                + "bytes BYTES(MAX),"
-                + "timestamp TIMESTAMP,"
-                + "date DATE,"
-                + "boolArray ARRAY<BOOL>,"
-                + "int64Array ARRAY<INT64>,"
-                + "float64Array ARRAY<FLOAT64>,"
-                + "numericArray ARRAY<NUMERIC>,"
-                + "stringArray ARRAY<STRING(MAX)>,"
-                + "bytesArray ARRAY<BYTES(MAX)>,"
-                + "timestampArray ARRAY<TIMESTAMP>,"
-                + "dateArray ARRAY<DATE>"
-                + ") PRIMARY KEY (Id)");
+  public static void beforeClass()
+      throws ExecutionException, InterruptedException, TimeoutException {
+    Database googleStandardSqlDatabase =
+        env.getTestHelper()
+            .createTestDatabase(
+                "CREATE TABLE "
+                    + TABLE_NAME
+                    + "("
+                    + "Id INT64 NOT NULL,"
+                    + "bool BOOL,"
+                    + "int64 INT64,"
+                    + "float64 FLOAT64,"
+                    + "numeric NUMERIC,"
+                    + "string STRING(MAX),"
+                    + "bytes BYTES(MAX),"
+                    + "timestamp TIMESTAMP,"
+                    + "date DATE,"
+                    + "json JSON,"
+                    + "boolArray ARRAY<BOOL>,"
+                    + "int64Array ARRAY<INT64>,"
+                    + "float64Array ARRAY<FLOAT64>,"
+                    + "numericArray ARRAY<NUMERIC>,"
+                    + "stringArray ARRAY<STRING(MAX)>,"
+                    + "bytesArray ARRAY<BYTES(MAX)>,"
+                    + "timestampArray ARRAY<TIMESTAMP>,"
+                    + "dateArray ARRAY<DATE>,"
+                    + "jsonArray ARRAY<JSON>"
+                    + ") PRIMARY KEY (Id)");
+    googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSqlDatabase);
+    if (!EmulatorSpannerHelper.isUsingEmulator()) {
+      Database postgreSQLDatabase =
+          env.getTestHelper()
+              .createTestDatabase(
+                  Dialect.POSTGRESQL,
+                  Collections.singletonList(
+                      "CREATE TABLE "
+                          + TABLE_NAME
+                          + "("
+                          + "id BIGINT PRIMARY KEY,"
+                          + "bool BOOL,"
+                          + "int64 BIGINT,"
+                          + "float64 DOUBLE PRECISION,"
+                          + "numeric NUMERIC,"
+                          + "string VARCHAR,"
+                          + "bytes BYTEA"
+                          + ")"));
+      postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
+    }
+  }
 
-    databaseClient = testHelper.getDatabaseClient(database);
+  @Before
+  public void before() {
+    databaseClient =
+        dialect.dialect == Dialect.GOOGLE_STANDARD_SQL ? googleStandardSQLClient : postgreSQLClient;
+  }
+
+  @AfterClass
+  public static void teardown() {
+    ConnectionOptions.closeSpanner();
   }
 
   @Test
-  public void testReadNonNullValues() {
+  public void testReadNonNullValuesGoogleStandardSQL() {
+    Assume.assumeTrue(dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
     databaseClient.write(
         Collections.singletonList(
             Mutation.newInsertBuilder(TABLE_NAME)
@@ -112,6 +169,8 @@ public class ITResultSetGetValue {
                 .to(Timestamp.ofTimeSecondsAndNanos(1, 0))
                 .set("date")
                 .to(Date.fromYearMonthDay(2021, 1, 2))
+                .set("json")
+                .to(Value.json("{\"key\":\"value\"}"))
                 .set("boolArray")
                 .toBoolArray(new boolean[] {false, true})
                 .set("int64Array")
@@ -134,8 +193,9 @@ public class ITResultSetGetValue {
                 .toDateArray(
                     Arrays.asList(
                         Date.fromYearMonthDay(2021, 2, 3), Date.fromYearMonthDay(2021, 3, 4)))
+                .set("jsonArray")
+                .toJsonArray(Arrays.asList("{\"key1\":\"value1\"}", "{\"key2\":\"value2\"}"))
                 .build()));
-
     try (ResultSet resultSet =
         databaseClient
             .singleUse()
@@ -152,6 +212,7 @@ public class ITResultSetGetValue {
       assertEquals(
           Value.timestamp(Timestamp.ofTimeSecondsAndNanos(1, 0)), resultSet.getValue("timestamp"));
       assertEquals(Value.date(Date.fromYearMonthDay(2021, 1, 2)), resultSet.getValue("date"));
+      assertEquals(Value.json("{\"key\":\"value\"}"), resultSet.getValue("json"));
       assertEquals(Value.boolArray(new boolean[] {false, true}), resultSet.getValue("boolArray"));
       assertEquals(Value.int64Array(new long[] {100L, 200L}), resultSet.getValue("int64Array"));
       assertArrayEquals(
@@ -177,11 +238,52 @@ public class ITResultSetGetValue {
           Value.dateArray(
               Arrays.asList(Date.fromYearMonthDay(2021, 2, 3), Date.fromYearMonthDay(2021, 3, 4))),
           resultSet.getValue("dateArray"));
+      assertEquals(
+          Value.jsonArray(Arrays.asList("{\"key1\":\"value1\"}", "{\"key2\":\"value2\"}")),
+          resultSet.getValue("jsonArray"));
     }
   }
 
   @Test
-  public void testReadNullValues() {
+  public void testReadNonNullValuesPostgreSQL() {
+    Assume.assumeTrue(dialect.dialect == Dialect.POSTGRESQL);
+    databaseClient.write(
+        Collections.singletonList(
+            Mutation.newInsertBuilder(TABLE_NAME)
+                .set("id")
+                .to(1L)
+                .set("bool")
+                .to(true)
+                .set("int64")
+                .to(10L)
+                .set("float64")
+                .to(20D)
+                .set("numeric")
+                .to(new BigDecimal("30"))
+                .set("string")
+                .to("stringValue")
+                .set("bytes")
+                .to(ByteArray.copyFrom("bytesValue"))
+                .build()));
+
+    try (ResultSet resultSet =
+        databaseClient
+            .singleUse()
+            .executeQuery(Statement.of("SELECT * FROM " + TABLE_NAME + " WHERE id = 1"))) {
+      resultSet.next();
+      assertEquals(Value.int64(1L), resultSet.getValue("id"));
+      assertEquals(Value.bool(true), resultSet.getValue("bool"));
+      assertEquals(Value.int64(10L), resultSet.getValue("int64"));
+      assertEquals(20D, resultSet.getValue("float64").getFloat64(), 1e-15);
+      assertEquals(Value.pgNumeric("30"), resultSet.getValue("numeric"));
+      assertEquals(Value.string("stringValue"), resultSet.getValue("string"));
+      assertEquals(Value.bytes(ByteArray.copyFrom("bytesValue")), resultSet.getValue("bytes"));
+    }
+  }
+
+  @Test
+  public void testReadNullValuesGoogleStandardSQL() {
+    Assume.assumeTrue(dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
     databaseClient.write(
         Collections.singletonList(Mutation.newInsertBuilder(TABLE_NAME).set("Id").to(2L).build()));
     try (ResultSet resultSet =
@@ -208,6 +310,8 @@ public class ITResultSetGetValue {
           IllegalStateException.class, () -> resultSet.getValue("timestamp").getTimestamp());
       assertTrue(resultSet.getValue("date").isNull());
       assertThrows(IllegalStateException.class, () -> resultSet.getValue("date").getDate());
+      assertTrue(resultSet.getValue("json").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("json").getJson());
       assertTrue(resultSet.getValue("boolArray").isNull());
       assertThrows(
           IllegalStateException.class, () -> resultSet.getValue("boolArray").getBoolArray());
@@ -233,11 +337,42 @@ public class ITResultSetGetValue {
       assertTrue(resultSet.getValue("dateArray").isNull());
       assertThrows(
           IllegalStateException.class, () -> resultSet.getValue("dateArray").getDateArray());
+      assertTrue(resultSet.getValue("jsonArray").isNull());
+      assertThrows(
+          IllegalStateException.class, () -> resultSet.getValue("jsonArray").getJsonArray());
+    }
+  }
+
+  @Test
+  public void testReadNullValuesPostgreSQL() {
+    Assume.assumeTrue(dialect.dialect == Dialect.POSTGRESQL);
+    databaseClient.write(
+        Collections.singletonList(Mutation.newInsertBuilder(TABLE_NAME).set("id").to(2L).build()));
+    try (ResultSet resultSet =
+        databaseClient
+            .singleUse()
+            .executeQuery(Statement.of("SELECT * FROM " + TABLE_NAME + " WHERE id = 2"))) {
+      resultSet.next();
+
+      assertEquals(Value.int64(2L), resultSet.getValue("id"));
+      assertTrue(resultSet.getValue("bool").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("bool").getBool());
+      assertTrue(resultSet.getValue("int64").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("int64").getInt64());
+      assertTrue(resultSet.getValue("float64").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("float64").getFloat64());
+      assertTrue(resultSet.getValue("numeric").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("numeric").getNumeric());
+      assertTrue(resultSet.getValue("string").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("string").getString());
+      assertTrue(resultSet.getValue("bytes").isNull());
+      assertThrows(IllegalStateException.class, () -> resultSet.getValue("bytes").getBytes());
     }
   }
 
   @Test
   public void testReadNullValuesInArrays() {
+    assumeFalse("PostgreSQL does not yet support Arrays", dialect.dialect == Dialect.POSTGRESQL);
     databaseClient.write(
         Collections.singletonList(
             Mutation.newInsertBuilder(TABLE_NAME)
@@ -259,6 +394,8 @@ public class ITResultSetGetValue {
                 .toTimestampArray(Arrays.asList(null, Timestamp.ofTimeSecondsAndNanos(20, 0)))
                 .set("dateArray")
                 .toDateArray(Arrays.asList(Date.fromYearMonthDay(2021, 2, 3), null))
+                .set("jsonArray")
+                .toJsonArray(Arrays.asList("{\"key1\":\"value1\"}", null))
                 .build()));
 
     try (ResultSet resultSet =
@@ -286,11 +423,15 @@ public class ITResultSetGetValue {
       assertEquals(
           Value.dateArray(Arrays.asList(Date.fromYearMonthDay(2021, 2, 3), null)),
           resultSet.getValue("dateArray"));
+      assertEquals(
+          Value.jsonArray(Arrays.asList("{\"key1\":\"value1\"}", null)),
+          resultSet.getValue("jsonArray"));
     }
   }
 
   @Test
-  public void testReadNonFloat64Literals() {
+  public void testReadNonFloat64LiteralsGoogleStandardSQL() {
+    Assume.assumeTrue(dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
     try (ResultSet resultSet =
         databaseClient
             .singleUse()
@@ -417,7 +558,32 @@ public class ITResultSetGetValue {
   }
 
   @Test
-  public void testReadFloat64Literals() {
+  public void testReadNonFloat64LiteralsPostgreSQL() {
+    Assume.assumeTrue(dialect.dialect == Dialect.POSTGRESQL);
+    try (ResultSet resultSet =
+        databaseClient
+            .singleUse()
+            .executeQuery(
+                Statement.of(
+                    "SELECT "
+                        + "TRUE AS bool,"
+                        + "1 AS int64,"
+                        + "CAST('100' AS numeric) AS numeric,"
+                        + "'stringValue' AS string,"
+                        + "CAST('bytesValue' AS BYTEA) AS bytes"))) {
+      resultSet.next();
+
+      assertEquals(Value.bool(true), resultSet.getValue("bool"));
+      assertEquals(Value.int64(1L), resultSet.getValue("int64"));
+      assertEquals(Value.pgNumeric("100"), resultSet.getValue("numeric"));
+      assertEquals(Value.string("stringValue"), resultSet.getValue("string"));
+      assertEquals(Value.bytes(ByteArray.copyFrom("bytesValue")), resultSet.getValue("bytes"));
+    }
+  }
+
+  @Test
+  public void testReadFloat64LiteralsGoogleStandardSQL() {
+    Assume.assumeTrue(dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
     try (ResultSet resultSet =
         databaseClient
             .singleUse()
@@ -442,6 +608,16 @@ public class ITResultSetGetValue {
       assertEquals(40D, struct.getDouble("structFloat64"), DELTA);
       assertArrayEquals(
           new double[] {50D, 60D}, struct.getDoubleArray("structFloat64Array"), DELTA);
+    }
+  }
+
+  @Test
+  public void testReadFloat64LiteralsPostgreSQL() {
+    Assume.assumeTrue(dialect.dialect == Dialect.POSTGRESQL);
+    try (ResultSet resultSet =
+        databaseClient.singleUse().executeQuery(Statement.of("SELECT 10.0 AS float64"))) {
+      resultSet.next();
+      assertEquals(10D, resultSet.getValue("float64").getFloat64(), DELTA);
     }
   }
 }

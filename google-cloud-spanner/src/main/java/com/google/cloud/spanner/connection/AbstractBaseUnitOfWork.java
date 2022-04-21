@@ -22,12 +22,13 @@ import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -51,6 +52,8 @@ import javax.annotation.concurrent.GuardedBy;
 abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   private final StatementExecutor statementExecutor;
   private final StatementTimeout statementTimeout;
+  protected final String transactionTag;
+  protected final RpcPriority rpcPriority;
 
   /** Class for keeping track of the stacktrace of the caller of an async statement. */
   static final class SpannerAsyncExecutionException extends RuntimeException {
@@ -82,6 +85,8 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   abstract static class Builder<B extends Builder<?, T>, T extends AbstractBaseUnitOfWork> {
     private StatementExecutor statementExecutor;
     private StatementTimeout statementTimeout = new StatementTimeout();
+    private String transactionTag;
+    private RpcPriority rpcPriority;
 
     Builder() {}
 
@@ -102,6 +107,16 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
       return self();
     }
 
+    B setTransactionTag(@Nullable String tag) {
+      this.transactionTag = tag;
+      return self();
+    }
+
+    B setRpcPriority(@Nullable RpcPriority rpcPriority) {
+      this.rpcPriority = rpcPriority;
+      return self();
+    }
+
     abstract T build();
   }
 
@@ -109,6 +124,8 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     Preconditions.checkState(builder.statementExecutor != null, "No statement executor specified");
     this.statementExecutor = builder.statementExecutor;
     this.statementTimeout = builder.statementTimeout;
+    this.transactionTag = builder.transactionTag;
+    this.rpcPriority = builder.rpcPriority;
   }
 
   StatementExecutor getStatementExecutor() {

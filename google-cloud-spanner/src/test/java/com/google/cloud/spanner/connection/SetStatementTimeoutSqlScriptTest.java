@@ -16,32 +16,24 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.cloud.NoCredentials;
-import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConnection;
-import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConnectionProvider;
-import com.google.cloud.spanner.connection.SqlScriptVerifier.SpannerGenericConnection;
+import com.google.cloud.spanner.Dialect;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
-@RunWith(JUnit4.class)
-public class SetStatementTimeoutSqlScriptTest {
+public class SetStatementTimeoutSqlScriptTest extends AbstractSqlScriptTest {
 
-  static class TestConnectionProvider implements GenericConnectionProvider {
-    @Override
-    public GenericConnection getConnection() {
-      return SpannerGenericConnection.of(
-          ConnectionImplTest.createConnection(
-              ConnectionOptions.newBuilder()
-                  .setUri(ConnectionImplTest.URI)
-                  .setCredentials(NoCredentials.getInstance())
-                  .build()));
+  private String getFile(Dialect dialect) {
+    switch (dialect) {
+      case POSTGRESQL:
+        return "postgresql/SetStatementTimeoutTest.sql";
+      case GOOGLE_STANDARD_SQL:
+      default:
+        return "SetStatementTimeoutTest.sql";
     }
   }
 
   @Test
   public void testSetStatementTimeoutScript() throws Exception {
-    SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider());
-    verifier.verifyStatementsInFile("SetStatementTimeoutTest.sql", getClass());
+    SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider(dialect));
+    verifier.verifyStatementsInFile(getFile(dialect), getClass(), true);
   }
 }

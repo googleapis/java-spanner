@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
@@ -24,9 +25,11 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.Duration;
 import com.google.protobuf.util.Durations;
+import com.google.spanner.v1.RequestOptions.Priority;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -114,6 +117,48 @@ class ClientSideStatementValueConverters {
           }
           return duration;
         }
+      }
+      return null;
+    }
+  }
+
+  /** Converter from string to {@link Duration}. */
+  static class PgDurationConverter implements ClientSideStatementValueConverter<Duration> {
+    private final Pattern allowedValues;
+
+    public PgDurationConverter(String allowedValues) {
+      // Remove the parentheses from the beginning and end.
+      this.allowedValues =
+          Pattern.compile(
+              "(?is)\\A" + allowedValues.substring(1, allowedValues.length() - 1) + "\\z");
+    }
+
+    @Override
+    public Class<Duration> getParameterClass() {
+      return Duration.class;
+    }
+
+    @Override
+    public Duration convert(String value) {
+      Matcher matcher = allowedValues.matcher(value);
+      if (matcher.find()) {
+        Duration duration;
+        if (matcher.group(0).equalsIgnoreCase("default")) {
+          return Durations.fromNanos(0L);
+        } else if (matcher.group(2) == null) {
+          duration =
+              ReadOnlyStalenessUtil.createDuration(
+                  Long.parseLong(matcher.group(0)), TimeUnit.MILLISECONDS);
+        } else {
+          duration =
+              ReadOnlyStalenessUtil.createDuration(
+                  Long.parseLong(matcher.group(1)),
+                  ReadOnlyStalenessUtil.parseTimeUnit(matcher.group(2)));
+        }
+        if (duration.getSeconds() == 0L && duration.getNanos() == 0) {
+          return null;
+        }
+        return duration;
       }
       return null;
     }
@@ -238,6 +283,63 @@ class ClientSideStatementValueConverters {
       // Transaction mode may contain multiple spaces.
       String valueWithSingleSpaces = value.replaceAll("\\s+", " ");
       return values.get(valueWithSingleSpaces);
+    }
+  }
+
+  /**
+   * Converter for converting string values to {@link PgTransactionMode} values. Includes no-op
+   * handling of setting the isolation level of the transaction to default or serializable.
+   */
+  static class PgTransactionModeConverter
+      implements ClientSideStatementValueConverter<PgTransactionMode> {
+    private final CaseInsensitiveEnumMap<PgTransactionMode> values =
+        new CaseInsensitiveEnumMap<>(
+            PgTransactionMode.class, PgTransactionMode::getStatementString);
+
+    PgTransactionModeConverter() {}
+
+    public PgTransactionModeConverter(String allowedValues) {}
+
+    @Override
+    public Class<PgTransactionMode> getParameterClass() {
+      return PgTransactionMode.class;
+    }
+
+    @Override
+    public PgTransactionMode convert(String value) {
+      // Transaction mode may contain multiple spaces.
+      String valueWithSingleSpaces = value.replaceAll("\\s+", " ");
+      return values.get(valueWithSingleSpaces);
+    }
+  }
+
+  /** Converter for converting strings to {@link RpcPriority} values. */
+  static class RpcPriorityConverter implements ClientSideStatementValueConverter<Priority> {
+    private final CaseInsensitiveEnumMap<Priority> values =
+        new CaseInsensitiveEnumMap<>(Priority.class);
+    private final Pattern allowedValues;
+
+    public RpcPriorityConverter(String allowedValues) {
+      // Remove the parentheses from the beginning and end.
+      this.allowedValues =
+          Pattern.compile(
+              "(?is)\\A" + allowedValues.substring(1, allowedValues.length() - 1) + "\\z");
+    }
+
+    @Override
+    public Class<Priority> getParameterClass() {
+      return Priority.class;
+    }
+
+    @Override
+    public Priority convert(String value) {
+      Matcher matcher = allowedValues.matcher(value);
+      if (matcher.find()) {
+        if (matcher.group(0).equalsIgnoreCase("null")) {
+          return Priority.PRIORITY_UNSPECIFIED;
+        }
+      }
+      return values.get("PRIORITY_" + value);
     }
   }
 }

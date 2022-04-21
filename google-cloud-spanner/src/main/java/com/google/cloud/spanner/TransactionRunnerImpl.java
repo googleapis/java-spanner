@@ -54,7 +54,9 @@ import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -74,6 +76,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
    * because it was invalidated by a later transaction in the same session.
    */
   private static final String TRANSACTION_CANCELLED_MESSAGE = "invalidated by a later transaction";
+
+  private static final String TRANSACTION_ALREADY_COMMITTED_MESSAGE =
+      "Transaction has already committed";
 
   @VisibleForTesting
   static class TransactionContextImpl extends AbstractReadContext implements TransactionContext {
@@ -146,7 +151,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
     }
 
-    @GuardedBy("lock")
+    private final Object committingLock = new Object();
+
+    @GuardedBy("committingLock")
     private volatile boolean committing;
 
     @GuardedBy("lock")
@@ -155,8 +162,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     @GuardedBy("lock")
     private volatile int runningAsyncOperations;
 
-    @GuardedBy("lock")
-    private List<Mutation> mutations = new ArrayList<>();
+    private final Queue<Mutation> mutations = new ConcurrentLinkedQueue<>();
 
     @GuardedBy("lock")
     private boolean aborted;
@@ -172,7 +178,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
      * transaction if the BeginTransaction option is included with the first statement of the
      * transaction.
      */
-    private volatile SettableApiFuture<ByteString> transactionIdFuture = null;
+    @VisibleForTesting volatile SettableApiFuture<ByteString> transactionIdFuture = null;
 
     @VisibleForTesting long waitForTransactionTimeoutMillis = 60_000L;
     private final boolean trackTransactionStarter;
@@ -205,6 +211,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         if (runningAsyncOperations == 0) {
           finishedAsyncOperations.set(null);
         }
+      }
+    }
+
+    @Override
+    public void close() {
+      // Only mark the context as closed, but do not end the tracer span, as that is done by the
+      // commit and rollback methods.
+      synchronized (lock) {
+        isClosed = true;
       }
     }
 
@@ -280,6 +295,18 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     volatile ApiFuture<CommitResponse> commitFuture;
 
     ApiFuture<CommitResponse> commitAsync() {
+      close();
+
+      List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
+      synchronized (committingLock) {
+        if (committing) {
+          throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+        }
+        committing = true;
+        if (!mutations.isEmpty()) {
+          Mutation.toProto(mutations, mutationsProto);
+        }
+      }
       final SettableApiFuture<CommitResponse> res = SettableApiFuture.create();
       final SettableApiFuture<Void> finishOps;
       CommitRequest.Builder builder =
@@ -303,14 +330,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         } else {
           finishOps = finishedAsyncOperations;
         }
-        if (!mutations.isEmpty()) {
-          List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-          Mutation.toProto(mutations, mutationsProto);
-          builder.addAllMutations(mutationsProto);
-        }
-        // Ensure that no call to buffer mutations that would be lost can succeed.
-        mutations = null;
       }
+      builder.addAllMutations(mutationsProto);
       finishOps.addListener(
           new CommitRunnable(res, finishOps, builder), MoreExecutors.directExecutor());
       return res;
@@ -340,7 +361,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                     .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
           } else {
             requestBuilder.setTransactionId(
-                transactionId == null ? transactionIdFuture.get() : transactionId);
+                transactionId == null
+                    ? transactionIdFuture.get(
+                        waitForTransactionTimeoutMillis, TimeUnit.MILLISECONDS)
+                    : transactionId);
           }
           if (options.hasPriority() || getTransactionTag() != null) {
             RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
@@ -389,6 +413,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               MoreExecutors.directExecutor());
         } catch (InterruptedException e) {
           res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+        } catch (TimeoutException e) {
+          res.setException(SpannerExceptionFactory.propagateTimeout(e));
         } catch (ExecutionException e) {
           res.setException(
               SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause()));
@@ -419,6 +445,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     ApiFuture<Empty> rollbackAsync() {
+      close();
+
       // It could be that there is no transaction if the transaction has been marked
       // withInlineBegin, and there has not been any query/update statement that has been executed.
       // In that case, we do not need to do anything, as there is no transaction.
@@ -603,20 +631,42 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public void buffer(Mutation mutation) {
-      synchronized (lock) {
-        checkNotNull(mutations, "Context is closed");
+      synchronized (committingLock) {
+        if (committing) {
+          throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+        }
         mutations.add(checkNotNull(mutation));
       }
     }
 
     @Override
+    public ApiFuture<Void> bufferAsync(Mutation mutation) {
+      // Normally, we would call the async method from the sync method, but this is also safe as
+      // both are non-blocking anyways, and this prevents the creation of an ApiFuture that is not
+      // really used when the sync method is called.
+      buffer(mutation);
+      return ApiFutures.immediateFuture(null);
+    }
+
+    @Override
     public void buffer(Iterable<Mutation> mutations) {
-      synchronized (lock) {
-        checkNotNull(this.mutations, "Context is closed");
+      synchronized (committingLock) {
+        if (committing) {
+          throw new IllegalStateException(TRANSACTION_ALREADY_COMMITTED_MESSAGE);
+        }
         for (Mutation mutation : mutations) {
           this.mutations.add(checkNotNull(mutation));
         }
       }
+    }
+
+    @Override
+    public ApiFuture<Void> bufferAsync(Iterable<Mutation> mutations) {
+      // Normally, we would call the async method from the sync method, but this is also safe as
+      // both are non-blocking anyways, and this prevents the creation of an ApiFuture that is not
+      // really used when the sync method is called.
+      buffer(mutations);
+      return ApiFutures.immediateFuture(null);
     }
 
     @Override

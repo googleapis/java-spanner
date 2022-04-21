@@ -19,8 +19,13 @@ package com.google.cloud.spanner;
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -38,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -81,7 +87,7 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.bool());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getBool());
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getBool);
     assertThat(e.getMessage()).contains("null value");
   }
 
@@ -97,22 +103,21 @@ public class ValueTest {
   @Test
   public void int64TryGetBool() {
     Value value = Value.int64(1234);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> value.getBool());
+    IllegalStateException e = assertThrows(IllegalStateException.class, value::getBool);
     assertThat(e.getMessage()).contains("Expected: BOOL actual: INT64");
   }
 
   @Test
   public void int64NullTryGetBool() {
     Value value = Value.int64(null);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> value.getBool());
+    IllegalStateException e = assertThrows(IllegalStateException.class, value::getBool);
     assertThat(e.getMessage()).contains("Expected: BOOL actual: INT64");
   }
 
   @Test
   public void int64TryGetInt64Array() {
     Value value = Value.int64(1234);
-    IllegalStateException e =
-        assertThrows(IllegalStateException.class, () -> value.getInt64Array());
+    IllegalStateException e = assertThrows(IllegalStateException.class, value::getInt64Array);
     assertThat(e.getMessage()).contains("Expected: ARRAY<INT64> actual: INT64");
   }
 
@@ -131,7 +136,7 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.int64());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getInt64());
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getInt64);
     assertThat(e.getMessage()).contains("null value");
   }
 
@@ -159,7 +164,7 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.float64());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getFloat64());
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getFloat64);
     assertThat(e.getMessage()).contains("null value");
   }
 
@@ -170,6 +175,28 @@ public class ValueTest {
     assertThat(v.isNull()).isFalse();
     assertThat(v.getNumeric()).isEqualTo(BigDecimal.valueOf(123, 2));
     assertThat(v.toString()).isEqualTo("1.23");
+  }
+
+  @Test
+  public void pgNumeric() {
+    final Value value = Value.pgNumeric("1234.5678");
+    assertEquals(Type.pgNumeric(), value.getType());
+    assertFalse("pgNumeric value should not be null", value.isNull());
+    assertEquals("1234.5678", value.getString());
+    assertEquals(BigDecimal.valueOf(12345678, 4), value.getNumeric());
+    assertEquals(1234.5678D, value.getFloat64(), 0.00001);
+    assertEquals("1234.5678", value.toString());
+  }
+
+  @Test
+  public void pgNumericNaN() {
+    final Value value = Value.pgNumeric("NaN");
+    assertEquals(Type.pgNumeric(), value.getType());
+    assertFalse("pgNumeric value should not be null", value.isNull());
+    assertEquals("NaN", value.getString());
+    assertThrows(NumberFormatException.class, value::getNumeric);
+    assertEquals(Double.NaN, value.getFloat64(), 0.00001);
+    assertEquals("NaN", value.toString());
   }
 
   @Test
@@ -325,8 +352,35 @@ public class ValueTest {
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
 
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getNumeric());
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getNumeric);
     assertThat(e.getMessage()).contains("null value");
+  }
+
+  @Test
+  public void pgNumericNull() {
+    final Value value = Value.pgNumeric(null);
+    assertEquals(Type.pgNumeric(), value.getType());
+    assertTrue("pgNumeric value should be null", value.isNull());
+    assertEquals(NULL_STRING, value.toString());
+
+    final IllegalStateException e1 = assertThrows(IllegalStateException.class, value::getString);
+    assertTrue("exception should mention value is null", e1.getMessage().contains("null value"));
+    final IllegalStateException e2 = assertThrows(IllegalStateException.class, value::getNumeric);
+    assertTrue("exception should mention value is null", e2.getMessage().contains("null value"));
+    final IllegalStateException e3 = assertThrows(IllegalStateException.class, value::getFloat64);
+    assertTrue("exception should mention value is null", e3.getMessage().contains("null value"));
+  }
+
+  @Test
+  public void pgNumericInvalid() {
+    final Value value = Value.pgNumeric("INVALID");
+    assertEquals(Type.pgNumeric(), value.getType());
+    assertFalse("pgNumeric value should not be null", value.isNull());
+    assertEquals("INVALID", value.toString());
+
+    assertEquals("INVALID", value.getString());
+    assertThrows(NumberFormatException.class, value::getNumeric);
+    assertThrows(NumberFormatException.class, value::getFloat64);
   }
 
   @Test
@@ -343,8 +397,8 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.string());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getString());
-    assertThat(e.getMessage().contains("null value"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getString);
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
@@ -355,6 +409,56 @@ public class ValueTest {
     assertThat(v.toString()).hasLength(36);
     assertThat(v.toString()).startsWith(str.substring(0, 36 - 3));
     assertThat(v.toString()).endsWith("...");
+  }
+
+  @Test
+  public void json() {
+    String json = "{\"color\":\"red\",\"value\":\"#f00\"}";
+    Value v = Value.json(json);
+    assertEquals(Type.json(), v.getType());
+    assertFalse(v.isNull());
+    assertEquals(json, v.getJson());
+    assertEquals(json, v.getString());
+  }
+
+  @Test
+  public void jsonNull() {
+    Value v = Value.json(null);
+    assertEquals(Type.json(), v.getType());
+    assertTrue(v.isNull());
+    assertEquals(NULL_STRING, v.toString());
+    assertThrowsWithMessage(v::getJson, "null value");
+    assertThrowsWithMessage(v::getString, "null value");
+  }
+
+  @Test
+  public void jsonEmpty() {
+    String json = "{}";
+    Value v = Value.json(json);
+    assertEquals(json, v.getJson());
+  }
+
+  @Test
+  public void jsonWithEmptyArray() {
+    String json = "[]";
+    Value v = Value.json(json);
+    assertEquals(json, v.getJson());
+  }
+
+  @Test
+  public void jsonWithArray() {
+    String json =
+        "[{\"color\":\"red\",\"value\":\"#f00\"},{\"color\":\"green\",\"value\":\"#0f0\"},{\"color\":\"blue\",\"value\":\"#00f\"},{\"color\":\"cyan\",\"value\":\"#0ff\"},{\"color\":\"magenta\",\"value\":\"#f0f\"},{\"color\":\"yellow\",\"value\":\"#ff0\"},{\"color\":\"black\",\"value\":\"#000\"}]";
+    Value v = Value.json(json);
+    assertEquals(json, v.getJson());
+  }
+
+  @Test
+  public void jsonNested() {
+    String json =
+        "[{\"id\":\"0001\",\"type\":\"donut\",\"name\":\"Cake\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"},{\"id\":\"1003\",\"type\":\"Blueberry\"},{\"id\":\"1004\",\"type\":\"Devil's Food\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5007\",\"type\":\"Powdered Sugar\"},{\"id\":\"5006\",\"type\":\"Chocolate with Sprinkles\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0002\",\"type\":\"donut\",\"name\":\"Raised\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0003\",\"type\":\"donut\",\"name\":\"Old Fashioned\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]}]";
+    Value v = Value.json(json);
+    assertEquals(json, v.getJson());
   }
 
   @Test
@@ -381,8 +485,8 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.bytes());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getBytes());
-    assertThat(e.getMessage().contains("null value"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getBytes);
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
@@ -404,8 +508,8 @@ public class ValueTest {
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
     assertThat(v.isCommitTimestamp()).isFalse();
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getTimestamp());
-    assertThat(e.getMessage().contains("null value"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getTimestamp);
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
@@ -420,8 +524,8 @@ public class ValueTest {
             com.google.protobuf.Value.newBuilder()
                 .setStringValue("spanner.commit_timestamp()")
                 .build());
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getTimestamp());
-    assertThat(e.getMessage().contains("Commit timestamp value"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getTimestamp);
+    assertThat(e.getMessage()).contains("Commit timestamp value");
   }
 
   @Test
@@ -441,8 +545,8 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.date());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getDate());
-    assertThat(e.getMessage().contains("null value"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getDate);
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
@@ -466,8 +570,8 @@ public class ValueTest {
     Value v = Value.boolArray((boolean[]) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getBoolArray());
-    assertThat(e.getMessage().contains("null value"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getBoolArray);
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
@@ -483,8 +587,8 @@ public class ValueTest {
     Value v = Value.boolArray((Iterable<Boolean>) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getBoolArray());
-    assertThat(e.getMessage().contains("null value"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getBoolArray);
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
@@ -507,9 +611,8 @@ public class ValueTest {
   @Test
   public void boolArrayTryGetInt64Array() {
     Value value = Value.boolArray(Collections.singletonList(true));
-    IllegalStateException e =
-        assertThrows(IllegalStateException.class, () -> value.getInt64Array());
-    assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<BOOL>"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, value::getInt64Array);
+    assertThat(e.getMessage()).contains("Expected: ARRAY<INT64> actual: ARRAY<BOOL>");
   }
 
   @Test
@@ -533,8 +636,8 @@ public class ValueTest {
     Value v = Value.int64Array((long[]) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getInt64Array());
-    assertThat(e.getMessage().contains("null value"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getInt64Array);
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
@@ -550,22 +653,22 @@ public class ValueTest {
     Value v = Value.int64Array((Iterable<Long>) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getInt64Array());
-    assertThat(e.getMessage().contains("null value"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getInt64Array);
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
   public void int64ArrayTryGetBool() {
     Value value = Value.int64Array(Collections.singletonList(1234L));
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> value.getBool());
-    assertThat(e.getMessage().contains("Expected: BOOL actual: ARRAY<INT64>"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, value::getBool);
+    assertThat(e.getMessage()).contains("Expected: BOOL actual: ARRAY<INT64>");
   }
 
   @Test
   public void int64ArrayNullTryGetBool() {
     Value value = Value.int64Array((Iterable<Long>) null);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> value.getBool());
-    assertThat(e.getMessage().contains("Expected: BOOL actual: ARRAY<INT64>"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, value::getBool);
+    assertThat(e.getMessage()).contains("Expected: BOOL actual: ARRAY<INT64>");
   }
 
   @Test
@@ -589,8 +692,8 @@ public class ValueTest {
     Value v = Value.float64Array((double[]) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getFloat64Array());
-    assertThat(e.getMessage().contains("null value"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getFloat64Array);
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
@@ -606,16 +709,15 @@ public class ValueTest {
     Value v = Value.float64Array((Iterable<Double>) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getFloat64Array());
-    assertThat(e.getMessage().contains("null value"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getFloat64Array);
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
   public void float64ArrayTryGetInt64Array() {
     Value value = Value.float64Array(Collections.singletonList(.1));
-    IllegalStateException e =
-        assertThrows(IllegalStateException.class, () -> value.getInt64Array());
-    assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<FLOAT64>"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, value::getInt64Array);
+    assertThat(e.getMessage()).contains("Expected: ARRAY<INT64> actual: ARRAY<FLOAT64>");
   }
 
   @Test
@@ -630,22 +732,74 @@ public class ValueTest {
   }
 
   @Test
+  public void pgNumericArray() {
+    final Value value = Value.pgNumericArray(Arrays.asList("1.23", null, "1.24"));
+    assertFalse("pgNumericArray value should not be null", value.isNull());
+    assertEquals(Arrays.asList("1.23", null, "1.24"), value.getStringArray());
+    assertEquals(
+        Arrays.asList(new BigDecimal("1.23"), null, new BigDecimal("1.24")),
+        value.getNumericArray());
+    final List<Double> float64Array = value.getFloat64Array();
+    assertEquals(1.23D, float64Array.get(0), 0.001);
+    assertNull(float64Array.get(1));
+    assertEquals(1.24D, float64Array.get(2), 0.001);
+  }
+
+  @Test
+  public void pgNumericArrayWithNaNs() {
+    final Value value = Value.pgNumericArray(Arrays.asList("1.23", null, Value.NAN));
+    assertFalse("pgNumericArray value should not be null", value.isNull());
+    assertEquals(Arrays.asList("1.23", null, "NaN"), value.getStringArray());
+    assertThrows(NumberFormatException.class, value::getNumericArray);
+    final List<Double> float64Array = value.getFloat64Array();
+    assertEquals(1.23D, float64Array.get(0), 0.001);
+    assertNull(float64Array.get(1));
+    assertEquals(Double.NaN, float64Array.get(2), 0.001);
+  }
+
+  @Test
   public void numericArrayNull() {
     Value v = Value.numericArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
 
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getNumericArray());
-    assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<FLOAT64>"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getNumericArray);
+    assertThat(e.getMessage()).contains("null value");
+  }
+
+  @Test
+  public void pgNumericArrayNull() {
+    final Value value = Value.pgNumericArray(null);
+    assertTrue("pgNumericArray value should be null", value.isNull());
+    assertEquals(NULL_STRING, value.toString());
+
+    final IllegalStateException e1 =
+        assertThrows(IllegalStateException.class, value::getStringArray);
+    assertTrue("exception should mention value is null", e1.getMessage().contains("null value"));
+    final IllegalStateException e2 =
+        assertThrows(IllegalStateException.class, value::getNumericArray);
+    assertTrue("exception should mention value is null", e2.getMessage().contains("null value"));
+    final IllegalStateException e3 =
+        assertThrows(IllegalStateException.class, value::getFloat64Array);
+    assertTrue("exception should mention value is null", e3.getMessage().contains("null value"));
   }
 
   @Test
   public void numericArrayTryGetInt64Array() {
     Value value = Value.numericArray(Collections.singletonList(BigDecimal.valueOf(1, 1)));
 
-    IllegalStateException e =
-        assertThrows(IllegalStateException.class, () -> value.getInt64Array());
-    assertThat(e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<NUMERIC>"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, value::getInt64Array);
+    assertThat(e.getMessage()).contains("Expected: ARRAY<INT64> actual: ARRAY<NUMERIC>");
+  }
+
+  @Test
+  public void pgNumericArrayTryGetInt64Array() {
+    final Value value = Value.pgNumericArray(Collections.singletonList("1.23"));
+
+    final IllegalStateException e = assertThrows(IllegalStateException.class, value::getInt64Array);
+    assertTrue(
+        "exception should mention type expectation",
+        e.getMessage().contains("Expected: ARRAY<INT64> actual: ARRAY<NUMERIC<PG_NUMERIC>>"));
   }
 
   @Test
@@ -661,16 +815,53 @@ public class ValueTest {
     Value v = Value.stringArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getStringArray());
-    assertThat(e.getMessage().contains("null value"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getStringArray);
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
   public void stringArrayTryGetBytesArray() {
     Value value = Value.stringArray(Collections.singletonList("a"));
-    IllegalStateException e =
-        assertThrows(IllegalStateException.class, () -> value.getBytesArray());
-    assertThat(e.getMessage().contains("Expected: ARRAY<BYTES> actual: ARRAY<STRING>"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, value::getBytesArray);
+    assertThat(e.getMessage()).contains("Expected: ARRAY<BYTES> actual: ARRAY<STRING>");
+  }
+
+  @Test
+  public void jsonArray() {
+    String one = "{}";
+    String two = null;
+    String three = "{\"color\":\"red\",\"value\":\"#f00\"}";
+    Value v = Value.jsonArray(Arrays.asList(one, two, three));
+    assertFalse(v.isNull());
+    assertArrayEquals(new String[] {one, two, three}, v.getJsonArray().toArray());
+    assertEquals("[{},NULL,{\"color\":\"red\",\"value\":\"#f00\"}]", v.toString());
+    assertArrayEquals(new String[] {one, two, three}, v.getStringArray().toArray());
+  }
+
+  @Test
+  public void jsonArrayNull() {
+    Value v = Value.jsonArray(null);
+    assertTrue(v.isNull());
+    assertEquals(NULL_STRING, v.toString());
+    assertThrowsWithMessage(v::getJsonArray, "null value");
+    assertThrowsWithMessage(v::getStringArray, "null value");
+  }
+
+  @Test
+  public void jsonArrayTryGetBytesArray() {
+    Value value = Value.jsonArray(Arrays.asList("{}"));
+    try {
+      value.getBytesArray();
+      fail("Expected exception");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage().contains("Expected: ARRAY<BYTES> actual: ARRAY<JSON>"));
+    }
+  }
+
+  @Test
+  public void jsonArrayTryGetFloat64Array() {
+    Value value = Value.jsonArray(Collections.singletonList("{}"));
+    assertThrowsWithMessage(value::getFloat64Array, "Expected: ARRAY<FLOAT64> actual: ARRAY<JSON>");
   }
 
   @Test
@@ -688,16 +879,15 @@ public class ValueTest {
     Value v = Value.bytesArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getBytesArray());
-    assertThat(e.getMessage().contains("null value"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getBytesArray);
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
   public void bytesArrayTryGetStringArray() {
     Value value = Value.bytesArray(Collections.singletonList(newByteArray("a")));
-    IllegalStateException e =
-        assertThrows(IllegalStateException.class, () -> value.getStringArray());
-    assertThat(e.getMessage().contains("Expected: ARRAY<STRING> actual: ARRAY<BYTES>"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, value::getStringArray);
+    assertThat(e.getMessage()).contains("Expected: ARRAY<STRING> actual: ARRAY<BYTES>");
   }
 
   @Test
@@ -719,9 +909,8 @@ public class ValueTest {
     Value v = Value.timestampArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e =
-        assertThrows(IllegalStateException.class, () -> v.getTimestampArray());
-    assertThat(e.getMessage().contains("null value"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getTimestampArray);
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
@@ -742,8 +931,8 @@ public class ValueTest {
     Value v = Value.dateArray(null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getDateArray());
-    assertThat(e.getMessage().contains("null value"));
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getDateArray);
+    assertThat(e.getMessage()).contains("null value");
   }
 
   @Test
@@ -764,7 +953,7 @@ public class ValueTest {
                 Value.struct(
                     Type.struct(Collections.singletonList(StructField.of("f3", Type.string()))),
                     struct));
-    assertThat(e.getMessage().contains("Mismatch between struct value and type."));
+    assertThat(e.getMessage()).contains("Mismatch between struct value and type.");
   }
 
   @Test
@@ -778,7 +967,7 @@ public class ValueTest {
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
     NullPointerException e = assertThrows(NullPointerException.class, () -> Value.struct(null));
-    assertThat(e.getMessage().contains("Illegal call to create a NULL struct value."));
+    assertThat(e.getMessage()).contains("Illegal call to create a NULL struct value.");
   }
 
   @Test
@@ -789,7 +978,7 @@ public class ValueTest {
 
     Value v = Value.struct(Type.struct(fieldTypes), null);
     assertThat(v.isNull()).isTrue();
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getStruct());
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getStruct);
     assertThat(e.getMessage()).contains("Illegal call to getter of null value.");
   }
 
@@ -872,7 +1061,7 @@ public class ValueTest {
     assertThat(v.isNull()).isTrue();
     assertThat(v.getType().getArrayElementType()).isEqualTo(elementType);
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> v.getStructArray());
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getStructArray);
     assertThat(e.getMessage()).contains("Illegal call to getter of null value");
   }
 
@@ -929,6 +1118,13 @@ public class ValueTest {
         Value.string(null).toProto());
 
     assertEquals(
+        com.google.protobuf.Value.newBuilder().setStringValue("{}").build(),
+        Value.json("{}").toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.json(null).toProto());
+
+    assertEquals(
         com.google.protobuf.Value.newBuilder()
             .setStringValue(ByteArray.copyFrom("test").toBase64())
             .build(),
@@ -943,6 +1139,13 @@ public class ValueTest {
     assertEquals(
         com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
         Value.numeric(null).toProto());
+
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setStringValue("1234.5678").build(),
+        Value.pgNumeric("1234.5678").toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.pgNumeric(null).toProto());
 
     assertEquals(
         com.google.protobuf.Value.newBuilder().setStringValue("2010-02-28").build(),
@@ -1016,6 +1219,18 @@ public class ValueTest {
                 ListValue.newBuilder()
                     .addAllValues(
                         Arrays.asList(
+                            com.google.protobuf.Value.newBuilder().setStringValue("{}").build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.jsonArray(Arrays.asList("{}", null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
                             com.google.protobuf.Value.newBuilder()
                                 .setStringValue(ByteArray.copyFrom("test").toBase64())
                                 .build(),
@@ -1036,6 +1251,19 @@ public class ValueTest {
                                 .build())))
             .build(),
         Value.numericArray(Arrays.asList(new BigDecimal("3.14"), null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder().setStringValue("1.23").build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build(),
+                            com.google.protobuf.Value.newBuilder().setStringValue("NaN").build())))
+            .build(),
+        Value.pgNumericArray(Arrays.asList("1.23", null, Value.NAN)).toProto());
     assertEquals(
         com.google.protobuf.Value.newBuilder()
             .setListValue(
@@ -1266,11 +1494,52 @@ public class ValueTest {
                                 Timestamp.parseTimestamp("2012-04-10T15:16:17.123456789Z"), null)))
                     .build())
             .toProto());
+    // Struct with pgNumeric
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder().setStringValue("1.23").build())
+                    .build())
+            .build(),
+        Value.struct(Struct.newBuilder().set("x").to(Value.pgNumeric("1.23")).build()).toProto());
+    // Struct with pgNumeric Array
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setStringValue("1.23")
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setStringValue("NaN")
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder()
+                    .add(Value.pgNumericArray(Arrays.asList(null, "1.23", "NaN")))
+                    .build())
+            .toProto());
   }
 
   @Test
   public void testEqualsHashCode() {
     EqualsTester tester = new EqualsTester();
+    String emptyJson = "{}";
+    String simpleJson = "{\"color\":\"red\",\"value\":\"#f00\"}";
 
     tester.addEqualityGroup(Value.bool(true), Value.bool(Boolean.TRUE));
     tester.addEqualityGroup(Value.bool(false));
@@ -1289,9 +1558,19 @@ public class ValueTest {
     tester.addEqualityGroup(Value.numeric(BigDecimal.valueOf(456, 2)));
     tester.addEqualityGroup(Value.numeric(null));
 
+    tester.addEqualityGroup(Value.pgNumeric("1234.5678"), Value.pgNumeric("1234.5678"));
+    tester.addEqualityGroup(Value.pgNumeric("NaN"), Value.pgNumeric(Value.NAN));
+    tester.addEqualityGroup(Value.pgNumeric("8765.4321"));
+    tester.addEqualityGroup(Value.pgNumeric(null));
+
     tester.addEqualityGroup(Value.string("abc"), Value.string("abc"));
     tester.addEqualityGroup(Value.string("def"));
     tester.addEqualityGroup(Value.string(null));
+
+    tester.addEqualityGroup(Value.json(simpleJson), Value.json(simpleJson));
+    tester.addEqualityGroup(Value.json("{}"));
+    tester.addEqualityGroup(Value.json("[]"));
+    tester.addEqualityGroup(Value.json(null));
 
     tester.addEqualityGroup(Value.bytes(newByteArray("abc")), Value.bytes(newByteArray("abc")));
     tester.addEqualityGroup(Value.bytes(newByteArray("def")));
@@ -1351,9 +1630,21 @@ public class ValueTest {
     tester.addEqualityGroup(Value.numericArray(null));
 
     tester.addEqualityGroup(
+        Value.pgNumericArray(Arrays.asList("1.23", null, Value.NAN)),
+        Value.pgNumericArray(Arrays.asList("1.23", null, "NaN")));
+    tester.addEqualityGroup(Value.pgNumericArray(Collections.singletonList("1.25")));
+    tester.addEqualityGroup(Value.pgNumericArray(null), Value.pgNumericArray(null));
+
+    tester.addEqualityGroup(
         Value.stringArray(Arrays.asList("a", "b")), Value.stringArray(Arrays.asList("a", "b")));
     tester.addEqualityGroup(Value.stringArray(Collections.singletonList("c")));
     tester.addEqualityGroup(Value.stringArray(null));
+
+    tester.addEqualityGroup(
+        Value.jsonArray(Arrays.asList(emptyJson, simpleJson)),
+        Value.jsonArray(Arrays.asList(emptyJson, simpleJson)));
+    tester.addEqualityGroup(Value.jsonArray(Arrays.asList("[]")));
+    tester.addEqualityGroup(Value.jsonArray(null));
 
     tester.addEqualityGroup(
         Value.bytesArray(Arrays.asList(newByteArray("a"), newByteArray("b"))),
@@ -1402,8 +1693,15 @@ public class ValueTest {
     reserializeAndAssert(Value.numeric(BigDecimal.valueOf(123, 2)));
     reserializeAndAssert(Value.numeric(null));
 
+    reserializeAndAssert(Value.pgNumeric("1.23"));
+    reserializeAndAssert(Value.pgNumeric(Value.NAN));
+    reserializeAndAssert(Value.pgNumeric(null));
+
     reserializeAndAssert(Value.string("abc"));
     reserializeAndAssert(Value.string(null));
+
+    reserializeAndAssert(Value.json("{\"color\":\"red\",\"value\":\"#f00\"}"));
+    reserializeAndAssert(Value.json(null));
 
     reserializeAndAssert(Value.bytes(newByteArray("abc")));
     reserializeAndAssert(Value.bytes(null));
@@ -1439,6 +1737,11 @@ public class ValueTest {
                 BigDecimal.valueOf(1, 1), BigDecimal.valueOf(2, 1), BigDecimal.valueOf(3, 1))));
     reserializeAndAssert(Value.numericArray(null));
 
+    reserializeAndAssert(Value.pgNumericArray(Arrays.asList("1.23", null, Value.NAN)));
+    reserializeAndAssert(
+        Value.pgNumericArray(BrokenSerializationList.of("1.23", "1.24", Value.NAN)));
+    reserializeAndAssert(Value.pgNumericArray(null));
+
     reserializeAndAssert(Value.timestamp(null));
     reserializeAndAssert(Value.timestamp(Value.COMMIT_TIMESTAMP));
     reserializeAndAssert(Value.timestamp(Timestamp.now()));
@@ -1451,6 +1754,11 @@ public class ValueTest {
     BrokenSerializationList<String> of = BrokenSerializationList.of("a", "b");
     reserializeAndAssert(Value.stringArray(of));
     reserializeAndAssert(Value.stringArray(null));
+
+    BrokenSerializationList<String> json =
+        BrokenSerializationList.of("{}", "{\"color\":\"red\",\"value\":\"#f00\"}");
+    reserializeAndAssert(Value.jsonArray(json));
+    reserializeAndAssert(Value.jsonArray(null));
 
     reserializeAndAssert(
         Value.bytesArray(BrokenSerializationList.of(newByteArray("a"), newByteArray("b"))));
@@ -1491,6 +1799,21 @@ public class ValueTest {
 
     private void writeObject(@SuppressWarnings("unused") java.io.ObjectOutputStream unusedStream) {
       throw new IllegalStateException("Serialization disabled");
+    }
+  }
+
+  private void assertThrowsWithMessage(Supplier<?> supplier, String message) {
+    try {
+      supplier.get();
+      fail("Expected exception");
+    } catch (Exception e) {
+      assertTrue(
+          "Expected exception message to contain: \""
+              + message
+              + "\", actual: \""
+              + e.getMessage()
+              + "\"",
+          e.getMessage().contains(message));
     }
   }
 }

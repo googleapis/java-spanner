@@ -92,11 +92,7 @@ public class SessionImplTest {
     DatabaseId db = DatabaseId.of(dbName);
 
     Session sessionProto = Session.newBuilder().setName(sessionName).build();
-    Mockito.when(
-            rpc.createSession(
-                Mockito.eq(dbName),
-                Mockito.anyMapOf(String.class, String.class),
-                optionsCaptor.capture()))
+    Mockito.when(rpc.createSession(Mockito.eq(dbName), Mockito.anyMap(), optionsCaptor.capture()))
         .thenReturn(sessionProto);
     Transaction txn = Transaction.newBuilder().setId(ByteString.copyFromUtf8("TEST")).build();
     Mockito.when(

@@ -18,7 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
@@ -48,6 +49,7 @@ public class AutocommitDmlModeTest {
   @SuppressWarnings("unchecked")
   private ConnectionImpl createConnection(ConnectionOptions options) {
     dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     txContext = mock(TransactionContext.class);
     Spanner spanner = mock(Spanner.class);
     SpannerPool spannerPool = mock(SpannerPool.class);

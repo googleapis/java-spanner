@@ -282,7 +282,7 @@ public class TransactionManagerImplTest {
               ResultSet.Builder builder =
                   ResultSet.newBuilder()
                       .setStats(ResultSetStats.newBuilder().setRowCountExact(1L).build());
-              ExecuteSqlRequest request = invocation.getArgumentAt(0, ExecuteSqlRequest.class);
+              ExecuteSqlRequest request = invocation.getArgument(0, ExecuteSqlRequest.class);
               if (request.getTransaction() != null && request.getTransaction().hasBegin()) {
                 transactionsStarted.incrementAndGet();
                 builder.setMetadata(

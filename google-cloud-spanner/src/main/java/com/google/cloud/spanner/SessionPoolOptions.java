@@ -50,6 +50,7 @@ public class SessionPoolOptions {
   private final ActionOnSessionNotFound actionOnSessionNotFound;
   private final ActionOnSessionLeak actionOnSessionLeak;
   private final long initialWaitForSessionTimeoutMillis;
+  private final boolean autoDetectDialect;
 
   private SessionPoolOptions(Builder builder) {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
@@ -67,6 +68,7 @@ public class SessionPoolOptions {
     this.loopFrequency = builder.loopFrequency;
     this.keepAliveIntervalMinutes = builder.keepAliveIntervalMinutes;
     this.removeInactiveSessionAfter = builder.removeInactiveSessionAfter;
+    this.autoDetectDialect = builder.autoDetectDialect;
   }
 
   @Override
@@ -87,7 +89,8 @@ public class SessionPoolOptions {
             this.initialWaitForSessionTimeoutMillis, other.initialWaitForSessionTimeoutMillis)
         && Objects.equals(this.loopFrequency, other.loopFrequency)
         && Objects.equals(this.keepAliveIntervalMinutes, other.keepAliveIntervalMinutes)
-        && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter);
+        && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter)
+        && Objects.equals(this.autoDetectDialect, other.autoDetectDialect);
   }
 
   @Override
@@ -104,7 +107,8 @@ public class SessionPoolOptions {
         this.initialWaitForSessionTimeoutMillis,
         this.loopFrequency,
         this.keepAliveIntervalMinutes,
-        this.removeInactiveSessionAfter);
+        this.removeInactiveSessionAfter,
+        this.autoDetectDialect);
   }
 
   public Builder toBuilder() {
@@ -161,6 +165,10 @@ public class SessionPoolOptions {
 
   public boolean isBlockIfPoolExhausted() {
     return actionOnExhaustion == ActionOnExhaustion.BLOCK;
+  }
+
+  public boolean isAutoDetectDialect() {
+    return autoDetectDialect;
   }
 
   @VisibleForTesting
@@ -220,6 +228,7 @@ public class SessionPoolOptions {
     private long loopFrequency = 10 * 1000L;
     private int keepAliveIntervalMinutes = 30;
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
+    private boolean autoDetectDialect = false;
 
     public Builder() {}
 
@@ -237,6 +246,7 @@ public class SessionPoolOptions {
       this.loopFrequency = options.loopFrequency;
       this.keepAliveIntervalMinutes = options.keepAliveIntervalMinutes;
       this.removeInactiveSessionAfter = options.removeInactiveSessionAfter;
+      this.autoDetectDialect = options.autoDetectDialect;
     }
 
     /**
@@ -324,6 +334,24 @@ public class SessionPoolOptions {
      */
     public Builder setBlockIfPoolExhausted() {
       this.actionOnExhaustion = ActionOnExhaustion.BLOCK;
+      return this;
+    }
+
+    /**
+     * Sets whether the client should automatically execute a background query to detect the dialect
+     * that is used by the database or not. Set this option to true if you do not know what the
+     * dialect of the database will be.
+     *
+     * <p>Note that you can always call {@link DatabaseClient#getDialect()} to get the dialect of a
+     * database regardless of this setting, but by setting this to true, the value will be
+     * pre-populated and cached in the client.
+     *
+     * @param autoDetectDialect Whether the client should automatically execute a background query
+     *     to detect the dialect of the underlying database
+     * @return this builder for chaining
+     */
+    public Builder setAutoDetectDialect(boolean autoDetectDialect) {
+      this.autoDetectDialect = autoDetectDialect;
       return this;
     }
 

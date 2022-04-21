@@ -19,7 +19,10 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
 
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.retrying.RetrySettings;
@@ -29,6 +32,7 @@ import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.TransportOptions;
+import com.google.cloud.spanner.SpannerOptions.FixedCloseableExecutorProvider;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
@@ -54,6 +58,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -497,6 +503,7 @@ public class SpannerOptionsTest {
   public void testSetClientLibToken() {
     final String jdbcToken = "sp-jdbc";
     final String hibernateToken = "sp-hib";
+    final String pgAdapterToken = "pg-adapter";
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId("some-project")
@@ -517,8 +524,16 @@ public class SpannerOptionsTest {
         SpannerOptions.newBuilder()
             .setProjectId("some-project")
             .setCredentials(NoCredentials.getInstance())
+            .setClientLibToken(pgAdapterToken)
             .build();
-    assertThat(options.getClientLibToken()).isEqualTo(ServiceOptions.getGoogApiClientLibName());
+    assertEquals(options.getClientLibToken(), pgAdapterToken);
+
+    options =
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
+    assertEquals(options.getClientLibToken(), ServiceOptions.getGoogApiClientLibName());
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -556,36 +571,80 @@ public class SpannerOptionsTest {
 
   @Test
   public void testDefaultQueryOptions() {
-    SpannerOptions.useEnvironment(() -> "");
+    SpannerOptions.useEnvironment(
+        new SpannerOptions.SpannerEnvironment() {
+          @Override
+          public String getOptimizerVersion() {
+            return "";
+          }
+
+          @Nonnull
+          @Override
+          public String getOptimizerStatisticsPackage() {
+            return "";
+          }
+        });
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setDefaultQueryOptions(
                 DatabaseId.of("p", "i", "d"),
-                QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                QueryOptions.newBuilder()
+                    .setOptimizerVersion("1")
+                    .setOptimizerStatisticsPackage("custom-package")
+                    .build())
             .setProjectId("p")
             .setCredentials(NoCredentials.getInstance())
             .build();
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "d")))
-        .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("1").build());
+        .isEqualTo(
+            QueryOptions.newBuilder()
+                .setOptimizerVersion("1")
+                .setOptimizerStatisticsPackage("custom-package")
+                .build());
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "o")))
         .isEqualTo(QueryOptions.getDefaultInstance());
 
-    // Now simulate that the user has set an environment variable for the query optimizer version.
-    SpannerOptions.useEnvironment(() -> "2");
-    // Create options with '1' as the default query optimizer version. This should be overridden by
+    // Now simulate that the user has set an environment variable for the query optimizer version
+    // and statistics package.
+    SpannerOptions.useEnvironment(
+        new SpannerOptions.SpannerEnvironment() {
+          @Override
+          public String getOptimizerVersion() {
+            return "2";
+          }
+
+          @Nonnull
+          @Override
+          public String getOptimizerStatisticsPackage() {
+            return "env-package";
+          }
+        });
+    // Create options with '1' as the default query optimizer version and 'custom-package' as the
+    // default query optimizer statistics package. These values should be overridden by
     // the environment variable.
     options =
         SpannerOptions.newBuilder()
             .setDefaultQueryOptions(
                 DatabaseId.of("p", "i", "d"),
-                QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                QueryOptions.newBuilder()
+                    .setOptimizerVersion("1")
+                    .setOptimizerStatisticsPackage("custom-package")
+                    .build())
             .setProjectId("p")
             .setCredentials(NoCredentials.getInstance())
             .build();
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "d")))
-        .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("2").build());
+        .isEqualTo(
+            QueryOptions.newBuilder()
+                .setOptimizerVersion("2")
+                .setOptimizerStatisticsPackage("env-package")
+                .build());
     assertThat(options.getDefaultQueryOptions(DatabaseId.of("p", "i", "o")))
-        .isEqualTo(QueryOptions.newBuilder().setOptimizerVersion("2").build());
+        .isEqualTo(
+            QueryOptions.newBuilder()
+                .setOptimizerVersion("2")
+                .setOptimizerStatisticsPackage("env-package")
+                .build());
   }
 
   @Test
@@ -846,5 +905,17 @@ public class SpannerOptionsTest {
                     SpannerGrpc.getPartitionReadMethod())
                 .getTimeout())
         .isEqualTo(Duration.ofSeconds(6L));
+  }
+
+  @Test
+  public void testCustomAsyncExecutorProvider() {
+    ScheduledExecutorService service = mock(ScheduledExecutorService.class);
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .setAsyncExecutorProvider(FixedCloseableExecutorProvider.create(service))
+            .build();
+    assertSame(service, options.getAsyncExecutorProvider().getExecutor());
   }
 }

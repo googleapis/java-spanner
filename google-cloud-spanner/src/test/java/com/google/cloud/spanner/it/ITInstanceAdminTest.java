@@ -25,9 +25,9 @@ import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceConfig;
 import com.google.cloud.spanner.InstanceInfo;
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.SerialIntegrationTest;
 import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import java.util.ArrayList;
@@ -35,13 +35,14 @@ import java.util.List;
 import java.util.Random;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Integration tests for {@link com.google.cloud.spanner.InstanceAdminClient}. */
-@Category(IntegrationTest.class)
+@Category(SerialIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITInstanceAdminTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
@@ -62,6 +63,17 @@ public class ITInstanceAdminTest {
     assertThat(config.getId()).isEqualTo(configs.get(0).getId());
     config = config.reload();
     assertThat(config.getId()).isEqualTo(configs.get(0).getId());
+  }
+
+  @Ignore("Feature is not yet enabled in production")
+  @Test
+  public void instanceConfigLeaderOptions() {
+    assumeFalse("The emulator does not support leader options", isUsingEmulator());
+    List<InstanceConfig> configs = new ArrayList<>();
+    Iterators.addAll(configs, instanceClient.listInstanceConfigs().iterateAll().iterator());
+
+    configs.forEach(config -> assertThat(config.getReplicas()).isNotEmpty());
+    configs.forEach(config -> assertThat(config.getLeaderOptions()).isNotEmpty());
   }
 
   @Test

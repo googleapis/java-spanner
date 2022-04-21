@@ -793,10 +793,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-      if (!getOptimizerVersionBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(optimizerVersion_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, optimizerVersion_);
       }
-      if (!getOptimizerStatisticsPackageBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(optimizerStatisticsPackage_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, optimizerStatisticsPackage_);
       }
       unknownFields.writeTo(output);
@@ -808,10 +808,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       if (size != -1) return size;
 
       size = 0;
-      if (!getOptimizerVersionBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(optimizerVersion_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, optimizerVersion_);
       }
-      if (!getOptimizerStatisticsPackageBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(optimizerStatisticsPackage_)) {
         size +=
             com.google.protobuf.GeneratedMessageV3.computeStringSize(
                 2, optimizerStatisticsPackage_);
@@ -2130,13 +2130,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!getSessionBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(session_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, session_);
     }
     if (transaction_ != null) {
       output.writeMessage(2, getTransaction());
     }
-    if (!getSqlBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(sql_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, sql_);
     }
     if (params_ != null) {
@@ -2171,13 +2171,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     if (size != -1) return size;
 
     size = 0;
-    if (!getSessionBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(session_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, session_);
     }
     if (transaction_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getTransaction());
     }
-    if (!getSqlBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(sql_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, sql_);
     }
     if (params_ != null) {

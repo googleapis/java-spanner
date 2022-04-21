@@ -23,6 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.google.api.client.util.BackOff;
+import com.google.cloud.spanner.AbstractResultSet.ResumableStreamIterator;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
@@ -37,18 +38,19 @@ import io.grpc.protobuf.ProtoUtils;
 import io.opencensus.trace.EndSpanOptions;
 import io.opencensus.trace.Span;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
-import org.mockito.internal.util.reflection.Whitebox;
 
 /** Unit tests for {@link AbstractResultSet.ResumableStreamIterator}. */
 @RunWith(JUnit4.class)
@@ -156,8 +158,12 @@ public class ResumableStreamIteratorTest {
 
   @Test
   public void closedSpan() {
+    Assume.assumeTrue(
+        "This test is only supported on JDK11 and lower",
+        JavaVersionUtil.getJavaMajorVersion() < 12);
+
     Span span = mock(Span.class);
-    Whitebox.setInternalState(this.resumableStreamIterator, "span", span);
+    setInternalState(ResumableStreamIterator.class, this.resumableStreamIterator, "span", span);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
     Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
@@ -236,9 +242,14 @@ public class ResumableStreamIteratorTest {
 
   @Test
   public void retryableErrorWithoutRetryInfo() throws IOException {
+    Assume.assumeTrue(
+        "This test is only supported on JDK11 and lower",
+        JavaVersionUtil.getJavaMajorVersion() < 12);
+
     BackOff backOff = mock(BackOff.class);
     Mockito.when(backOff.nextBackOffMillis()).thenReturn(1L);
-    Whitebox.setInternalState(this.resumableStreamIterator, "backOff", backOff);
+    setInternalState(
+        ResumableStreamIterator.class, this.resumableStreamIterator, "backOff", backOff);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
     Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
@@ -445,5 +456,19 @@ public class ResumableStreamIteratorTest {
       }
     }
     return r;
+  }
+
+  /**
+   * Sets a private static final field to a specific value. This is only supported on Java11 and
+   * lower.
+   */
+  private static void setInternalState(Class<?> c, Object target, String field, Object value) {
+    try {
+      Field f = c.getDeclaredField(field);
+      f.setAccessible(true);
+      f.set(target, value);
+    } catch (Exception e) {
+      throw new RuntimeException("Unable to set internal state on a private field.", e);
+    }
   }
 }

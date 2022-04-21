@@ -137,10 +137,10 @@ class ClientSideStatementImpl implements ClientSideStatement {
   private ClientSideSetStatementImpl setStatement;
 
   /** The compiled regex pattern for recognizing this statement. */
-  private Pattern pattern;
+  private transient Pattern pattern;
 
   /** A reference to the executor that should be used. */
-  private ClientSideStatementExecutor executor;
+  private transient ClientSideStatementExecutor executor;
 
   /**
    * Compiles this {@link ClientSideStatementImpl}. Throws a {@link CompileException} if the

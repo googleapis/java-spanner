@@ -61,6 +61,8 @@ public class StatementTest {
             .append("bytes_field = @bytes_field ")
             .bind("bytes_field")
             .to(ByteArray.fromBase64("abcd"))
+            .bind("untyped_null_field")
+            .to((Value) null)
             .build();
     reserializeAndAssert(stmt);
   }
@@ -165,6 +167,9 @@ public class StatementTest {
     tester.addEqualityGroup(Statement.newBuilder("SELECT @x, @y").bind("y").to(2).build());
     tester.addEqualityGroup(
         Statement.newBuilder("SELECT @x, @y").bind("x").to(1).bind("y").to(2).build());
+    tester.addEqualityGroup(
+        Statement.newBuilder("SELECT @x, @y").bind("x").to((Value) null).build(),
+        Statement.newBuilder("SELECT @x, @y").bind("x").to((Value) null).build());
     tester.testEquals();
   }
 }

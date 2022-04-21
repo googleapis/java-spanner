@@ -17,4 +17,4 @@
 package com.google.cloud.spanner;
 
 /** Parallel Integration Test interface. */
-public interface ParallelIntegrationTest {}
+public interface ParallelIntegrationTest extends IntegrationTest {}

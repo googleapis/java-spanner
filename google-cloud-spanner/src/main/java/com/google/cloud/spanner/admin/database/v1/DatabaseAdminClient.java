@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.admin.database.v1;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.BetaApi;
@@ -41,8 +40,11 @@ import com.google.longrunning.Operation;
 import com.google.longrunning.OperationsClient;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
+import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupName;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
+import com.google.spanner.admin.database.v1.CopyBackupRequest;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
@@ -78,9 +80,9 @@ import javax.annotation.Generated;
 /**
  * Service Description: Cloud Spanner Database Admin API
  *
- * <p>The Cloud Spanner Database Admin API can be used to create, drop, and list databases. It also
- * enables updating the schema of pre-existing databases. It can be also used to create, delete and
- * list backups for a database and to restore from an existing backup.
+ * <p>The Cloud Spanner Database Admin API can be used to: &#42; create, drop, and list databases
+ * &#42; update the schema of pre-existing databases &#42; create, delete and list backups for a
+ * database &#42; restore a database from an existing backup
  *
  * <p>This class provides the ability to make remote calls to the backing service through method
  * calls that map to API methods. Sample code to get started:
@@ -439,6 +441,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setCreateStatement("createStatement744686547")
    *           .addAllExtraStatements(new ArrayList<String>())
    *           .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+   *           .setDatabaseDialect(DatabaseDialect.forNumber(0))
    *           .build();
    *   Database response = databaseAdminClient.createDatabaseAsync(request).get();
    * }
@@ -472,6 +475,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setCreateStatement("createStatement744686547")
    *           .addAllExtraStatements(new ArrayList<String>())
    *           .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+   *           .setDatabaseDialect(DatabaseDialect.forNumber(0))
    *           .build();
    *   OperationFuture<Database, CreateDatabaseMetadata> future =
    *       databaseAdminClient.createDatabaseOperationCallable().futureCall(request);
@@ -505,6 +509,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setCreateStatement("createStatement744686547")
    *           .addAllExtraStatements(new ArrayList<String>())
    *           .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+   *           .setDatabaseDialect(DatabaseDialect.forNumber(0))
    *           .build();
    *   ApiFuture<Operation> future =
    *       databaseAdminClient.createDatabaseCallable().futureCall(request);
@@ -773,7 +778,8 @@ public class DatabaseAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be
-   * retained according to their `expire_time`.
+   * retained according to their `expire_time`. Note: Cloud Spanner might continue to accept
+   * requests for a few seconds after the database has been deleted.
    *
    * <p>Sample code:
    *
@@ -798,7 +804,8 @@ public class DatabaseAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be
-   * retained according to their `expire_time`.
+   * retained according to their `expire_time`. Note: Cloud Spanner might continue to accept
+   * requests for a few seconds after the database has been deleted.
    *
    * <p>Sample code:
    *
@@ -820,7 +827,8 @@ public class DatabaseAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be
-   * retained according to their `expire_time`.
+   * retained according to their `expire_time`. Note: Cloud Spanner might continue to accept
+   * requests for a few seconds after the database has been deleted.
    *
    * <p>Sample code:
    *
@@ -844,7 +852,8 @@ public class DatabaseAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be
-   * retained according to their `expire_time`.
+   * retained according to their `expire_time`. Note: Cloud Spanner might continue to accept
+   * requests for a few seconds after the database has been deleted.
    *
    * <p>Sample code:
    *
@@ -980,9 +989,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource =
-   *       CryptoKeyVersionName.of(
-   *           "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Policy policy = Policy.newBuilder().build();
    *   Policy response = databaseAdminClient.setIamPolicy(resource, policy);
    * }
@@ -1017,10 +1024,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   String resource =
-   *       CryptoKeyVersionName.of(
-   *               "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]")
-   *           .toString();
+   *   String resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   Policy policy = Policy.newBuilder().build();
    *   Policy response = databaseAdminClient.setIamPolicy(resource, policy);
    * }
@@ -1054,14 +1058,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   SetIamPolicyRequest request =
    *       SetIamPolicyRequest.newBuilder()
-   *           .setResource(
-   *               CryptoKeyVersionName.of(
-   *                       "[PROJECT]",
-   *                       "[LOCATION]",
-   *                       "[KEY_RING]",
-   *                       "[CRYPTO_KEY]",
-   *                       "[CRYPTO_KEY_VERSION]")
-   *                   .toString())
+   *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .setPolicy(Policy.newBuilder().build())
    *           .build();
    *   Policy response = databaseAdminClient.setIamPolicy(request);
@@ -1090,14 +1087,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   SetIamPolicyRequest request =
    *       SetIamPolicyRequest.newBuilder()
-   *           .setResource(
-   *               CryptoKeyVersionName.of(
-   *                       "[PROJECT]",
-   *                       "[LOCATION]",
-   *                       "[KEY_RING]",
-   *                       "[CRYPTO_KEY]",
-   *                       "[CRYPTO_KEY_VERSION]")
-   *                   .toString())
+   *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .setPolicy(Policy.newBuilder().build())
    *           .build();
    *   ApiFuture<Policy> future = databaseAdminClient.setIamPolicyCallable().futureCall(request);
@@ -1124,9 +1114,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource =
-   *       CryptoKeyVersionName.of(
-   *           "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Policy response = databaseAdminClient.getIamPolicy(resource);
    * }
    * }</pre>
@@ -1157,10 +1145,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   String resource =
-   *       CryptoKeyVersionName.of(
-   *               "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]")
-   *           .toString();
+   *   String resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   Policy response = databaseAdminClient.getIamPolicy(resource);
    * }
    * }</pre>
@@ -1190,14 +1175,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetIamPolicyRequest request =
    *       GetIamPolicyRequest.newBuilder()
-   *           .setResource(
-   *               CryptoKeyVersionName.of(
-   *                       "[PROJECT]",
-   *                       "[LOCATION]",
-   *                       "[KEY_RING]",
-   *                       "[CRYPTO_KEY]",
-   *                       "[CRYPTO_KEY_VERSION]")
-   *                   .toString())
+   *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .setOptions(GetPolicyOptions.newBuilder().build())
    *           .build();
    *   Policy response = databaseAdminClient.getIamPolicy(request);
@@ -1227,14 +1205,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetIamPolicyRequest request =
    *       GetIamPolicyRequest.newBuilder()
-   *           .setResource(
-   *               CryptoKeyVersionName.of(
-   *                       "[PROJECT]",
-   *                       "[LOCATION]",
-   *                       "[KEY_RING]",
-   *                       "[CRYPTO_KEY]",
-   *                       "[CRYPTO_KEY_VERSION]")
-   *                   .toString())
+   *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .setOptions(GetPolicyOptions.newBuilder().build())
    *           .build();
    *   ApiFuture<Policy> future = databaseAdminClient.getIamPolicyCallable().futureCall(request);
@@ -1261,9 +1232,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   ResourceName resource =
-   *       CryptoKeyVersionName.of(
-   *           "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]");
+   *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   List<String> permissions = new ArrayList<>();
    *   TestIamPermissionsResponse response =
    *       databaseAdminClient.testIamPermissions(resource, permissions);
@@ -1301,10 +1270,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *
    * <pre>{@code
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-   *   String resource =
-   *       CryptoKeyVersionName.of(
-   *               "[PROJECT]", "[LOCATION]", "[KEY_RING]", "[CRYPTO_KEY]", "[CRYPTO_KEY_VERSION]")
-   *           .toString();
+   *   String resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   List<String> permissions = new ArrayList<>();
    *   TestIamPermissionsResponse response =
    *       databaseAdminClient.testIamPermissions(resource, permissions);
@@ -1344,14 +1310,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   TestIamPermissionsRequest request =
    *       TestIamPermissionsRequest.newBuilder()
-   *           .setResource(
-   *               CryptoKeyVersionName.of(
-   *                       "[PROJECT]",
-   *                       "[LOCATION]",
-   *                       "[KEY_RING]",
-   *                       "[CRYPTO_KEY]",
-   *                       "[CRYPTO_KEY_VERSION]")
-   *                   .toString())
+   *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .addAllPermissions(new ArrayList<String>())
    *           .build();
    *   TestIamPermissionsResponse response = databaseAdminClient.testIamPermissions(request);
@@ -1381,14 +1340,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   TestIamPermissionsRequest request =
    *       TestIamPermissionsRequest.newBuilder()
-   *           .setResource(
-   *               CryptoKeyVersionName.of(
-   *                       "[PROJECT]",
-   *                       "[LOCATION]",
-   *                       "[KEY_RING]",
-   *                       "[CRYPTO_KEY]",
-   *                       "[CRYPTO_KEY_VERSION]")
-   *                   .toString())
+   *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .addAllPermissions(new ArrayList<String>())
    *           .build();
    *   ApiFuture<TestIamPermissionsResponse> future =
@@ -1597,6 +1549,327 @@ public class DatabaseAdminClient implements BackgroundResource {
    */
   public final UnaryCallable<CreateBackupRequest, Operation> createBackupCallable() {
     return stub.createBackupCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Starts copying a Cloud Spanner Backup. The returned backup [long-running
+   * operation][google.longrunning.Operation] will have a name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track copying of the backup. The operation is associated with the
+   * destination backup. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
+   * operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run
+   * on the same source backup.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   String backupId = "backupId2121930365";
+   *   BackupName sourceBackup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   Timestamp expireTime = Timestamp.newBuilder().build();
+   *   Backup response =
+   *       databaseAdminClient.copyBackupAsync(parent, backupId, sourceBackup, expireTime).get();
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The name of the destination instance that will contain the backup copy.
+   *     Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @param backupId Required. The id of the backup copy. The `backup_id` appended to `parent` forms
+   *     the full backup_uri of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * @param sourceBackup Required. The source backup to be copied. The source backup needs to be in
+   *     READY state for it to be copied. Once CopyBackup is in progress, the source backup cannot
+   *     be deleted or cleaned up on expiration until CopyBackup is finished. Values are of the
+   *     form: `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * @param expireTime Required. The expiration time of the backup in microsecond granularity. The
+   *     expiration time must be at least 6 hours and at most 366 days from the `create_time` of the
+   *     source backup. Once the `expire_time` has passed, the backup is eligible to be
+   *     automatically deleted by Cloud Spanner to free the resources used by the backup.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<Backup, CopyBackupMetadata> copyBackupAsync(
+      InstanceName parent, String backupId, BackupName sourceBackup, Timestamp expireTime) {
+    CopyBackupRequest request =
+        CopyBackupRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .setBackupId(backupId)
+            .setSourceBackup(sourceBackup == null ? null : sourceBackup.toString())
+            .setExpireTime(expireTime)
+            .build();
+    return copyBackupAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Starts copying a Cloud Spanner Backup. The returned backup [long-running
+   * operation][google.longrunning.Operation] will have a name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track copying of the backup. The operation is associated with the
+   * destination backup. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
+   * operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run
+   * on the same source backup.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   String backupId = "backupId2121930365";
+   *   String sourceBackup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
+   *   Timestamp expireTime = Timestamp.newBuilder().build();
+   *   Backup response =
+   *       databaseAdminClient.copyBackupAsync(parent, backupId, sourceBackup, expireTime).get();
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The name of the destination instance that will contain the backup copy.
+   *     Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @param backupId Required. The id of the backup copy. The `backup_id` appended to `parent` forms
+   *     the full backup_uri of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * @param sourceBackup Required. The source backup to be copied. The source backup needs to be in
+   *     READY state for it to be copied. Once CopyBackup is in progress, the source backup cannot
+   *     be deleted or cleaned up on expiration until CopyBackup is finished. Values are of the
+   *     form: `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * @param expireTime Required. The expiration time of the backup in microsecond granularity. The
+   *     expiration time must be at least 6 hours and at most 366 days from the `create_time` of the
+   *     source backup. Once the `expire_time` has passed, the backup is eligible to be
+   *     automatically deleted by Cloud Spanner to free the resources used by the backup.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<Backup, CopyBackupMetadata> copyBackupAsync(
+      InstanceName parent, String backupId, String sourceBackup, Timestamp expireTime) {
+    CopyBackupRequest request =
+        CopyBackupRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .setBackupId(backupId)
+            .setSourceBackup(sourceBackup)
+            .setExpireTime(expireTime)
+            .build();
+    return copyBackupAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Starts copying a Cloud Spanner Backup. The returned backup [long-running
+   * operation][google.longrunning.Operation] will have a name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track copying of the backup. The operation is associated with the
+   * destination backup. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
+   * operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run
+   * on the same source backup.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   String backupId = "backupId2121930365";
+   *   BackupName sourceBackup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
+   *   Timestamp expireTime = Timestamp.newBuilder().build();
+   *   Backup response =
+   *       databaseAdminClient.copyBackupAsync(parent, backupId, sourceBackup, expireTime).get();
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The name of the destination instance that will contain the backup copy.
+   *     Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @param backupId Required. The id of the backup copy. The `backup_id` appended to `parent` forms
+   *     the full backup_uri of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * @param sourceBackup Required. The source backup to be copied. The source backup needs to be in
+   *     READY state for it to be copied. Once CopyBackup is in progress, the source backup cannot
+   *     be deleted or cleaned up on expiration until CopyBackup is finished. Values are of the
+   *     form: `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * @param expireTime Required. The expiration time of the backup in microsecond granularity. The
+   *     expiration time must be at least 6 hours and at most 366 days from the `create_time` of the
+   *     source backup. Once the `expire_time` has passed, the backup is eligible to be
+   *     automatically deleted by Cloud Spanner to free the resources used by the backup.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<Backup, CopyBackupMetadata> copyBackupAsync(
+      String parent, String backupId, BackupName sourceBackup, Timestamp expireTime) {
+    CopyBackupRequest request =
+        CopyBackupRequest.newBuilder()
+            .setParent(parent)
+            .setBackupId(backupId)
+            .setSourceBackup(sourceBackup == null ? null : sourceBackup.toString())
+            .setExpireTime(expireTime)
+            .build();
+    return copyBackupAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Starts copying a Cloud Spanner Backup. The returned backup [long-running
+   * operation][google.longrunning.Operation] will have a name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track copying of the backup. The operation is associated with the
+   * destination backup. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
+   * operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run
+   * on the same source backup.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   String backupId = "backupId2121930365";
+   *   String sourceBackup = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
+   *   Timestamp expireTime = Timestamp.newBuilder().build();
+   *   Backup response =
+   *       databaseAdminClient.copyBackupAsync(parent, backupId, sourceBackup, expireTime).get();
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The name of the destination instance that will contain the backup copy.
+   *     Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @param backupId Required. The id of the backup copy. The `backup_id` appended to `parent` forms
+   *     the full backup_uri of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * @param sourceBackup Required. The source backup to be copied. The source backup needs to be in
+   *     READY state for it to be copied. Once CopyBackup is in progress, the source backup cannot
+   *     be deleted or cleaned up on expiration until CopyBackup is finished. Values are of the
+   *     form: `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * @param expireTime Required. The expiration time of the backup in microsecond granularity. The
+   *     expiration time must be at least 6 hours and at most 366 days from the `create_time` of the
+   *     source backup. Once the `expire_time` has passed, the backup is eligible to be
+   *     automatically deleted by Cloud Spanner to free the resources used by the backup.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<Backup, CopyBackupMetadata> copyBackupAsync(
+      String parent, String backupId, String sourceBackup, Timestamp expireTime) {
+    CopyBackupRequest request =
+        CopyBackupRequest.newBuilder()
+            .setParent(parent)
+            .setBackupId(backupId)
+            .setSourceBackup(sourceBackup)
+            .setExpireTime(expireTime)
+            .build();
+    return copyBackupAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Starts copying a Cloud Spanner Backup. The returned backup [long-running
+   * operation][google.longrunning.Operation] will have a name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track copying of the backup. The operation is associated with the
+   * destination backup. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
+   * operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run
+   * on the same source backup.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   CopyBackupRequest request =
+   *       CopyBackupRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setBackupId("backupId2121930365")
+   *           .setSourceBackup(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
+   *           .setExpireTime(Timestamp.newBuilder().build())
+   *           .setEncryptionConfig(CopyBackupEncryptionConfig.newBuilder().build())
+   *           .build();
+   *   Backup response = databaseAdminClient.copyBackupAsync(request).get();
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<Backup, CopyBackupMetadata> copyBackupAsync(
+      CopyBackupRequest request) {
+    return copyBackupOperationCallable().futureCall(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Starts copying a Cloud Spanner Backup. The returned backup [long-running
+   * operation][google.longrunning.Operation] will have a name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track copying of the backup. The operation is associated with the
+   * destination backup. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
+   * operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run
+   * on the same source backup.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   CopyBackupRequest request =
+   *       CopyBackupRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setBackupId("backupId2121930365")
+   *           .setSourceBackup(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
+   *           .setExpireTime(Timestamp.newBuilder().build())
+   *           .setEncryptionConfig(CopyBackupEncryptionConfig.newBuilder().build())
+   *           .build();
+   *   OperationFuture<Backup, CopyBackupMetadata> future =
+   *       databaseAdminClient.copyBackupOperationCallable().futureCall(request);
+   *   // Do something.
+   *   Backup response = future.get();
+   * }
+   * }</pre>
+   */
+  public final OperationCallable<CopyBackupRequest, Backup, CopyBackupMetadata>
+      copyBackupOperationCallable() {
+    return stub.copyBackupOperationCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Starts copying a Cloud Spanner Backup. The returned backup [long-running
+   * operation][google.longrunning.Operation] will have a name of the format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track copying of the backup. The operation is associated with the
+   * destination backup. The [metadata][google.longrunning.Operation.metadata] field type is
+   * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
+   * operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run
+   * on the same source backup.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   CopyBackupRequest request =
+   *       CopyBackupRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setBackupId("backupId2121930365")
+   *           .setSourceBackup(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
+   *           .setExpireTime(Timestamp.newBuilder().build())
+   *           .setEncryptionConfig(CopyBackupEncryptionConfig.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Operation> future = databaseAdminClient.copyBackupCallable().futureCall(request);
+   *   // Do something.
+   *   Operation response = future.get();
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<CopyBackupRequest, Operation> copyBackupCallable() {
+    return stub.copyBackupCallable();
   }
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
@@ -2722,12 +2995,7 @@ public class DatabaseAdminClient implements BackgroundResource {
           ListDatabasesPage.createEmptyPage().createPageAsync(context, futureResponse);
       return ApiFutures.transform(
           futurePage,
-          new ApiFunction<ListDatabasesPage, ListDatabasesPagedResponse>() {
-            @Override
-            public ListDatabasesPagedResponse apply(ListDatabasesPage input) {
-              return new ListDatabasesPagedResponse(input);
-            }
-          },
+          input -> new ListDatabasesPagedResponse(input),
           MoreExecutors.directExecutor());
     }
 
@@ -2802,14 +3070,7 @@ public class DatabaseAdminClient implements BackgroundResource {
       ApiFuture<ListBackupsPage> futurePage =
           ListBackupsPage.createEmptyPage().createPageAsync(context, futureResponse);
       return ApiFutures.transform(
-          futurePage,
-          new ApiFunction<ListBackupsPage, ListBackupsPagedResponse>() {
-            @Override
-            public ListBackupsPagedResponse apply(ListBackupsPage input) {
-              return new ListBackupsPagedResponse(input);
-            }
-          },
-          MoreExecutors.directExecutor());
+          futurePage, input -> new ListBackupsPagedResponse(input), MoreExecutors.directExecutor());
     }
 
     private ListBackupsPagedResponse(ListBackupsPage page) {
@@ -2884,12 +3145,7 @@ public class DatabaseAdminClient implements BackgroundResource {
           ListDatabaseOperationsPage.createEmptyPage().createPageAsync(context, futureResponse);
       return ApiFutures.transform(
           futurePage,
-          new ApiFunction<ListDatabaseOperationsPage, ListDatabaseOperationsPagedResponse>() {
-            @Override
-            public ListDatabaseOperationsPagedResponse apply(ListDatabaseOperationsPage input) {
-              return new ListDatabaseOperationsPagedResponse(input);
-            }
-          },
+          input -> new ListDatabaseOperationsPagedResponse(input),
           MoreExecutors.directExecutor());
     }
 
@@ -2972,12 +3228,7 @@ public class DatabaseAdminClient implements BackgroundResource {
           ListBackupOperationsPage.createEmptyPage().createPageAsync(context, futureResponse);
       return ApiFutures.transform(
           futurePage,
-          new ApiFunction<ListBackupOperationsPage, ListBackupOperationsPagedResponse>() {
-            @Override
-            public ListBackupOperationsPagedResponse apply(ListBackupOperationsPage input) {
-              return new ListBackupOperationsPagedResponse(input);
-            }
-          },
+          input -> new ListBackupOperationsPagedResponse(input),
           MoreExecutors.directExecutor());
     }
 

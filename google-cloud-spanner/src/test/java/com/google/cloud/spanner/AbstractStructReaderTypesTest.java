@@ -71,6 +71,11 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
+    protected String getJsonInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
     protected ByteArray getBytesInternal(int columnIndex) {
       return null;
     }
@@ -127,6 +132,11 @@ public class AbstractStructReaderTypesTest {
 
     @Override
     protected List<String> getStringListInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected List<String> getJsonListInternal(int columnIndex) {
       return null;
     }
 
@@ -191,6 +201,13 @@ public class AbstractStructReaderTypesTest {
             Collections.singletonList("getValue")
           },
           {
+            Type.pgNumeric(),
+            "getStringInternal",
+            "1.23",
+            "getString",
+            Collections.singletonList("getValue")
+          },
+          {
             Type.string(),
             "getStringInternal",
             "a",
@@ -202,6 +219,13 @@ public class AbstractStructReaderTypesTest {
             "getBytesInternal",
             ByteArray.copyFrom(new byte[] {0}),
             "getBytes",
+            Collections.singletonList("getValue")
+          },
+          {
+            Type.json(),
+            "getJsonInternal",
+            "{\"color\":\"red\",\"value\":\"#f00\"}",
+            "getJson",
             Collections.singletonList("getValue")
           },
           {
@@ -268,10 +292,24 @@ public class AbstractStructReaderTypesTest {
             Collections.singletonList("getValue")
           },
           {
+            Type.array(Type.pgNumeric()),
+            "getStringListInternal",
+            Arrays.asList("1.23", "2.34"),
+            "getStringList",
+            Collections.singletonList("getValue")
+          },
+          {
             Type.array(Type.string()),
             "getStringListInternal",
             Arrays.asList("a", "b", "c"),
             "getStringList",
+            Collections.singletonList("getValue")
+          },
+          {
+            Type.array(Type.json()),
+            "getJsonListInternal",
+            Arrays.asList("{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"),
+            "getJsonList",
             Collections.singletonList("getValue")
           },
           {

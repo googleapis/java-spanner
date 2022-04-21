@@ -28,12 +28,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -154,9 +154,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             invocation -> {
               executor.submit(
                   () -> {
-                    int sessionCount = invocation.getArgumentAt(0, Integer.class);
+                    int sessionCount = invocation.getArgument(0, Integer.class);
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     for (int i = 0; i < sessionCount; i++) {
                       consumer.onSessionReady(mockSession());
                     }
@@ -229,7 +229,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(sessions.pop());
                   });
               return null;
@@ -277,7 +277,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(session1);
                   });
               return null;
@@ -289,7 +289,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                     insideCreation.countDown();
                     releaseCreation.await();
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(session2);
                     return null;
                   });
@@ -323,7 +323,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(session1);
                   });
               return null;
@@ -335,7 +335,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                     insideCreation.countDown();
                     releaseCreation.await();
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(session2);
                     return null;
                   });
@@ -369,7 +369,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                     insideCreation.countDown();
                     releaseCreation.await();
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionCreateFailure(
                         SpannerExceptionFactory.newSpannerException(new RuntimeException()), 1);
                     return null;
@@ -397,7 +397,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(session);
                   });
               return null;
@@ -437,7 +437,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionCreateFailure(
                         SpannerExceptionFactory.newSpannerException(ErrorCode.INTERNAL, ""), 1);
                     return null;
@@ -464,7 +464,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(mockSession());
                   });
               return null;
@@ -500,7 +500,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(sessions.pop());
                   });
               return null;
@@ -558,9 +558,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             invocation -> {
               executor.submit(
                   () -> {
-                    int sessionCount = invocation.getArgumentAt(0, Integer.class);
+                    int sessionCount = invocation.getArgument(0, Integer.class);
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     for (int i = 0; i < sessionCount; i++) {
                       consumer.onSessionReady(session);
                     }
@@ -664,7 +664,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(closedSession);
                   });
               return null;
@@ -674,7 +674,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(openSession);
                   });
               return null;
@@ -708,7 +708,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(closedSession);
                   });
               return null;
@@ -718,7 +718,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(openSession);
                   });
               return null;
@@ -819,7 +819,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                 executor.submit(
                     () -> {
                       SessionConsumerImpl consumer =
-                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                          invocation.getArgument(2, SessionConsumerImpl.class);
                       consumer.onSessionReady(closedSession);
                     });
                 return null;
@@ -829,7 +829,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                 executor.submit(
                     () -> {
                       SessionConsumerImpl consumer =
-                          invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                          invocation.getArgument(2, SessionConsumerImpl.class);
                       consumer.onSessionReady(openSession);
                     });
                 return null;
@@ -927,7 +927,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(closedSession);
                   });
               return null;
@@ -937,7 +937,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(openSession);
                   });
               return null;
@@ -970,7 +970,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(closedSession);
                   });
               return null;
@@ -980,7 +980,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(openSession);
                   });
               return null;
@@ -1009,7 +1009,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(closedSession);
                   });
               return null;
@@ -1019,7 +1019,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               executor.submit(
                   () -> {
                     SessionConsumerImpl consumer =
-                        invocation.getArgumentAt(2, SessionConsumerImpl.class);
+                        invocation.getArgument(2, SessionConsumerImpl.class);
                     consumer.onSessionReady(openSession);
                   });
               return null;

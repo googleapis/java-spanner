@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /** Represents a Cloud Spanner instance config resource. */
@@ -23,15 +25,25 @@ public class InstanceConfigInfo {
 
   private final InstanceConfigId id;
   private final String displayName;
+  private final List<ReplicaInfo> replicas;
+  private final List<String> leaderOptions;
 
   public InstanceConfigInfo(InstanceConfigId id, String displayName) {
-    this.id = id;
-    this.displayName = displayName;
+    this(id, displayName, Collections.emptyList(), Collections.emptyList());
   }
 
-  /*
-   * Returns the id of this instance config.
-   */
+  public InstanceConfigInfo(
+      InstanceConfigId id,
+      String displayName,
+      List<ReplicaInfo> replicas,
+      List<String> leaderOptions) {
+    this.id = id;
+    this.displayName = displayName;
+    this.replicas = replicas;
+    this.leaderOptions = leaderOptions;
+  }
+
+  /** Returns the id of this instance config. */
   public InstanceConfigId getId() {
     return id;
   }
@@ -41,9 +53,20 @@ public class InstanceConfigInfo {
     return displayName;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, displayName);
+  /**
+   * The geographic placement of nodes in this instance configuration and their replication
+   * properties.
+   */
+  public List<ReplicaInfo> getReplicas() {
+    return replicas;
+  }
+
+  /**
+   * Allowed values of the default leader schema option for databases in instances that use this
+   * instance configuration.
+   */
+  public List<String> getLeaderOptions() {
+    return leaderOptions;
   }
 
   @Override
@@ -51,15 +74,24 @@ public class InstanceConfigInfo {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof InstanceConfigInfo)) {
       return false;
     }
     InstanceConfigInfo that = (InstanceConfigInfo) o;
-    return that.id.equals(id) && that.displayName.equals(displayName);
+    return Objects.equals(id, that.id)
+        && Objects.equals(displayName, that.displayName)
+        && Objects.equals(replicas, that.replicas)
+        && Objects.equals(leaderOptions, that.leaderOptions);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, displayName, replicas, leaderOptions);
   }
 
   @Override
   public String toString() {
-    return String.format("Instance Config[%s, %s]", id, displayName);
+    return String.format(
+        "Instance Config[%s, %s, %s, %s]", id, displayName, replicas, leaderOptions);
   }
 }

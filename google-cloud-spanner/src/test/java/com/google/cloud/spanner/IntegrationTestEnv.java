@@ -42,6 +42,8 @@ public class IntegrationTestEnv extends ExternalResource {
   /** Names a property that provides the class name of the {@link TestEnvConfig} to use. */
   public static final String TEST_ENV_CONFIG_CLASS_NAME = "spanner.testenv.config.class";
 
+  public static final String CONFIG_CLASS = System.getProperty(TEST_ENV_CONFIG_CLASS_NAME, null);
+
   /**
    * Names a property that, if set, identifies an existing Cloud Spanner instance to use for tests.
    */
@@ -62,12 +64,11 @@ public class IntegrationTestEnv extends ExternalResource {
   @SuppressWarnings("unchecked")
   protected void initializeConfig()
       throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-    String configClassName = System.getProperty(TEST_ENV_CONFIG_CLASS_NAME, null);
-    if (configClassName == null) {
+    if (CONFIG_CLASS == null) {
       throw new NullPointerException("Property " + TEST_ENV_CONFIG_CLASS_NAME + " needs to be set");
     }
     Class<? extends TestEnvConfig> configClass;
-    configClass = (Class<? extends TestEnvConfig>) Class.forName(configClassName);
+    configClass = (Class<? extends TestEnvConfig>) Class.forName(CONFIG_CLASS);
     config = configClass.newInstance();
   }
 

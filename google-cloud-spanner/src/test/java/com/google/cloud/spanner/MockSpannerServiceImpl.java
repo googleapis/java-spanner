@@ -33,6 +33,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Empty;
+import com.google.protobuf.ListValue;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value.KindCase;
 import com.google.rpc.Code;
@@ -71,6 +72,7 @@ import com.google.spanner.v1.TransactionOptions.ModeCase;
 import com.google.spanner.v1.TransactionOptions.ReadWrite;
 import com.google.spanner.v1.TransactionSelector;
 import com.google.spanner.v1.Type;
+import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Metadata;
 import io.grpc.ServerServiceDefinition;
@@ -79,6 +81,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
 import io.grpc.stub.StreamObserver;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -267,6 +270,32 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     /** Creates a {@link StatementResult} for statement that should return an error. */
     public static StatementResult exception(Statement statement, StatusRuntimeException exception) {
       return new StatementResult(statement, exception);
+    }
+
+    /** Creates a result for the query that detects the dialect that is used for the database. */
+    public static StatementResult detectDialectResult(Dialect resultDialect) {
+      return StatementResult.query(
+          SessionPool.DETERMINE_DIALECT_STATEMENT,
+          ResultSet.newBuilder()
+              .setMetadata(
+                  ResultSetMetadata.newBuilder()
+                      .setRowType(
+                          StructType.newBuilder()
+                              .addFields(
+                                  Field.newBuilder()
+                                      .setName("DIALECT")
+                                      .setType(Type.newBuilder().setCode(TypeCode.STRING).build())
+                                      .build())
+                              .build())
+                      .build())
+              .addRows(
+                  ListValue.newBuilder()
+                      .addValues(
+                          com.google.protobuf.Value.newBuilder()
+                              .setStringValue(resultDialect.toString())
+                              .build())
+                      .build())
+              .build());
     }
 
     private static class KeepLastElementDeque<E> extends LinkedList<E> {
@@ -523,6 +552,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   private final Random random = new Random();
   private double abortProbability = 0.0010D;
+  /**
+   * Flip this switch to true if you want the {@link SessionPool#DETERMINE_DIALECT_STATEMENT}
+   * statement to be included in the recorded requests on the mock server. It is ignored by default
+   * to prevent tests that do not expect this request to suddenly start failing.
+   */
+  private boolean includeDetermineDialectStatementInRequests = false;
 
   private final Object lock = new Object();
   private Deque<AbstractMessage> requests = new ConcurrentLinkedDeque<>();
@@ -565,6 +600,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private SimulatedExecutionTime readExecutionTime = NO_EXECUTION_TIME;
   private SimulatedExecutionTime rollbackExecutionTime = NO_EXECUTION_TIME;
   private SimulatedExecutionTime streamingReadExecutionTime = NO_EXECUTION_TIME;
+
+  public MockSpannerServiceImpl() {
+    putStatementResult(StatementResult.detectDialectResult(Dialect.GOOGLE_STANDARD_SQL));
+  }
 
   private String generateSessionName(String database) {
     return String.format("%s/sessions/%s", database, UUID.randomUUID().toString());
@@ -659,6 +698,15 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     Preconditions.checkArgument(
         probability >= 0D && probability <= 1D, "Probability must be >= 0 and <= 1");
     this.abortProbability = probability;
+  }
+
+  /**
+   * Set this to true if you want the {@link SessionPool#DETERMINE_DIALECT_STATEMENT} statement to
+   * be included in the recorded requests on the mock server. It is ignored by default to prevent
+   * tests that do not expect this request to suddenly start failing.
+   */
+  public void setIncludeDetermineDialectStatementInRequests(boolean include) {
+    this.includeDetermineDialectStatementInRequests = include;
   }
 
   /**
@@ -1095,7 +1143,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   @Override
   public void executeStreamingSql(
       ExecuteSqlRequest request, StreamObserver<PartialResultSet> responseObserver) {
-    requests.add(request);
+    if (includeDetermineDialectStatementInRequests
+        || !request.getSql().equals(SessionPool.DETERMINE_DIALECT_STATEMENT.getSql())) {
+      requests.add(request);
+    }
     Preconditions.checkNotNull(request.getSession());
     Session session = sessions.get(request.getSession());
     if (session == null) {
@@ -1175,79 +1226,107 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private Statement buildStatement(
       String sql, Map<String, Type> paramTypes, com.google.protobuf.Struct params) {
     Statement.Builder builder = Statement.newBuilder(sql);
+    // Set all untyped null values first.
+    for (Entry<String, com.google.protobuf.Value> entry : params.getFieldsMap().entrySet()) {
+      if (entry.getValue().hasNullValue() && !paramTypes.containsKey(entry.getKey())) {
+        builder.bind(entry.getKey()).to((Value) null);
+      }
+    }
+
     for (Entry<String, Type> entry : paramTypes.entrySet()) {
-      com.google.protobuf.Value value = params.getFieldsOrThrow(entry.getKey());
+      final String fieldName = entry.getKey();
+      final Type fieldType = entry.getValue();
+      final Type elementType = fieldType.getArrayElementType();
+      com.google.protobuf.Value value = params.getFieldsOrThrow(fieldName);
       if (value.getKindCase() == KindCase.NULL_VALUE) {
-        switch (entry.getValue().getCode()) {
+        switch (fieldType.getCode()) {
           case ARRAY:
-            switch (entry.getValue().getArrayElementType().getCode()) {
+            switch (elementType.getCode()) {
               case BOOL:
-                builder.bind(entry.getKey()).toBoolArray((Iterable<Boolean>) null);
+                builder.bind(fieldName).toBoolArray((Iterable<Boolean>) null);
                 break;
               case BYTES:
-                builder.bind(entry.getKey()).toBytesArray(null);
+                builder.bind(fieldName).toBytesArray(null);
                 break;
               case DATE:
-                builder.bind(entry.getKey()).toDateArray(null);
+                builder.bind(fieldName).toDateArray(null);
                 break;
               case FLOAT64:
-                builder.bind(entry.getKey()).toFloat64Array((Iterable<Double>) null);
+                builder.bind(fieldName).toFloat64Array((Iterable<Double>) null);
                 break;
               case INT64:
-                builder.bind(entry.getKey()).toInt64Array((Iterable<Long>) null);
+                builder.bind(fieldName).toInt64Array((Iterable<Long>) null);
                 break;
               case STRING:
-                builder.bind(entry.getKey()).toStringArray(null);
+                builder.bind(fieldName).toStringArray(null);
+                break;
+              case NUMERIC:
+                if (elementType.getTypeAnnotation() == TypeAnnotationCode.PG_NUMERIC) {
+                  builder.bind(fieldName).toPgNumericArray(null);
+                } else {
+                  builder.bind(fieldName).toNumericArray(null);
+                }
                 break;
               case TIMESTAMP:
-                builder.bind(entry.getKey()).toTimestampArray(null);
+                builder.bind(fieldName).toTimestampArray(null);
+                break;
+              case JSON:
+                builder.bind(fieldName).toJsonArray(null);
                 break;
               case STRUCT:
               case TYPE_CODE_UNSPECIFIED:
               case UNRECOGNIZED:
               default:
                 throw new IllegalArgumentException(
-                    "Unknown or invalid array parameter type: "
-                        + entry.getValue().getArrayElementType().getCode());
+                    "Unknown or invalid array parameter type: " + elementType.getCode());
             }
             break;
           case BOOL:
-            builder.bind(entry.getKey()).to((Boolean) null);
+            builder.bind(fieldName).to((Boolean) null);
             break;
           case BYTES:
-            builder.bind(entry.getKey()).to((ByteArray) null);
+            builder.bind(fieldName).to((ByteArray) null);
             break;
           case DATE:
-            builder.bind(entry.getKey()).to((Date) null);
+            builder.bind(fieldName).to((Date) null);
             break;
           case FLOAT64:
-            builder.bind(entry.getKey()).to((Double) null);
+            builder.bind(fieldName).to((Double) null);
             break;
           case INT64:
-            builder.bind(entry.getKey()).to((Long) null);
+            builder.bind(fieldName).to((Long) null);
             break;
           case STRING:
-            builder.bind(entry.getKey()).to((String) null);
+            builder.bind(fieldName).to((String) null);
+            break;
+          case NUMERIC:
+            if (fieldType.getTypeAnnotation() == TypeAnnotationCode.PG_NUMERIC) {
+              builder.bind(fieldName).to(Value.pgNumeric(null));
+            } else {
+              builder.bind(fieldName).to((BigDecimal) null);
+            }
             break;
           case STRUCT:
-            builder.bind(entry.getKey()).to((Struct) null);
+            builder.bind(fieldName).to((Struct) null);
             break;
           case TIMESTAMP:
-            builder.bind(entry.getKey()).to((com.google.cloud.Timestamp) null);
+            builder.bind(fieldName).to((com.google.cloud.Timestamp) null);
+            break;
+          case JSON:
+            builder.bind(fieldName).to(Value.json(null));
             break;
           case TYPE_CODE_UNSPECIFIED:
           case UNRECOGNIZED:
           default:
-            throw new IllegalArgumentException(
-                "Unknown parameter type: " + entry.getValue().getCode());
+            throw new IllegalArgumentException("Unknown parameter type: " + fieldType.getCode());
         }
       } else {
-        switch (entry.getValue().getCode()) {
+        switch (fieldType.getCode()) {
           case ARRAY:
-            switch (entry.getValue().getArrayElementType().getCode()) {
+            switch (elementType.getCode()) {
               case BOOL:
                 builder
-                    .bind(entry.getKey())
+                    .bind(fieldName)
                     .toBoolArray(
                         (Iterable<Boolean>)
                             GrpcStruct.decodeArrayValue(
@@ -1255,7 +1334,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 break;
               case BYTES:
                 builder
-                    .bind(entry.getKey())
+                    .bind(fieldName)
                     .toBytesArray(
                         (Iterable<ByteArray>)
                             GrpcStruct.decodeArrayValue(
@@ -1263,7 +1342,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 break;
               case DATE:
                 builder
-                    .bind(entry.getKey())
+                    .bind(fieldName)
                     .toDateArray(
                         (Iterable<Date>)
                             GrpcStruct.decodeArrayValue(
@@ -1271,7 +1350,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 break;
               case FLOAT64:
                 builder
-                    .bind(entry.getKey())
+                    .bind(fieldName)
                     .toFloat64Array(
                         (Iterable<Double>)
                             GrpcStruct.decodeArrayValue(
@@ -1279,7 +1358,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 break;
               case INT64:
                 builder
-                    .bind(entry.getKey())
+                    .bind(fieldName)
                     .toInt64Array(
                         (Iterable<Long>)
                             GrpcStruct.decodeArrayValue(
@@ -1287,59 +1366,92 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 break;
               case STRING:
                 builder
-                    .bind(entry.getKey())
+                    .bind(fieldName)
                     .toStringArray(
                         (Iterable<String>)
                             GrpcStruct.decodeArrayValue(
                                 com.google.cloud.spanner.Type.string(), value.getListValue()));
                 break;
+              case NUMERIC:
+                if (elementType.getTypeAnnotation() == TypeAnnotationCode.PG_NUMERIC) {
+                  builder
+                      .bind(fieldName)
+                      .toPgNumericArray(
+                          (Iterable<String>)
+                              GrpcStruct.decodeArrayValue(
+                                  com.google.cloud.spanner.Type.pgNumeric(), value.getListValue()));
+                } else {
+                  builder
+                      .bind(fieldName)
+                      .toNumericArray(
+                          (Iterable<BigDecimal>)
+                              GrpcStruct.decodeArrayValue(
+                                  com.google.cloud.spanner.Type.numeric(), value.getListValue()));
+                }
+                break;
               case TIMESTAMP:
                 builder
-                    .bind(entry.getKey())
+                    .bind(fieldName)
                     .toTimestampArray(
                         (Iterable<com.google.cloud.Timestamp>)
                             GrpcStruct.decodeArrayValue(
                                 com.google.cloud.spanner.Type.timestamp(), value.getListValue()));
+                break;
+              case JSON:
+                builder
+                    .bind(fieldName)
+                    .toJsonArray(
+                        (Iterable<String>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.json(), value.getListValue()));
                 break;
               case STRUCT:
               case TYPE_CODE_UNSPECIFIED:
               case UNRECOGNIZED:
               default:
                 throw new IllegalArgumentException(
-                    "Unknown or invalid array parameter type: "
-                        + entry.getValue().getArrayElementType().getCode());
+                    "Unknown or invalid array parameter type: " + elementType.getCode());
             }
             break;
           case BOOL:
-            builder.bind(entry.getKey()).to(value.getBoolValue());
+            builder.bind(fieldName).to(value.getBoolValue());
             break;
           case BYTES:
-            builder.bind(entry.getKey()).to(ByteArray.fromBase64(value.getStringValue()));
+            builder.bind(fieldName).to(ByteArray.fromBase64(value.getStringValue()));
             break;
           case DATE:
-            builder.bind(entry.getKey()).to(Date.parseDate(value.getStringValue()));
+            builder.bind(fieldName).to(Date.parseDate(value.getStringValue()));
             break;
           case FLOAT64:
-            builder.bind(entry.getKey()).to(value.getNumberValue());
+            builder.bind(fieldName).to(value.getNumberValue());
             break;
           case INT64:
-            builder.bind(entry.getKey()).to(Long.valueOf(value.getStringValue()));
+            builder.bind(fieldName).to(Long.valueOf(value.getStringValue()));
             break;
           case STRING:
-            builder.bind(entry.getKey()).to(value.getStringValue());
+            builder.bind(fieldName).to(value.getStringValue());
+            break;
+          case NUMERIC:
+            if (fieldType.getTypeAnnotation() == TypeAnnotationCode.PG_NUMERIC) {
+              builder.bind(fieldName).to(Value.pgNumeric(value.getStringValue()));
+            } else {
+              builder.bind(fieldName).to(new BigDecimal(value.getStringValue()));
+            }
             break;
           case STRUCT:
             throw new IllegalArgumentException("Struct parameters not (yet) supported");
           case TIMESTAMP:
             builder
-                .bind(entry.getKey())
+                .bind(fieldName)
                 .to(com.google.cloud.Timestamp.parseTimestamp(value.getStringValue()));
+            break;
+          case JSON:
+            builder.bind(fieldName).to(Value.json(value.getStringValue()));
             break;
           case TYPE_CODE_UNSPECIFIED:
           case UNRECOGNIZED:
           default:
-            throw new IllegalArgumentException(
-                "Unknown parameter type: " + entry.getValue().getCode());
+            throw new IllegalArgumentException("Unknown parameter type: " + fieldType.getCode());
         }
       }
     }
@@ -1465,6 +1577,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         throw Status.NOT_FOUND
             .withDescription("No result found for " + statement.toString())
             .asRuntimeException();
+      }
+      if (res.getType() == StatementResult.StatementResultType.EXCEPTION) {
+        throw res.getException();
       }
       returnPartialResultSet(
           res.getResultSet(),

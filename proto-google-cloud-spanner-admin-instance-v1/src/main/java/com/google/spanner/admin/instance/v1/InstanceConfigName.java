@@ -182,8 +182,8 @@ public class InstanceConfigName implements ResourceName {
     }
 
     private Builder(InstanceConfigName instanceConfigName) {
-      project = instanceConfigName.project;
-      instanceConfig = instanceConfigName.instanceConfig;
+      this.project = instanceConfigName.project;
+      this.instanceConfig = instanceConfigName.instanceConfig;
     }
 
     public InstanceConfigName build() {

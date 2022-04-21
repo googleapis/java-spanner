@@ -148,6 +148,7 @@ public class SpannerSample {
     final boolean outdoorVenue;
     final float popularityScore;
     final BigDecimal revenue;
+    final Value venueDetails;
 
     Venue(
         long venueId,
@@ -158,7 +159,8 @@ public class SpannerSample {
         String lastContactDate,
         boolean outdoorVenue,
         float popularityScore,
-        BigDecimal revenue) {
+        BigDecimal revenue,
+        Value venueDetails) {
       this.venueId = venueId;
       this.venueName = venueName;
       this.venueInfo = venueInfo;
@@ -168,6 +170,7 @@ public class SpannerSample {
       this.outdoorVenue = outdoorVenue;
       this.popularityScore = popularityScore;
       this.revenue = revenue;
+      this.venueDetails = venueDetails;
     }
   }
 
@@ -237,7 +240,9 @@ public class SpannerSample {
               "2018-09-02",
               false,
               0.85543f,
-              new BigDecimal("215100.10")),
+              new BigDecimal("215100.10"),
+              Value.json(
+                  "[{\"name\":\"room 1\",\"open\":true},{\"name\":\"room 2\",\"open\":false}]")),
           new Venue(
               19,
               "Venue 19",
@@ -247,7 +252,8 @@ public class SpannerSample {
               "2019-01-15",
               true,
               0.98716f,
-              new BigDecimal("1200100.00")),
+              new BigDecimal("1200100.00"),
+              Value.json("{\"rating\":9,\"open\":true}")),
           new Venue(
               42,
               "Venue 42",
@@ -257,7 +263,11 @@ public class SpannerSample {
               "2018-10-01",
               false,
               0.72598f,
-              new BigDecimal("390650.99")));
+              new BigDecimal("390650.99"),
+              Value.json(
+                  "{\"name\":null,"
+                      + "\"open\":{\"Monday\":true,\"Tuesday\":false},"
+                      + "\"tags\":[\"large\",\"airy\"]}")));
   // [END spanner_insert_datatypes_data]
 
   // [START spanner_create_database]
@@ -1258,6 +1268,7 @@ public class SpannerSample {
                     + "  OutdoorVenue    BOOL, "
                     + "  PopularityScore FLOAT64, "
                     + "  Revenue         NUMERIC, "
+                    + "  VenueDetails    JSON, "
                     + "  LastUpdateTime  TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true)"
                     + ") PRIMARY KEY (VenueId)"),
             null);
@@ -1300,6 +1311,8 @@ public class SpannerSample {
               .to(venue.popularityScore)
               .set("Revenue")
               .to(venue.revenue)
+              .set("VenueDetails")
+              .to(venue.venueDetails)
               .set("LastUpdateTime")
               .to(Value.COMMIT_TIMESTAMP)
               .build());
@@ -1507,7 +1520,13 @@ public class SpannerSample {
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setDefaultQueryOptions(
-                db, QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                db, QueryOptions
+                    .newBuilder()
+                    .setOptimizerVersion("1")
+                    // The list of available statistics packages can be found by querying the
+                    // "INFORMATION_SCHEMA.SPANNER_STATISTICS" table.
+                    .setOptimizerStatisticsPackage("latest")
+                    .build())
             .build();
     Spanner spanner = options.getService();
     DatabaseClient dbClient = spanner.getDatabaseClient(db);
@@ -1531,7 +1550,13 @@ public class SpannerSample {
             .executeQuery(
                 Statement
                     .newBuilder("SELECT SingerId, AlbumId, AlbumTitle FROM Albums")
-                    .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("1").build())
+                    .withQueryOptions(QueryOptions
+                        .newBuilder()
+                        .setOptimizerVersion("1")
+                        // The list of available statistics packages can be found by querying the
+                        // "INFORMATION_SCHEMA.SPANNER_STATISTICS" table.
+                        .setOptimizerStatisticsPackage("latest")
+                        .build())
                     .build())) {
       while (resultSet.next()) {
         System.out.printf(
@@ -1620,6 +1645,8 @@ public class SpannerSample {
       if (pollingFuture.get().getErrorCode() == null) {
         // Backup was created before it could be cancelled. Delete the backup.
         backup.delete();
+        System.out.println("Backup operation for [" + backup.getId()
+            + "] successfully finished before it could be cancelled");
       } else if (pollingFuture.get().getErrorCode().getCode() == StatusCode.Code.CANCELLED) {
         System.out.println("Backup operation for [" + backup.getId() + "] successfully cancelled");
       }

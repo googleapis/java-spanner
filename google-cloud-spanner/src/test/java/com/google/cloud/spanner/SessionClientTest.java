@@ -149,10 +149,10 @@ public class SessionClientTest {
             Mockito.eq(dbName), Mockito.anyInt(), Mockito.eq(labels), Mockito.anyMap()))
         .then(
             invocation -> {
-              Map<Option, Object> options = invocation.getArgumentAt(3, Map.class);
+              Map<Option, Object> options = invocation.getArgument(3, Map.class);
               Long channelHint = (Long) options.get(Option.CHANNEL_HINT);
               usedChannels.add(channelHint);
-              int sessionCount = invocation.getArgumentAt(1, Integer.class);
+              int sessionCount = invocation.getArgument(1, Integer.class);
               List<com.google.spanner.v1.Session> res = new ArrayList<>();
               for (int i = 1; i <= sessionCount; i++) {
                 res.add(
@@ -209,10 +209,10 @@ public class SessionClientTest {
             Mockito.eq(dbName), Mockito.anyInt(), Mockito.eq(labels), Mockito.anyMap()))
         .then(
             invocation -> {
-              Map<Option, Object> options = invocation.getArgumentAt(3, Map.class);
+              Map<Option, Object> options = invocation.getArgument(3, Map.class);
               Long channelHint = (Long) options.get(Option.CHANNEL_HINT);
               usedChannelHints.add(channelHint);
-              int sessionCount = invocation.getArgumentAt(1, Integer.class);
+              int sessionCount = invocation.getArgument(1, Integer.class);
               List<com.google.spanner.v1.Session> res = new ArrayList<>();
               for (int i = 1; i <= sessionCount; i++) {
                 res.add(
@@ -290,13 +290,13 @@ public class SessionClientTest {
                 Mockito.eq(dbName), Mockito.anyInt(), Mockito.anyMap(), Mockito.anyMap()))
             .then(
                 invocation -> {
-                  Map<Option, Object> options = invocation.getArgumentAt(3, Map.class);
+                  Map<Option, Object> options = invocation.getArgument(3, Map.class);
                   Long channelHint = (Long) options.get(Option.CHANNEL_HINT);
                   if (errorOnChannels.contains(channelHint)) {
                     throw SpannerExceptionFactory.newSpannerException(
                         ErrorCode.RESOURCE_EXHAUSTED, "could not create any more sessions");
                   } else {
-                    int sessionCount = invocation.getArgumentAt(1, Integer.class);
+                    int sessionCount = invocation.getArgument(1, Integer.class);
                     List<com.google.spanner.v1.Session> res = new ArrayList<>();
                     for (int i = 1; i <= sessionCount; i++) {
                       res.add(
@@ -354,7 +354,7 @@ public class SessionClientTest {
             Mockito.eq(dbName), Mockito.anyInt(), Mockito.anyMap(), Mockito.anyMap()))
         .then(
             invocation -> {
-              int sessionCount = invocation.getArgumentAt(1, Integer.class);
+              int sessionCount = invocation.getArgument(1, Integer.class);
               List<com.google.spanner.v1.Session> res = new ArrayList<>();
               for (int i = 1; i <= Math.min(MAX_SESSIONS_PER_BATCH, sessionCount); i++) {
                 res.add(

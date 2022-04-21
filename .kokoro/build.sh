@@ -23,8 +23,8 @@ cd ${scriptDir}/..
 # include common functions
 source ${scriptDir}/common.sh
 
-# Print out Java version
-java -version
+# Print out Maven & Java version
+mvn -version
 echo ${JOB_TYPE}
 
 # attempt to install 3 times with exponential backoff (starting with 10 seconds)
@@ -47,7 +47,10 @@ set +e
 
 case ${JOB_TYPE} in
 test)
-    mvn test -B -Dclirr.skip=true -Denforcer.skip=true
+    mvn test -B \
+      -Dclirr.skip=true \
+      -Denforcer.skip=true \
+      -Djava.net.preferIPv4Stack=true
     RETURN_CODE=$?
     ;;
 lint)
@@ -62,6 +65,7 @@ integration)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
+      -Djava.net.preferIPv4Stack=true \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
       -Denforcer.skip=true \
@@ -69,6 +73,19 @@ integration)
       verify
     RETURN_CODE=$?
     ;;
+slowtests)
+  mvn -B ${INTEGRATION_TEST_ARGS} \
+    -ntp \
+    -Pslow-tests \
+    -Djava.net.preferIPv4Stack=true \
+    -DskipITs=false \
+    -DtrimStackTrace=false \
+    -Dclirr.skip=true \
+    -Denforcer.skip=true \
+    -fae \
+    verify
+  RETURN_CODE=$?
+  ;;
 samples)
     SAMPLES_DIR=samples
     # only run ITs in snapshot/ on presubmit PRs. run ITs in all 3 samples/ subdirectories otherwise.
@@ -86,7 +103,6 @@ samples)
 
         pushd ${SAMPLES_DIR}
         mvn -B \
-          -Penable-samples \
           -ntp \
           -DtrimStackTrace=false \
           -Dclirr.skip=true \
@@ -115,7 +131,7 @@ fi
 # fix output location of logs
 bash .kokoro/coerce_logs.sh
 
-if [[ "${ENABLE_BUILD_COP}" == "true" ]]
+if [[ "${ENABLE_FLAKYBOT}" == "true" ]]
 then
     chmod +x ${KOKORO_GFILE_DIR}/linux_amd64/flakybot
     ${KOKORO_GFILE_DIR}/linux_amd64/flakybot -repo=googleapis/java-spanner

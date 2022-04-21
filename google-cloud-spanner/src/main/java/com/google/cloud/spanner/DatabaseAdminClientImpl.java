@@ -23,7 +23,6 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.cloud.Policy.DefaultMarshaller;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.DatabaseInfo.State;
 import com.google.cloud.spanner.Options.ListOption;
 import com.google.cloud.spanner.SpannerImpl.PageFetcher;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -33,10 +32,7 @@ import com.google.common.base.Preconditions;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
-import com.google.spanner.admin.database.v1.CreateBackupMetadata;
-import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
-import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.*;
 import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -167,6 +163,49 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   }
 
   @Override
+  public OperationFuture<Backup, CopyBackupMetadata> copyBackup(
+      String instanceId, String sourceBackupId, String destinationBackupId, Timestamp expireTime)
+      throws SpannerException {
+    final Backup destinationBackup =
+        newBackupBuilder(BackupId.of(projectId, instanceId, destinationBackupId))
+            .setExpireTime(expireTime)
+            .build();
+
+    return copyBackup(BackupId.of(projectId, instanceId, sourceBackupId), destinationBackup);
+  }
+
+  @Override
+  public OperationFuture<Backup, CopyBackupMetadata> copyBackup(
+      BackupId sourceBackupId, Backup destinationBackup) throws SpannerException {
+    Preconditions.checkNotNull(sourceBackupId);
+    Preconditions.checkNotNull(destinationBackup);
+
+    final OperationFuture<com.google.spanner.admin.database.v1.Backup, CopyBackupMetadata>
+        rawOperationFuture = rpc.copyBackup(sourceBackupId, destinationBackup);
+
+    return new OperationFutureImpl<>(
+        rawOperationFuture.getPollingFuture(),
+        rawOperationFuture.getInitialFuture(),
+        snapshot -> {
+          com.google.spanner.admin.database.v1.Backup proto =
+              ProtoOperationTransformers.ResponseTransformer.create(
+                      com.google.spanner.admin.database.v1.Backup.class)
+                  .apply(snapshot);
+          return Backup.fromProto(
+              com.google.spanner.admin.database.v1.Backup.newBuilder(proto)
+                  .setName(proto.getName())
+                  .setExpireTime(proto.getExpireTime())
+                  .setEncryptionInfo(proto.getEncryptionInfo())
+                  .build(),
+              DatabaseAdminClientImpl.this);
+        },
+        ProtoOperationTransformers.MetadataTransformer.create(CopyBackupMetadata.class),
+        e -> {
+          throw SpannerExceptionFactory.newSpannerException(e);
+        });
+  }
+
+  @Override
   public Backup updateBackup(String instanceId, String backupId, Timestamp expireTime) {
     String backupName = getBackupName(instanceId, backupId);
     final com.google.spanner.admin.database.v1.Backup backup =
@@ -281,14 +320,18 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       String instanceId, String databaseId, Iterable<String> statements) throws SpannerException {
     return createDatabase(
-        new Database(DatabaseId.of(projectId, instanceId, databaseId), State.UNSPECIFIED, this),
+        newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
+            .setDialect(Dialect.GOOGLE_STANDARD_SQL)
+            .build(),
         statements);
   }
 
   @Override
   public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       Database database, Iterable<String> statements) throws SpannerException {
-    String createStatement = "CREATE DATABASE `" + database.getId().getDatabase() + "`";
+    final Dialect dialect = Preconditions.checkNotNull(database.getDialect());
+    final String createStatement =
+        dialect.createDatabaseStatementFor(database.getId().getDatabase());
     OperationFuture<com.google.spanner.admin.database.v1.Database, CreateDatabaseMetadata>
         rawOperationFuture =
             rpc.createDatabase(

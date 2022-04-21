@@ -22,17 +22,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.api.core.ApiFutures;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
-import com.google.cloud.spanner.connection.StatementParser.StatementType;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,9 +45,11 @@ import org.junit.runners.JUnit4;
 public class DmlBatchTest {
 
   private final ParsedStatement statement1 =
-      StatementParser.INSTANCE.parse(Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2"));
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+          .parse(Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2"));
   private final ParsedStatement statement2 =
-      StatementParser.INSTANCE.parse(Statement.of("UPDATE FOO SET BAR=2 WHERE BAZ=3"));
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+          .parse(Statement.of("UPDATE FOO SET BAR=2 WHERE BAZ=3"));
 
   private DmlBatch createSubject() {
     UnitOfWork transaction = mock(UnitOfWork.class);
@@ -161,7 +164,7 @@ public class DmlBatchTest {
     assertThat(batch.isActive(), is(false));
 
     UnitOfWork tx = mock(UnitOfWork.class);
-    when(tx.executeBatchUpdateAsync(anyListOf(ParsedStatement.class)))
+    when(tx.executeBatchUpdateAsync(anyList()))
         .thenReturn(ApiFutures.immediateFailedFuture(mock(SpannerException.class)));
     batch = createSubject(tx);
     assertThat(batch.getState(), is(UnitOfWorkState.STARTED));

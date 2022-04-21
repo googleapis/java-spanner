@@ -23,9 +23,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -36,6 +36,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ReadContext;
@@ -44,9 +45,9 @@ import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.Connection.InternalMetadataQuery;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
-import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
@@ -108,7 +109,7 @@ public class DdlBatchTest {
           ApiFutures.immediateFuture(metadataBuilder.build());
       when(operation.getMetadata()).thenReturn(metadataFuture);
       when(ddlClient.executeDdl(anyString())).thenReturn(operation);
-      when(ddlClient.executeDdl(anyListOf(String.class))).thenReturn(operation);
+      when(ddlClient.executeDdl(anyList())).thenReturn(operation);
       return ddlClient;
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -256,7 +257,7 @@ public class DdlBatchTest {
     DdlClient client = mock(DdlClient.class);
     SpannerException exception = mock(SpannerException.class);
     when(exception.getErrorCode()).thenReturn(ErrorCode.FAILED_PRECONDITION);
-    doThrow(exception).when(client).executeDdl(anyListOf(String.class));
+    doThrow(exception).when(client).executeDdl(anyList());
     batch = createSubject(client);
     assertThat(batch.getState(), is(UnitOfWorkState.STARTED));
     assertThat(batch.isActive(), is(true));
@@ -283,17 +284,16 @@ public class DdlBatchTest {
     return new IsListOfStringsWithSize(size);
   }
 
-  private static class IsListOfStringsWithSize extends ArgumentMatcher<List<String>> {
+  private static class IsListOfStringsWithSize implements ArgumentMatcher<List<String>> {
     private final int size;
 
     private IsListOfStringsWithSize(int size) {
       this.size = size;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public boolean matches(Object list) {
-      return ((List<String>) list).size() == size;
+    public boolean matches(List<String> list) {
+      return list.size() == size;
     }
   }
 
@@ -394,8 +394,12 @@ public class DdlBatchTest {
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
             .build();
-    batch.executeDdlAsync(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE FOO")));
-    batch.executeDdlAsync(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE BAR")));
+    batch.executeDdlAsync(
+        AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+            .parse(Statement.of("CREATE TABLE FOO")));
+    batch.executeDdlAsync(
+        AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+            .parse(Statement.of("CREATE TABLE BAR")));
     long[] updateCounts = get(batch.runBatchAsync());
     assertThat(updateCounts.length, is(equalTo(2)));
     assertThat(updateCounts[0], is(equalTo(1L)));
@@ -426,9 +430,12 @@ public class DdlBatchTest {
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
             .build();
-    batch.executeDdlAsync(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE FOO")));
     batch.executeDdlAsync(
-        StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE INVALID_TABLE")));
+        AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+            .parse(Statement.of("CREATE TABLE FOO")));
+    batch.executeDdlAsync(
+        AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+            .parse(Statement.of("CREATE TABLE INVALID_TABLE")));
     try {
       get(batch.runBatchAsync());
       fail("missing expected exception");
@@ -463,9 +470,12 @@ public class DdlBatchTest {
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
             .build();
-    batch.executeDdlAsync(StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE FOO")));
     batch.executeDdlAsync(
-        StatementParser.INSTANCE.parse(Statement.of("CREATE TABLE INVALID_TABLE")));
+        AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+            .parse(Statement.of("CREATE TABLE FOO")));
+    batch.executeDdlAsync(
+        AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+            .parse(Statement.of("CREATE TABLE INVALID_TABLE")));
     try {
       get(batch.runBatchAsync());
       fail("missing expected exception");
@@ -483,7 +493,7 @@ public class DdlBatchTest {
     batch.abortBatch();
     assertThat(batch.getState(), is(UnitOfWorkState.ABORTED));
     verify(client, never()).executeDdl(anyString());
-    verify(client, never()).executeDdl(anyListOf(String.class));
+    verify(client, never()).executeDdl(anyList());
 
     ParsedStatement statement = mock(ParsedStatement.class);
     when(statement.getType()).thenReturn(StatementType.DDL);
@@ -494,21 +504,21 @@ public class DdlBatchTest {
     batch = createSubject(client);
     batch.executeDdlAsync(statement);
     batch.abortBatch();
-    verify(client, never()).executeDdl(anyListOf(String.class));
+    verify(client, never()).executeDdl(anyList());
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
     batch.executeDdlAsync(statement);
     batch.executeDdlAsync(statement);
     batch.abortBatch();
-    verify(client, never()).executeDdl(anyListOf(String.class));
+    verify(client, never()).executeDdl(anyList());
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
     batch.executeDdlAsync(statement);
     batch.executeDdlAsync(statement);
     batch.abortBatch();
-    verify(client, never()).executeDdl(anyListOf(String.class));
+    verify(client, never()).executeDdl(anyList());
     boolean exception = false;
     try {
       get(batch.runBatchAsync());
@@ -519,7 +529,7 @@ public class DdlBatchTest {
       exception = true;
     }
     assertThat(exception, is(true));
-    verify(client, never()).executeDdl(anyListOf(String.class));
+    verify(client, never()).executeDdl(anyList());
   }
 
   @Test

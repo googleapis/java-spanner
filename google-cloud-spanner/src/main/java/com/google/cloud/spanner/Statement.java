@@ -21,9 +21,9 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -56,11 +56,11 @@ import java.util.Objects;
 public final class Statement implements Serializable {
   private static final long serialVersionUID = -1967958247625065259L;
 
-  private final ImmutableMap<String, Value> parameters;
+  private final Map<String, Value> parameters;
   private final String sql;
   private final QueryOptions queryOptions;
 
-  private Statement(String sql, ImmutableMap<String, Value> parameters, QueryOptions queryOptions) {
+  private Statement(String sql, Map<String, Value> parameters, QueryOptions queryOptions) {
     this.sql = sql;
     this.parameters = parameters;
     this.queryOptions = queryOptions;
@@ -112,14 +112,17 @@ public final class Statement implements Serializable {
     public Statement build() {
       checkState(
           currentBinding == null, "Binding for parameter '%s' is incomplete.", currentBinding);
-      return new Statement(sqlBuffer.toString(), ImmutableMap.copyOf(parameters), queryOptions);
+      return new Statement(
+          sqlBuffer.toString(),
+          Collections.unmodifiableMap(new HashMap<>(parameters)),
+          queryOptions);
     }
 
     private class Binder extends ValueBinder<Builder> {
       @Override
       Builder handle(Value value) {
         Preconditions.checkArgument(
-            !value.isCommitTimestamp(),
+            value == null || !value.isCommitTimestamp(),
             "Mutation.COMMIT_TIMESTAMP cannot be bound as a query parameter");
         checkState(currentBinding != null, "No binding in progress");
         parameters.put(currentBinding, value);
@@ -218,7 +221,11 @@ public final class Statement implements Serializable {
           b.append(", ");
         }
         b.append(parameter.getKey()).append(": ");
-        parameter.getValue().toString(b);
+        if (parameter.getValue() == null) {
+          b.append("NULL");
+        } else {
+          parameter.getValue().toString(b);
+        }
       }
       b.append("}");
     }

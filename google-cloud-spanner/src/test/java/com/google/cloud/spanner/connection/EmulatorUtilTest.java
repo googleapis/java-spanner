@@ -18,7 +18,8 @@ package com.google.cloud.spanner.connection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,7 +46,6 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.Matchers;
 
 @RunWith(JUnit4.class)
 public class EmulatorUtilTest {
@@ -75,9 +75,7 @@ public class EmulatorUtilTest {
 
     when(spanner.getDatabaseAdminClient()).thenReturn(databaseClient);
     when(databaseClient.createDatabase(
-            Matchers.eq("test-instance"),
-            Matchers.eq("test-database"),
-            Matchers.eq(ImmutableList.of())))
+            eq("test-instance"), eq("test-database"), eq(ImmutableList.of())))
         .thenReturn(databaseOperationFuture);
     when(databaseOperationFuture.get()).thenReturn(mock(Database.class));
 
@@ -124,9 +122,7 @@ public class EmulatorUtilTest {
 
     when(spanner.getDatabaseAdminClient()).thenReturn(databaseClient);
     when(databaseClient.createDatabase(
-            Matchers.eq("test-instance"),
-            Matchers.eq("test-database"),
-            Matchers.eq(ImmutableList.of())))
+            eq("test-instance"), eq("test-database"), eq(ImmutableList.of())))
         .thenReturn(databaseOperationFuture);
     when(databaseOperationFuture.get())
         .thenThrow(
@@ -231,9 +227,7 @@ public class EmulatorUtilTest {
 
     when(spanner.getDatabaseAdminClient()).thenReturn(databaseClient);
     when(databaseClient.createDatabase(
-            Matchers.eq("test-instance"),
-            Matchers.eq("test-database"),
-            Matchers.eq(ImmutableList.of())))
+            eq("test-instance"), eq("test-database"), eq(ImmutableList.of())))
         .thenReturn(databaseOperationFuture);
     when(databaseOperationFuture.get())
         .thenThrow(
@@ -275,9 +269,7 @@ public class EmulatorUtilTest {
 
     when(spanner.getDatabaseAdminClient()).thenReturn(databaseClient);
     when(databaseClient.createDatabase(
-            Matchers.eq("test-instance"),
-            Matchers.eq("test-database"),
-            Matchers.eq(ImmutableList.of())))
+            eq("test-instance"), eq("test-database"), eq(ImmutableList.of())))
         .thenReturn(databaseOperationFuture);
     when(databaseOperationFuture.get()).thenThrow(new InterruptedException());
 

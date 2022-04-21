@@ -45,6 +45,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -353,8 +354,13 @@ public class InstanceAdminGaxTest {
     for (int i = 0; i < 2; i++) {
       InstanceConfigName name2 = InstanceConfigName.of(PROJECT, "INSTANCE_CONFIG");
       String displayName = "displayName1615086568";
+      List<String> leaderOptions = Arrays.asList("leader option 1", "leader option 2");
       InstanceConfig expectedResponse =
-          InstanceConfig.newBuilder().setName(name2.toString()).setDisplayName(displayName).build();
+          InstanceConfig.newBuilder()
+              .setName(name2.toString())
+              .setDisplayName(displayName)
+              .addAllLeaderOptions(leaderOptions)
+              .build();
       if (exceptionAtCall == 0) {
         mockInstanceAdmin.addException(exception);
       }
@@ -368,6 +374,7 @@ public class InstanceAdminGaxTest {
           client.getInstanceConfig(name.toString());
 
       Assert.assertEquals(displayName, actualResponse.getDisplayName());
+      Assert.assertEquals(leaderOptions, actualResponse.getLeaderOptions());
       List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
       Assert.assertEquals(i + 1, actualRequests.size());
     }

@@ -16,24 +16,17 @@
 
 package com.example.spanner;
 
+import static com.example.spanner.SampleRunner.runSample;
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.Spanner;
-import com.google.cloud.spanner.SpannerOptions;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.UUID;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -44,28 +37,17 @@ import org.junit.runners.JUnit4;
  * Integration tests for {@link GetCommitStatsSample}
  */
 @RunWith(JUnit4.class)
-public class GetCommitStatsSampleIT {
+public class GetCommitStatsSampleIT extends SampleTestBase {
 
-  private static String instanceId = System.getProperty("spanner.test.instance");
-  private static String databaseId = formatForTest(
-      System.getProperty("spanner.sample.database", "commitstatssample"));
-  private static DatabaseId dbId;
-  private static DatabaseAdminClient dbClient;
-  private static Spanner spanner;
+  private static DatabaseId databaseId;
 
   @BeforeClass
   public static void createTestDatabase() throws Exception {
-    Preconditions.checkState(instanceId != null, "No instance id set");
-    final SpannerOptions options =
-        SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests().build();
-    spanner = options.getService();
-    dbClient = spanner.getDatabaseAdminClient();
-    dbId = DatabaseId.of(options.getProjectId(), instanceId, databaseId);
-    dbClient.dropDatabase(dbId.getInstanceId().getInstance(), dbId.getDatabase());
-    dbClient
+    final String database = idGenerator.generateDatabaseId();
+    databaseAdminClient
         .createDatabase(
             instanceId,
-            databaseId,
+            database,
             ImmutableList.of(
                 "CREATE TABLE Singers ("
                     + "  SingerId   INT64 NOT NULL,"
@@ -81,17 +63,12 @@ public class GetCommitStatsSampleIT {
                     + ") PRIMARY KEY (SingerId, AlbumId),"
                     + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE"))
         .get();
-  }
-
-  @AfterClass
-  public static void dropTestDatabase() {
-    dbClient.dropDatabase(dbId.getInstanceId().getInstance(), dbId.getDatabase());
-    spanner.close();
+    databaseId = DatabaseId.of(projectId, instanceId, database);
   }
 
   @Before
   public void insertTestData() {
-    final DatabaseClient client = spanner.getDatabaseClient(dbId);
+    final DatabaseClient client = spanner.getDatabaseClient(databaseId);
     client.write(Arrays.asList(
         Mutation.newInsertBuilder("Singers")
             .set("SingerId")
@@ -114,33 +91,15 @@ public class GetCommitStatsSampleIT {
 
   @After
   public void removeTestData() {
-    final DatabaseClient client = spanner.getDatabaseClient(dbId);
+    final DatabaseClient client = spanner.getDatabaseClient(databaseId);
     client.write(Collections.singletonList(Mutation.delete("Singers", KeySet.all())));
   }
 
   @Test
-  public void testGetCommitStatsSample() {
-    final DatabaseClient client = spanner.getDatabaseClient(dbId);
-    final String out = runExample(client);
+  public void testGetCommitStatsSample() throws Exception {
+    final DatabaseClient client = spanner.getDatabaseClient(databaseId);
+    final String out = runSample(() -> GetCommitStatsSample.getCommitStats(client));
 
     assertThat(out).contains("Updated data with 6 mutations.");
-  }
-
-  private String runExample(DatabaseClient client) {
-    PrintStream stdOut = System.out;
-    ByteArrayOutputStream bout = new ByteArrayOutputStream();
-    PrintStream out = new PrintStream(bout);
-    System.setOut(out);
-    GetCommitStatsSample.getCommitStats(client);
-    System.setOut(stdOut);
-    return bout.toString();
-  }
-
-  private static String formatForTest(String name) {
-    return (
-        name
-            + "-"
-            + UUID.randomUUID().toString().replaceAll("-", "")
-    ).substring(0, 30);
   }
 }

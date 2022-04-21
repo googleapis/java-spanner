@@ -20,8 +20,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SerialIntegrationTest;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ import org.junit.runners.JUnit4;
  * parallel with other tests, as it tries to close all active connections, and should not try to
  * close connections of other integration tests.
  */
-@Category(IntegrationTest.class)
+@Category(SerialIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITBulkConnectionTest extends ITAbstractSpannerTest {
   private static final int NUMBER_OF_TEST_CONNECTIONS = 250;

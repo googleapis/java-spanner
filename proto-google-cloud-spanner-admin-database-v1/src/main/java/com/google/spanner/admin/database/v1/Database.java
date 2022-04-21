@@ -42,6 +42,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     state_ = 0;
     encryptionInfo_ = java.util.Collections.emptyList();
     versionRetentionPeriod_ = "";
+    defaultLeader_ = "";
+    databaseDialect_ = 0;
   }
 
   @java.lang.Override
@@ -169,6 +171,20 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
                   input.readMessage(
                       com.google.spanner.admin.database.v1.EncryptionInfo.parser(),
                       extensionRegistry));
+              break;
+            }
+          case 74:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              defaultLeader_ = s;
+              break;
+            }
+          case 80:
+            {
+              int rawValue = input.readEnum();
+
+              databaseDialect_ = rawValue;
               break;
             }
           default:
@@ -904,6 +920,105 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     return getEarliestVersionTime();
   }
 
+  public static final int DEFAULT_LEADER_FIELD_NUMBER = 9;
+  private volatile java.lang.Object defaultLeader_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The read-write region which contains the database's leader
+   * replicas.
+   * This is the same as the value of default_leader
+   * database option set using DatabaseAdmin.CreateDatabase or
+   * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+   * </pre>
+   *
+   * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The defaultLeader.
+   */
+  @java.lang.Override
+  public java.lang.String getDefaultLeader() {
+    java.lang.Object ref = defaultLeader_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      defaultLeader_ = s;
+      return s;
+    }
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The read-write region which contains the database's leader
+   * replicas.
+   * This is the same as the value of default_leader
+   * database option set using DatabaseAdmin.CreateDatabase or
+   * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+   * </pre>
+   *
+   * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The bytes for defaultLeader.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString getDefaultLeaderBytes() {
+    java.lang.Object ref = defaultLeader_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+      defaultLeader_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int DATABASE_DIALECT_FIELD_NUMBER = 10;
+  private int databaseDialect_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The dialect of the Cloud Spanner Database.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 10 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for databaseDialect.
+   */
+  @java.lang.Override
+  public int getDatabaseDialectValue() {
+    return databaseDialect_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The dialect of the Cloud Spanner Database.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 10 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The databaseDialect.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect() {
+    @SuppressWarnings("deprecation")
+    com.google.spanner.admin.database.v1.DatabaseDialect result =
+        com.google.spanner.admin.database.v1.DatabaseDialect.valueOf(databaseDialect_);
+    return result == null
+        ? com.google.spanner.admin.database.v1.DatabaseDialect.UNRECOGNIZED
+        : result;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -918,7 +1033,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!getNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
     }
     if (state_
@@ -934,7 +1049,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     if (encryptionConfig_ != null) {
       output.writeMessage(5, getEncryptionConfig());
     }
-    if (!getVersionRetentionPeriodBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(versionRetentionPeriod_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 6, versionRetentionPeriod_);
     }
     if (earliestVersionTime_ != null) {
@@ -942,6 +1057,14 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     }
     for (int i = 0; i < encryptionInfo_.size(); i++) {
       output.writeMessage(8, encryptionInfo_.get(i));
+    }
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(defaultLeader_)) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 9, defaultLeader_);
+    }
+    if (databaseDialect_
+        != com.google.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED
+            .getNumber()) {
+      output.writeEnum(10, databaseDialect_);
     }
     unknownFields.writeTo(output);
   }
@@ -952,7 +1075,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     if (size != -1) return size;
 
     size = 0;
-    if (!getNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
     }
     if (state_
@@ -968,7 +1091,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     if (encryptionConfig_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(5, getEncryptionConfig());
     }
-    if (!getVersionRetentionPeriodBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(versionRetentionPeriod_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, versionRetentionPeriod_);
     }
     if (earliestVersionTime_ != null) {
@@ -976,6 +1099,14 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     }
     for (int i = 0; i < encryptionInfo_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(8, encryptionInfo_.get(i));
+    }
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(defaultLeader_)) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, defaultLeader_);
+    }
+    if (databaseDialect_
+        != com.google.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED
+            .getNumber()) {
+      size += com.google.protobuf.CodedOutputStream.computeEnumSize(10, databaseDialect_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -1013,6 +1144,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     if (hasEarliestVersionTime()) {
       if (!getEarliestVersionTime().equals(other.getEarliestVersionTime())) return false;
     }
+    if (!getDefaultLeader().equals(other.getDefaultLeader())) return false;
+    if (databaseDialect_ != other.databaseDialect_) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -1050,6 +1183,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       hash = (37 * hash) + EARLIEST_VERSION_TIME_FIELD_NUMBER;
       hash = (53 * hash) + getEarliestVersionTime().hashCode();
     }
+    hash = (37 * hash) + DEFAULT_LEADER_FIELD_NUMBER;
+    hash = (53 * hash) + getDefaultLeader().hashCode();
+    hash = (37 * hash) + DATABASE_DIALECT_FIELD_NUMBER;
+    hash = (53 * hash) + databaseDialect_;
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1233,6 +1370,10 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         earliestVersionTime_ = null;
         earliestVersionTimeBuilder_ = null;
       }
+      defaultLeader_ = "";
+
+      databaseDialect_ = 0;
+
       return this;
     }
 
@@ -1293,6 +1434,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       } else {
         result.earliestVersionTime_ = earliestVersionTimeBuilder_.build();
       }
+      result.defaultLeader_ = defaultLeader_;
+      result.databaseDialect_ = databaseDialect_;
       onBuilt();
       return result;
     }
@@ -1391,6 +1534,13 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       }
       if (other.hasEarliestVersionTime()) {
         mergeEarliestVersionTime(other.getEarliestVersionTime());
+      }
+      if (!other.getDefaultLeader().isEmpty()) {
+        defaultLeader_ = other.defaultLeader_;
+        onChanged();
+      }
+      if (other.databaseDialect_ != 0) {
+        setDatabaseDialectValue(other.getDatabaseDialectValue());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -3175,6 +3325,235 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         earliestVersionTime_ = null;
       }
       return earliestVersionTimeBuilder_;
+    }
+
+    private java.lang.Object defaultLeader_ = "";
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The read-write region which contains the database's leader
+     * replicas.
+     * This is the same as the value of default_leader
+     * database option set using DatabaseAdmin.CreateDatabase or
+     * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+     * </pre>
+     *
+     * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @return The defaultLeader.
+     */
+    public java.lang.String getDefaultLeader() {
+      java.lang.Object ref = defaultLeader_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        defaultLeader_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The read-write region which contains the database's leader
+     * replicas.
+     * This is the same as the value of default_leader
+     * database option set using DatabaseAdmin.CreateDatabase or
+     * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+     * </pre>
+     *
+     * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @return The bytes for defaultLeader.
+     */
+    public com.google.protobuf.ByteString getDefaultLeaderBytes() {
+      java.lang.Object ref = defaultLeader_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        defaultLeader_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The read-write region which contains the database's leader
+     * replicas.
+     * This is the same as the value of default_leader
+     * database option set using DatabaseAdmin.CreateDatabase or
+     * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+     * </pre>
+     *
+     * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @param value The defaultLeader to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDefaultLeader(java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+
+      defaultLeader_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The read-write region which contains the database's leader
+     * replicas.
+     * This is the same as the value of default_leader
+     * database option set using DatabaseAdmin.CreateDatabase or
+     * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+     * </pre>
+     *
+     * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearDefaultLeader() {
+
+      defaultLeader_ = getDefaultInstance().getDefaultLeader();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The read-write region which contains the database's leader
+     * replicas.
+     * This is the same as the value of default_leader
+     * database option set using DatabaseAdmin.CreateDatabase or
+     * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+     * </pre>
+     *
+     * <code>string default_leader = 9 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @param value The bytes for defaultLeader to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDefaultLeaderBytes(com.google.protobuf.ByteString value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+
+      defaultLeader_ = value;
+      onChanged();
+      return this;
+    }
+
+    private int databaseDialect_ = 0;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The dialect of the Cloud Spanner Database.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 10 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The enum numeric value on the wire for databaseDialect.
+     */
+    @java.lang.Override
+    public int getDatabaseDialectValue() {
+      return databaseDialect_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The dialect of the Cloud Spanner Database.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 10 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param value The enum numeric value on the wire for databaseDialect to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDatabaseDialectValue(int value) {
+
+      databaseDialect_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The dialect of the Cloud Spanner Database.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 10 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The databaseDialect.
+     */
+    @java.lang.Override
+    public com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect() {
+      @SuppressWarnings("deprecation")
+      com.google.spanner.admin.database.v1.DatabaseDialect result =
+          com.google.spanner.admin.database.v1.DatabaseDialect.valueOf(databaseDialect_);
+      return result == null
+          ? com.google.spanner.admin.database.v1.DatabaseDialect.UNRECOGNIZED
+          : result;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The dialect of the Cloud Spanner Database.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 10 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param value The databaseDialect to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDatabaseDialect(com.google.spanner.admin.database.v1.DatabaseDialect value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+
+      databaseDialect_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The dialect of the Cloud Spanner Database.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 10 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearDatabaseDialect() {
+
+      databaseDialect_ = 0;
+      onChanged();
+      return this;
     }
 
     @java.lang.Override

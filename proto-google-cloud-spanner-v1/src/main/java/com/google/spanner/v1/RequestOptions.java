@@ -370,6 +370,7 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    * Legal characters for `request_tag` values are all printable characters
    * (ASCII 32 - 126) and the length of a request_tag is limited to 50
    * characters. Values that exceed this limit are truncated.
+   * Any leading underscore (_) characters will be removed from the string.
    * </pre>
    *
    * <code>string request_tag = 2;</code>
@@ -401,6 +402,7 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    * Legal characters for `request_tag` values are all printable characters
    * (ASCII 32 - 126) and the length of a request_tag is limited to 50
    * characters. Values that exceed this limit are truncated.
+   * Any leading underscore (_) characters will be removed from the string.
    * </pre>
    *
    * <code>string request_tag = 2;</code>
@@ -431,11 +433,12 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    * that belongs to a transaction.
    * The value of transaction_tag should be the same for all requests belonging
    * to the same transaction.
-   * If this request doesn’t belong to any transaction, transaction_tag will be
+   * If this request doesn't belong to any transaction, transaction_tag will be
    * ignored.
    * Legal characters for `transaction_tag` values are all printable characters
    * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
    * characters. Values that exceed this limit are truncated.
+   * Any leading underscore (_) characters will be removed from the string.
    * </pre>
    *
    * <code>string transaction_tag = 3;</code>
@@ -463,11 +466,12 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    * that belongs to a transaction.
    * The value of transaction_tag should be the same for all requests belonging
    * to the same transaction.
-   * If this request doesn’t belong to any transaction, transaction_tag will be
+   * If this request doesn't belong to any transaction, transaction_tag will be
    * ignored.
    * Legal characters for `transaction_tag` values are all printable characters
    * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
    * characters. Values that exceed this limit are truncated.
+   * Any leading underscore (_) characters will be removed from the string.
    * </pre>
    *
    * <code>string transaction_tag = 3;</code>
@@ -505,10 +509,10 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
         != com.google.spanner.v1.RequestOptions.Priority.PRIORITY_UNSPECIFIED.getNumber()) {
       output.writeEnum(1, priority_);
     }
-    if (!getRequestTagBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(requestTag_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, requestTag_);
     }
-    if (!getTransactionTagBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(transactionTag_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, transactionTag_);
     }
     unknownFields.writeTo(output);
@@ -524,10 +528,10 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
         != com.google.spanner.v1.RequestOptions.Priority.PRIORITY_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(1, priority_);
     }
-    if (!getRequestTagBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(requestTag_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, requestTag_);
     }
-    if (!getTransactionTagBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(transactionTag_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, transactionTag_);
     }
     size += unknownFields.getSerializedSize();
@@ -938,6 +942,7 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * Legal characters for `request_tag` values are all printable characters
      * (ASCII 32 - 126) and the length of a request_tag is limited to 50
      * characters. Values that exceed this limit are truncated.
+     * Any leading underscore (_) characters will be removed from the string.
      * </pre>
      *
      * <code>string request_tag = 2;</code>
@@ -968,6 +973,7 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * Legal characters for `request_tag` values are all printable characters
      * (ASCII 32 - 126) and the length of a request_tag is limited to 50
      * characters. Values that exceed this limit are truncated.
+     * Any leading underscore (_) characters will be removed from the string.
      * </pre>
      *
      * <code>string request_tag = 2;</code>
@@ -998,6 +1004,7 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * Legal characters for `request_tag` values are all printable characters
      * (ASCII 32 - 126) and the length of a request_tag is limited to 50
      * characters. Values that exceed this limit are truncated.
+     * Any leading underscore (_) characters will be removed from the string.
      * </pre>
      *
      * <code>string request_tag = 2;</code>
@@ -1027,6 +1034,7 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * Legal characters for `request_tag` values are all printable characters
      * (ASCII 32 - 126) and the length of a request_tag is limited to 50
      * characters. Values that exceed this limit are truncated.
+     * Any leading underscore (_) characters will be removed from the string.
      * </pre>
      *
      * <code>string request_tag = 2;</code>
@@ -1052,6 +1060,7 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * Legal characters for `request_tag` values are all printable characters
      * (ASCII 32 - 126) and the length of a request_tag is limited to 50
      * characters. Values that exceed this limit are truncated.
+     * Any leading underscore (_) characters will be removed from the string.
      * </pre>
      *
      * <code>string request_tag = 2;</code>
@@ -1080,11 +1089,12 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * that belongs to a transaction.
      * The value of transaction_tag should be the same for all requests belonging
      * to the same transaction.
-     * If this request doesn’t belong to any transaction, transaction_tag will be
+     * If this request doesn't belong to any transaction, transaction_tag will be
      * ignored.
      * Legal characters for `transaction_tag` values are all printable characters
      * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
      * characters. Values that exceed this limit are truncated.
+     * Any leading underscore (_) characters will be removed from the string.
      * </pre>
      *
      * <code>string transaction_tag = 3;</code>
@@ -1111,11 +1121,12 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * that belongs to a transaction.
      * The value of transaction_tag should be the same for all requests belonging
      * to the same transaction.
-     * If this request doesn’t belong to any transaction, transaction_tag will be
+     * If this request doesn't belong to any transaction, transaction_tag will be
      * ignored.
      * Legal characters for `transaction_tag` values are all printable characters
      * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
      * characters. Values that exceed this limit are truncated.
+     * Any leading underscore (_) characters will be removed from the string.
      * </pre>
      *
      * <code>string transaction_tag = 3;</code>
@@ -1142,11 +1153,12 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * that belongs to a transaction.
      * The value of transaction_tag should be the same for all requests belonging
      * to the same transaction.
-     * If this request doesn’t belong to any transaction, transaction_tag will be
+     * If this request doesn't belong to any transaction, transaction_tag will be
      * ignored.
      * Legal characters for `transaction_tag` values are all printable characters
      * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
      * characters. Values that exceed this limit are truncated.
+     * Any leading underscore (_) characters will be removed from the string.
      * </pre>
      *
      * <code>string transaction_tag = 3;</code>
@@ -1172,11 +1184,12 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * that belongs to a transaction.
      * The value of transaction_tag should be the same for all requests belonging
      * to the same transaction.
-     * If this request doesn’t belong to any transaction, transaction_tag will be
+     * If this request doesn't belong to any transaction, transaction_tag will be
      * ignored.
      * Legal characters for `transaction_tag` values are all printable characters
      * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
      * characters. Values that exceed this limit are truncated.
+     * Any leading underscore (_) characters will be removed from the string.
      * </pre>
      *
      * <code>string transaction_tag = 3;</code>
@@ -1198,11 +1211,12 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * that belongs to a transaction.
      * The value of transaction_tag should be the same for all requests belonging
      * to the same transaction.
-     * If this request doesn’t belong to any transaction, transaction_tag will be
+     * If this request doesn't belong to any transaction, transaction_tag will be
      * ignored.
      * Legal characters for `transaction_tag` values are all printable characters
      * (ASCII 32 - 126) and the length of a transaction_tag is limited to 50
      * characters. Values that exceed this limit are truncated.
+     * Any leading underscore (_) characters will be removed from the string.
      * </pre>
      *
      * <code>string transaction_tag = 3;</code>

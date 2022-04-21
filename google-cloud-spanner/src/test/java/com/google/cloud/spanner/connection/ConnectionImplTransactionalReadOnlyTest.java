@@ -20,7 +20,7 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
-import com.google.cloud.spanner.connection.StatementParser.StatementType;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import java.util.concurrent.TimeUnit;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -43,7 +43,7 @@ public class ConnectionImplTransactionalReadOnlyTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=TRUE;");
+      logWithNamespace("SET %sREADONLY=TRUE;");
       connection.setReadOnly(true);
       log("SET AUTOCOMMIT=FALSE;");
       connection.setAutocommit(false);
@@ -83,6 +83,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       return mode == TransactionMode.READ_ONLY_TRANSACTION;
+    }
+
+    boolean isSetTransactionTagAllowed() {
+      return false;
     }
 
     @Override
@@ -185,7 +189,7 @@ public class ConnectionImplTransactionalReadOnlyTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=TRUE;");
+      logWithNamespace("SET %sREADONLY=TRUE;");
       connection.setReadOnly(true);
       log("SET AUTOCOMMIT=FALSE;");
       connection.setAutocommit(false);
@@ -227,6 +231,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
 
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
+      return false;
+    }
+
+    boolean isSetTransactionTagAllowed() {
       return false;
     }
 
@@ -332,7 +340,7 @@ public class ConnectionImplTransactionalReadOnlyTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=TRUE;");
+      logWithNamespace("SET %sREADONLY=TRUE;");
       connection.setReadOnly(true);
       log("SET AUTOCOMMIT=FALSE;");
       connection.setAutocommit(false);
@@ -375,6 +383,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       // transaction is running
+      return false;
+    }
+
+    boolean isSetTransactionTagAllowed() {
       return false;
     }
 
@@ -479,7 +491,7 @@ public class ConnectionImplTransactionalReadOnlyTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=TRUE;");
+      logWithNamespace("SET %sREADONLY=TRUE;");
       connection.setReadOnly(true);
       log("SET AUTOCOMMIT=FALSE;");
       connection.setAutocommit(false);
@@ -522,6 +534,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       // connection is in read-only mode
       return mode == TransactionMode.READ_ONLY_TRANSACTION;
+    }
+
+    boolean isSetTransactionTagAllowed() {
+      return false;
     }
 
     @Override
@@ -625,7 +641,7 @@ public class ConnectionImplTransactionalReadOnlyTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=TRUE;");
+      logWithNamespace("SET %sREADONLY=TRUE;");
       connection.setReadOnly(true);
       log("SET AUTOCOMMIT=FALSE;");
       connection.setAutocommit(false);
@@ -672,6 +688,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       return mode == TransactionMode.READ_ONLY_TRANSACTION;
+    }
+
+    boolean isSetTransactionTagAllowed() {
+      return false;
     }
 
     @Override
@@ -774,7 +794,7 @@ public class ConnectionImplTransactionalReadOnlyTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=TRUE;");
+      logWithNamespace("SET %sREADONLY=TRUE;");
       connection.setReadOnly(true);
       log("SET AUTOCOMMIT=FALSE;");
       connection.setAutocommit(false);
@@ -821,6 +841,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       return mode == TransactionMode.READ_ONLY_TRANSACTION;
+    }
+
+    boolean isSetTransactionTagAllowed() {
+      return false;
     }
 
     @Override
@@ -923,13 +947,13 @@ public class ConnectionImplTransactionalReadOnlyTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=TRUE;");
+      logWithNamespace("SET %sREADONLY=TRUE;");
       connection.setReadOnly(true);
       log("SET AUTOCOMMIT=FALSE;");
       connection.setAutocommit(false);
       TimestampBound staleness = TimestampBound.ofExactStaleness(10L, TimeUnit.SECONDS);
-      log(
-          "SET READ_ONLY_STALENESS='"
+      logWithNamespace(
+          "SET %sREAD_ONLY_STALENESS='"
               + ReadOnlyStalenessUtil.timestampBoundToString(staleness)
               + "';");
       connection.setReadOnlyStaleness(staleness);
@@ -969,6 +993,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       return mode == TransactionMode.READ_ONLY_TRANSACTION;
+    }
+
+    boolean isSetTransactionTagAllowed() {
+      return false;
     }
 
     @Override
@@ -1070,7 +1098,7 @@ public class ConnectionImplTransactionalReadOnlyTest {
                   .setCredentials(NoCredentials.getInstance())
                   .setUri(ConnectionImplTest.URI)
                   .build());
-      log("SET READONLY=TRUE;");
+      logWithNamespace("SET %sREADONLY=TRUE;");
       connection.setReadOnly(true);
       log("SET AUTOCOMMIT=FALSE;");
       connection.setAutocommit(false);
@@ -1112,6 +1140,10 @@ public class ConnectionImplTransactionalReadOnlyTest {
     @Override
     boolean isSetTransactionModeAllowed(TransactionMode mode) {
       return mode == TransactionMode.READ_ONLY_TRANSACTION;
+    }
+
+    boolean isSetTransactionTagAllowed() {
+      return false;
     }
 
     @Override

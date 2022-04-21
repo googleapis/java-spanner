@@ -20,6 +20,7 @@ import static com.google.common.testing.SerializableTester.reserialize;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -697,6 +698,25 @@ public class GrpcResultSetTest {
   }
 
   @Test
+  public void getJson() {
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(makeMetadata(Type.struct(Type.StructField.of("f", Type.json()))))
+            .addValues(Value.json("{\"color\":\"red\",\"value\":\"#f00\"}").toProto())
+            .addValues(Value.json("{}").toProto())
+            .addValues(Value.json("[]").toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertTrue(resultSet.next());
+    assertEquals("{\"color\":\"red\",\"value\":\"#f00\"}", resultSet.getJson(0));
+    assertTrue(resultSet.next());
+    assertEquals("{}", resultSet.getJson(0));
+    assertTrue(resultSet.next());
+    assertEquals("[]", resultSet.getJson(0));
+  }
+
+  @Test
   public void getBooleanArray() {
     boolean[] boolArray = {true, true, false};
     consumer.onPartialResultSet(
@@ -798,5 +818,24 @@ public class GrpcResultSetTest {
 
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getDateList(0)).isEqualTo(dateList);
+  }
+
+  @Test
+  public void getJsonList() {
+    List<String> jsonList = new ArrayList<>();
+    jsonList.add("{\"color\":\"red\",\"value\":\"#f00\"}");
+    jsonList.add("{\"special\":\"%😃∮πρότερονแผ่นดินฮั่นเสื่อมሰማይᚻᛖ\"}");
+    jsonList.add("[]");
+
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.json())))))
+            .addValues(Value.jsonArray(jsonList).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertTrue(resultSet.next());
+    assertEquals(jsonList, resultSet.getJsonList(0));
   }
 }

@@ -54,6 +54,11 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
+  public Dialect getDialect() {
+    return pool.getDialect();
+  }
+
+  @Override
   public Timestamp write(final Iterable<Mutation> mutations) throws SpannerException {
     return writeWithOptions(mutations).getCommitTimestamp();
   }

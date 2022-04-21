@@ -77,6 +77,14 @@
 	  "exampleStatements": ["show variable optimizer_version"]
 	},
 	{
+	  "name": "SHOW VARIABLE OPTIMIZER_STATISTICS_PACKAGE",
+	  "executorName": "ClientSideStatementNoParamExecutor",
+	  "resultType": "RESULT_SET",
+	  "regex": "(?is)\\A\\s*show\\s+variable\\s+optimizer_statistics_package\\s*\\z",
+	  "method": "statementShowOptimizerStatisticsPackage",
+	  "exampleStatements": ["show variable optimizer_statistics_package"]
+	},
+	{
 	  "name": "SHOW VARIABLE RETURN_COMMIT_STATS",
 	  "executorName": "ClientSideStatementNoParamExecutor",
 	  "resultType": "RESULT_SET",
@@ -92,6 +100,30 @@
 	  "method": "statementShowCommitResponse",
 	  "exampleStatements": ["show variable commit_response"],
 	  "examplePrerequisiteStatements": ["update foo set bar=1"]
+	},
+	{
+	  "name": "SHOW VARIABLE STATEMENT_TAG",
+	  "executorName": "ClientSideStatementNoParamExecutor",
+	  "resultType": "RESULT_SET",
+	  "regex": "(?is)\\A\\s*show\\s+variable\\s+statement_tag\\s*\\z",
+	  "method": "statementShowStatementTag",
+	  "exampleStatements": ["show variable statement_tag"]
+	},
+	{
+	  "name": "SHOW VARIABLE TRANSACTION_TAG",
+	  "executorName": "ClientSideStatementNoParamExecutor",
+	  "resultType": "RESULT_SET",
+	  "regex": "(?is)\\A\\s*show\\s+variable\\s+transaction_tag\\s*\\z",
+	  "method": "statementShowTransactionTag",
+	  "exampleStatements": ["show variable transaction_tag"]
+	},
+	{
+		"name": "SHOW VARIABLE RPC_PRIORITY",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+rpc_priority\\s*\\z",
+		"method": "statementShowRPCPriority",
+		"exampleStatements": ["show variable rpc_priority"]
 	},
 	{
 	  "name": "BEGIN TRANSACTION",
@@ -282,6 +314,20 @@
 	  }
 	},
 	{
+	  "name": "SET OPTIMIZER_STATISTICS_PACKAGE = '<package>'|''",
+	  "executorName": "ClientSideStatementSetExecutor",
+	  "resultType": "NO_RESULT",
+	  "regex": "(?is)\\A\\s*set\\s+optimizer_statistics_package\\s*(?:=)\\s*(.*)\\z",
+	  "method": "statementSetOptimizerStatisticsPackage",
+	  "exampleStatements": ["set optimizer_statistics_package='auto_20191128_14_47_22UTC'", "set optimizer_statistics_package=''"],
+	  "setStatement": {
+	    "propertyName": "OPTIMIZER_STATISTICS_PACKAGE",
+	    "separator": "=",
+	    "allowedValues": "'((\\S+)|())'",
+	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
+	  }
+	},
+	{
 	  "name": "SET RETURN_COMMIT_STATS = TRUE|FALSE",
 	  "executorName": "ClientSideStatementSetExecutor",
 	  "resultType": "NO_RESULT",
@@ -296,72 +342,129 @@
 	  }
 	},
 	{
-	  "name": "SHOW VARIABLE DATABASES",
-	  "executorName": "ClientSideStatementNoParamExecutor",
-	  "resultType": "RESULT_SET",
-	  "regex": "(?is)\\A\\s*show\\s+variable\\s+databases\\s*\\z",
-	  "method": "statementShowDatabases",
-	  "exampleStatements": ["show variable databases"]
-	},
-	{
-	  "name": "USE DATABASE <database_id>",
+	  "name": "SET STATEMENT_TAG = '<tag>'",
 	  "executorName": "ClientSideStatementSetExecutor",
 	  "resultType": "NO_RESULT",
-	  "regex": "(?is)\\A\\s*use\\s+database\\s*(?:\\s+)\\s*(.*)\\z",
-	  "method": "statementUseDatabase",
-	  "exampleStatements": ["use database test-db", "use database `some database`"],
+	  "regex": "(?is)\\A\\s*set\\s+statement_tag\\s*(?:=)\\s*(.*)\\z",
+	  "method": "statementSetStatementTag",
+	  "exampleStatements": ["set statement_tag='tag1'", "set statement_tag='tag2'", "set statement_tag=''"],
 	  "setStatement": {
-	    "statementKeyword": "USE",
-	    "propertyName": "DATABASE",
-	    "separator": "\\s+",
-	    "allowedValues": "(.*)",
+	    "propertyName": "STATEMENT_TAG",
+	    "separator": "=",
+	    "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
 	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
 	  }
 	},
 	{
-	  "name": "CREATE DATABASE <database_id>",
+	  "name": "SET TRANSACTION_TAG = '<tag>'",
 	  "executorName": "ClientSideStatementSetExecutor",
 	  "resultType": "NO_RESULT",
-	  "regex": "(?is)\\A\\s*create\\s+database\\s*(?:\\s+)\\s*(.*)\\z",
-	  "method": "statementCreateDatabase",
-	  "exampleStatements": ["create database test-db", "create database `some database`"],
+	  "regex": "(?is)\\A\\s*set\\s+transaction_tag\\s*(?:=)\\s*(.*)\\z",
+	  "method": "statementSetTransactionTag",
+	  "exampleStatements": ["set transaction_tag='tag1'", "set transaction_tag='tag2'", "set transaction_tag=''"],
+	  "examplePrerequisiteStatements": ["set autocommit = false"],
 	  "setStatement": {
-	    "statementKeyword": "CREATE",
-	    "propertyName": "DATABASE",
-	    "separator": "\\s+",
-	    "allowedValues": "(.+)",
+	    "propertyName": "TRANSACTION_TAG",
+	    "separator": "=",
+	    "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
 	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
 	  }
 	},
 	{
-	  "name": "ALTER DATABASE <database_id>",
-	  "executorName": "ClientSideStatementSetExecutor",
-	  "resultType": "NO_RESULT",
-	  "regex": "(?is)\\A\\s*alter\\s+database\\s*(?:\\s+)\\s*(.*)\\z",
-	  "method": "statementAlterDatabase",
-	  "exampleStatements": ["alter database test-db SET OPTIONS ( optimizer_version = 1 )", "alter database `some database` SET OPTIONS ( optimizer_version = 1 )"],
-	  "setStatement": {
-	    "statementKeyword": "ALTER",
-	    "propertyName": "DATABASE",
-	    "separator": "\\s+",
-	    "allowedValues": "(.+)",
-	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
-	  }
+		"name": "SET RPC_PRIORITY = 'HIGH'|'MEDIUM'|'LOW'|'NULL'",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"regex": "(?is)\\A\\s*set\\s+rpc_priority\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetRPCPriority",
+		"exampleStatements": [
+			"set rpc_priority='HIGH'",
+			"set rpc_priority='MEDIUM'",
+			"set rpc_priority='LOW'",
+			"set rpc_priority='NULL'"
+		],
+		"setStatement": {
+			"propertyName": "RPC_PRIORITY",
+			"separator": "=",
+			"allowedValues": "'(HIGH|MEDIUM|LOW|NULL)'",
+			"converterName": "ClientSideStatementValueConverters$RpcPriorityConverter"
+		}
 	},
 	{
-	  "name": "DROP DATABASE <database_id>",
-	  "executorName": "ClientSideStatementSetExecutor",
-	  "resultType": "NO_RESULT",
-	  "regex": "(?is)\\A\\s*drop\\s+database\\s*(?:\\s+)\\s*(.*)\\z",
-	  "method": "statementDropDatabase",
-	  "exampleStatements": ["drop database test-db", "drop database `some database`"],
-	  "setStatement": {
-	    "statementKeyword": "DROP",
-	    "propertyName": "DATABASE",
-	    "separator": "\\s+",
-	    "allowedValues": "(.*)",
-	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
-	  }
+		"name": "SHOW VARIABLE DATABASES",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+databases\\s*\\z",
+		"method": "statementShowDatabases",
+		"exampleStatements": ["show variable databases"]
+	},
+	{
+		"name": "USE DATABASE <database_id>",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"regex": "(?is)\\A\\s*use\\s+database\\s*(?:\\s+)\\s*(.*)\\z",
+		"method": "statementUseDatabase",
+		"exampleStatements": ["use database test-db", "use database `some database`"],
+		"setStatement": {
+			"statementKeyword": "USE",
+			"propertyName": "DATABASE",
+			"separator": "\\s+",
+			"allowedValues": "(.*)",
+			"converterName": "ClientSideStatementValueConverters$StringValueConverter"
+		}
+	},
+	{
+		"name": "CREATE DATABASE <database_id>",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"regex": "(?is)\\A\\s*create\\s+database\\s*(?:\\s+)\\s*(.*)\\z",
+		"method": "statementCreateDatabase",
+		"exampleStatements": [
+			"create database test-db",
+			"create database `some database`"
+		],
+		"setStatement": {
+			"statementKeyword": "CREATE",
+			"propertyName": "DATABASE",
+			"separator": "\\s+",
+			"allowedValues": "(.+)",
+			"converterName": "ClientSideStatementValueConverters$StringValueConverter"
+		}
+	},
+	{
+		"name": "ALTER DATABASE <database_id>",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"regex": "(?is)\\A\\s*alter\\s+database\\s*(?:\\s+)\\s*(.*)\\z",
+		"method": "statementAlterDatabase",
+		"exampleStatements": [
+			"alter database test-db SET OPTIONS ( optimizer_version = 1 )",
+			"alter database `some database` SET OPTIONS ( optimizer_version = 1 )"
+		],
+		"setStatement": {
+			"statementKeyword": "ALTER",
+			"propertyName": "DATABASE",
+			"separator": "\\s+",
+			"allowedValues": "(.+)",
+			"converterName": "ClientSideStatementValueConverters$StringValueConverter"
+		}
+	},
+	{
+		"name": "DROP DATABASE <database_id>",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"regex": "(?is)\\A\\s*drop\\s+database\\s*(?:\\s+)\\s*(.*)\\z",
+		"method": "statementDropDatabase",
+		"exampleStatements": [
+			"drop database test-db",
+			"drop database `some database`"
+		],
+		"setStatement": {
+			"statementKeyword": "DROP",
+			"propertyName": "DATABASE",
+			"separator": "\\s+",
+			"allowedValues": "(.*)",
+			"converterName": "ClientSideStatementValueConverters$StringValueConverter"
+		}
 	}
 	]
 }

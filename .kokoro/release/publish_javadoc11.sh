@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2021 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,12 +36,10 @@ mvn clean install -B -q -DskipTests=true
 export NAME=google-cloud-spanner
 export VERSION=$(grep ${NAME}: versions.txt | cut -d: -f3)
 
-# V3 generates docfx yml from javadoc
-# generate yml
-mvn clean site -B -q -P docFX
-
-# copy README to docfx-yml dir and rename index.md
-cp README.md target/docfx-yml/index.md
+# cloud RAD generation
+mvn clean javadoc:aggregate -B -q -P docFX
+# include CHANGELOG
+cp CHANGELOG.md target/docfx-yml/history.md
 
 pushd target/docfx-yml
 
@@ -49,6 +47,13 @@ pushd target/docfx-yml
 python3 -m docuploader create-metadata \
  --name ${NAME} \
  --version ${VERSION} \
+ --xrefs devsite://java/gax \
+ --xrefs devsite://java/google-cloud-core \
+ --xrefs devsite://java/api-common \
+ --xrefs devsite://java/proto-google-common-protos \
+ --xrefs devsite://java/google-api-client \
+ --xrefs devsite://java/google-http-client \
+ --xrefs devsite://java/protobuf \
  --language java
 
 # upload yml to production bucket

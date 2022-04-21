@@ -187,6 +187,8 @@ public class Database extends DatabaseInfo {
         .setVersionRetentionPeriod(proto.getVersionRetentionPeriod())
         .setEarliestVersionTime(Timestamp.fromProto(proto.getEarliestVersionTime()))
         .setEncryptionConfig(CustomerManagedEncryption.fromProtoOrNull(proto.getEncryptionConfig()))
+        .setDefaultLeader(proto.getDefaultLeader())
+        .setDialect(Dialect.fromProto(proto.getDatabaseDialect()))
         .setProto(proto)
         .build();
   }
