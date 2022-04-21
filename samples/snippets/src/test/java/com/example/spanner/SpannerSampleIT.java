@@ -526,7 +526,7 @@ public class SpannerSampleIT {
         baseDbId + "-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{8}",
         Pattern.CASE_INSENSITIVE);
   }
-
+  
   static String formatForTest(String name) {
     return name + "-" + UUID.randomUUID().toString().substring(0, DBID_LENGTH);
   }
