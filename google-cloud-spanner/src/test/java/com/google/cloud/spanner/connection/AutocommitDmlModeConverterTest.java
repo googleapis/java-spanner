@@ -22,19 +22,28 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.AutocommitDmlModeConverter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class AutocommitDmlModeConverterTest {
+  @Parameter public Dialect dialect;
+
+  @Parameters(name = "dialect = {0}")
+  public static Object[] data() {
+    return Dialect.values();
+  }
 
   @Test
   public void testConvert() throws CompileException {
     String allowedValues =
-        ReadOnlyStalenessConverterTest.getAllowedValues(AutocommitDmlModeConverter.class);
+        ReadOnlyStalenessConverterTest.getAllowedValues(AutocommitDmlModeConverter.class, dialect);
     assertThat(allowedValues, is(notNullValue()));
     AutocommitDmlModeConverter converter = new AutocommitDmlModeConverter(allowedValues);
     assertThat(converter.convert("transactional"), is(equalTo(AutocommitDmlMode.TRANSACTIONAL)));
