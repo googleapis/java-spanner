@@ -526,8 +526,8 @@ public abstract class AbstractStatementParser {
    *   <li>Multi line comments between '/&#42;' and '&#42;/'
    * </ul>
    *
-   * Reference: https://cloud.google.com/spanner/docs/lexical#comments
-   * Removes comments from and trims the given sql statement using the dialect of this parser.
+   * Reference: https://cloud.google.com/spanner/docs/lexical#comments Removes comments from and
+   * trims the given sql statement using the dialect of this parser.
    *
    * @param sql The sql statement to remove comments from and to trim.
    * @return the sql statement without the comments and leading and trailing spaces.

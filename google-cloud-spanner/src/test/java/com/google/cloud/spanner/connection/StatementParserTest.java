@@ -923,16 +923,13 @@ public class StatementParserTest {
     assertEquals("test test", parser.trimAndUnquoteIdentifier("`test test`"));
     assertEquals(
         "my-database",
-        parser.trimAndUnquoteIdentifier(
-            " /* comment that should be removed */ my-database"));
+        parser.trimAndUnquoteIdentifier(" /* comment that should be removed */ my-database"));
     assertEquals(
         "my-database",
-        parser.trimAndUnquoteIdentifier(
-            " -- comment that should be removed \nmy-database"));
+        parser.trimAndUnquoteIdentifier(" -- comment that should be removed \nmy-database"));
     assertEquals(
         "my-database",
-        parser.trimAndUnquoteIdentifier(
-            " # comment that should be removed \nmy-database"));
+        parser.trimAndUnquoteIdentifier(" # comment that should be removed \nmy-database"));
   }
 
   @Test
@@ -949,14 +946,11 @@ public class StatementParserTest {
     assertEquals("test ` ", parser.parseIdentifier("```test ` ```"));
     assertEquals("test test", parser.parseIdentifier("`test test`"));
     assertEquals(
-        "my-database",
-        parser.parseIdentifier(" /* comment that should be removed */ my-database"));
+        "my-database", parser.parseIdentifier(" /* comment that should be removed */ my-database"));
     assertEquals(
-        "my-database",
-        parser.parseIdentifier(" -- comment that should be removed \nmy-database"));
+        "my-database", parser.parseIdentifier(" -- comment that should be removed \nmy-database"));
     assertEquals(
-        "my-database",
-        parser.parseIdentifier(" # comment that should be removed \nmy-database"));
+        "my-database", parser.parseIdentifier(" # comment that should be removed \nmy-database"));
 
     assertEquals("test", parser.parseIdentifier("test test"));
     assertEquals("my-database", parser.parseIdentifier("my-database test"));

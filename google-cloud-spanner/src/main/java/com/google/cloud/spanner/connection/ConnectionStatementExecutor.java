@@ -121,5 +121,4 @@ interface ConnectionStatementExecutor {
   StatementResult statementShowRPCPriority();
 
   StatementResult statementShowTransactionIsolationLevel();
-
 }
