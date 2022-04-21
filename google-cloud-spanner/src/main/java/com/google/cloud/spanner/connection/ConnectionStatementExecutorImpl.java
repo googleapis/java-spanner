@@ -60,8 +60,10 @@ import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.CommitStats;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Type;
@@ -442,4 +444,24 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   public StatementResult statementShowTransactionIsolationLevel() {
     return resultSet("transaction_isolation", "serializable", SHOW_TRANSACTION_ISOLATION_LEVEL);
   }
+
+  @Override
+  public ResultSet statementExplain(String sql){
+    sql = sql.trim();
+    String firstWord = sql.split(" ")[0];
+
+    if(firstWord.equalsIgnoreCase("analyze")) {
+      sql = sql.split(" ",2)[1];
+      Statement statement = Statement.newBuilder(sql).build();
+      return getConnection().analyzeQuery(statement, QueryAnalyzeMode.PROFILE);
+    }
+    else{
+      Statement statement = Statement.newBuilder(sql).build();
+      return getConnection().analyzeQuery(statement, QueryAnalyzeMode.PLAN);
+
+    }
+
+
+  }
+
 }
