@@ -22,11 +22,13 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -276,6 +278,16 @@ public abstract class AbstractStatementParser {
       return false;
     }
 
+    /**
+     * Returns the {@link ClientSideStatementType} of this statement. This method may only be called
+     * on statements of type {@link StatementType#CLIENT_SIDE}.
+     */
+    @InternalApi
+    public ClientSideStatementType getClientSideStatementType() {
+      Preconditions.checkState(type == StatementType.CLIENT_SIDE);
+      return clientSideStatement.getStatementType();
+    }
+
     Statement getStatement() {
       return statement;
     }
@@ -322,7 +334,12 @@ public abstract class AbstractStatementParser {
 
   AbstractStatementParser(Dialect dialect, Set<ClientSideStatementImpl> statements) {
     this.dialect = dialect;
-    this.statements = statements;
+    this.statements = Collections.unmodifiableSet(statements);
+  }
+
+  @VisibleForTesting
+  Set<ClientSideStatementImpl> getClientSideStatements() {
+    return statements;
   }
 
   /**
