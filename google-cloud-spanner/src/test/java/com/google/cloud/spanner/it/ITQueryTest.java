@@ -16,53 +16,34 @@
 
 package com.google.cloud.spanner.it;
 
-import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
-import static com.google.common.truth.Truth.assertThat;
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
-
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.Dialect;
-import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.IntegrationTestEnv;
-import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.ParallelIntegrationTest;
+import com.google.cloud.spanner.*;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
-import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.SpannerException;
-import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.Struct;
-import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
-import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.spanner.v1.ResultSetStats;
+import org.junit.*;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
+import static com.google.common.truth.Truth.assertThat;
+import static java.util.Arrays.asList;
+import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 /** Integration tests for query execution. */
 @Category(ParallelIntegrationTest.class)
@@ -711,10 +692,8 @@ public class ITQueryTest {
   }
 
   @Test
-  public void bindNumericArray() {
-    assumeFalse(
-        "array numeric binding is not supported on POSTGRESQL",
-        dialect.dialect == Dialect.POSTGRESQL);
+  public void bindNumericArrayGoogleStandardSQL() {
+    assumeTrue(dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     BigDecimal b1 = new BigDecimal("3.14");
     BigDecimal b2 = new BigDecimal("6.626");
@@ -728,10 +707,20 @@ public class ITQueryTest {
   }
 
   @Test
-  public void bindNumericArrayEmpty() {
-    assumeFalse(
-        "array numeric binding is not supported on POSTGRESQL",
-        dialect.dialect == Dialect.POSTGRESQL);
+  public void bindNumericArrayPostgreSQL() {
+    assumeTrue(dialect.dialect == Dialect.POSTGRESQL);
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+            execute(
+                    Statement.newBuilder(selectValueQuery).bind("p1").toPgNumericArray(asList("3.14", "6.626", null)),
+                    Type.array(Type.pgNumeric()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getStringList(0)).containsExactly("3.14", "6.626", null).inOrder();
+  }
+
+  @Test
+  public void bindNumericArrayEmptyGoogleStandardSQL() {
+    assumeTrue(dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
@@ -744,15 +733,36 @@ public class ITQueryTest {
   }
 
   @Test
-  public void bindNumericArrayNull() {
-    assumeFalse(
-        "array numeric binding is not supported on POSTGRESQL",
-        dialect.dialect == Dialect.POSTGRESQL);
+  public void bindNumericArrayEmptyPostgreSQL() {
+    assumeTrue(dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+            execute(
+                    Statement.newBuilder(selectValueQuery)
+                            .bind("p1")
+                            .toPgNumericArray(Collections.emptyList()),
+                    Type.array(Type.pgNumeric()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getStringList(0)).containsExactly();
+  }
+
+  @Test
+  public void bindNumericArrayNullGoogleStandardSQL() {
+    assumeTrue(dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").toNumericArray(null),
             Type.array(Type.numeric()));
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindNumericArrayNullPostgreSQL() {
+    assumeTrue(dialect.dialect == Dialect.POSTGRESQL);
+    Struct row =
+            execute(
+                    Statement.newBuilder(selectValueQuery).bind("p1").toPgNumericArray(null),
+                    Type.array(Type.pgNumeric()));
     assertThat(row.isNull(0)).isTrue();
   }
 
