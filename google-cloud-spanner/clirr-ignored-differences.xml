@@ -60,4 +60,9 @@
     <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
     <method>com.google.api.gax.longrunning.OperationFuture copyBackup(com.google.cloud.spanner.BackupId, com.google.cloud.spanner.Backup)</method>
   </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.DatabaseClient getDatabaseClient()</method>
+  </difference>
 </differences>
