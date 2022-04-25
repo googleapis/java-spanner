@@ -36,6 +36,7 @@ import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
+import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -584,7 +585,7 @@ abstract class AbstractReadContext
       com.google.protobuf.Struct.Builder paramsBuilder = builder.getParamsBuilder();
       for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
         paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
-        if (param.getValue() != null) {
+        if (param.getValue() != null && param.getValue().getType() != null) {
           builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
         }
       }
@@ -615,7 +616,7 @@ abstract class AbstractReadContext
             builder.getStatementsBuilder(idx).getParamsBuilder();
         for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
           paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
-          if (param.getValue() != null) {
+          if (param.getValue() != null && param.getValue().getType() != null) {
             builder
                 .getStatementsBuilder(idx)
                 .putParamTypes(param.getKey(), param.getValue().getType().toProto());
