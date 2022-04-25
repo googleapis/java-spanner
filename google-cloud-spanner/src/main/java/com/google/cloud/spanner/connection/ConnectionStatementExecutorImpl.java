@@ -92,7 +92,7 @@ import javax.annotation.Nullable;
 class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
 
-  private final Set<String> explainOptions = ImmutableSet.of("VERBOSE", "COSTS", "SETTINGS", "BUFFERS", "WAL", "TIMING", "SUMMARY", "FORMAT");
+  private final Set<String> explainOptions = ImmutableSet.of("verbose", "costs", "settings", "buffers", "wal", "timing", "summary", "format");
 
   static final class StatementTimeoutGetter implements DurationValueGetter {
     private final Connection connection;
