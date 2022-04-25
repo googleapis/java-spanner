@@ -26,27 +26,16 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.cloud.ByteArray;
-import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Dialect;
-import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
-import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.Type;
 import com.google.protobuf.Duration;
-import com.google.spanner.v1.ResultSetStats;
-import java.math.BigDecimal;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Assert.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
@@ -252,289 +241,52 @@ public class ConnectionStatementExecutorTest {
     verify(connection, never()).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
   }
 
-  private ResultSet getMockResultSetForAnalyseQuery(){
-    ResultSet rs = new ResultSet() {
-
-      @Override
-      public boolean next() throws SpannerException {
-        return false;
-      }
-
-      @Override
-      public Struct getCurrentRowAsStruct() {
-        return null;
-      }
-
-      @Override
-      public void close() {
-
-      }
-
-      @Nullable
-      @Override
-      public ResultSetStats getStats() {
-        return null;
-      }
-
-      @Override
-      public Type getType() {
-        return null;
-      }
-
-      @Override
-      public int getColumnCount() {
-        return 1;
-      }
-
-      @Override
-      public int getColumnIndex(String columnName) {
-        if(columnName.equalsIgnoreCase("query plan")) return 0;
-        return -1;
-
-      }
-
-      @Override
-      public Type getColumnType(int columnIndex) {
-        return null;
-      }
-
-      @Override
-      public Type getColumnType(String columnName) {
-        return null;
-      }
-
-      @Override
-      public boolean isNull(int columnIndex) {
-        return false;
-      }
-
-      @Override
-      public boolean isNull(String columnName) {
-        return false;
-      }
-
-      @Override
-      public boolean getBoolean(int columnIndex) {
-        return false;
-      }
-
-      @Override
-      public boolean getBoolean(String columnName) {
-        return false;
-      }
-
-      @Override
-      public long getLong(int columnIndex) {
-        return 0;
-      }
-
-      @Override
-      public long getLong(String columnName) {
-        return 0;
-      }
-
-      @Override
-      public double getDouble(int columnIndex) {
-        return 0;
-      }
-
-      @Override
-      public double getDouble(String columnName) {
-        return 0;
-      }
-
-      @Override
-      public BigDecimal getBigDecimal(int columnIndex) {
-        return null;
-      }
-
-      @Override
-      public BigDecimal getBigDecimal(String columnName) {
-        return null;
-      }
-
-      @Override
-      public String getString(int columnIndex) {
-        return null;
-      }
-
-      @Override
-      public String getString(String columnName) {
-        return null;
-      }
-
-      @Override
-      public ByteArray getBytes(int columnIndex) {
-        return null;
-      }
-
-      @Override
-      public ByteArray getBytes(String columnName) {
-        return null;
-      }
-
-      @Override
-      public Timestamp getTimestamp(int columnIndex) {
-        return null;
-      }
-
-      @Override
-      public Timestamp getTimestamp(String columnName) {
-        return null;
-      }
-
-      @Override
-      public Date getDate(int columnIndex) {
-        return null;
-      }
-
-      @Override
-      public Date getDate(String columnName) {
-        return null;
-      }
-
-      @Override
-      public boolean[] getBooleanArray(int columnIndex) {
-        return new boolean[0];
-      }
-
-      @Override
-      public boolean[] getBooleanArray(String columnName) {
-        return new boolean[0];
-      }
-
-      @Override
-      public List<Boolean> getBooleanList(int columnIndex) {
-        return null;
-      }
-
-      @Override
-      public List<Boolean> getBooleanList(String columnName) {
-        return null;
-      }
-
-      @Override
-      public long[] getLongArray(int columnIndex) {
-        return new long[0];
-      }
-
-      @Override
-      public long[] getLongArray(String columnName) {
-        return new long[0];
-      }
-
-      @Override
-      public List<Long> getLongList(int columnIndex) {
-        return null;
-      }
-
-      @Override
-      public List<Long> getLongList(String columnName) {
-        return null;
-      }
-
-      @Override
-      public double[] getDoubleArray(int columnIndex) {
-        return new double[0];
-      }
-
-      @Override
-      public double[] getDoubleArray(String columnName) {
-        return new double[0];
-      }
-
-      @Override
-      public List<Double> getDoubleList(int columnIndex) {
-        return null;
-      }
-
-      @Override
-      public List<Double> getDoubleList(String columnName) {
-        return null;
-      }
-
-      @Override
-      public List<BigDecimal> getBigDecimalList(int columnIndex) {
-        return null;
-      }
-
-      @Override
-      public List<BigDecimal> getBigDecimalList(String columnName) {
-        return null;
-      }
-
-      @Override
-      public List<String> getStringList(int columnIndex) {
-        return null;
-      }
-
-      @Override
-      public List<String> getStringList(String columnName) {
-        return null;
-      }
-
-      @Override
-      public List<ByteArray> getBytesList(int columnIndex) {
-        return null;
-      }
-
-      @Override
-      public List<ByteArray> getBytesList(String columnName) {
-        return null;
-      }
-
-      @Override
-      public List<Timestamp> getTimestampList(int columnIndex) {
-        return null;
-      }
-
-      @Override
-      public List<Timestamp> getTimestampList(String columnName) {
-        return null;
-      }
-
-      @Override
-      public List<Date> getDateList(int columnIndex) {
-        return null;
-      }
-
-      @Override
-      public List<Date> getDateList(String columnName) {
-        return null;
-      }
-
-      @Override
-      public List<Struct> getStructList(int columnIndex) {
-        return null;
-      }
-
-      @Override
-      public List<Struct> getStructList(String columnName) {
-        return null;
-      }
-    };
-    return rs;
-
-  }
   @Test
   public void testStatementExplain(){
-    String sql = "verbose select * from table";
-    try {
-      ResultSet rs = subject.statementExplain(sql);
-      Assert.assertEquals(true, false);
-    }
-    catch (SpannerException e){
-      Assert.assertEquals(e.getErrorCode(), ErrorCode.UNIMPLEMENTED);
-    }
 
-    sql = "select * from table";
-    when(connection.analyzeQuery(any(), any())).thenReturn(getMockResultSetForAnalyseQuery());
+    /*Test for proper EXPLAIN*/
+    String sql = "select * from table";
+
+    ResultSet expectedRs = mock(ResultSet.class);
+    when(expectedRs.next()).thenReturn(true, false);
+    when(expectedRs.getColumnCount()).thenReturn(1);
+    when(expectedRs.getColumnIndex("query plan")).thenReturn(1);
+
+    when(connection.analyzeQuery(any(), any())).thenReturn(expectedRs);
 
     ResultSet rs = subject.statementExplain(sql);
 
+    int countRows = 0;
+    while(rs.next()){
+      ++countRows;
+    }
+
+    Assert.assertEquals(1, countRows);
     Assert.assertEquals(1, rs.getColumnCount());
-    Assert.assertEquals(0, rs.getColumnIndex("query plan"));
-    Assert.assertEquals(-1, rs.getColumnIndex("random column"));
+    Assert.assertEquals(1, rs.getColumnIndex("query plan"));
+    Assert.assertEquals(0, rs.getColumnIndex("random column"));
+
+    /*Test for EXPLAIN ANALYSE*/
+    sql = "analyse select * from table1";
+
+    when(expectedRs.next()).thenReturn(true, true, true, false);
+
+    rs = subject.statementExplain(sql);
+
+    countRows = 0;
+    while(rs.next()){
+      ++countRows;
+    }
+
+    Assert.assertEquals(3, countRows);
+    Assert.assertEquals(1, rs.getColumnCount());
+    Assert.assertEquals(1, rs.getColumnIndex("query plan"));
+    Assert.assertEquals(0, rs.getColumnIndex("random column"));
+
+    /*Test for Unsupported Option*/
+    String sql2 = "verbose select * from table";
+    Assert.assertThrows(SpannerException.class, () -> subject.statementExplain(sql2));
+
 
   }
 }
