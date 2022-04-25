@@ -134,7 +134,7 @@
       "exampleStatements": ["show transaction isolation level","show variable transaction isolation level"]
     },
     {
-      "name": "EXPLAIN '<sql>'",
+      "name": "EXPLAIN <sql>",
       "executorName": "ClientSideStatementExplainExecutor",
       "resultType": "RESULT_SET",
       "regex": "(?is)\\A\\s*explain\\s+(.*)\\z",
