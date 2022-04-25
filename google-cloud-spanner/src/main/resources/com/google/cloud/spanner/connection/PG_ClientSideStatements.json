@@ -131,7 +131,7 @@
       "resultType": "RESULT_SET",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?transaction\\s*isolation\\s*level\\s*\\z",
       "method": "statementShowTransactionIsolationLevel",
-      "exampleStatements": ["show transaction isolation level","show variable transaction isolation level"]
+      "exampleStatements": []
     },
     {
       "name": "EXPLAIN <sql>",
