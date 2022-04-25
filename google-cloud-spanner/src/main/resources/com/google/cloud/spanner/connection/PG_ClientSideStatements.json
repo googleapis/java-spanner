@@ -135,7 +135,7 @@
     },
     {
       "name": "EXPLAIN '<sql>'",
-      "executorName": "ClientSideStatementNoParamExecutor",
+      "executorName": "ClientSideStatementExplainExecutor",
       "resultType": "RESULT_SET",
       "regex": "(?is)\\A\\s*explain\\s+(.*)\\z",
       "method": "statementExplain",

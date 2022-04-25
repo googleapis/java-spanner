@@ -458,16 +458,19 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   public ResultSet statementExplain(String sql){
 
     sql = sql.trim();
-    String firstString = sql.split(" ")[0].toLowerCase();
 
-    if(explainOptions.contains(firstString)){
+    String[] arr = sql.split(" +", 2);
+
+    String option = arr[0];
+    String statementToBeExplained = arr[1];
+
+    if(explainOptions.contains(option)){
       throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", firstString));
+          ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", option));
     }
 
-    if(firstString.equals("analyze") || firstString.equals("analyse")) {
-      sql = sql.split(" ",2)[1];
-      Statement statement = Statement.newBuilder(sql).build();
+    else if(option.equals("analyze") || option.equals("analyse")) {
+      Statement statement = Statement.newBuilder(statementToBeExplained).build();
       return getConnection().analyzeQuery(statement, QueryAnalyzeMode.PROFILE);
     }
     else{

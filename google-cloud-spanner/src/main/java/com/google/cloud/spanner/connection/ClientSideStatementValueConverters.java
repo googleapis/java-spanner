@@ -342,4 +342,18 @@ class ClientSideStatementValueConverters {
       return values.get("PRIORITY_" + value);
     }
   }
+
+  static class ExplainCommandConverter implements ClientSideStatementValueConverter<String> {
+
+    @Override
+    public Class<String> getParameterClass() {
+      return String.class;
+    }
+
+    @Override
+    public String convert(String value) {
+      return value.split(" +", 2)[1].toLowerCase();
+    }
+  }
+
 }
