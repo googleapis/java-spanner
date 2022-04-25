@@ -355,5 +355,4 @@ class ClientSideStatementValueConverters {
       return value.split(" +", 2)[1].toLowerCase();
     }
   }
-
 }

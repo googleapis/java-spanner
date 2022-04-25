@@ -84,15 +84,15 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
-
 /**
  * The methods in this class are called by the different {@link ClientSideStatement}s. These method
  * calls are then forwarded into a {@link Connection}.
  */
 class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
-
-  private final Set<String> explainOptions = ImmutableSet.of("verbose", "costs", "settings", "buffers", "wal", "timing", "summary", "format");
+  private final Set<String> explainOptions =
+      ImmutableSet.of(
+          "verbose", "costs", "settings", "buffers", "wal", "timing", "summary", "format");
 
   static final class StatementTimeoutGetter implements DurationValueGetter {
     private final Connection connection;
@@ -455,7 +455,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
-  public ResultSet statementExplain(String sql){
+  public ResultSet statementExplain(String sql) {
 
     sql = sql.trim();
 
@@ -464,21 +464,15 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     String option = arr[0];
     String statementToBeExplained = arr[1];
 
-    if(explainOptions.contains(option)){
+    if (explainOptions.contains(option)) {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", option));
-    }
-
-    else if(option.equals("analyze") || option.equals("analyse")) {
+    } else if (option.equals("analyze") || option.equals("analyse")) {
       Statement statement = Statement.newBuilder(statementToBeExplained).build();
       return getConnection().analyzeQuery(statement, QueryAnalyzeMode.PROFILE);
-    }
-    else{
+    } else {
       Statement statement = Statement.newBuilder(sql).build();
       return getConnection().analyzeQuery(statement, QueryAnalyzeMode.PLAN);
     }
-
-
   }
-
 }

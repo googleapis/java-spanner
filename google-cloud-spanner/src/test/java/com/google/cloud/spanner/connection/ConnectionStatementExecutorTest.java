@@ -242,7 +242,7 @@ public class ConnectionStatementExecutorTest {
   }
 
   @Test
-  public void testStatementExplain(){
+  public void testStatementExplain() {
 
     /*Test for proper EXPLAIN*/
     String sql = "select * from table";
@@ -257,7 +257,7 @@ public class ConnectionStatementExecutorTest {
     ResultSet rs = subject.statementExplain(sql);
 
     int countRows = 0;
-    while(rs.next()){
+    while (rs.next()) {
       ++countRows;
     }
 
@@ -274,7 +274,7 @@ public class ConnectionStatementExecutorTest {
     rs = subject.statementExplain(sql);
 
     countRows = 0;
-    while(rs.next()){
+    while (rs.next()) {
       ++countRows;
     }
 
@@ -286,7 +286,5 @@ public class ConnectionStatementExecutorTest {
     /*Test for Unsupported Option*/
     String sql2 = "verbose select * from table";
     Assert.assertThrows(SpannerException.class, () -> subject.statementExplain(sql2));
-
-
   }
 }
