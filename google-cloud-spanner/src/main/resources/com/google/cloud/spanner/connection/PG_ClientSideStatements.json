@@ -131,7 +131,7 @@
       "resultType": "RESULT_SET",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?transaction\\s*isolation\\s*level\\s*\\z",
       "method": "statementShowTransactionIsolationLevel",
-      "exampleStatements": []
+      "exampleStatements": ["show transaction isolation level","show variable transaction isolation level"]
     },
     {
       "name": "EXPLAIN <sql>",
@@ -139,7 +139,7 @@
       "resultType": "RESULT_SET",
       "regex": "(?is)\\A\\s*explain\\s+(.*)\\z",
       "method": "statementExplain",
-      "exampleStatements": ["explain select * from table1", "explain analyse select * from table1"]
+      "exampleStatements": []
     },
     {
       "name": "{START | BEGIN} [TRANSACTION | WORK] [{ (READ ONLY|READ WRITE) | (ISOLATION LEVEL (DEFAULT|SERIALIZABLE)) }]",
