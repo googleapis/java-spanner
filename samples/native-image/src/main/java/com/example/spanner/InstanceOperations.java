@@ -22,9 +22,7 @@ import com.google.cloud.spanner.InstanceConfigId;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.InstanceInfo;
 
-/**
- * Helper methods to manage Spanner instances.
- */
+/** Helper methods to manage Spanner instances. */
 public class InstanceOperations {
 
   static void createTestInstance(
@@ -37,8 +35,7 @@ public class InstanceOperations {
 
     InstanceInfo instanceInfo =
         InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
-            .setInstanceConfigId(
-                InstanceConfigId.of(projectId, "regional-us-central1"))
+            .setInstanceConfigId(InstanceConfigId.of(projectId, "regional-us-central1"))
             .setNodeCount(1)
             .setDisplayName(instanceId)
             .build();

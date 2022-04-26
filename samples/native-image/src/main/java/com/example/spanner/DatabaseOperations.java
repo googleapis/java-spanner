@@ -27,9 +27,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Helper methods to manage Spanner Databases.
- */
+/** Helper methods to manage Spanner Databases. */
 public class DatabaseOperations {
 
   private static final List<String> DDL_STATEMENTS =
@@ -38,9 +36,7 @@ public class DatabaseOperations {
               + "STRING(1024), LastName STRING(1024)) PRIMARY KEY (SingerId)");
 
   static void createDatabase(
-      DatabaseAdminClient databaseAdminClient,
-      String instanceId,
-      String databaseId) {
+      DatabaseAdminClient databaseAdminClient, String instanceId, String databaseId) {
 
     if (databaseExists(databaseAdminClient, instanceId, databaseId)) {
       databaseAdminClient.dropDatabase(instanceId, databaseId);
@@ -62,21 +58,25 @@ public class DatabaseOperations {
   static void insertUsingDml(DatabaseClient dbClient) {
     dbClient
         .readWriteTransaction()
-        .run(transaction -> {
-          String sql =
-              "INSERT INTO Singers (SingerId, FirstName, LastName) "
-                  + " VALUES (10, 'Virginia', 'Watson')";
-          transaction.executeUpdate(Statement.of(sql));
-          return null;
-        });
+        .run(
+            transaction -> {
+              String sql =
+                  "INSERT INTO Singers (SingerId, FirstName, LastName) "
+                      + " VALUES (10, 'Virginia', 'Watson')";
+              transaction.executeUpdate(Statement.of(sql));
+              return null;
+            });
   }
 
   static void insertUsingMutation(DatabaseClient dbClient) {
     Mutation mutation =
         Mutation.newInsertBuilder("Singers")
-            .set("SingerId").to(12)
-            .set("FirstName").to("Bob")
-            .set("LastName").to("Loblaw")
+            .set("SingerId")
+            .to(12)
+            .set("FirstName")
+            .to("Bob")
+            .set("LastName")
+            .to("Loblaw")
             .build();
     dbClient.write(Collections.singletonList(mutation));
   }
