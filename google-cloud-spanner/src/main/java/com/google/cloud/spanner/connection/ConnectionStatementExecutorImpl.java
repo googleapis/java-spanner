@@ -464,11 +464,8 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         Statement statement = Statement.newBuilder(statementToBeExplained).build();
         return getConnection().analyzeQuery(statement, QueryAnalyzeMode.PROFILE);
       }
-
     }
     Statement statement = Statement.newBuilder(sql).build();
     return getConnection().analyzeQuery(statement, QueryAnalyzeMode.PLAN);
-
-
   }
 }

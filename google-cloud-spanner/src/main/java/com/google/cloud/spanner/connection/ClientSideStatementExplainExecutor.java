@@ -34,7 +34,6 @@ class ClientSideStatementExplainExecutor implements ClientSideStatementExecutor 
       ImmutableSet.of(
           "verbose", "costs", "settings", "buffers", "wal", "timing", "summary", "format");
 
-
   ClientSideStatementExplainExecutor(ClientSideStatementImpl statement) throws CompileException {
     try {
       this.statement = statement;
