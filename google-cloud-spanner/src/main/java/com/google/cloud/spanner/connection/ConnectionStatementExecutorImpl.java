@@ -90,7 +90,7 @@ import javax.annotation.Nullable;
  */
 class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
-  private final Set<String> explainOptions =
+  private static final Set<String> EXPLAIN_OPTIONS =
       ImmutableSet.of(
           "verbose", "costs", "settings", "buffers", "wal", "timing", "summary", "format");
 
