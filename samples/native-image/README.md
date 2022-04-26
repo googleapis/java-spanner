@@ -70,7 +70,7 @@ You will need to follow these prerequisite steps in order to run these samples:
 4. Run the application.
 
     ```
-    ./target/native-image-sample
+    ./target/native-image
     ```
 
 5. The application will run through some basic Spanner operations and log some output statements.
