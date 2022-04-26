@@ -74,13 +74,11 @@ import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGe
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.Duration;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
@@ -89,10 +87,6 @@ import javax.annotation.Nullable;
  * calls are then forwarded into a {@link Connection}.
  */
 class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
-
-  private static final Set<String> EXPLAIN_OPTIONS =
-      ImmutableSet.of(
-          "verbose", "costs", "settings", "buffers", "wal", "timing", "summary", "format");
 
   static final class StatementTimeoutGetter implements DurationValueGetter {
     private final Connection connection;
@@ -457,22 +451,24 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public ResultSet statementExplain(String sql) {
 
-    sql = sql.trim();
-
     String[] arr = sql.split("\\s+", 2);
 
-    String option = arr[0];
-    String statementToBeExplained = arr[1];
+    if (arr.length >= 2) {
+      String option = arr[0].toLowerCase();
+      String statementToBeExplained = arr[1];
 
-    if (explainOptions.contains(option)) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", option));
-    } else if (option.equals("analyze") || option.equals("analyse")) {
-      Statement statement = Statement.newBuilder(statementToBeExplained).build();
-      return getConnection().analyzeQuery(statement, QueryAnalyzeMode.PROFILE);
-    } else {
-      Statement statement = Statement.newBuilder(sql).build();
-      return getConnection().analyzeQuery(statement, QueryAnalyzeMode.PLAN);
+      if (ClientSideStatementExplainExecutor.EXPLAIN_OPTIONS.contains(option)) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", option));
+      } else if (option.equals("analyze") || option.equals("analyse")) {
+        Statement statement = Statement.newBuilder(statementToBeExplained).build();
+        return getConnection().analyzeQuery(statement, QueryAnalyzeMode.PROFILE);
+      }
+
     }
+    Statement statement = Statement.newBuilder(sql).build();
+    return getConnection().analyzeQuery(statement, QueryAnalyzeMode.PLAN);
+
+
   }
 }

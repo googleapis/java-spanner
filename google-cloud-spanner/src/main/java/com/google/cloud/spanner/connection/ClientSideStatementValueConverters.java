@@ -352,7 +352,9 @@ class ClientSideStatementValueConverters {
 
     @Override
     public String convert(String value) {
-      return value.split(" +", 2)[1].toLowerCase();
+      String arr[] = value.split("\\s+", 2);
+      if(arr.length < 2) return null;
+      return arr[1];
     }
   }
 }

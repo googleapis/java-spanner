@@ -20,7 +20,9 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.ExplainCommandConverter;
+import com.google.common.collect.ImmutableSet;
 import java.lang.reflect.Method;
+import java.util.Set;
 import java.util.regex.Matcher;
 
 /** Specific executor for the EXPLAIN statement for PostgreSQL. */
@@ -28,6 +30,10 @@ class ClientSideStatementExplainExecutor implements ClientSideStatementExecutor 
   private final ClientSideStatementImpl statement;
   private final Method method;
   private final ExplainCommandConverter converter;
+  public static final Set<String> EXPLAIN_OPTIONS =
+      ImmutableSet.of(
+          "verbose", "costs", "settings", "buffers", "wal", "timing", "summary", "format");
+
 
   ClientSideStatementExplainExecutor(ClientSideStatementImpl statement) throws CompileException {
     try {
