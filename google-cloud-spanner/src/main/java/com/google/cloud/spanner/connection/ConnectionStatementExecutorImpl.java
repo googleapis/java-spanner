@@ -459,7 +459,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
     sql = sql.trim();
 
-    String[] arr = sql.split(" +", 2);
+    String[] arr = sql.split("\\s+", 2);
 
     String option = arr[0];
     String statementToBeExplained = arr[1];
