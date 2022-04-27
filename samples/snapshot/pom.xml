@@ -22,7 +22,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <opencensus.version>0.31.0</opencensus.version>
-    <trace.version>2.1.9</trace.version>
+    <trace.version>2.1.11</trace.version>
     <cloudmonitoring.version>3.2.9</cloudmonitoring.version>
   </properties>
 
