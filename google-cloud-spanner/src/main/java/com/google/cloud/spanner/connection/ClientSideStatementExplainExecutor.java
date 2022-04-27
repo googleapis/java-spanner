@@ -55,7 +55,7 @@ class ClientSideStatementExplainExecutor implements ClientSideStatementExecutor 
   String getParameterValue(String sql) {
     Matcher matcher = statement.getPattern().matcher(sql);
     if (matcher.find() && matcher.groupCount() >= 1) {
-      String value = matcher.group(1);
+      String value = matcher.group(0);
       if (value != null) {
         String res = converter.convert(value.trim());
         if (res != null) {

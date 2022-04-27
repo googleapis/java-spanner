@@ -71,6 +71,7 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
+import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -449,8 +450,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
-  public ResultSet statementExplain(String sql) {
-
+  public StatementResult statementExplain(String sql) {
     String[] arr = sql.split("\\s+", 2);
 
     if (arr.length >= 2) {
@@ -462,10 +462,12 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
             ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", option));
       } else if (option.equals("analyze") || option.equals("analyse")) {
         Statement statement = Statement.newBuilder(statementToBeExplained).build();
-        return getConnection().analyzeQuery(statement, QueryAnalyzeMode.PROFILE);
+        ResultSet rs = getConnection().analyzeQuery(statement, QueryAnalyzeMode.PROFILE);
+        return StatementResultImpl.of(rs, ClientSideStatementType.EXPLAIN);
       }
     }
     Statement statement = Statement.newBuilder(sql).build();
-    return getConnection().analyzeQuery(statement, QueryAnalyzeMode.PLAN);
+    ResultSet rs = getConnection().analyzeQuery(statement, QueryAnalyzeMode.PLAN);
+    return StatementResultImpl.of(rs, ClientSideStatementType.EXPLAIN);
   }
 }

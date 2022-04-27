@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.protobuf.Duration;
 import com.google.spanner.v1.RequestOptions.Priority;
@@ -113,5 +112,5 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowTransactionIsolationLevel();
 
-  ResultSet statementExplain(String sql);
+  StatementResult statementExplain(String sql);
 }
