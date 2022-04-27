@@ -176,13 +176,13 @@ public class SqlScriptVerifier extends AbstractSqlScriptVerifier {
     assertTrue(e instanceof SpannerException);
     SpannerException spannerException = (SpannerException) e;
     assertEquals(
-            statement + " resulted in " + spannerException,
-            ErrorCode.valueOf(code),
-            spannerException.getErrorCode());
-    if (messagePrefix!=null) {
+        statement + " resulted in " + spannerException,
+        ErrorCode.valueOf(code),
+        spannerException.getErrorCode());
+    if (messagePrefix != null) {
       assertTrue(
-              statement,
-              e.getMessage().startsWith(messagePrefix.substring(1, messagePrefix.length() - 1)));
+          statement,
+          e.getMessage().startsWith(messagePrefix.substring(1, messagePrefix.length() - 1)));
     }
   }
 }
