@@ -188,7 +188,7 @@ public class ConnectionOptions {
   public static final String OAUTH_TOKEN_PROPERTY_NAME = "oauthToken";
   /** Name of the 'minSessions' connection property. */
   public static final String MIN_SESSIONS_PROPERTY_NAME = "minSessions";
-  /** Name of the 'numChannels' connection property. */
+  /** Name of the 'maxSessions' connection property. */
   public static final String MAX_SESSIONS_PROPERTY_NAME = "maxSessions";
   /** Name of the 'numChannels' connection property. */
   public static final String NUM_CHANNELS_PROPERTY_NAME = "numChannels";
