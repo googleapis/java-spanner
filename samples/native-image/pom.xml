@@ -28,7 +28,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>libraries-bom</artifactId>
-        <version>24.3.0</version>
+        <version>25.2.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -101,11 +101,6 @@
 
       <dependencies>
         <dependency>
-          <groupId>com.google.cloud</groupId>
-          <artifactId>native-image-support</artifactId>
-          <version>0.12.0</version>
-        </dependency>
-        <dependency>
           <groupId>org.junit.vintage</groupId>
           <artifactId>junit-vintage-engine</artifactId>
           <version>5.8.2</version>
@@ -142,7 +137,6 @@
               <buildArgs>
                 <buildArg>--no-fallback</buildArg>
                 <buildArg>--no-server</buildArg>
-                <buildArg>--features=com.google.cloud.nativeimage.features.ProtobufMessageFeature</buildArg>
               </buildArgs>
             </configuration>
             <executions>
