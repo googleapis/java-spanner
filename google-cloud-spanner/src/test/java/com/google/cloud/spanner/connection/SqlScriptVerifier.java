@@ -16,10 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
@@ -175,17 +173,16 @@ public class SqlScriptVerifier extends AbstractSqlScriptVerifier {
   @Override
   protected void verifyExpectedException(
       String statement, Exception e, String code, String messagePrefix) {
-    assertThat(e instanceof SpannerException, is(true));
+    assertTrue(e instanceof SpannerException);
     SpannerException spannerException = (SpannerException) e;
-    assertThat(
-        statement + " resulted in " + spannerException.toString(),
-        spannerException.getErrorCode(),
-        is(equalTo(ErrorCode.valueOf(code))));
-    if (messagePrefix != null) {
-      assertThat(
-          statement,
-          e.getMessage(),
-          startsWith(messagePrefix.substring(1, messagePrefix.length() - 1)));
+    assertEquals(
+            statement + " resulted in " + spannerException,
+            ErrorCode.valueOf(code),
+            spannerException.getErrorCode());
+    if (messagePrefix!=null) {
+      assertTrue(
+              statement,
+              e.getMessage().startsWith(messagePrefix.substring(1, messagePrefix.length() - 1)));
     }
   }
 }
