@@ -171,20 +171,30 @@ public class IntegrationTestEnv extends ExternalResource {
   private void cleanUpOldDatabases(InstanceId instanceId) {
     int OLD_DB_THRESHOLD_SECS = 24 * 60 * 60;
     Timestamp currentTimestamp = Timestamp.now();
+    int numDropped = 0;
 
     Page<Database> page = databaseAdminClient.listDatabases(instanceId.getInstance());
 
+    logger.log(Level.INFO, "Dropping old test databases from {0}", instanceId.getName());
+
     while (page != null) {
       for (Database db : page.iterateAll()) {
-        long timeDiff = db.getCreateTime().getSeconds() - currentTimestamp.getSeconds();
-        // Delete all databases which are more than OLD_DB_THRESHOLD_SECS seconds
-        // old.
-        if (timeDiff > OLD_DB_THRESHOLD_SECS) {
-          db.drop();
+        try {
+          long timeDiff = db.getCreateTime().getSeconds() - currentTimestamp.getSeconds();
+          // Delete all databases which are more than OLD_DB_THRESHOLD_SECS seconds
+          // old.
+          if (timeDiff > OLD_DB_THRESHOLD_SECS) {
+            logger.log(Level.INFO, "Dropping test database {0}", db.getId());
+            db.drop();
+            ++numDropped;
+          }
+        } catch(SpannerException e) {
+          logger.log(Level.SEVERE, "Failed to drop test database " + db.getId(), e);
         }
       }
       page = page.getNextPage();
     }
+    logger.log(Level.INFO, "Dropped {0} test database(s)", numDropped);
   }
 
   private void cleanUpInstance() {
