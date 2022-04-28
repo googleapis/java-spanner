@@ -116,15 +116,15 @@ final class SpannerFeature implements Feature {
         }
     }
 
-    private void registerSpannerTestClasses(BeforeAnalysisAccess access) {
-        Class<?> spannerTestClass = access.findClassByName(SPANNER_TEST_CLASS);
-        if (spannerTestClass != null) {
-            NativeImageUtils.registerConstructorsForReflection(access, SPANNER_TEST_CLASS);
-        }
-        Class<?> mockClass = access.findClassByName(MOCK_CLASS);
-        if (mockClass != null) {
-            NativeImageUtils.registerClassForReflection(
-                    access, "com.google.cloud.spanner.MockDatabaseAdminServiceImpl$MockBackup");
-        }
+  private void registerSpannerTestClasses(BeforeAnalysisAccess access) {
+    Class<?> spannerTestClass = access.findClassByName(SPANNER_TEST_CLASS);
+    if (spannerTestClass != null) {
+      NativeImageUtils.registerConstructorsForReflection(access, SPANNER_TEST_CLASS);
     }
+    Class<?> mockClass = access.findClassByName(MOCK_CLASS);
+    if (mockClass != null) {
+      NativeImageUtils.registerClassForReflection(
+          access, "com.google.cloud.spanner.MockDatabaseAdminServiceImpl$MockBackup");
+    }
+  }
 }
