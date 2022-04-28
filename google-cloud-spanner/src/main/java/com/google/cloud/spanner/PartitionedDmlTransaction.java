@@ -218,7 +218,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
       com.google.protobuf.Struct.Builder paramsBuilder = requestBuilder.getParamsBuilder();
       for (Map.Entry<String, Value> param : statementParameters.entrySet()) {
         paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
-        if (param.getValue() != null) {
+        if (param.getValue() != null && param.getValue().getType() != null) {
           requestBuilder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
         }
       }
