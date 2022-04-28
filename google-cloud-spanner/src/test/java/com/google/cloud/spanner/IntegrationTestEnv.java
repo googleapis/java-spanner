@@ -98,7 +98,7 @@ public class IntegrationTestEnv extends ExternalResource {
       // Cleanup instance before using it again, so that we do not have
       // databases from previous runs. This is done to prevent frequent
       // RESOURCE_EXHAUSTED errors, due to number of databases per
-      // instance exceeding the maximum limit.
+      // instance reaching the maximum limit.
       cleanUpInstance();
       initializeInstance(instanceId);
     }
