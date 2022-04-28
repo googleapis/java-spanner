@@ -169,16 +169,17 @@ public class IntegrationTestEnv extends ExternalResource {
   }
 
   private void cleanUpOldDatabases(InstanceId instanceId) {
-    int OLD_DB_THRESHOLD_SECS = 24*60*60;
+    int OLD_DB_THRESHOLD_SECS = 24 * 60 * 60;
     Timestamp currentTimestamp = Timestamp.now();
 
-    Page<Database> page =
-        databaseAdminClient.listDatabases(instanceId.getName());
+    Page<Database> page = databaseAdminClient.listDatabases(instanceId.getName());
 
-    while(page != null) {
-      for(Database db : page.iterateAll()) {
+    while (page != null) {
+      for (Database db : page.iterateAll()) {
         long timeDiff = db.getCreateTime().getSeconds() - currentTimestamp.getSeconds();
-        if(timeDiff > OLD_DB_THRESHOLD_SECS) {
+        // Delete all databases which are more than OLD_DB_THRESHOLD_SECS seconds
+        // old.
+        if (timeDiff > OLD_DB_THRESHOLD_SECS) {
           db.drop();
         }
       }
