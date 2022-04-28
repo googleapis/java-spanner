@@ -19,6 +19,8 @@ package com.google.cloud.spanner;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.api.gax.paging.Page;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.Iterators;
@@ -53,6 +55,7 @@ public class IntegrationTestEnv extends ExternalResource {
 
   private TestEnvConfig config;
   private InstanceAdminClient instanceAdminClient;
+  private DatabaseAdminClient databaseAdminClient;
   private boolean isOwnedInstance;
   private RemoteSpannerHelper testHelper;
 
@@ -93,9 +96,12 @@ public class IntegrationTestEnv extends ExternalResource {
     }
     testHelper = createTestHelper(options, instanceId);
     instanceAdminClient = testHelper.getClient().getInstanceAdminClient();
+    databaseAdminClient = testHelper.getClient().getDatabaseAdminClient();
     logger.log(Level.FINE, "Test env endpoint is {0}", options.getHost());
     if (isOwnedInstance) {
       initializeInstance(instanceId);
+    } else {
+      cleanUpOldDatabases(instanceId);
     }
   }
 
@@ -160,6 +166,24 @@ public class IntegrationTestEnv extends ExternalResource {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
     logger.log(Level.INFO, "Created test instance: {0}", createdInstance.getId());
+  }
+
+  private void cleanUpOldDatabases(InstanceId instanceId) {
+    int OLD_DB_THRESHOLD_SECS = 24*60*60;
+    Timestamp currentTimestamp = Timestamp.now();
+
+    Page<Database> page =
+        databaseAdminClient.listDatabases(instanceId.getName());
+
+    while(page != null) {
+      for(Database db : page.iterateAll()) {
+        long timeDiff = db.getCreateTime().getSeconds() - currentTimestamp.getSeconds();
+        if(timeDiff > OLD_DB_THRESHOLD_SECS) {
+          db.drop();
+        }
+      }
+      page = page.getNextPage();
+    }
   }
 
   private void cleanUpInstance() {
