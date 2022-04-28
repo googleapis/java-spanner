@@ -172,7 +172,7 @@ public class IntegrationTestEnv extends ExternalResource {
     int OLD_DB_THRESHOLD_SECS = 24 * 60 * 60;
     Timestamp currentTimestamp = Timestamp.now();
 
-    Page<Database> page = databaseAdminClient.listDatabases(instanceId.getName());
+    Page<Database> page = databaseAdminClient.listDatabases(instanceId.getInstance());
 
     while (page != null) {
       for (Database db : page.iterateAll()) {
