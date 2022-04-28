@@ -188,7 +188,7 @@ public class IntegrationTestEnv extends ExternalResource {
             db.drop();
             ++numDropped;
           }
-        } catch(SpannerException e) {
+        } catch (SpannerException e) {
           logger.log(Level.SEVERE, "Failed to drop test database " + db.getId(), e);
         }
       }
