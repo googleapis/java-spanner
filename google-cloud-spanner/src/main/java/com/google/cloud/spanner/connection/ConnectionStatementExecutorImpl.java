@@ -71,13 +71,15 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
-import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Duration;
+import com.google.spanner.v1.PlanNode;
+import com.google.spanner.v1.QueryPlan;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -449,25 +451,104 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     return resultSet("transaction_isolation", "serializable", SHOW_TRANSACTION_ISOLATION_LEVEL);
   }
 
+  private StatementResult getStatementResultFromQueryPlan(QueryPlan qp){
+
+    if(qp == null) return null;
+
+    ArrayList<Struct> list = new ArrayList<>();
+
+    for(PlanNode pn : qp.getPlanNodesList()){
+      list.add(Struct.newBuilder().set("QUERY PLAN").to(pn.getDisplayName()).build());
+
+    }
+
+    ResultSet rs = ResultSets.forRows(
+        Type.struct(StructField.of("QUERY PLAN", Type.string()))
+        , list);
+
+
+    return StatementResultImpl.of(rs);
+  }
+
+  private StatementResult executeStatement(String sql, QueryAnalyzeMode qam){
+    Statement statement = Statement.newBuilder(sql).build();
+    ResultSet rs = getConnection().analyzeQuery(statement, qam);
+    if(rs.getStats() != null){
+      return getStatementResultFromQueryPlan(rs.getStats().getQueryPlan());
+    }
+    throw SpannerExceptionFactory.newSpannerException(ErrorCode.UNAVAILABLE, String.format("Couldn't fetch stats for %s",sql));
+
+  }
+
   @Override
   public StatementResult statementExplain(String sql) {
-    String[] arr = sql.split("\\s+", 2);
 
-    if (arr.length >= 2) {
-      String option = arr[0].toLowerCase();
-      String statementToBeExplained = arr[1];
+    if(sql == null){
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT, String.format("Invalid String with Explain"));
 
-      if (ClientSideStatementExplainExecutor.EXPLAIN_OPTIONS.contains(option)) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", option));
-      } else if (option.equals("analyze") || option.equals("analyse")) {
-        Statement statement = Statement.newBuilder(statementToBeExplained).build();
-        ResultSet rs = getConnection().analyzeQuery(statement, QueryAnalyzeMode.PROFILE);
-        return StatementResultImpl.of(rs, ClientSideStatementType.EXPLAIN);
-      }
     }
-    Statement statement = Statement.newBuilder(sql).build();
-    ResultSet rs = getConnection().analyzeQuery(statement, QueryAnalyzeMode.PLAN);
-    return StatementResultImpl.of(rs, ClientSideStatementType.EXPLAIN);
+
+    if(sql.charAt(0) == '('){
+
+      int index = sql.indexOf(')');
+
+      String arr[] = sql.substring(1, index).split("\\s*,\\s*");
+      boolean isAnalyse = false;
+      for(String probableOptions : arr){
+        String arr2[] = probableOptions.split("\\s+");
+        if(arr2.length >= 3){
+          isAnalyse = false;
+          break;
+        }
+
+        if(ClientSideStatementExplainExecutor.EXPLAIN_OPTIONS.contains(arr2[0])){
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", arr2[0]));
+        }
+        else if(arr2[0].equalsIgnoreCase("analyse") || arr2[0].equalsIgnoreCase("analyze")){
+          isAnalyse = true;
+        }
+        else{
+          isAnalyse = false;
+          break;
+        }
+
+        if(arr2.length == 2){
+          if(arr[1].equalsIgnoreCase("false")){
+            isAnalyse = false;
+          }
+          else if(!arr[1].equalsIgnoreCase("true")){
+            isAnalyse = false;
+            break;
+          }
+        }
+
+      }
+
+      if(isAnalyse){
+        return executeStatement(sql.substring(index+1), QueryAnalyzeMode.PROFILE);
+      }
+      else{
+        return executeStatement(sql, QueryAnalyzeMode.PLAN);
+      }
+
+    }
+    else {
+      String[] arr = sql.split("\\s+", 2);
+
+      if (arr.length >= 2) {
+        String option = arr[0].toLowerCase();
+        String statementToBeExplained = arr[1];
+
+        if (ClientSideStatementExplainExecutor.EXPLAIN_OPTIONS.contains(option)) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", option));
+        } else if (option.equals("analyze") || option.equals("analyse")) {
+          return executeStatement(statementToBeExplained, QueryAnalyzeMode.PROFILE);
+        }
+      }
+      return executeStatement(sql, QueryAnalyzeMode.PLAN);
+    }
   }
 }

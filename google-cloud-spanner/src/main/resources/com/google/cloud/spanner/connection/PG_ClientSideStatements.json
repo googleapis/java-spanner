@@ -137,7 +137,7 @@
       "name": "EXPLAIN <sql>",
       "executorName": "ClientSideStatementExplainExecutor",
       "resultType": "RESULT_SET",
-      "regex": "(?is)\\A\\s*explain\\s+(.*)\\z",
+      "regex": "(?is)\\A\\s*explain(\\s+|\\()(.*)\\z",
       "method": "statementExplain",
       "exampleStatements": []
     },

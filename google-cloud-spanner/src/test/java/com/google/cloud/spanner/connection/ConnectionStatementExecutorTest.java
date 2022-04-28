@@ -31,6 +31,7 @@ import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.TimestampBound;
+import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.ExplainCommandConverter;
 import com.google.protobuf.Duration;
 import java.util.concurrent.TimeUnit;
@@ -335,6 +336,7 @@ public class ConnectionStatementExecutorTest {
     when(expectedRs.next()).thenReturn(true, true, true, false);
 
     assertExplainAnalyse(rs);
+
 
 
   }
