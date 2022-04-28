@@ -23,6 +23,7 @@ import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.CommitResponse;
+import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -1101,6 +1102,12 @@ public interface Connection extends AutoCloseable {
 
   /** The {@link Dialect} that is used by this {@link Connection}. */
   default Dialect getDialect() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /** The {@link DatabaseClient} that is used by this {@link Connection}. */
+  @InternalApi
+  default DatabaseClient getDatabaseClient() {
     throw new UnsupportedOperationException("Not implemented");
   }
 

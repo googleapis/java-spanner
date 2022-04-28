@@ -188,6 +188,9 @@ class DdlBatch extends AbstractBaseUnitOfWork {
         "Only DDL statements are allowed. \""
             + ddl.getSqlWithoutComments()
             + "\" is not a DDL-statement.");
+    Preconditions.checkArgument(
+        !DdlClient.isCreateDatabaseStatement(ddl.getSqlWithoutComments()),
+        "CREATE DATABASE is not supported in DDL batches.");
     statements.add(ddl.getSqlWithoutComments());
     return ApiFutures.immediateFuture(null);
   }

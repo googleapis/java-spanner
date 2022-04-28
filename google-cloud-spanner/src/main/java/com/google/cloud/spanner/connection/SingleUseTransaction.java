@@ -44,7 +44,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.SpannerGrpc;
 import java.util.concurrent.Callable;
 
@@ -270,11 +269,17 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     Callable<Void> callable =
         () -> {
           try {
-            OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
-                ddlClient.executeDdl(ddl.getSqlWithoutComments());
-            Void res = getWithStatementTimeout(operation, ddl);
+            OperationFuture<?, ?> operation;
+            if (DdlClient.isCreateDatabaseStatement(ddl.getSqlWithoutComments())) {
+              operation =
+                  ddlClient.executeCreateDatabase(
+                      ddl.getSqlWithoutComments(), dbClient.getDialect());
+            } else {
+              operation = ddlClient.executeDdl(ddl.getSqlWithoutComments());
+            }
+            getWithStatementTimeout(operation, ddl);
             state = UnitOfWorkState.COMMITTED;
-            return res;
+            return null;
           } catch (Throwable t) {
             state = UnitOfWorkState.COMMIT_FAILED;
             throw t;
