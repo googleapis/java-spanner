@@ -27,94 +27,94 @@ import org.graalvm.nativeimage.impl.ConfigurationCondition;
 @AutomaticFeature
 final class SpannerFeature implements Feature {
 
-    private static final String SPANNER_CLASS = "com.google.spanner.v1.SpannerGrpc";
-    private static final String SPANNER_TEST_CLASS = "com.google.cloud.spanner.GceTestEnvConfig";
-    private static final String MOCK_CLASS = "com.google.cloud.spanner.MockDatabaseAdminServiceImpl";
-    private static final String CLIENT_SIDE_IMPL_CLASS =
-            "com.google.cloud.spanner.connection.ClientSideStatementImpl";
-    private static final String CLIENT_SIDE_VALUE_CONVERTER =
-            "com.google.cloud.spanner.connection.ClientSideStatementValueConverters";
-    private static final String CONNECTION_IMPL =
-            "com.google.cloud.spanner.connection.ConnectionImpl";
-    private static final String CLIENT_SIDE_STATEMENTS =
-            "com.google.cloud.spanner.connection.ClientSideStatements";
-    private static final String CONNECTION_STATEMENT_EXECUTOR =
-            "com.google.cloud.spanner.connection.ConnectionStatementExecutor";
-    private static final String CLIENT_SIDE_STATEMENT_NO_PARAM_EXECUTOR =
-            "com.google.cloud.spanner.connection.ClientSideStatementNoParamExecutor";
-    private static final String CLIENT_SIDE_STATEMENT_SET_EXECUTOR =
-            "com.google.cloud.spanner.connection.ClientSideStatementSetExecutor";
-    private static final String ABSTRACT_STATEMENT_PARSER =
-            "com.google.cloud.spanner.connection.AbstractStatementParser";
-    private static final String STATEMENT_PARSER =
-            "com.google.cloud.spanner.connection.SpannerStatementParser";
-    private static final String POSTGRESQL_STATEMENT_PARSER =
-            "com.google.cloud.spanner.connection.PostgreSQLStatementParser";
-    private static final String STATEMENT_RESULT =
-            "com.google.cloud.spanner.connection.StatementResult$ResultType";
+  private static final String SPANNER_CLASS = "com.google.spanner.v1.SpannerGrpc";
+  private static final String SPANNER_TEST_CLASS = "com.google.cloud.spanner.GceTestEnvConfig";
+  private static final String MOCK_CLASS = "com.google.cloud.spanner.MockDatabaseAdminServiceImpl";
+  private static final String CLIENT_SIDE_IMPL_CLASS =
+      "com.google.cloud.spanner.connection.ClientSideStatementImpl";
+  private static final String CLIENT_SIDE_VALUE_CONVERTER =
+      "com.google.cloud.spanner.connection.ClientSideStatementValueConverters";
+  private static final String CONNECTION_IMPL =
+      "com.google.cloud.spanner.connection.ConnectionImpl";
+  private static final String CLIENT_SIDE_STATEMENTS =
+      "com.google.cloud.spanner.connection.ClientSideStatements";
+  private static final String CONNECTION_STATEMENT_EXECUTOR =
+      "com.google.cloud.spanner.connection.ConnectionStatementExecutor";
+  private static final String CLIENT_SIDE_STATEMENT_NO_PARAM_EXECUTOR =
+      "com.google.cloud.spanner.connection.ClientSideStatementNoParamExecutor";
+  private static final String CLIENT_SIDE_STATEMENT_SET_EXECUTOR =
+      "com.google.cloud.spanner.connection.ClientSideStatementSetExecutor";
+  private static final String ABSTRACT_STATEMENT_PARSER =
+      "com.google.cloud.spanner.connection.AbstractStatementParser";
+  private static final String STATEMENT_PARSER =
+      "com.google.cloud.spanner.connection.SpannerStatementParser";
+  private static final String POSTGRESQL_STATEMENT_PARSER =
+      "com.google.cloud.spanner.connection.PostgreSQLStatementParser";
+  private static final String STATEMENT_RESULT =
+      "com.google.cloud.spanner.connection.StatementResult$ResultType";
 
-    @Override
-    public void beforeAnalysis(BeforeAnalysisAccess access) {
-        registerSpannerTestClasses(access);
-        if (access.findClassByName(CLIENT_SIDE_IMPL_CLASS) != null) {
-            NativeImageUtils.registerClassHierarchyForReflection(access, CLIENT_SIDE_IMPL_CLASS);
-        }
-        if (access.findClassByName(CLIENT_SIDE_STATEMENT_NO_PARAM_EXECUTOR) != null) {
-            NativeImageUtils.registerClassForReflection(access, CLIENT_SIDE_STATEMENT_NO_PARAM_EXECUTOR);
-        }
-        if (access.findClassByName(CLIENT_SIDE_STATEMENT_SET_EXECUTOR) != null) {
-            NativeImageUtils.registerClassForReflection(access, CLIENT_SIDE_STATEMENT_SET_EXECUTOR);
-        }
-        if (access.findClassByName(CLIENT_SIDE_VALUE_CONVERTER) != null) {
-            NativeImageUtils.registerClassHierarchyForReflection(access, CLIENT_SIDE_VALUE_CONVERTER);
-        }
-        if (access.findClassByName(CLIENT_SIDE_STATEMENTS) != null) {
-            NativeImageUtils.registerClassForReflection(access, CLIENT_SIDE_STATEMENTS);
-        }
-        if (access.findClassByName(CONNECTION_STATEMENT_EXECUTOR) != null) {
-            NativeImageUtils.registerClassForReflection(access, CONNECTION_STATEMENT_EXECUTOR);
-        }
-        if (access.findClassByName(CONNECTION_IMPL) != null) {
-            NativeImageUtils.registerClassForReflection(access, CONNECTION_IMPL);
-        }
-        if (access.findClassByName(ABSTRACT_STATEMENT_PARSER) != null) {
-            NativeImageUtils.registerClassHierarchyForReflection(access, ABSTRACT_STATEMENT_PARSER);
-            NativeImageUtils.registerClassForReflection(access, "com.google.cloud.spanner.Dialect");
-        }
-        if (access.findClassByName(STATEMENT_PARSER) != null) {
-            NativeImageUtils.registerConstructorsForReflection(access, STATEMENT_PARSER);
-        }
-        if (access.findClassByName(POSTGRESQL_STATEMENT_PARSER) != null) {
-            NativeImageUtils.registerConstructorsForReflection(access, POSTGRESQL_STATEMENT_PARSER);
-        }
-        if (access.findClassByName(STATEMENT_RESULT) != null) {
-            NativeImageUtils.registerClassForReflection(access, STATEMENT_RESULT);
-        }
-
-        Class<?> spannerClass = access.findClassByName(SPANNER_CLASS);
-        if (spannerClass != null) {
-            NativeImageUtils.registerClassHierarchyForReflection(
-                    access, "com.google.spanner.admin.database.v1.Database");
-            NativeImageUtils.registerClassHierarchyForReflection(
-                    access, "com.google.spanner.admin.instance.v1.Instance");
-            NativeImageUtils.registerClassForReflection(
-                    access, "com.google.spanner.admin.database.v1.RestoreInfo");
-
-            // Resources
-            ResourcesRegistry resourcesRegistry = ImageSingletons.lookup(ResourcesRegistry.class);
-            resourcesRegistry.addResources(
-                    ConfigurationCondition.alwaysTrue(),
-                    "\\Qcom/google/cloud/spanner/connection/ClientSideStatements.json\\E");
-            resourcesRegistry.addResources(
-                    ConfigurationCondition.alwaysTrue(),
-                    "\\Qcom/google/cloud/spanner/connection/PG_ClientSideStatements.json\\E");
-            resourcesRegistry.addResources(
-                    "\\Qcom/google/cloud/spanner/spi/v1/grpc-gcp-apiconfig.json\\E");
-            resourcesRegistry.addResources(
-                    ConfigurationCondition.alwaysTrue(),
-                    "\\Qcom/google/cloud/spanner/connection/ITSqlScriptTest_TestQueryOptions.sql\\E");
-        }
+  @Override
+  public void beforeAnalysis(BeforeAnalysisAccess access) {
+    registerSpannerTestClasses(access);
+    if (access.findClassByName(CLIENT_SIDE_IMPL_CLASS) != null) {
+      NativeImageUtils.registerClassHierarchyForReflection(access, CLIENT_SIDE_IMPL_CLASS);
     }
+    if (access.findClassByName(CLIENT_SIDE_STATEMENT_NO_PARAM_EXECUTOR) != null) {
+      NativeImageUtils.registerClassForReflection(access, CLIENT_SIDE_STATEMENT_NO_PARAM_EXECUTOR);
+    }
+    if (access.findClassByName(CLIENT_SIDE_STATEMENT_SET_EXECUTOR) != null) {
+      NativeImageUtils.registerClassForReflection(access, CLIENT_SIDE_STATEMENT_SET_EXECUTOR);
+    }
+    if (access.findClassByName(CLIENT_SIDE_VALUE_CONVERTER) != null) {
+      NativeImageUtils.registerClassHierarchyForReflection(access, CLIENT_SIDE_VALUE_CONVERTER);
+    }
+    if (access.findClassByName(CLIENT_SIDE_STATEMENTS) != null) {
+      NativeImageUtils.registerClassForReflection(access, CLIENT_SIDE_STATEMENTS);
+    }
+    if (access.findClassByName(CONNECTION_STATEMENT_EXECUTOR) != null) {
+      NativeImageUtils.registerClassForReflection(access, CONNECTION_STATEMENT_EXECUTOR);
+    }
+    if (access.findClassByName(CONNECTION_IMPL) != null) {
+      NativeImageUtils.registerClassForReflection(access, CONNECTION_IMPL);
+    }
+    if (access.findClassByName(ABSTRACT_STATEMENT_PARSER) != null) {
+      NativeImageUtils.registerClassHierarchyForReflection(access, ABSTRACT_STATEMENT_PARSER);
+      NativeImageUtils.registerClassForReflection(access, "com.google.cloud.spanner.Dialect");
+    }
+    if (access.findClassByName(STATEMENT_PARSER) != null) {
+      NativeImageUtils.registerConstructorsForReflection(access, STATEMENT_PARSER);
+    }
+    if (access.findClassByName(POSTGRESQL_STATEMENT_PARSER) != null) {
+      NativeImageUtils.registerConstructorsForReflection(access, POSTGRESQL_STATEMENT_PARSER);
+    }
+    if (access.findClassByName(STATEMENT_RESULT) != null) {
+      NativeImageUtils.registerClassForReflection(access, STATEMENT_RESULT);
+    }
+
+    Class<?> spannerClass = access.findClassByName(SPANNER_CLASS);
+    if (spannerClass != null) {
+      NativeImageUtils.registerClassHierarchyForReflection(
+          access, "com.google.spanner.admin.database.v1.Database");
+      NativeImageUtils.registerClassHierarchyForReflection(
+          access, "com.google.spanner.admin.instance.v1.Instance");
+      NativeImageUtils.registerClassForReflection(
+          access, "com.google.spanner.admin.database.v1.RestoreInfo");
+
+      // Resources
+      ResourcesRegistry resourcesRegistry = ImageSingletons.lookup(ResourcesRegistry.class);
+      resourcesRegistry.addResources(
+          ConfigurationCondition.alwaysTrue(),
+          "\\Qcom/google/cloud/spanner/connection/ClientSideStatements.json\\E");
+      resourcesRegistry.addResources(
+          ConfigurationCondition.alwaysTrue(),
+          "\\Qcom/google/cloud/spanner/connection/PG_ClientSideStatements.json\\E");
+      resourcesRegistry.addResources(
+          "\\Qcom/google/cloud/spanner/spi/v1/grpc-gcp-apiconfig.json\\E");
+      resourcesRegistry.addResources(
+          ConfigurationCondition.alwaysTrue(),
+          "\\Qcom/google/cloud/spanner/connection/ITSqlScriptTest_TestQueryOptions.sql\\E");
+    }
+  }
 
   private void registerSpannerTestClasses(BeforeAnalysisAccess access) {
     Class<?> spannerTestClass = access.findClassByName(SPANNER_TEST_CLASS);
