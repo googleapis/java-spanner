@@ -95,6 +95,11 @@ public class IntegrationTestEnv extends ExternalResource {
     instanceAdminClient = testHelper.getClient().getInstanceAdminClient();
     logger.log(Level.FINE, "Test env endpoint is {0}", options.getHost());
     if (isOwnedInstance) {
+      // Cleanup instance before using it again, so that we do not have
+      // databases from previous runs. This is done to prevent frequent
+      // RESOURCE_EXHAUSTED errors, due to number of databases per
+      // instance exceeding the maximum limit.
+      cleanUpInstance();
       initializeInstance(instanceId);
     }
   }
