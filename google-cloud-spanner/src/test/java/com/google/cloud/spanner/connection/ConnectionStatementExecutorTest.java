@@ -275,7 +275,7 @@ public class ConnectionStatementExecutorTest {
 
     ExplainCommandConverter converter = new ExplainCommandConverter();
 
-    /*Test for proper EXPLAIN*/
+    /*Test for valid EXPLAIN*/
     String sql = converter.convert("explain select * from table");
 
     ResultSet expectedRs = mock(ResultSet.class);

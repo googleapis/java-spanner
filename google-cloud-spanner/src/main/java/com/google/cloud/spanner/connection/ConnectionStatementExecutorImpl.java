@@ -480,6 +480,14 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   }
 
+  /*
+  * This method supports the EXPLAIN feature with ANALYSE option only.
+  * Any option other than ANALYSE is not supported currently.
+  * If the statement has combination of analyse with any other option
+  * like "explain (analyse, costs) select * from table"
+  * it will throw exception .
+  */
+
   @Override
   public StatementResult statementExplain(String sql) {
 

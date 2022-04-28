@@ -62,7 +62,7 @@ class ClientSideStatementExplainExecutor implements ClientSideStatementExecutor 
           return res;
         }
         throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT, String.format("Unknown transaction mode: %s", value));
+            ErrorCode.INVALID_ARGUMENT, String.format("Invalid argument for EXPLAIN: %s", value));
       }
     }
     return null;
