@@ -71,6 +71,39 @@ public interface DatabaseAdminClient {
       String instanceId, String databaseId, Iterable<String> statements) throws SpannerException;
 
   /**
+   * Creates a new database in a Cloud Spanner instance with the given {@link Dialect}.
+   *
+   * <p>Example to create database.
+   *
+   * <pre>{@code
+   * String instanceId = "my_instance_id";
+   * String createDatabaseStatement = "CREATE DATABASE \"my-database\"";
+   * Operation<Database, CreateDatabaseMetadata> op = dbAdminClient
+   *     .createDatabase(
+   *         instanceId,
+   *         createDatabaseStatement,
+   *         Dialect.POSTGRESQL
+   *         Collections.emptyList());
+   * Database db = op.waitFor().getResult();
+   * }</pre>
+   *
+   * @param instanceId the id of the instance in which to create the database.
+   * @param createDatabaseStatement the CREATE DATABASE statement for the database. This statement
+   *     must use the dialect for the new database.
+   * @param dialect the dialect that the new database should use.
+   * @param statements DDL statements to run while creating the database, for example {@code CREATE
+   *     TABLE MyTable ( ... )}. This should not include {@code CREATE DATABASE} statement.
+   */
+  default OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
+      String instanceId,
+      String createDatabaseStatement,
+      Dialect dialect,
+      Iterable<String> statements)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
    * Creates a database in a Cloud Spanner instance. Any configuration options in the {@link
    * Database} instance will be included in the {@link CreateDatabaseRequest}.
    *

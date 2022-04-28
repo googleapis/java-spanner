@@ -22,7 +22,9 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -61,6 +63,34 @@ public class ValueTest {
   @SafeVarargs
   private static <T> Iterable<T> plainIterable(T... values) {
     return Lists.newArrayList(values);
+  }
+
+  @Test
+  public void untyped() {
+    com.google.protobuf.Value proto =
+        com.google.protobuf.Value.newBuilder().setStringValue("test").build();
+    Value v = Value.untyped(proto);
+    assertNull(v.getType());
+    assertFalse(v.isNull());
+    assertSame(proto, v.toProto());
+
+    assertEquals(
+        v, Value.untyped(com.google.protobuf.Value.newBuilder().setStringValue("test").build()));
+    assertEquals(
+        Value.untyped(com.google.protobuf.Value.newBuilder().setNumberValue(3.14d).build()),
+        Value.untyped(com.google.protobuf.Value.newBuilder().setNumberValue(3.14d).build()));
+    assertEquals(
+        Value.untyped(com.google.protobuf.Value.newBuilder().setBoolValue(true).build()),
+        Value.untyped(com.google.protobuf.Value.newBuilder().setBoolValue(true).build()));
+
+    assertNotEquals(
+        v, Value.untyped(com.google.protobuf.Value.newBuilder().setStringValue("foo").build()));
+    assertNotEquals(
+        Value.untyped(com.google.protobuf.Value.newBuilder().setNumberValue(3.14d).build()),
+        Value.untyped(com.google.protobuf.Value.newBuilder().setNumberValue(0.14d).build()));
+    assertNotEquals(
+        Value.untyped(com.google.protobuf.Value.newBuilder().setBoolValue(false).build()),
+        Value.untyped(com.google.protobuf.Value.newBuilder().setBoolValue(true).build()));
   }
 
   @Test

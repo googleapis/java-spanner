@@ -333,6 +333,11 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
+  public DatabaseClient getDatabaseClient() {
+    return dbClient;
+  }
+
+  @Override
   public boolean isClosed() {
     return closed;
   }

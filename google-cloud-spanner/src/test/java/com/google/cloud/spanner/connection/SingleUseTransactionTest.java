@@ -34,6 +34,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
@@ -365,6 +366,7 @@ public class SingleUseTransactionTest {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     com.google.cloud.spanner.ReadOnlyTransaction singleUse =
         new SimpleReadOnlyTransaction(staleness);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     when(dbClient.singleUseReadOnlyTransaction(staleness)).thenReturn(singleUse);
 
     final TransactionContext txContext = mock(TransactionContext.class);
@@ -535,6 +537,19 @@ public class SingleUseTransactionTest {
     SingleUseTransaction subject = createDdlSubject(ddlClient);
     get(subject.executeDdlAsync(ddl));
     verify(ddlClient).executeDdl(sql);
+  }
+
+  @Test
+  public void testExecuteCreateDatabase() {
+    String sql = "CREATE DATABASE FOO";
+    ParsedStatement ddl = createParsedDdl(sql);
+    DdlClient ddlClient = createDefaultMockDdlClient();
+    when(ddlClient.executeCreateDatabase(sql, Dialect.GOOGLE_STANDARD_SQL))
+        .thenReturn(mock(OperationFuture.class));
+
+    SingleUseTransaction singleUseTransaction = createDdlSubject(ddlClient);
+    get(singleUseTransaction.executeDdlAsync(ddl));
+    verify(ddlClient).executeCreateDatabase(sql, Dialect.GOOGLE_STANDARD_SQL);
   }
 
   @Test
