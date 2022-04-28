@@ -509,8 +509,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
           isAnalyse = false;
           break;
         }
-
-        if(ClientSideStatementExplainExecutor.EXPLAIN_OPTIONS.contains(arr2[0])){
+        if(ClientSideStatementExplainExecutor.EXPLAIN_OPTIONS.contains(arr2[0].toLowerCase())){
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", arr2[0]));
         }
