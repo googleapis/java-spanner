@@ -54,12 +54,6 @@ public abstract class AbstractStatementParser {
               SpannerStatementParser.class,
               Dialect.POSTGRESQL,
               PostgreSQLStatementParser.class);
-  private static final String GSQL_STATEMENT = "/*GSQL*/";
-
-  /* Checks if the SQL statement starts with /*GSQL*/
-  private boolean isGoogleSql(String sql) {
-    return sql.startsWith(GSQL_STATEMENT);
-  }
 
   /** Get an instance of {@link AbstractStatementParser} for the specified dialect. */
   public static AbstractStatementParser getInstance(Dialect dialect) {
@@ -317,11 +311,9 @@ public abstract class AbstractStatementParser {
   static final Set<String> ddlStatements = ImmutableSet.of("CREATE", "DROP", "ALTER");
   static final Set<String> selectStatements = ImmutableSet.of("SELECT", "WITH", "SHOW");
   static final Set<String> dmlStatements = ImmutableSet.of("INSERT", "UPDATE", "DELETE");
-  private final Dialect dialect;
   private final Set<ClientSideStatementImpl> statements;
 
-  AbstractStatementParser(Dialect dialect, Set<ClientSideStatementImpl> statements) {
-    this.dialect = dialect;
+  AbstractStatementParser(Set<ClientSideStatementImpl> statements) {
     this.statements = statements;
   }
 
@@ -427,12 +419,7 @@ public abstract class AbstractStatementParser {
 
   private boolean statementStartsWith(String sql, Iterable<String> checkStatements) {
     Preconditions.checkNotNull(sql);
-    String[] tokens;
-    if (isGoogleSql(sql)) {
-      tokens = sql.substring(GSQL_STATEMENT.length()).split("\\s+", 2);
-    } else {
-      tokens = sql.split("\\s+", 2);
-    }
+    String[] tokens = sql.split("\\s+", 2);
     int checkIndex = 0;
     if (supportsExplain() && tokens[0].equalsIgnoreCase("EXPLAIN")) {
       checkIndex = 1;
@@ -467,20 +454,7 @@ public abstract class AbstractStatementParser {
 
   @InternalApi
   public String removeCommentsAndTrim(String sql) {
-    switch (dialect) {
-      case POSTGRESQL:
-        if (isGoogleSql(sql.trim())) {
-          return GSQL_STATEMENT
-              + INSTANCES.get(Dialect.GOOGLE_STANDARD_SQL).removeCommentsAndTrimInternal(sql);
-        } else {
-          return removeCommentsAndTrimInternal(sql);
-        }
-      case GOOGLE_STANDARD_SQL:
-        return removeCommentsAndTrimInternal(sql);
-      default:
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INTERNAL, "Unknown dialect: " + dialect);
-    }
+    return removeCommentsAndTrimInternal(sql);
   }
 
   /** Removes any statement hints at the beginning of the statement. */
@@ -517,15 +491,7 @@ public abstract class AbstractStatementParser {
 
   @InternalApi
   public ParametersInfo convertPositionalParametersToNamedParameters(char paramChar, String sql) {
-    if (dialect == Dialect.POSTGRESQL && isGoogleSql(sql.trim())) {
-      return INSTANCES
-          .get(Dialect.GOOGLE_STANDARD_SQL)
-          .convertPositionalParametersToNamedParametersInternal(paramChar, sql);
-    } else {
-      return INSTANCES
-          .get(dialect)
-          .convertPositionalParametersToNamedParametersInternal(paramChar, sql);
-    }
+    return convertPositionalParametersToNamedParametersInternal(paramChar, sql);
   }
 
   /** Convenience method that is used to estimate the number of parameters in a SQL statement. */

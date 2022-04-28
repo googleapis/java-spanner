@@ -332,6 +332,26 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
     final Dialect dialect = Preconditions.checkNotNull(database.getDialect());
     final String createStatement =
         dialect.createDatabaseStatementFor(database.getId().getDatabase());
+
+    return createDatabase(createStatement, database, statements);
+  }
+
+  @Override
+  public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
+      String instanceId,
+      String createDatabaseStatement,
+      Dialect dialect,
+      Iterable<String> statements)
+      throws SpannerException {
+    Database database =
+        newDatabaseBuilder(DatabaseId.of(projectId, instanceId, "")).setDialect(dialect).build();
+
+    return createDatabase(createDatabaseStatement, database, statements);
+  }
+
+  private OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
+      String createStatement, Database database, Iterable<String> statements)
+      throws SpannerException {
     OperationFuture<com.google.spanner.admin.database.v1.Database, CreateDatabaseMetadata>
         rawOperationFuture =
             rpc.createDatabase(

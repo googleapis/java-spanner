@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.isNull;
@@ -65,5 +67,24 @@ public class DdlClientTest {
     List<String> ddlList = Arrays.asList("CREATE TABLE FOO", "DROP TABLE FOO");
     subject.executeDdl(ddlList);
     verify(client).updateDatabaseDdl(instanceId, databaseId, ddlList, null);
+  }
+
+  @Test
+  public void testIsCreateDatabase() {
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE foo"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE \"foo\""));
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE `foo`"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE\tfoo"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE\n foo"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE\t\n foo"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE\t \n DATABASE  foo"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("create\t \n DATABASE  foo"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("create database foo"));
+
+    assertFalse(DdlClient.isCreateDatabaseStatement("CREATE VIEW foo"));
+    assertFalse(DdlClient.isCreateDatabaseStatement("CREATE DATABAS foo"));
+    assertFalse(DdlClient.isCreateDatabaseStatement("CREATE DATABASEfoo"));
+    assertFalse(DdlClient.isCreateDatabaseStatement("CREATE foo"));
   }
 }

@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.anyString;
@@ -141,6 +142,17 @@ public class DdlBatchTest {
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
+  }
+
+  @Test
+  public void testExecuteCreateDatabase() {
+    DdlBatch batch = createSubject();
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            batch.executeDdlAsync(
+                AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+                    .parse(Statement.of("CREATE DATABASE foo"))));
   }
 
   @Test
