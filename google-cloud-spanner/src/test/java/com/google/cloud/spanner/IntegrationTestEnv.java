@@ -169,7 +169,7 @@ public class IntegrationTestEnv extends ExternalResource {
   }
 
   private void cleanUpOldDatabases(InstanceId instanceId) {
-    int OLD_DB_THRESHOLD_SECS = 24 * 60 * 60;
+    int OLD_DB_THRESHOLD_SECS = TimeUnit.SECONDS.convert(24L, TimeUnit.HOURS);
     Timestamp currentTimestamp = Timestamp.now();
     int numDropped = 0;
 
