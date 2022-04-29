@@ -509,7 +509,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
           isAnalyse = false;
           break;
         }
-        if(ClientSideStatementExplainExecutor.EXPLAIN_OPTIONS.contains(arr2[0].toLowerCase())){
+        else if(ClientSideStatementExplainExecutor.EXPLAIN_OPTIONS.contains(arr2[0].toLowerCase())){
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", arr2[0]));
         }
@@ -522,10 +522,10 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         }
 
         if(arr2.length == 2){
-          if(arr[1].equalsIgnoreCase("false")){
+          if(arr2[1].equalsIgnoreCase("false")){
             isAnalyse = false;
           }
-          else if(!arr[1].equalsIgnoreCase("true")){
+          else if(!arr2[1].equalsIgnoreCase("true")){
             isAnalyse = false;
             break;
           }
