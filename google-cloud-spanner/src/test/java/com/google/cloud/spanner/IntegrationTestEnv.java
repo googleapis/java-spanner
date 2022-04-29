@@ -27,6 +27,7 @@ import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import io.grpc.Status;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.rules.ExternalResource;
@@ -169,21 +170,20 @@ public class IntegrationTestEnv extends ExternalResource {
   }
 
   private void cleanUpOldDatabases(InstanceId instanceId) {
-    int OLD_DB_THRESHOLD_SECS = TimeUnit.SECONDS.convert(24L, TimeUnit.HOURS);
+    long OLD_DB_THRESHOLD_SECS = TimeUnit.SECONDS.convert(24L, TimeUnit.HOURS);
     Timestamp currentTimestamp = Timestamp.now();
     int numDropped = 0;
-
     Page<Database> page = databaseAdminClient.listDatabases(instanceId.getInstance());
+    String TEST_DB_REGEX = "(testdb_(.*)_(.*))|(mysample-(.*))";
 
     logger.log(Level.INFO, "Dropping old test databases from {0}", instanceId.getName());
-
     while (page != null) {
       for (Database db : page.iterateAll()) {
         try {
           long timeDiff = db.getCreateTime().getSeconds() - currentTimestamp.getSeconds();
           // Delete all databases which are more than OLD_DB_THRESHOLD_SECS seconds
           // old.
-          if (timeDiff > OLD_DB_THRESHOLD_SECS) {
+          if ((db.getId().getDatabase().matches(TEST_DB_REGEX)) && (timeDiff > OLD_DB_THRESHOLD_SECS)) {
             logger.log(Level.INFO, "Dropping test database {0}", db.getId());
             db.drop();
             ++numDropped;
