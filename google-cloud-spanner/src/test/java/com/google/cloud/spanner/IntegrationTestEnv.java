@@ -183,7 +183,8 @@ public class IntegrationTestEnv extends ExternalResource {
           long timeDiff = db.getCreateTime().getSeconds() - currentTimestamp.getSeconds();
           // Delete all databases which are more than OLD_DB_THRESHOLD_SECS seconds
           // old.
-          if ((db.getId().getDatabase().matches(TEST_DB_REGEX)) && (timeDiff > OLD_DB_THRESHOLD_SECS)) {
+          if ((db.getId().getDatabase().matches(TEST_DB_REGEX))
+              && (timeDiff > OLD_DB_THRESHOLD_SECS)) {
             logger.log(Level.INFO, "Dropping test database {0}", db.getId());
             db.drop();
             ++numDropped;
