@@ -140,6 +140,8 @@ import com.google.spanner.admin.instance.v1.GetInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceAdminGrpc;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
+import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
@@ -950,6 +952,30 @@ public class GapicSpannerRpc implements SpannerRpc {
         newCallContext(
             null, instanceConfigName, request, InstanceAdminGrpc.getDeleteInstanceConfigMethod());
     get(instanceAdminStub.deleteInstanceConfigCallable().futureCall(request, context));
+  }
+
+  @Override
+  public Paginated<Operation> listInstanceConfigOperations(
+      String projectName, int pageSize, @Nullable String filter, @Nullable String pageToken) {
+    acquireAdministrativeRequestsRateLimiter();
+    ListInstanceConfigOperationsRequest.Builder requestBuilder =
+        ListInstanceConfigOperationsRequest.newBuilder().setParent(projectName).setPageSize(pageSize);
+    if (filter != null) {
+      requestBuilder.setFilter(filter);
+    }
+    if (pageToken != null) {
+      requestBuilder.setPageToken(pageToken);
+    }
+    final ListInstanceConfigOperationsRequest request = requestBuilder.build();
+
+    final GrpcCallContext context =
+        newCallContext(
+            null, projectName, request, InstanceAdminGrpc.getListInstanceConfigOperationsMethod());
+    ListInstanceConfigOperationsResponse response =
+        runWithRetryOnAdministrativeRequestsExceeded(
+            () ->
+                get(instanceAdminStub.listInstanceConfigOperationsCallable().futureCall(request, context)));
+    return new Paginated<>(response.getOperationsList(), response.getNextPageToken());
   }
 
   @Override

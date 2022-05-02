@@ -37,6 +37,8 @@ import com.google.common.io.BaseEncoding;
 import com.google.iam.v1.Binding;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.TestIamPermissionsResponse;
+import com.google.longrunning.Operation;
+import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
@@ -46,6 +48,8 @@ import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -164,6 +168,54 @@ public class InstanceAdminClientImplTest {
   public void dropInstanceConfig() {
     client.deleteInstanceConfig(CONFIG_ID);
     verify(rpc).deleteInstanceConfig(CONFIG_NAME, null, null);
+  }
+
+  public Operation getInstanceConfigOperation(String instanceConfigId, Integer operationId) {
+    InstanceConfig instanceConfig = com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder()
+        .setName(instanceConfigId)
+        .setBaseConfig(BASE_CONFIG)
+        .addAllReplicas(getAllReplicas())
+        .build();
+
+    CreateInstanceConfigMetadata metadata =
+        CreateInstanceConfigMetadata
+            .newBuilder()
+            .setInstanceConfig(instanceConfig).build();
+
+    final String operationName =
+        String.format(
+            "projects/%s/instanceConfigs/%s/operations/%d",
+            PROJECT_ID,
+            instanceConfigId,
+            operationId
+        );
+    return com.google.longrunning.Operation.newBuilder()
+        .setMetadata(Any.pack(metadata))
+        .setResponse(Any.pack(instanceConfig))
+        .setDone(false)
+        .setName(operationName)
+        .build();
+  }
+
+  @Test
+  public void listInstanceConfigOperations() {
+    String nextToken = "token";
+    Operation operation1 = getInstanceConfigOperation("custom-instance-config-1", 1);
+    Operation operation2 = getInstanceConfigOperation("custom-instance-config-2", 2);
+    when(rpc.listInstanceConfigOperations(PROJECT_ID, 1, null, null))
+        .thenReturn(
+            new Paginated<>(
+                ImmutableList.of(operation1),
+                nextToken));
+    when(rpc.listInstanceConfigOperations(PROJECT_ID, 1, null, nextToken))
+        .thenReturn(
+            new Paginated<>(
+                ImmutableList.of(operation2), ""));
+    List<Operation> operations =
+        Lists.newArrayList(client.listInstanceConfigOperations(Options.pageSize(1)).iterateAll());
+    assertThat(operations.get(0).getName()).isEqualTo("custom-instance-config-1");
+    assertThat(operations.get(1).getName()).isEqualTo("custom-instance-config-2");
+    assertThat(operations.size()).isEqualTo(2);
   }
 
   @Test

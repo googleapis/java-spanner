@@ -167,6 +167,31 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
   }
 
   @Override
+  public final Page<Operation> listInstanceConfigOperations(ListOption... options) {
+    final Options listOptions = Options.fromListOptions(options);
+    final int pageSize = listOptions.hasPageSize() ? listOptions.pageSize() : 0;
+    final String filter = listOptions.hasFilter() ? listOptions.filter() : null;
+    final String pageToken = listOptions.hasPageToken() ? listOptions.pageToken() : null;
+
+    PageFetcher<Operation, Operation> pageFetcher =
+        new PageFetcher<Operation, Operation>() {
+          @Override
+          public Paginated<Operation> getNextPage(String nextPageToken) {
+            return rpc.listInstanceConfigOperations(projectId, pageSize, filter, pageToken);
+          }
+
+          @Override
+          public Operation fromProto(Operation proto) {
+            return proto;
+          }
+        };
+    if (listOptions.hasPageToken()) {
+      pageFetcher.setNextPageToken(listOptions.pageToken());
+    }
+    return pageFetcher.getNextPage();
+  }
+
+  @Override
   public OperationFuture<Instance, CreateInstanceMetadata> createInstance(InstanceInfo instance)
       throws SpannerException {
     Preconditions.checkArgument(

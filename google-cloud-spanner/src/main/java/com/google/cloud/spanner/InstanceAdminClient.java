@@ -194,6 +194,11 @@ public interface InstanceAdminClient {
    */
   Page<InstanceConfig> listInstanceConfigs(ListOption... options) throws SpannerException;
 
+  /** Lists long-running instance config operations. */
+  default Page<Operation> listInstanceConfigOperations(ListOption... options) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
   /**
    * Creates an instance and begins preparing it to begin serving. The returned {@code Operation}
    * can be used to track the progress of preparing the new instance. The instance name is assigned

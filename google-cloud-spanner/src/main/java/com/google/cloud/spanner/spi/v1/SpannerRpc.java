@@ -192,6 +192,12 @@ public interface SpannerRpc extends ServiceRpc {
     throw new UnsupportedOperationException("Not implemented");
   }
 
+  /** List all long-running instance config operations on the given project. */
+  default Paginated<Operation> listInstanceConfigOperations(
+      String projectName, int pageSize, @Nullable String filter, @Nullable String pageToken) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
   Paginated<Instance> listInstances(
       int pageSize, @Nullable String pageToken, @Nullable String filter) throws SpannerException;
 
