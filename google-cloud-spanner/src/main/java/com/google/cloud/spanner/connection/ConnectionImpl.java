@@ -48,6 +48,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.ResultSetStats;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -288,6 +289,9 @@ class ConnectionImpl implements Connection {
   public ApiFuture<Void> closeAsync() {
     if (!isClosed()) {
       List<ApiFuture<Void>> futures = new ArrayList<>();
+      if (isBatchActive()) {
+        abortBatch();
+      }
       if (isTransactionStarted()) {
         futures.add(rollbackAsync());
       }
@@ -965,6 +969,7 @@ class ConnectionImpl implements Connection {
         "Statement is not an update statement: " + parsedStatement.getSqlWithoutComments());
   }
 
+  @Override
   public ApiFuture<Long> executeUpdateAsync(Statement update) {
     Preconditions.checkNotNull(update);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
@@ -973,6 +978,27 @@ class ConnectionImpl implements Connection {
       switch (parsedStatement.getType()) {
         case UPDATE:
           return internalExecuteUpdateAsync(parsedStatement);
+        case CLIENT_SIDE:
+        case QUERY:
+        case DDL:
+        case UNKNOWN:
+        default:
+      }
+    }
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.INVALID_ARGUMENT,
+        "Statement is not an update statement: " + parsedStatement.getSqlWithoutComments());
+  }
+
+  @Override
+  public ResultSetStats analyzeUpdate(Statement update, QueryAnalyzeMode analyzeMode) {
+    Preconditions.checkNotNull(update);
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ParsedStatement parsedStatement = getStatementParser().parse(update);
+    if (parsedStatement.isUpdate()) {
+      switch (parsedStatement.getType()) {
+        case UPDATE:
+          return get(internalAnalyzeUpdateAsync(parsedStatement, AnalyzeMode.of(analyzeMode)));
         case CLIENT_SIDE:
         case QUERY:
         case DDL:
@@ -1096,7 +1122,9 @@ class ConnectionImpl implements Connection {
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
     Preconditions.checkArgument(
-        statement.getType() == StatementType.QUERY, "Statement must be a query");
+        statement.getType() == StatementType.QUERY
+            || (statement.getType() == StatementType.UPDATE && analyzeMode != AnalyzeMode.NONE),
+        "Statement must either be a query or a DML mode with analyzeMode!=NONE");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return get(
         transaction.executeQueryAsync(
@@ -1124,6 +1152,15 @@ class ConnectionImpl implements Connection {
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return transaction.executeUpdateAsync(
         update, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
+  }
+
+  private ApiFuture<ResultSetStats> internalAnalyzeUpdateAsync(
+      final ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
+    Preconditions.checkArgument(
+        update.getType() == StatementType.UPDATE, "Statement must be an update");
+    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
+    return transaction.analyzeUpdateAsync(
+        update, analyzeMode, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
   }
 
   private ApiFuture<long[]> internalExecuteBatchUpdateAsync(
