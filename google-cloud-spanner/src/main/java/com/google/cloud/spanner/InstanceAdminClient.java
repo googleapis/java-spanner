@@ -35,8 +35,8 @@ public interface InstanceAdminClient {
   /**
    * Creates an instance config and begins preparing it to be used. The returned {@code Operation}
    * can be used to track the progress of preparing the new instance config. The instance config
-   * name is assigned by the caller and must start with the string 'custom'. If the named instance config already exists, a SpannerException
-   * is thrown.
+   * name is assigned by the caller and must start with the string 'custom'. If the named instance
+   * config already exists, a SpannerException is thrown.
    *
    * <p>Immediately after the request returns:
    *
@@ -93,9 +93,10 @@ public interface InstanceAdminClient {
   }
 
   /**
-   * Updates a custom instance config. This can not be used to update a Google managed instance config. The returned {@code Operation} can be used to track the progress of
-   * updating the instance. If the named instance config does not exist, a SpannerException is
-   * thrown. The request must include at least one field to update.
+   * Updates a custom instance config. This can not be used to update a Google managed instance
+   * config. The returned {@code Operation} can be used to track the progress of updating the
+   * instance. If the named instance config does not exist, a SpannerException is thrown. The
+   * request must include at least one field to update.
    *
    * <p>Only user managed configurations can be updated.
    *
@@ -164,8 +165,9 @@ public interface InstanceAdminClient {
   InstanceConfig getInstanceConfig(String configId) throws SpannerException;
 
   /**
-   * Deletes a custom instance config. Deletion is only allowed for custom instance configs and when no instances are using the
-   * configuration. If any instances are using the config, a SpannerException is thrown.
+   * Deletes a custom instance config. Deletion is only allowed for custom instance configs and when
+   * no instances are using the configuration. If any instances are using the config, a
+   * SpannerException is thrown.
    *
    * <p>Only user managed configurations can be deleted.
    * <!--SNIPPET instance_admin_client_delete_instance_config-->

@@ -959,7 +959,9 @@ public class GapicSpannerRpc implements SpannerRpc {
       String projectName, int pageSize, @Nullable String filter, @Nullable String pageToken) {
     acquireAdministrativeRequestsRateLimiter();
     ListInstanceConfigOperationsRequest.Builder requestBuilder =
-        ListInstanceConfigOperationsRequest.newBuilder().setParent(projectName).setPageSize(pageSize);
+        ListInstanceConfigOperationsRequest.newBuilder()
+            .setParent(projectName)
+            .setPageSize(pageSize);
     if (filter != null) {
       requestBuilder.setFilter(filter);
     }
@@ -974,7 +976,10 @@ public class GapicSpannerRpc implements SpannerRpc {
     ListInstanceConfigOperationsResponse response =
         runWithRetryOnAdministrativeRequestsExceeded(
             () ->
-                get(instanceAdminStub.listInstanceConfigOperationsCallable().futureCall(request, context)));
+                get(
+                    instanceAdminStub
+                        .listInstanceConfigOperationsCallable()
+                        .futureCall(request, context)));
     return new Paginated<>(response.getOperationsList(), response.getNextPageToken());
   }
 

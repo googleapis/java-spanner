@@ -118,8 +118,8 @@ public class InstanceConfigInfo {
 
   /**
    * Base configuration, e.g. projects/<project_name>/instanceConfigs/nam3, based on which this
-   * configuration is created. Only set for user managed configurations. The base config must refer to a
-   * configuration of type GOOGLE_MANAGED.
+   * configuration is created. Only set for user managed configurations. The base config must refer
+   * to a configuration of type GOOGLE_MANAGED.
    */
   public InstanceConfigInfo getBaseConfig() {
     return baseConfig;
@@ -469,7 +469,7 @@ public class InstanceConfigInfo {
       com.google.spanner.admin.instance.v1.InstanceConfig proto, InstanceAdminClient client) {
     com.google.cloud.spanner.InstanceConfig.Builder builder =
         com.google.cloud.spanner.InstanceConfig.newBuilder(
-            client, InstanceConfigId.of(proto.getName()))
+                client, InstanceConfigId.of(proto.getName()))
             .setReconciling(proto.getReconciling())
             .setReplicas(
                 proto.getReplicasList().stream()
@@ -487,14 +487,14 @@ public class InstanceConfigInfo {
             .setConfigType(fromProtoConfigType(proto.getConfigType()));
 
     if (!proto.getBaseConfig().isEmpty()) {
-      builder.setBaseConfig(
-          newBuilder(InstanceConfigId.of(proto.getBaseConfig())).build());
+      builder.setBaseConfig(newBuilder(InstanceConfigId.of(proto.getBaseConfig())).build());
     }
 
     return builder.build();
   }
 
-  private static State fromProtoState(com.google.spanner.admin.instance.v1.InstanceConfig.State state) {
+  private static State fromProtoState(
+      com.google.spanner.admin.instance.v1.InstanceConfig.State state) {
     switch (state) {
       case STATE_UNSPECIFIED:
         return State.STATE_UNSPECIFIED;
@@ -507,7 +507,8 @@ public class InstanceConfigInfo {
     }
   }
 
-  private static Type fromProtoConfigType(com.google.spanner.admin.instance.v1.InstanceConfig.Type type) {
+  private static Type fromProtoConfigType(
+      com.google.spanner.admin.instance.v1.InstanceConfig.Type type) {
     switch (type) {
       case TYPE_UNSPECIFIED:
         return Type.TYPE_UNSPECIFIED;

@@ -48,8 +48,6 @@ import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,8 +64,7 @@ public class InstanceAdminClientImplTest {
   private static final String CONFIG_ID = "my-config";
   private static final String CONFIG_NAME = "projects/my-project/instanceConfigs/my-config";
   private static final String CONFIG_NAME2 = "projects/my-project/instanceConfigs/my-config2";
-  private static final String BASE_CONFIG =
-      "projects/my-project/instanceConfigs/my-base-config";
+  private static final String BASE_CONFIG = "projects/my-project/instanceConfigs/my-base-config";
 
   @Mock SpannerRpc rpc;
   @Mock DatabaseAdminClient dbClient;
@@ -171,24 +168,20 @@ public class InstanceAdminClientImplTest {
   }
 
   public Operation getInstanceConfigOperation(String instanceConfigId, Integer operationId) {
-    InstanceConfig instanceConfig = com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder()
-        .setName(instanceConfigId)
-        .setBaseConfig(BASE_CONFIG)
-        .addAllReplicas(getAllReplicas())
-        .build();
+    InstanceConfig instanceConfig =
+        com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder()
+            .setName(instanceConfigId)
+            .setBaseConfig(BASE_CONFIG)
+            .addAllReplicas(getAllReplicas())
+            .build();
 
     CreateInstanceConfigMetadata metadata =
-        CreateInstanceConfigMetadata
-            .newBuilder()
-            .setInstanceConfig(instanceConfig).build();
+        CreateInstanceConfigMetadata.newBuilder().setInstanceConfig(instanceConfig).build();
 
     final String operationName =
         String.format(
             "projects/%s/instanceConfigs/%s/operations/%d",
-            PROJECT_ID,
-            instanceConfigId,
-            operationId
-        );
+            PROJECT_ID, instanceConfigId, operationId);
     return com.google.longrunning.Operation.newBuilder()
         .setMetadata(Any.pack(metadata))
         .setResponse(Any.pack(instanceConfig))
@@ -203,14 +196,9 @@ public class InstanceAdminClientImplTest {
     Operation operation1 = getInstanceConfigOperation("custom-instance-config-1", 1);
     Operation operation2 = getInstanceConfigOperation("custom-instance-config-2", 2);
     when(rpc.listInstanceConfigOperations(PROJECT_ID, 1, null, null))
-        .thenReturn(
-            new Paginated<>(
-                ImmutableList.of(operation1),
-                nextToken));
+        .thenReturn(new Paginated<>(ImmutableList.of(operation1), nextToken));
     when(rpc.listInstanceConfigOperations(PROJECT_ID, 1, null, nextToken))
-        .thenReturn(
-            new Paginated<>(
-                ImmutableList.of(operation2), ""));
+        .thenReturn(new Paginated<>(ImmutableList.of(operation2), ""));
     List<Operation> operations =
         Lists.newArrayList(client.listInstanceConfigOperations(Options.pageSize(1)).iterateAll());
     assertThat(operations.get(0).getName()).isEqualTo("custom-instance-config-1");
