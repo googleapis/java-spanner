@@ -24,6 +24,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -35,6 +36,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import com.google.cloud.spanner.connection.SqlScriptVerifier;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -179,13 +181,15 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
 
   @Test
   public void test06_AnalyzeUpdate() {
+    assumeFalse(
+        "Emulator does not support PLAN and PROFILE", EmulatorSpannerHelper.isUsingEmulator());
+
     // PLAN should not execute the update.
     try (ITConnection connection = createConnection()) {
       ResultSetStats resultSetStats =
           connection.analyzeUpdate(
               Statement.of("UPDATE TEST SET NAME='test_updated' WHERE ID > 0"),
               QueryAnalyzeMode.PLAN);
-      connection.commit();
 
       assertNotNull(resultSetStats);
       assertTrue(resultSetStats.hasQueryPlan());
@@ -198,7 +202,6 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
           connection.analyzeUpdate(
               Statement.of("UPDATE TEST SET NAME='test_updated' WHERE ID > 0"),
               QueryAnalyzeMode.PROFILE);
-      connection.commit();
 
       // Executing the update in PROFILE mode should execute the update
       assertNotNull(resultSetStats);
