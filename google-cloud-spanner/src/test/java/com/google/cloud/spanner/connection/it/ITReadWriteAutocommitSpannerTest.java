@@ -20,6 +20,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -193,8 +194,12 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
 
       assertNotNull(resultSetStats);
       assertTrue(resultSetStats.hasQueryPlan());
-      assertFalse(resultSetStats.hasRowCountExact());
       assertFalse(resultSetStats.hasQueryStats());
+
+      // The backend indicates that the statement would return an exact row count, but as the
+      // statement is not executed, the actual row count is zero.
+      assertTrue(resultSetStats.hasRowCountExact());
+      assertEquals(0, resultSetStats.getRowCountExact());
     }
 
     try (ITConnection connection = createConnection()) {
