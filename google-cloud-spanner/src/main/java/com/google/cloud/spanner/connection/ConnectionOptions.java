@@ -588,7 +588,7 @@ public class ConnectionOptions {
     // Using credentials on a plain text connection is not allowed, so if the user has not specified
     // any credentials and is using a plain text connection, we should not try to get the
     // credentials from the environment, but default to NoCredentials.
-    if (builder.credentials == null
+    if (this.fixedCredentials == null
         && this.credentialsUrl == null
         && this.encodedCredentials == null
         && this.credentialsProvider == null
