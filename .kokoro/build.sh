@@ -23,6 +23,17 @@ cd ${scriptDir}/..
 # include common functions
 source ${scriptDir}/common.sh
 
+function setJava() {
+  export JAVA_HOME=$1
+  export PATH=${JAVA_HOME}/bin:$PATH
+}
+
+# units-java8 uses both JDK 11 and JDK 8. GraalVM dependencies require JDK 11 to
+# compile the classes touching GraalVM classes.
+if [ ! -z "${JAVA11_HOME}" ]; then
+  setJava "${JAVA11_HOME}"
+fi
+
 # Print out Maven & Java version
 mvn -version
 echo ${JOB_TYPE}
@@ -40,6 +51,13 @@ retry_with_backoff 3 10 \
 # if GOOGLE_APPLICATION_CREDENTIALS is specified as a relative path, prepend Kokoro root directory onto it
 if [[ ! -z "${GOOGLE_APPLICATION_CREDENTIALS}" && "${GOOGLE_APPLICATION_CREDENTIALS}" != /* ]]; then
     export GOOGLE_APPLICATION_CREDENTIALS=$(realpath ${KOKORO_GFILE_DIR}/${GOOGLE_APPLICATION_CREDENTIALS})
+fi
+
+# units-java8 uses both JDK 11 and JDK 8. We ensure the generated class files
+# are compatible with Java 8 when running tests.
+if [ ! -z "${JAVA8_HOME}" ]; then
+  setJava "${JAVA8_HOME}"
+  mvn -version
 fi
 
 RETURN_CODE=0
