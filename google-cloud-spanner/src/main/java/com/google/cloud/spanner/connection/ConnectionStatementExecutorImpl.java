@@ -542,7 +542,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     if(rs.getStats() != null && rs.getStats().getQueryPlan() != null){
       return getStatementResultFromQueryPlan(rs.getStats().getQueryPlan(), qam.equals(QueryAnalyzeMode.PROFILE));
     }
-    throw SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, String.format("Couldn't fetch stats for %s",sql));
+    throw SpannerExceptionFactory.newSpannerException(ErrorCode.FAILED_PRECONDITION, String.format("Couldn't fetch stats for %s",sql));
 
   }
 
@@ -569,8 +569,8 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
       String arr[] = sql.substring(1, index).split("\\s*,\\s*");
       boolean isAnalyse = false, startAfterIndex = false;
-      for(String probableOptions : arr){
-        String arr2[] = probableOptions.split("\\s+");
+      for(String option : arr){
+        String arr2[] = option.split("\\s+");
         if(arr2.length >= 3){
           isAnalyse = false;
           break;
