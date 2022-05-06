@@ -545,7 +545,6 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   * The only additional option that is supported is ANALYZE. The method will throw a SpannerException
   * if it is invoked with a statement that includes any other options.
   */
-
   @Override
   public StatementResult statementExplain(String sql) {
     if(sql == null){
