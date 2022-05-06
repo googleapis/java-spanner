@@ -539,11 +539,11 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   /*
-  * This method supports the EXPLAIN feature with ANALYSE option only.
-  * Any option other than ANALYSE is not supported currently.
-  * If the statement has combination of analyse with any other option
-  * like "explain (analyse, costs) select * from table"
-  * it will throw exception .
+  * This method executes the given SQL string in either PLAN or PROFILE mode and returns
+  * the query plan as a ResultSet containing a single String column with the query plan nodes.
+  *
+  * The only additional option that is supported is ANALYZE. The method will throw a SpannerException
+  * if it is invoked with a statement that includes any other options.
   */
 
   @Override
