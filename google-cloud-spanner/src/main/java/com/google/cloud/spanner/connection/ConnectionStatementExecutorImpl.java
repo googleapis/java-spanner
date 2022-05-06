@@ -555,19 +555,19 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     if(sql.charAt(0) == '('){
       int index = sql.indexOf(')');
 
-      String arr[] = sql.substring(1, index).split("\\s*,\\s*");
+      String options[] = sql.substring(1, index).split("\\s*,\\s*");
       boolean isAnalyse = false, startAfterIndex = false;
-      for(String option : arr){
-        String arr2[] = option.split("\\s+");
-        if(arr2.length >= 3){
+      for(String option : options){
+        String optionExpression[] = option.split("\\s+");
+        if(optionExpression.length >= 3){
           isAnalyse = false;
           break;
         }
-        else if(ClientSideStatementExplainExecutor.EXPLAIN_OPTIONS.contains(arr2[0].toLowerCase())){
+        else if(ClientSideStatementExplainExecutor.EXPLAIN_OPTIONS.contains(optionExpression[0].toLowerCase())){
           throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", arr2[0]));
+              ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", optionExpression[0]));
         }
-        else if(arr2[0].equalsIgnoreCase("analyse") || arr2[0].equalsIgnoreCase("analyze")){
+        else if(optionExpression[0].equalsIgnoreCase("analyse") || optionExpression[0].equalsIgnoreCase("analyze")){
           isAnalyse = true;
         }
         else{
@@ -575,12 +575,12 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
           break;
         }
 
-        if(arr2.length == 2){
-          if(arr2[1].equalsIgnoreCase("false") || arr2[1].equalsIgnoreCase("0") || arr2[1].equalsIgnoreCase("off")){
+        if(optionExpression.length == 2){
+          if(optionExpression[1].equalsIgnoreCase("false") || optionExpression[1].equalsIgnoreCase("0") || optionExpression[1].equalsIgnoreCase("off")){
             isAnalyse = false;
             startAfterIndex = true;
           }
-          else if(!(arr2[1].equalsIgnoreCase("true") || arr2[1].equalsIgnoreCase("1") || arr2[1].equalsIgnoreCase("on"))){
+          else if(!(optionExpression[1].equalsIgnoreCase("true") || optionExpression[1].equalsIgnoreCase("1") || optionExpression[1].equalsIgnoreCase("on"))){
             isAnalyse = false;
             break;
           }
