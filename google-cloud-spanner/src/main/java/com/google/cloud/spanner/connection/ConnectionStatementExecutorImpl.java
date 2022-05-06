@@ -494,7 +494,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
     for(PlanNode planNode : queryPlan.getPlanNodesList()){
 
-      String planNodeDescription = "";
+      String planNodeDescription = planNode.getDisplayName();
       String executionStats = "";
       if(!planNode.getMetadata().toString().equalsIgnoreCase("")){
         planNodeDescription = processQueryPlan(planNode);
