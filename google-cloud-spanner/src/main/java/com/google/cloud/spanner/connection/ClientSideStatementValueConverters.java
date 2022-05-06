@@ -344,7 +344,6 @@ class ClientSideStatementValueConverters {
   }
 
   static class ExplainCommandConverter implements ClientSideStatementValueConverter<String> {
-
     @Override
     public Class<String> getParameterClass() {
       return String.class;
