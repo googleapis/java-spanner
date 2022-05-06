@@ -80,6 +80,7 @@ import com.google.spanner.v1.QueryPlan;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -452,14 +453,16 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   private String processQueryPlan(PlanNode planNode){
-    String planNodeDescription = planNode.getDisplayName();
-    planNodeDescription += " : ";
+
+    String planNodeDescription = " : { ";
     com.google.protobuf.Struct metadata = planNode.getMetadata();
 
     for(String key : metadata.getFieldsMap().keySet()){
       planNodeDescription += key + " : " + metadata.getFieldsMap().get(key).getStringValue() + " , ";
     }
     planNodeDescription = planNodeDescription.substring(0, planNodeDescription.length()-3);
+    planNodeDescription += " }";
+
     return planNodeDescription;
   }
 
@@ -485,41 +488,47 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   }
 
-  private StatementResult getStatementResultFromQueryPlan(QueryPlan queryPlan){
+  private StatementResult getStatementResultFromQueryPlan(QueryPlan queryPlan, boolean isAnalyse){
 
-    if(queryPlan == null) return null;
-
-    ArrayList<Struct> queryPlanlist = new ArrayList<>();
-    ArrayList<Struct> executionStatsList = new ArrayList<>();
-
+    ArrayList<Struct> list = new ArrayList<>();
     for(PlanNode planNode : queryPlan.getPlanNodesList()){
 
       String planNodeDescription = planNode.getDisplayName();
       String executionStats = "";
+
       if(!planNode.getMetadata().toString().equalsIgnoreCase("")){
-        planNodeDescription = processQueryPlan(planNode);
+        planNodeDescription += processQueryPlan(planNode);
       }
 
       if(!planNode.getShortRepresentation().toString().equalsIgnoreCase("")){
         planNodeDescription += " : " + planNode.getShortRepresentation().getDescription();
-
       }
 
-      if(!planNode.getExecutionStats().toString().equals("")){
+      if(isAnalyse && !planNode.getExecutionStats().toString().equals("")){
         executionStats = processExecutionStats(planNode);
       }
 
-      queryPlanlist.add(Struct.newBuilder().set("QUERY PLAN").to(planNodeDescription).build());
-      if(!executionStats.equals("") || executionStatsList.size() > 0){
-        executionStatsList.add(Struct.newBuilder().set("EXECUTION STATS").to(executionStats).build());
-        System.out.println("Execution Stats:"+executionStats+"?");
+      if(isAnalyse){
+        list.add(Struct.newBuilder().set("QUERY PLAN").to(planNodeDescription).set("EXECUTION STATS").to(executionStats).build());
+      }
+      else{
+        list.add(Struct.newBuilder().set("QUERY PLAN").to(planNodeDescription).build());
       }
     }
 
-    ResultSet rs = ResultSets.forRows(
-        Type.struct(StructField.of("QUERY PLAN", Type.string()))
-        , queryPlanlist);
-
+    ResultSet rs;
+    if(isAnalyse) {
+      rs = ResultSets.forRows(
+          Type.struct(
+              StructField.of("QUERY PLAN", Type.string()),
+              StructField.of("EXECUTION STATS", Type.string())),
+          list);
+    }
+    else{
+      rs = ResultSets.forRows(
+          Type.struct(StructField.of("QUERY PLAN", Type.string())),
+          list);
+    }
     return StatementResultImpl.of(rs);
   }
 
@@ -530,8 +539,8 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
       continue;
     }
 
-    if(rs.getStats() != null){
-      return getStatementResultFromQueryPlan(rs.getStats().getQueryPlan());
+    if(rs.getStats() != null && rs.getStats().getQueryPlan() != null){
+      return getStatementResultFromQueryPlan(rs.getStats().getQueryPlan(), qam.equals(QueryAnalyzeMode.PROFILE));
     }
     throw SpannerExceptionFactory.newSpannerException(ErrorCode.UNKNOWN, String.format("Couldn't fetch stats for %s",sql));
 
