@@ -569,7 +569,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
       String arr[] = sql.substring(1, index).split("\\s*,\\s*");
       boolean isAnalyse = false, startAfterIndex = false;
-      for(String probableOptions : arr){
+      for(String option : arr){
         String arr2[] = probableOptions.split("\\s+");
         if(arr2.length >= 3){
           isAnalyse = false;
