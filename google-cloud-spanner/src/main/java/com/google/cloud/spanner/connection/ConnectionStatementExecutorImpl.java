@@ -468,13 +468,13 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     for(String key : planNode.getExecutionStats().getFieldsMap().keySet()){
       executionStats += key + " : { ";
 
-      Map value = planNode.getExecutionStats().getFieldsMap().get(key).getStructValue().getFieldsMap();
+      com.google.protobuf.Struct value = planNode.getExecutionStats().getFieldsMap().get(key).getStructValue();
 
-      for(Object newKey : value.keySet()){
+      for(String newKey : value.getFieldsMap().keySet()){
 
-        String newValue = value.get(newKey).toString().trim();
+        String newValue = value.getFieldsMap().get(newKey).getStringValue();
 
-        executionStats += newKey.toString() + " : " + newValue.substring(15, newValue.length()-1) + " , ";
+        executionStats += newKey + " : " + newValue + " , ";
       }
       executionStats = executionStats.substring(0, executionStats.length()-3);
       executionStats += " } , ";
