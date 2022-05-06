@@ -352,10 +352,10 @@ class ClientSideStatementValueConverters {
 
     @Override
     public String convert(String value) {
-
-      if(value.length() <= 7) return null;
+      if(value.length() <= 7) {
+        return null;
+      }
       return value.substring(7).trim();
-
     }
   }
 }

@@ -453,7 +453,6 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   private String processQueryPlan(PlanNode planNode){
-
     String planNodeDescription = " : { ";
     com.google.protobuf.Struct metadata = planNode.getMetadata();
 
@@ -472,11 +471,8 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
       executionStats += key + " : { ";
 
       com.google.protobuf.Struct value = planNode.getExecutionStats().getFieldsMap().get(key).getStructValue();
-
       for(String newKey : value.getFieldsMap().keySet()){
-
         String newValue = value.getFieldsMap().get(newKey).getStringValue();
-
         executionStats += newKey + " : " + newValue + " , ";
       }
       executionStats = executionStats.substring(0, executionStats.length()-3);
@@ -485,14 +481,11 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     executionStats = executionStats.substring(0, executionStats.length()-3);
 
     return executionStats;
-
   }
 
   private StatementResult getStatementResultFromQueryPlan(QueryPlan queryPlan, boolean isAnalyse){
-
     ArrayList<Struct> list = new ArrayList<>();
     for(PlanNode planNode : queryPlan.getPlanNodesList()){
-
       String planNodeDescription = planNode.getDisplayName();
       String executionStats = "";
 
@@ -543,7 +536,6 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
       return getStatementResultFromQueryPlan(rs.getStats().getQueryPlan(), qam.equals(QueryAnalyzeMode.PROFILE));
     }
     throw SpannerExceptionFactory.newSpannerException(ErrorCode.FAILED_PRECONDITION, String.format("Couldn't fetch stats for %s",sql));
-
   }
 
   /*
@@ -556,15 +548,12 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementExplain(String sql) {
-
     if(sql == null){
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INVALID_ARGUMENT, String.format("Invalid String with Explain"));
-
     }
 
     if(sql.charAt(0) == '('){
-
       int index = sql.indexOf(')');
 
       String arr[] = sql.substring(1, index).split("\\s*,\\s*");
@@ -597,9 +586,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
             break;
           }
         }
-
       }
-
       if(isAnalyse){
         return executeStatement(sql.substring(index+1), QueryAnalyzeMode.PROFILE);
       }
@@ -609,11 +596,9 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
       else{
         return executeStatement(sql, QueryAnalyzeMode.PLAN);
       }
-
     }
     else {
       String[] arr = sql.split("\\s+", 2);
-
       if (arr.length >= 2) {
         String option = arr[0].toLowerCase();
         String statementToBeExplained = arr[1];
