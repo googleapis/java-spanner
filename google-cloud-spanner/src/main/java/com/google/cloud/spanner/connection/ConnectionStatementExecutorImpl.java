@@ -568,7 +568,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
       int index = sql.indexOf(')');
 
       String arr[] = sql.substring(1, index).split("\\s*,\\s*");
-      boolean isAnalyse = false;
+      boolean isAnalyse = false, startAfterIndex = false;
       for(String probableOptions : arr){
         String arr2[] = probableOptions.split("\\s+");
         if(arr2.length >= 3){
@@ -588,10 +588,11 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         }
 
         if(arr2.length == 2){
-          if(arr2[1].equalsIgnoreCase("false")){
+          if(arr2[1].equalsIgnoreCase("false") || arr2[1].equalsIgnoreCase("0") || arr2[1].equalsIgnoreCase("off")){
             isAnalyse = false;
+            startAfterIndex = true;
           }
-          else if(!arr2[1].equalsIgnoreCase("true")){
+          else if(!(arr2[1].equalsIgnoreCase("true") || arr2[1].equalsIgnoreCase("1") || arr2[1].equalsIgnoreCase("on"))){
             isAnalyse = false;
             break;
           }
@@ -601,6 +602,9 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
       if(isAnalyse){
         return executeStatement(sql.substring(index+1), QueryAnalyzeMode.PROFILE);
+      }
+      else if(startAfterIndex){
+        return executeStatement(sql.substring(index+1), QueryAnalyzeMode.PLAN);
       }
       else{
         return executeStatement(sql, QueryAnalyzeMode.PLAN);
