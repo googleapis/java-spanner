@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2022 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package com.example.spanner;
 
-// [START spanner_async_query_to_list]
+// [START spanner_postgresql_async_query_to_list]
 import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.DatabaseClient;
@@ -31,10 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-/**
- * Example code for using Async query on Cloud Spanner and convert it to list.
- */
-class AsyncQueryToListAsyncExample {
+public class PgAsyncQueryToListAsyncExample {
   static class Album {
     final long singerId;
     final long albumId;
@@ -54,7 +51,7 @@ class AsyncQueryToListAsyncExample {
     String databaseId = "my-database";
 
     try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
+             SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
       asyncQueryToList(client);
@@ -67,9 +64,11 @@ class AsyncQueryToListAsyncExample {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     ApiFuture<? extends List<Album>> albums;
     try (AsyncResultSet resultSet =
-        client
-            .singleUse()
-            .executeQueryAsync(Statement.of("SELECT SingerId, AlbumId, AlbumTitle FROM Albums"))) {
+             client
+                 .singleUse()
+                 .executeQueryAsync(Statement.of("SELECT singerid as \"SingerId\", "
+                     + "albumid as \"AlbumId\", albumtitle as \"AlbumTitle\" "
+                     + "FROM Albums"))) {
       // Convert the result set to a list of Albums asynchronously.
       albums =
           resultSet.toListAsync(
@@ -88,4 +87,4 @@ class AsyncQueryToListAsyncExample {
     executor.shutdown();
   }
 }
-//[END spanner_async_query_to_list]
+//[END spanner_postgresql_async_query_to_list]

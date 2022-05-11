@@ -80,7 +80,7 @@ class CustomTimeoutAndRetrySettingsExample {
           .readWriteTransaction()
           .run(transaction -> {
             String sql =
-                "INSERT Singers (SingerId, FirstName, LastName)\n"
+                "INSERT INTO Singers (SingerId, FirstName, LastName)\n"
                     + "VALUES (20, 'George', 'Washington')";
             long rowCount = transaction.executeUpdate(Statement.of(sql));
             System.out.printf("%d record inserted.%n", rowCount);
