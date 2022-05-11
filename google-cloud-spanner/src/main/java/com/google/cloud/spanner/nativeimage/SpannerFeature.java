@@ -43,7 +43,6 @@ final class SpannerFeature implements Feature {
       "com.google.cloud.spanner.connection.AbstractStatementParser";
   private static final String STATEMENT_PARSER =
       "com.google.cloud.spanner.connection.SpannerStatementParser";
-  private static final String DIALECT = "com.google.cloud.spanner.Dialect";
 
   @Override
   public void beforeAnalysis(BeforeAnalysisAccess access) {
