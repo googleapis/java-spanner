@@ -350,15 +350,6 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Native Image dependencies-->
-    <dependency>
-      <groupId>org.graalvm.nativeimage</groupId>
-      <artifactId>svm</artifactId>
-      <version>${graalvm.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <!-- Native Image dependencies-->
-
   </dependencies>
 
   <profiles>

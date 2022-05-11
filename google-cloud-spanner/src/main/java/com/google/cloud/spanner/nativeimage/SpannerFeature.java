@@ -17,14 +17,9 @@
 package com.google.cloud.spanner.nativeimage;
 
 import com.google.api.gax.nativeimage.NativeImageUtils;
-import com.oracle.svm.core.annotate.AutomaticFeature;
-import com.oracle.svm.core.configure.ResourcesRegistry;
-import org.graalvm.nativeimage.ImageSingletons;
 import org.graalvm.nativeimage.hosted.Feature;
-import org.graalvm.nativeimage.impl.ConfigurationCondition;
 
 /** Registers Spanner library classes for reflection. */
-@AutomaticFeature
 final class SpannerFeature implements Feature {
 
   private static final String SPANNER_CLASS = "com.google.spanner.v1.SpannerGrpc";
@@ -99,20 +94,6 @@ final class SpannerFeature implements Feature {
           access, "com.google.spanner.admin.instance.v1.Instance");
       NativeImageUtils.registerClassForReflection(
           access, "com.google.spanner.admin.database.v1.RestoreInfo");
-
-      // Resources
-      ResourcesRegistry resourcesRegistry = ImageSingletons.lookup(ResourcesRegistry.class);
-      resourcesRegistry.addResources(
-          ConfigurationCondition.alwaysTrue(),
-          "\\Qcom/google/cloud/spanner/connection/ClientSideStatements.json\\E");
-      resourcesRegistry.addResources(
-          ConfigurationCondition.alwaysTrue(),
-          "\\Qcom/google/cloud/spanner/connection/PG_ClientSideStatements.json\\E");
-      resourcesRegistry.addResources(
-          "\\Qcom/google/cloud/spanner/spi/v1/grpc-gcp-apiconfig.json\\E");
-      resourcesRegistry.addResources(
-          ConfigurationCondition.alwaysTrue(),
-          "\\Qcom/google/cloud/spanner/connection/ITSqlScriptTest_TestQueryOptions.sql\\E");
     }
   }
 
