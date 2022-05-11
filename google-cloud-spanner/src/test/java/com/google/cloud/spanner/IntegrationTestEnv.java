@@ -180,7 +180,7 @@ public class IntegrationTestEnv extends ExternalResource {
     while (page != null) {
       for (Database db : page.iterateAll()) {
         try {
-          long timeDiff = db.getCreateTime().getSeconds() - currentTimestamp.getSeconds();
+          long timeDiff = currentTimestamp.getSeconds() - db.getCreateTime().getSeconds();
           // Delete all databases which are more than OLD_DB_THRESHOLD_SECS seconds
           // old.
           if ((db.getId().getDatabase().matches(TEST_DB_REGEX))
