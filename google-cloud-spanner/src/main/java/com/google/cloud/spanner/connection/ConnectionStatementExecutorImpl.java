@@ -538,6 +538,13 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     throw SpannerExceptionFactory.newSpannerException(ErrorCode.FAILED_PRECONDITION, String.format("Couldn't fetch stats for %s",sql));
   }
 
+  private String removeParenthesisAndTrim(String sql){
+    if(sql.charAt(0) == '('){
+      sql = sql.substring(1, sql.length()-1);
+    }
+    return sql.trim();
+  }
+
   /*
   * This method executes the given SQL string in either PLAN or PROFILE mode and returns
   * the query plan as a ResultSet containing a single String column with the query plan nodes.
@@ -558,7 +565,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
       String options[] = sql.substring(1, index).split("\\s*,\\s*");
       boolean isAnalyse = false, startAfterIndex = false;
       for(String option : options){
-        String optionExpression[] = option.split("\\s+");
+        String optionExpression[] = option.trim().split("\\s+");
         if(optionExpression.length >= 3){
           isAnalyse = false;
           break;
@@ -587,13 +594,15 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         }
       }
       if(isAnalyse){
-        return executeStatement(sql.substring(index+1), QueryAnalyzeMode.PROFILE);
+        String newSql = removeParenthesisAndTrim(sql.substring(index+1).trim());
+        return executeStatement(newSql, QueryAnalyzeMode.PROFILE);
       }
       else if(startAfterIndex){
-        return executeStatement(sql.substring(index+1), QueryAnalyzeMode.PLAN);
+        String newSql = removeParenthesisAndTrim(sql.substring(index+1).trim());
+        return executeStatement(newSql, QueryAnalyzeMode.PLAN);
       }
       else{
-        return executeStatement(sql, QueryAnalyzeMode.PLAN);
+        return executeStatement(removeParenthesisAndTrim(sql), QueryAnalyzeMode.PLAN);
       }
     }
     else {
@@ -606,7 +615,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", option));
         } else if (option.equals("analyze") || option.equals("analyse")) {
-          return executeStatement(statementToBeExplained, QueryAnalyzeMode.PROFILE);
+          return executeStatement(removeParenthesisAndTrim(statementToBeExplained), QueryAnalyzeMode.PROFILE);
         }
       }
       return executeStatement(sql, QueryAnalyzeMode.PLAN);

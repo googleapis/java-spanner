@@ -28,14 +28,9 @@ import static org.mockito.Mockito.when;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Dialect;
-import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
-import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.ExplainCommandConverter;
 import com.google.protobuf.Duration;
 import java.util.concurrent.TimeUnit;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -241,103 +236,5 @@ public class ConnectionStatementExecutorTest {
     subject.statementSetPgTransactionMode(PgTransactionMode.ISOLATION_LEVEL_SERIALIZABLE);
     verify(connection, never()).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
     verify(connection, never()).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
-  }
-
-  private void assertExplain(ResultSet rs){
-    int countRows = 0;
-    while (rs.next()) {
-      ++countRows;
-    }
-
-    Assert.assertEquals(1, countRows);
-    Assert.assertEquals(1, rs.getColumnCount());
-    Assert.assertEquals(1, rs.getColumnIndex("query plan"));
-    Assert.assertEquals(0, rs.getColumnIndex("random column"));
-
-  }
-
-  private void assertExplainAnalyse(ResultSet rs){
-    int countRows = 0;
-    while (rs.next()) {
-      ++countRows;
-    }
-
-    Assert.assertEquals(3, countRows);
-    Assert.assertEquals(1, rs.getColumnCount());
-    Assert.assertEquals(1, rs.getColumnIndex("query plan"));
-    Assert.assertEquals(0, rs.getColumnIndex("random column"));
-
-
-  }
-
-  @Test
-  public void testStatementExplain() {
-
-    ExplainCommandConverter converter = new ExplainCommandConverter();
-
-    /*Test for valid EXPLAIN*/
-    String sql = converter.convert("explain select * from table");
-
-    ResultSet expectedRs = mock(ResultSet.class);
-    when(expectedRs.next()).thenReturn(true, false);
-    when(expectedRs.getColumnCount()).thenReturn(1);
-    when(expectedRs.getColumnIndex("query plan")).thenReturn(1);
-
-    when(connection.analyzeQuery(any(), any())).thenReturn(expectedRs);
-
-    ResultSet rs = subject.statementExplain(sql).getResultSet();
-
-    assertExplain(rs);
-    /*Test for EXPLAIN ANALYSE*/
-    sql = converter.convert("explain analyse select * from table1");
-
-    when(expectedRs.next()).thenReturn(true, true, true, false);
-
-    rs = subject.statementExplain(sql).getResultSet();
-
-    assertExplainAnalyse(rs);
-
-    /*Test for Unsupported Option*/
-    String sql2 = converter.convert("explain verbose select * from table");
-    Assert.assertThrows(SpannerException.class, () -> subject.statementExplain(sql2));
-
-    /*Test for explain with extra spaces, tab, \n*/
-
-    sql = converter.convert("    select \n * from   \t table1");
-
-    rs = subject.statementExplain(sql).getResultSet();
-    when(expectedRs.next()).thenReturn(true, false);
-
-    assertExplain(rs);
-
-    /*Test for explain analyse with extra spaces, tab, \n*/
-
-    sql = converter.convert("   analyse \n select  * from  \t table1");
-
-    rs = subject.statementExplain(sql).getResultSet();
-    when(expectedRs.next()).thenReturn(true, true, true, false);
-
-    assertExplainAnalyse(rs);
-
-    /*Test for explain with two words*/
-
-    sql = converter.convert("explain foo");
-
-    rs = subject.statementExplain(sql).getResultSet();
-    when(expectedRs.next()).thenReturn(true, false);
-
-    assertExplain(rs);
-
-    /*Test for explain analyse with two words*/
-
-    sql = converter.convert("explain analyse foo");
-
-    rs = subject.statementExplain(sql).getResultSet();
-    when(expectedRs.next()).thenReturn(true, true, true, false);
-
-    assertExplainAnalyse(rs);
-
-
-
   }
 }
