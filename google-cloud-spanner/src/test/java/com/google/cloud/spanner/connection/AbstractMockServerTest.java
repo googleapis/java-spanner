@@ -173,7 +173,7 @@ public abstract class AbstractMockServerTest {
     try {
       SpannerPool.INSTANCE.checkAndCloseSpanners(
           CheckAndCloseSpannersMode.ERROR,
-          new ForceCloseSpannerFunction(100L, TimeUnit.MILLISECONDS));
+          new ForceCloseSpannerFunction(500L, TimeUnit.MILLISECONDS));
     } finally {
       Logger.getLogger(AbstractFuture.class.getName()).setUseParentHandlers(futureParentHandlers);
       Logger.getLogger(LogExceptionRunnable.class.getName())

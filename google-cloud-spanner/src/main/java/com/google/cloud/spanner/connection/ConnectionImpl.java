@@ -259,6 +259,11 @@ class ConnectionImpl implements Connection {
     setDefaultTransactionOptions();
   }
 
+  @VisibleForTesting
+  Spanner getSpanner() {
+    return this.spanner;
+  }
+
   private DdlClient createDdlClient() {
     return DdlClient.newBuilder()
         .setDatabaseAdminClient(spanner.getDatabaseAdminClient())
@@ -330,6 +335,11 @@ class ConnectionImpl implements Connection {
   @Override
   public Dialect getDialect() {
     return dbClient.getDialect();
+  }
+
+  @Override
+  public DatabaseClient getDatabaseClient() {
+    return dbClient;
   }
 
   @Override

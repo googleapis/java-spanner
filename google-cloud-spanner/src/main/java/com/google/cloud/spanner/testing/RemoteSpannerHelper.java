@@ -48,10 +48,10 @@ public class RemoteSpannerHelper {
   private final SpannerOptions options;
   private final Spanner client;
   private final InstanceId instanceId;
-  private static int dbSeq;
-  private static int dbPrefix = new Random().nextInt(Integer.MAX_VALUE);
+  private static final AtomicInteger dbSeq = new AtomicInteger();
+  private static final int dbPrefix = new Random().nextInt(Integer.MAX_VALUE);
   private static final AtomicInteger backupSeq = new AtomicInteger();
-  private static int backupPrefix = new Random().nextInt(Integer.MAX_VALUE);
+  private static final int backupPrefix = new Random().nextInt(Integer.MAX_VALUE);
   private final List<Database> dbs = new ArrayList<>();
 
   protected RemoteSpannerHelper(SpannerOptions options, InstanceId instanceId, Spanner client) {
@@ -104,7 +104,7 @@ public class RemoteSpannerHelper {
    * Returns a database id which is guaranteed to be unique within the context of this environment.
    */
   public String getUniqueDatabaseId() {
-    return String.format("testdb_%d_%04d", dbPrefix, dbSeq++);
+    return String.format("testdb_%d_%04d", dbPrefix, dbSeq.incrementAndGet());
   }
 
   /**
@@ -159,7 +159,7 @@ public class RemoteSpannerHelper {
     int numDropped = 0;
     for (Database db : dbs) {
       try {
-        logger.log(Level.FINE, "Dropping test database {0}", db.getId());
+        logger.log(Level.INFO, "Dropping test database {0}", db.getId());
         db.drop();
         ++numDropped;
       } catch (SpannerException e) {
