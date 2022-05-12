@@ -80,7 +80,6 @@ import com.google.spanner.v1.QueryPlan;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -452,160 +451,167 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     return resultSet("transaction_isolation", "serializable", SHOW_TRANSACTION_ISOLATION_LEVEL);
   }
 
-  private String processQueryPlan(PlanNode planNode){
+  private String processQueryPlan(PlanNode planNode) {
     String planNodeDescription = " : { ";
     com.google.protobuf.Struct metadata = planNode.getMetadata();
 
-    for(String key : metadata.getFieldsMap().keySet()){
-      planNodeDescription += key + " : " + metadata.getFieldsMap().get(key).getStringValue() + " , ";
+    for (String key : metadata.getFieldsMap().keySet()) {
+      planNodeDescription +=
+          key + " : " + metadata.getFieldsMap().get(key).getStringValue() + " , ";
     }
-    planNodeDescription = planNodeDescription.substring(0, planNodeDescription.length()-3);
+    planNodeDescription = planNodeDescription.substring(0, planNodeDescription.length() - 3);
     planNodeDescription += " }";
 
     return planNodeDescription;
   }
 
-  private String processExecutionStats(PlanNode planNode){
+  private String processExecutionStats(PlanNode planNode) {
     String executionStats = "";
-    for(String key : planNode.getExecutionStats().getFieldsMap().keySet()){
+    for (String key : planNode.getExecutionStats().getFieldsMap().keySet()) {
       executionStats += key + " : { ";
 
-      com.google.protobuf.Struct value = planNode.getExecutionStats().getFieldsMap().get(key).getStructValue();
-      for(String newKey : value.getFieldsMap().keySet()){
+      com.google.protobuf.Struct value =
+          planNode.getExecutionStats().getFieldsMap().get(key).getStructValue();
+      for (String newKey : value.getFieldsMap().keySet()) {
         String newValue = value.getFieldsMap().get(newKey).getStringValue();
         executionStats += newKey + " : " + newValue + " , ";
       }
-      executionStats = executionStats.substring(0, executionStats.length()-3);
+      executionStats = executionStats.substring(0, executionStats.length() - 3);
       executionStats += " } , ";
     }
-    executionStats = executionStats.substring(0, executionStats.length()-3);
+    executionStats = executionStats.substring(0, executionStats.length() - 3);
 
     return executionStats;
   }
 
-  private StatementResult getStatementResultFromQueryPlan(QueryPlan queryPlan, boolean isAnalyse){
+  private StatementResult getStatementResultFromQueryPlan(QueryPlan queryPlan, boolean isAnalyse) {
     ArrayList<Struct> list = new ArrayList<>();
-    for(PlanNode planNode : queryPlan.getPlanNodesList()){
+    for (PlanNode planNode : queryPlan.getPlanNodesList()) {
       String planNodeDescription = planNode.getDisplayName();
       String executionStats = "";
 
-      if(!planNode.getMetadata().toString().equalsIgnoreCase("")){
+      if (!planNode.getMetadata().toString().equalsIgnoreCase("")) {
         planNodeDescription += processQueryPlan(planNode);
       }
 
-      if(!planNode.getShortRepresentation().toString().equalsIgnoreCase("")){
+      if (!planNode.getShortRepresentation().toString().equalsIgnoreCase("")) {
         planNodeDescription += " : " + planNode.getShortRepresentation().getDescription();
       }
 
-      if(isAnalyse && !planNode.getExecutionStats().toString().equals("")){
+      if (isAnalyse && !planNode.getExecutionStats().toString().equals("")) {
         executionStats = processExecutionStats(planNode);
       }
 
-      if(isAnalyse){
-        list.add(Struct.newBuilder().set("QUERY PLAN").to(planNodeDescription).set("EXECUTION STATS").to(executionStats).build());
-      }
-      else{
+      if (isAnalyse) {
+        list.add(
+            Struct.newBuilder()
+                .set("QUERY PLAN")
+                .to(planNodeDescription)
+                .set("EXECUTION STATS")
+                .to(executionStats)
+                .build());
+      } else {
         list.add(Struct.newBuilder().set("QUERY PLAN").to(planNodeDescription).build());
       }
     }
 
     ResultSet rs;
-    if(isAnalyse) {
-      rs = ResultSets.forRows(
-          Type.struct(
-              StructField.of("QUERY PLAN", Type.string()),
-              StructField.of("EXECUTION STATS", Type.string())),
-          list);
-    }
-    else{
-      rs = ResultSets.forRows(
-          Type.struct(StructField.of("QUERY PLAN", Type.string())),
-          list);
+    if (isAnalyse) {
+      rs =
+          ResultSets.forRows(
+              Type.struct(
+                  StructField.of("QUERY PLAN", Type.string()),
+                  StructField.of("EXECUTION STATS", Type.string())),
+              list);
+    } else {
+      rs = ResultSets.forRows(Type.struct(StructField.of("QUERY PLAN", Type.string())), list);
     }
     return StatementResultImpl.of(rs);
   }
 
-  private StatementResult executeStatement(String sql, QueryAnalyzeMode qam){
+  private StatementResult executeStatement(String sql, QueryAnalyzeMode qam) {
     Statement statement = Statement.newBuilder(sql).build();
     ResultSet rs = getConnection().analyzeQuery(statement, qam);
-    while(rs.next()){
+    while (rs.next()) {
       continue;
     }
 
-    if(rs.getStats() != null && rs.getStats().getQueryPlan() != null){
-      return getStatementResultFromQueryPlan(rs.getStats().getQueryPlan(), qam.equals(QueryAnalyzeMode.PROFILE));
+    if (rs.getStats() != null && rs.getStats().getQueryPlan() != null) {
+      return getStatementResultFromQueryPlan(
+          rs.getStats().getQueryPlan(), qam.equals(QueryAnalyzeMode.PROFILE));
     }
-    throw SpannerExceptionFactory.newSpannerException(ErrorCode.FAILED_PRECONDITION, String.format("Couldn't fetch stats for %s",sql));
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.FAILED_PRECONDITION, String.format("Couldn't fetch stats for %s", sql));
   }
 
-  private String removeParenthesisAndTrim(String sql){
-    if(sql.charAt(0) == '('){
-      sql = sql.substring(1, sql.length()-1);
+  private String removeParenthesisAndTrim(String sql) {
+    if (sql.charAt(0) == '(') {
+      sql = sql.substring(1, sql.length() - 1);
     }
     return sql.trim();
   }
 
   /*
-  * This method executes the given SQL string in either PLAN or PROFILE mode and returns
-  * the query plan as a ResultSet containing a single String column with the query plan nodes.
-  *
-  * The only additional option that is supported is ANALYZE. The method will throw a SpannerException
-  * if it is invoked with a statement that includes any other options.
-  */
+   * This method executes the given SQL string in either PLAN or PROFILE mode and returns
+   * the query plan as a ResultSet containing a single String column with the query plan nodes.
+   *
+   * The only additional option that is supported is ANALYZE. The method will throw a SpannerException
+   * if it is invoked with a statement that includes any other options.
+   */
   @Override
   public StatementResult statementExplain(String sql) {
-    if(sql == null){
+    if (sql == null) {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INVALID_ARGUMENT, String.format("Invalid String with Explain"));
     }
 
-    if(sql.charAt(0) == '('){
+    if (sql.charAt(0) == '(') {
       int index = sql.indexOf(')');
 
       String options[] = sql.substring(1, index).split("\\s*,\\s*");
       boolean isAnalyse = false, startAfterIndex = false;
-      for(String option : options){
+      for (String option : options) {
         String optionExpression[] = option.trim().split("\\s+");
-        if(optionExpression.length >= 3){
+        if (optionExpression.length >= 3) {
           isAnalyse = false;
           break;
-        }
-        else if(ClientSideStatementExplainExecutor.EXPLAIN_OPTIONS.contains(optionExpression[0].toLowerCase())){
+        } else if (ClientSideStatementExplainExecutor.EXPLAIN_OPTIONS.contains(
+            optionExpression[0].toLowerCase())) {
           throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", optionExpression[0]));
-        }
-        else if(optionExpression[0].equalsIgnoreCase("analyse") || optionExpression[0].equalsIgnoreCase("analyze")){
+              ErrorCode.UNIMPLEMENTED,
+              String.format("%s is not implemented yet", optionExpression[0]));
+        } else if (optionExpression[0].equalsIgnoreCase("analyse")
+            || optionExpression[0].equalsIgnoreCase("analyze")) {
           isAnalyse = true;
-        }
-        else{
+        } else {
           isAnalyse = false;
           break;
         }
 
-        if(optionExpression.length == 2){
-          if(optionExpression[1].equalsIgnoreCase("false") || optionExpression[1].equalsIgnoreCase("0") || optionExpression[1].equalsIgnoreCase("off")){
+        if (optionExpression.length == 2) {
+          if (optionExpression[1].equalsIgnoreCase("false")
+              || optionExpression[1].equalsIgnoreCase("0")
+              || optionExpression[1].equalsIgnoreCase("off")) {
             isAnalyse = false;
             startAfterIndex = true;
-          }
-          else if(!(optionExpression[1].equalsIgnoreCase("true") || optionExpression[1].equalsIgnoreCase("1") || optionExpression[1].equalsIgnoreCase("on"))){
+          } else if (!(optionExpression[1].equalsIgnoreCase("true")
+              || optionExpression[1].equalsIgnoreCase("1")
+              || optionExpression[1].equalsIgnoreCase("on"))) {
             isAnalyse = false;
             break;
           }
         }
       }
-      if(isAnalyse){
-        String newSql = removeParenthesisAndTrim(sql.substring(index+1).trim());
+      if (isAnalyse) {
+        String newSql = removeParenthesisAndTrim(sql.substring(index + 1).trim());
         return executeStatement(newSql, QueryAnalyzeMode.PROFILE);
-      }
-      else if(startAfterIndex){
-        String newSql = removeParenthesisAndTrim(sql.substring(index+1).trim());
+      } else if (startAfterIndex) {
+        String newSql = removeParenthesisAndTrim(sql.substring(index + 1).trim());
         return executeStatement(newSql, QueryAnalyzeMode.PLAN);
-      }
-      else{
+      } else {
         return executeStatement(removeParenthesisAndTrim(sql), QueryAnalyzeMode.PLAN);
       }
-    }
-    else {
+    } else {
       String[] arr = sql.split("\\s+", 2);
       if (arr.length >= 2) {
         String option = arr[0].toLowerCase();
@@ -615,7 +621,8 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.UNIMPLEMENTED, String.format("%s is not implemented yet", option));
         } else if (option.equals("analyze") || option.equals("analyse")) {
-          return executeStatement(removeParenthesisAndTrim(statementToBeExplained), QueryAnalyzeMode.PROFILE);
+          return executeStatement(
+              removeParenthesisAndTrim(statementToBeExplained), QueryAnalyzeMode.PROFILE);
         }
       }
       return executeStatement(sql, QueryAnalyzeMode.PLAN);

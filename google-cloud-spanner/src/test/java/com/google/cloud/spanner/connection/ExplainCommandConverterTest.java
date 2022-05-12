@@ -36,23 +36,35 @@ public class ExplainCommandConverterTest {
   }
 
   @Test
-  public void testConvert() throws CompileException{
+  public void testConvert() throws CompileException {
     ExplainCommandConverter explainCommandConverter = new ExplainCommandConverter();
-    Assert.assertEquals("select * from table1",explainCommandConverter.convert("explain select * from table1"));
-    Assert.assertEquals("select    *   \t from table1",explainCommandConverter.convert("explain \tselect    *   \t from table1"));
-    Assert.assertEquals("select    *   \t from table1",explainCommandConverter.convert("explain \n select    *   \t from table1"));
-    Assert.assertEquals("select    *   \t from table1",explainCommandConverter.convert("explain \n \t select    *   \t from table1"));
-    Assert.assertEquals("foo",explainCommandConverter.convert("explain   foo"));
+    Assert.assertEquals(
+        "select * from table1", explainCommandConverter.convert("explain select * from table1"));
+    Assert.assertEquals(
+        "select    *   \t from table1",
+        explainCommandConverter.convert("explain \tselect    *   \t from table1"));
+    Assert.assertEquals(
+        "select    *   \t from table1",
+        explainCommandConverter.convert("explain \n select    *   \t from table1"));
+    Assert.assertEquals(
+        "select    *   \t from table1",
+        explainCommandConverter.convert("explain \n \t select    *   \t from table1"));
+    Assert.assertEquals("foo", explainCommandConverter.convert("explain   foo"));
     Assert.assertEquals(null, explainCommandConverter.convert("explain"));
 
-    Assert.assertEquals("analyse select * from table1",explainCommandConverter.convert("explain analyse select * from table1"));
-    Assert.assertEquals("analyse \tselect    *   \t from table1",explainCommandConverter.convert("explain \t analyse \tselect    *   \t from table1"));
-    Assert.assertEquals("analyse \n select    *   \t from table1",explainCommandConverter.convert("explain \n analyse \n select    *   \t from table1"));
-    Assert.assertEquals("analyse \t select    *   \t from table1",explainCommandConverter.convert("explain \n analyse \t select    *   \t from table1"));
-    Assert.assertEquals("analyse foo",explainCommandConverter.convert("explain  analyse foo"));
+    Assert.assertEquals(
+        "analyse select * from table1",
+        explainCommandConverter.convert("explain analyse select * from table1"));
+    Assert.assertEquals(
+        "analyse \tselect    *   \t from table1",
+        explainCommandConverter.convert("explain \t analyse \tselect    *   \t from table1"));
+    Assert.assertEquals(
+        "analyse \n select    *   \t from table1",
+        explainCommandConverter.convert("explain \n analyse \n select    *   \t from table1"));
+    Assert.assertEquals(
+        "analyse \t select    *   \t from table1",
+        explainCommandConverter.convert("explain \n analyse \t select    *   \t from table1"));
+    Assert.assertEquals("analyse foo", explainCommandConverter.convert("explain  analyse foo"));
     Assert.assertEquals("analyse", explainCommandConverter.convert("explain analyse"));
-
   }
-
-
 }

@@ -17,24 +17,20 @@
 package com.google.cloud.spanner.connection;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
+import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.protobuf.Descriptors.DescriptorValidationException;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
-import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.PlanNode;
 import com.google.spanner.v1.QueryPlan;
-import com.google.cloud.spanner.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.StructType;
@@ -58,19 +54,31 @@ public class ExplainTest extends AbstractMockServerTest {
   public static void setupAnalyzeResults() throws DescriptorValidationException {
     mockSpanner.putStatementResult(
         MockSpannerServiceImpl.StatementResult.detectDialectResult(Dialect.POSTGRESQL));
-    Struct metadata = Struct.newBuilder().putFields("subquery_cluster_node", Value.newBuilder().setStringValue("1").build()).build();
-    Struct cpuTime = Struct.newBuilder()
-        .putFields("unit", Value.newBuilder().setStringValue("msec").build())
-        .putFields("total_time", Value.newBuilder().setStringValue("10").build())
-        .build();
-    Struct executionStats = Struct.newBuilder().putFields("cpu_time", Value.newBuilder().setStructValue(cpuTime).build()).build();
-    ResultSetStats resultSetStats = ResultSetStats.newBuilder()
-        .setQueryPlan(
-            QueryPlan.newBuilder()
-                .addPlanNodes(
-                    PlanNode.newBuilder().setDisplayName("some-plan-node").setMetadata(metadata).setExecutionStats(executionStats).build())
-                .build())
-        .build();
+    Struct metadata =
+        Struct.newBuilder()
+            .putFields("subquery_cluster_node", Value.newBuilder().setStringValue("1").build())
+            .build();
+    Struct cpuTime =
+        Struct.newBuilder()
+            .putFields("unit", Value.newBuilder().setStringValue("msec").build())
+            .putFields("total_time", Value.newBuilder().setStringValue("10").build())
+            .build();
+    Struct executionStats =
+        Struct.newBuilder()
+            .putFields("cpu_time", Value.newBuilder().setStructValue(cpuTime).build())
+            .build();
+    ResultSetStats resultSetStats =
+        ResultSetStats.newBuilder()
+            .setQueryPlan(
+                QueryPlan.newBuilder()
+                    .addPlanNodes(
+                        PlanNode.newBuilder()
+                            .setDisplayName("some-plan-node")
+                            .setMetadata(metadata)
+                            .setExecutionStats(executionStats)
+                            .build())
+                    .build())
+            .build();
     mockSpanner.putStatementResult(
         MockSpannerServiceImpl.StatementResult.query(
             EXPLAIN_STATEMENT_QUERY,
@@ -93,8 +101,6 @@ public class ExplainTest extends AbstractMockServerTest {
                         .build())
                 .setStats(resultSetStats)
                 .build()));
-
-
   }
 
   @After
@@ -104,16 +110,15 @@ public class ExplainTest extends AbstractMockServerTest {
 
   public void testExplain(String statement) {
     mockSpanner.clearRequests();
-    final Statement explainStatement =
-        Statement.of(statement);
+    final Statement explainStatement = Statement.of(statement);
 
     try (Connection connection = createConnection()) {
 
-      try(ResultSet resultSet = connection.execute(explainStatement).getResultSet()) {
+      try (ResultSet resultSet = connection.execute(explainStatement).getResultSet()) {
         int count = 0;
 
-        while(resultSet.next()){
-          if(count == 1){
+        while (resultSet.next()) {
+          if (count == 1) {
             Assert.assertEquals(true, false);
           }
 
@@ -125,7 +130,6 @@ public class ExplainTest extends AbstractMockServerTest {
           assertNotNull(row.getString("QUERY PLAN"));
           String expectedQueryPlan = "some-plan-node : { subquery_cluster_node : 1 }";
           Assert.assertEquals(expectedQueryPlan, row.getString("QUERY PLAN"));
-
         }
       }
     }
@@ -137,17 +141,16 @@ public class ExplainTest extends AbstractMockServerTest {
     assertEquals(QueryMode.PLAN, request.getQueryMode());
   }
 
-  public void testExplainAnalyze(String statement){
+  public void testExplainAnalyze(String statement) {
     mockSpanner.clearRequests();
-    final Statement explainAnalyseStatement =
-        Statement.of(statement);
+    final Statement explainAnalyseStatement = Statement.of(statement);
     try (Connection connection = createConnection()) {
 
-      try(ResultSet resultSet = connection.execute(explainAnalyseStatement).getResultSet()) {
+      try (ResultSet resultSet = connection.execute(explainAnalyseStatement).getResultSet()) {
         int count = 0;
 
-        while(resultSet.next()){
-          if(count == 1){
+        while (resultSet.next()) {
+          if (count == 1) {
             Assert.assertEquals(true, false);
           }
 
@@ -176,7 +179,7 @@ public class ExplainTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testValidExplain(){
+  public void testValidExplain() {
     String statement = "Explain " + EXPLAIN_STATEMENT_QUERY;
     testExplain(statement);
 
@@ -200,7 +203,7 @@ public class ExplainTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testValidExplainWithFalseAnalyse(){
+  public void testValidExplainWithFalseAnalyse() {
     String statement = "    explain (analyse false)      " + EXPLAIN_STATEMENT_QUERY;
     testExplain(statement);
 
@@ -216,21 +219,32 @@ public class ExplainTest extends AbstractMockServerTest {
     statement = "    explain (analyse off)  (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
     testExplain(statement);
 
-    statement = "    explain (analyse false, analyze true, analyse false, analyze false)      " + EXPLAIN_STATEMENT_QUERY;
+    statement =
+        "    explain (analyse false, analyze true, analyse false, analyze false)      "
+            + EXPLAIN_STATEMENT_QUERY;
     testExplain(statement);
 
-    statement = "    explain (   analyse off , analyse true , analyse 0  )  (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
+    statement =
+        "    explain (   analyse off , analyse true , analyse 0  )  (    "
+            + EXPLAIN_STATEMENT_QUERY
+            + "   ) ";
     testExplain(statement);
 
-    statement = "    explain (   analyse off , analyse 0 , analyse 0  )  (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
+    statement =
+        "    explain (   analyse off , analyse 0 , analyse 0  )  (    "
+            + EXPLAIN_STATEMENT_QUERY
+            + "   ) ";
     testExplain(statement);
 
-    statement = "    explain (   analyse off , analyse,   analyse 0 , analyse false  )  (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
+    statement =
+        "    explain (   analyse off , analyse,   analyse 0 , analyse false  )  (    "
+            + EXPLAIN_STATEMENT_QUERY
+            + "   ) ";
     testExplain(statement);
   }
 
   @Test
-  public void testValidExplainAnalyse(){
+  public void testValidExplainAnalyse() {
     String statement = "Explain analyse " + EXPLAIN_STATEMENT_QUERY;
     testExplainAnalyze(statement);
 
@@ -255,22 +269,29 @@ public class ExplainTest extends AbstractMockServerTest {
     statement = "    EXPLAIN(analyse)(    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
     testExplainAnalyze(statement);
 
-    statement = "    EXPLAIN(analyse , analyse false , analyse 1)(    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
+    statement =
+        "    EXPLAIN(analyse , analyse false , analyse 1)(    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
     testExplainAnalyze(statement);
 
-    statement = "    EXPLAIN(analyse , analyse false , analyse  )(    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
+    statement =
+        "    EXPLAIN(analyse , analyse false , analyse  )(    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
     testExplainAnalyze(statement);
 
-    statement = "    EXPLAIN(analyse off  , analyse false , analyse  )(    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
+    statement =
+        "    EXPLAIN(analyse off  , analyse false , analyse  )(    "
+            + EXPLAIN_STATEMENT_QUERY
+            + "   ) ";
     testExplainAnalyze(statement);
 
-    statement = "    EXPLAIN(analyse \n off  , analyse false , analyse  )(    " + EXPLAIN_STATEMENT_QUERY + " \t  ) ";
+    statement =
+        "    EXPLAIN(analyse \n off  , analyse false , analyse  )(    "
+            + EXPLAIN_STATEMENT_QUERY
+            + " \t  ) ";
     testExplainAnalyze(statement);
-
   }
 
   @Test
-  public void testInvalidExlain(){
+  public void testInvalidExlain() {
 
     String statement = " explain  verbose " + EXPLAIN_STATEMENT_QUERY;
     Assert.assertThrows(SpannerException.class, () -> testExplain(statement));
@@ -292,7 +313,5 @@ public class ExplainTest extends AbstractMockServerTest {
 
     String statement7 = " explain  (analyse true , verbose , costs )   " + EXPLAIN_STATEMENT_QUERY;
     Assert.assertThrows(SpannerException.class, () -> testExplain(statement7));
-
-
   }
 }
