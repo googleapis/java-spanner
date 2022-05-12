@@ -41,12 +41,12 @@ public class ITSpannerOptionsTest {
   private static Database db;
 
   @BeforeClass
-  public static void setUp() throws Exception {
+  public static void setUp() {
     db = env.getTestHelper().createTestDatabase();
   }
 
   @AfterClass
-  public static void tearDown() throws Exception {
+  public static void tearDown() {
     db.drop();
   }
 

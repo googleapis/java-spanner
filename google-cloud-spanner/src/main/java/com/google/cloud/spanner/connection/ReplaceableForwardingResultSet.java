@@ -25,6 +25,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
+import com.google.cloud.spanner.Value;
 import com.google.common.base.Preconditions;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
@@ -196,6 +197,18 @@ class ReplaceableForwardingResultSet implements ResultSet {
   }
 
   @Override
+  public String getJson(int columnIndex) {
+    checkClosed();
+    return delegate.getJson(columnIndex);
+  }
+
+  @Override
+  public String getJson(String columnName) {
+    checkClosed();
+    return delegate.getJson(columnName);
+  }
+
+  @Override
   public ByteArray getBytes(int columnIndex) {
     checkClosed();
     return delegate.getBytes(columnIndex);
@@ -229,6 +242,18 @@ class ReplaceableForwardingResultSet implements ResultSet {
   public Date getDate(String columnName) {
     checkClosed();
     return delegate.getDate(columnName);
+  }
+
+  @Override
+  public Value getValue(int columnIndex) {
+    checkClosed();
+    return delegate.getValue(columnIndex);
+  }
+
+  @Override
+  public Value getValue(String columnName) {
+    checkClosed();
+    return delegate.getValue(columnName);
   }
 
   @Override
@@ -325,6 +350,18 @@ class ReplaceableForwardingResultSet implements ResultSet {
   public List<String> getStringList(String columnName) {
     checkClosed();
     return delegate.getStringList(columnName);
+  }
+
+  @Override
+  public List<String> getJsonList(int columnIndex) {
+    checkClosed();
+    return delegate.getJsonList(columnIndex);
+  }
+
+  @Override
+  public List<String> getJsonList(String columnName) {
+    checkClosed();
+    return delegate.getJsonList(columnName);
   }
 
   @Override

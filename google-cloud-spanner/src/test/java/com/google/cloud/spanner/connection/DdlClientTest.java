@@ -16,9 +16,11 @@
 
 package com.google.cloud.spanner.connection;
 
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,6 +29,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.junit.Test;
@@ -53,17 +56,35 @@ public class DdlClientTest {
     @SuppressWarnings("unchecked")
     OperationFuture<Void, UpdateDatabaseDdlMetadata> operation = mock(OperationFuture.class);
     when(operation.get()).thenReturn(null);
-    when(client.updateDatabaseDdl(
-            eq(instanceId), eq(databaseId), anyListOf(String.class), isNull(String.class)))
+    when(client.updateDatabaseDdl(eq(instanceId), eq(databaseId), anyList(), isNull()))
         .thenReturn(operation);
     DdlClient subject = createSubject(client);
     String ddl = "CREATE TABLE FOO";
     subject.executeDdl(ddl);
-    verify(client).updateDatabaseDdl(instanceId, databaseId, Arrays.asList(ddl), null);
+    verify(client).updateDatabaseDdl(instanceId, databaseId, Collections.singletonList(ddl), null);
 
     subject = createSubject(client);
     List<String> ddlList = Arrays.asList("CREATE TABLE FOO", "DROP TABLE FOO");
     subject.executeDdl(ddlList);
     verify(client).updateDatabaseDdl(instanceId, databaseId, ddlList, null);
+  }
+
+  @Test
+  public void testIsCreateDatabase() {
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE foo"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE \"foo\""));
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE `foo`"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE\tfoo"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE\n foo"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE\t\n foo"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE DATABASE"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("CREATE\t \n DATABASE  foo"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("create\t \n DATABASE  foo"));
+    assertTrue(DdlClient.isCreateDatabaseStatement("create database foo"));
+
+    assertFalse(DdlClient.isCreateDatabaseStatement("CREATE VIEW foo"));
+    assertFalse(DdlClient.isCreateDatabaseStatement("CREATE DATABAS foo"));
+    assertFalse(DdlClient.isCreateDatabaseStatement("CREATE DATABASEfoo"));
+    assertFalse(DdlClient.isCreateDatabaseStatement("CREATE foo"));
   }
 }

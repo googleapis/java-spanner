@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,18 @@
  *
  * <p>Service Description: Cloud Spanner Database Admin API
  *
- * <p>The Cloud Spanner Database Admin API can be used to create, drop, and list databases. It also
- * enables updating the schema of pre-existing databases. It can be also used to create, delete and
- * list backups for a database and to restore from an existing backup.
+ * <p>The Cloud Spanner Database Admin API can be used to: &#42; create, drop, and list databases
+ * &#42; update the schema of pre-existing databases &#42; create, delete and list backups for a
+ * database &#42; restore a database from an existing backup
  *
  * <p>Sample for DatabaseAdminClient:
+ *
+ * <pre>{@code
+ * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+ *   DatabaseName name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+ *   Database response = databaseAdminClient.getDatabase(name);
+ * }
+ * }</pre>
  */
 @Generated("by gapic-generator-java")
 package com.google.cloud.spanner.admin.database.v1;

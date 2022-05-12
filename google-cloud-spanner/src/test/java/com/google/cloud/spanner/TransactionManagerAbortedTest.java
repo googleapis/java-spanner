@@ -27,16 +27,17 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.v1.SpannerClient;
 import com.google.cloud.spanner.v1.SpannerSettings;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Server;
-import io.grpc.Status;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -130,16 +131,20 @@ public class TransactionManagerAbortedTest {
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(
-        StatementResult.read("FOO", KeySet.all(), Arrays.asList("BAR"), READ_RESULTSET));
+        StatementResult.read(
+            "FOO", KeySet.all(), Collections.singletonList("BAR"), READ_RESULTSET));
     mockSpanner.putStatementResult(
         StatementResult.read(
-            "FOO", KeySet.singleKey(Key.of()), Arrays.asList("BAR"), READ_ROW_RESULTSET));
+            "FOO",
+            KeySet.singleKey(Key.of()),
+            Collections.singletonList("BAR"),
+            READ_ROW_RESULTSET));
     mockSpanner.putStatementResult(StatementResult.query(SELECT1AND2, SELECT1AND2_RESULTSET));
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
     mockSpanner.putStatementResult(
         StatementResult.exception(
             UPDATE_ABORTED_STATEMENT,
-            Status.ABORTED.withDescription("Transaction was aborted").asRuntimeException()));
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
 
     String uniqueName = InProcessServerBuilder.generateName();
     server =
@@ -199,7 +204,7 @@ public class TransactionManagerAbortedTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           manager.resetForRetry();
         }
       }
@@ -226,7 +231,7 @@ public class TransactionManagerAbortedTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetry();
         }
       }
@@ -253,7 +258,7 @@ public class TransactionManagerAbortedTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetry();
         }
       }
@@ -281,7 +286,7 @@ public class TransactionManagerAbortedTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetry();
         }
       }
@@ -313,7 +318,7 @@ public class TransactionManagerAbortedTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetry();
         }
       }
@@ -335,7 +340,7 @@ public class TransactionManagerAbortedTest {
           if (attempts == 1) {
             mockSpanner.abortNextTransaction();
           }
-          try (ResultSet rs = txn.read("FOO", KeySet.all(), Arrays.asList("BAR"))) {
+          try (ResultSet rs = txn.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
             int rows = 0;
             while (rs.next()) {
               rows++;
@@ -345,7 +350,7 @@ public class TransactionManagerAbortedTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetry();
         }
       }
@@ -368,7 +373,7 @@ public class TransactionManagerAbortedTest {
             mockSpanner.abortNextTransaction();
           }
           try (ResultSet rs =
-              txn.readUsingIndex("FOO", "INDEX", KeySet.all(), Arrays.asList("BAR"))) {
+              txn.readUsingIndex("FOO", "INDEX", KeySet.all(), Collections.singletonList("BAR"))) {
             int rows = 0;
             while (rs.next()) {
               rows++;
@@ -378,7 +383,7 @@ public class TransactionManagerAbortedTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetry();
         }
       }
@@ -400,12 +405,12 @@ public class TransactionManagerAbortedTest {
           if (attempts == 1) {
             mockSpanner.abortNextTransaction();
           }
-          Struct row = txn.readRow("FOO", Key.of(), Arrays.asList("BAR"));
+          Struct row = txn.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
           assertThat(row.getLong(0), is(equalTo(1L)));
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetry();
         }
       }
@@ -427,12 +432,13 @@ public class TransactionManagerAbortedTest {
           if (attempts == 1) {
             mockSpanner.abortNextTransaction();
           }
-          Struct row = txn.readRowUsingIndex("FOO", "INDEX", Key.of(), Arrays.asList("BAR"));
+          Struct row =
+              txn.readRowUsingIndex("FOO", "INDEX", Key.of(), Collections.singletonList("BAR"));
           assertThat(row.getLong(0), is(equalTo(1L)));
           manager.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetry();
         }
       }

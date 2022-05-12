@@ -18,7 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
@@ -35,8 +36,6 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 @RunWith(JUnit4.class)
 public class AutocommitDmlModeTest {
@@ -50,6 +49,7 @@ public class AutocommitDmlModeTest {
   @SuppressWarnings("unchecked")
   private ConnectionImpl createConnection(ConnectionOptions options) {
     dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     txContext = mock(TransactionContext.class);
     Spanner spanner = mock(Spanner.class);
     SpannerPool spannerPool = mock(SpannerPool.class);
@@ -60,13 +60,10 @@ public class AutocommitDmlModeTest {
     when(dbClient.readWriteTransaction()).thenReturn(txRunner);
     when(txRunner.run(any(TransactionCallable.class)))
         .thenAnswer(
-            new Answer<Long>() {
-              @Override
-              public Long answer(InvocationOnMock invocation) throws Throwable {
-                TransactionCallable<Long> callable =
-                    (TransactionCallable<Long>) invocation.getArguments()[0];
-                return callable.run(txContext);
-              }
+            invocation -> {
+              TransactionCallable<Long> callable =
+                  (TransactionCallable<Long>) invocation.getArguments()[0];
+              return callable.run(txContext);
             });
 
     TransactionManager txManager = mock(TransactionManager.class);

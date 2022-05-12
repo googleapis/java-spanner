@@ -18,9 +18,12 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,7 +32,9 @@ import com.google.api.core.ApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
@@ -46,9 +51,9 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionRunner;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
-import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.common.base.Preconditions;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ResultSetStats;
@@ -71,6 +76,7 @@ public class SingleUseTransactionTest {
   private static final String VALID_UPDATE = "UPDATE FOO SET BAR=1";
   private static final String INVALID_UPDATE = "UPDATE BAR SET FOO=1";
   private static final String SLOW_UPDATE = "UPDATE SLOW_TABLE SET FOO=1";
+  private static final String VALID_DDL = "CREATE TABLE FOO";
   private static final long VALID_UPDATE_COUNT = 99L;
 
   private final StatementExecutor executor = new StatementExecutor();
@@ -78,7 +84,7 @@ public class SingleUseTransactionTest {
   private enum CommitBehavior {
     SUCCEED,
     FAIL,
-    ABORT;
+    ABORT
   }
 
   /** Creates a {@link StatementTimeout} that will never timeout. */
@@ -97,7 +103,7 @@ public class SingleUseTransactionTest {
 
   private static class SimpleTransactionManager implements TransactionManager {
     private TransactionState state;
-    private Timestamp commitTimestamp;
+    private CommitResponse commitResponse;
     private TransactionContext txContext;
     private CommitBehavior commitBehavior;
 
@@ -116,7 +122,7 @@ public class SingleUseTransactionTest {
     public void commit() {
       switch (commitBehavior) {
         case SUCCEED:
-          commitTimestamp = Timestamp.now();
+          commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
           state = TransactionState.COMMITTED;
           break;
         case FAIL:
@@ -143,7 +149,12 @@ public class SingleUseTransactionTest {
 
     @Override
     public Timestamp getCommitTimestamp() {
-      return commitTimestamp;
+      return commitResponse.getCommitTimestamp();
+    }
+
+    @Override
+    public CommitResponse getCommitResponse() {
+      return commitResponse;
     }
 
     @Override
@@ -288,7 +299,7 @@ public class SingleUseTransactionTest {
           mock(OperationFuture.class);
       when(operation.get()).thenReturn(null);
       when(ddlClient.executeDdl(anyString())).thenCallRealMethod();
-      when(ddlClient.executeDdl(anyListOf(String.class))).thenReturn(operation);
+      when(ddlClient.executeDdl(anyList())).thenReturn(operation);
       return ddlClient;
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -355,18 +366,16 @@ public class SingleUseTransactionTest {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     com.google.cloud.spanner.ReadOnlyTransaction singleUse =
         new SimpleReadOnlyTransaction(staleness);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     when(dbClient.singleUseReadOnlyTransaction(staleness)).thenReturn(singleUse);
 
     final TransactionContext txContext = mock(TransactionContext.class);
     when(txContext.executeUpdate(Statement.of(VALID_UPDATE))).thenReturn(VALID_UPDATE_COUNT);
     when(txContext.executeUpdate(Statement.of(SLOW_UPDATE)))
         .thenAnswer(
-            new Answer<Long>() {
-              @Override
-              public Long answer(InvocationOnMock invocation) throws Throwable {
-                Thread.sleep(1000L);
-                return VALID_UPDATE_COUNT;
-              }
+            invocation -> {
+              Thread.sleep(1000L);
+              return VALID_UPDATE_COUNT;
             });
     when(txContext.executeUpdate(Statement.of(INVALID_UPDATE)))
         .thenThrow(
@@ -385,44 +394,49 @@ public class SingleUseTransactionTest {
             new Answer<TransactionRunner>() {
               @Override
               public TransactionRunner answer(InvocationOnMock invocation) {
-                TransactionRunner runner =
-                    new TransactionRunner() {
-                      private Timestamp commitTimestamp;
+                return new TransactionRunner() {
+                  private CommitResponse commitResponse;
 
-                      @Override
-                      public <T> T run(TransactionCallable<T> callable) {
-                        if (commitBehavior == CommitBehavior.SUCCEED) {
-                          T res;
-                          try {
-                            res = callable.run(txContext);
-                          } catch (Exception e) {
-                            throw SpannerExceptionFactory.newSpannerException(e);
-                          }
-                          this.commitTimestamp = Timestamp.now();
-                          return res;
-                        } else if (commitBehavior == CommitBehavior.FAIL) {
-                          throw SpannerExceptionFactory.newSpannerException(
-                              ErrorCode.UNKNOWN, "commit failed");
-                        } else {
-                          throw SpannerExceptionFactory.newSpannerException(
-                              ErrorCode.ABORTED, "commit aborted");
-                        }
+                  @Override
+                  public <T> T run(TransactionCallable<T> callable) {
+                    if (commitBehavior == CommitBehavior.SUCCEED) {
+                      T res;
+                      try {
+                        res = callable.run(txContext);
+                      } catch (Exception e) {
+                        throw SpannerExceptionFactory.newSpannerException(e);
                       }
+                      commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
+                      return res;
+                    } else if (commitBehavior == CommitBehavior.FAIL) {
+                      throw SpannerExceptionFactory.newSpannerException(
+                          ErrorCode.UNKNOWN, "commit failed");
+                    } else {
+                      throw SpannerExceptionFactory.newSpannerException(
+                          ErrorCode.ABORTED, "commit aborted");
+                    }
+                  }
 
-                      @Override
-                      public Timestamp getCommitTimestamp() {
-                        if (commitTimestamp == null) {
-                          throw new IllegalStateException("no commit timestamp");
-                        }
-                        return commitTimestamp;
-                      }
+                  @Override
+                  public Timestamp getCommitTimestamp() {
+                    if (commitResponse == null) {
+                      throw new IllegalStateException("no commit timestamp");
+                    }
+                    return commitResponse.getCommitTimestamp();
+                  }
 
-                      @Override
-                      public TransactionRunner allowNestedTransaction() {
-                        return this;
-                      }
-                    };
-                return runner;
+                  public CommitResponse getCommitResponse() {
+                    if (commitResponse == null) {
+                      throw new IllegalStateException("no commit response");
+                    }
+                    return commitResponse;
+                  }
+
+                  @Override
+                  public TransactionRunner allowNestedTransaction() {
+                    return this;
+                  }
+                };
               }
             });
 
@@ -523,6 +537,19 @@ public class SingleUseTransactionTest {
     SingleUseTransaction subject = createDdlSubject(ddlClient);
     get(subject.executeDdlAsync(ddl));
     verify(ddlClient).executeDdl(sql);
+  }
+
+  @Test
+  public void testExecuteCreateDatabase() {
+    String sql = "CREATE DATABASE FOO";
+    ParsedStatement ddl = createParsedDdl(sql);
+    DdlClient ddlClient = createDefaultMockDdlClient();
+    when(ddlClient.executeCreateDatabase(sql, Dialect.GOOGLE_STANDARD_SQL))
+        .thenReturn(mock(OperationFuture.class));
+
+    SingleUseTransaction singleUseTransaction = createDdlSubject(ddlClient);
+    get(singleUseTransaction.executeDdlAsync(ddl));
+    verify(ddlClient).executeCreateDatabase(sql, Dialect.GOOGLE_STANDARD_SQL);
   }
 
   @Test
@@ -680,6 +707,7 @@ public class SingleUseTransactionTest {
         get(subject.executeQueryAsync(createParsedQuery(VALID_QUERY), AnalyzeMode.NONE));
         fail("missing expected exception");
       } catch (IllegalStateException e) {
+        // Expected exception
       }
     }
 
@@ -693,6 +721,7 @@ public class SingleUseTransactionTest {
       get(subject.executeDdlAsync(ddl));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
+      // Expected exception
     }
 
     ParsedStatement update = createParsedUpdate(VALID_UPDATE);
@@ -704,6 +733,7 @@ public class SingleUseTransactionTest {
       get(subject.executeUpdateAsync(update));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
+      // Expected exception
     }
 
     subject = createSubject();
@@ -713,6 +743,7 @@ public class SingleUseTransactionTest {
       get(subject.writeAsync(Collections.singleton(Mutation.newInsertBuilder("FOO").build())));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
+      // Expected exception
     }
 
     subject = createSubject();
@@ -723,6 +754,44 @@ public class SingleUseTransactionTest {
       get(subject.writeAsync(Arrays.asList(mutation, mutation)));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
+      // Expected exception
     }
+  }
+
+  @Test
+  public void testGetCommitResponseAfterUpdate() {
+    ParsedStatement update = createParsedUpdate(VALID_UPDATE);
+    SingleUseTransaction transaction = createSubject();
+    get(transaction.executeUpdateAsync(update));
+    assertNotNull(transaction.getCommitResponse());
+    assertNotNull(transaction.getCommitResponseOrNull());
+  }
+
+  @Test
+  public void testGetCommitResponseAfterQuery() {
+    ParsedStatement query = createParsedQuery(VALID_QUERY);
+    SingleUseTransaction transaction = createSubject();
+    get(transaction.executeQueryAsync(query, AnalyzeMode.NONE));
+    try {
+      transaction.getCommitResponse();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
+    assertNull(transaction.getCommitResponseOrNull());
+  }
+
+  @Test
+  public void testGetCommitResponseAfterDdl() {
+    ParsedStatement ddl = createParsedDdl(VALID_DDL);
+    SingleUseTransaction transaction = createSubject();
+    get(transaction.executeDdlAsync(ddl));
+    try {
+      transaction.getCommitResponse();
+      fail("missing expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
+    assertNull(transaction.getCommitResponseOrNull());
   }
 }

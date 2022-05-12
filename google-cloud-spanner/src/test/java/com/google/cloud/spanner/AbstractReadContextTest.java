@@ -17,17 +17,23 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.RequestOptions;
+import com.google.spanner.v1.RequestOptions.Priority;
 import com.google.spanner.v1.TransactionSelector;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +52,12 @@ public class AbstractReadContextTest {
     List<Object[]> params = new ArrayList<>();
     params.add(new Object[] {QueryOptions.getDefaultInstance()});
     params.add(
-        new Object[] {QueryOptions.newBuilder().setOptimizerVersion("some-version").build()});
+        new Object[] {
+          QueryOptions.newBuilder()
+              .setOptimizerVersion("some-version")
+              .setOptimizerStatisticsPackage("some-package")
+              .build()
+        });
     return params;
   }
 
@@ -58,6 +69,14 @@ public class AbstractReadContextTest {
     }
   }
 
+  class TestReadContextWithTagBuilder
+      extends AbstractReadContext.Builder<TestReadContextWithTagBuilder, TestReadContextWithTag> {
+    @Override
+    TestReadContextWithTag build() {
+      return new TestReadContextWithTag(this);
+    }
+  }
+
   private final class TestReadContext extends AbstractReadContext {
     TestReadContext(TestReadContextBuilder builder) {
       super(builder);
@@ -66,6 +85,21 @@ public class AbstractReadContextTest {
     @Override
     TransactionSelector getTransactionSelector() {
       return TransactionSelector.getDefaultInstance();
+    }
+  }
+
+  private final class TestReadContextWithTag extends AbstractReadContext {
+    TestReadContextWithTag(TestReadContextWithTagBuilder builder) {
+      super(builder);
+    }
+
+    @Override
+    TransactionSelector getTransactionSelector() {
+      return TransactionSelector.getDefaultInstance();
+    }
+
+    String getTransactionTag() {
+      return "app=spanner,env=test";
     }
   }
 
@@ -90,7 +124,10 @@ public class AbstractReadContextTest {
     ExecuteSqlRequest request =
         context
             .getExecuteSqlRequestBuilder(
-                Statement.of("SELECT FOO FROM BAR"), QueryMode.NORMAL, Options.fromQueryOptions())
+                Statement.of("SELECT FOO FROM BAR"),
+                QueryMode.NORMAL,
+                Options.fromQueryOptions(),
+                true)
             .build();
     assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
     assertThat(request.getQueryOptions()).isEqualTo(defaultQueryOptions);
@@ -102,12 +139,103 @@ public class AbstractReadContextTest {
         context
             .getExecuteSqlRequestBuilder(
                 Statement.newBuilder("SELECT FOO FROM BAR")
-                    .withQueryOptions(QueryOptions.newBuilder().setOptimizerVersion("2.0").build())
+                    .withQueryOptions(
+                        QueryOptions.newBuilder()
+                            .setOptimizerVersion("2.0")
+                            .setOptimizerStatisticsPackage("custom-package")
+                            .build())
                     .build(),
                 QueryMode.NORMAL,
-                Options.fromQueryOptions())
+                Options.fromQueryOptions(),
+                true)
             .build();
     assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
     assertThat(request.getQueryOptions().getOptimizerVersion()).isEqualTo("2.0");
+    assertThat(request.getQueryOptions().getOptimizerStatisticsPackage())
+        .isEqualTo("custom-package");
+  }
+
+  @Test
+  public void testBuildRequestOptions() {
+    RequestOptions requestOptions = context.buildRequestOptions(Options.fromQueryOptions());
+    assertEquals(RequestOptions.Priority.PRIORITY_UNSPECIFIED, requestOptions.getPriority());
+  }
+
+  @Test
+  public void testBuildRequestOptionsWithPriority() {
+    RequestOptions requestOptionsHighPriority =
+        context.buildRequestOptions(Options.fromQueryOptions(Options.priority(RpcPriority.HIGH)));
+    assertEquals(RequestOptions.Priority.PRIORITY_HIGH, requestOptionsHighPriority.getPriority());
+
+    RequestOptions requestOptionsMediumPriority =
+        context.buildRequestOptions(Options.fromQueryOptions(Options.priority(RpcPriority.MEDIUM)));
+    assertEquals(
+        RequestOptions.Priority.PRIORITY_MEDIUM, requestOptionsMediumPriority.getPriority());
+
+    RequestOptions requestOptionsLowPriority =
+        context.buildRequestOptions(Options.fromQueryOptions(Options.priority(RpcPriority.LOW)));
+    assertEquals(RequestOptions.Priority.PRIORITY_LOW, requestOptionsLowPriority.getPriority());
+  }
+
+  @Test
+  public void testGetExecuteSqlRequestBuilderWithPriority() {
+    ExecuteSqlRequest.Builder request =
+        context.getExecuteSqlRequestBuilder(
+            Statement.of("SELECT * FROM FOO"),
+            QueryMode.NORMAL,
+            Options.fromQueryOptions(Options.priority(RpcPriority.MEDIUM)),
+            false);
+    assertEquals(Priority.PRIORITY_MEDIUM, request.getRequestOptions().getPriority());
+  }
+
+  @Test
+  public void testGetExecuteBatchDmlRequestBuilderWithPriority() {
+    ExecuteBatchDmlRequest.Builder request =
+        context.getExecuteBatchDmlRequestBuilder(
+            Collections.singleton(Statement.of("SELECT * FROM FOO")),
+            Options.fromQueryOptions(Options.priority(RpcPriority.LOW)));
+    assertEquals(Priority.PRIORITY_LOW, request.getRequestOptions().getPriority());
+  }
+
+  public void executeSqlRequestBuilderWithRequestOptions() {
+    ExecuteSqlRequest request =
+        context
+            .getExecuteSqlRequestBuilder(
+                Statement.newBuilder("SELECT FOO FROM BAR").build(),
+                QueryMode.NORMAL,
+                Options.fromUpdateOptions(Options.tag("app=spanner,env=test,action=query")),
+                false)
+            .build();
+    assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=query");
+    assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
+  }
+
+  @Test
+  public void executeSqlRequestBuilderWithRequestOptionsWithTxnTag() {
+    SessionImpl session = mock(SessionImpl.class);
+    when(session.getName()).thenReturn("session-1");
+    TestReadContextWithTagBuilder builder = new TestReadContextWithTagBuilder();
+    TestReadContextWithTag contextWithTag =
+        builder
+            .setSession(session)
+            .setRpc(mock(SpannerRpc.class))
+            .setDefaultQueryOptions(defaultQueryOptions)
+            .setExecutorProvider(mock(ExecutorProvider.class))
+            .build();
+
+    ExecuteSqlRequest request =
+        contextWithTag
+            .getExecuteSqlRequestBuilder(
+                Statement.newBuilder("SELECT FOO FROM BAR").build(),
+                QueryMode.NORMAL,
+                Options.fromUpdateOptions(Options.tag("app=spanner,env=test,action=query")),
+                false)
+            .build();
+    assertThat(request.getSql()).isEqualTo("SELECT FOO FROM BAR");
+    assertThat(request.getRequestOptions().getRequestTag())
+        .isEqualTo("app=spanner,env=test,action=query");
+    assertThat(request.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
   }
 }

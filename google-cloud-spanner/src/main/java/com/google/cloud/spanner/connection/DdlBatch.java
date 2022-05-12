@@ -16,21 +16,24 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.AbstractStatementParser.RUN_BATCH_STATEMENT;
+
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.Connection.InternalMetadataQuery;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
-import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
@@ -129,13 +132,9 @@ class DdlBatch extends AbstractBaseUnitOfWork {
           temp.remove(i);
           final QueryOption[] internalOptions = temp.toArray(new QueryOption[0]);
           Callable<ResultSet> callable =
-              new Callable<ResultSet>() {
-                @Override
-                public ResultSet call() throws Exception {
-                  return DirectExecuteResultSet.ofResultSet(
+              () ->
+                  DirectExecuteResultSet.ofResultSet(
                       dbClient.singleUse().executeQuery(statement.getStatement(), internalOptions));
-                }
-              };
           return executeStatementAsync(
               statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
         }
@@ -169,6 +168,17 @@ class DdlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
+  public CommitResponse getCommitResponse() {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.FAILED_PRECONDITION, "There is no commit response available for DDL batches.");
+  }
+
+  @Override
+  public CommitResponse getCommitResponseOrNull() {
+    return null;
+  }
+
+  @Override
   public ApiFuture<Void> executeDdlAsync(ParsedStatement ddl) {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED,
@@ -178,18 +188,22 @@ class DdlBatch extends AbstractBaseUnitOfWork {
         "Only DDL statements are allowed. \""
             + ddl.getSqlWithoutComments()
             + "\" is not a DDL-statement.");
+    Preconditions.checkArgument(
+        !DdlClient.isCreateDatabaseStatement(ddl.getSqlWithoutComments()),
+        "CREATE DATABASE is not supported in DDL batches.");
     statements.add(ddl.getSqlWithoutComments());
     return ApiFutures.immediateFuture(null);
   }
 
   @Override
-  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update) {
+  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing updates is not allowed for DDL batches.");
   }
 
   @Override
-  public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
+  public ApiFuture<long[]> executeBatchUpdateAsync(
+      Iterable<ParsedStatement> updates, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing batch updates is not allowed for DDL batches.");
   }
@@ -199,15 +213,6 @@ class DdlBatch extends AbstractBaseUnitOfWork {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Writing mutations is not allowed for DDL batches.");
   }
-
-  /**
-   * Create a {@link ParsedStatement} that we can use as input for the generic execute method when
-   * the {@link #runBatch()} method is executed. This method uses the generic execute method that
-   * allows statements to be cancelled and to timeout, which requires the input to be a {@link
-   * ParsedStatement}.
-   */
-  private static final ParsedStatement RUN_BATCH =
-      StatementParser.INSTANCE.parse(Statement.of("RUN BATCH"));
 
   @Override
   public ApiFuture<long[]> runBatchAsync() {
@@ -219,33 +224,30 @@ class DdlBatch extends AbstractBaseUnitOfWork {
     }
     // create a statement that can be passed in to the execute method
     Callable<long[]> callable =
-        new Callable<long[]>() {
-          @Override
-          public long[] call() throws Exception {
+        () -> {
+          try {
+            OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
+                ddlClient.executeDdl(statements);
             try {
-              OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
-                  ddlClient.executeDdl(statements);
-              try {
-                // Wait until the operation has finished.
-                getWithStatementTimeout(operation, RUN_BATCH);
-                long[] updateCounts = new long[statements.size()];
-                Arrays.fill(updateCounts, 1L);
-                state = UnitOfWorkState.RAN;
-                return updateCounts;
-              } catch (SpannerException e) {
-                long[] updateCounts = extractUpdateCounts(operation);
-                throw SpannerExceptionFactory.newSpannerBatchUpdateException(
-                    e.getErrorCode(), e.getMessage(), updateCounts);
-              }
-            } catch (Throwable t) {
-              state = UnitOfWorkState.RUN_FAILED;
-              throw t;
+              // Wait until the operation has finished.
+              getWithStatementTimeout(operation, RUN_BATCH_STATEMENT);
+              long[] updateCounts = new long[statements.size()];
+              Arrays.fill(updateCounts, 1L);
+              state = UnitOfWorkState.RAN;
+              return updateCounts;
+            } catch (SpannerException e) {
+              long[] updateCounts = extractUpdateCounts(operation);
+              throw SpannerExceptionFactory.newSpannerBatchUpdateException(
+                  e.getErrorCode(), e.getMessage(), updateCounts);
             }
+          } catch (Throwable t) {
+            state = UnitOfWorkState.RUN_FAILED;
+            throw t;
           }
         };
     this.state = UnitOfWorkState.RUNNING;
     return executeStatementAsync(
-        RUN_BATCH, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
+        RUN_BATCH_STATEMENT, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
   }
 
   long[] extractUpdateCounts(OperationFuture<Void, UpdateDatabaseDdlMetadata> operation) {

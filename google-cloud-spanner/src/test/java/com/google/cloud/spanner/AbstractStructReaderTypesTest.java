@@ -20,7 +20,7 @@ import static com.google.cloud.spanner.Type.StructField;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.junit.runners.Parameterized.Parameter;
 
 import com.google.cloud.ByteArray;
@@ -32,6 +32,7 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.junit.Before;
@@ -70,6 +71,11 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
+    protected String getJsonInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
     protected ByteArray getBytesInternal(int columnIndex) {
       return null;
     }
@@ -81,6 +87,11 @@ public class AbstractStructReaderTypesTest {
 
     @Override
     protected Date getDateInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected Value getValueInternal(int columnIndex) {
       return null;
     }
 
@@ -125,6 +136,11 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
+    protected List<String> getJsonListInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
     protected List<ByteArray> getBytesListInternal(int columnIndex) {
       return null;
     }
@@ -162,81 +178,139 @@ public class AbstractStructReaderTypesTest {
   public static Collection<Object[]> parameters() {
     return Arrays.asList(
         new Object[][] {
-          {Type.bool(), "getBooleanInternal", false, "getBoolean", null},
-          {Type.int64(), "getLongInternal", 123L, "getLong", null},
-          {Type.float64(), "getDoubleInternal", 2.0, "getDouble", null},
+          {
+            Type.bool(),
+            "getBooleanInternal",
+            false,
+            "getBoolean",
+            Collections.singletonList("getValue")
+          },
+          {Type.int64(), "getLongInternal", 123L, "getLong", Collections.singletonList("getValue")},
+          {
+            Type.float64(),
+            "getDoubleInternal",
+            2.0,
+            "getDouble",
+            Collections.singletonList("getValue")
+          },
           {
             Type.numeric(),
             "getBigDecimalInternal",
             BigDecimal.valueOf(21, 1),
             "getBigDecimal",
-            null
+            Collections.singletonList("getValue")
           },
-          {Type.string(), "getStringInternal", "a", "getString", null},
-          {Type.bytes(), "getBytesInternal", ByteArray.copyFrom(new byte[] {0}), "getBytes", null},
+          {
+            Type.pgNumeric(),
+            "getStringInternal",
+            "1.23",
+            "getString",
+            Collections.singletonList("getValue")
+          },
+          {
+            Type.string(),
+            "getStringInternal",
+            "a",
+            "getString",
+            Collections.singletonList("getValue")
+          },
+          {
+            Type.bytes(),
+            "getBytesInternal",
+            ByteArray.copyFrom(new byte[] {0}),
+            "getBytes",
+            Collections.singletonList("getValue")
+          },
+          {
+            Type.json(),
+            "getJsonInternal",
+            "{\"color\":\"red\",\"value\":\"#f00\"}",
+            "getJson",
+            Collections.singletonList("getValue")
+          },
           {
             Type.timestamp(),
             "getTimestampInternal",
             Timestamp.parseTimestamp("2015-09-15T00:00:00Z"),
             "getTimestamp",
-            null
+            Collections.singletonList("getValue")
           },
-          {Type.date(), "getDateInternal", Date.parseDate("2015-09-15"), "getDate", null},
+          {
+            Type.date(),
+            "getDateInternal",
+            Date.parseDate("2015-09-15"),
+            "getDate",
+            Collections.singletonList("getValue")
+          },
           {
             Type.array(Type.bool()),
             "getBooleanArrayInternal",
             new boolean[] {true, false},
             "getBooleanArray",
-            Arrays.asList("getBooleanList")
+            Arrays.asList("getBooleanList", "getValue")
           },
           {
             Type.array(Type.bool()),
             "getBooleanListInternal",
             Arrays.asList(false, true),
             "getBooleanList",
-            Arrays.asList("getBooleanArray")
+            Arrays.asList("getBooleanArray", "getValue")
           },
           {
             Type.array(Type.int64()),
             "getLongArrayInternal",
             new long[] {1, 2},
             "getLongArray",
-            Arrays.asList("getLongList")
+            Arrays.asList("getLongList", "getValue")
           },
           {
             Type.array(Type.int64()),
             "getLongListInternal",
             Arrays.asList(3L, 4L),
             "getLongList",
-            Arrays.asList("getLongArray")
+            Arrays.asList("getLongArray", "getValue")
           },
           {
             Type.array(Type.float64()),
             "getDoubleArrayInternal",
             new double[] {1.0, 2.0},
             "getDoubleArray",
-            Arrays.asList("getDoubleList")
+            Arrays.asList("getDoubleList", "getValue")
           },
           {
             Type.array(Type.float64()),
             "getDoubleListInternal",
             Arrays.asList(2.0, 4.0),
             "getDoubleList",
-            Arrays.asList("getDoubleArray")
+            Arrays.asList("getDoubleArray", "getValue")
           },
           {
             Type.array(Type.numeric()),
             "getBigDecimalListInternal",
             Arrays.asList(BigDecimal.valueOf(21, 1), BigDecimal.valueOf(41, 1)),
             "getBigDecimalList",
-            null
+            Collections.singletonList("getValue")
+          },
+          {
+            Type.array(Type.pgNumeric()),
+            "getStringListInternal",
+            Arrays.asList("1.23", "2.34"),
+            "getStringList",
+            Collections.singletonList("getValue")
           },
           {
             Type.array(Type.string()),
             "getStringListInternal",
             Arrays.asList("a", "b", "c"),
             "getStringList",
-            null
+            Collections.singletonList("getValue")
+          },
+          {
+            Type.array(Type.json()),
+            "getJsonListInternal",
+            Arrays.asList("{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"),
+            "getJsonList",
+            Collections.singletonList("getValue")
           },
           {
             Type.array(Type.bytes()),
@@ -244,7 +318,7 @@ public class AbstractStructReaderTypesTest {
             Arrays.asList(
                 ByteArray.copyFrom("a"), ByteArray.copyFrom("b"), ByteArray.copyFrom("c")),
             "getBytesList",
-            null
+            Collections.singletonList("getValue")
           },
           {
             Type.array(Type.timestamp()),
@@ -253,14 +327,14 @@ public class AbstractStructReaderTypesTest {
                 Timestamp.parseTimestamp("2015-09-15T00:00:00Z"),
                 Timestamp.parseTimestamp("2015-09-14T00:00:00Z")),
             "getTimestampList",
-            null,
+            Collections.singletonList("getValue")
           },
           {
             Type.array(Type.date()),
             "getDateListInternal",
             Arrays.asList(Date.parseDate("2015-09-15"), Date.parseDate("2015-09-14")),
             "getDateList",
-            null,
+            Collections.singletonList("getValue")
           },
           {
             Type.array(Type.struct(StructField.of("f1", Type.int64()))),
@@ -270,7 +344,7 @@ public class AbstractStructReaderTypesTest {
                 Struct.newBuilder().set("f1").to(2).build(),
                 Struct.newBuilder().set("f1").to(3).build()),
             "getStructList",
-            null
+            Collections.singletonList("getValue")
           }
         });
   }
@@ -372,22 +446,24 @@ public class AbstractStructReaderTypesTest {
         // Skip allowed getters.
         continue;
       }
-      try {
-        getterByIndex(method.getName(), columnIndex);
-        fail("Expected ISE for " + method);
-      } catch (IllegalStateException e) {
-        assertWithMessage("Exception for " + method).that(e.getMessage()).contains("was " + type);
-        assertWithMessage("Exception for " + method)
-            .that(e.getMessage())
-            .contains("Column " + columnIndex);
-      }
-      try {
-        getterByName(method.getName(), "F1");
-        fail("Expected ISE for " + method);
-      } catch (IllegalStateException e) {
-        assertWithMessage("Exception for " + method).that(e.getMessage()).contains("was " + type);
-        assertWithMessage("Exception for " + method).that(e.getMessage()).contains("Column F1");
-      }
+      IllegalStateException getterByIndexException =
+          assertThrows(
+              IllegalStateException.class, () -> getterByIndex(method.getName(), columnIndex));
+      assertWithMessage("Exception for " + method)
+          .that(getterByIndexException.getMessage())
+          .contains("was " + type);
+      assertWithMessage("Exception for " + method)
+          .that(getterByIndexException.getMessage())
+          .contains("Column " + columnIndex);
+
+      IllegalStateException getterByNameException =
+          assertThrows(IllegalStateException.class, () -> getterByName(method.getName(), "F1"));
+      assertWithMessage("Exception for " + method)
+          .that(getterByNameException.getMessage())
+          .contains("was " + type);
+      assertWithMessage("Exception for " + method)
+          .that(getterByNameException.getMessage())
+          .contains("Column F1");
     }
   }
 
@@ -395,23 +471,15 @@ public class AbstractStructReaderTypesTest {
   public void getterWhenNull() {
     Mockito.when(reader.getType()).thenReturn(Type.struct(StructField.of("F1", type)));
     Mockito.when(reader.isNull(0)).thenReturn(true);
-    try {
-      getterByIndex(0);
-      fail("Expected exception");
-    } catch (NullPointerException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    NullPointerException ex = assertThrows(NullPointerException.class, () -> getterByIndex(0));
+    assertNotNull(ex.getMessage());
   }
 
   @Test
   public void getterByNameWhenNull() {
     Mockito.when(reader.getType()).thenReturn(Type.struct(StructField.of("F1", type)));
     Mockito.when(reader.isNull(0)).thenReturn(true);
-    try {
-      getterByName("F1");
-      fail("Expected exception");
-    } catch (NullPointerException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    NullPointerException ex = assertThrows(NullPointerException.class, () -> getterByName("F1"));
+    assertNotNull(ex.getMessage());
   }
 }

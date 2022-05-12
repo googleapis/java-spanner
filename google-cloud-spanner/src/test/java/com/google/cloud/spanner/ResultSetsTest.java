@@ -18,7 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -27,13 +27,12 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
-import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
-import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -51,6 +50,7 @@ public class ResultSetsTest {
     double doubleVal = 1.2;
     BigDecimal bigDecimalVal = BigDecimal.valueOf(123, 2);
     String stringVal = "stringVal";
+    String jsonVal = "{\"color\":\"red\",\"value\":\"#f00\"}";
     String byteVal = "101";
     long usecs = 32343;
     int year = 2018;
@@ -78,6 +78,7 @@ public class ResultSetsTest {
       Date.fromYearMonthDay(1, 2, 3), Date.fromYearMonthDay(4, 5, 6), Date.fromYearMonthDay(7, 8, 9)
     };
     String[] stringArray = {"abc", "def", "ghi"};
+    String[] jsonArray = {"{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"};
 
     Type type =
         Type.struct(
@@ -87,6 +88,7 @@ public class ResultSetsTest {
             Type.StructField.of("doubleVal", Type.float64()),
             Type.StructField.of("bigDecimalVal", Type.numeric()),
             Type.StructField.of("stringVal", Type.string()),
+            Type.StructField.of("jsonVal", Type.json()),
             Type.StructField.of("byteVal", Type.bytes()),
             Type.StructField.of("timestamp", Type.timestamp()),
             Type.StructField.of("date", Type.date()),
@@ -97,7 +99,8 @@ public class ResultSetsTest {
             Type.StructField.of("byteArray", Type.array(Type.bytes())),
             Type.StructField.of("timestampArray", Type.array(Type.timestamp())),
             Type.StructField.of("dateArray", Type.array(Type.date())),
-            Type.StructField.of("stringArray", Type.array(Type.string())));
+            Type.StructField.of("stringArray", Type.array(Type.string())),
+            Type.StructField.of("jsonArray", Type.array(Type.json())));
     Struct struct1 =
         Struct.newBuilder()
             .set("f1")
@@ -112,6 +115,8 @@ public class ResultSetsTest {
             .to(Value.numeric(bigDecimalVal))
             .set("stringVal")
             .to(stringVal)
+            .set("jsonVal")
+            .to(Value.json(jsonVal))
             .set("byteVal")
             .to(Value.bytes(ByteArray.copyFrom(byteVal)))
             .set("timestamp")
@@ -134,6 +139,8 @@ public class ResultSetsTest {
             .to(Value.dateArray(Arrays.asList(dateArray)))
             .set("stringArray")
             .to(Value.stringArray(Arrays.asList(stringArray)))
+            .set("jsonArray")
+            .to(Value.jsonArray(Arrays.asList(jsonArray)))
             .build();
     Struct struct2 =
         Struct.newBuilder()
@@ -149,6 +156,8 @@ public class ResultSetsTest {
             .to(Value.numeric(bigDecimalVal))
             .set("stringVal")
             .to(stringVal)
+            .set("jsonVal")
+            .to(Value.json(jsonVal))
             .set("byteVal")
             .to(Value.bytes(ByteArray.copyFrom(byteVal)))
             .set("timestamp")
@@ -171,16 +180,15 @@ public class ResultSetsTest {
             .to(Value.dateArray(Arrays.asList(dateArray)))
             .set("stringArray")
             .to(Value.stringArray(Arrays.asList(stringArray)))
+            .set("jsonArray")
+            .to(Value.jsonArray(Arrays.asList(jsonArray)))
             .build();
     ResultSet rs = ResultSets.forRows(type, Arrays.asList(struct1, struct2));
 
-    try {
-      rs.getType();
-      fail("Exception expected");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("Must be preceded by a next() call");
-    }
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> rs.getType());
+    assertThat(e.getMessage()).contains("Must be preceded by a next() call");
 
+    int columnIndex = 0;
     assertThat(rs.next()).isTrue();
     assertThat(rs.getType()).isEqualTo(type);
     assertThat(rs.getColumnCount()).isEqualTo(type.getStructFields().size());
@@ -195,47 +203,90 @@ public class ResultSetsTest {
     assertThat(rs.getColumnType("f3")).isEqualTo(Type.bool());
     assertThat(rs.getColumnType(2)).isEqualTo(Type.bool());
     assertThat(rs.getCurrentRowAsStruct()).isEqualTo(struct1);
-    assertThat(rs.getString(0)).isEqualTo("x");
-    assertThat(rs.getLong(1)).isEqualTo(2L);
-    assertThat(rs.getBoolean(2)).isTrue();
+    assertThat(rs.getString(columnIndex)).isEqualTo("x");
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.string("x"));
+    assertThat(rs.getLong(columnIndex)).isEqualTo(2L);
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.int64(2L));
+    assertThat(rs.getBoolean(columnIndex)).isTrue();
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.bool(true));
     assertThat(rs.getBoolean("f3")).isTrue();
+    assertThat(rs.getValue("f3")).isEqualTo(Value.bool(true));
     assertThat(rs.getDouble("doubleVal")).isWithin(0.0).of(doubleVal);
-    assertThat(rs.getDouble(3)).isWithin(0.0).of(doubleVal);
+    assertThat(rs.getValue("doubleVal").getFloat64()).isWithin(0.0).of(doubleVal);
+    assertThat(rs.getDouble(columnIndex)).isWithin(0.0).of(doubleVal);
+    assertThat(rs.getValue(columnIndex++).getFloat64()).isWithin(0.0).of(doubleVal);
     assertThat(rs.getBigDecimal("bigDecimalVal")).isEqualTo(new BigDecimal("1.23"));
-    assertThat(rs.getBigDecimal(4)).isEqualTo(new BigDecimal("1.23"));
-    assertThat(rs.getString(5)).isEqualTo(stringVal);
+    assertThat(rs.getValue("bigDecimalVal")).isEqualTo(Value.numeric(new BigDecimal("1.23")));
+    assertThat(rs.getBigDecimal(columnIndex)).isEqualTo(new BigDecimal("1.23"));
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.numeric(new BigDecimal("1.23")));
+    assertThat(rs.getString(columnIndex)).isEqualTo(stringVal);
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.string(stringVal));
     assertThat(rs.getString("stringVal")).isEqualTo(stringVal);
-    assertThat(rs.getBytes(6)).isEqualTo(ByteArray.copyFrom(byteVal));
+    assertThat(rs.getValue("stringVal")).isEqualTo(Value.string(stringVal));
+    assertThat(rs.getJson(columnIndex)).isEqualTo(jsonVal);
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.json(jsonVal));
+    assertThat(rs.getJson("jsonVal")).isEqualTo(jsonVal);
+    assertThat(rs.getValue("jsonVal")).isEqualTo(Value.json(jsonVal));
+    assertThat(rs.getBytes(columnIndex)).isEqualTo(ByteArray.copyFrom(byteVal));
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.bytes(ByteArray.copyFrom(byteVal)));
     assertThat(rs.getBytes("byteVal")).isEqualTo(ByteArray.copyFrom(byteVal));
-    assertThat(rs.getTimestamp(7)).isEqualTo(Timestamp.ofTimeMicroseconds(usecs));
+    assertThat(rs.getValue("byteVal")).isEqualTo(Value.bytes(ByteArray.copyFrom(byteVal)));
+    assertThat(rs.getTimestamp(columnIndex)).isEqualTo(Timestamp.ofTimeMicroseconds(usecs));
+    assertThat(rs.getValue(columnIndex++))
+        .isEqualTo(Value.timestamp(Timestamp.ofTimeMicroseconds(usecs)));
     assertThat(rs.getTimestamp("timestamp")).isEqualTo(Timestamp.ofTimeMicroseconds(usecs));
-    assertThat(rs.getDate(8)).isEqualTo(Date.fromYearMonthDay(year, month, day));
+    assertThat(rs.getValue("timestamp"))
+        .isEqualTo(Value.timestamp(Timestamp.ofTimeMicroseconds(usecs)));
+    assertThat(rs.getDate(columnIndex)).isEqualTo(Date.fromYearMonthDay(year, month, day));
+    assertThat(rs.getValue(columnIndex++))
+        .isEqualTo(Value.date(Date.fromYearMonthDay(year, month, day)));
     assertThat(rs.getDate("date")).isEqualTo(Date.fromYearMonthDay(year, month, day));
-    assertThat(rs.getBooleanArray(9)).isEqualTo(boolArray);
+    assertThat(rs.getValue("date")).isEqualTo(Value.date(Date.fromYearMonthDay(year, month, day)));
+    assertThat(rs.getBooleanArray(columnIndex)).isEqualTo(boolArray);
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.boolArray(boolArray));
     assertThat(rs.getBooleanArray("boolArray")).isEqualTo(boolArray);
-    assertThat(rs.getBooleanList(9)).isEqualTo(Booleans.asList(boolArray));
-    assertThat(rs.getBooleanList("boolArray")).isEqualTo(Booleans.asList(boolArray));
-    assertThat(rs.getLongArray(10)).isEqualTo(longArray);
+    assertThat(rs.getValue("boolArray")).isEqualTo(Value.boolArray(boolArray));
+    assertThat(rs.getLongArray(columnIndex)).isEqualTo(longArray);
+    assertThat(rs.getValue(columnIndex)).isEqualTo(Value.int64Array(longArray));
     assertThat(rs.getLongArray("longArray")).isEqualTo(longArray);
-    assertThat(rs.getLongList(10)).isEqualTo(Longs.asList(longArray));
+    assertThat(rs.getValue("longArray")).isEqualTo(Value.int64Array(longArray));
+    assertThat(rs.getLongList(columnIndex++)).isEqualTo(Longs.asList(longArray));
     assertThat(rs.getLongList("longArray")).isEqualTo(Longs.asList(longArray));
-    assertThat(rs.getDoubleArray(11)).usingTolerance(0.0).containsAtLeast(doubleArray);
+    assertThat(rs.getDoubleArray(columnIndex)).usingTolerance(0.0).containsAtLeast(doubleArray);
+    assertThat(rs.getValue(columnIndex)).isEqualTo(Value.float64Array(doubleArray));
     assertThat(rs.getDoubleArray("doubleArray"))
         .usingTolerance(0.0)
         .containsExactly(doubleArray)
         .inOrder();
-    assertThat(rs.getDoubleList(11)).isEqualTo(Doubles.asList(doubleArray));
+    assertThat(rs.getValue("doubleArray")).isEqualTo(Value.float64Array(doubleArray));
+    assertThat(rs.getDoubleList(columnIndex++)).isEqualTo(Doubles.asList(doubleArray));
     assertThat(rs.getDoubleList("doubleArray")).isEqualTo(Doubles.asList(doubleArray));
-    assertThat(rs.getBigDecimalList(12)).isEqualTo(Arrays.asList(bigDecimalArray));
+    assertThat(rs.getBigDecimalList(columnIndex)).isEqualTo(Arrays.asList(bigDecimalArray));
+    assertThat(rs.getValue(columnIndex++))
+        .isEqualTo(Value.numericArray(Arrays.asList(bigDecimalArray)));
     assertThat(rs.getBigDecimalList("bigDecimalArray")).isEqualTo(Arrays.asList(bigDecimalArray));
-    assertThat(rs.getBytesList(13)).isEqualTo(Arrays.asList(byteArray));
+    assertThat(rs.getValue("bigDecimalArray"))
+        .isEqualTo(Value.numericArray(Arrays.asList(bigDecimalArray)));
+    assertThat(rs.getBytesList(columnIndex)).isEqualTo(Arrays.asList(byteArray));
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.bytesArray(Arrays.asList(byteArray)));
     assertThat(rs.getBytesList("byteArray")).isEqualTo(Arrays.asList(byteArray));
-    assertThat(rs.getTimestampList(14)).isEqualTo(Arrays.asList(timestampArray));
+    assertThat(rs.getValue("byteArray")).isEqualTo(Value.bytesArray(Arrays.asList(byteArray)));
+    assertThat(rs.getTimestampList(columnIndex)).isEqualTo(Arrays.asList(timestampArray));
+    assertThat(rs.getValue(columnIndex++))
+        .isEqualTo(Value.timestampArray(Arrays.asList(timestampArray)));
     assertThat(rs.getTimestampList("timestampArray")).isEqualTo(Arrays.asList(timestampArray));
-    assertThat(rs.getDateList(15)).isEqualTo(Arrays.asList(dateArray));
+    assertThat(rs.getValue("timestampArray"))
+        .isEqualTo(Value.timestampArray(Arrays.asList(timestampArray)));
+    assertThat(rs.getDateList(columnIndex)).isEqualTo(Arrays.asList(dateArray));
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.dateArray(Arrays.asList(dateArray)));
     assertThat(rs.getDateList("dateArray")).isEqualTo(Arrays.asList(dateArray));
-    assertThat(rs.getStringList(16)).isEqualTo(Arrays.asList(stringArray));
+    assertThat(rs.getValue("dateArray")).isEqualTo(Value.dateArray(Arrays.asList(dateArray)));
+    assertThat(rs.getStringList(columnIndex)).isEqualTo(Arrays.asList(stringArray));
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.stringArray(Arrays.asList(stringArray)));
     assertThat(rs.getStringList("stringArray")).isEqualTo(Arrays.asList(stringArray));
+    assertThat(rs.getValue("stringArray")).isEqualTo(Value.stringArray(Arrays.asList(stringArray)));
+    assertThat(rs.getJsonList(columnIndex)).isEqualTo(Arrays.asList(jsonArray));
+    assertThat(rs.getJsonList("jsonArray")).isEqualTo(Arrays.asList(jsonArray));
 
     assertThat(rs.next()).isTrue();
     assertThat(rs.getCurrentRowAsStruct()).isEqualTo(struct2);
@@ -244,13 +295,10 @@ public class ResultSetsTest {
     assertThat(rs.isNull(2)).isTrue();
     assertThat(rs.next()).isFalse();
 
-    try {
-      rs.getStats();
-      fail("Exception expected");
-    } catch (UnsupportedOperationException e) {
-      assertThat(e.getMessage())
-          .contains("ResultSetStats are available only for results returned from analyzeQuery");
-    }
+    UnsupportedOperationException unsupported =
+        assertThrows(UnsupportedOperationException.class, () -> rs.getStats());
+    assertThat(unsupported.getMessage())
+        .contains("ResultSetStats are available only for results returned from analyzeQuery");
   }
 
   @Test
@@ -263,13 +311,12 @@ public class ResultSetsTest {
     Struct value1 = Struct.newBuilder().set("g1").to("abc").build();
 
     Struct struct1 = Struct.newBuilder().set("f1").to(value1).set("f2").to((Long) null).build();
-    try {
-      ResultSets.forRows(type, Arrays.asList(struct1));
-      fail("Expected exception");
-    } catch (UnsupportedOperationException ex) {
-      assertThat(ex.getMessage())
-          .contains("STRUCT-typed columns are not supported inside ResultSets.");
-    }
+    UnsupportedOperationException e =
+        assertThrows(
+            UnsupportedOperationException.class,
+            () -> ResultSets.forRows(type, Collections.singletonList(struct1)));
+    assertThat(e.getMessage())
+        .contains("STRUCT-typed columns are not supported inside ResultSets.");
   }
 
   @Test
@@ -317,7 +364,9 @@ public class ResultSetsTest {
     assertThat(rs.getCurrentRowAsStruct()).isEqualTo(struct1);
 
     assertThat(rs.getStructList(0)).isEqualTo(arrayValue);
+    assertThat(rs.getValue(0)).isEqualTo(Value.structArray(nestedStructType, arrayValue));
     assertThat(rs.getStructList("f1")).isEqualTo(arrayValue);
+    assertThat(rs.getValue("f1")).isEqualTo(Value.structArray(nestedStructType, arrayValue));
     assertThat(rs.isNull(1)).isTrue();
 
     assertThat(rs.next()).isTrue();
@@ -326,7 +375,9 @@ public class ResultSetsTest {
     assertThat(rs.isNull(0)).isTrue();
     assertThat(rs.isNull("f1")).isTrue();
     assertThat(rs.getLong(1)).isEqualTo(20);
+    assertThat(rs.getValue(1)).isEqualTo(Value.int64(20));
     assertThat(rs.getLong("f2")).isEqualTo(20);
+    assertThat(rs.getValue("f2")).isEqualTo(Value.int64(20));
 
     assertThat(rs.next()).isFalse();
   }
@@ -336,14 +387,11 @@ public class ResultSetsTest {
     ResultSet rs =
         ResultSets.forRows(
             Type.struct(Type.StructField.of("f1", Type.string())),
-            Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
+            Collections.singletonList(Struct.newBuilder().set("f1").to("x").build()));
     rs.close();
-    try {
-      rs.getCurrentRowAsStruct();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> rs.getCurrentRowAsStruct());
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -351,13 +399,10 @@ public class ResultSetsTest {
     ResultSet rs =
         ResultSets.forRows(
             Type.struct(Type.StructField.of("f1", Type.string())),
-            Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
-    try {
-      rs.getCurrentRowAsStruct();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertNotNull(ex.getMessage());
-    }
+            Collections.singletonList(Struct.newBuilder().set("f1").to("x").build()));
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> rs.getCurrentRowAsStruct());
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -365,26 +410,23 @@ public class ResultSetsTest {
     ResultSet delegate =
         ResultSets.forRows(
             Type.struct(Type.StructField.of("f1", Type.string())),
-            Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
+            Collections.singletonList(Struct.newBuilder().set("f1").to("x").build()));
 
     final AtomicInteger count = new AtomicInteger();
     AsyncResultSet rs = ResultSets.toAsyncResultSet(delegate);
     ApiFuture<Void> fut =
         rs.setCallback(
             MoreExecutors.directExecutor(),
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                while (true) {
-                  switch (resultSet.tryNext()) {
-                    case DONE:
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case OK:
-                      count.incrementAndGet();
-                      assertThat(resultSet.getString("f1")).isEqualTo("x");
-                  }
+            resultSet -> {
+              while (true) {
+                switch (resultSet.tryNext()) {
+                  case DONE:
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  case OK:
+                    count.incrementAndGet();
+                    assertThat(resultSet.getString("f1")).isEqualTo("x");
                 }
               }
             });
@@ -397,7 +439,7 @@ public class ResultSetsTest {
     ResultSet delegate =
         ResultSets.forRows(
             Type.struct(Type.StructField.of("f1", Type.string())),
-            Arrays.asList(Struct.newBuilder().set("f1").to("x").build()));
+            Collections.singletonList(Struct.newBuilder().set("f1").to("x").build()));
 
     ExecutorProvider provider =
         new ExecutorProvider() {
@@ -418,19 +460,16 @@ public class ResultSetsTest {
     ApiFuture<Void> fut =
         rs.setCallback(
             MoreExecutors.directExecutor(),
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                while (true) {
-                  switch (resultSet.tryNext()) {
-                    case DONE:
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case OK:
-                      count.incrementAndGet();
-                      assertThat(resultSet.getString("f1")).isEqualTo("x");
-                  }
+            resultSet -> {
+              while (true) {
+                switch (resultSet.tryNext()) {
+                  case DONE:
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  case OK:
+                    count.incrementAndGet();
+                    assertThat(resultSet.getString("f1")).isEqualTo("x");
                 }
               }
             });
@@ -445,7 +484,7 @@ public class ResultSetsTest {
         ApiFutures.immediateFuture(
             ResultSets.forRows(
                 Type.struct(Type.StructField.of("f1", Type.string())),
-                Arrays.asList(Struct.newBuilder().set("f1").to("x").build())));
+                Collections.singletonList(Struct.newBuilder().set("f1").to("x").build())));
 
     ExecutorProvider provider =
         new ExecutorProvider() {
@@ -466,19 +505,16 @@ public class ResultSetsTest {
     ApiFuture<Void> fut =
         rs.setCallback(
             MoreExecutors.directExecutor(),
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                while (true) {
-                  switch (resultSet.tryNext()) {
-                    case DONE:
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case OK:
-                      count.incrementAndGet();
-                      assertThat(resultSet.getString("f1")).isEqualTo("x");
-                  }
+            resultSet -> {
+              while (true) {
+                switch (resultSet.tryNext()) {
+                  case DONE:
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  case OK:
+                    count.incrementAndGet();
+                    assertThat(resultSet.getString("f1")).isEqualTo("x");
                 }
               }
             });

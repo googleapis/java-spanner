@@ -20,7 +20,7 @@ import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.TimestampBound.Mode;
@@ -89,12 +89,11 @@ public class TimestampBoundTest {
 
   @Test
   public void exactStalenessNegative() {
-    try {
-      TimestampBound.ofExactStaleness(-1, TimeUnit.SECONDS);
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> TimestampBound.ofExactStaleness(-1, TimeUnit.SECONDS));
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -122,12 +121,11 @@ public class TimestampBoundTest {
 
   @Test
   public void maxStalenessNegative() {
-    try {
-      TimestampBound.ofMaxStaleness(-1, TimeUnit.SECONDS);
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> TimestampBound.ofMaxStaleness(-1, TimeUnit.SECONDS));
+    assertNotNull(e.getMessage());
   }
 
   @Test

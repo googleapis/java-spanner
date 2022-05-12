@@ -23,6 +23,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.encryption.EncryptionInfo;
 import com.google.longrunning.Operation;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
@@ -61,11 +62,7 @@ public class Backup extends BackupInfo {
 
   /** Creates a backup on the server based on the source of this {@link Backup} instance. */
   public OperationFuture<Backup, CreateBackupMetadata> create() {
-    Preconditions.checkState(
-        getExpireTime() != null, "Cannot create a backup without an expire time");
-    Preconditions.checkState(
-        getDatabase() != null, "Cannot create a backup without a source database");
-    return dbClient.createBackup(instance(), backup(), sourceDatabase(), getExpireTime());
+    return dbClient.createBackup(this);
   }
 
   /**
@@ -182,8 +179,12 @@ public class Backup extends BackupInfo {
         .setState(fromProtoState(proto.getState()))
         .setSize(proto.getSizeBytes())
         .setExpireTime(Timestamp.fromProto(proto.getExpireTime()))
+        .setVersionTime(Timestamp.fromProto(proto.getVersionTime()))
         .setDatabase(DatabaseId.of(proto.getDatabase()))
+        .setEncryptionInfo(EncryptionInfo.fromProtoOrNull(proto.getEncryptionInfo()))
         .setProto(proto)
+        .setMaxExpireTime(Timestamp.fromProto(proto.getMaxExpireTime()))
+        .addAllReferencingBackups(proto.getReferencingBackupsList())
         .build();
   }
 

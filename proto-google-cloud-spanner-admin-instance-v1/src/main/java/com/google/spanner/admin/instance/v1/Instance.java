@@ -131,6 +131,11 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
               endpointUris_.add(s);
               break;
             }
+          case 72:
+            {
+              processingUnits_ = input.readInt32();
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -354,7 +359,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * segment of the name must be between 2 and 64 characters in length.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The name.
    */
@@ -380,7 +385,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * segment of the name must be between 2 and 64 characters in length.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The bytes for name.
    */
@@ -409,7 +414,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
    * </pre>
    *
-   * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+   * <code>
+   * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+   * </code>
    *
    * @return The config.
    */
@@ -435,7 +442,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
    * </pre>
    *
-   * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+   * <code>
+   * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+   * </code>
    *
    * @return The bytes for config.
    */
@@ -462,7 +471,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * Must be unique per project and between 4 and 30 characters in length.
    * </pre>
    *
-   * <code>string display_name = 3;</code>
+   * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The displayName.
    */
@@ -486,7 +495,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * Must be unique per project and between 4 and 30 characters in length.
    * </pre>
    *
-   * <code>string display_name = 3;</code>
+   * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The bytes for displayName.
    */
@@ -525,6 +534,26 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     return nodeCount_;
   }
 
+  public static final int PROCESSING_UNITS_FIELD_NUMBER = 9;
+  private int processingUnits_;
+  /**
+   *
+   *
+   * <pre>
+   * The number of processing units allocated to this instance. At most one of
+   * processing_units or node_count should be present in the message. This may
+   * be zero in API responses for instances that are not yet in state `READY`.
+   * </pre>
+   *
+   * <code>int32 processing_units = 9;</code>
+   *
+   * @return The processingUnits.
+   */
+  @java.lang.Override
+  public int getProcessingUnits() {
+    return processingUnits_;
+  }
+
   public static final int STATE_FIELD_NUMBER = 6;
   private int state_;
   /**
@@ -538,7 +567,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * either omitted or set to `READY`.
    * </pre>
    *
-   * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+   * <code>
+   * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return The enum numeric value on the wire for state.
    */
@@ -557,7 +588,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * either omitted or set to `READY`.
    * </pre>
    *
-   * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+   * <code>
+   * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return The state.
    */
@@ -812,13 +845,13 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!getNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
     }
-    if (!getConfigBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(config_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, config_);
     }
-    if (!getDisplayNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(displayName_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, displayName_);
     }
     if (nodeCount_ != 0) {
@@ -833,6 +866,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     for (int i = 0; i < endpointUris_.size(); i++) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 8, endpointUris_.getRaw(i));
     }
+    if (processingUnits_ != 0) {
+      output.writeInt32(9, processingUnits_);
+    }
     unknownFields.writeTo(output);
   }
 
@@ -842,13 +878,13 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (size != -1) return size;
 
     size = 0;
-    if (!getNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
     }
-    if (!getConfigBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(config_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, config_);
     }
-    if (!getDisplayNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(displayName_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, displayName_);
     }
     if (nodeCount_ != 0) {
@@ -876,6 +912,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       size += dataSize;
       size += 1 * getEndpointUrisList().size();
     }
+    if (processingUnits_ != 0) {
+      size += com.google.protobuf.CodedOutputStream.computeInt32Size(9, processingUnits_);
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -896,6 +935,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (!getConfig().equals(other.getConfig())) return false;
     if (!getDisplayName().equals(other.getDisplayName())) return false;
     if (getNodeCount() != other.getNodeCount()) return false;
+    if (getProcessingUnits() != other.getProcessingUnits()) return false;
     if (state_ != other.state_) return false;
     if (!internalGetLabels().equals(other.internalGetLabels())) return false;
     if (!getEndpointUrisList().equals(other.getEndpointUrisList())) return false;
@@ -918,6 +958,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     hash = (53 * hash) + getDisplayName().hashCode();
     hash = (37 * hash) + NODE_COUNT_FIELD_NUMBER;
     hash = (53 * hash) + getNodeCount();
+    hash = (37 * hash) + PROCESSING_UNITS_FIELD_NUMBER;
+    hash = (53 * hash) + getProcessingUnits();
     hash = (37 * hash) + STATE_FIELD_NUMBER;
     hash = (53 * hash) + state_;
     if (!internalGetLabels().getMap().isEmpty()) {
@@ -1101,6 +1143,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
 
       nodeCount_ = 0;
 
+      processingUnits_ = 0;
+
       state_ = 0;
 
       internalGetMutableLabels().clear();
@@ -1138,6 +1182,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       result.config_ = config_;
       result.displayName_ = displayName_;
       result.nodeCount_ = nodeCount_;
+      result.processingUnits_ = processingUnits_;
       result.state_ = state_;
       result.labels_ = internalGetLabels();
       result.labels_.makeImmutable();
@@ -1210,6 +1255,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (other.getNodeCount() != 0) {
         setNodeCount(other.getNodeCount());
       }
+      if (other.getProcessingUnits() != 0) {
+        setProcessingUnits(other.getProcessingUnits());
+      }
       if (other.state_ != 0) {
         setStateValue(other.getStateValue());
       }
@@ -1266,7 +1314,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * segment of the name must be between 2 and 64 characters in length.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The name.
      */
@@ -1291,7 +1339,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * segment of the name must be between 2 and 64 characters in length.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The bytes for name.
      */
@@ -1316,7 +1364,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * segment of the name must be between 2 and 64 characters in length.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @param value The name to set.
      * @return This builder for chaining.
@@ -1340,7 +1388,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * segment of the name must be between 2 and 64 characters in length.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return This builder for chaining.
      */
@@ -1360,7 +1408,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * segment of the name must be between 2 and 64 characters in length.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @param value The bytes for name to set.
      * @return This builder for chaining.
@@ -1387,7 +1435,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
      * </pre>
      *
-     * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+     * <code>
+     * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+     * </code>
      *
      * @return The config.
      */
@@ -1412,7 +1462,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
      * </pre>
      *
-     * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+     * <code>
+     * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+     * </code>
      *
      * @return The bytes for config.
      */
@@ -1437,7 +1489,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
      * </pre>
      *
-     * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+     * <code>
+     * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+     * </code>
      *
      * @param value The config to set.
      * @return This builder for chaining.
@@ -1461,7 +1515,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
      * </pre>
      *
-     * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+     * <code>
+     * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+     * </code>
      *
      * @return This builder for chaining.
      */
@@ -1481,7 +1537,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
      * </pre>
      *
-     * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+     * <code>
+     * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+     * </code>
      *
      * @param value The bytes for config to set.
      * @return This builder for chaining.
@@ -1506,7 +1564,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * Must be unique per project and between 4 and 30 characters in length.
      * </pre>
      *
-     * <code>string display_name = 3;</code>
+     * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The displayName.
      */
@@ -1529,7 +1587,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * Must be unique per project and between 4 and 30 characters in length.
      * </pre>
      *
-     * <code>string display_name = 3;</code>
+     * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return The bytes for displayName.
      */
@@ -1552,7 +1610,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * Must be unique per project and between 4 and 30 characters in length.
      * </pre>
      *
-     * <code>string display_name = 3;</code>
+     * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @param value The displayName to set.
      * @return This builder for chaining.
@@ -1574,7 +1632,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * Must be unique per project and between 4 and 30 characters in length.
      * </pre>
      *
-     * <code>string display_name = 3;</code>
+     * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @return This builder for chaining.
      */
@@ -1592,7 +1650,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * Must be unique per project and between 4 and 30 characters in length.
      * </pre>
      *
-     * <code>string display_name = 3;</code>
+     * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      *
      * @param value The bytes for displayName to set.
      * @return This builder for chaining.
@@ -1672,6 +1730,64 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
+    private int processingUnits_;
+    /**
+     *
+     *
+     * <pre>
+     * The number of processing units allocated to this instance. At most one of
+     * processing_units or node_count should be present in the message. This may
+     * be zero in API responses for instances that are not yet in state `READY`.
+     * </pre>
+     *
+     * <code>int32 processing_units = 9;</code>
+     *
+     * @return The processingUnits.
+     */
+    @java.lang.Override
+    public int getProcessingUnits() {
+      return processingUnits_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The number of processing units allocated to this instance. At most one of
+     * processing_units or node_count should be present in the message. This may
+     * be zero in API responses for instances that are not yet in state `READY`.
+     * </pre>
+     *
+     * <code>int32 processing_units = 9;</code>
+     *
+     * @param value The processingUnits to set.
+     * @return This builder for chaining.
+     */
+    public Builder setProcessingUnits(int value) {
+
+      processingUnits_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The number of processing units allocated to this instance. At most one of
+     * processing_units or node_count should be present in the message. This may
+     * be zero in API responses for instances that are not yet in state `READY`.
+     * </pre>
+     *
+     * <code>int32 processing_units = 9;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearProcessingUnits() {
+
+      processingUnits_ = 0;
+      onChanged();
+      return this;
+    }
+
     private int state_ = 0;
     /**
      *
@@ -1684,7 +1800,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * either omitted or set to `READY`.
      * </pre>
      *
-     * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @return The enum numeric value on the wire for state.
      */
@@ -1703,7 +1821,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * either omitted or set to `READY`.
      * </pre>
      *
-     * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @param value The enum numeric value on the wire for state to set.
      * @return This builder for chaining.
@@ -1725,7 +1845,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * either omitted or set to `READY`.
      * </pre>
      *
-     * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @return The state.
      */
@@ -1749,7 +1871,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * either omitted or set to `READY`.
      * </pre>
      *
-     * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @param value The state to set.
      * @return This builder for chaining.
@@ -1774,7 +1898,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * either omitted or set to `READY`.
      * </pre>
      *
-     * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+     * <code>
+     * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
      *
      * @return This builder for chaining.
      */

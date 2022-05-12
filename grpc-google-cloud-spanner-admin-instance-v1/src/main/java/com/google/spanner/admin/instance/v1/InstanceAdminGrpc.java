@@ -16,11 +16,6 @@
 package com.google.spanner.admin.instance.v1;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  *
@@ -49,6 +44,7 @@ import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 @javax.annotation.Generated(
     value = "by gRPC proto compiler",
     comments = "Source: google/spanner/admin/instance/v1/spanner_instance_admin.proto")
+@io.grpc.stub.annotations.GrpcGenerated
 public final class InstanceAdminGrpc {
 
   private InstanceAdminGrpc() {}
@@ -579,7 +575,8 @@ public final class InstanceAdminGrpc {
         io.grpc.stub.StreamObserver<
                 com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getListInstanceConfigsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getListInstanceConfigsMethod(), responseObserver);
     }
 
     /**
@@ -593,7 +590,8 @@ public final class InstanceAdminGrpc {
         com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.InstanceConfig>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getGetInstanceConfigMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getGetInstanceConfigMethod(), responseObserver);
     }
 
     /**
@@ -607,7 +605,8 @@ public final class InstanceAdminGrpc {
         com.google.spanner.admin.instance.v1.ListInstancesRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.ListInstancesResponse>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getListInstancesMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getListInstancesMethod(), responseObserver);
     }
 
     /**
@@ -621,7 +620,8 @@ public final class InstanceAdminGrpc {
         com.google.spanner.admin.instance.v1.GetInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.Instance>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getGetInstanceMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getGetInstanceMethod(), responseObserver);
     }
 
     /**
@@ -660,7 +660,8 @@ public final class InstanceAdminGrpc {
     public void createInstance(
         com.google.spanner.admin.instance.v1.CreateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
-      asyncUnimplementedUnaryCall(getCreateInstanceMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getCreateInstanceMethod(), responseObserver);
     }
 
     /**
@@ -704,7 +705,8 @@ public final class InstanceAdminGrpc {
     public void updateInstance(
         com.google.spanner.admin.instance.v1.UpdateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
-      asyncUnimplementedUnaryCall(getUpdateInstanceMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getUpdateInstanceMethod(), responseObserver);
     }
 
     /**
@@ -723,7 +725,8 @@ public final class InstanceAdminGrpc {
     public void deleteInstance(
         com.google.spanner.admin.instance.v1.DeleteInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
-      asyncUnimplementedUnaryCall(getDeleteInstanceMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getDeleteInstanceMethod(), responseObserver);
     }
 
     /**
@@ -739,7 +742,8 @@ public final class InstanceAdminGrpc {
     public void setIamPolicy(
         com.google.iam.v1.SetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
-      asyncUnimplementedUnaryCall(getSetIamPolicyMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getSetIamPolicyMethod(), responseObserver);
     }
 
     /**
@@ -755,7 +759,8 @@ public final class InstanceAdminGrpc {
     public void getIamPolicy(
         com.google.iam.v1.GetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
-      asyncUnimplementedUnaryCall(getGetIamPolicyMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getGetIamPolicyMethod(), responseObserver);
     }
 
     /**
@@ -773,7 +778,8 @@ public final class InstanceAdminGrpc {
         com.google.iam.v1.TestIamPermissionsRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.TestIamPermissionsResponse>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getTestIamPermissionsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getTestIamPermissionsMethod(), responseObserver);
     }
 
     @java.lang.Override
@@ -781,64 +787,64 @@ public final class InstanceAdminGrpc {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
               getListInstanceConfigsMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest,
                       com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>(
                       this, METHODID_LIST_INSTANCE_CONFIGS)))
           .addMethod(
               getGetInstanceConfigMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.instance.v1.GetInstanceConfigRequest,
                       com.google.spanner.admin.instance.v1.InstanceConfig>(
                       this, METHODID_GET_INSTANCE_CONFIG)))
           .addMethod(
               getListInstancesMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.instance.v1.ListInstancesRequest,
                       com.google.spanner.admin.instance.v1.ListInstancesResponse>(
                       this, METHODID_LIST_INSTANCES)))
           .addMethod(
               getGetInstanceMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.instance.v1.GetInstanceRequest,
                       com.google.spanner.admin.instance.v1.Instance>(this, METHODID_GET_INSTANCE)))
           .addMethod(
               getCreateInstanceMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.instance.v1.CreateInstanceRequest,
                       com.google.longrunning.Operation>(this, METHODID_CREATE_INSTANCE)))
           .addMethod(
               getUpdateInstanceMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.instance.v1.UpdateInstanceRequest,
                       com.google.longrunning.Operation>(this, METHODID_UPDATE_INSTANCE)))
           .addMethod(
               getDeleteInstanceMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.instance.v1.DeleteInstanceRequest,
                       com.google.protobuf.Empty>(this, METHODID_DELETE_INSTANCE)))
           .addMethod(
               getSetIamPolicyMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.iam.v1.SetIamPolicyRequest, com.google.iam.v1.Policy>(
                       this, METHODID_SET_IAM_POLICY)))
           .addMethod(
               getGetIamPolicyMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.iam.v1.GetIamPolicyRequest, com.google.iam.v1.Policy>(
                       this, METHODID_GET_IAM_POLICY)))
           .addMethod(
               getTestIamPermissionsMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.iam.v1.TestIamPermissionsRequest,
                       com.google.iam.v1.TestIamPermissionsResponse>(
@@ -894,7 +900,7 @@ public final class InstanceAdminGrpc {
         io.grpc.stub.StreamObserver<
                 com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>
             responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getListInstanceConfigsMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -911,7 +917,7 @@ public final class InstanceAdminGrpc {
         com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.InstanceConfig>
             responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetInstanceConfigMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -928,7 +934,7 @@ public final class InstanceAdminGrpc {
         com.google.spanner.admin.instance.v1.ListInstancesRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.ListInstancesResponse>
             responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getListInstancesMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -945,7 +951,7 @@ public final class InstanceAdminGrpc {
         com.google.spanner.admin.instance.v1.GetInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.Instance>
             responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetInstanceMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -987,7 +993,7 @@ public final class InstanceAdminGrpc {
     public void createInstance(
         com.google.spanner.admin.instance.v1.CreateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getCreateInstanceMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1034,7 +1040,7 @@ public final class InstanceAdminGrpc {
     public void updateInstance(
         com.google.spanner.admin.instance.v1.UpdateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getUpdateInstanceMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1056,7 +1062,7 @@ public final class InstanceAdminGrpc {
     public void deleteInstance(
         com.google.spanner.admin.instance.v1.DeleteInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getDeleteInstanceMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1075,7 +1081,7 @@ public final class InstanceAdminGrpc {
     public void setIamPolicy(
         com.google.iam.v1.SetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getSetIamPolicyMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1094,7 +1100,7 @@ public final class InstanceAdminGrpc {
     public void getIamPolicy(
         com.google.iam.v1.GetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetIamPolicyMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1115,7 +1121,7 @@ public final class InstanceAdminGrpc {
         com.google.iam.v1.TestIamPermissionsRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.TestIamPermissionsResponse>
             responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getTestIamPermissionsMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1167,7 +1173,7 @@ public final class InstanceAdminGrpc {
      */
     public com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse listInstanceConfigs(
         com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest request) {
-      return blockingUnaryCall(
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getListInstanceConfigsMethod(), getCallOptions(), request);
     }
 
@@ -1180,7 +1186,7 @@ public final class InstanceAdminGrpc {
      */
     public com.google.spanner.admin.instance.v1.InstanceConfig getInstanceConfig(
         com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request) {
-      return blockingUnaryCall(
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getGetInstanceConfigMethod(), getCallOptions(), request);
     }
 
@@ -1193,7 +1199,8 @@ public final class InstanceAdminGrpc {
      */
     public com.google.spanner.admin.instance.v1.ListInstancesResponse listInstances(
         com.google.spanner.admin.instance.v1.ListInstancesRequest request) {
-      return blockingUnaryCall(getChannel(), getListInstancesMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getListInstancesMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1205,7 +1212,8 @@ public final class InstanceAdminGrpc {
      */
     public com.google.spanner.admin.instance.v1.Instance getInstance(
         com.google.spanner.admin.instance.v1.GetInstanceRequest request) {
-      return blockingUnaryCall(getChannel(), getGetInstanceMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getGetInstanceMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1243,7 +1251,8 @@ public final class InstanceAdminGrpc {
      */
     public com.google.longrunning.Operation createInstance(
         com.google.spanner.admin.instance.v1.CreateInstanceRequest request) {
-      return blockingUnaryCall(getChannel(), getCreateInstanceMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getCreateInstanceMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1286,7 +1295,8 @@ public final class InstanceAdminGrpc {
      */
     public com.google.longrunning.Operation updateInstance(
         com.google.spanner.admin.instance.v1.UpdateInstanceRequest request) {
-      return blockingUnaryCall(getChannel(), getUpdateInstanceMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getUpdateInstanceMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1304,7 +1314,8 @@ public final class InstanceAdminGrpc {
      */
     public com.google.protobuf.Empty deleteInstance(
         com.google.spanner.admin.instance.v1.DeleteInstanceRequest request) {
-      return blockingUnaryCall(getChannel(), getDeleteInstanceMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getDeleteInstanceMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1318,7 +1329,8 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.iam.v1.Policy setIamPolicy(com.google.iam.v1.SetIamPolicyRequest request) {
-      return blockingUnaryCall(getChannel(), getSetIamPolicyMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getSetIamPolicyMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1332,7 +1344,8 @@ public final class InstanceAdminGrpc {
      * </pre>
      */
     public com.google.iam.v1.Policy getIamPolicy(com.google.iam.v1.GetIamPolicyRequest request) {
-      return blockingUnaryCall(getChannel(), getGetIamPolicyMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getGetIamPolicyMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1348,7 +1361,7 @@ public final class InstanceAdminGrpc {
      */
     public com.google.iam.v1.TestIamPermissionsResponse testIamPermissions(
         com.google.iam.v1.TestIamPermissionsRequest request) {
-      return blockingUnaryCall(
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getTestIamPermissionsMethod(), getCallOptions(), request);
     }
   }
@@ -1400,7 +1413,7 @@ public final class InstanceAdminGrpc {
             com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>
         listInstanceConfigs(
             com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getListInstanceConfigsMethod(), getCallOptions()), request);
     }
 
@@ -1414,7 +1427,7 @@ public final class InstanceAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.instance.v1.InstanceConfig>
         getInstanceConfig(com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetInstanceConfigMethod(), getCallOptions()), request);
     }
 
@@ -1428,7 +1441,7 @@ public final class InstanceAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.instance.v1.ListInstancesResponse>
         listInstances(com.google.spanner.admin.instance.v1.ListInstancesRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getListInstancesMethod(), getCallOptions()), request);
     }
 
@@ -1442,7 +1455,7 @@ public final class InstanceAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.instance.v1.Instance>
         getInstance(com.google.spanner.admin.instance.v1.GetInstanceRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetInstanceMethod(), getCallOptions()), request);
     }
 
@@ -1481,7 +1494,7 @@ public final class InstanceAdminGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
         createInstance(com.google.spanner.admin.instance.v1.CreateInstanceRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getCreateInstanceMethod(), getCallOptions()), request);
     }
 
@@ -1525,7 +1538,7 @@ public final class InstanceAdminGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
         updateInstance(com.google.spanner.admin.instance.v1.UpdateInstanceRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getUpdateInstanceMethod(), getCallOptions()), request);
     }
 
@@ -1544,7 +1557,7 @@ public final class InstanceAdminGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty>
         deleteInstance(com.google.spanner.admin.instance.v1.DeleteInstanceRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getDeleteInstanceMethod(), getCallOptions()), request);
     }
 
@@ -1560,7 +1573,7 @@ public final class InstanceAdminGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.iam.v1.Policy>
         setIamPolicy(com.google.iam.v1.SetIamPolicyRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getSetIamPolicyMethod(), getCallOptions()), request);
     }
 
@@ -1576,7 +1589,7 @@ public final class InstanceAdminGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.iam.v1.Policy>
         getIamPolicy(com.google.iam.v1.GetIamPolicyRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetIamPolicyMethod(), getCallOptions()), request);
     }
 
@@ -1594,7 +1607,7 @@ public final class InstanceAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.iam.v1.TestIamPermissionsResponse>
         testIamPermissions(com.google.iam.v1.TestIamPermissionsRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getTestIamPermissionsMethod(), getCallOptions()), request);
     }
   }

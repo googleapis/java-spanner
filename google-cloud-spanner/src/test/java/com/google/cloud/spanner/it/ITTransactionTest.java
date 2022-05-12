@@ -19,6 +19,8 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
@@ -33,6 +35,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext;
@@ -42,7 +45,6 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
@@ -52,6 +54,7 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
@@ -88,14 +91,14 @@ public class ITTransactionTest {
 
   @Before
   public void removeTestData() {
-    client.writeAtLeastOnce(Arrays.asList(Mutation.delete("T", KeySet.all())));
+    client.writeAtLeastOnce(Collections.singletonList(Mutation.delete("T", KeySet.all())));
   }
 
   private static String uniqueKey() {
     return "k" + seq++;
   }
 
-  private static interface ReadStrategy {
+  private interface ReadStrategy {
     Struct read(ReadContext ctx, String key);
   }
 
@@ -104,7 +107,8 @@ public class ITTransactionTest {
 
     // Initial value.
     client.write(
-        Arrays.asList(Mutation.newInsertBuilder("T").set("K").to(key).set("V").to(0).build()));
+        Collections.singletonList(
+            Mutation.newInsertBuilder("T").set("K").to(key).set("V").to(0).build()));
 
     final int numThreads = 3;
 
@@ -112,18 +116,15 @@ public class ITTransactionTest {
     final CountDownLatch complete = new CountDownLatch(numThreads);
 
     final TransactionCallable<Long> callable =
-        new TransactionCallable<Long>() {
-          @Override
-          public Long run(TransactionContext transaction) throws SpannerException {
-            Struct row = strategy.read(transaction, key);
-            long newValue = row.getLong(0) + 1;
-            transaction.buffer(
-                Mutation.newUpdateBuilder("T").set("K").to(key).set("V").to(newValue).build());
-            commitBarrier.countDown();
-            // Synchronize so that all threads attempt to commit at the same time.
-            Uninterruptibles.awaitUninterruptibly(commitBarrier);
-            return newValue;
-          }
+        transaction -> {
+          Struct row = strategy.read(transaction, key);
+          long newValue = row.getLong(0) + 1;
+          transaction.buffer(
+              Mutation.newUpdateBuilder("T").set("K").to(key).set("V").to(newValue).build());
+          commitBarrier.countDown();
+          // Synchronize so that all threads attempt to commit at the same time.
+          Uninterruptibles.awaitUninterruptibly(commitBarrier);
+          return newValue;
         };
 
     // We start multiple threads all attempting to update the same value concurrently.  We expect
@@ -156,9 +157,9 @@ public class ITTransactionTest {
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(key), Arrays.asList("V"))
+                .readRow("T", Key.of(key), Collections.singletonList("V"))
                 .getLong(0))
-        .isEqualTo(Long.valueOf(numThreads));
+        .isEqualTo((long) numThreads);
   }
 
   @Test
@@ -166,12 +167,7 @@ public class ITTransactionTest {
     assumeFalse("Emulator does not support multiple parallel transactions", isUsingEmulator());
 
     doBasicsTest(
-        new ReadStrategy() {
-          @Override
-          public Struct read(ReadContext ctx, String key) {
-            return ctx.readRow("T", Key.of(key), Arrays.asList("V"));
-          }
-        });
+        (context, key) -> context.readRow("T", Key.of(key), Collections.singletonList("V")));
   }
 
   @Test
@@ -179,20 +175,17 @@ public class ITTransactionTest {
     assumeFalse("Emulator does not support multiple parallel transactions", isUsingEmulator());
 
     doBasicsTest(
-        new ReadStrategy() {
-          @Override
-          public Struct read(ReadContext ctx, String key) {
-            ResultSet resultSet =
-                ctx.executeQuery(
-                    Statement.newBuilder("SELECT V FROM T WHERE K = @key")
-                        .bind("key")
-                        .to(key)
-                        .build());
-            assertThat(resultSet.next()).isTrue();
-            Struct row = resultSet.getCurrentRowAsStruct();
-            assertThat(resultSet.next()).isFalse();
-            return row;
-          }
+        (context, key) -> {
+          ResultSet resultSet =
+              context.executeQuery(
+                  Statement.newBuilder("SELECT V FROM T WHERE K = @key")
+                      .bind("key")
+                      .to(key)
+                      .build());
+          assertThat(resultSet.next()).isTrue();
+          Struct row = resultSet.getCurrentRowAsStruct();
+          assertThat(resultSet.next()).isFalse();
+          return row;
         });
   }
 
@@ -207,12 +200,9 @@ public class ITTransactionTest {
     final String key = uniqueKey();
 
     TransactionCallable<Void> callable =
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws UserException {
-            transaction.buffer(Mutation.newInsertOrUpdateBuilder("T").set("K").to(key).build());
-            throw new UserException("User failure");
-          }
+        transaction -> {
+          transaction.buffer(Mutation.newInsertOrUpdateBuilder("T").set("K").to(key).build());
+          throw new UserException("User failure");
         };
 
     try {
@@ -225,7 +215,9 @@ public class ITTransactionTest {
     }
 
     Struct row =
-        client.singleUse(TimestampBound.strong()).readRow("T", Key.of(key), Arrays.asList("K"));
+        client
+            .singleUse(TimestampBound.strong())
+            .readRow("T", Key.of(key), Collections.singletonList("K"));
     assertThat(row).isNull();
   }
 
@@ -234,12 +226,9 @@ public class ITTransactionTest {
     final String key = uniqueKey();
 
     TransactionCallable<Void> callable =
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) {
-            transaction.buffer(Mutation.newInsertOrUpdateBuilder("T").set("K").to(key).build());
-            throw newSpannerException(ErrorCode.OUT_OF_RANGE, "User failure");
-          }
+        transaction -> {
+          transaction.buffer(Mutation.newInsertOrUpdateBuilder("T").set("K").to(key).build());
+          throw newSpannerException(ErrorCode.OUT_OF_RANGE, "User failure");
         };
 
     try {
@@ -251,7 +240,9 @@ public class ITTransactionTest {
     }
 
     Struct row =
-        client.singleUse(TimestampBound.strong()).readRow("T", Key.of(key), Arrays.asList("K"));
+        client
+            .singleUse(TimestampBound.strong())
+            .readRow("T", Key.of(key), Collections.singletonList("K"));
     assertThat(row).isNull();
   }
 
@@ -283,18 +274,17 @@ public class ITTransactionTest {
     // second read, which will abort.  Both threads will mask SpannerExceptions to ensure that
     // the implementation does not require TransactionCallable to propagate them.
     Thread t1 =
-        new Thread() {
-          @Override
-          public void run() {
-            try {
-              client
-                  .readWriteTransaction()
-                  .run(
-                      new TransactionCallable<Void>() {
-                        @Override
-                        public Void run(TransactionContext transaction) throws SpannerException {
+        new Thread(
+            () -> {
+              try {
+                client
+                    .readWriteTransaction()
+                    .run(
+                        transaction -> {
                           try {
-                            Struct row = transaction.readRow("T", Key.of(key1), Arrays.asList("V"));
+                            Struct row =
+                                transaction.readRow(
+                                    "T", Key.of(key1), Collections.singletonList("V"));
                             t1Started.countDown();
                             Uninterruptibles.awaitUninterruptibly(t2Running);
                             transaction.buffer(
@@ -308,37 +298,35 @@ public class ITTransactionTest {
                           } catch (SpannerException e) {
                             if (e.getErrorCode() == ErrorCode.ABORTED) {
                               assertThat(e).isInstanceOf(AbortedException.class);
-                              assertThat(((AbortedException) e).getRetryDelayInMillis())
-                                  .isNotEqualTo(-1L);
+                              assertThat(e.getRetryDelayInMillis()).isNotEqualTo(-1L);
                             }
                             throw new RuntimeException("Swallowed exception: " + e.getMessage());
                           }
-                        }
-                      });
-              t1Result.set(null);
-            } catch (Throwable t) {
-              t1Result.setException(t);
-            } finally {
-              t1Done.countDown();
-            }
-          }
-        };
+                        });
+                t1Result.set(null);
+              } catch (Throwable t) {
+                t1Result.setException(t);
+              } finally {
+                t1Done.countDown();
+              }
+            });
     Thread t2 =
-        new Thread() {
-          @Override
-          public void run() {
-            try {
-              client
-                  .readWriteTransaction()
-                  .run(
-                      new TransactionCallable<Void>() {
-                        @Override
-                        public Void run(TransactionContext transaction) throws SpannerException {
+        new Thread(
+            () -> {
+              try {
+                client
+                    .readWriteTransaction()
+                    .run(
+                        transaction -> {
                           try {
-                            Struct r1 = transaction.readRow("T", Key.of(key1), Arrays.asList("V"));
+                            Struct r1 =
+                                transaction.readRow(
+                                    "T", Key.of(key1), Collections.singletonList("V"));
                             t2Running.countDown();
                             Uninterruptibles.awaitUninterruptibly(t1Done);
-                            Struct r2 = transaction.readRow("T", Key.of(key2), Arrays.asList("V"));
+                            Struct r2 =
+                                transaction.readRow(
+                                    "T", Key.of(key2), Collections.singletonList("V"));
                             transaction.buffer(
                                 Mutation.newUpdateBuilder("T")
                                     .set("K")
@@ -350,21 +338,18 @@ public class ITTransactionTest {
                           } catch (SpannerException e) {
                             if (e.getErrorCode() == ErrorCode.ABORTED) {
                               assertThat(e).isInstanceOf(AbortedException.class);
-                              assertThat(((AbortedException) e).getRetryDelayInMillis())
-                                  .isNotEqualTo(-1L);
+                              assertThat(e.getRetryDelayInMillis()).isNotEqualTo(-1L);
                             }
                             throw new RuntimeException("Swallowed exception: " + e.getMessage());
                           }
-                        }
-                      });
-              t2Result.set(null);
-            } catch (Throwable t) {
-              t2Result.setException(t);
-            } finally {
-              t2Done.countDown();
-            }
-          }
-        };
+                        });
+                t2Result.set(null);
+              } catch (Throwable t) {
+                t2Result.setException(t);
+              } finally {
+                t2Done.countDown();
+              }
+            });
 
     t1.start();
     Uninterruptibles.awaitUninterruptibly(t1Started);
@@ -378,13 +363,13 @@ public class ITTransactionTest {
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(key1), Arrays.asList("V"))
+                .readRow("T", Key.of(key1), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(1);
     assertThat(
             client
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(key2), Arrays.asList("V"))
+                .readRow("T", Key.of(key2), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(2);
   }
@@ -393,21 +378,10 @@ public class ITTransactionTest {
     client
         .readWriteTransaction()
         .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws SpannerException {
-                client
-                    .readWriteTransaction()
-                    .run(
-                        new TransactionCallable<Void>() {
-                          @Override
-                          public Void run(TransactionContext transaction) {
-                            return null;
-                          }
-                        });
+            transaction -> {
+              client.readWriteTransaction().run(transaction1 -> null);
 
-                return null;
-              }
+              return null;
             });
   }
 
@@ -428,15 +402,12 @@ public class ITTransactionTest {
       client
           .readWriteTransaction()
           .run(
-              new TransactionCallable<Void>() {
-                @Override
-                public Void run(TransactionContext transaction) throws SpannerException {
-                  try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
-                    tx.getReadTimestamp();
-                  }
-
-                  return null;
+              transaction -> {
+                try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
+                  tx.getReadTimestamp();
                 }
+
+                return null;
               });
       fail("Expected exception");
     } catch (SpannerException e) {
@@ -451,21 +422,18 @@ public class ITTransactionTest {
       client
           .readWriteTransaction()
           .run(
-              new TransactionCallable<Void>() {
-                @Override
-                public Void run(TransactionContext transaction) throws SpannerException {
-                  BatchClient batchClient = env.getTestHelper().getBatchClient(db);
-                  BatchReadOnlyTransaction batchTxn =
-                      batchClient.batchReadOnlyTransaction(TimestampBound.strong());
-                  batchTxn.partitionReadUsingIndex(
-                      PartitionOptions.getDefaultInstance(),
-                      "Test",
-                      "Index",
-                      KeySet.all(),
-                      Arrays.asList("Fingerprint"));
+              transaction -> {
+                BatchClient batchClient = env.getTestHelper().getBatchClient(db);
+                BatchReadOnlyTransaction batchTxn =
+                    batchClient.batchReadOnlyTransaction(TimestampBound.strong());
+                batchTxn.partitionReadUsingIndex(
+                    PartitionOptions.getDefaultInstance(),
+                    "Test",
+                    "Index",
+                    KeySet.all(),
+                    Collections.singletonList("Fingerprint"));
 
-                  return null;
-                }
+                return null;
               });
       fail("Expected exception");
     } catch (SpannerException e) {
@@ -480,18 +448,13 @@ public class ITTransactionTest {
       client
           .readWriteTransaction()
           .run(
-              new TransactionCallable<Void>() {
-                @Override
-                public Void run(TransactionContext transaction) throws SpannerException {
-                  try (ResultSet rs =
-                      client
-                          .singleUseReadOnlyTransaction()
-                          .executeQuery(Statement.of("SELECT 1"))) {
-                    rs.next();
-                  }
-
-                  return null;
+              transaction -> {
+                try (ResultSet rs =
+                    client.singleUseReadOnlyTransaction().executeQuery(Statement.of("SELECT 1"))) {
+                  rs.next();
                 }
+
+                return null;
               });
       fail("Expected exception");
     } catch (SpannerException e) {
@@ -508,13 +471,10 @@ public class ITTransactionTest {
         .readWriteTransaction()
         .allowNestedTransaction()
         .run(
-            new TransactionCallable<Void>() {
-              @Override
-              public Void run(TransactionContext transaction) throws SpannerException {
-                client.singleUseReadOnlyTransaction();
+            transaction -> {
+              client.singleUseReadOnlyTransaction();
 
-                return null;
-              }
+              return null;
             });
   }
 
@@ -528,22 +488,19 @@ public class ITTransactionTest {
         client
             .readWriteTransaction()
             .run(
-                new TransactionCallable<Long>() {
-                  @Override
-                  public Long run(TransactionContext transaction) throws Exception {
-                    try {
-                      transaction.executeUpdate(Statement.of("UPDATE T SET V=2 WHERE"));
-                      fail("missing expected exception");
-                    } catch (SpannerException e) {
-                      if (e.getErrorCode() == ErrorCode.ABORTED) {
-                        // Aborted -> Let the transaction be retried
-                        throw e;
-                      }
-                      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+                transaction -> {
+                  try {
+                    transaction.executeUpdate(Statement.of("UPDATE T SET V=2 WHERE"));
+                    fail("missing expected exception");
+                  } catch (SpannerException e) {
+                    if (e.getErrorCode() == ErrorCode.ABORTED) {
+                      // Aborted -> Let the transaction be retried
+                      throw e;
                     }
-                    return transaction.executeUpdate(
-                        Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
+                    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
                   }
+                  return transaction.executeUpdate(
+                      Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
                 });
     assertThat(updateCount).isEqualTo(1L);
   }
@@ -563,30 +520,26 @@ public class ITTransactionTest {
       client
           .readWriteTransaction()
           .run(
-              new TransactionCallable<Long>() {
-                @Override
-                public Long run(TransactionContext transaction) throws Exception {
-                  try {
-                    // Try to insert a duplicate row. This statement will fail. When the statement
-                    // is executed against an already existing transaction (i.e.
-                    // inlineBegin=false), the entire transaction will remain invalid and cannot
-                    // be committed. When it is executed as the first statement of a transaction
-                    // that also tries to start a transaction, then no transaction will be started
-                    // and the next statement will start the transaction. This will cause the
-                    // transaction to succeed.
-                    transaction.executeUpdate(
-                        Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
-                    fail("missing expected exception");
-                  } catch (SpannerException e) {
-                    if (e.getErrorCode() == ErrorCode.ABORTED) {
-                      // Aborted -> Let the transaction be retried
-                      throw e;
-                    }
-                    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
+              transaction -> {
+                try {
+                  // Try to insert a duplicate row. This statement will fail. When the statement
+                  // is executed against an already existing transaction (i.e.
+                  // inlineBegin=false), the entire transaction will remain invalid and cannot
+                  // be committed. When it is executed as the first statement of a transaction
+                  // that also tries to start a transaction, then no transaction will be started
+                  // and the next statement will start the transaction. This will cause the
+                  // transaction to succeed.
+                  transaction.executeUpdate(Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
+                  fail("missing expected exception");
+                } catch (SpannerException e) {
+                  if (e.getErrorCode() == ErrorCode.ABORTED) {
+                    // Aborted -> Let the transaction be retried
+                    throw e;
                   }
-                  return transaction.executeUpdate(
-                      Statement.of("INSERT INTO T (K, V) VALUES ('Two', 2)"));
+                  assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXISTS);
                 }
+                return transaction.executeUpdate(
+                    Statement.of("INSERT INTO T (K, V) VALUES ('Two', 2)"));
               });
       fail("missing expected ALREADY_EXISTS error");
     } catch (SpannerException e) {
@@ -599,13 +552,7 @@ public class ITTransactionTest {
     try {
       client
           .readWriteTransaction()
-          .run(
-              new TransactionCallable<Long>() {
-                @Override
-                public Long run(TransactionContext transaction) throws Exception {
-                  return transaction.executeUpdate(Statement.of("UPDATE T SET V=2 WHERE"));
-                }
-              });
+          .run(transaction -> transaction.executeUpdate(Statement.of("UPDATE T SET V=2 WHERE")));
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
@@ -618,16 +565,29 @@ public class ITTransactionTest {
       client
           .readWriteTransaction()
           .run(
-              new TransactionCallable<Long>() {
-                @Override
-                public Long run(TransactionContext transaction) throws Exception {
-                  transaction.executeUpdate(Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
-                  return transaction.executeUpdate(Statement.of("UPDATE T SET V=2 WHERE"));
-                }
+              transaction -> {
+                transaction.executeUpdate(Statement.of("INSERT INTO T (K, V) VALUES ('One', 1)"));
+                return transaction.executeUpdate(Statement.of("UPDATE T SET V=2 WHERE"));
               });
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
     }
+  }
+
+  @Test
+  public void testTransactionRunnerReturnsCommitStats() {
+    assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
+    final String key = uniqueKey();
+    TransactionRunner runner = client.readWriteTransaction(Options.commitStats());
+    runner.run(
+        transaction -> {
+          transaction.buffer(
+              Mutation.newInsertBuilder("T").set("K").to(key).set("V").to(0).build());
+          return null;
+        });
+    assertNotNull(runner.getCommitResponse().getCommitStats());
+    // MutationCount = 2 (2 columns).
+    assertEquals(2L, runner.getCommitResponse().getCommitStats().getMutationCount());
   }
 }

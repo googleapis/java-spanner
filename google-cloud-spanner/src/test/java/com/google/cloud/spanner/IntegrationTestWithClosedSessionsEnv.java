@@ -34,8 +34,7 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
   }
 
   @Override
-  RemoteSpannerHelper createTestHelper(SpannerOptions options, InstanceId instanceId)
-      throws Throwable {
+  RemoteSpannerHelper createTestHelper(SpannerOptions options, InstanceId instanceId) {
     SpannerWithClosedSessionsImpl spanner = new SpannerWithClosedSessionsImpl(options);
     return new RemoteSpannerHelperWithClosedSessions(options, instanceId, spanner);
   }

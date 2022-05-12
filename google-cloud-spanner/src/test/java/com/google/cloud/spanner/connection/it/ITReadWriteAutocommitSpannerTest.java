@@ -16,13 +16,11 @@
 
 package com.google.cloud.spanner.connection.it;
 
-import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -61,7 +59,7 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
   public void test01_SqlScript() throws Exception {
     SqlScriptVerifier verifier = new SqlScriptVerifier(new ITConnectionProvider());
     verifier.verifyStatementsInFile(
-        "ITReadWriteAutocommitSpannerTest.sql", SqlScriptVerifier.class);
+        "ITReadWriteAutocommitSpannerTest.sql", SqlScriptVerifier.class, false);
   }
 
   @Test
@@ -75,9 +73,6 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
 
   @Test
   public void test03_MultipleStatements_WithTimeouts() {
-    assumeFalse(
-        "Rolling back a transaction while an update statement is still in flight can cause the transaction to remain active on the emulator",
-        isUsingEmulator());
     try (ITConnection connection = createConnection()) {
       // do an insert that should succeed
       assertThat(
@@ -92,8 +87,8 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
         assertThat(rs.next(), is(false));
       }
 
-      // do an update that should time out
-      connection.setStatementTimeout(1L, TimeUnit.MILLISECONDS);
+      // do an update that should always time out (both on real Spanner as well as on the emulator)
+      connection.setStatementTimeout(1L, TimeUnit.NANOSECONDS);
       try {
         connection.executeUpdate(Statement.of("UPDATE TEST SET NAME='test18' WHERE ID=1000"));
         fail("missing expected exception");

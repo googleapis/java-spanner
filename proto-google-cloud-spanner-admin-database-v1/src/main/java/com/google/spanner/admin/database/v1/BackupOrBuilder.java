@@ -60,6 +60,50 @@ public interface BackupOrBuilder
    *
    *
    * <pre>
+   * The backup will contain an externally consistent copy of the database at
+   * the timestamp specified by `version_time`. If `version_time` is not
+   * specified, the system will set `version_time` to the `create_time` of the
+   * backup.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp version_time = 9;</code>
+   *
+   * @return Whether the versionTime field is set.
+   */
+  boolean hasVersionTime();
+  /**
+   *
+   *
+   * <pre>
+   * The backup will contain an externally consistent copy of the database at
+   * the timestamp specified by `version_time`. If `version_time` is not
+   * specified, the system will set `version_time` to the `create_time` of the
+   * backup.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp version_time = 9;</code>
+   *
+   * @return The versionTime.
+   */
+  com.google.protobuf.Timestamp getVersionTime();
+  /**
+   *
+   *
+   * <pre>
+   * The backup will contain an externally consistent copy of the database at
+   * the timestamp specified by `version_time`. If `version_time` is not
+   * specified, the system will set `version_time` to the `create_time` of the
+   * backup.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp version_time = 9;</code>
+   */
+  com.google.protobuf.TimestampOrBuilder getVersionTimeOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
    * Required for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
    * operation. The expiration time of the backup, with microseconds
    * granularity that must be at least 6 hours and at most 366 days
@@ -155,10 +199,9 @@ public interface BackupOrBuilder
    *
    *
    * <pre>
-   * Output only. The backup will contain an externally consistent
-   * copy of the database at the timestamp specified by
-   * `create_time`. `create_time` is approximately the time the
-   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request is received.
+   * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * request is received. If the request does not specify `version_time`, the
+   * `version_time` of the backup will be equivalent to the `create_time`.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp create_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -171,10 +214,9 @@ public interface BackupOrBuilder
    *
    *
    * <pre>
-   * Output only. The backup will contain an externally consistent
-   * copy of the database at the timestamp specified by
-   * `create_time`. `create_time` is approximately the time the
-   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request is received.
+   * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * request is received. If the request does not specify `version_time`, the
+   * `version_time` of the backup will be equivalent to the `create_time`.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp create_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -187,10 +229,9 @@ public interface BackupOrBuilder
    *
    *
    * <pre>
-   * Output only. The backup will contain an externally consistent
-   * copy of the database at the timestamp specified by
-   * `create_time`. `create_time` is approximately the time the
-   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] request is received.
+   * Output only. The time the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup]
+   * request is received. If the request does not specify `version_time`, the
+   * `version_time` of the backup will be equivalent to the `create_time`.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp create_time = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -253,7 +294,8 @@ public interface BackupOrBuilder
    * to the backup is removed.
    * </pre>
    *
-   * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @return A list containing the referencingDatabases.
@@ -272,7 +314,8 @@ public interface BackupOrBuilder
    * to the backup is removed.
    * </pre>
    *
-   * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @return The count of referencingDatabases.
@@ -291,7 +334,8 @@ public interface BackupOrBuilder
    * to the backup is removed.
    * </pre>
    *
-   * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @param index The index of the element to return.
@@ -311,11 +355,218 @@ public interface BackupOrBuilder
    * to the backup is removed.
    * </pre>
    *
-   * <code>repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string referencing_databases = 7 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @param index The index of the value to return.
    * @return The bytes of the referencingDatabases at the given index.
    */
   com.google.protobuf.ByteString getReferencingDatabasesBytes(int index);
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The encryption information for the backup.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the encryptionInfo field is set.
+   */
+  boolean hasEncryptionInfo();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The encryption information for the backup.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The encryptionInfo.
+   */
+  com.google.spanner.admin.database.v1.EncryptionInfo getEncryptionInfo();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The encryption information for the backup.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionInfo encryption_info = 8 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder getEncryptionInfoOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The database dialect information for the backup.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 10 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for databaseDialect.
+   */
+  int getDatabaseDialectValue();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The database dialect information for the backup.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 10 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The databaseDialect.
+   */
+  com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The names of the destination backups being created by copying
+   * this source backup. The backup names are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * Referencing backups may exist in different instances. The existence of
+   * any referencing backup prevents the backup from being deleted. When the
+   * copy operation is done (either successfully completed or cancelled or the
+   * destination backup is deleted), the reference to the backup is removed.
+   * </pre>
+   *
+   * <code>
+   * repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @return A list containing the referencingBackups.
+   */
+  java.util.List<java.lang.String> getReferencingBackupsList();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The names of the destination backups being created by copying
+   * this source backup. The backup names are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * Referencing backups may exist in different instances. The existence of
+   * any referencing backup prevents the backup from being deleted. When the
+   * copy operation is done (either successfully completed or cancelled or the
+   * destination backup is deleted), the reference to the backup is removed.
+   * </pre>
+   *
+   * <code>
+   * repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @return The count of referencingBackups.
+   */
+  int getReferencingBackupsCount();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The names of the destination backups being created by copying
+   * this source backup. The backup names are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * Referencing backups may exist in different instances. The existence of
+   * any referencing backup prevents the backup from being deleted. When the
+   * copy operation is done (either successfully completed or cancelled or the
+   * destination backup is deleted), the reference to the backup is removed.
+   * </pre>
+   *
+   * <code>
+   * repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @param index The index of the element to return.
+   * @return The referencingBackups at the given index.
+   */
+  java.lang.String getReferencingBackups(int index);
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The names of the destination backups being created by copying
+   * this source backup. The backup names are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * Referencing backups may exist in different instances. The existence of
+   * any referencing backup prevents the backup from being deleted. When the
+   * copy operation is done (either successfully completed or cancelled or the
+   * destination backup is deleted), the reference to the backup is removed.
+   * </pre>
+   *
+   * <code>
+   * repeated string referencing_backups = 11 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @param index The index of the value to return.
+   * @return The bytes of the referencingBackups at the given index.
+   */
+  com.google.protobuf.ByteString getReferencingBackupsBytes(int index);
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The max allowed expiration time of the backup, with
+   * microseconds granularity. A backup's expiration time can be configured in
+   * multiple APIs: CreateBackup, UpdateBackup, CopyBackup. When updating or
+   * copying an existing backup, the expiration time specified must be
+   * less than `Backup.max_expire_time`.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp max_expire_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the maxExpireTime field is set.
+   */
+  boolean hasMaxExpireTime();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The max allowed expiration time of the backup, with
+   * microseconds granularity. A backup's expiration time can be configured in
+   * multiple APIs: CreateBackup, UpdateBackup, CopyBackup. When updating or
+   * copying an existing backup, the expiration time specified must be
+   * less than `Backup.max_expire_time`.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp max_expire_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The maxExpireTime.
+   */
+  com.google.protobuf.Timestamp getMaxExpireTime();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The max allowed expiration time of the backup, with
+   * microseconds granularity. A backup's expiration time can be configured in
+   * multiple APIs: CreateBackup, UpdateBackup, CopyBackup. When updating or
+   * copying an existing backup, the expiration time specified must be
+   * less than `Backup.max_expire_time`.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp max_expire_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.protobuf.TimestampOrBuilder getMaxExpireTimeOrBuilder();
 }

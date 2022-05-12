@@ -42,6 +42,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     database_ = "";
     statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     commitTimestamps_ = java.util.Collections.emptyList();
+    progress_ = java.util.Collections.emptyList();
   }
 
   @java.lang.Override
@@ -106,6 +107,20 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
               throttled_ = input.readBool();
               break;
             }
+          case 42:
+            {
+              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
+                progress_ =
+                    new java.util.ArrayList<
+                        com.google.spanner.admin.database.v1.OperationProgress>();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              progress_.add(
+                  input.readMessage(
+                      com.google.spanner.admin.database.v1.OperationProgress.parser(),
+                      extensionRegistry));
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -125,6 +140,9 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       if (((mutable_bitField0_ & 0x00000002) != 0)) {
         commitTimestamps_ = java.util.Collections.unmodifiableList(commitTimestamps_);
+      }
+      if (((mutable_bitField0_ & 0x00000004) != 0)) {
+        progress_ = java.util.Collections.unmodifiableList(progress_);
       }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
@@ -359,6 +377,111 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     return throttled_;
   }
 
+  public static final int PROGRESS_FIELD_NUMBER = 5;
+  private java.util.List<com.google.spanner.admin.database.v1.OperationProgress> progress_;
+  /**
+   *
+   *
+   * <pre>
+   * The progress of the
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+   * Currently, only index creation statements will have a continuously
+   * updating progress.
+   * For non-index creation statements, `progress[i]` will have start time
+   * and end time populated with commit timestamp of operation,
+   * as well as a progress of 100% once the operation has completed.
+   * `progress[i]` is the operation progress for `statements[i]`.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+   */
+  @java.lang.Override
+  public java.util.List<com.google.spanner.admin.database.v1.OperationProgress> getProgressList() {
+    return progress_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The progress of the
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+   * Currently, only index creation statements will have a continuously
+   * updating progress.
+   * For non-index creation statements, `progress[i]` will have start time
+   * and end time populated with commit timestamp of operation,
+   * as well as a progress of 100% once the operation has completed.
+   * `progress[i]` is the operation progress for `statements[i]`.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+   */
+  @java.lang.Override
+  public java.util.List<? extends com.google.spanner.admin.database.v1.OperationProgressOrBuilder>
+      getProgressOrBuilderList() {
+    return progress_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The progress of the
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+   * Currently, only index creation statements will have a continuously
+   * updating progress.
+   * For non-index creation statements, `progress[i]` will have start time
+   * and end time populated with commit timestamp of operation,
+   * as well as a progress of 100% once the operation has completed.
+   * `progress[i]` is the operation progress for `statements[i]`.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+   */
+  @java.lang.Override
+  public int getProgressCount() {
+    return progress_.size();
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The progress of the
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+   * Currently, only index creation statements will have a continuously
+   * updating progress.
+   * For non-index creation statements, `progress[i]` will have start time
+   * and end time populated with commit timestamp of operation,
+   * as well as a progress of 100% once the operation has completed.
+   * `progress[i]` is the operation progress for `statements[i]`.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.OperationProgress getProgress(int index) {
+    return progress_.get(index);
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The progress of the
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+   * Currently, only index creation statements will have a continuously
+   * updating progress.
+   * For non-index creation statements, `progress[i]` will have start time
+   * and end time populated with commit timestamp of operation,
+   * as well as a progress of 100% once the operation has completed.
+   * `progress[i]` is the operation progress for `statements[i]`.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.OperationProgressOrBuilder getProgressOrBuilder(
+      int index) {
+    return progress_.get(index);
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -373,7 +496,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!getDatabaseBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(database_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, database_);
     }
     for (int i = 0; i < statements_.size(); i++) {
@@ -385,6 +508,9 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     if (throttled_ != false) {
       output.writeBool(4, throttled_);
     }
+    for (int i = 0; i < progress_.size(); i++) {
+      output.writeMessage(5, progress_.get(i));
+    }
     unknownFields.writeTo(output);
   }
 
@@ -394,7 +520,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     if (size != -1) return size;
 
     size = 0;
-    if (!getDatabaseBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(database_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, database_);
     }
     {
@@ -410,6 +536,9 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     }
     if (throttled_ != false) {
       size += com.google.protobuf.CodedOutputStream.computeBoolSize(4, throttled_);
+    }
+    for (int i = 0; i < progress_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(5, progress_.get(i));
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -431,6 +560,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     if (!getStatementsList().equals(other.getStatementsList())) return false;
     if (!getCommitTimestampsList().equals(other.getCommitTimestampsList())) return false;
     if (getThrottled() != other.getThrottled()) return false;
+    if (!getProgressList().equals(other.getProgressList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -454,6 +584,10 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     }
     hash = (37 * hash) + THROTTLED_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getThrottled());
+    if (getProgressCount() > 0) {
+      hash = (37 * hash) + PROGRESS_FIELD_NUMBER;
+      hash = (53 * hash) + getProgressList().hashCode();
+    }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -597,6 +731,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
         getCommitTimestampsFieldBuilder();
+        getProgressFieldBuilder();
       }
     }
 
@@ -615,6 +750,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       throttled_ = false;
 
+      if (progressBuilder_ == null) {
+        progress_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000004);
+      } else {
+        progressBuilder_.clear();
+      }
       return this;
     }
 
@@ -660,6 +801,15 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         result.commitTimestamps_ = commitTimestampsBuilder_.build();
       }
       result.throttled_ = throttled_;
+      if (progressBuilder_ == null) {
+        if (((bitField0_ & 0x00000004) != 0)) {
+          progress_ = java.util.Collections.unmodifiableList(progress_);
+          bitField0_ = (bitField0_ & ~0x00000004);
+        }
+        result.progress_ = progress_;
+      } else {
+        result.progress_ = progressBuilder_.build();
+      }
       onBuilt();
       return result;
     }
@@ -754,6 +904,33 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       if (other.getThrottled() != false) {
         setThrottled(other.getThrottled());
+      }
+      if (progressBuilder_ == null) {
+        if (!other.progress_.isEmpty()) {
+          if (progress_.isEmpty()) {
+            progress_ = other.progress_;
+            bitField0_ = (bitField0_ & ~0x00000004);
+          } else {
+            ensureProgressIsMutable();
+            progress_.addAll(other.progress_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.progress_.isEmpty()) {
+          if (progressBuilder_.isEmpty()) {
+            progressBuilder_.dispose();
+            progressBuilder_ = null;
+            progress_ = other.progress_;
+            bitField0_ = (bitField0_ & ~0x00000004);
+            progressBuilder_ =
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
+                    ? getProgressFieldBuilder()
+                    : null;
+          } else {
+            progressBuilder_.addAllMessages(other.progress_);
+          }
+        }
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1515,6 +1692,492 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       throttled_ = false;
       onChanged();
       return this;
+    }
+
+    private java.util.List<com.google.spanner.admin.database.v1.OperationProgress> progress_ =
+        java.util.Collections.emptyList();
+
+    private void ensureProgressIsMutable() {
+      if (!((bitField0_ & 0x00000004) != 0)) {
+        progress_ =
+            new java.util.ArrayList<com.google.spanner.admin.database.v1.OperationProgress>(
+                progress_);
+        bitField0_ |= 0x00000004;
+      }
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.admin.database.v1.OperationProgress,
+            com.google.spanner.admin.database.v1.OperationProgress.Builder,
+            com.google.spanner.admin.database.v1.OperationProgressOrBuilder>
+        progressBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public java.util.List<com.google.spanner.admin.database.v1.OperationProgress>
+        getProgressList() {
+      if (progressBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(progress_);
+      } else {
+        return progressBuilder_.getMessageList();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public int getProgressCount() {
+      if (progressBuilder_ == null) {
+        return progress_.size();
+      } else {
+        return progressBuilder_.getCount();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public com.google.spanner.admin.database.v1.OperationProgress getProgress(int index) {
+      if (progressBuilder_ == null) {
+        return progress_.get(index);
+      } else {
+        return progressBuilder_.getMessage(index);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public Builder setProgress(
+        int index, com.google.spanner.admin.database.v1.OperationProgress value) {
+      if (progressBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureProgressIsMutable();
+        progress_.set(index, value);
+        onChanged();
+      } else {
+        progressBuilder_.setMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public Builder setProgress(
+        int index, com.google.spanner.admin.database.v1.OperationProgress.Builder builderForValue) {
+      if (progressBuilder_ == null) {
+        ensureProgressIsMutable();
+        progress_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        progressBuilder_.setMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public Builder addProgress(com.google.spanner.admin.database.v1.OperationProgress value) {
+      if (progressBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureProgressIsMutable();
+        progress_.add(value);
+        onChanged();
+      } else {
+        progressBuilder_.addMessage(value);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public Builder addProgress(
+        int index, com.google.spanner.admin.database.v1.OperationProgress value) {
+      if (progressBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureProgressIsMutable();
+        progress_.add(index, value);
+        onChanged();
+      } else {
+        progressBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public Builder addProgress(
+        com.google.spanner.admin.database.v1.OperationProgress.Builder builderForValue) {
+      if (progressBuilder_ == null) {
+        ensureProgressIsMutable();
+        progress_.add(builderForValue.build());
+        onChanged();
+      } else {
+        progressBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public Builder addProgress(
+        int index, com.google.spanner.admin.database.v1.OperationProgress.Builder builderForValue) {
+      if (progressBuilder_ == null) {
+        ensureProgressIsMutable();
+        progress_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        progressBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public Builder addAllProgress(
+        java.lang.Iterable<? extends com.google.spanner.admin.database.v1.OperationProgress>
+            values) {
+      if (progressBuilder_ == null) {
+        ensureProgressIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(values, progress_);
+        onChanged();
+      } else {
+        progressBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public Builder clearProgress() {
+      if (progressBuilder_ == null) {
+        progress_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000004);
+        onChanged();
+      } else {
+        progressBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public Builder removeProgress(int index) {
+      if (progressBuilder_ == null) {
+        ensureProgressIsMutable();
+        progress_.remove(index);
+        onChanged();
+      } else {
+        progressBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public com.google.spanner.admin.database.v1.OperationProgress.Builder getProgressBuilder(
+        int index) {
+      return getProgressFieldBuilder().getBuilder(index);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public com.google.spanner.admin.database.v1.OperationProgressOrBuilder getProgressOrBuilder(
+        int index) {
+      if (progressBuilder_ == null) {
+        return progress_.get(index);
+      } else {
+        return progressBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public java.util.List<? extends com.google.spanner.admin.database.v1.OperationProgressOrBuilder>
+        getProgressOrBuilderList() {
+      if (progressBuilder_ != null) {
+        return progressBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(progress_);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public com.google.spanner.admin.database.v1.OperationProgress.Builder addProgressBuilder() {
+      return getProgressFieldBuilder()
+          .addBuilder(com.google.spanner.admin.database.v1.OperationProgress.getDefaultInstance());
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public com.google.spanner.admin.database.v1.OperationProgress.Builder addProgressBuilder(
+        int index) {
+      return getProgressFieldBuilder()
+          .addBuilder(
+              index, com.google.spanner.admin.database.v1.OperationProgress.getDefaultInstance());
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The progress of the
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+     * Currently, only index creation statements will have a continuously
+     * updating progress.
+     * For non-index creation statements, `progress[i]` will have start time
+     * and end time populated with commit timestamp of operation,
+     * as well as a progress of 100% once the operation has completed.
+     * `progress[i]` is the operation progress for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
+     */
+    public java.util.List<com.google.spanner.admin.database.v1.OperationProgress.Builder>
+        getProgressBuilderList() {
+      return getProgressFieldBuilder().getBuilderList();
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.admin.database.v1.OperationProgress,
+            com.google.spanner.admin.database.v1.OperationProgress.Builder,
+            com.google.spanner.admin.database.v1.OperationProgressOrBuilder>
+        getProgressFieldBuilder() {
+      if (progressBuilder_ == null) {
+        progressBuilder_ =
+            new com.google.protobuf.RepeatedFieldBuilderV3<
+                com.google.spanner.admin.database.v1.OperationProgress,
+                com.google.spanner.admin.database.v1.OperationProgress.Builder,
+                com.google.spanner.admin.database.v1.OperationProgressOrBuilder>(
+                progress_, ((bitField0_ & 0x00000004) != 0), getParentForChildren(), isClean());
+        progress_ = null;
+      }
+      return progressBuilder_;
     }
 
     @java.lang.Override

@@ -26,7 +26,7 @@ import com.google.spanner.v1.TypeCode;
 import java.util.Arrays;
 
 public class MockSpannerTestUtil {
-  static final Statement SELECT1 = Statement.of("SELECT 1 AS COL1");
+  public static final Statement SELECT1 = Statement.of("SELECT 1 AS COL1");
   private static final ResultSetMetadata SELECT1_METADATA =
       ResultSetMetadata.newBuilder()
           .setRowType(
@@ -41,7 +41,7 @@ public class MockSpannerTestUtil {
                           .build())
                   .build())
           .build();
-  static final com.google.spanner.v1.ResultSet SELECT1_RESULTSET =
+  public static final com.google.spanner.v1.ResultSet SELECT1_RESULTSET =
       com.google.spanner.v1.ResultSet.newBuilder()
           .addRows(
               ListValue.newBuilder()

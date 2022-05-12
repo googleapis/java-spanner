@@ -16,11 +16,13 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
@@ -28,6 +30,7 @@ import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import java.util.ArrayList;
@@ -35,19 +38,20 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
 
 /**
  * Integration test reading large amounts of data. The size of data ensures that multiple chunks are
  * returned by the server.
  */
 @Category(ParallelIntegrationTest.class)
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class ITLargeReadTest {
   private static int numRows;
 
@@ -56,9 +60,9 @@ public class ITLargeReadTest {
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
-  private static Database db;
+  private static DatabaseClient googleStandardSQLClient;
+  private static DatabaseClient postgreSQLClient;
   private static HashFunction hasher;
-  private static DatabaseClient client;
 
   // Generate a combination of small and large row sizes to allow multiple read/query restarts and
   // to exercise chunking.
@@ -74,7 +78,7 @@ public class ITLargeReadTest {
 
   @BeforeClass
   public static void setUpDatabase() {
-    db =
+    Database googleStandardSQLDatabase =
         env.getTestHelper()
             .createTestDatabase(
                 "CREATE TABLE TestTable ("
@@ -83,8 +87,22 @@ public class ITLargeReadTest {
                     + "  Fingerprint   INT64,"
                     + "  Size          INT64,"
                     + ") PRIMARY KEY (Key)");
+    googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSQLDatabase);
+    if (!isUsingEmulator()) {
+      Database postgreSQLDatabase =
+          env.getTestHelper()
+              .createTestDatabase(
+                  Dialect.POSTGRESQL,
+                  Arrays.asList(
+                      "CREATE TABLE TestTable ("
+                          + "  Key           BIGINT PRIMARY KEY,"
+                          + "  Data          BYTEA,"
+                          + "  Fingerprint   BIGINT,"
+                          + "  Size          BIGINT"
+                          + ")"));
+      postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
+    }
     hasher = Hashing.goodFastHash(64);
-    client = env.getTestHelper().getDatabaseClient(db);
 
     List<Mutation> mutations = new ArrayList<>();
     Random rnd = new Random();
@@ -108,18 +126,50 @@ public class ITLargeReadTest {
       totalSize += rowSize;
       i++;
       if (totalSize >= WRITE_BATCH_SIZE) {
-        client.write(mutations);
+        googleStandardSQLClient.write(mutations);
+        if (!isUsingEmulator()) {
+          postgreSQLClient.write(mutations);
+        }
         mutations.clear();
         totalSize = 0;
       }
     }
-    client.write(mutations);
+    googleStandardSQLClient.write(mutations);
+    if (!isUsingEmulator()) {
+      postgreSQLClient.write(mutations);
+    }
+  }
+
+  @AfterClass
+  public static void teardown() {
+    ConnectionOptions.closeSpanner();
+  }
+
+  @Parameterized.Parameters(name = "Dialect = {0}")
+  public static List<DialectTestParameter> data() {
+    List<DialectTestParameter> params = new ArrayList<>();
+    params.add(new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL));
+    // "PG dialect tests are not supported by the emulator"
+    if (!isUsingEmulator()) {
+      params.add(new DialectTestParameter(Dialect.POSTGRESQL));
+    }
+    return params;
+  }
+
+  @Parameterized.Parameter(0)
+  public DialectTestParameter dialect;
+
+  private DatabaseClient getClient(Dialect dialect) {
+    if (dialect == Dialect.POSTGRESQL) {
+      return postgreSQLClient;
+    }
+    return googleStandardSQLClient;
   }
 
   @Test
   public void read() {
     try (ResultSet resultSet =
-        client
+        getClient(dialect.dialect)
             .singleUse()
             .read(TABLE_NAME, KeySet.all(), Arrays.asList("Key", "Data", "Fingerprint", "Size"))) {
       validate(resultSet);
@@ -129,7 +179,7 @@ public class ITLargeReadTest {
   @Test
   public void readWithSmallPrefetchChunks() {
     try (ResultSet resultSet =
-        client
+        getClient(dialect.dialect)
             .singleUse()
             .read(
                 TABLE_NAME,
@@ -143,7 +193,7 @@ public class ITLargeReadTest {
   @Test
   public void query() {
     try (ResultSet resultSet =
-        client
+        getClient(dialect.dialect)
             .singleUse()
             .executeQuery(
                 Statement.of(
@@ -155,7 +205,7 @@ public class ITLargeReadTest {
   @Test
   public void queryWithSmallPrefetchChunks() {
     try (ResultSet resultSet =
-        client
+        getClient(dialect.dialect)
             .singleUse()
             .executeQuery(
                 Statement.of(

@@ -141,7 +141,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
    * Name of the restored database being optimized.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
    *
    * @return The name.
    */
@@ -164,7 +164,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
    * Name of the restored database being optimized.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
    *
    * @return The bytes for name.
    */
@@ -243,7 +243,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!getNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
     }
     if (progress_ != null) {
@@ -258,7 +258,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
     if (size != -1) return size;
 
     size = 0;
-    if (!getNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
     }
     if (progress_ != null) {
@@ -595,7 +595,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
      * Name of the restored database being optimized.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return The name.
      */
@@ -617,7 +617,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
      * Name of the restored database being optimized.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return The bytes for name.
      */
@@ -639,7 +639,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
      * Name of the restored database being optimized.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
      *
      * @param value The name to set.
      * @return This builder for chaining.
@@ -660,7 +660,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
      * Name of the restored database being optimized.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
      *
      * @return This builder for chaining.
      */
@@ -677,7 +677,7 @@ public final class OptimizeRestoredDatabaseMetadata extends com.google.protobuf.
      * Name of the restored database being optimized.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.resource_reference) = { ... }</code>
      *
      * @param value The bytes for name to set.
      * @return This builder for chaining.

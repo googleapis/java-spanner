@@ -36,7 +36,7 @@ public class AsyncStatementResultImplTest {
   @Test
   public void testNoResultGetResultSetAsync() {
     AsyncStatementResult subject =
-        AsyncStatementResultImpl.noResult(ApiFutures.<Void>immediateFuture(null));
+        AsyncStatementResultImpl.noResult(ApiFutures.immediateFuture(null));
     assertThat(subject.getResultType()).isEqualTo(ResultType.NO_RESULT);
     try {
       subject.getResultSetAsync();
@@ -49,7 +49,7 @@ public class AsyncStatementResultImplTest {
   @Test
   public void testNoResultGetUpdateCountAsync() {
     AsyncStatementResult subject =
-        AsyncStatementResultImpl.noResult(ApiFutures.<Void>immediateFuture(null));
+        AsyncStatementResultImpl.noResult(ApiFutures.immediateFuture(null));
     assertThat(subject.getResultType()).isEqualTo(ResultType.NO_RESULT);
     try {
       subject.getUpdateCountAsync();

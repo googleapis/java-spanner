@@ -17,16 +17,14 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
-import com.google.api.gax.rpc.UnaryCallSettings.Builder;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -42,6 +40,7 @@ import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -50,8 +49,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.threeten.bp.Duration;
 
-@RunWith(JUnit4.class)
 @Category(TracerTest.class)
+@RunWith(JUnit4.class)
 public class SpanTest {
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_INSTANCE = "my-instance";
@@ -103,6 +102,21 @@ public class SpanTest {
 
   @BeforeClass
   public static void startStaticServer() throws Exception {
+    Assume.assumeTrue(
+        "This test is only supported on JDK11 and lower",
+        JavaVersionUtil.getJavaMajorVersion() < 12);
+
+    // Use a little reflection to set the test tracer.
+    // This is not possible in Java 12 and later.
+    java.lang.reflect.Field field = Tracing.class.getDeclaredField("traceComponent");
+    field.setAccessible(true);
+    java.lang.reflect.Field modifiersField =
+        java.lang.reflect.Field.class.getDeclaredField("modifiers");
+    modifiersField.setAccessible(true);
+    // Remove the final modifier from the 'traceComponent' field.
+    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+    field.set(null, failOnOverkillTraceComponent);
+
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
@@ -121,22 +135,14 @@ public class SpanTest {
             .build()
             .start();
     channelProvider = LocalChannelProvider.create(uniqueName);
-
-    // Use a little bit reflection to set the test tracer.
-    java.lang.reflect.Field field = Tracing.class.getDeclaredField("traceComponent");
-    field.setAccessible(true);
-    java.lang.reflect.Field modifiersField =
-        java.lang.reflect.Field.class.getDeclaredField("modifiers");
-    modifiersField.setAccessible(true);
-    // Remove the final modifier from the 'traceComponent' field.
-    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-    field.set(null, failOnOverkillTraceComponent);
   }
 
   @AfterClass
   public static void stopServer() throws InterruptedException {
-    server.shutdown();
-    server.awaitTermination();
+    if (server != null) {
+      server.shutdown();
+      server.awaitTermination();
+    }
   }
 
   @Before
@@ -173,12 +179,9 @@ public class SpanTest {
     builder
         .getSpannerStubSettingsBuilder()
         .applyToAllUnaryMethods(
-            new ApiFunction<Builder<?, ?>, Void>() {
-              @Override
-              public Void apply(Builder<?, ?> input) {
-                input.setRetrySettings(retrySettings);
-                return null;
-              }
+            input -> {
+              input.setRetrySettings(retrySettings);
+              return null;
             });
     builder
         .getSpannerStubSettingsBuilder()
@@ -209,13 +212,8 @@ public class SpanTest {
   public void singleUseNonRetryableErrorOnNext() {
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
       mockSpanner.addException(FAILED_PRECONDITION);
-      while (rs.next()) {
-        // Just consume the result set.
-        fail("Expected exception");
-      }
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
   }
 
@@ -223,13 +221,8 @@ public class SpanTest {
   public void singleUseExecuteStreamingSqlTimeout() {
     try (ResultSet rs = clientWithTimeout.singleUse().executeQuery(SELECT1)) {
       mockSpanner.setExecuteStreamingSqlExecutionTime(ONE_SECOND);
-      while (rs.next()) {
-        // Just consume the result set.
-        fail("Expected exception");
-      }
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
+      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
     }
   }
 
@@ -269,14 +262,7 @@ public class SpanTest {
   @Test
   public void transactionRunner() {
     TransactionRunner runner = client.readWriteTransaction();
-    runner.run(
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) {
-            transaction.executeUpdate(UPDATE_STATEMENT);
-            return null;
-          }
-        });
+    runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
@@ -288,19 +274,11 @@ public class SpanTest {
   @Test
   public void transactionRunnerWithError() {
     TransactionRunner runner = client.readWriteTransaction();
-    try {
-      runner.run(
-          new TransactionCallable<Void>() {
-            @Override
-            public Void run(TransactionContext transaction) {
-              transaction.executeUpdate(INVALID_UPDATE_STATEMENT);
-              return null;
-            }
-          });
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> runner.run(transaction -> transaction.executeUpdate(INVALID_UPDATE_STATEMENT)));
+    assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
 
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans.size()).isEqualTo(4);

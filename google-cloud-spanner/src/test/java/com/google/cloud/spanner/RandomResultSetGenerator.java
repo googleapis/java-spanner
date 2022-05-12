@@ -32,7 +32,7 @@ import com.google.spanner.v1.TypeCode;
 import java.util.Random;
 
 public class RandomResultSetGenerator {
-  private static final Type TYPES[] =
+  private static final Type[] TYPES =
       new Type[] {
         Type.newBuilder().setCode(TypeCode.BOOL).build(),
         Type.newBuilder().setCode(TypeCode.INT64).build(),
@@ -71,7 +71,7 @@ public class RandomResultSetGenerator {
             .build(),
       };
 
-  private static final ResultSetMetadata generateMetadata() {
+  private static ResultSetMetadata generateMetadata() {
     StructType.Builder rowTypeBuilder = StructType.newBuilder();
     for (int col = 0; col < TYPES.length; col++) {
       rowTypeBuilder.addFields(Field.newBuilder().setName("COL" + col).setType(TYPES[col])).build();
@@ -94,9 +94,9 @@ public class RandomResultSetGenerator {
     ResultSet.Builder builder = ResultSet.newBuilder();
     for (int row = 0; row < rowCount; row++) {
       ListValue.Builder rowBuilder = ListValue.newBuilder();
-      for (int col = 0; col < TYPES.length; col++) {
+      for (Type type : TYPES) {
         Value.Builder valueBuilder = Value.newBuilder();
-        setRandomValue(valueBuilder, TYPES[col]);
+        setRandomValue(valueBuilder, type);
         rowBuilder.addValues(valueBuilder.build());
       }
       builder.addRows(rowBuilder.build());

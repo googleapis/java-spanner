@@ -33,6 +33,7 @@ import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import com.google.cloud.spanner.connection.SqlScriptVerifier;
 import java.math.BigInteger;
@@ -66,7 +67,7 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
         // create tables
         SqlScriptVerifier verifier = new SqlScriptVerifier(new ITConnectionProvider());
         verifier.verifyStatementsInFile(
-            "ITReadOnlySpannerTest_CreateTables.sql", SqlScriptVerifier.class);
+            "ITReadOnlySpannerTest_CreateTables.sql", SqlScriptVerifier.class, false);
 
         // fill tables with data
         connection.setAutocommit(false);
@@ -101,7 +102,7 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
     // Wait 100ms to ensure that staleness tests in the script succeed.
     Thread.sleep(100L);
     SqlScriptVerifier verifier = new SqlScriptVerifier(new ITConnectionProvider());
-    verifier.verifyStatementsInFile("ITReadOnlySpannerTest.sql", SqlScriptVerifier.class);
+    verifier.verifyStatementsInFile("ITReadOnlySpannerTest.sql", SqlScriptVerifier.class, false);
   }
 
   @Test
@@ -200,23 +201,41 @@ public class ITReadOnlySpannerTest extends ITAbstractSpannerTest {
       final ResultSet rs2 = connection.executeQuery(Statement.of("SELECT * FROM NUMBERS"));
       ExecutorService exec = Executors.newFixedThreadPool(2);
       exec.submit(
-          new Runnable() {
-            @Override
-            public void run() {
-              while (rs1.next()) {}
-            }
+          () -> {
+            while (rs1.next()) {}
           });
       exec.submit(
-          new Runnable() {
-            @Override
-            public void run() {
-              while (rs2.next()) {}
-            }
+          () -> {
+            while (rs2.next()) {}
           });
       exec.shutdown();
       exec.awaitTermination(1000L, TimeUnit.SECONDS);
       rs1.close();
       rs2.close();
+    }
+  }
+
+  @Test
+  public void testGetMetadataFromAnalyzeQuery() {
+    assumeFalse("analyze query is not supported on the emulator", isUsingEmulator());
+    try (ITConnection connection = createConnection()) {
+      // Request a query plan without executing the query and verify that we can get the column
+      // metadata of the query without calling resultSet.next() first.
+      try (ResultSet resultSet =
+          connection.analyzeQuery(
+              Statement.of("SELECT number, name FROM NUMBERS"), QueryAnalyzeMode.PLAN)) {
+        assertEquals(2, resultSet.getColumnCount());
+
+        assertEquals(0, resultSet.getColumnIndex("number"));
+        assertEquals("number", resultSet.getType().getStructFields().get(0).getName());
+        assertEquals(Type.int64(), resultSet.getColumnType(0));
+        assertEquals(Type.int64(), resultSet.getColumnType("number"));
+
+        assertEquals(1, resultSet.getColumnIndex("name"));
+        assertEquals("name", resultSet.getType().getStructFields().get(1).getName());
+        assertEquals(Type.string(), resultSet.getColumnType(1));
+        assertEquals(Type.string(), resultSet.getColumnType("name"));
+      }
     }
   }
 }

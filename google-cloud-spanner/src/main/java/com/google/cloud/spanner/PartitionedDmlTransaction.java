@@ -26,12 +26,14 @@ import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Ticker;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.PartialResultSet;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
@@ -162,8 +164,8 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     }
   }
 
-  private ExecuteSqlRequest newTransactionRequestFrom(
-      final Statement statement, final Options options) {
+  @VisibleForTesting
+  ExecuteSqlRequest newTransactionRequestFrom(final Statement statement, final Options options) {
     ByteString transactionId = initTransaction();
 
     final TransactionSelector transactionSelector =
@@ -179,6 +181,16 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
 
     builder.setResumeToken(ByteString.EMPTY);
 
+    if (options.hasPriority() || options.hasTag()) {
+      RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
+      if (options.hasPriority()) {
+        requestOptionsBuilder.setPriority(options.priority());
+      }
+      if (options.hasTag()) {
+        requestOptionsBuilder.setRequestTag(options.tag());
+      }
+      builder.setRequestOptions(requestOptionsBuilder.build());
+    }
     return builder.build();
   }
 
@@ -205,8 +217,10 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     if (!statementParameters.isEmpty()) {
       com.google.protobuf.Struct.Builder paramsBuilder = requestBuilder.getParamsBuilder();
       for (Map.Entry<String, Value> param : statementParameters.entrySet()) {
-        paramsBuilder.putFields(param.getKey(), param.getValue().toProto());
-        requestBuilder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
+        paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
+        if (param.getValue() != null && param.getValue().getType() != null) {
+          requestBuilder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
+        }
       }
     }
   }

@@ -24,8 +24,6 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.TransactionContext;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.spanner.v1.SpannerGrpc;
 import io.grpc.CallOptions;
 import io.grpc.Context;
@@ -65,18 +63,14 @@ class StatementTimeoutExample {
     Context context =
         Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
     // Run the transaction in the custom context.
-    context.run(new Runnable() {
-      public void run() {
-        client.readWriteTransaction().run(new TransactionCallable<long[]>() {
-          public long[] run(TransactionContext transaction) throws Exception {
-            String sql = "INSERT Singers (SingerId, FirstName, LastName)\n"
-                + "VALUES (20, 'George', 'Washington')";
-            long rowCount = transaction.executeUpdate(Statement.of(sql));
-            System.out.printf("%d record inserted.%n", rowCount);
-            return null;
-          }
-        });
-      }
-    });
+    context.run(() ->
+        client.readWriteTransaction().<long[]>run(transaction -> {
+          String sql = "INSERT INTO Singers (SingerId, FirstName, LastName)\n"
+              + "VALUES (20, 'George', 'Washington')";
+          long rowCount = transaction.executeUpdate(Statement.of(sql));
+          System.out.printf("%d record inserted.%n", rowCount);
+          return null;
+        })
+    );
   }
 }

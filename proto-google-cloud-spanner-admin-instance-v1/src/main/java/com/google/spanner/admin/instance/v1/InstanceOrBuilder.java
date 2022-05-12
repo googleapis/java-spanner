@@ -33,7 +33,7 @@ public interface InstanceOrBuilder
    * segment of the name must be between 2 and 64 characters in length.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The name.
    */
@@ -48,7 +48,7 @@ public interface InstanceOrBuilder
    * segment of the name must be between 2 and 64 characters in length.
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The bytes for name.
    */
@@ -64,7 +64,9 @@ public interface InstanceOrBuilder
    * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
    * </pre>
    *
-   * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+   * <code>
+   * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+   * </code>
    *
    * @return The config.
    */
@@ -79,7 +81,9 @@ public interface InstanceOrBuilder
    * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
    * </pre>
    *
-   * <code>string config = 2 [(.google.api.resource_reference) = { ... }</code>
+   * <code>
+   * string config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+   * </code>
    *
    * @return The bytes for config.
    */
@@ -93,7 +97,7 @@ public interface InstanceOrBuilder
    * Must be unique per project and between 4 and 30 characters in length.
    * </pre>
    *
-   * <code>string display_name = 3;</code>
+   * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The displayName.
    */
@@ -106,7 +110,7 @@ public interface InstanceOrBuilder
    * Must be unique per project and between 4 and 30 characters in length.
    * </pre>
    *
-   * <code>string display_name = 3;</code>
+   * <code>string display_name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    *
    * @return The bytes for displayName.
    */
@@ -133,6 +137,21 @@ public interface InstanceOrBuilder
    *
    *
    * <pre>
+   * The number of processing units allocated to this instance. At most one of
+   * processing_units or node_count should be present in the message. This may
+   * be zero in API responses for instances that are not yet in state `READY`.
+   * </pre>
+   *
+   * <code>int32 processing_units = 9;</code>
+   *
+   * @return The processingUnits.
+   */
+  int getProcessingUnits();
+
+  /**
+   *
+   *
+   * <pre>
    * Output only. The current instance state. For
    * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
    * either omitted or set to `CREATING`. For
@@ -140,7 +159,9 @@ public interface InstanceOrBuilder
    * either omitted or set to `READY`.
    * </pre>
    *
-   * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+   * <code>
+   * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return The enum numeric value on the wire for state.
    */
@@ -156,7 +177,9 @@ public interface InstanceOrBuilder
    * either omitted or set to `READY`.
    * </pre>
    *
-   * <code>.google.spanner.admin.instance.v1.Instance.State state = 6;</code>
+   * <code>
+   * .google.spanner.admin.instance.v1.Instance.State state = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
    *
    * @return The state.
    */

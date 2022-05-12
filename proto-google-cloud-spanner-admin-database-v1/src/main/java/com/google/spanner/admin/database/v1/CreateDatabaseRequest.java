@@ -41,6 +41,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     parent_ = "";
     createStatement_ = "";
     extraStatements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    databaseDialect_ = 0;
   }
 
   @java.lang.Override
@@ -95,6 +96,30 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
                 mutable_bitField0_ |= 0x00000001;
               }
               extraStatements_.add(s);
+              break;
+            }
+          case 34:
+            {
+              com.google.spanner.admin.database.v1.EncryptionConfig.Builder subBuilder = null;
+              if (encryptionConfig_ != null) {
+                subBuilder = encryptionConfig_.toBuilder();
+              }
+              encryptionConfig_ =
+                  input.readMessage(
+                      com.google.spanner.admin.database.v1.EncryptionConfig.parser(),
+                      extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(encryptionConfig_);
+                encryptionConfig_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+          case 40:
+            {
+              int rawValue = input.readEnum();
+
+              databaseDialect_ = rawValue;
               break;
             }
           default:
@@ -319,6 +344,109 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     return extraStatements_.getByteString(index);
   }
 
+  public static final int ENCRYPTION_CONFIG_FIELD_NUMBER = 4;
+  private com.google.spanner.admin.database.v1.EncryptionConfig encryptionConfig_;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The encryption configuration for the database. If this field is not
+   * specified, Cloud Spanner will encrypt/decrypt all data at rest using
+   * Google default encryption.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the encryptionConfig field is set.
+   */
+  @java.lang.Override
+  public boolean hasEncryptionConfig() {
+    return encryptionConfig_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The encryption configuration for the database. If this field is not
+   * specified, Cloud Spanner will encrypt/decrypt all data at rest using
+   * Google default encryption.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The encryptionConfig.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig() {
+    return encryptionConfig_ == null
+        ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
+        : encryptionConfig_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The encryption configuration for the database. If this field is not
+   * specified, Cloud Spanner will encrypt/decrypt all data at rest using
+   * Google default encryption.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder
+      getEncryptionConfigOrBuilder() {
+    return getEncryptionConfig();
+  }
+
+  public static final int DATABASE_DIALECT_FIELD_NUMBER = 5;
+  private int databaseDialect_;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The dialect of the Cloud Spanner Database.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for databaseDialect.
+   */
+  @java.lang.Override
+  public int getDatabaseDialectValue() {
+    return databaseDialect_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The dialect of the Cloud Spanner Database.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The databaseDialect.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect() {
+    @SuppressWarnings("deprecation")
+    com.google.spanner.admin.database.v1.DatabaseDialect result =
+        com.google.spanner.admin.database.v1.DatabaseDialect.valueOf(databaseDialect_);
+    return result == null
+        ? com.google.spanner.admin.database.v1.DatabaseDialect.UNRECOGNIZED
+        : result;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -333,14 +461,22 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!getParentBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parent_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, parent_);
     }
-    if (!getCreateStatementBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(createStatement_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, createStatement_);
     }
     for (int i = 0; i < extraStatements_.size(); i++) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, extraStatements_.getRaw(i));
+    }
+    if (encryptionConfig_ != null) {
+      output.writeMessage(4, getEncryptionConfig());
+    }
+    if (databaseDialect_
+        != com.google.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED
+            .getNumber()) {
+      output.writeEnum(5, databaseDialect_);
     }
     unknownFields.writeTo(output);
   }
@@ -351,10 +487,10 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     if (size != -1) return size;
 
     size = 0;
-    if (!getParentBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parent_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, parent_);
     }
-    if (!getCreateStatementBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(createStatement_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, createStatement_);
     }
     {
@@ -364,6 +500,14 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       }
       size += dataSize;
       size += 1 * getExtraStatementsList().size();
+    }
+    if (encryptionConfig_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, getEncryptionConfig());
+    }
+    if (databaseDialect_
+        != com.google.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED
+            .getNumber()) {
+      size += com.google.protobuf.CodedOutputStream.computeEnumSize(5, databaseDialect_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -384,6 +528,11 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     if (!getParent().equals(other.getParent())) return false;
     if (!getCreateStatement().equals(other.getCreateStatement())) return false;
     if (!getExtraStatementsList().equals(other.getExtraStatementsList())) return false;
+    if (hasEncryptionConfig() != other.hasEncryptionConfig()) return false;
+    if (hasEncryptionConfig()) {
+      if (!getEncryptionConfig().equals(other.getEncryptionConfig())) return false;
+    }
+    if (databaseDialect_ != other.databaseDialect_) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -403,6 +552,12 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       hash = (37 * hash) + EXTRA_STATEMENTS_FIELD_NUMBER;
       hash = (53 * hash) + getExtraStatementsList().hashCode();
     }
+    if (hasEncryptionConfig()) {
+      hash = (37 * hash) + ENCRYPTION_CONFIG_FIELD_NUMBER;
+      hash = (53 * hash) + getEncryptionConfig().hashCode();
+    }
+    hash = (37 * hash) + DATABASE_DIALECT_FIELD_NUMBER;
+    hash = (53 * hash) + databaseDialect_;
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -555,6 +710,14 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
 
       extraStatements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       bitField0_ = (bitField0_ & ~0x00000001);
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = null;
+      } else {
+        encryptionConfig_ = null;
+        encryptionConfigBuilder_ = null;
+      }
+      databaseDialect_ = 0;
+
       return this;
     }
 
@@ -590,6 +753,12 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         bitField0_ = (bitField0_ & ~0x00000001);
       }
       result.extraStatements_ = extraStatements_;
+      if (encryptionConfigBuilder_ == null) {
+        result.encryptionConfig_ = encryptionConfig_;
+      } else {
+        result.encryptionConfig_ = encryptionConfigBuilder_.build();
+      }
+      result.databaseDialect_ = databaseDialect_;
       onBuilt();
       return result;
     }
@@ -657,6 +826,12 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
           extraStatements_.addAll(other.extraStatements_);
         }
         onChanged();
+      }
+      if (other.hasEncryptionConfig()) {
+        mergeEncryptionConfig(other.getEncryptionConfig());
+      }
+      if (other.databaseDialect_ != 0) {
+        setDatabaseDialectValue(other.getDatabaseDialectValue());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1128,6 +1303,335 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       checkByteStringIsUtf8(value);
       ensureExtraStatementsIsMutable();
       extraStatements_.add(value);
+      onChanged();
+      return this;
+    }
+
+    private com.google.spanner.admin.database.v1.EncryptionConfig encryptionConfig_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionConfig,
+            com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
+            com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>
+        encryptionConfigBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is not
+     * specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the encryptionConfig field is set.
+     */
+    public boolean hasEncryptionConfig() {
+      return encryptionConfigBuilder_ != null || encryptionConfig_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is not
+     * specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The encryptionConfig.
+     */
+    public com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig() {
+      if (encryptionConfigBuilder_ == null) {
+        return encryptionConfig_ == null
+            ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
+            : encryptionConfig_;
+      } else {
+        return encryptionConfigBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is not
+     * specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setEncryptionConfig(
+        com.google.spanner.admin.database.v1.EncryptionConfig value) {
+      if (encryptionConfigBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        encryptionConfig_ = value;
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is not
+     * specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setEncryptionConfig(
+        com.google.spanner.admin.database.v1.EncryptionConfig.Builder builderForValue) {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = builderForValue.build();
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is not
+     * specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder mergeEncryptionConfig(
+        com.google.spanner.admin.database.v1.EncryptionConfig value) {
+      if (encryptionConfigBuilder_ == null) {
+        if (encryptionConfig_ != null) {
+          encryptionConfig_ =
+              com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder(encryptionConfig_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          encryptionConfig_ = value;
+        }
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is not
+     * specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder clearEncryptionConfig() {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = null;
+        onChanged();
+      } else {
+        encryptionConfig_ = null;
+        encryptionConfigBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is not
+     * specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionConfig.Builder
+        getEncryptionConfigBuilder() {
+
+      onChanged();
+      return getEncryptionConfigFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is not
+     * specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder
+        getEncryptionConfigOrBuilder() {
+      if (encryptionConfigBuilder_ != null) {
+        return encryptionConfigBuilder_.getMessageOrBuilder();
+      } else {
+        return encryptionConfig_ == null
+            ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
+            : encryptionConfig_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The encryption configuration for the database. If this field is not
+     * specified, Cloud Spanner will encrypt/decrypt all data at rest using
+     * Google default encryption.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionConfig,
+            com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
+            com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>
+        getEncryptionConfigFieldBuilder() {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfigBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.database.v1.EncryptionConfig,
+                com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
+                com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>(
+                getEncryptionConfig(), getParentForChildren(), isClean());
+        encryptionConfig_ = null;
+      }
+      return encryptionConfigBuilder_;
+    }
+
+    private int databaseDialect_ = 0;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The dialect of the Cloud Spanner Database.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The enum numeric value on the wire for databaseDialect.
+     */
+    @java.lang.Override
+    public int getDatabaseDialectValue() {
+      return databaseDialect_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The dialect of the Cloud Spanner Database.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @param value The enum numeric value on the wire for databaseDialect to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDatabaseDialectValue(int value) {
+
+      databaseDialect_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The dialect of the Cloud Spanner Database.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The databaseDialect.
+     */
+    @java.lang.Override
+    public com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect() {
+      @SuppressWarnings("deprecation")
+      com.google.spanner.admin.database.v1.DatabaseDialect result =
+          com.google.spanner.admin.database.v1.DatabaseDialect.valueOf(databaseDialect_);
+      return result == null
+          ? com.google.spanner.admin.database.v1.DatabaseDialect.UNRECOGNIZED
+          : result;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The dialect of the Cloud Spanner Database.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @param value The databaseDialect to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDatabaseDialect(com.google.spanner.admin.database.v1.DatabaseDialect value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+
+      databaseDialect_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The dialect of the Cloud Spanner Database.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearDatabaseDialect() {
+
+      databaseDialect_ = 0;
       onChanged();
       return this;
     }

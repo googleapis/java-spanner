@@ -22,11 +22,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
-import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.AsyncTransactionManager;
-import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionFunction;
 import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionStep;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.Database;
@@ -40,12 +38,12 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
-import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -109,19 +107,15 @@ public class ITTransactionManagerAsyncTest {
         assertThat(manager.getState()).isEqualTo(TransactionState.STARTED);
         try {
           txn.then(
-                  new AsyncTransactionFunction<Void, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
-                      txn.buffer(
-                          Mutation.newInsertBuilder("T")
-                              .set("K")
-                              .to("Key1")
-                              .set("BoolValue")
-                              .to(true)
-                              .build());
-                      return ApiFutures.immediateFuture(null);
-                    }
+                  (transaction, ignored) -> {
+                    transaction.buffer(
+                        Mutation.newInsertBuilder("T")
+                            .set("K")
+                            .to("Key1")
+                            .set("BoolValue")
+                            .to(true)
+                            .build());
+                    return ApiFutures.immediateFuture(null);
                   },
                   executor)
               .commitAsync()
@@ -133,7 +127,7 @@ public class ITTransactionManagerAsyncTest {
           assertThat(row.getBoolean(1)).isTrue();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetryAsync();
         }
       }
@@ -147,26 +141,22 @@ public class ITTransactionManagerAsyncTest {
       while (true) {
         try {
           txn.then(
-                  new AsyncTransactionFunction<Void, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Void input)
-                        throws Exception {
-                      txn.buffer(
-                          Mutation.newInsertBuilder("InvalidTable")
-                              .set("K")
-                              .to("Key1")
-                              .set("BoolValue")
-                              .to(true)
-                              .build());
-                      return ApiFutures.immediateFuture(null);
-                    }
+                  (transaction, ignored) -> {
+                    transaction.buffer(
+                        Mutation.newInsertBuilder("InvalidTable")
+                            .set("K")
+                            .to("Key1")
+                            .set("BoolValue")
+                            .to(true)
+                            .build());
+                    return ApiFutures.immediateFuture(null);
                   },
                   executor)
               .commitAsync()
               .get();
           fail("Expected exception");
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetryAsync();
         } catch (ExecutionException e) {
           assertThat(e.getCause()).isInstanceOf(SpannerException.class);
@@ -193,25 +183,22 @@ public class ITTransactionManagerAsyncTest {
       TransactionContextFuture txn = manager.beginAsync();
       while (true) {
         txn.then(
-            new AsyncTransactionFunction<Void, Void>() {
-              @Override
-              public ApiFuture<Void> apply(TransactionContext txn, Void input) throws Exception {
-                txn.buffer(
-                    Mutation.newInsertBuilder("T")
-                        .set("K")
-                        .to("Key2")
-                        .set("BoolValue")
-                        .to(true)
-                        .build());
-                return ApiFutures.immediateFuture(null);
-              }
+            (transaction, ignored) -> {
+              transaction.buffer(
+                  Mutation.newInsertBuilder("T")
+                      .set("K")
+                      .to("Key2")
+                      .set("BoolValue")
+                      .to(true)
+                      .build());
+              return ApiFutures.immediateFuture(null);
             },
             executor);
         try {
           manager.rollbackAsync();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetryAsync();
         }
       }
@@ -227,12 +214,12 @@ public class ITTransactionManagerAsyncTest {
   @Test
   public void testAbortAndRetry() throws InterruptedException, ExecutionException {
     assumeFalse(
-        "Emulator does not support more than 1 simultanous transaction. "
-            + "This test would therefore loop indefinetly on the emulator.",
+        "Emulator does not support more than 1 simultaneous transaction. "
+            + "This test would therefore loop indefinitely on the emulator.",
         isUsingEmulator());
 
     client.write(
-        Arrays.asList(
+        Collections.singletonList(
             Mutation.newInsertBuilder("T").set("K").to("Key3").set("BoolValue").to(true).build()));
     try (AsyncTransactionManager manager1 = client.transactionManagerAsync()) {
       TransactionContextFuture txn1 = manager1.beginAsync();
@@ -243,42 +230,30 @@ public class ITTransactionManagerAsyncTest {
         try {
           AsyncTransactionStep<Void, Struct> txn1Step1 =
               txn1.then(
-                  new AsyncTransactionFunction<Void, Struct>() {
-                    @Override
-                    public ApiFuture<Struct> apply(TransactionContext txn, Void input)
-                        throws Exception {
-                      return txn.readRowAsync("T", Key.of("Key3"), Arrays.asList("K", "BoolValue"));
-                    }
-                  },
+                  (transaction, ignored) ->
+                      transaction.readRowAsync(
+                          "T", Key.of("Key3"), Arrays.asList("K", "BoolValue")),
                   executor);
           manager2 = client.transactionManagerAsync();
           txn2 = manager2.beginAsync();
           txn2Step1 =
               txn2.then(
-                  new AsyncTransactionFunction<Void, Struct>() {
-                    @Override
-                    public ApiFuture<Struct> apply(TransactionContext txn, Void input)
-                        throws Exception {
-                      return txn.readRowAsync("T", Key.of("Key3"), Arrays.asList("K", "BoolValue"));
-                    }
-                  },
+                  (transaction, ignored) ->
+                      transaction.readRowAsync(
+                          "T", Key.of("Key3"), Arrays.asList("K", "BoolValue")),
                   executor);
 
           AsyncTransactionStep<Struct, Void> txn1Step2 =
               txn1Step1.then(
-                  new AsyncTransactionFunction<Struct, Void>() {
-                    @Override
-                    public ApiFuture<Void> apply(TransactionContext txn, Struct input)
-                        throws Exception {
-                      txn.buffer(
-                          Mutation.newUpdateBuilder("T")
-                              .set("K")
-                              .to("Key3")
-                              .set("BoolValue")
-                              .to(false)
-                              .build());
-                      return ApiFutures.immediateFuture(null);
-                    }
+                  (transaction, ignored) -> {
+                    transaction.buffer(
+                        Mutation.newUpdateBuilder("T")
+                            .set("K")
+                            .to("Key3")
+                            .set("BoolValue")
+                            .to(false)
+                            .build());
+                    return ApiFutures.immediateFuture(null);
                   },
                   executor);
 
@@ -286,7 +261,7 @@ public class ITTransactionManagerAsyncTest {
           txn1Step2.commitAsync().get();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           // It is possible that it was txn2 that aborted.
           // In that case we should just retry without resetting anything.
           if (manager1.getState() == TransactionState.ABORTED) {
@@ -305,18 +280,15 @@ public class ITTransactionManagerAsyncTest {
       }
       AsyncTransactionStep<Void, Void> txn2Step2 =
           txn2.then(
-              new AsyncTransactionFunction<Void, Void>() {
-                @Override
-                public ApiFuture<Void> apply(TransactionContext txn, Void input) throws Exception {
-                  txn.buffer(
-                      Mutation.newUpdateBuilder("T")
-                          .set("K")
-                          .to("Key3")
-                          .set("BoolValue")
-                          .to(true)
-                          .build());
-                  return ApiFutures.immediateFuture(null);
-                }
+              (transaction, ignored) -> {
+                transaction.buffer(
+                    Mutation.newUpdateBuilder("T")
+                        .set("K")
+                        .to("Key3")
+                        .set("BoolValue")
+                        .to(true)
+                        .build());
+                return ApiFutures.immediateFuture(null);
               },
               executor);
       txn2Step2.commitAsync().get();

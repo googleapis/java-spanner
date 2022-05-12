@@ -17,12 +17,28 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.common.io.BaseEncoding;
+import com.google.common.io.Files;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -116,6 +132,34 @@ public class ConnectionOptionsTest {
         .isEqualTo(new CredentialsService().createCredentials(FILE_TEST_PATH));
     assertThat(options.isAutocommit()).isEqualTo(ConnectionOptions.DEFAULT_AUTOCOMMIT);
     assertThat(options.isReadOnly()).isEqualTo(ConnectionOptions.DEFAULT_READONLY);
+  }
+
+  @Test
+  public void testBuildWithAutoConfigEmulator() {
+    ConnectionOptions.Builder builder = ConnectionOptions.newBuilder();
+    builder.setUri(
+        "cloudspanner:/projects/test-project-123/instances/test-instance-123/databases/test-database-123?autoConfigEmulator=true");
+    ConnectionOptions options = builder.build();
+    assertEquals("http://localhost:9010", options.getHost());
+    assertEquals("test-project-123", options.getProjectId());
+    assertEquals("test-instance-123", options.getInstanceId());
+    assertEquals("test-database-123", options.getDatabaseName());
+    assertEquals(NoCredentials.getInstance(), options.getCredentials());
+    assertTrue(options.isUsePlainText());
+  }
+
+  @Test
+  public void testBuildWithAutoConfigEmulatorAndHost() {
+    ConnectionOptions.Builder builder = ConnectionOptions.newBuilder();
+    builder.setUri(
+        "cloudspanner://central-emulator.local:8080/projects/test-project-123/instances/test-instance-123/databases/test-database-123?autoConfigEmulator=true");
+    ConnectionOptions options = builder.build();
+    assertEquals("http://central-emulator.local:8080", options.getHost());
+    assertEquals("test-project-123", options.getProjectId());
+    assertEquals("test-instance-123", options.getInstanceId());
+    assertEquals("test-database-123", options.getDatabaseName());
+    assertEquals(NoCredentials.getInstance(), options.getCredentials());
+    assertTrue(options.isUsePlainText());
   }
 
   @Test
@@ -213,21 +257,14 @@ public class ConnectionOptionsTest {
   }
 
   private void setInvalidUri(ConnectionOptions.Builder builder, String uri) {
-    try {
-      builder.setUri(uri);
-      fail(uri + " should be considered an invalid uri");
-    } catch (IllegalArgumentException e) {
-    }
+    assertThrows(IllegalArgumentException.class, () -> builder.setUri(uri));
   }
 
   private void setInvalidProperty(
       ConnectionOptions.Builder builder, String uri, String expectedInvalidProperties) {
-    try {
-      builder.setUri(uri);
-      fail("missing expected exception");
-    } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage()).contains(expectedInvalidProperties);
-    }
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, () -> builder.setUri(uri));
+    assertTrue(exception.getMessage(), exception.getMessage().contains(expectedInvalidProperties));
   }
 
   @Test
@@ -292,7 +329,7 @@ public class ConnectionOptionsTest {
     final String baseUri =
         "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database";
     assertThat(ConnectionOptions.parseProperties(baseUri + "?autocommit=true"))
-        .isEqualTo(Arrays.asList("autocommit"));
+        .isEqualTo(Collections.singletonList("autocommit"));
     assertThat(ConnectionOptions.parseProperties(baseUri + "?autocommit=true;readonly=false"))
         .isEqualTo(Arrays.asList("autocommit", "readonly"));
     assertThat(ConnectionOptions.parseProperties(baseUri + "?autocommit=true;READONLY=false"))
@@ -339,12 +376,14 @@ public class ConnectionOptionsTest {
             .setUri(
                 "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database"
                     + "?OAuthToken=RsT5OjbzRn430zqMLgV3Ia;credentials=/path/to/credentials.json");
-    try {
-      builder.build();
-      fail("missing expected exception");
-    } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage()).contains("Cannot specify both credentials and an OAuth token");
-    }
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, builder::build);
+    assertTrue(
+        exception.getMessage(),
+        exception
+            .getMessage()
+            .contains(
+                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
 
     // Now try to use only an OAuth token.
     builder =
@@ -374,17 +413,22 @@ public class ConnectionOptionsTest {
 
   @Test
   public void testSetOAuthTokenAndCredentials() {
-    try {
-      ConnectionOptions.newBuilder()
-          .setUri(
-              "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
-          .setOAuthToken("RsT5OjbzRn430zqMLgV3Ia")
-          .setCredentialsUrl(FILE_TEST_PATH)
-          .build();
-      fail("missing expected exception");
-    } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage()).contains("Cannot specify both credentials and an OAuth token");
-    }
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                ConnectionOptions.newBuilder()
+                    .setUri(
+                        "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+                    .setOAuthToken("RsT5OjbzRn430zqMLgV3Ia")
+                    .setCredentialsUrl(FILE_TEST_PATH)
+                    .build());
+    assertTrue(
+        exception.getMessage(),
+        exception
+            .getMessage()
+            .contains(
+                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
   }
 
   @Test
@@ -409,16 +453,185 @@ public class ConnectionOptionsTest {
     assertThat(options.getWarnings()).contains("bar");
     assertThat(options.getWarnings()).doesNotContain("lenient");
 
-    try {
-      options =
-          ConnectionOptions.newBuilder()
-              .setUri(
-                  "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?bar=foo")
-              .setCredentialsUrl(FILE_TEST_PATH)
-              .build();
-      fail("missing expected exception");
-    } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage()).contains("bar");
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                ConnectionOptions.newBuilder()
+                    .setUri(
+                        "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?bar=foo")
+                    .setCredentialsUrl(FILE_TEST_PATH)
+                    .build());
+    assertTrue(exception.getMessage(), exception.getMessage().contains("bar"));
+  }
+
+  @Test
+  public void testMinSessions() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?minSessions=400")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertThat(options.getMinSessions()).isEqualTo(400);
+    assertThat(options.getSessionPoolOptions().getMinSessions()).isEqualTo(400);
+  }
+
+  @Test
+  public void testMaxSessions() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxSessions=4000")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertThat(options.getMaxSessions()).isEqualTo(4000);
+    assertThat(options.getSessionPoolOptions().getMaxSessions()).isEqualTo(4000);
+  }
+
+  @Test
+  public void testLocalConnectionError() {
+    String uri =
+        "cloudspanner://localhost:1/projects/test-project/instances/test-instance/databases/test-database?usePlainText=true";
+    ConnectionOptions options = ConnectionOptions.newBuilder().setUri(uri).build();
+    SpannerException exception = assertThrows(SpannerException.class, options::getConnection);
+    assertEquals(ErrorCode.UNAVAILABLE, exception.getErrorCode());
+    assertTrue(
+        exception.getMessage(),
+        exception
+            .getMessage()
+            .contains(
+                String.format(
+                    "The connection string '%s' contains host 'localhost:1', but no running",
+                    uri)));
+  }
+
+  @Test
+  public void testInvalidCredentials() {
+    String uri =
+        "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?credentials=/some/non/existing/path";
+    SpannerException exception =
+        assertThrows(
+            SpannerException.class, () -> ConnectionOptions.newBuilder().setUri(uri).build());
+    assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
+    assertTrue(
+        exception.getMessage(),
+        exception
+            .getMessage()
+            .contains("Invalid credentials path specified: /some/non/existing/path"));
+  }
+
+  @Test
+  public void testNonBase64EncodedCredentials() {
+    String uri =
+        "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?encodedCredentials=not-a-base64-string/";
+    SpannerException e =
+        assertThrows(
+            SpannerException.class, () -> ConnectionOptions.newBuilder().setUri(uri).build());
+    assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+    assertThat(e.getMessage())
+        .contains("The encoded credentials could not be decoded as a base64 string.");
+  }
+
+  @Test
+  public void testInvalidEncodedCredentials() throws UnsupportedEncodingException {
+    String uri =
+        String.format(
+            "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?encodedCredentials=%s",
+            BaseEncoding.base64Url().encode("not-a-credentials-JSON-string".getBytes("UTF-8")));
+    SpannerException e =
+        assertThrows(
+            SpannerException.class, () -> ConnectionOptions.newBuilder().setUri(uri).build());
+    assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+    assertThat(e.getMessage())
+        .contains(
+            "The encoded credentials do not contain a valid Google Cloud credentials JSON string.");
+  }
+
+  @Test
+  public void testValidEncodedCredentials() throws Exception {
+    String encoded =
+        BaseEncoding.base64Url().encode(Files.asByteSource(new File(FILE_TEST_PATH)).read());
+    String uri =
+        String.format(
+            "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?encodedCredentials=%s",
+            encoded);
+
+    ConnectionOptions options = ConnectionOptions.newBuilder().setUri(uri).build();
+    assertEquals(
+        new CredentialsService().createCredentials(FILE_TEST_PATH), options.getCredentials());
+  }
+
+  @Test
+  public void testSetCredentialsAndEncodedCredentials() throws Exception {
+    String encoded =
+        BaseEncoding.base64Url().encode(Files.asByteSource(new File(FILE_TEST_PATH)).read());
+    String uri =
+        String.format(
+            "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?credentials=%s;encodedCredentials=%s",
+            FILE_TEST_PATH, encoded);
+
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> ConnectionOptions.newBuilder().setUri(uri).build());
+    assertTrue(
+        e.getMessage(),
+        e.getMessage()
+            .contains(
+                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
+  }
+
+  public static class TestCredentialsProvider implements CredentialsProvider {
+    @Override
+    public Credentials getCredentials() throws IOException {
+      return NoCredentials.getInstance();
     }
+  }
+
+  @Test
+  public void testValidCredentialsProvider() {
+    String uri =
+        String.format(
+            "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?credentialsProvider=%s",
+            TestCredentialsProvider.class.getName());
+
+    ConnectionOptions options = ConnectionOptions.newBuilder().setUri(uri).build();
+    assertEquals(NoCredentials.getInstance(), options.getCredentials());
+  }
+
+  @Test
+  public void testSetCredentialsAndCredentialsProvider() {
+    String uri =
+        String.format(
+            "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?credentials=%s;credentialsProvider=%s",
+            FILE_TEST_PATH, NoCredentialsProvider.class.getName());
+
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> ConnectionOptions.newBuilder().setUri(uri).build());
+    assertTrue(
+        e.getMessage(),
+        e.getMessage()
+            .contains(
+                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
+  }
+
+  @Test
+  public void testExternalChannelProvider() {
+    String baseUri =
+        "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database";
+
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                baseUri
+                    + "?channelProvider=com.google.cloud.spanner.connection.TestChannelProvider")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
+
+    TransportChannelProvider provider = options.getChannelProvider();
+    assertTrue(provider instanceof InstantiatingGrpcChannelProvider);
   }
 }

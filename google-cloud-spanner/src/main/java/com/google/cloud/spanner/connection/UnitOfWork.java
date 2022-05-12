@@ -19,13 +19,15 @@ package com.google.cloud.spanner.connection;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.TransactionContext;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.concurrent.ExecutionException;
 
@@ -36,7 +38,7 @@ interface UnitOfWork {
   /** A unit of work can be either a transaction or a DDL/DML batch. */
   enum Type {
     TRANSACTION,
-    BATCH;
+    BATCH
   }
 
   enum UnitOfWorkState {
@@ -143,6 +145,18 @@ interface UnitOfWork {
   Timestamp getCommitTimestampOrNull();
 
   /**
+   * @return the {@link CommitResponse} of this transaction
+   * @throws SpannerException if there is no {@link CommitResponse}
+   */
+  CommitResponse getCommitResponse();
+
+  /**
+   * @return the {@link CommitResponse} of this transaction or null if there is no {@link
+   *     CommitResponse}
+   */
+  CommitResponse getCommitResponseOrNull();
+
+  /**
    * Executes the specified DDL statements in this unit of work. For DDL batches, this will mean
    * that the statements are buffered locally and will be sent to Spanner when {@link
    * UnitOfWork#commit()} is called. For {@link SingleUseTransaction}s, this will execute the DDL
@@ -157,20 +171,23 @@ interface UnitOfWork {
    * Execute a DML statement on Spanner.
    *
    * @param update The DML statement to execute.
+   * @param options Update options to apply for the statement.
    * @return an {@link ApiFuture} containing the number of records that were
    *     inserted/updated/deleted by this statement.
    */
-  ApiFuture<Long> executeUpdateAsync(ParsedStatement update);
+  ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options);
 
   /**
    * Execute a batch of DML statements on Spanner.
    *
    * @param updates The DML statements to execute.
+   * @param options Update options to apply for the statement.
    * @return an {@link ApiFuture} containing an array with the number of records that were
    *     inserted/updated/deleted per statement.
    * @see TransactionContext#batchUpdate(Iterable)
    */
-  ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates);
+  ApiFuture<long[]> executeBatchUpdateAsync(
+      Iterable<ParsedStatement> updates, UpdateOption... options);
 
   /**
    * Writes a batch of {@link Mutation}s to Spanner. For {@link ReadWriteTransaction}s, this means

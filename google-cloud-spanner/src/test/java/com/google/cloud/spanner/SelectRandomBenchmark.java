@@ -27,7 +27,6 @@ import com.google.common.util.concurrent.MoreExecutors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.AuxCounters;
@@ -129,18 +128,15 @@ public class SelectRandomBenchmark {
     for (int i = 0; i < totalQueries; i++) {
       futures.add(
           service.submit(
-              new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                  Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
-                  try (ResultSet rs =
-                      client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT_RANDOM)) {
-                    while (rs.next()) {
-                      // Get the entire current row and convert to String.
-                      rs.getCurrentRowAsStruct().toString();
-                    }
-                    return null;
+              () -> {
+                Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
+                try (ResultSet rs =
+                    client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT_RANDOM)) {
+                  while (rs.next()) {
+                    // Get the entire current row and convert to String.
+                    rs.getCurrentRowAsStruct().toString();
                   }
+                  return null;
                 }
               }));
     }

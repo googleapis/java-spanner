@@ -136,8 +136,9 @@ public interface ExecuteSqlRequestOrBuilder
    * <pre>
    * Parameter names and values that bind to placeholders in the SQL string.
    * A parameter placeholder consists of the `&#64;` character followed by the
-   * parameter name (for example, `&#64;firstName`). Parameter names can contain
-   * letters, numbers, and underscores.
+   * parameter name (for example, `&#64;firstName`). Parameter names must conform
+   * to the naming requirements of identifiers as specified at
+   * https://cloud.google.com/spanner/docs/lexical#identifiers.
    * Parameters can appear anywhere that a literal value is expected.  The same
    * parameter name can be used more than once, for example:
    * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
@@ -155,8 +156,9 @@ public interface ExecuteSqlRequestOrBuilder
    * <pre>
    * Parameter names and values that bind to placeholders in the SQL string.
    * A parameter placeholder consists of the `&#64;` character followed by the
-   * parameter name (for example, `&#64;firstName`). Parameter names can contain
-   * letters, numbers, and underscores.
+   * parameter name (for example, `&#64;firstName`). Parameter names must conform
+   * to the naming requirements of identifiers as specified at
+   * https://cloud.google.com/spanner/docs/lexical#identifiers.
    * Parameters can appear anywhere that a literal value is expected.  The same
    * parameter name can be used more than once, for example:
    * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
@@ -174,8 +176,9 @@ public interface ExecuteSqlRequestOrBuilder
    * <pre>
    * Parameter names and values that bind to placeholders in the SQL string.
    * A parameter placeholder consists of the `&#64;` character followed by the
-   * parameter name (for example, `&#64;firstName`). Parameter names can contain
-   * letters, numbers, and underscores.
+   * parameter name (for example, `&#64;firstName`). Parameter names must conform
+   * to the naming requirements of identifiers as specified at
+   * https://cloud.google.com/spanner/docs/lexical#identifiers.
    * Parameters can appear anywhere that a literal value is expected.  The same
    * parameter name can be used more than once, for example:
    * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
@@ -388,4 +391,39 @@ public interface ExecuteSqlRequestOrBuilder
    * <code>.google.spanner.v1.ExecuteSqlRequest.QueryOptions query_options = 10;</code>
    */
   com.google.spanner.v1.ExecuteSqlRequest.QueryOptionsOrBuilder getQueryOptionsOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Common options for this request.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
+   *
+   * @return Whether the requestOptions field is set.
+   */
+  boolean hasRequestOptions();
+  /**
+   *
+   *
+   * <pre>
+   * Common options for this request.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
+   *
+   * @return The requestOptions.
+   */
+  com.google.spanner.v1.RequestOptions getRequestOptions();
+  /**
+   *
+   *
+   * <pre>
+   * Common options for this request.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
+   */
+  com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder();
 }

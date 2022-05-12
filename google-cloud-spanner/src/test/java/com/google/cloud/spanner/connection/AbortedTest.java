@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import com.google.cloud.Timestamp;
@@ -38,7 +39,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -150,7 +151,7 @@ public class AbortedTest extends AbstractMockServerTest {
         createConnection(createAbortFirstRetryListener(invalidStatement, notFound))) {
       connection.execute(INSERT_STATEMENT);
       try {
-        connection.executeBatchUpdate(Arrays.asList(invalidStatement));
+        connection.executeBatchUpdate(Collections.singletonList(invalidStatement));
         fail("missing expected exception");
       } catch (SpannerException e) {
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
@@ -230,7 +231,7 @@ public class AbortedTest extends AbstractMockServerTest {
     try (ITConnection connection =
         createConnection(createAbortFirstRetryListener(invalidStatement, notFound))) {
       try {
-        connection.executeBatchUpdate(Arrays.asList(invalidStatement));
+        connection.executeBatchUpdate(Collections.singletonList(invalidStatement));
         fail("missing expected exception");
       } catch (SpannerException e) {
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
@@ -244,10 +245,63 @@ public class AbortedTest extends AbstractMockServerTest {
     assertThat(mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class)).isEqualTo(6);
   }
 
+  @Test
+  public void testRetryUsesTags() {
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT_COUNT_STATEMENT, SELECT_COUNT_RESULTSET_BEFORE_INSERT));
+    mockSpanner.putStatementResult(StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
+    try (ITConnection connection = createConnection()) {
+      connection.setTransactionTag("transaction-tag");
+      connection.setStatementTag("statement-tag");
+      connection.executeUpdate(INSERT_STATEMENT);
+      connection.setStatementTag("statement-tag");
+      connection.executeBatchUpdate(Collections.singleton(INSERT_STATEMENT));
+      connection.setStatementTag("statement-tag");
+      connection.executeQuery(SELECT_COUNT_STATEMENT);
+
+      mockSpanner.abortNextStatement();
+      connection.commit();
+    }
+    long executeSqlRequestCount =
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+            .filter(
+                request ->
+                    request.getRequestOptions().getRequestTag().equals("statement-tag")
+                        && request
+                            .getRequestOptions()
+                            .getTransactionTag()
+                            .equals("transaction-tag"))
+            .count();
+    assertEquals(4L, executeSqlRequestCount);
+
+    long executeBatchSqlRequestCount =
+        mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()
+            .filter(
+                request ->
+                    request.getRequestOptions().getRequestTag().equals("statement-tag")
+                        && request
+                            .getRequestOptions()
+                            .getTransactionTag()
+                            .equals("transaction-tag"))
+            .count();
+    assertEquals(2L, executeBatchSqlRequestCount);
+
+    long commitRequestCount =
+        mockSpanner.getRequestsOfType(CommitRequest.class).stream()
+            .filter(
+                request ->
+                    request.getRequestOptions().getRequestTag().equals("")
+                        && request
+                            .getRequestOptions()
+                            .getTransactionTag()
+                            .equals("transaction-tag"))
+            .count();
+    assertEquals(2L, commitRequestCount);
+  }
+
   ITConnection createConnection(TransactionRetryListener listener) {
     ITConnection connection =
-        super.createConnection(
-            ImmutableList.<StatementExecutionInterceptor>of(), ImmutableList.of(listener));
+        super.createConnection(ImmutableList.of(), ImmutableList.of(listener));
     connection.setAutocommit(false);
     return connection;
   }

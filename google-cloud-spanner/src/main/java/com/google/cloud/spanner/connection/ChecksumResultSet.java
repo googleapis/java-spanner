@@ -26,8 +26,8 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type.Code;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.ReadWriteTransaction.RetriableStatement;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.hash.Funnel;
@@ -93,7 +93,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
   /** Simple {@link Callable} for calling {@link ResultSet#next()} */
   private final class NextCallable implements Callable<Boolean> {
     @Override
-    public Boolean call() throws Exception {
+    public Boolean call() {
       transaction
           .getStatementExecutor()
           .invokeInterceptors(
@@ -236,11 +236,17 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             case NUMERIC:
               funnelValue(type, row.getBigDecimal(i), into);
               break;
+            case PG_NUMERIC:
+              funnelValue(type, row.getString(i), into);
+              break;
             case INT64:
               funnelValue(type, row.getLong(i), into);
               break;
             case STRING:
               funnelValue(type, row.getString(i), into);
+              break;
+            case JSON:
+              funnelValue(type, row.getJson(i), into);
               break;
             case TIMESTAMP:
               funnelValue(type, row.getTimestamp(i), into);
@@ -288,6 +294,12 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             funnelValue(Code.NUMERIC, value, into);
           }
           break;
+        case PG_NUMERIC:
+          into.putInt(row.getStringList(columnIndex).size());
+          for (String value : row.getStringList(columnIndex)) {
+            funnelValue(Code.STRING, value, into);
+          }
+          break;
         case INT64:
           into.putInt(row.getLongList(columnIndex).size());
           for (Long value : row.getLongList(columnIndex)) {
@@ -298,6 +310,12 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
           into.putInt(row.getStringList(columnIndex).size());
           for (String value : row.getStringList(columnIndex)) {
             funnelValue(Code.STRING, value, into);
+          }
+          break;
+        case JSON:
+          into.putInt(row.getJsonList(columnIndex).size());
+          for (String value : row.getJsonList(columnIndex)) {
+            funnelValue(Code.JSON, value, into);
           }
           break;
         case TIMESTAMP:
@@ -342,14 +360,16 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             into.putDouble((Double) value);
             break;
           case NUMERIC:
-            String stringRepresentation = ((BigDecimal) value).toString();
+            String stringRepresentation = value.toString();
             into.putInt(stringRepresentation.length());
             into.putUnencodedChars(stringRepresentation);
             break;
           case INT64:
             into.putLong((Long) value);
             break;
+          case PG_NUMERIC:
           case STRING:
+          case JSON:
             String stringValue = (String) value;
             into.putInt(stringValue.length());
             into.putUnencodedChars(stringValue);

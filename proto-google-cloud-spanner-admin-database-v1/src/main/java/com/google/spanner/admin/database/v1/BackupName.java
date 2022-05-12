@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -211,9 +211,9 @@ public class BackupName implements ResourceName {
     }
 
     private Builder(BackupName backupName) {
-      project = backupName.project;
-      instance = backupName.instance;
-      backup = backupName.backup;
+      this.project = backupName.project;
+      this.instance = backupName.instance;
+      this.backup = backupName.backup;
     }
 
     public BackupName build() {

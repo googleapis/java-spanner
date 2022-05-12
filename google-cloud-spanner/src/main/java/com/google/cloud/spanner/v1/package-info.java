@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,13 @@
  * in Cloud Spanner databases.
  *
  * <p>Sample for SpannerClient:
+ *
+ * <pre>{@code
+ * try (SpannerClient spannerClient = SpannerClient.create()) {
+ *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+ *   Session response = spannerClient.createSession(database);
+ * }
+ * }</pre>
  */
 @Generated("by gapic-generator-java")
 package com.google.cloud.spanner.v1;

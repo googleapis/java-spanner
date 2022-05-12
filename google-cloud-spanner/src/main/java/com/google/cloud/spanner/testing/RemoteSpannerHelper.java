@@ -20,16 +20,21 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.common.collect.Iterables;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,8 +48,10 @@ public class RemoteSpannerHelper {
   private final SpannerOptions options;
   private final Spanner client;
   private final InstanceId instanceId;
-  private static int dbSeq;
-  private static int dbPrefix = new Random().nextInt(Integer.MAX_VALUE);
+  private static final AtomicInteger dbSeq = new AtomicInteger();
+  private static final int dbPrefix = new Random().nextInt(Integer.MAX_VALUE);
+  private static final AtomicInteger backupSeq = new AtomicInteger();
+  private static final int backupPrefix = new Random().nextInt(Integer.MAX_VALUE);
   private final List<Database> dbs = new ArrayList<>();
 
   protected RemoteSpannerHelper(SpannerOptions options, InstanceId instanceId, Spanner client) {
@@ -90,14 +97,21 @@ public class RemoteSpannerHelper {
    * accordingly.
    */
   public Database createTestDatabase(String... statements) throws SpannerException {
-    return createTestDatabase(Arrays.asList(statements));
+    return createTestDatabase(Dialect.GOOGLE_STANDARD_SQL, Arrays.asList(statements));
   }
 
   /**
    * Returns a database id which is guaranteed to be unique within the context of this environment.
    */
   public String getUniqueDatabaseId() {
-    return String.format("testdb_%d_%04d", dbPrefix, dbSeq++);
+    return String.format("testdb_%d_%04d", dbPrefix, dbSeq.incrementAndGet());
+  }
+
+  /**
+   * Returns a backup id which is guaranteed to be unique within the context of this environment.
+   */
+  public String getUniqueBackupId() {
+    return String.format("testbck_%06d_%04d", backupPrefix, backupSeq.incrementAndGet());
   }
 
   /**
@@ -105,14 +119,28 @@ public class RemoteSpannerHelper {
    * DATABASE ...} statement should not be included; an appropriate name will be chosen and the
    * statement generated accordingly.
    */
-  public Database createTestDatabase(Iterable<String> statements) throws SpannerException {
+  public Database createTestDatabase(Dialect dialect, Iterable<String> statements)
+      throws SpannerException {
     String dbId = getUniqueDatabaseId();
+    Database databaseToCreate =
+        client
+            .getDatabaseAdminClient()
+            .newDatabaseBuilder(
+                DatabaseId.of(instanceId.getProject(), instanceId.getInstance(), dbId))
+            .setDialect(dialect)
+            .build();
     try {
+      Iterable<String> ddlStatements =
+          dialect == Dialect.POSTGRESQL ? Collections.emptyList() : statements;
       OperationFuture<Database, CreateDatabaseMetadata> op =
-          client
-              .getDatabaseAdminClient()
-              .createDatabase(instanceId.getInstance(), dbId, statements);
+          client.getDatabaseAdminClient().createDatabase(databaseToCreate, ddlStatements);
       Database db = op.get();
+      if (dialect == Dialect.POSTGRESQL && Iterables.size(statements) > 0) {
+        client
+            .getDatabaseAdminClient()
+            .updateDatabaseDdl(instanceId.getInstance(), dbId, statements, null)
+            .get();
+      }
       logger.log(Level.FINE, "Created test database {0}", db.getId());
       dbs.add(db);
       return db;
@@ -121,13 +149,17 @@ public class RemoteSpannerHelper {
     }
   }
 
+  public Database createTestDatabase(Iterable<String> statements) throws SpannerException {
+    return createTestDatabase(Dialect.GOOGLE_STANDARD_SQL, statements);
+  }
+
   /** Deletes all the databases created via {@code createTestDatabase}. Shuts down the client. */
   public void cleanUp() {
     // Drop all the databases we created explicitly.
     int numDropped = 0;
     for (Database db : dbs) {
       try {
-        logger.log(Level.FINE, "Dropping test database {0}", db.getId());
+        logger.log(Level.INFO, "Dropping test database {0}", db.getId());
         db.drop();
         ++numDropped;
       } catch (SpannerException e) {
@@ -141,7 +173,7 @@ public class RemoteSpannerHelper {
    * Creates a {@code RemoteSpannerHelper} bound to the given instance ID. All databases created
    * using this will be created in the given instance.
    */
-  public static RemoteSpannerHelper create(InstanceId instanceId) throws Throwable {
+  public static RemoteSpannerHelper create(InstanceId instanceId) {
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId(instanceId.getProject())
@@ -156,8 +188,7 @@ public class RemoteSpannerHelper {
    * Creates a {@code RemoteSpannerHelper} for the given option and bound to the given instance ID.
    * All databases created using this will be created in the given instance.
    */
-  public static RemoteSpannerHelper create(SpannerOptions options, InstanceId instanceId)
-      throws Throwable {
+  public static RemoteSpannerHelper create(SpannerOptions options, InstanceId instanceId) {
     Spanner client = options.getService();
     return new RemoteSpannerHelper(options, instanceId, client);
   }

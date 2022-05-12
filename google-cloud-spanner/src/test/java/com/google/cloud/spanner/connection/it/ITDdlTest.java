@@ -16,7 +16,14 @@
 
 package com.google.cloud.spanner.connection.it;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+
+import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.DatabaseNotFoundException;
 import com.google.cloud.spanner.ParallelIntegrationTest;
+import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.Connection;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import com.google.cloud.spanner.connection.SqlScriptVerifier;
 import org.junit.Test;
@@ -32,6 +39,22 @@ public class ITDdlTest extends ITAbstractSpannerTest {
   @Test
   public void testSqlScript() throws Exception {
     SqlScriptVerifier verifier = new SqlScriptVerifier(new ITConnectionProvider());
-    verifier.verifyStatementsInFile("ITDdlTest.sql", SqlScriptVerifier.class);
+    verifier.verifyStatementsInFile("ITDdlTest.sql", SqlScriptVerifier.class, false);
+  }
+
+  @Test
+  public void testCreateDatabase() {
+    DatabaseAdminClient client = getTestEnv().getTestHelper().getClient().getDatabaseAdminClient();
+    String instance = getTestEnv().getTestHelper().getInstanceId().getInstance();
+    String name = getTestEnv().getTestHelper().getUniqueDatabaseId();
+
+    assertThrows(DatabaseNotFoundException.class, () -> client.getDatabase(instance, name));
+
+    try (Connection connection = createConnection()) {
+      connection.execute(Statement.of(String.format("CREATE DATABASE `%s`", name)));
+      assertNotNull(client.getDatabase(instance, name));
+    } finally {
+      client.dropDatabase(instance, name);
+    }
   }
 }

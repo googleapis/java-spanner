@@ -16,35 +16,38 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.MoreExecutors;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 class AsyncRunnerImpl implements AsyncRunner {
   private final TransactionRunnerImpl delegate;
-  private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
+  private SettableApiFuture<CommitResponse> commitResponse;
 
   AsyncRunnerImpl(TransactionRunnerImpl delegate) {
-    this.delegate = delegate;
+    this.delegate = Preconditions.checkNotNull(delegate);
   }
 
   @Override
   public <R> ApiFuture<R> runAsync(final AsyncWork<R> work, Executor executor) {
+    Preconditions.checkState(commitResponse == null, "runAsync() can only be called once");
+    commitResponse = SettableApiFuture.create();
     final SettableApiFuture<R> res = SettableApiFuture.create();
     executor.execute(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              res.set(runTransaction(work));
-            } catch (Throwable t) {
-              res.setException(t);
-            } finally {
-              setCommitTimestamp();
-            }
+        () -> {
+          try {
+            res.set(runTransaction(work));
+          } catch (Throwable t) {
+            res.setException(t);
+          } finally {
+            setCommitResponse();
           }
         });
     return res;
@@ -52,30 +55,34 @@ class AsyncRunnerImpl implements AsyncRunner {
 
   private <R> R runTransaction(final AsyncWork<R> work) {
     return delegate.run(
-        new TransactionCallable<R>() {
-          @Override
-          public R run(TransactionContext transaction) throws Exception {
-            try {
-              return work.doWorkAsync(transaction).get();
-            } catch (ExecutionException e) {
-              throw SpannerExceptionFactory.newSpannerException(e.getCause());
-            } catch (InterruptedException e) {
-              throw SpannerExceptionFactory.propagateInterrupt(e);
-            }
+        transaction -> {
+          try {
+            return work.doWorkAsync(transaction).get();
+          } catch (ExecutionException e) {
+            throw SpannerExceptionFactory.newSpannerException(e.getCause());
+          } catch (InterruptedException e) {
+            throw SpannerExceptionFactory.propagateInterrupt(e);
           }
         });
   }
 
-  private void setCommitTimestamp() {
+  private void setCommitResponse() {
     try {
-      commitTimestamp.set(delegate.getCommitTimestamp());
+      commitResponse.set(delegate.getCommitResponse());
     } catch (Throwable t) {
-      commitTimestamp.setException(t);
+      commitResponse.setException(t);
     }
   }
 
   @Override
   public ApiFuture<Timestamp> getCommitTimestamp() {
-    return commitTimestamp;
+    checkState(commitResponse != null, "runAsync() has not yet been called");
+    return ApiFutures.transform(
+        commitResponse, CommitResponse::getCommitTimestamp, MoreExecutors.directExecutor());
+  }
+
+  public ApiFuture<CommitResponse> getCommitResponse() {
+    checkState(commitResponse != null, "runAsync() has not yet been called");
+    return commitResponse;
   }
 }

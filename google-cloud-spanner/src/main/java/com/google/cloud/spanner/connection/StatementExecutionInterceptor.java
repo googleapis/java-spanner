@@ -17,7 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 
 /** Interface for interceptors that are invoked before a statement is executed. */
 interface StatementExecutionInterceptor {
@@ -36,5 +36,5 @@ enum StatementExecutionStep {
   /** Execution of the statement during an internal transaction retry. */
   RETRY_STATEMENT,
   /** A call to {@link ResultSet#next()} during internal transaction retry. */
-  RETRY_NEXT_ON_RESULT_SET;
+  RETRY_NEXT_ON_RESULT_SET
 }

@@ -22,6 +22,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
 import com.google.common.base.Preconditions;
 import com.google.longrunning.Operation;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
@@ -118,8 +119,14 @@ public class Database extends DatabaseInfo {
     Preconditions.checkArgument(
         backup.getInstanceId().equals(getId().getInstanceId()),
         "The instance of the backup must be equal to the instance of this database.");
+
     return dbClient.createBackup(
-        instance(), backup.getId().getBackup(), database(), backup.getExpireTime());
+        dbClient
+            .newBackupBuilder(backup.getId())
+            .setDatabase(getId())
+            .setExpireTime(backup.getExpireTime())
+            .setVersionTime(backup.getVersionTime())
+            .build());
   }
 
   /**
@@ -177,6 +184,11 @@ public class Database extends DatabaseInfo {
         .setState(fromProtoState(proto.getState()))
         .setCreateTime(Timestamp.fromProto(proto.getCreateTime()))
         .setRestoreInfo(RestoreInfo.fromProtoOrNullIfDefaultInstance(proto.getRestoreInfo()))
+        .setVersionRetentionPeriod(proto.getVersionRetentionPeriod())
+        .setEarliestVersionTime(Timestamp.fromProto(proto.getEarliestVersionTime()))
+        .setEncryptionConfig(CustomerManagedEncryption.fromProtoOrNull(proto.getEncryptionConfig()))
+        .setDefaultLeader(proto.getDefaultLeader())
+        .setDialect(Dialect.fromProto(proto.getDatabaseDialect()))
         .setProto(proto)
         .build();
   }

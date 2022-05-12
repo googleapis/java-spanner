@@ -19,6 +19,9 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
@@ -27,6 +30,7 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Mutation;
@@ -40,6 +44,7 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.Value;
+import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
@@ -47,28 +52,71 @@ import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
 
 /** Integration tests for query execution. */
 @Category(ParallelIntegrationTest.class)
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class ITQueryTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
-  private static Database db;
-  private static DatabaseClient client;
+  private static DatabaseClient googleStandardSQLClient;
+  private static DatabaseClient postgreSQLClient;
+  private String selectValueQuery;
 
   @BeforeClass
   public static void setUpDatabase() {
     // Empty database.
-    db = env.getTestHelper().createTestDatabase();
-    client = env.getTestHelper().getDatabaseClient(db);
+    Database googleStandardSQLDatabase = env.getTestHelper().createTestDatabase();
+    googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSQLDatabase);
+    if (!isUsingEmulator()) {
+      Database postgreSQLDatabase =
+          env.getTestHelper().createTestDatabase(Dialect.POSTGRESQL, Collections.emptyList());
+      postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
+    }
+  }
+
+  @AfterClass
+  public static void teardown() {
+    ConnectionOptions.closeSpanner();
+  }
+
+  @Before
+  public void initSelectValueQuery() {
+    selectValueQuery = "SELECT @p1";
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      selectValueQuery = "SELECT $1";
+    }
+  }
+
+  @Parameterized.Parameters(name = "Dialect = {0}")
+  public static List<DialectTestParameter> data() {
+    List<DialectTestParameter> params = new ArrayList<>();
+    params.add(new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL));
+    // "PG dialect tests are not supported by the emulator"
+    if (!isUsingEmulator()) {
+      params.add(new DialectTestParameter(Dialect.POSTGRESQL));
+    }
+    return params;
+  }
+
+  @Parameterized.Parameter(0)
+  public DialectTestParameter dialect;
+
+  private DatabaseClient getClient(Dialect dialect) {
+    if (dialect == Dialect.POSTGRESQL) {
+      return postgreSQLClient;
+    }
+    return googleStandardSQLClient;
   }
 
   @Test
@@ -84,12 +132,17 @@ public class ITQueryTest {
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-      assertThat(ex.getMessage()).contains("Unrecognized name: Apples");
+      if (dialect.dialect == Dialect.POSTGRESQL) {
+        assertThat(ex.getMessage()).contains("column \"apples\" does not exist");
+      } else {
+        assertThat(ex.getMessage()).contains("Unrecognized name: Apples");
+      }
     }
   }
 
   @Test
   public void arrayOfStruct() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Type structType =
         Type.struct(StructField.of("C1", Type.string()), StructField.of("C2", Type.int64()));
     Struct row =
@@ -127,6 +180,7 @@ public class ITQueryTest {
 
   @Test
   public void arrayOfStructEmpty() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Type structType =
         Type.struct(StructField.of("", Type.string()), StructField.of("", Type.int64()));
     Struct row =
@@ -172,7 +226,8 @@ public class ITQueryTest {
 
   @Test
   public void bindBool() {
-    Struct row = execute(Statement.newBuilder("SELECT @v").bind("v").to(true).build(), Type.bool());
+    Struct row =
+        execute(Statement.newBuilder(selectValueQuery).bind("p1").to(true).build(), Type.bool());
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBoolean(0)).isEqualTo(true);
   }
@@ -180,26 +235,27 @@ public class ITQueryTest {
   @Test
   public void bindBoolNull() {
     Struct row =
-        execute(Statement.newBuilder("SELECT @v").bind("v").to((Boolean) null), Type.bool());
+        execute(Statement.newBuilder(selectValueQuery).bind("p1").to((Boolean) null), Type.bool());
     assertThat(row.isNull(0)).isTrue();
   }
 
   @Test
   public void bindInt64() {
-    Struct row = execute(Statement.newBuilder("SELECT @v").bind("v").to(1234), Type.int64());
+    Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(1234), Type.int64());
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getLong(0)).isEqualTo(1234);
   }
 
   @Test
   public void bindInt64Null() {
-    Struct row = execute(Statement.newBuilder("SELECT @v").bind("v").to((Long) null), Type.int64());
+    Struct row =
+        execute(Statement.newBuilder(selectValueQuery).bind("p1").to((Long) null), Type.int64());
     assertThat(row.isNull(0)).isTrue();
   }
 
   @Test
   public void bindFloat64() {
-    Struct row = execute(Statement.newBuilder("SELECT @v").bind("v").to(2.0), Type.float64());
+    Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(2.0), Type.float64());
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getDouble(0)).isWithin(0.0).of(2.0);
   }
@@ -207,13 +263,15 @@ public class ITQueryTest {
   @Test
   public void bindFloat64Null() {
     Struct row =
-        execute(Statement.newBuilder("SELECT @v").bind("v").to((Double) null), Type.float64());
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").to((Double) null), Type.float64());
     assertThat(row.isNull(0)).isTrue();
   }
 
   @Test
   public void bindString() {
-    Struct row = execute(Statement.newBuilder("SELECT @v").bind("v").to("abc"), Type.string());
+    Struct row =
+        execute(Statement.newBuilder(selectValueQuery).bind("p1").to("abc"), Type.string());
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getString(0)).isEqualTo("abc");
   }
@@ -221,7 +279,42 @@ public class ITQueryTest {
   @Test
   public void bindStringNull() {
     Struct row =
-        execute(Statement.newBuilder("SELECT @v").bind("v").to((String) null), Type.string());
+        execute(Statement.newBuilder(selectValueQuery).bind("p1").to((String) null), Type.string());
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindJson() {
+    assumeFalse("JSON are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .to(Value.json("{\"rating\":9,\"open\":true}")),
+            Type.json());
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJson(0)).isEqualTo("{\"open\":true,\"rating\":9}");
+  }
+
+  @Test
+  public void bindJsonEmpty() {
+    assumeFalse("JSON are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").to(Value.json("{}")), Type.json());
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJson(0)).isEqualTo("{}");
+  }
+
+  @Test
+  public void bindJsonNull() {
+    assumeFalse("JSON is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").to(Value.json(null)), Type.json());
     assertThat(row.isNull(0)).isTrue();
   }
 
@@ -229,7 +322,7 @@ public class ITQueryTest {
   public void bindBytes() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").to(ByteArray.copyFrom("xyz")),
+            Statement.newBuilder(selectValueQuery).bind("p1").to(ByteArray.copyFrom("xyz")),
             Type.bytes());
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBytes(0)).isEqualTo(ByteArray.copyFrom("xyz"));
@@ -238,14 +331,15 @@ public class ITQueryTest {
   @Test
   public void bindBytesNull() {
     Struct row =
-        execute(Statement.newBuilder("SELECT @v").bind("v").to((ByteArray) null), Type.bytes());
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").to((ByteArray) null), Type.bytes());
     assertThat(row.isNull(0)).isTrue();
   }
 
   @Test
   public void bindTimestamp() {
     Timestamp t = Timestamp.parseTimestamp("2016-09-18T00:00:00Z");
-    Struct row = execute(Statement.newBuilder("SELECT @v").bind("v").to(t), Type.timestamp());
+    Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(t), Type.timestamp());
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getTimestamp(0)).isEqualTo(t);
   }
@@ -253,21 +347,26 @@ public class ITQueryTest {
   @Test
   public void bindTimestampNull() {
     Struct row =
-        execute(Statement.newBuilder("SELECT @v").bind("v").to((Timestamp) null), Type.timestamp());
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").to((Timestamp) null),
+            Type.timestamp());
     assertThat(row.isNull(0)).isTrue();
   }
 
   @Test
   public void bindDate() {
+    assumeFalse("date type is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Date d = Date.parseDate("2016-09-18");
-    Struct row = execute(Statement.newBuilder("SELECT @v").bind("v").to(d), Type.date());
+    Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(d), Type.date());
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getDate(0)).isEqualTo(d);
   }
 
   @Test
   public void bindDateNull() {
-    Struct row = execute(Statement.newBuilder("SELECT @v").bind("v").to((Date) null), Type.date());
+    assumeFalse("date type is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
+    Struct row =
+        execute(Statement.newBuilder(selectValueQuery).bind("p1").to((Date) null), Type.date());
     assertThat(row.isNull(0)).isTrue();
   }
 
@@ -275,16 +374,39 @@ public class ITQueryTest {
   public void bindNumeric() {
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     BigDecimal b = new BigDecimal("1.1");
-    Struct row = execute(Statement.newBuilder("SELECT @v").bind("v").to(b), Type.numeric());
+    Statement.Builder statement = Statement.newBuilder(selectValueQuery);
+    Type expectedType = Type.numeric();
+    Object expectedValue = b;
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      expectedType = Type.pgNumeric();
+      expectedValue = Value.pgNumeric(b.toString());
+      statement.bind("p1").to(Value.pgNumeric(b.toString()));
+    } else {
+      statement.bind("p1").to(b);
+    }
+    Struct row = execute(statement, expectedType);
     assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getBigDecimal(0)).isEqualTo(b);
+    Object got;
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      got = row.getValue(0);
+    } else {
+      got = row.getBigDecimal(0);
+    }
+    assertThat(got).isEqualTo(expectedValue);
   }
 
   @Test
   public void bindNumericNull() {
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
-    Struct row =
-        execute(Statement.newBuilder("SELECT @v").bind("v").to((BigDecimal) null), Type.numeric());
+    Statement.Builder statement = Statement.newBuilder(selectValueQuery);
+    Type expectedType = Type.numeric();
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      expectedType = Type.pgNumeric();
+      statement.bind("p1").to(Value.pgNumeric(null));
+    } else {
+      statement.bind("p1").to((BigDecimal) null);
+    }
+    Struct row = execute(statement, expectedType);
     assertThat(row.isNull(0)).isTrue();
   }
 
@@ -292,18 +414,37 @@ public class ITQueryTest {
   public void bindNumeric_doesNotPreservePrecision() {
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     BigDecimal b = new BigDecimal("1.10");
-    Struct row = execute(Statement.newBuilder("SELECT @v").bind("v").to(b), Type.numeric());
-    assertThat(row.isNull(0)).isFalse();
+    Statement.Builder statement = Statement.newBuilder(selectValueQuery);
+    Type expectedType = Type.numeric();
     // Cloud Spanner does not store precision, and will therefore return 1.10 as 1.1.
-    assertThat(row.getBigDecimal(0)).isNotEqualTo(b);
-    assertThat(row.getBigDecimal(0)).isEqualTo(b.stripTrailingZeros());
+    Object expectedValue = b.stripTrailingZeros();
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      expectedType = Type.pgNumeric();
+      // Cloud Spanner with PG dialect store precision, and will therefore return 1.10.
+      expectedValue = Value.pgNumeric(b.toString());
+      statement.bind("p1").to(Value.pgNumeric(b.toString()));
+    } else {
+      statement.bind("p1").to(b);
+    }
+    Struct row = execute(statement, expectedType);
+    assertThat(row.isNull(0)).isFalse();
+    Object got;
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      got = row.getValue(0);
+    } else {
+      got = row.getBigDecimal(0);
+    }
+    assertThat(got).isNotEqualTo(b);
+    assertThat(got).isEqualTo(expectedValue);
   }
 
   @Test
   public void bindBoolArray() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toBoolArray(asList(true, null, false)),
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toBoolArray(asList(true, null, false)),
             Type.array(Type.bool()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBooleanList(0)).containsExactly(true, null, false).inOrder();
@@ -313,7 +454,7 @@ public class ITQueryTest {
   public void bindBoolArrayEmpty() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toBoolArray(Arrays.<Boolean>asList()),
+            Statement.newBuilder(selectValueQuery).bind("p1").toBoolArray(Collections.emptyList()),
             Type.array(Type.bool()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBooleanList(0)).containsExactly();
@@ -323,7 +464,7 @@ public class ITQueryTest {
   public void bindBoolArrayNull() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toBoolArray((boolean[]) null),
+            Statement.newBuilder(selectValueQuery).bind("p1").toBoolArray((boolean[]) null),
             Type.array(Type.bool()));
     assertThat(row.isNull(0)).isTrue();
   }
@@ -332,7 +473,7 @@ public class ITQueryTest {
   public void bindInt64Array() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toInt64Array(asList(null, 1L, 2L)),
+            Statement.newBuilder(selectValueQuery).bind("p1").toInt64Array(asList(null, 1L, 2L)),
             Type.array(Type.int64()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getLongList(0)).containsExactly(null, 1L, 2L).inOrder();
@@ -342,7 +483,7 @@ public class ITQueryTest {
   public void bindInt64ArrayEmpty() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toInt64Array(Arrays.<Long>asList()),
+            Statement.newBuilder(selectValueQuery).bind("p1").toInt64Array(Collections.emptyList()),
             Type.array(Type.int64()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getLongList(0)).containsExactly();
@@ -352,7 +493,7 @@ public class ITQueryTest {
   public void bindInt64ArrayNull() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toInt64Array((long[]) null),
+            Statement.newBuilder(selectValueQuery).bind("p1").toInt64Array((long[]) null),
             Type.array(Type.int64()));
     assertThat(row.isNull(0)).isTrue();
   }
@@ -361,8 +502,8 @@ public class ITQueryTest {
   public void bindFloat64Array() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v")
-                .bind("v")
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
                 .toFloat64Array(
                     asList(
                         null,
@@ -383,7 +524,9 @@ public class ITQueryTest {
   public void bindFloat64ArrayEmpty() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toFloat64Array(Arrays.<Double>asList()),
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toFloat64Array(Collections.emptyList()),
             Type.array(Type.float64()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getDoubleList(0)).containsExactly();
@@ -393,7 +536,7 @@ public class ITQueryTest {
   public void bindFloat64ArrayNull() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toFloat64Array((double[]) null),
+            Statement.newBuilder(selectValueQuery).bind("p1").toFloat64Array((double[]) null),
             Type.array(Type.float64()));
     assertThat(row.isNull(0)).isTrue();
   }
@@ -402,7 +545,7 @@ public class ITQueryTest {
   public void bindStringArray() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toStringArray(asList("a", "b", null)),
+            Statement.newBuilder(selectValueQuery).bind("p1").toStringArray(asList("a", "b", null)),
             Type.array(Type.string()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getStringList(0)).containsExactly("a", "b", null).inOrder();
@@ -412,7 +555,9 @@ public class ITQueryTest {
   public void bindStringArrayEmpty() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toStringArray(Arrays.<String>asList()),
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toStringArray(Collections.emptyList()),
             Type.array(Type.string()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getStringList(0)).containsExactly();
@@ -422,8 +567,48 @@ public class ITQueryTest {
   public void bindStringArrayNull() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toStringArray(null),
+            Statement.newBuilder(selectValueQuery).bind("p1").toStringArray(null),
             Type.array(Type.string()));
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindJsonArray() {
+    assumeFalse(
+        "array JSON binding is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toJsonArray(asList("{}", "[]", "{\"rating\":9,\"open\":true}", null)),
+            Type.array(Type.json()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJsonList(0))
+        .containsExactly("{}", "[]", "{\"open\":true,\"rating\":9}", null)
+        .inOrder();
+  }
+
+  @Test
+  public void bindJsonArrayEmpty() {
+    assumeFalse("JSON is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toJsonArray(Collections.emptyList()),
+            Type.array(Type.json()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getJsonList(0)).isEqualTo(Collections.emptyList());
+  }
+
+  @Test
+  public void bindJsonArrayNull() {
+    assumeFalse("JSON is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
+    assumeFalse("Emulator does not yet support JSON", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toJsonArray(null),
+            Type.array(Type.json()));
     assertThat(row.isNull(0)).isTrue();
   }
 
@@ -434,7 +619,7 @@ public class ITQueryTest {
     ByteArray e3 = null;
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toBytesArray(asList(e1, e2, e3)),
+            Statement.newBuilder(selectValueQuery).bind("p1").toBytesArray(asList(e1, e2, e3)),
             Type.array(Type.bytes()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBytesList(0)).containsExactly(e1, e2, e3).inOrder();
@@ -444,7 +629,7 @@ public class ITQueryTest {
   public void bindBytesArrayEmpty() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toBytesArray(Arrays.<ByteArray>asList()),
+            Statement.newBuilder(selectValueQuery).bind("p1").toBytesArray(Collections.emptyList()),
             Type.array(Type.bytes()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBytesList(0)).isEmpty();
@@ -454,7 +639,7 @@ public class ITQueryTest {
   public void bindBytesArrayNull() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toBytesArray(null),
+            Statement.newBuilder(selectValueQuery).bind("p1").toBytesArray(null),
             Type.array(Type.bytes()));
     assertThat(row.isNull(0)).isTrue();
   }
@@ -466,7 +651,9 @@ public class ITQueryTest {
 
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toTimestampArray(asList(t1, t2, null)),
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toTimestampArray(asList(t1, t2, null)),
             Type.array(Type.timestamp()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getTimestampList(0)).containsExactly(t1, t2, null).inOrder();
@@ -476,9 +663,9 @@ public class ITQueryTest {
   public void bindTimestampArrayEmpty() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v")
-                .bind("v")
-                .toTimestampArray(Arrays.<Timestamp>asList()),
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toTimestampArray(Collections.emptyList()),
             Type.array(Type.timestamp()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getTimestampList(0)).containsExactly();
@@ -488,13 +675,14 @@ public class ITQueryTest {
   public void bindTimestampArrayNull() {
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toTimestampArray(null),
+            Statement.newBuilder(selectValueQuery).bind("p1").toTimestampArray(null),
             Type.array(Type.timestamp()));
     assertThat(row.isNull(0)).isTrue();
   }
 
   @Test
   public void bindDateArray() {
+    assumeFalse("date type is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Date d1 = Date.parseDate("2016-09-18");
     Date d2 = Date.parseDate("2016-09-19");
 
@@ -508,9 +696,10 @@ public class ITQueryTest {
 
   @Test
   public void bindDateArrayEmpty() {
+    assumeFalse("date type is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toDateArray(Arrays.<Date>asList()),
+            Statement.newBuilder("SELECT @v").bind("v").toDateArray(Collections.emptyList()),
             Type.array(Type.date()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getDateList(0)).containsExactly();
@@ -518,6 +707,7 @@ public class ITQueryTest {
 
   @Test
   public void bindDateArrayNull() {
+    assumeFalse("date type is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct row =
         execute(
             Statement.newBuilder("SELECT @v").bind("v").toDateArray(null), Type.array(Type.date()));
@@ -526,13 +716,16 @@ public class ITQueryTest {
 
   @Test
   public void bindNumericArray() {
+    assumeFalse(
+        "array numeric binding is not supported on POSTGRESQL",
+        dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     BigDecimal b1 = new BigDecimal("3.14");
     BigDecimal b2 = new BigDecimal("6.626");
 
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toNumericArray(asList(b1, b2, null)),
+            Statement.newBuilder(selectValueQuery).bind("p1").toNumericArray(asList(b1, b2, null)),
             Type.array(Type.numeric()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBigDecimalList(0)).containsExactly(b1, b2, null).inOrder();
@@ -540,10 +733,15 @@ public class ITQueryTest {
 
   @Test
   public void bindNumericArrayEmpty() {
+    assumeFalse(
+        "array numeric binding is not supported on POSTGRESQL",
+        dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toNumericArray(Arrays.<BigDecimal>asList()),
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toNumericArray(Collections.emptyList()),
             Type.array(Type.numeric()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBigDecimalList(0)).containsExactly();
@@ -551,16 +749,22 @@ public class ITQueryTest {
 
   @Test
   public void bindNumericArrayNull() {
+    assumeFalse(
+        "array numeric binding is not supported on POSTGRESQL",
+        dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toNumericArray(null),
+            Statement.newBuilder(selectValueQuery).bind("p1").toNumericArray(null),
             Type.array(Type.numeric()));
     assertThat(row.isNull(0)).isTrue();
   }
 
   @Test
   public void bindNumericArray_doesNotPreservePrecision() {
+    assumeFalse(
+        "array numeric binding is not supported on POSTGRESQL",
+        dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     BigDecimal b1 = new BigDecimal("3.14");
     BigDecimal b2 = new BigDecimal("6.626070");
@@ -577,10 +781,11 @@ public class ITQueryTest {
 
   @Test
   public void unsupportedSelectStructValue() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("The emulator accepts this query", isUsingEmulator());
     Struct p = structValue();
     try {
-      execute(Statement.newBuilder("SELECT @p").bind("p").to(p).build(), p.getType());
+      execute(Statement.newBuilder(selectValueQuery).bind("p1").to(p).build(), p.getType());
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.UNIMPLEMENTED);
@@ -592,13 +797,17 @@ public class ITQueryTest {
 
   @Test
   public void unsupportedSelectArrayStructValue() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse(
         "Emulator evaluates this expression differently than Cloud Spanner", isUsingEmulator());
 
     Struct p = structValue();
     try {
       execute(
-          Statement.newBuilder("SELECT @p").bind("p").toStructArray(p.getType(), asList(p)).build(),
+          Statement.newBuilder("SELECT @p")
+              .bind("p")
+              .toStructArray(p.getType(), Collections.singletonList(p))
+              .build(),
           p.getType());
       fail("Expected exception");
     } catch (SpannerException ex) {
@@ -613,6 +822,7 @@ public class ITQueryTest {
 
   @Test
   public void invalidAmbiguousFieldAccess() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct p = Struct.newBuilder().set("f1").to(20).set("f1").to("abc").build();
     try {
       execute(Statement.newBuilder("SELECT @p.f1").bind("p").to(p).build(), Type.int64());
@@ -644,6 +854,7 @@ public class ITQueryTest {
 
   @Test
   public void bindStruct() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct p = structValue();
     String query =
         "SELECT "
@@ -662,6 +873,7 @@ public class ITQueryTest {
 
   @Test
   public void bindArrayOfStruct() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct arrayElement = structValue();
     List<Struct> p = asList(arrayElement, null);
 
@@ -686,6 +898,7 @@ public class ITQueryTest {
 
   @Test
   public void bindStructNull() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct row =
         execute(
             Statement.newBuilder("SELECT @p IS NULL")
@@ -703,6 +916,7 @@ public class ITQueryTest {
 
   @Test
   public void bindArrayOfStructNull() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Type elementType =
         Type.struct(
             asList(
@@ -721,6 +935,7 @@ public class ITQueryTest {
 
   @Test
   public void bindEmptyStruct() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct p = Struct.newBuilder().build();
     Struct row =
         execute(Statement.newBuilder("SELECT @p IS NULL").bind("p").to(p).build(), Type.bool());
@@ -729,6 +944,7 @@ public class ITQueryTest {
 
   @Test
   public void bindStructWithUnnamedFields() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct p = Struct.newBuilder().add(Value.int64(1337)).add(Value.int64(7331)).build();
     Struct row =
         executeWithRowResultType(
@@ -740,6 +956,7 @@ public class ITQueryTest {
 
   @Test
   public void bindStructWithDuplicateFieldNames() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct p =
         Struct.newBuilder()
             .set("f1")
@@ -757,8 +974,9 @@ public class ITQueryTest {
 
   @Test
   public void bindEmptyArrayOfStruct() {
-    Type elementType = Type.struct(asList(Type.StructField.of("f1", Type.date())));
-    List<Struct> p = asList();
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
+    Type elementType = Type.struct(Collections.singletonList(StructField.of("f1", Type.date())));
+    List<Struct> p = Collections.emptyList();
     assertThat(p).isEmpty();
 
     List<Struct> rows =
@@ -773,7 +991,8 @@ public class ITQueryTest {
 
   @Test
   public void bindStructWithNullStructField() {
-    Type emptyStructType = Type.struct(new ArrayList<StructField>());
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
+    Type emptyStructType = Type.struct(new ArrayList<>());
     Struct p = Struct.newBuilder().set("f1").to(emptyStructType, null).build();
 
     Struct row =
@@ -782,7 +1001,68 @@ public class ITQueryTest {
   }
 
   @Test
+  public void bindStructWithBoolArrayFieldThatContainsNulls() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
+    Struct p =
+        Struct.newBuilder()
+            .set("boolArray")
+            .to(Value.boolArray(Arrays.asList(true, false, null)))
+            .build();
+    List<Struct> rows =
+        resultRows(
+            Statement.newBuilder("SELECT * FROM UNNEST(@p.boolArray) ORDER BY 1")
+                .bind("p")
+                .to(p)
+                .build(),
+            Type.struct(StructField.of("", Type.bool())));
+    assertTrue(rows.get(0).isNull(0));
+    assertFalse(rows.get(1).getBoolean(0));
+    assertTrue(rows.get(2).getBoolean(0));
+  }
+
+  @Test
+  public void bindStructWithInt64ArrayFieldThatContainsNulls() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
+    Struct p =
+        Struct.newBuilder()
+            .set("int64Array")
+            .to(Value.int64Array(Arrays.asList(1L, 100L, null)))
+            .build();
+    List<Struct> rows =
+        resultRows(
+            Statement.newBuilder("SELECT * FROM UNNEST(@p.int64Array) ORDER BY 1")
+                .bind("p")
+                .to(p)
+                .build(),
+            Type.struct(StructField.of("", Type.int64())));
+    assertTrue(rows.get(0).isNull(0));
+    assertEquals(1L, rows.get(1).getLong(0));
+    assertEquals(100L, rows.get(2).getLong(0));
+  }
+
+  @Test
+  public void bindStructWithFloat64ArrayFieldThatContainsNulls() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
+    Struct p =
+        Struct.newBuilder()
+            .set("float64Array")
+            .to(Value.float64Array(Arrays.asList(1d, 3.14d, null)))
+            .build();
+    List<Struct> rows =
+        resultRows(
+            Statement.newBuilder("SELECT * FROM UNNEST(@p.float64Array) ORDER BY 1")
+                .bind("p")
+                .to(p)
+                .build(),
+            Type.struct(StructField.of("", Type.float64())));
+    assertTrue(rows.get(0).isNull(0));
+    assertEquals(1d, rows.get(1).getDouble(0), 0d);
+    assertEquals(3.14d, rows.get(2).getDouble(0), 0d);
+  }
+
+  @Test
   public void bindStructWithStructField() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct nestedStruct = Struct.newBuilder().set("ff1").to("abc").build();
     Struct p = Struct.newBuilder().set("f1").to(nestedStruct).build();
 
@@ -795,6 +1075,7 @@ public class ITQueryTest {
 
   @Test
   public void bindStructWithArrayOfStructField() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct arrayElement1 = Struct.newBuilder().set("ff1").to("abc").build();
     Struct arrayElement2 = Struct.newBuilder().set("ff1").to("def").build();
     Struct p =
@@ -813,8 +1094,13 @@ public class ITQueryTest {
 
   @Test
   public void unboundParameter() {
+    String query = "SELECT @v";
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      query = "SELECT $1";
+    }
     ResultSet resultSet =
-        Statement.of("SELECT @v").executeQuery(client.singleUse(TimestampBound.strong()));
+        Statement.of(query)
+            .executeQuery(getClient(dialect.dialect).singleUse(TimestampBound.strong()));
     try {
       resultSet.next();
       fail("Expected exception");
@@ -825,24 +1111,32 @@ public class ITQueryTest {
 
   @Test
   public void positiveInfinity() {
+    assumeFalse(
+        "function ieee_divide not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct row = execute(Statement.newBuilder("SELECT IEEE_DIVIDE(1, 0)"), Type.float64());
     assertThat(row.getDouble(0)).isPositiveInfinity();
   }
 
   @Test
   public void negativeInfinity() {
+    assumeFalse(
+        "function ieee_divide not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct row = execute(Statement.newBuilder("SELECT IEEE_DIVIDE(-1, 0)"), Type.float64());
     assertThat(row.getDouble(0)).isNegativeInfinity();
   }
 
   @Test
   public void notANumber() {
+    assumeFalse(
+        "function ieee_divide not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct row = execute(Statement.newBuilder("SELECT IEEE_DIVIDE(0, 0)"), Type.float64());
     assertThat(row.getDouble(0)).isNaN();
   }
 
   @Test
   public void nonNumberArray() {
+    assumeFalse(
+        "function ieee_divide not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct row =
         execute(
             Statement.newBuilder(
@@ -856,6 +1150,8 @@ public class ITQueryTest {
 
   @Test
   public void largeErrorText() {
+    assumeFalse(
+        "regexp_contains is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     String veryLongString = Joiner.on("").join(Iterables.limit(Iterables.cycle("x"), 8000));
     Statement statement =
         Statement.newBuilder("SELECT REGEXP_CONTAINS(@value, @regexp)")
@@ -864,7 +1160,8 @@ public class ITQueryTest {
             .bind("regexp")
             .to("(" + veryLongString)
             .build();
-    ResultSet resultSet = statement.executeQuery(client.singleUse(TimestampBound.strong()));
+    ResultSet resultSet =
+        statement.executeQuery(getClient(dialect.dialect).singleUse(TimestampBound.strong()));
     try {
       resultSet.next();
       fail("Expected exception");
@@ -876,10 +1173,19 @@ public class ITQueryTest {
 
   @Test
   public void queryRealTable() {
-    Database populatedDb =
-        env.getTestHelper()
-            .createTestDatabase(
-                "CREATE TABLE T ( K STRING(MAX) NOT NULL, V STRING(MAX) ) PRIMARY KEY (K)");
+    Database populatedDb;
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      populatedDb =
+          env.getTestHelper()
+              .createTestDatabase(
+                  dialect.dialect,
+                  Arrays.asList("CREATE TABLE T ( K VARCHAR PRIMARY KEY, V VARCHAR )"));
+    } else {
+      populatedDb =
+          env.getTestHelper()
+              .createTestDatabase(
+                  "CREATE TABLE T ( K STRING(MAX) NOT NULL, V STRING(MAX) ) PRIMARY KEY (K)");
+    }
     DatabaseClient client = env.getTestHelper().getDatabaseClient(populatedDb);
     client.writeAtLeastOnce(
         asList(
@@ -888,23 +1194,22 @@ public class ITQueryTest {
             Mutation.newInsertBuilder("T").set("K").to("k3").set("V").to("v3").build(),
             Mutation.newInsertBuilder("T").set("K").to("k4").set("V").to("v4").build()));
 
+    String query = "SELECT k, v FROM T WHERE k >= @p1 AND k < @p2 ORDER BY K ASC";
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      query = "SELECT k, v FROM T WHERE k >= $1 AND k < $2 ORDER BY K ASC";
+    }
     Statement statement =
-        Statement.newBuilder("SELECT K, V FROM T WHERE K >= @min AND K < @max ORDER BY K ASC")
-            .bind("min")
-            .to("k13")
-            .bind("max")
-            .to("k32")
-            .build();
+        Statement.newBuilder(query).bind("p1").to("k13").bind("p2").to("k32").build();
     ResultSet resultSet = statement.executeQuery(client.singleUse(TimestampBound.strong()));
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getType())
         .isEqualTo(
-            Type.struct(StructField.of("K", Type.string()), StructField.of("V", Type.string())));
+            Type.struct(StructField.of("k", Type.string()), StructField.of("v", Type.string())));
     assertThat(resultSet.getString(0)).isEqualTo("k2");
     assertThat(resultSet.getString(1)).isEqualTo("v2");
     assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getString("K")).isEqualTo("k3");
-    assertThat(resultSet.getString("V")).isEqualTo("v3");
+    assertThat(resultSet.getString("k")).isEqualTo("k3");
+    assertThat(resultSet.getString("v")).isEqualTo("v3");
     assertThat(resultSet.next()).isFalse();
   }
 
@@ -912,11 +1217,12 @@ public class ITQueryTest {
   public void analyzePlan() {
     assumeFalse("Emulator does not support Analyze Plan", isUsingEmulator());
 
-    Statement statement = Statement.of("SELECT 1 AS column UNION ALL SELECT 2");
+    Statement statement = Statement.of("SELECT 1 AS data UNION ALL SELECT 2");
     ResultSet resultSet =
-        statement.analyzeQuery(client.singleUse(TimestampBound.strong()), QueryAnalyzeMode.PLAN);
+        statement.analyzeQuery(
+            getClient(dialect.dialect).singleUse(TimestampBound.strong()), QueryAnalyzeMode.PLAN);
     assertThat(resultSet.next()).isFalse();
-    assertThat(resultSet.getType()).isEqualTo(Type.struct(StructField.of("column", Type.int64())));
+    assertThat(resultSet.getType()).isEqualTo(Type.struct(StructField.of("data", Type.int64())));
     ResultSetStats receivedStats = resultSet.getStats();
     assertThat(receivedStats).isNotNull();
     assertThat(receivedStats.hasQueryPlan()).isTrue();
@@ -927,12 +1233,18 @@ public class ITQueryTest {
   public void analyzeProfile() {
     assumeFalse("Emulator does not support Analyze Profile", isUsingEmulator());
 
-    Statement statement =
-        Statement.of("SELECT 1 AS column UNION ALL SELECT 2 AS column ORDER BY column");
+    String query = "SELECT 1 AS data UNION ALL SELECT 2 AS data ORDER BY data";
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      // "Statements with set operations and ORDER BY are not supported"
+      query = "SELECT 1 AS data UNION ALL SELECT 2 AS data";
+    }
+    Statement statement = Statement.of(query);
     ResultSet resultSet =
-        statement.analyzeQuery(client.singleUse(TimestampBound.strong()), QueryAnalyzeMode.PROFILE);
+        statement.analyzeQuery(
+            getClient(dialect.dialect).singleUse(TimestampBound.strong()),
+            QueryAnalyzeMode.PROFILE);
     assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getType()).isEqualTo(Type.struct(StructField.of("column", Type.int64())));
+    assertThat(resultSet.getType()).isEqualTo(Type.struct(StructField.of("data", Type.int64())));
     assertThat(resultSet.getLong(0)).isEqualTo(1);
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getLong(0)).isEqualTo(2);
@@ -943,9 +1255,41 @@ public class ITQueryTest {
     assertThat(receivedStats.hasQueryStats()).isTrue();
   }
 
+  @Test
+  public void testSelectArrayOfStructs() {
+    assumeFalse("structs are not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
+    try (ResultSet resultSet =
+        getClient(dialect.dialect)
+            .singleUse()
+            .executeQuery(
+                Statement.of(
+                    "WITH points AS\n"
+                        + "  (SELECT [1, 5] as point\n"
+                        + "   UNION ALL SELECT [2, 8] as point\n"
+                        + "   UNION ALL SELECT [3, 7] as point\n"
+                        + "   UNION ALL SELECT [4, 1] as point\n"
+                        + "   UNION ALL SELECT [5, 7] as point)\n"
+                        + "SELECT ARRAY(\n"
+                        + "  SELECT STRUCT(point)\n"
+                        + "  FROM points)\n"
+                        + "  AS coordinates"))) {
+      assertTrue(resultSet.next());
+      assertEquals(resultSet.getColumnCount(), 1);
+      assertThat(resultSet.getStructList(0))
+          .containsExactly(
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {1L, 5L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {2L, 8L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {3L, 7L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {4L, 1L})).build(),
+              Struct.newBuilder().set("point").to(Value.int64Array(new long[] {5L, 7L})).build());
+      assertFalse(resultSet.next());
+    }
+  }
+
   private List<Struct> resultRows(Statement statement, Type expectedRowType) {
     ArrayList<Struct> results = new ArrayList<>();
-    ResultSet resultSet = statement.executeQuery(client.singleUse(TimestampBound.strong()));
+    ResultSet resultSet =
+        statement.executeQuery(getClient(dialect.dialect).singleUse(TimestampBound.strong()));
     while (resultSet.next()) {
       Struct row = resultSet.getCurrentRowAsStruct();
       results.add(row);
@@ -956,7 +1300,8 @@ public class ITQueryTest {
   }
 
   private Struct executeWithRowResultType(Statement statement, Type expectedRowType) {
-    ResultSet resultSet = statement.executeQuery(client.singleUse(TimestampBound.strong()));
+    ResultSet resultSet =
+        statement.executeQuery(getClient(dialect.dialect).singleUse(TimestampBound.strong()));
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getType()).isEqualTo(expectedRowType);
     Struct row = resultSet.getCurrentRowAsStruct();
@@ -966,6 +1311,9 @@ public class ITQueryTest {
 
   private Struct execute(Statement statement, Type expectedColumnType) {
     Type rowType = Type.struct(StructField.of("", expectedColumnType));
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      rowType = Type.struct(StructField.of("?column?", expectedColumnType));
+    }
     return executeWithRowResultType(statement, rowType);
   }
 

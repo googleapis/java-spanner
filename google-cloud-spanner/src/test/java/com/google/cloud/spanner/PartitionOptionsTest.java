@@ -19,7 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import org.junit.Test;
@@ -85,21 +85,19 @@ public class PartitionOptionsTest {
 
   @Test
   public void invalidDesiredBytesPerBatch() {
-    try {
-      PartitionOptions.newBuilder().setPartitionSizeBytes(-1).build();
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> PartitionOptions.newBuilder().setPartitionSizeBytes(-1).build());
+    assertNotNull(e.getMessage());
   }
 
   @Test
   public void invalidMaxPartitionCount() {
-    try {
-      PartitionOptions.newBuilder().setMaxPartitions(-1).build();
-      fail("Expected exception");
-    } catch (IllegalArgumentException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> PartitionOptions.newBuilder().setMaxPartitions(-1).build());
+    assertNotNull(e.getMessage());
   }
 }

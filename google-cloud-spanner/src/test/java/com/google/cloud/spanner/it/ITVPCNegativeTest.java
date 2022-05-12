@@ -18,7 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
@@ -35,10 +35,10 @@ import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceId;
-import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SerialIntegrationTest;
 import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
@@ -47,10 +47,9 @@ import com.google.common.base.Strings;
 import com.google.longrunning.OperationsClient;
 import com.google.longrunning.OperationsSettings;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
@@ -63,7 +62,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Integration tests for VPC-SC */
-@Category(IntegrationTest.class)
+@Category(SerialIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITVPCNegativeTest {
   private static final Logger logger = Logger.getLogger(ITVPCNegativeTest.class.getName());
@@ -83,10 +82,10 @@ public class ITVPCNegativeTest {
     assumeTrue(
         "To run tests, GOOGLE_CLOUD_TESTS_IN_VPCSC environment variable needs to be set to True",
         IN_VPCSC_TEST != null && IN_VPCSC_TEST.equalsIgnoreCase("true"));
-    assertTrue(
+    assertFalse(
         "GOOGLE_CLOUD_TESTS_VPCSC_OUTSIDE_PERIMETER_PROJECT environment variable needs "
             + "to be set to a GCP project that is outside the VPC perimeter",
-        OUTSIDE_VPC_PROJECT != null && OUTSIDE_VPC_PROJECT != "");
+        Strings.isNullOrEmpty(OUTSIDE_VPC_PROJECT));
     assumeTrue(Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST")));
   }
 
@@ -190,7 +189,7 @@ public class ITVPCNegativeTest {
     ResultSet rs =
         databaseClient
             .singleUse()
-            .read("nonexistent-table", KeySet.all(), Arrays.asList("nonexistent-col"));
+            .read("nonexistent-table", KeySet.all(), Collections.singletonList("nonexistent-col"));
     try {
       // Tests that the initial create session request returns a permission denied.
       rs.next();
@@ -343,7 +342,7 @@ public class ITVPCNegativeTest {
   }
 
   @Test
-  public void deniedListBackupOperations() throws FileNotFoundException, IOException {
+  public void deniedListBackupOperations() throws IOException {
     try (OperationsClient client =
         OperationsClient.create(
             OperationsSettings.newBuilder()

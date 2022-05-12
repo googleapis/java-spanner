@@ -133,4 +133,59 @@ public interface InstanceConfigOrBuilder
    * <code>repeated .google.spanner.admin.instance.v1.ReplicaInfo replicas = 3;</code>
    */
   com.google.spanner.admin.instance.v1.ReplicaInfoOrBuilder getReplicasOrBuilder(int index);
+
+  /**
+   *
+   *
+   * <pre>
+   * Allowed values of the “default_leader” schema option for databases in
+   * instances that use this instance configuration.
+   * </pre>
+   *
+   * <code>repeated string leader_options = 4;</code>
+   *
+   * @return A list containing the leaderOptions.
+   */
+  java.util.List<java.lang.String> getLeaderOptionsList();
+  /**
+   *
+   *
+   * <pre>
+   * Allowed values of the “default_leader” schema option for databases in
+   * instances that use this instance configuration.
+   * </pre>
+   *
+   * <code>repeated string leader_options = 4;</code>
+   *
+   * @return The count of leaderOptions.
+   */
+  int getLeaderOptionsCount();
+  /**
+   *
+   *
+   * <pre>
+   * Allowed values of the “default_leader” schema option for databases in
+   * instances that use this instance configuration.
+   * </pre>
+   *
+   * <code>repeated string leader_options = 4;</code>
+   *
+   * @param index The index of the element to return.
+   * @return The leaderOptions at the given index.
+   */
+  java.lang.String getLeaderOptions(int index);
+  /**
+   *
+   *
+   * <pre>
+   * Allowed values of the “default_leader” schema option for databases in
+   * instances that use this instance configuration.
+   * </pre>
+   *
+   * <code>repeated string leader_options = 4;</code>
+   *
+   * @param index The index of the value to return.
+   * @return The bytes of the leaderOptions at the given index.
+   */
+  com.google.protobuf.ByteString getLeaderOptionsBytes(int index);
 }

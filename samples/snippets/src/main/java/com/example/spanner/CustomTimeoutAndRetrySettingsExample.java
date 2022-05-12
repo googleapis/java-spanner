@@ -17,6 +17,7 @@
 package com.example.spanner;
 
 //[START spanner_set_custom_timeout_and_retry]
+
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.cloud.spanner.DatabaseClient;
@@ -24,8 +25,6 @@ import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.TransactionContext;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import org.threeten.bp.Duration;
 
 class CustomTimeoutAndRetrySettingsExample {
@@ -54,14 +53,23 @@ class CustomTimeoutAndRetrySettingsExample {
         .setRetrySettings(
             RetrySettings.newBuilder()
                 // Configure retry delay settings.
+                // The initial amount of time to wait before retrying the request.
                 .setInitialRetryDelay(Duration.ofMillis(500))
+                // The maximum amount of time to wait before retrying. I.e. after this value is
+                // reached, the wait time will not increase further by the multiplier.
                 .setMaxRetryDelay(Duration.ofSeconds(64))
+                // The previous wait time is multiplied by this multiplier to come up with the next
+                // wait time, until the max is reached.
                 .setRetryDelayMultiplier(1.5)
 
                 // Configure RPC and total timeout settings.
+                // Timeout for the first RPC call. Subsequent retries will be based off this value.
                 .setInitialRpcTimeout(Duration.ofSeconds(60))
+                // The max for the per RPC timeout.
                 .setMaxRpcTimeout(Duration.ofSeconds(60))
+                // Controls the change of timeout for each retry.
                 .setRpcTimeoutMultiplier(1.0)
+                // The timeout for all calls (first call + all retries).
                 .setTotalTimeout(Duration.ofSeconds(60))
                 .build());
     // Create a Spanner client using the custom retry and timeout settings.
@@ -70,18 +78,14 @@ class CustomTimeoutAndRetrySettingsExample {
           spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
       client
           .readWriteTransaction()
-          .run(
-              new TransactionCallable<Void>() {
-                @Override
-                public Void run(TransactionContext transaction) throws Exception {
-                  String sql =
-                      "INSERT Singers (SingerId, FirstName, LastName)\n"
-                          + "VALUES (20, 'George', 'Washington')";
-                  long rowCount = transaction.executeUpdate(Statement.of(sql));
-                  System.out.printf("%d record inserted.%n", rowCount);
-                  return null;
-                }
-              });
+          .run(transaction -> {
+            String sql =
+                "INSERT INTO Singers (SingerId, FirstName, LastName)\n"
+                    + "VALUES (20, 'George', 'Washington')";
+            long rowCount = transaction.executeUpdate(Statement.of(sql));
+            System.out.printf("%d record inserted.%n", rowCount);
+            return null;
+          });
     }
   }
 }

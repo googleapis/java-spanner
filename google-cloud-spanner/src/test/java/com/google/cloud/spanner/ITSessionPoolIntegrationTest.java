@@ -40,7 +40,7 @@ import org.junit.runners.JUnit4;
  * <p>See also {@code it/WriteIntegrationTest}, which provides coverage of writing and reading back
  * all Cloud Spanner types.
  */
-@Category(IntegrationTest.class)
+@Category(SerialIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITSessionPoolIntegrationTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
@@ -115,12 +115,9 @@ public class ITSessionPoolIntegrationTest {
     Session session2 = pool.getSession().get();
     final CountDownLatch latch = new CountDownLatch(1);
     new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                try (Session session3 = pool.getSession().get()) {
-                  latch.countDown();
-                }
+            () -> {
+              try (Session session3 = pool.getSession().get()) {
+                latch.countDown();
               }
             })
         .start();
@@ -138,12 +135,9 @@ public class ITSessionPoolIntegrationTest {
     final CountDownLatch latch = new CountDownLatch(numSessions);
     for (int i = 0; i < numSessions; i++) {
       new Thread(
-              new Runnable() {
-                @Override
-                public void run() {
-                  try (Session session = pool.getSession().get()) {
-                    latch.countDown();
-                  }
+              () -> {
+                try (Session session = pool.getSession().get()) {
+                  latch.countDown();
                 }
               })
           .start();

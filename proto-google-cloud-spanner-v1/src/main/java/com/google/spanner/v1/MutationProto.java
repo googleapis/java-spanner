@@ -49,33 +49,34 @@ public final class MutationProto {
   static {
     java.lang.String[] descriptorData = {
       "\n google/spanner/v1/mutation.proto\022\021goog"
-          + "le.spanner.v1\032\034google/protobuf/struct.pr"
-          + "oto\032\034google/spanner/v1/keys.proto\032\034googl"
-          + "e/api/annotations.proto\"\306\003\n\010Mutation\0223\n\006"
-          + "insert\030\001 \001(\0132!.google.spanner.v1.Mutatio"
-          + "n.WriteH\000\0223\n\006update\030\002 \001(\0132!.google.spann"
-          + "er.v1.Mutation.WriteH\000\022=\n\020insert_or_upda"
-          + "te\030\003 \001(\0132!.google.spanner.v1.Mutation.Wr"
-          + "iteH\000\0224\n\007replace\030\004 \001(\0132!.google.spanner."
-          + "v1.Mutation.WriteH\000\0224\n\006delete\030\005 \001(\0132\".go"
-          + "ogle.spanner.v1.Mutation.DeleteH\000\032S\n\005Wri"
-          + "te\022\r\n\005table\030\001 \001(\t\022\017\n\007columns\030\002 \003(\t\022*\n\006va"
-          + "lues\030\003 \003(\0132\032.google.protobuf.ListValue\032C"
-          + "\n\006Delete\022\r\n\005table\030\001 \001(\t\022*\n\007key_set\030\002 \001(\013"
-          + "2\031.google.spanner.v1.KeySetB\013\n\toperation"
-          + "B\263\001\n\025com.google.spanner.v1B\rMutationProt"
-          + "oP\001Z8google.golang.org/genproto/googleap"
-          + "is/spanner/v1;spanner\252\002\027Google.Cloud.Spa"
-          + "nner.V1\312\002\027Google\\Cloud\\Spanner\\V1\352\002\032Goog"
-          + "le::Cloud::Spanner::V1b\006proto3"
+          + "le.spanner.v1\032\037google/api/field_behavior"
+          + ".proto\032\034google/protobuf/struct.proto\032\034go"
+          + "ogle/spanner/v1/keys.proto\"\325\003\n\010Mutation\022"
+          + "3\n\006insert\030\001 \001(\0132!.google.spanner.v1.Muta"
+          + "tion.WriteH\000\0223\n\006update\030\002 \001(\0132!.google.sp"
+          + "anner.v1.Mutation.WriteH\000\022=\n\020insert_or_u"
+          + "pdate\030\003 \001(\0132!.google.spanner.v1.Mutation"
+          + ".WriteH\000\0224\n\007replace\030\004 \001(\0132!.google.spann"
+          + "er.v1.Mutation.WriteH\000\0224\n\006delete\030\005 \001(\0132\""
+          + ".google.spanner.v1.Mutation.DeleteH\000\032X\n\005"
+          + "Write\022\022\n\005table\030\001 \001(\tB\003\340A\002\022\017\n\007columns\030\002 \003"
+          + "(\t\022*\n\006values\030\003 \003(\0132\032.google.protobuf.Lis"
+          + "tValue\032M\n\006Delete\022\022\n\005table\030\001 \001(\tB\003\340A\002\022/\n\007"
+          + "key_set\030\002 \001(\0132\031.google.spanner.v1.KeySet"
+          + "B\003\340A\002B\013\n\toperationB\263\001\n\025com.google.spanne"
+          + "r.v1B\rMutationProtoP\001Z8google.golang.org"
+          + "/genproto/googleapis/spanner/v1;spanner\252"
+          + "\002\027Google.Cloud.Spanner.V1\312\002\027Google\\Cloud"
+          + "\\Spanner\\V1\352\002\032Google::Cloud::Spanner::V1"
+          + "b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
             descriptorData,
             new com.google.protobuf.Descriptors.FileDescriptor[] {
+              com.google.api.FieldBehaviorProto.getDescriptor(),
               com.google.protobuf.StructProto.getDescriptor(),
               com.google.spanner.v1.KeysProto.getDescriptor(),
-              com.google.api.AnnotationsProto.getDescriptor(),
             });
     internal_static_google_spanner_v1_Mutation_descriptor =
         getDescriptor().getMessageTypes().get(0);
@@ -101,9 +102,14 @@ public final class MutationProto {
             new java.lang.String[] {
               "Table", "KeySet",
             });
+    com.google.protobuf.ExtensionRegistry registry =
+        com.google.protobuf.ExtensionRegistry.newInstance();
+    registry.add(com.google.api.FieldBehaviorProto.fieldBehavior);
+    com.google.protobuf.Descriptors.FileDescriptor.internalUpdateFileDescriptor(
+        descriptor, registry);
+    com.google.api.FieldBehaviorProto.getDescriptor();
     com.google.protobuf.StructProto.getDescriptor();
     com.google.spanner.v1.KeysProto.getDescriptor();
-    com.google.api.AnnotationsProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

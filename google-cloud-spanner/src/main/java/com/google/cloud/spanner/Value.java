@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -72,13 +73,30 @@ public abstract class Value implements Serializable {
    */
   public static final Timestamp COMMIT_TIMESTAMP = Timestamp.ofTimeMicroseconds(0L);
 
+  static final com.google.protobuf.Value NULL_PROTO =
+      com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
+
+  /** Constant to specify a PG Numeric NaN value. */
+  public static final String NAN = "NaN";
+
   private static final int MAX_DEBUG_STRING_LENGTH = 36;
   private static final String ELLIPSIS = "...";
   private static final String NULL_STRING = "NULL";
-  private static final char LIST_SEPERATOR = ',';
+  private static final char LIST_SEPARATOR = ',';
   private static final char LIST_OPEN = '[';
   private static final char LIST_CLOSE = ']';
   private static final long serialVersionUID = -5289864325087675338L;
+
+  /**
+   * Returns a {@link Value} that wraps the given proto value. This can be used to construct a value
+   * without a specific type, and let the backend infer the type based on the statement where it is
+   * used.
+   *
+   * @param value the non-null proto value (a {@link NullValue} is allowed)
+   */
+  public static Value untyped(com.google.protobuf.Value value) {
+    return new UntypedValueImpl(Preconditions.checkNotNull(value));
+  }
 
   /**
    * Returns a {@code BOOL} value.
@@ -158,12 +176,36 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns a {@code PG NUMERIC} value. This value has flexible precision and scale which is
+   * specified in the Database DDL. This value also supports {@code NaNs}, which can be specified
+   * with {@code Value.pgNumeric(Value.NAN)} or simply as {@code Value.pgNumeric("NaN")}.
+   *
+   * <p>Note that this flavour of numeric is different than Spanner numerics ({@link
+   * Value#numeric(BigDecimal)}). It should be used only for handling numerics in the PostgreSQL
+   * dialect.
+   *
+   * @param v the value, which may be null
+   */
+  public static Value pgNumeric(@Nullable String v) {
+    return new PgNumericImpl(v == null, v);
+  }
+
+  /**
    * Returns a {@code STRING} value.
    *
    * @param v the value, which may be null
    */
   public static Value string(@Nullable String v) {
     return new StringImpl(v == null, v);
+  }
+
+  /**
+   * Returns a {@code STRING} value.
+   *
+   * @param v the value, which may be null
+   */
+  public static Value json(@Nullable String v) {
+    return new JsonImpl(v == null, v);
   }
 
   /**
@@ -330,6 +372,17 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns an {@code ARRAY<PG_NUMERIC>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}. Individual
+   *     elements may be {@code "NaN"} or {@link Value#NAN}.
+   */
+  public static Value pgNumericArray(@Nullable Iterable<String> v) {
+    return new PgNumericArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+  }
+
+  /**
    * Returns an {@code ARRAY<STRING>} value.
    *
    * @param v the source of element values. This may be {@code null} to produce a value for which
@@ -337,6 +390,16 @@ public abstract class Value implements Serializable {
    */
   public static Value stringArray(@Nullable Iterable<String> v) {
     return new StringArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+  }
+
+  /**
+   * Returns an {@code ARRAY<STRING>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   */
+  public static Value jsonArray(@Nullable Iterable<String> v) {
+    return new JsonArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
   }
 
   /**
@@ -442,6 +505,15 @@ public abstract class Value implements Serializable {
   public abstract String getString();
 
   /**
+   * Returns the value of a {@code JSON}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public String getJson() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
    * Returns the value of a {@code BYTES}-typed instance.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
@@ -514,6 +586,16 @@ public abstract class Value implements Serializable {
   public abstract List<String> getStringArray();
 
   /**
+   * Returns the value of an {@code ARRAY<JSON>}-typed instance. While the returned list itself will
+   * never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public List<String> getJsonArray() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
    * Returns the value of an {@code ARRAY<BYTES>}-typed instance. While the returned list itself
    * will never be {@code null}, elements of that list may be null.
    *
@@ -543,7 +625,7 @@ public abstract class Value implements Serializable {
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
-  abstract List<Struct> getStructArray();
+  public abstract List<Struct> getStructArray();
 
   @Override
   public String toString() {
@@ -553,6 +635,10 @@ public abstract class Value implements Serializable {
   }
 
   // END OF PUBLIC API.
+
+  static com.google.protobuf.Value toProto(Value value) {
+    return value == null ? NULL_PROTO : value.toProto();
+  }
 
   abstract void toString(StringBuilder b);
 
@@ -669,9 +755,6 @@ public abstract class Value implements Serializable {
 
   /** Template class for {@code Value} implementations. */
   private abstract static class AbstractValue extends Value {
-    static final com.google.protobuf.Value NULL_PROTO =
-        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
-
     private final boolean isNull;
     private final Type type;
 
@@ -721,6 +804,11 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public String getJson() {
+      throw defaultGetter(Type.json());
+    }
+
+    @Override
     public ByteArray getBytes() {
       throw defaultGetter(Type.bytes());
     }
@@ -767,6 +855,11 @@ public abstract class Value implements Serializable {
     @Override
     public List<String> getStringArray() {
       throw defaultGetter(Type.array(Type.string()));
+    }
+
+    @Override
+    public List<String> getJsonArray() {
+      throw defaultGetter(Type.array(Type.json()));
     }
 
     @Override
@@ -832,7 +925,7 @@ public abstract class Value implements Serializable {
       }
 
       AbstractValue that = (AbstractValue) o;
-      if (!getType().equals(that.getType()) || isNull != that.isNull) {
+      if (!Objects.equals(getType(), that.getType()) || isNull != that.isNull) {
         return false;
       }
 
@@ -878,6 +971,58 @@ public abstract class Value implements Serializable {
 
     final void checkNotNull() {
       Preconditions.checkState(!isNull(), "Illegal call to getter of null value.");
+    }
+  }
+
+  private static class UntypedValueImpl extends AbstractValue {
+    private final com.google.protobuf.Value value;
+
+    private UntypedValueImpl(com.google.protobuf.Value value) {
+      super(value.hasNullValue(), null);
+      this.value = value;
+    }
+
+    @Override
+    public boolean getBool() {
+      checkNotNull();
+      Preconditions.checkState(value.hasBoolValue(), "This value does not contain a bool value");
+      return value.getBoolValue();
+    }
+
+    @Override
+    public String getString() {
+      checkNotNull();
+      Preconditions.checkState(
+          value.hasStringValue(), "This value does not contain a string value");
+      return value.getStringValue();
+    }
+
+    @Override
+    public double getFloat64() {
+      checkNotNull();
+      Preconditions.checkState(
+          value.hasNumberValue(), "This value does not contain a number value");
+      return value.getNumberValue();
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value);
+    }
+
+    @Override
+    com.google.protobuf.Value valueToProto() {
+      return value;
+    }
+
+    @Override
+    boolean valueEquals(Value v) {
+      return ((UntypedValueImpl) v).value.equals(value);
+    }
+
+    @Override
+    int valueHash() {
+      return value.hashCode();
     }
   }
 
@@ -1056,6 +1201,34 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class JsonImpl extends AbstractObjectValue<String> {
+
+    private JsonImpl(boolean isNull, @Nullable String value) {
+      super(isNull, Type.json(), value);
+    }
+
+    @Override
+    public String getJson() {
+      checkType(Type.json());
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    public String getString() {
+      return getJson();
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      if (value.length() > MAX_DEBUG_STRING_LENGTH) {
+        b.append(value, 0, MAX_DEBUG_STRING_LENGTH - ELLIPSIS.length()).append(ELLIPSIS);
+      } else {
+        b.append(value);
+      }
+    }
+  }
+
   private static class BytesImpl extends AbstractObjectValue<ByteArray> {
 
     private BytesImpl(boolean isNull, ByteArray value) {
@@ -1161,6 +1334,65 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class PgNumericImpl extends AbstractObjectValue<String> {
+    private BigDecimal valueAsBigDecimal;
+    private NumberFormatException bigDecimalConversionError;
+    private Double valueAsDouble;
+    private NumberFormatException doubleConversionError;
+
+    private PgNumericImpl(boolean isNull, String value) {
+      super(isNull, Type.pgNumeric(), value);
+    }
+
+    @Override
+    public String getString() {
+      checkType(Type.pgNumeric());
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    public BigDecimal getNumeric() {
+      checkType(Type.pgNumeric());
+      checkNotNull();
+      if (bigDecimalConversionError != null) {
+        throw bigDecimalConversionError;
+      }
+      if (valueAsBigDecimal == null) {
+        try {
+          valueAsBigDecimal = new BigDecimal(value);
+        } catch (NumberFormatException e) {
+          bigDecimalConversionError = e;
+          throw e;
+        }
+      }
+      return valueAsBigDecimal;
+    }
+
+    @Override
+    public double getFloat64() {
+      checkType(Type.pgNumeric());
+      checkNotNull();
+      if (doubleConversionError != null) {
+        throw doubleConversionError;
+      }
+      if (valueAsDouble == null) {
+        try {
+          valueAsDouble = Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+          doubleConversionError = e;
+          throw e;
+        }
+      }
+      return valueAsDouble;
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value);
+    }
+  }
+
   private abstract static class PrimitiveArrayImpl<T> extends AbstractValue {
     private final BitSet nulls;
 
@@ -1194,7 +1426,7 @@ public abstract class Value implements Serializable {
       b.append(LIST_OPEN);
       for (int i = 0; i < size(); ++i) {
         if (i > 0) {
-          b.append(LIST_SEPERATOR);
+          b.append(LIST_SEPARATOR);
         }
         if (nulls != null && nulls.get(i)) {
           b.append(NULL_STRING);
@@ -1378,7 +1610,7 @@ public abstract class Value implements Serializable {
       b.append(LIST_OPEN);
       for (int i = 0; i < value.size(); ++i) {
         if (i > 0) {
-          b.append(LIST_SEPERATOR);
+          b.append(LIST_SEPARATOR);
         }
         T v = value.get(i);
         if (v == null) {
@@ -1402,6 +1634,30 @@ public abstract class Value implements Serializable {
       checkType(getType());
       checkNotNull();
       return value;
+    }
+
+    @Override
+    void appendElement(StringBuilder b, String element) {
+      b.append(element);
+    }
+  }
+
+  private static class JsonArrayImpl extends AbstractArrayValue<String> {
+
+    private JsonArrayImpl(boolean isNull, @Nullable List<String> values) {
+      super(isNull, Type.json(), values);
+    }
+
+    @Override
+    public List<String> getJsonArray() {
+      checkType(getType());
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    public List<String> getStringArray() {
+      return getJsonArray();
     }
 
     @Override
@@ -1490,6 +1746,72 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class PgNumericArrayImpl extends AbstractArrayValue<String> {
+
+    private List<BigDecimal> valuesAsBigDecimal;
+    private NumberFormatException bigDecimalConversionError;
+    private List<Double> valuesAsDouble;
+    private NumberFormatException doubleConversionError;
+
+    private PgNumericArrayImpl(boolean isNull, @Nullable List<String> values) {
+      super(isNull, Type.pgNumeric(), values);
+    }
+
+    @Override
+    public List<String> getStringArray() {
+      checkType(getType());
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    public List<BigDecimal> getNumericArray() {
+      checkType(getType());
+      checkNotNull();
+      if (bigDecimalConversionError != null) {
+        throw bigDecimalConversionError;
+      }
+      if (valuesAsBigDecimal == null) {
+        try {
+          valuesAsBigDecimal =
+              value.stream()
+                  .map(v -> v == null ? null : new BigDecimal(v))
+                  .collect(Collectors.toList());
+        } catch (NumberFormatException e) {
+          bigDecimalConversionError = e;
+          throw e;
+        }
+      }
+      return valuesAsBigDecimal;
+    }
+
+    @Override
+    public List<Double> getFloat64Array() {
+      checkType(getType());
+      checkNotNull();
+      if (doubleConversionError != null) {
+        throw doubleConversionError;
+      }
+      if (valuesAsDouble == null) {
+        try {
+          valuesAsDouble =
+              value.stream()
+                  .map(v -> v == null ? null : Double.valueOf(v))
+                  .collect(Collectors.toList());
+        } catch (NumberFormatException e) {
+          doubleConversionError = e;
+          throw e;
+        }
+      }
+      return valuesAsDouble;
+    }
+
+    @Override
+    void appendElement(StringBuilder b, String element) {
+      b.append(element);
+    }
+  }
+
   private static class StructImpl extends AbstractObjectValue<Struct> {
 
     // Constructor for non-NULL struct values.
@@ -1533,12 +1855,16 @@ public abstract class Value implements Serializable {
           return Value.int64(value.getLong(fieldIndex));
         case STRING:
           return Value.string(value.getString(fieldIndex));
+        case JSON:
+          return Value.json(value.getJson(fieldIndex));
         case BYTES:
           return Value.bytes(value.getBytes(fieldIndex));
         case FLOAT64:
           return Value.float64(value.getDouble(fieldIndex));
         case NUMERIC:
           return Value.numeric(value.getBigDecimal(fieldIndex));
+        case PG_NUMERIC:
+          return Value.pgNumeric(value.getString(fieldIndex));
         case DATE:
           return Value.date(value.getDate(fieldIndex));
         case TIMESTAMP:
@@ -1550,17 +1876,21 @@ public abstract class Value implements Serializable {
             Type elementType = fieldType.getArrayElementType();
             switch (elementType.getCode()) {
               case BOOL:
-                return Value.boolArray(value.getBooleanArray(fieldIndex));
+                return Value.boolArray(value.getBooleanList(fieldIndex));
               case INT64:
-                return Value.int64Array(value.getLongArray(fieldIndex));
+                return Value.int64Array(value.getLongList(fieldIndex));
               case STRING:
                 return Value.stringArray(value.getStringList(fieldIndex));
+              case JSON:
+                return Value.jsonArray(value.getJsonList(fieldIndex));
               case BYTES:
                 return Value.bytesArray(value.getBytesList(fieldIndex));
               case FLOAT64:
-                return Value.float64Array(value.getDoubleArray(fieldIndex));
+                return Value.float64Array(value.getDoubleList(fieldIndex));
               case NUMERIC:
                 return Value.numericArray(value.getBigDecimalList(fieldIndex));
+              case PG_NUMERIC:
+                return Value.pgNumericArray(value.getStringList(fieldIndex));
               case DATE:
                 return Value.dateArray(value.getDateList(fieldIndex));
               case TIMESTAMP:
@@ -1597,7 +1927,7 @@ public abstract class Value implements Serializable {
   }
 
   private static class StructArrayImpl extends AbstractArrayValue<Struct> {
-    private static final Joiner joiner = Joiner.on(LIST_SEPERATOR).useForNull(NULL_STRING);
+    private static final Joiner joiner = Joiner.on(LIST_SEPARATOR).useForNull(NULL_STRING);
 
     private StructArrayImpl(Type elementType, @Nullable List<Struct> values) {
       super(values == null, elementType, values);

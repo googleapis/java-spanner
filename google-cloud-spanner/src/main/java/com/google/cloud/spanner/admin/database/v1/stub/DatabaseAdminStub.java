@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,8 @@ import com.google.longrunning.Operation;
 import com.google.longrunning.stub.OperationsStub;
 import com.google.protobuf.Empty;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
+import com.google.spanner.admin.database.v1.CopyBackupRequest;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
@@ -65,7 +67,7 @@ import javax.annotation.Generated;
  *
  * <p>This class is for advanced usage and reflects the underlying API directly.
  */
-@Generated("by gapic-generator")
+@Generated("by gapic-generator-java")
 public abstract class DatabaseAdminStub implements BackgroundResource {
 
   public OperationsStub getOperationsStub() {
@@ -132,6 +134,15 @@ public abstract class DatabaseAdminStub implements BackgroundResource {
 
   public UnaryCallable<CreateBackupRequest, Operation> createBackupCallable() {
     throw new UnsupportedOperationException("Not implemented: createBackupCallable()");
+  }
+
+  public OperationCallable<CopyBackupRequest, Backup, CopyBackupMetadata>
+      copyBackupOperationCallable() {
+    throw new UnsupportedOperationException("Not implemented: copyBackupOperationCallable()");
+  }
+
+  public UnaryCallable<CopyBackupRequest, Operation> copyBackupCallable() {
+    throw new UnsupportedOperationException("Not implemented: copyBackupCallable()");
   }
 
   public UnaryCallable<GetBackupRequest, Backup> getBackupCallable() {

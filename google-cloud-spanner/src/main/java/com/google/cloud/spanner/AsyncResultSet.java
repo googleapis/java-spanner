@@ -39,9 +39,8 @@ public interface AsyncResultSet extends ResultSet {
    * Non-blocking call that attempts to step the cursor to the next position in the stream. The
    * cursor may be inspected only if the cursor returns {@code CursorState.OK}.
    *
-   * <p>A caller will typically call {@link #tryNext()} in a loop inside the ReadyCallback,
-   * consuming all results available. For more information see {@link #setCallback(Executor,
-   * ReadyCallback)}.
+   * <p>A caller will typically call tryNext in a loop inside the ReadyCallback, consuming all
+   * results available. For more information see {@link #setCallback(Executor, ReadyCallback)}.
    *
    * <p>Currently this method may only be called if a ReadyCallback has been registered. This is for
    * safety purposes only, and may be relaxed in future.
@@ -146,8 +145,8 @@ public interface AsyncResultSet extends ResultSet {
    * <ul>
    *   <li>Semi-async: make {@code upstream.emit()} a blocking call. This will block the callback
    *       thread until progress is possible. When coding in this way the threads in the Executor
-   *       provided to {@link #setCallback(Executor, ReadyCallback)} must be blockable without
-   *       causing harm to progress in your system.
+   *       provided to setCallback must be blockable without causing harm to progress in your
+   *       system.
    *   <li>Full-async: call {@code cursor.pause()} and return from the callback with data still in
    *       the Cursor. Once in this state cursor waits until resume() is called before calling
    *       callback again.

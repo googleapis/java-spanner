@@ -19,13 +19,12 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
-import com.google.api.gax.grpc.testing.MockGrpcService;
 import com.google.api.gax.grpc.testing.MockServiceHelper;
 import com.google.cloud.Identity;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Policy;
 import com.google.cloud.Role;
-import java.util.Arrays;
+import java.util.Collections;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -49,7 +48,7 @@ public class InstanceAdminClientTest {
   public static void startStaticServer() {
     mockInstanceAdmin = new MockInstanceAdminServiceImpl();
     serviceHelper =
-        new MockServiceHelper("in-process-1", Arrays.<MockGrpcService>asList(mockInstanceAdmin));
+        new MockServiceHelper("in-process-1", Collections.singletonList(mockInstanceAdmin));
     serviceHelper.start();
   }
 
@@ -91,7 +90,8 @@ public class InstanceAdminClientTest {
   @Test
   public void testIAMPermissions() {
     Iterable<String> permissions =
-        client.testInstanceIAMPermissions(INSTANCE_ID, Arrays.asList("spanner.instances.list"));
+        client.testInstanceIAMPermissions(
+            INSTANCE_ID, Collections.singletonList("spanner.instances.list"));
     assertThat(permissions).containsExactly("spanner.instances.list");
   }
 }

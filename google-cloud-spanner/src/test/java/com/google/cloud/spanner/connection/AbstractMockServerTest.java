@@ -16,13 +16,16 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.ForceCloseSpannerFunction;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.RandomResultSetGenerator;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.cloud.spanner.admin.instance.v1.MockInstanceAdminImpl;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.AbortInterceptor;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
+import com.google.cloud.spanner.connection.SpannerPool.CheckAndCloseSpannersMode;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.longrunning.GetOperationRequest;
 import com.google.longrunning.Operation;
@@ -46,11 +49,10 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -110,9 +112,10 @@ public abstract class AbstractMockServerTest {
   private static Server server;
   private static InetSocketAddress address;
 
-  private boolean futureParentHandlers;
-  private boolean exceptionRunnableParentHandlers;
-  private boolean nettyServerParentHandlers;
+  private static boolean futureParentHandlers;
+  private static boolean exceptionRunnableParentHandlers;
+  private static boolean nettyServerParentHandlers;
+  private static boolean clientStreamParentHandlers;
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
@@ -148,20 +151,6 @@ public abstract class AbstractMockServerTest {
     mockSpanner.putStatementResult(StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     mockSpanner.putStatementResult(
         StatementResult.query(SELECT_RANDOM_STATEMENT, RANDOM_RESULT_SET));
-  }
-
-  @AfterClass
-  public static void stopServer() throws Exception {
-    SpannerPool.closeSpannerPool();
-    server.shutdown();
-    server.awaitTermination();
-  }
-
-  @Before
-  public void setupResults() {
-    mockSpanner.reset();
-    mockDatabaseAdmin.reset();
-    mockInstanceAdmin.reset();
 
     futureParentHandlers = Logger.getLogger(AbstractFuture.class.getName()).getUseParentHandlers();
     exceptionRunnableParentHandlers =
@@ -169,23 +158,39 @@ public abstract class AbstractMockServerTest {
     nettyServerParentHandlers =
         Logger.getLogger("io.grpc.netty.shaded.io.grpc.netty.NettyServerHandler")
             .getUseParentHandlers();
+    clientStreamParentHandlers =
+        Logger.getLogger("io.grpc.netty.shaded.io.grpc.netty.NettyServerHandler")
+            .getUseParentHandlers();
     Logger.getLogger(AbstractFuture.class.getName()).setUseParentHandlers(false);
     Logger.getLogger(LogExceptionRunnable.class.getName()).setUseParentHandlers(false);
     Logger.getLogger("io.grpc.netty.shaded.io.grpc.netty.NettyServerHandler")
         .setUseParentHandlers(false);
+    Logger.getLogger("io.grpc.internal.AbstractClientStream").setUseParentHandlers(false);
   }
 
-  @After
-  public void closeSpannerPool() {
+  @AfterClass
+  public static void stopServer() {
     try {
-      SpannerPool.closeSpannerPool();
+      SpannerPool.INSTANCE.checkAndCloseSpanners(
+          CheckAndCloseSpannersMode.ERROR,
+          new ForceCloseSpannerFunction(500L, TimeUnit.MILLISECONDS));
     } finally {
       Logger.getLogger(AbstractFuture.class.getName()).setUseParentHandlers(futureParentHandlers);
       Logger.getLogger(LogExceptionRunnable.class.getName())
           .setUseParentHandlers(exceptionRunnableParentHandlers);
       Logger.getLogger("io.grpc.netty.shaded.io.grpc.netty.NettyServerHandler")
           .setUseParentHandlers(nettyServerParentHandlers);
+      Logger.getLogger("io.grpc.internal.AbstractClientStream")
+          .setUseParentHandlers(clientStreamParentHandlers);
     }
+    server.shutdown();
+  }
+
+  @Before
+  public void setupResults() {
+    mockSpanner.clearRequests();
+    mockDatabaseAdmin.getRequests().clear();
+    mockInstanceAdmin.getRequests().clear();
   }
 
   protected java.sql.Connection createJdbcConnection() throws SQLException {
@@ -193,25 +198,22 @@ public abstract class AbstractMockServerTest {
   }
 
   ITConnection createConnection() {
-    return createConnection(
-        Collections.<StatementExecutionInterceptor>emptyList(),
-        Collections.<TransactionRetryListener>emptyList());
+    return createConnection(Collections.emptyList(), Collections.emptyList());
   }
 
   ITConnection createConnection(
       AbortInterceptor interceptor, TransactionRetryListener transactionRetryListener) {
     return createConnection(
-        Arrays.<StatementExecutionInterceptor>asList(interceptor),
-        Arrays.<TransactionRetryListener>asList(transactionRetryListener));
+        Collections.singletonList(interceptor),
+        Collections.singletonList(transactionRetryListener));
   }
 
   ITConnection createConnection(
       List<StatementExecutionInterceptor> interceptors,
       List<TransactionRetryListener> transactionRetryListeners) {
-    StringBuilder url = new StringBuilder(getBaseUrl());
     ConnectionOptions.Builder builder =
         ConnectionOptions.newBuilder()
-            .setUri(url.toString())
+            .setUri(getBaseUrl())
             .setStatementExecutionInterceptors(interceptors);
     ConnectionOptions options = builder.build();
     ITConnection connection = createITConnection(options);

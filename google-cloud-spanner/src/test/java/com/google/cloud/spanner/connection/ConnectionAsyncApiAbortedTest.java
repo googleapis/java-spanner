@@ -33,14 +33,13 @@ import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ByteString;
 import com.google.spanner.v1.ExecuteSqlRequest;
-import io.grpc.Status;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -51,6 +50,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -108,6 +108,13 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
     multiThreadedExecutor.shutdown();
   }
 
+  @Before
+  public void setup() {
+    try (Connection connection = createConnection()) {
+      connection.getDialect();
+    }
+  }
+
   @After
   public void reset() {
     mockSpanner.removeAllExecutionTimes();
@@ -115,8 +122,7 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
 
   ITConnection createConnection(TransactionRetryListener listener) {
     ITConnection connection =
-        super.createConnection(
-            ImmutableList.<StatementExecutionInterceptor>of(), ImmutableList.of(listener));
+        super.createConnection(ImmutableList.of(), ImmutableList.of(listener));
     connection.setAutocommit(false);
     return connection;
   }
@@ -127,7 +133,8 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
     try (Connection connection = createConnection(counter)) {
       assertThat(counter.retryCount).isEqualTo(0);
       mockSpanner.setExecuteStreamingSqlExecutionTime(
-          SimulatedExecutionTime.ofException(Status.ABORTED.asRuntimeException()));
+          SimulatedExecutionTime.ofException(
+              mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
       QueryResult res = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT);
 
       assertThat(get(res.finished)).isNull();
@@ -143,7 +150,8 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
       assertThat(counter.retryCount).isEqualTo(0);
       QueryResult res1 = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT);
       mockSpanner.setExecuteStreamingSqlExecutionTime(
-          SimulatedExecutionTime.ofException(Status.ABORTED.asRuntimeException()));
+          SimulatedExecutionTime.ofException(
+              mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
       QueryResult res2 = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT_2);
 
       assertThat(get(res1.finished)).isNull();
@@ -160,12 +168,14 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
     try (Connection connection = createConnection(counter)) {
       assertThat(counter.retryCount).isEqualTo(0);
       mockSpanner.setExecuteStreamingSqlExecutionTime(
-          SimulatedExecutionTime.ofException(Status.ABORTED.asRuntimeException()));
+          SimulatedExecutionTime.ofException(
+              mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
       QueryResult res1 = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT);
       // Wait until the first query aborted.
       assertThat(counter.latch.await(10L, TimeUnit.SECONDS)).isTrue();
       mockSpanner.setExecuteStreamingSqlExecutionTime(
-          SimulatedExecutionTime.ofException(Status.ABORTED.asRuntimeException()));
+          SimulatedExecutionTime.ofException(
+              mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
       QueryResult res2 = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT_2);
 
       assertThat(get(res1.finished)).isNull();
@@ -180,7 +190,8 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   public void testSingleQueryAbortedMidway() {
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofStreamException(
-            Status.ABORTED.asRuntimeException(), RANDOM_RESULT_SET_ROW_COUNT / 2));
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test")),
+            RANDOM_RESULT_SET_ROW_COUNT / 2));
     RetryCounter counter = new RetryCounter();
     try (Connection connection = createConnection(counter)) {
       assertThat(counter.retryCount).isEqualTo(0);
@@ -200,7 +211,8 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
       QueryResult res1 = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT);
       mockSpanner.setExecuteStreamingSqlExecutionTime(
           SimulatedExecutionTime.ofStreamException(
-              Status.ABORTED.asRuntimeException(), RANDOM_RESULT_SET_ROW_COUNT_2 / 2));
+              mockSpanner.createAbortedException(ByteString.copyFromUtf8("test")),
+              RANDOM_RESULT_SET_ROW_COUNT_2 / 2));
       QueryResult res2 = executeQueryAsync(connection, SELECT_RANDOM_STATEMENT_2);
 
       assertThat(get(res1.finished)).isNull();
@@ -215,7 +227,7 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   public void testTwoQueriesOneAbortedMidway() {
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofStreamException(
-            Status.ABORTED.asRuntimeException(),
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test")),
             Math.min(RANDOM_RESULT_SET_ROW_COUNT / 2, RANDOM_RESULT_SET_ROW_COUNT_2 / 2)));
     RetryCounter counter = new RetryCounter();
     try (Connection connection = createConnection(counter)) {
@@ -239,7 +251,8 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   public void testUpdateAndQueryAbortedMidway() throws InterruptedException {
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofStreamException(
-            Status.ABORTED.asRuntimeException(), RANDOM_RESULT_SET_ROW_COUNT / 2));
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test")),
+            RANDOM_RESULT_SET_ROW_COUNT / 2));
     final RetryCounter counter = new RetryCounter();
     try (Connection connection = createConnection(counter)) {
       assertThat(counter.retryCount).isEqualTo(0);
@@ -284,14 +297,7 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
       // Wait until the query has actually executed.
       queryLatch.await(10L, TimeUnit.SECONDS);
       ApiFuture<Long> updateCount = connection.executeUpdateAsync(INSERT_STATEMENT);
-      updateCount.addListener(
-          new Runnable() {
-            @Override
-            public void run() {
-              updateLatch.countDown();
-            }
-          },
-          MoreExecutors.directExecutor());
+      updateCount.addListener(updateLatch::countDown, MoreExecutors.directExecutor());
 
       // We should not commit before the AsyncResultSet has finished.
       assertThat(get(finished)).isNull();
@@ -306,13 +312,7 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
       List<? extends AbstractMessage> requests =
           Lists.newArrayList(
               Collections2.filter(
-                  mockSpanner.getRequests(),
-                  new Predicate<AbstractMessage>() {
-                    @Override
-                    public boolean apply(AbstractMessage input) {
-                      return input instanceof ExecuteSqlRequest;
-                    }
-                  }));
+                  mockSpanner.getRequests(), input -> input instanceof ExecuteSqlRequest));
       // The entire transaction should be retried.
       assertThat(requests).hasSize(4);
       assertThat(((ExecuteSqlRequest) requests.get(0)).getSeqno()).isEqualTo(1L);
@@ -334,7 +334,8 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   public void testUpdateAndQueryAbortedMidway_UpdateCountChanged() throws InterruptedException {
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofStreamException(
-            Status.ABORTED.asRuntimeException(), RANDOM_RESULT_SET_ROW_COUNT / 2));
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test")),
+            RANDOM_RESULT_SET_ROW_COUNT / 2));
     final RetryCounter counter = new RetryCounter();
     try (Connection connection = createConnection(counter)) {
       assertThat(counter.retryCount).isEqualTo(0);
@@ -347,27 +348,24 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
         finished =
             rs.setCallback(
                 singleThreadedExecutor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    // Indicate that the query has been executed.
-                    queryLatch.countDown();
-                    try {
-                      // Wait until the update is on its way.
-                      updateLatch.await(10L, TimeUnit.SECONDS);
-                      while (true) {
-                        switch (resultSet.tryNext()) {
-                          case OK:
-                            break;
-                          case DONE:
-                            return CallbackResponse.DONE;
-                          case NOT_READY:
-                            return CallbackResponse.CONTINUE;
-                        }
+                resultSet -> {
+                  // Indicate that the query has been executed.
+                  queryLatch.countDown();
+                  try {
+                    // Wait until the update is on its way.
+                    updateLatch.await(10L, TimeUnit.SECONDS);
+                    while (true) {
+                      switch (resultSet.tryNext()) {
+                        case OK:
+                          break;
+                        case DONE:
+                          return CallbackResponse.DONE;
+                        case NOT_READY:
+                          return CallbackResponse.CONTINUE;
                       }
-                    } catch (InterruptedException e) {
-                      throw SpannerExceptionFactory.propagateInterrupt(e);
                     }
+                  } catch (InterruptedException e) {
+                    throw SpannerExceptionFactory.propagateInterrupt(e);
                   }
                 });
       }
@@ -394,13 +392,7 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
       List<? extends AbstractMessage> requests =
           Lists.newArrayList(
               Collections2.filter(
-                  mockSpanner.getRequests(),
-                  new Predicate<AbstractMessage>() {
-                    @Override
-                    public boolean apply(AbstractMessage input) {
-                      return input instanceof ExecuteSqlRequest;
-                    }
-                  }));
+                  mockSpanner.getRequests(), input -> input instanceof ExecuteSqlRequest));
       // The entire transaction should be retried, but will not succeed as the result of the update
       // statement was different during the retry.
       assertThat(requests).hasSize(4);
@@ -420,10 +412,11 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testQueriesAbortedMidway_ResultsChanged() throws InterruptedException {
+  public void testQueriesAbortedMidway_ResultsChanged() {
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofStreamException(
-            Status.ABORTED.asRuntimeException(), RANDOM_RESULT_SET_ROW_COUNT - 1));
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test")),
+            RANDOM_RESULT_SET_ROW_COUNT - 1));
     final Statement statement = Statement.of("SELECT * FROM TEST_TABLE");
     final RandomResultSetGenerator generator =
         new RandomResultSetGenerator(RANDOM_RESULT_SET_ROW_COUNT - 10);
@@ -438,24 +431,21 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
         res1 =
             rs.setCallback(
                 multiThreadedExecutor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    try {
-                      latch.await(10L, TimeUnit.SECONDS);
-                      while (true) {
-                        switch (resultSet.tryNext()) {
-                          case OK:
-                            break;
-                          case DONE:
-                            return CallbackResponse.DONE;
-                          case NOT_READY:
-                            return CallbackResponse.CONTINUE;
-                        }
+                resultSet -> {
+                  try {
+                    latch.await(10L, TimeUnit.SECONDS);
+                    while (true) {
+                      switch (resultSet.tryNext()) {
+                        case OK:
+                          break;
+                        case DONE:
+                          return CallbackResponse.DONE;
+                        case NOT_READY:
+                          return CallbackResponse.CONTINUE;
                       }
-                    } catch (Throwable t) {
-                      throw SpannerExceptionFactory.asSpannerException(t);
                     }
+                  } catch (Throwable t) {
+                    throw SpannerExceptionFactory.asSpannerException(t);
                   }
                 });
       }
@@ -589,13 +579,10 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
         ApiFuture<Void> fut =
             rs.setCallback(
                 singleThreadedExecutor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    // The following line should throw AbortedDueToConcurrentModificationException.
-                    resultSet.tryNext();
-                    return CallbackResponse.DONE;
-                  }
+                resultSet -> {
+                  // The following line should throw AbortedDueToConcurrentModificationException.
+                  resultSet.tryNext();
+                  return CallbackResponse.DONE;
                 });
         try {
           assertThat(get(fut)).isNull();
@@ -611,12 +598,9 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
         ApiFuture<Void> fut =
             rs.setCallback(
                 singleThreadedExecutor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    resultSet.tryNext();
-                    return CallbackResponse.DONE;
-                  }
+                resultSet -> {
+                  resultSet.tryNext();
+                  return CallbackResponse.DONE;
                 });
         assertThat(get(fut)).isNull();
       }
@@ -666,19 +650,16 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
       res =
           rs.setCallback(
               executor,
-              new ReadyCallback() {
-                @Override
-                public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case OK:
-                        rowCount.incrementAndGet();
-                        break;
-                      case DONE:
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                    }
+              resultSet -> {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case OK:
+                      rowCount.incrementAndGet();
+                      break;
+                    case DONE:
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
                   }
                 }
               });

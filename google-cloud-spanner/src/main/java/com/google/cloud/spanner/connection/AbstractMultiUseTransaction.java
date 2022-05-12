@@ -23,10 +23,9 @@ import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
 import com.google.spanner.v1.SpannerGrpc;
-import java.util.concurrent.Callable;
 
 /**
  * Base class for {@link Connection}-based transactions that can be used for multiple read and
@@ -67,13 +66,10 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
     checkValidTransaction();
     return executeStatementAsync(
         statement,
-        new Callable<ResultSet>() {
-          @Override
-          public ResultSet call() throws Exception {
-            checkAborted();
-            return DirectExecuteResultSet.ofResultSet(
-                internalExecuteQuery(statement, analyzeMode, options));
-          }
+        () -> {
+          checkAborted();
+          return DirectExecuteResultSet.ofResultSet(
+              internalExecuteQuery(statement, analyzeMode, options));
         },
         SpannerGrpc.getExecuteStreamingSqlMethod());
   }

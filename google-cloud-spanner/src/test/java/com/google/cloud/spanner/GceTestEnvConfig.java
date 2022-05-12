@@ -70,12 +70,6 @@ public class GceTestEnvConfig implements TestEnvConfig {
         SpannerOptions.newBuilder()
             .setAutoThrottleAdministrativeRequests()
             .setTrackTransactionStarter();
-    InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder =
-        InstantiatingGrpcChannelProvider.newBuilder();
-    if (attemptDirectPath) {
-      builder.setChannelProvider(
-          defaultChannelProviderBuilder.setEndpoint(DIRECT_PATH_ENDPOINT).build());
-    }
     if (!projectId.isEmpty()) {
       builder.setProjectId(projectId);
     }
@@ -96,6 +90,16 @@ public class GceTestEnvConfig implements TestEnvConfig {
           interceptorProvider.with(new DirectPathAddressCheckInterceptor(directPathTestScenario));
     }
     builder.setInterceptorProvider(interceptorProvider);
+    // DirectPath tests need to set a custom endpoint to the ChannelProvider
+    InstantiatingGrpcChannelProvider.Builder customChannelProviderBuilder =
+        InstantiatingGrpcChannelProvider.newBuilder();
+    if (attemptDirectPath) {
+      customChannelProviderBuilder
+          .setEndpoint(DIRECT_PATH_ENDPOINT)
+          .setAttemptDirectPath(true)
+          .setInterceptorProvider(interceptorProvider);
+      builder.setChannelProvider(customChannelProviderBuilder.build());
+    }
     options = builder.build();
   }
 

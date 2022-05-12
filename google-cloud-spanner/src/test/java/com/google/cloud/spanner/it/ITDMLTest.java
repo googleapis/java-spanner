@@ -16,12 +16,19 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
@@ -34,25 +41,30 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.cloud.spanner.Value;
+import com.google.cloud.spanner.connection.ConnectionOptions;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
 
 /** Integration tests for DML. */
 @Category(ParallelIntegrationTest.class)
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public final class ITDMLTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
-  private static Database db;
-  private static DatabaseClient client;
+  private static DatabaseClient googleStandardSQLClient;
+  private static DatabaseClient postgreSQLClient;
   /** Sequence for assigning unique keys to test cases. */
   private static int seq;
 
@@ -61,29 +73,64 @@ public final class ITDMLTest {
 
   private static final String INSERT_DML =
       "INSERT INTO T (k, v) VALUES ('%d-boo1', 1), ('%d-boo2', 2), ('%d-boo3', 3), ('%d-boo4', 4);";
-  private static final String UPDATE_DML = "UPDATE T SET T.V = 100 WHERE T.K LIKE '%d-boo%%';";
-  private static final String DELETE_DML = "DELETE FROM T WHERE T.K like '%d-boo%%';";
+  private static final String UPDATE_DML = "UPDATE T SET V = 100 WHERE K LIKE '%d-boo%%';";
+  private static final String DELETE_DML = "DELETE FROM T WHERE K like '%d-boo%%';";
+
   private static final long DML_COUNT = 4;
 
   private static boolean throwAbortOnce = false;
 
   @BeforeClass
   public static void setUpDatabase() {
-    db =
+    Database googleStandardSQLDatabase =
         env.getTestHelper()
             .createTestDatabase(
                 "CREATE TABLE T ("
                     + "  K    STRING(MAX) NOT NULL,"
                     + "  V    INT64,"
                     + ") PRIMARY KEY (K)");
-    client = env.getTestHelper().getDatabaseClient(db);
+    googleStandardSQLClient = env.getTestHelper().getDatabaseClient(googleStandardSQLDatabase);
+    if (!isUsingEmulator()) {
+      Database postgreSQLDatabase =
+          env.getTestHelper()
+              .createTestDatabase(
+                  Dialect.POSTGRESQL,
+                  Arrays.asList(
+                      "CREATE TABLE T (" + "  K    VARCHAR PRIMARY KEY," + "  V    BIGINT" + ")"));
+      postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
+    }
+  }
+
+  @AfterClass
+  public static void teardown() {
+    ConnectionOptions.closeSpanner();
   }
 
   @Before
   public void increaseTestIdAndDeleteTestData() {
-    client.writeAtLeastOnce(Arrays.asList(Mutation.delete("T", KeySet.all())));
+    if (dialect.dialect == Dialect.GOOGLE_STANDARD_SQL) {
+      googleStandardSQLClient.writeAtLeastOnce(
+          Collections.singletonList(Mutation.delete("T", KeySet.all())));
+    } else {
+      postgreSQLClient.writeAtLeastOnce(
+          Collections.singletonList(Mutation.delete("T", KeySet.all())));
+    }
     id++;
   }
+
+  @Parameterized.Parameters(name = "Dialect = {0}")
+  public static List<DialectTestParameter> data() {
+    List<DialectTestParameter> params = new ArrayList<>();
+    params.add(new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL));
+    // "PG dialect tests are not supported by the emulator"
+    if (!isUsingEmulator()) {
+      params.add(new DialectTestParameter(Dialect.POSTGRESQL));
+    }
+    return params;
+  }
+
+  @Parameterized.Parameter(0)
+  public DialectTestParameter dialect;
 
   private static String uniqueKey() {
     return "k" + seq++;
@@ -103,25 +150,28 @@ public final class ITDMLTest {
 
   private void executeUpdate(long expectedCount, final String... stmts) {
     final TransactionCallable<Long> callable =
-        new TransactionCallable<Long>() {
-          @Override
-          public Long run(TransactionContext transaction) {
-            long rowCount = 0;
-            for (String stmt : stmts) {
-              if (throwAbortOnce) {
-                throwAbortOnce = false;
-                throw SpannerExceptionFactory.newSpannerException(
-                    ErrorCode.ABORTED, "Abort in test");
-              }
-
-              rowCount += transaction.executeUpdate(Statement.of(stmt));
+        transaction -> {
+          long rowCount = 0;
+          for (String stmt : stmts) {
+            if (throwAbortOnce) {
+              throwAbortOnce = false;
+              throw SpannerExceptionFactory.newSpannerException(ErrorCode.ABORTED, "Abort in test");
             }
-            return rowCount;
+
+            rowCount += transaction.executeUpdate(Statement.of(stmt));
           }
+          return rowCount;
         };
-    TransactionRunner runner = client.readWriteTransaction();
+    TransactionRunner runner = getClient(dialect.dialect).readWriteTransaction();
     Long rowCount = runner.run(callable);
     assertThat(rowCount).isEqualTo(expectedCount);
+  }
+
+  private DatabaseClient getClient(Dialect dialect) {
+    if (dialect == Dialect.POSTGRESQL) {
+      return postgreSQLClient;
+    }
+    return googleStandardSQLClient;
   }
 
   @Test
@@ -139,29 +189,29 @@ public final class ITDMLTest {
   public void partitionedDML() {
     executeUpdate(DML_COUNT, insertDml());
     assertThat(
-            client
+            getClient(dialect.dialect)
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(1);
 
-    long rowCount = client.executePartitionedUpdate(Statement.of(updateDml()));
+    long rowCount = getClient(dialect.dialect).executePartitionedUpdate(Statement.of(updateDml()));
     // Note: With PDML there is a possibility of network replay or partial update to occur, causing
     // this assert to fail. We should remove this assert if it is a recurring failure in IT tests.
     assertThat(rowCount).isEqualTo(DML_COUNT);
     assertThat(
-            client
+            getClient(dialect.dialect)
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(100);
 
-    rowCount = client.executePartitionedUpdate(Statement.of(deleteDml()));
+    rowCount = getClient(dialect.dialect).executePartitionedUpdate(Statement.of(deleteDml()));
     assertThat(rowCount).isEqualTo(DML_COUNT);
     assertThat(
-            client
+            getClient(dialect.dialect)
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V")))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V")))
         .isNull();
   }
 
@@ -169,23 +219,23 @@ public final class ITDMLTest {
   public void standardDML() {
     executeUpdate(DML_COUNT, insertDml());
     assertThat(
-            client
+            getClient(dialect.dialect)
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(1);
     executeUpdate(DML_COUNT, updateDml());
     assertThat(
-            client
+            getClient(dialect.dialect)
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(100);
     executeUpdate(DML_COUNT, deleteDml());
     assertThat(
-            client
+            getClient(dialect.dialect)
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V")))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V")))
         .isNull();
   }
 
@@ -213,9 +263,9 @@ public final class ITDMLTest {
         String.format("UPDATE T SET v = 400 WHERE k = '%d-boo1';", id),
         String.format("UPDATE T SET v = 500 WHERE k = '%d-boo1';", id));
     assertThat(
-            client
+            getClient(dialect.dialect)
                 .singleUse(TimestampBound.strong())
-                .readRow("T", Key.of(String.format("%d-boo1", id)), Arrays.asList("V"))
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(500);
 
@@ -227,22 +277,20 @@ public final class ITDMLTest {
     executeUpdate(DML_COUNT, insertDml());
 
     final TransactionCallable<Void> callable =
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) {
-            long rowCount =
-                transaction.executeUpdate(
-                    Statement.of(String.format("UPDATE T SET v = v * 2 WHERE k = '%d-boo2';", id)));
-            assertThat(rowCount).isEqualTo(1);
-            assertThat(
-                    transaction
-                        .readRow("T", Key.of(String.format("%d-boo2", id)), Arrays.asList("v"))
-                        .getLong(0))
-                .isEqualTo(2 * 2);
-            return null;
-          }
+        transaction -> {
+          long rowCount =
+              transaction.executeUpdate(
+                  Statement.of(String.format("UPDATE T SET v = v * 2 WHERE k = '%d-boo2';", id)));
+          assertThat(rowCount).isEqualTo(1);
+          assertThat(
+                  transaction
+                      .readRow(
+                          "T", Key.of(String.format("%d-boo2", id)), Collections.singletonList("v"))
+                      .getLong(0))
+              .isEqualTo(2 * 2);
+          return null;
         };
-    TransactionRunner runner = client.readWriteTransaction();
+    TransactionRunner runner = getClient(dialect.dialect).readWriteTransaction();
     runner.run(callable);
 
     executeUpdate(DML_COUNT, deleteDml());
@@ -256,17 +304,14 @@ public final class ITDMLTest {
       }
     }
     final TransactionCallable<Void> callable =
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) throws UserException {
-            long rowCount = transaction.executeUpdate(Statement.of(insertDml()));
-            assertThat(rowCount).isEqualTo(DML_COUNT);
-            throw new UserException("failing to commit");
-          }
+        transaction -> {
+          long rowCount = transaction.executeUpdate(Statement.of(insertDml()));
+          assertThat(rowCount).isEqualTo(DML_COUNT);
+          throw new UserException("failing to commit");
         };
 
     try {
-      TransactionRunner runner = client.readWriteTransaction();
+      TransactionRunner runner = getClient(dialect.dialect).readWriteTransaction();
       runner.run(callable);
       fail("Expected user exception");
     } catch (SpannerException e) {
@@ -276,12 +321,12 @@ public final class ITDMLTest {
     }
 
     ResultSet resultSet =
-        client
+        getClient(dialect.dialect)
             .singleUse(TimestampBound.strong())
             .read(
                 "T",
                 KeySet.range(KeyRange.prefix(Key.of(String.format("%d-boo", id)))),
-                Arrays.asList("K"));
+                Collections.singletonList("K"));
     assertThat(resultSet.next()).isFalse();
   }
 
@@ -290,28 +335,27 @@ public final class ITDMLTest {
     final String key1 = uniqueKey();
     final String key2 = uniqueKey();
     final TransactionCallable<Void> callable =
-        new TransactionCallable<Void>() {
-          @Override
-          public Void run(TransactionContext transaction) {
-            // DML
-            long rowCount =
-                transaction.executeUpdate(
-                    Statement.of("INSERT INTO T (k, v) VALUES ('" + key1 + "', 1)"));
-            assertThat(rowCount).isEqualTo(1);
+        transaction -> {
+          // DML
+          long rowCount =
+              transaction.executeUpdate(
+                  Statement.of("INSERT INTO T (k, v) VALUES ('" + key1 + "', 1)"));
+          assertThat(rowCount).isEqualTo(1);
 
-            // Mutations
-            transaction.buffer(
-                Mutation.newInsertOrUpdateBuilder("T").set("K").to(key2).set("V").to(2).build());
-            return null;
-          }
+          // Mutations
+          transaction.buffer(
+              Mutation.newInsertOrUpdateBuilder("T").set("K").to(key2).set("V").to(2).build());
+          return null;
         };
-    TransactionRunner runner = client.readWriteTransaction();
+    TransactionRunner runner = getClient(dialect.dialect).readWriteTransaction();
     runner.run(callable);
 
     KeySet.Builder keys = KeySet.newBuilder();
     keys.addKey(Key.of(key1)).addKey(Key.of(key2));
     ResultSet resultSet =
-        client.singleUse(TimestampBound.strong()).read("T", keys.build(), Arrays.asList("K"));
+        getClient(dialect.dialect)
+            .singleUse(TimestampBound.strong())
+            .read("T", keys.build(), Collections.singletonList("K"));
     int rowCount = 0;
     while (resultSet.next()) {
       rowCount++;
@@ -321,20 +365,17 @@ public final class ITDMLTest {
 
   private void executeQuery(long expectedCount, final String... stmts) {
     final TransactionCallable<Long> callable =
-        new TransactionCallable<Long>() {
-          @Override
-          public Long run(TransactionContext transaction) {
-            long rowCount = 0;
-            for (final String stmt : stmts) {
-              ResultSet resultSet = transaction.executeQuery(Statement.of(stmt));
-              assertThat(resultSet.next()).isFalse();
-              assertThat(resultSet.getStats()).isNotNull();
-              rowCount += resultSet.getStats().getRowCountExact();
-            }
-            return rowCount;
+        transaction -> {
+          long rowCount = 0;
+          for (final String stmt : stmts) {
+            ResultSet resultSet = transaction.executeQuery(Statement.of(stmt));
+            assertThat(resultSet.next()).isFalse();
+            assertThat(resultSet.getStats()).isNotNull();
+            rowCount += resultSet.getStats().getRowCountExact();
           }
+          return rowCount;
         };
-    TransactionRunner runner = client.readWriteTransaction();
+    TransactionRunner runner = getClient(dialect.dialect).readWriteTransaction();
     Long rowCount = runner.run(callable);
     assertThat(rowCount).isEqualTo(expectedCount);
   }
@@ -344,5 +385,42 @@ public final class ITDMLTest {
     executeQuery(DML_COUNT, insertDml());
     // checks for multi-stmts within a txn, therefore also verifying seqNo.
     executeQuery(DML_COUNT * 2, updateDml(), deleteDml());
+  }
+
+  @Test
+  public void testUntypedNullValues() {
+    assumeFalse(
+        "Spanner PostgreSQL does not yet support untyped null values",
+        dialect.dialect == Dialect.POSTGRESQL);
+
+    DatabaseClient client = getClient(dialect.dialect);
+    String sql;
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      sql = "INSERT INTO T (K, V) VALUES ($1, $2)";
+    } else {
+      sql = "INSERT INTO T (K, V) VALUES (@p1, @p2)";
+    }
+    Long updateCount =
+        client
+            .readWriteTransaction()
+            .run(
+                transaction ->
+                    transaction.executeUpdate(
+                        Statement.newBuilder(sql)
+                            .bind("p1")
+                            .to("k1")
+                            .bind("p2")
+                            .to((Value) null)
+                            .build()));
+
+    assertNotNull(updateCount);
+    assertEquals(1L, updateCount.longValue());
+
+    // Read the row back and verify that the value is null.
+    try (ResultSet resultSet = client.singleUse().executeQuery(Statement.of("SELECT V FROM T"))) {
+      assertTrue(resultSet.next());
+      assertTrue(resultSet.isNull(0));
+      assertFalse(resultSet.next());
+    }
   }
 }

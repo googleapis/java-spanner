@@ -16,8 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.ApiAsyncFunction;
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
@@ -59,18 +57,15 @@ class SessionPoolAsyncTransactionManager
     this.session = session;
     this.delegate = SettableApiFuture.create();
     this.session.addListener(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              delegate.set(
-                  SessionPoolAsyncTransactionManager.this
-                      .session
-                      .get()
-                      .transactionManagerAsync(options));
-            } catch (Throwable t) {
-              delegate.setException(t);
-            }
+        () -> {
+          try {
+            delegate.set(
+                SessionPoolAsyncTransactionManager.this
+                    .session
+                    .get()
+                    .transactionManagerAsync(options));
+          } catch (Throwable t) {
+            delegate.setException(t);
           }
         },
         MoreExecutors.directExecutor());
@@ -188,34 +183,31 @@ class SessionPoolAsyncTransactionManager
     }
     return ApiFutures.transformAsync(
         delegate,
-        new ApiAsyncFunction<AsyncTransactionManagerImpl, Timestamp>() {
-          @Override
-          public ApiFuture<Timestamp> apply(AsyncTransactionManagerImpl input) throws Exception {
-            final SettableApiFuture<Timestamp> res = SettableApiFuture.create();
-            ApiFutures.addCallback(
-                input.commitAsync(),
-                new ApiFutureCallback<Timestamp>() {
-                  @Override
-                  public void onFailure(Throwable t) {
-                    synchronized (lock) {
-                      if (t instanceof AbortedException) {
-                        txnState = TransactionState.ABORTED;
-                        abortedException = (AbortedException) t;
-                      } else {
-                        txnState = TransactionState.COMMIT_FAILED;
-                      }
+        input -> {
+          final SettableApiFuture<Timestamp> res = SettableApiFuture.create();
+          ApiFutures.addCallback(
+              input.commitAsync(),
+              new ApiFutureCallback<Timestamp>() {
+                @Override
+                public void onFailure(Throwable t) {
+                  synchronized (lock) {
+                    if (t instanceof AbortedException) {
+                      txnState = TransactionState.ABORTED;
+                      abortedException = (AbortedException) t;
+                    } else {
+                      txnState = TransactionState.COMMIT_FAILED;
                     }
-                    res.setException(t);
                   }
+                  res.setException(t);
+                }
 
-                  @Override
-                  public void onSuccess(Timestamp result) {
-                    res.set(result);
-                  }
-                },
-                MoreExecutors.directExecutor());
-            return res;
-          }
+                @Override
+                public void onSuccess(Timestamp result) {
+                  res.set(result);
+                }
+              },
+              MoreExecutors.directExecutor());
+          return res;
         },
         MoreExecutors.directExecutor());
   }
@@ -230,20 +222,10 @@ class SessionPoolAsyncTransactionManager
     }
     return ApiFutures.transformAsync(
         delegate,
-        new ApiAsyncFunction<AsyncTransactionManagerImpl, Void>() {
-          @Override
-          public ApiFuture<Void> apply(AsyncTransactionManagerImpl input) throws Exception {
-            ApiFuture<Void> res = input.rollbackAsync();
-            res.addListener(
-                new Runnable() {
-                  @Override
-                  public void run() {
-                    session.close();
-                  }
-                },
-                MoreExecutors.directExecutor());
-            return res;
-          }
+        input -> {
+          ApiFuture<Void> res = input.rollbackAsync();
+          res.addListener(() -> session.close(), MoreExecutors.directExecutor());
+          return res;
         },
         MoreExecutors.directExecutor());
   }
@@ -261,26 +243,17 @@ class SessionPoolAsyncTransactionManager
         ApiFutures.transform(
             ApiFutures.transformAsync(
                 delegate,
-                new ApiAsyncFunction<AsyncTransactionManagerImpl, TransactionContext>() {
-                  @Override
-                  public ApiFuture<TransactionContext> apply(AsyncTransactionManagerImpl input)
-                      throws Exception {
-                    if (restartedAfterSessionNotFound) {
-                      restartedAfterSessionNotFound = false;
-                      return input.beginAsync();
-                    }
-                    return input.resetForRetryAsync();
+                input -> {
+                  if (restartedAfterSessionNotFound) {
+                    restartedAfterSessionNotFound = false;
+                    return input.beginAsync();
                   }
+                  return input.resetForRetryAsync();
                 },
                 MoreExecutors.directExecutor()),
-            new ApiFunction<TransactionContext, TransactionContext>() {
-
-              @Override
-              public TransactionContext apply(TransactionContext input) {
-                return new SessionPool.SessionPoolTransactionContext(
-                    SessionPoolAsyncTransactionManager.this, input);
-              }
-            },
+            input ->
+                new SessionPool.SessionPoolTransactionContext(
+                    SessionPoolAsyncTransactionManager.this, input),
             MoreExecutors.directExecutor()));
   }
 
@@ -289,5 +262,15 @@ class SessionPoolAsyncTransactionManager
     synchronized (lock) {
       return txnState;
     }
+  }
+
+  public ApiFuture<CommitResponse> getCommitResponse() {
+    synchronized (lock) {
+      Preconditions.checkState(
+          txnState == TransactionState.COMMITTED,
+          "commit can only be invoked if the transaction was successfully committed");
+    }
+    return ApiFutures.transformAsync(
+        delegate, AsyncTransactionManagerImpl::getCommitResponse, MoreExecutors.directExecutor());
   }
 }

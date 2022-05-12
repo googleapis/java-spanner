@@ -44,7 +44,7 @@ public class SpannerMetadataProviderTest {
   @Test
   public void testGetResourceHeaderValue() {
     SpannerMetadataProvider metadataProvider =
-        SpannerMetadataProvider.create(ImmutableMap.<String, String>of(), "header3");
+        SpannerMetadataProvider.create(ImmutableMap.of(), "header3");
 
     assertEquals("projects/p", getResourceHeaderValue(metadataProvider, "garbage"));
     assertEquals("projects/p", getResourceHeaderValue(metadataProvider, "projects/p"));
@@ -75,11 +75,11 @@ public class SpannerMetadataProviderTest {
   @Test
   public void testNewExtraHeaders() {
     SpannerMetadataProvider metadataProvider =
-        SpannerMetadataProvider.create(ImmutableMap.<String, String>of(), "header1");
+        SpannerMetadataProvider.create(ImmutableMap.of(), "header1");
     Map<String, List<String>> extraHeaders = metadataProvider.newExtraHeaders(null, "value1");
     assertThat(extraHeaders)
         .containsExactlyEntriesIn(
-            ImmutableMap.<String, List<String>>of("header1", ImmutableList.<String>of("value1")));
+            ImmutableMap.<String, List<String>>of("header1", ImmutableList.of("value1")));
   }
 
   private String getResourceHeaderValue(

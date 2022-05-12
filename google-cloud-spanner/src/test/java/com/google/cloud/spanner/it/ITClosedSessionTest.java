@@ -33,7 +33,6 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionRunner;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -200,18 +199,15 @@ public class ITClosedSessionTest {
     for (int run = 0; run < RUNS_PER_TEST_CASE; run++) {
       TransactionRunner txn = client.readWriteTransaction();
       txn.run(
-          new TransactionCallable<Void>() {
-            @Override
-            public Void run(TransactionContext transaction) {
-              for (int i = 0; i < 2; i++) {
-                try (ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"))) {
-                  assertThat(rs.next()).isTrue();
-                  assertThat(rs.getLong(0)).isEqualTo(1L);
-                  assertThat(rs.next()).isFalse();
-                }
+          transaction -> {
+            for (int i = 0; i < 2; i++) {
+              try (ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"))) {
+                assertThat(rs.next()).isTrue();
+                assertThat(rs.getLong(0)).isEqualTo(1L);
+                assertThat(rs.next()).isFalse();
               }
-              return null;
             }
+            return null;
           });
     }
   }
@@ -223,15 +219,12 @@ public class ITClosedSessionTest {
     try {
       TransactionRunner txn = client.readWriteTransaction();
       txn.run(
-          new TransactionCallable<Void>() {
-            @Override
-            public Void run(TransactionContext transaction) {
-              try (ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"))) {
-                rs.next();
-                fail("Expected exception");
-              }
-              return null;
+          transaction -> {
+            try (ResultSet rs = transaction.executeQuery(Statement.of("SELECT 1"))) {
+              rs.next();
+              fail("Expected exception");
             }
+            return null;
           });
       fail("Expected exception");
     } catch (SessionNotFoundException ex) {
@@ -258,7 +251,7 @@ public class ITClosedSessionTest {
             break;
           }
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+          Thread.sleep(e.getRetryDelayInMillis());
           txn = manager.resetForRetry();
         }
       }

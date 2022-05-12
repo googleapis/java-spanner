@@ -17,11 +17,16 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -79,13 +84,32 @@ class DdlClient {
     this.databaseName = builder.databaseName;
   }
 
+  OperationFuture<Database, CreateDatabaseMetadata> executeCreateDatabase(
+      String createStatement, Dialect dialect) {
+    Preconditions.checkArgument(isCreateDatabaseStatement(createStatement));
+    return dbAdminClient.createDatabase(
+        instanceId, createStatement, dialect, Collections.emptyList());
+  }
+
   /** Execute a single DDL statement. */
   OperationFuture<Void, UpdateDatabaseDdlMetadata> executeDdl(String ddl) {
-    return executeDdl(Arrays.asList(ddl));
+    return executeDdl(Collections.singletonList(ddl));
   }
 
   /** Execute a list of DDL statements as one operation. */
   OperationFuture<Void, UpdateDatabaseDdlMetadata> executeDdl(List<String> statements) {
+    if (statements.stream().anyMatch(DdlClient::isCreateDatabaseStatement)) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT, "CREATE DATABASE is not supported in a DDL batch");
+    }
     return dbAdminClient.updateDatabaseDdl(instanceId, databaseName, statements, null);
+  }
+
+  /** Returns true if the statement is a `CREATE DATABASE ...` statement. */
+  static boolean isCreateDatabaseStatement(String statement) {
+    String[] tokens = statement.split("\\s+", 3);
+    return tokens.length >= 2
+        && tokens[0].equalsIgnoreCase("CREATE")
+        && tokens[1].equalsIgnoreCase("DATABASE");
   }
 }

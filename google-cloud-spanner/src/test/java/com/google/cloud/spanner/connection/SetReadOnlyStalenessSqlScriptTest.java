@@ -16,32 +16,22 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.cloud.NoCredentials;
-import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConnection;
-import com.google.cloud.spanner.connection.AbstractSqlScriptVerifier.GenericConnectionProvider;
-import com.google.cloud.spanner.connection.SqlScriptVerifier.SpannerGenericConnection;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
-@RunWith(JUnit4.class)
-public class SetReadOnlyStalenessSqlScriptTest {
-
-  static class TestConnectionProvider implements GenericConnectionProvider {
-    @Override
-    public GenericConnection getConnection() {
-      return SpannerGenericConnection.of(
-          ConnectionImplTest.createConnection(
-              ConnectionOptions.newBuilder()
-                  .setCredentials(NoCredentials.getInstance())
-                  .setUri(ConnectionImplTest.URI)
-                  .build()));
+public class SetReadOnlyStalenessSqlScriptTest extends AbstractSqlScriptTest {
+  private String getFileName() {
+    switch (dialect) {
+      case POSTGRESQL:
+        return "postgresql/SetReadOnlyStalenessTest.sql";
+      case GOOGLE_STANDARD_SQL:
+      default:
+        return "SetReadOnlyStalenessTest.sql";
     }
   }
 
   @Test
   public void testSetReadOnlyStalenessScript() throws Exception {
-    SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider());
-    verifier.verifyStatementsInFile("SetReadOnlyStalenessTest.sql", getClass());
+    SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider(dialect));
+    verifier.verifyStatementsInFile(getFileName(), getClass(), true);
   }
 }

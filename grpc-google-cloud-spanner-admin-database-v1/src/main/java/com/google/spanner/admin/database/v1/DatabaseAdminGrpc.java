@@ -16,26 +16,23 @@
 package com.google.spanner.admin.database.v1;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  *
  *
  * <pre>
  * Cloud Spanner Database Admin API
- * The Cloud Spanner Database Admin API can be used to create, drop, and
- * list databases. It also enables updating the schema of pre-existing
- * databases. It can be also used to create, delete and list backups for a
- * database and to restore from an existing backup.
+ * The Cloud Spanner Database Admin API can be used to:
+ *   * create, drop, and list databases
+ *   * update the schema of pre-existing databases
+ *   * create, delete and list backups for a database
+ *   * restore a database from an existing backup
  * </pre>
  */
 @javax.annotation.Generated(
     value = "by gRPC proto compiler",
     comments = "Source: google/spanner/admin/database/v1/spanner_database_admin.proto")
+@io.grpc.stub.annotations.GrpcGenerated
 public final class DatabaseAdminGrpc {
 
   private DatabaseAdminGrpc() {}
@@ -485,6 +482,49 @@ public final class DatabaseAdminGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.admin.database.v1.CopyBackupRequest, com.google.longrunning.Operation>
+      getCopyBackupMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "CopyBackup",
+      requestType = com.google.spanner.admin.database.v1.CopyBackupRequest.class,
+      responseType = com.google.longrunning.Operation.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.admin.database.v1.CopyBackupRequest, com.google.longrunning.Operation>
+      getCopyBackupMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.admin.database.v1.CopyBackupRequest,
+            com.google.longrunning.Operation>
+        getCopyBackupMethod;
+    if ((getCopyBackupMethod = DatabaseAdminGrpc.getCopyBackupMethod) == null) {
+      synchronized (DatabaseAdminGrpc.class) {
+        if ((getCopyBackupMethod = DatabaseAdminGrpc.getCopyBackupMethod) == null) {
+          DatabaseAdminGrpc.getCopyBackupMethod =
+              getCopyBackupMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.admin.database.v1.CopyBackupRequest,
+                          com.google.longrunning.Operation>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "CopyBackup"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.database.v1.CopyBackupRequest
+                                  .getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.longrunning.Operation.getDefaultInstance()))
+                      .setSchemaDescriptor(new DatabaseAdminMethodDescriptorSupplier("CopyBackup"))
+                      .build();
+        }
+      }
+    }
+    return getCopyBackupMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<
           com.google.spanner.admin.database.v1.GetBackupRequest,
           com.google.spanner.admin.database.v1.Backup>
       getGetBackupMethod;
@@ -855,10 +895,11 @@ public final class DatabaseAdminGrpc {
    *
    * <pre>
    * Cloud Spanner Database Admin API
-   * The Cloud Spanner Database Admin API can be used to create, drop, and
-   * list databases. It also enables updating the schema of pre-existing
-   * databases. It can be also used to create, delete and list backups for a
-   * database and to restore from an existing backup.
+   * The Cloud Spanner Database Admin API can be used to:
+   *   * create, drop, and list databases
+   *   * update the schema of pre-existing databases
+   *   * create, delete and list backups for a database
+   *   * restore a database from an existing backup
    * </pre>
    */
   public abstract static class DatabaseAdminImplBase implements io.grpc.BindableService {
@@ -874,7 +915,8 @@ public final class DatabaseAdminGrpc {
         com.google.spanner.admin.database.v1.ListDatabasesRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.ListDatabasesResponse>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getListDatabasesMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getListDatabasesMethod(), responseObserver);
     }
 
     /**
@@ -894,7 +936,8 @@ public final class DatabaseAdminGrpc {
     public void createDatabase(
         com.google.spanner.admin.database.v1.CreateDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
-      asyncUnimplementedUnaryCall(getCreateDatabaseMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getCreateDatabaseMethod(), responseObserver);
     }
 
     /**
@@ -908,7 +951,8 @@ public final class DatabaseAdminGrpc {
         com.google.spanner.admin.database.v1.GetDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.Database>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getGetDatabaseMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getGetDatabaseMethod(), responseObserver);
     }
 
     /**
@@ -927,7 +971,8 @@ public final class DatabaseAdminGrpc {
     public void updateDatabaseDdl(
         com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
-      asyncUnimplementedUnaryCall(getUpdateDatabaseDdlMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getUpdateDatabaseDdlMethod(), responseObserver);
     }
 
     /**
@@ -937,12 +982,15 @@ public final class DatabaseAdminGrpc {
      * Drops (aka deletes) a Cloud Spanner database.
      * Completed backups for the database will be retained according to their
      * `expire_time`.
+     * Note: Cloud Spanner might continue to accept requests for a few seconds
+     * after the database has been deleted.
      * </pre>
      */
     public void dropDatabase(
         com.google.spanner.admin.database.v1.DropDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
-      asyncUnimplementedUnaryCall(getDropDatabaseMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getDropDatabaseMethod(), responseObserver);
     }
 
     /**
@@ -958,7 +1006,8 @@ public final class DatabaseAdminGrpc {
         com.google.spanner.admin.database.v1.GetDatabaseDdlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.GetDatabaseDdlResponse>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getGetDatabaseDdlMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getGetDatabaseDdlMethod(), responseObserver);
     }
 
     /**
@@ -976,7 +1025,8 @@ public final class DatabaseAdminGrpc {
     public void setIamPolicy(
         com.google.iam.v1.SetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
-      asyncUnimplementedUnaryCall(getSetIamPolicyMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getSetIamPolicyMethod(), responseObserver);
     }
 
     /**
@@ -995,7 +1045,8 @@ public final class DatabaseAdminGrpc {
     public void getIamPolicy(
         com.google.iam.v1.GetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
-      asyncUnimplementedUnaryCall(getGetIamPolicyMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getGetIamPolicyMethod(), responseObserver);
     }
 
     /**
@@ -1017,7 +1068,8 @@ public final class DatabaseAdminGrpc {
         com.google.iam.v1.TestIamPermissionsRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.TestIamPermissionsResponse>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getTestIamPermissionsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getTestIamPermissionsMethod(), responseObserver);
     }
 
     /**
@@ -1041,7 +1093,32 @@ public final class DatabaseAdminGrpc {
     public void createBackup(
         com.google.spanner.admin.database.v1.CreateBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
-      asyncUnimplementedUnaryCall(getCreateBackupMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getCreateBackupMethod(), responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Starts copying a Cloud Spanner Backup.
+     * The returned backup [long-running operation][google.longrunning.Operation]
+     * will have a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+     * and can be used to track copying of the backup. The operation is associated
+     * with the destination backup.
+     * The [metadata][google.longrunning.Operation.metadata] field type is
+     * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned operation will stop the
+     * copying and delete the backup.
+     * Concurrent CopyBackup requests can run on the same source backup.
+     * </pre>
+     */
+    public void copyBackup(
+        com.google.spanner.admin.database.v1.CopyBackupRequest request,
+        io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getCopyBackupMethod(), responseObserver);
     }
 
     /**
@@ -1054,7 +1131,7 @@ public final class DatabaseAdminGrpc {
     public void getBackup(
         com.google.spanner.admin.database.v1.GetBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.Backup> responseObserver) {
-      asyncUnimplementedUnaryCall(getGetBackupMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetBackupMethod(), responseObserver);
     }
 
     /**
@@ -1067,7 +1144,8 @@ public final class DatabaseAdminGrpc {
     public void updateBackup(
         com.google.spanner.admin.database.v1.UpdateBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.Backup> responseObserver) {
-      asyncUnimplementedUnaryCall(getUpdateBackupMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getUpdateBackupMethod(), responseObserver);
     }
 
     /**
@@ -1080,7 +1158,8 @@ public final class DatabaseAdminGrpc {
     public void deleteBackup(
         com.google.spanner.admin.database.v1.DeleteBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
-      asyncUnimplementedUnaryCall(getDeleteBackupMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getDeleteBackupMethod(), responseObserver);
     }
 
     /**
@@ -1096,7 +1175,8 @@ public final class DatabaseAdminGrpc {
         com.google.spanner.admin.database.v1.ListBackupsRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.ListBackupsResponse>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getListBackupsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getListBackupsMethod(), responseObserver);
     }
 
     /**
@@ -1125,7 +1205,8 @@ public final class DatabaseAdminGrpc {
     public void restoreDatabase(
         com.google.spanner.admin.database.v1.RestoreDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
-      asyncUnimplementedUnaryCall(getRestoreDatabaseMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getRestoreDatabaseMethod(), responseObserver);
     }
 
     /**
@@ -1147,7 +1228,8 @@ public final class DatabaseAdminGrpc {
         io.grpc.stub.StreamObserver<
                 com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getListDatabaseOperationsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getListDatabaseOperationsMethod(), responseObserver);
     }
 
     /**
@@ -1171,7 +1253,8 @@ public final class DatabaseAdminGrpc {
         io.grpc.stub.StreamObserver<
                 com.google.spanner.admin.database.v1.ListBackupOperationsResponse>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getListBackupOperationsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getListBackupOperationsMethod(), responseObserver);
     }
 
     @java.lang.Override
@@ -1179,108 +1262,114 @@ public final class DatabaseAdminGrpc {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
               getListDatabasesMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.database.v1.ListDatabasesRequest,
                       com.google.spanner.admin.database.v1.ListDatabasesResponse>(
                       this, METHODID_LIST_DATABASES)))
           .addMethod(
               getCreateDatabaseMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.database.v1.CreateDatabaseRequest,
                       com.google.longrunning.Operation>(this, METHODID_CREATE_DATABASE)))
           .addMethod(
               getGetDatabaseMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.database.v1.GetDatabaseRequest,
                       com.google.spanner.admin.database.v1.Database>(this, METHODID_GET_DATABASE)))
           .addMethod(
               getUpdateDatabaseDdlMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest,
                       com.google.longrunning.Operation>(this, METHODID_UPDATE_DATABASE_DDL)))
           .addMethod(
               getDropDatabaseMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.database.v1.DropDatabaseRequest,
                       com.google.protobuf.Empty>(this, METHODID_DROP_DATABASE)))
           .addMethod(
               getGetDatabaseDdlMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.database.v1.GetDatabaseDdlRequest,
                       com.google.spanner.admin.database.v1.GetDatabaseDdlResponse>(
                       this, METHODID_GET_DATABASE_DDL)))
           .addMethod(
               getSetIamPolicyMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.iam.v1.SetIamPolicyRequest, com.google.iam.v1.Policy>(
                       this, METHODID_SET_IAM_POLICY)))
           .addMethod(
               getGetIamPolicyMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.iam.v1.GetIamPolicyRequest, com.google.iam.v1.Policy>(
                       this, METHODID_GET_IAM_POLICY)))
           .addMethod(
               getTestIamPermissionsMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.iam.v1.TestIamPermissionsRequest,
                       com.google.iam.v1.TestIamPermissionsResponse>(
                       this, METHODID_TEST_IAM_PERMISSIONS)))
           .addMethod(
               getCreateBackupMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.database.v1.CreateBackupRequest,
                       com.google.longrunning.Operation>(this, METHODID_CREATE_BACKUP)))
           .addMethod(
+              getCopyBackupMethod(),
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
+                  new MethodHandlers<
+                      com.google.spanner.admin.database.v1.CopyBackupRequest,
+                      com.google.longrunning.Operation>(this, METHODID_COPY_BACKUP)))
+          .addMethod(
               getGetBackupMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.database.v1.GetBackupRequest,
                       com.google.spanner.admin.database.v1.Backup>(this, METHODID_GET_BACKUP)))
           .addMethod(
               getUpdateBackupMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.database.v1.UpdateBackupRequest,
                       com.google.spanner.admin.database.v1.Backup>(this, METHODID_UPDATE_BACKUP)))
           .addMethod(
               getDeleteBackupMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.database.v1.DeleteBackupRequest,
                       com.google.protobuf.Empty>(this, METHODID_DELETE_BACKUP)))
           .addMethod(
               getListBackupsMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.database.v1.ListBackupsRequest,
                       com.google.spanner.admin.database.v1.ListBackupsResponse>(
                       this, METHODID_LIST_BACKUPS)))
           .addMethod(
               getRestoreDatabaseMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.database.v1.RestoreDatabaseRequest,
                       com.google.longrunning.Operation>(this, METHODID_RESTORE_DATABASE)))
           .addMethod(
               getListDatabaseOperationsMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest,
                       com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse>(
                       this, METHODID_LIST_DATABASE_OPERATIONS)))
           .addMethod(
               getListBackupOperationsMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.admin.database.v1.ListBackupOperationsRequest,
                       com.google.spanner.admin.database.v1.ListBackupOperationsResponse>(
@@ -1294,10 +1383,11 @@ public final class DatabaseAdminGrpc {
    *
    * <pre>
    * Cloud Spanner Database Admin API
-   * The Cloud Spanner Database Admin API can be used to create, drop, and
-   * list databases. It also enables updating the schema of pre-existing
-   * databases. It can be also used to create, delete and list backups for a
-   * database and to restore from an existing backup.
+   * The Cloud Spanner Database Admin API can be used to:
+   *   * create, drop, and list databases
+   *   * update the schema of pre-existing databases
+   *   * create, delete and list backups for a database
+   *   * restore a database from an existing backup
    * </pre>
    */
   public static final class DatabaseAdminStub
@@ -1322,7 +1412,7 @@ public final class DatabaseAdminGrpc {
         com.google.spanner.admin.database.v1.ListDatabasesRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.ListDatabasesResponse>
             responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getListDatabasesMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1345,7 +1435,7 @@ public final class DatabaseAdminGrpc {
     public void createDatabase(
         com.google.spanner.admin.database.v1.CreateDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getCreateDatabaseMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1362,7 +1452,7 @@ public final class DatabaseAdminGrpc {
         com.google.spanner.admin.database.v1.GetDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.Database>
             responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetDatabaseMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1384,7 +1474,7 @@ public final class DatabaseAdminGrpc {
     public void updateDatabaseDdl(
         com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getUpdateDatabaseDdlMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1397,12 +1487,14 @@ public final class DatabaseAdminGrpc {
      * Drops (aka deletes) a Cloud Spanner database.
      * Completed backups for the database will be retained according to their
      * `expire_time`.
+     * Note: Cloud Spanner might continue to accept requests for a few seconds
+     * after the database has been deleted.
      * </pre>
      */
     public void dropDatabase(
         com.google.spanner.admin.database.v1.DropDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getDropDatabaseMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1421,7 +1513,7 @@ public final class DatabaseAdminGrpc {
         com.google.spanner.admin.database.v1.GetDatabaseDdlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.GetDatabaseDdlResponse>
             responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetDatabaseDdlMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1442,7 +1534,7 @@ public final class DatabaseAdminGrpc {
     public void setIamPolicy(
         com.google.iam.v1.SetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getSetIamPolicyMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1464,7 +1556,7 @@ public final class DatabaseAdminGrpc {
     public void getIamPolicy(
         com.google.iam.v1.GetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetIamPolicyMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1489,7 +1581,7 @@ public final class DatabaseAdminGrpc {
         com.google.iam.v1.TestIamPermissionsRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.TestIamPermissionsResponse>
             responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getTestIamPermissionsMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1516,10 +1608,35 @@ public final class DatabaseAdminGrpc {
     public void createBackup(
         com.google.spanner.admin.database.v1.CreateBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getCreateBackupMethod(), getCallOptions()),
           request,
           responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Starts copying a Cloud Spanner Backup.
+     * The returned backup [long-running operation][google.longrunning.Operation]
+     * will have a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+     * and can be used to track copying of the backup. The operation is associated
+     * with the destination backup.
+     * The [metadata][google.longrunning.Operation.metadata] field type is
+     * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned operation will stop the
+     * copying and delete the backup.
+     * Concurrent CopyBackup requests can run on the same source backup.
+     * </pre>
+     */
+    public void copyBackup(
+        com.google.spanner.admin.database.v1.CopyBackupRequest request,
+        io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getCopyBackupMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -1532,7 +1649,7 @@ public final class DatabaseAdminGrpc {
     public void getBackup(
         com.google.spanner.admin.database.v1.GetBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.Backup> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetBackupMethod(), getCallOptions()), request, responseObserver);
     }
 
@@ -1546,7 +1663,7 @@ public final class DatabaseAdminGrpc {
     public void updateBackup(
         com.google.spanner.admin.database.v1.UpdateBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.Backup> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getUpdateBackupMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1562,7 +1679,7 @@ public final class DatabaseAdminGrpc {
     public void deleteBackup(
         com.google.spanner.admin.database.v1.DeleteBackupRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getDeleteBackupMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1581,7 +1698,7 @@ public final class DatabaseAdminGrpc {
         com.google.spanner.admin.database.v1.ListBackupsRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.ListBackupsResponse>
             responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getListBackupsMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1613,7 +1730,7 @@ public final class DatabaseAdminGrpc {
     public void restoreDatabase(
         com.google.spanner.admin.database.v1.RestoreDatabaseRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getRestoreDatabaseMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1638,7 +1755,7 @@ public final class DatabaseAdminGrpc {
         io.grpc.stub.StreamObserver<
                 com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse>
             responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getListDatabaseOperationsMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1665,7 +1782,7 @@ public final class DatabaseAdminGrpc {
         io.grpc.stub.StreamObserver<
                 com.google.spanner.admin.database.v1.ListBackupOperationsResponse>
             responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getListBackupOperationsMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1677,10 +1794,11 @@ public final class DatabaseAdminGrpc {
    *
    * <pre>
    * Cloud Spanner Database Admin API
-   * The Cloud Spanner Database Admin API can be used to create, drop, and
-   * list databases. It also enables updating the schema of pre-existing
-   * databases. It can be also used to create, delete and list backups for a
-   * database and to restore from an existing backup.
+   * The Cloud Spanner Database Admin API can be used to:
+   *   * create, drop, and list databases
+   *   * update the schema of pre-existing databases
+   *   * create, delete and list backups for a database
+   *   * restore a database from an existing backup
    * </pre>
    */
   public static final class DatabaseAdminBlockingStub
@@ -1704,7 +1822,8 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.spanner.admin.database.v1.ListDatabasesResponse listDatabases(
         com.google.spanner.admin.database.v1.ListDatabasesRequest request) {
-      return blockingUnaryCall(getChannel(), getListDatabasesMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getListDatabasesMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1723,7 +1842,8 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.longrunning.Operation createDatabase(
         com.google.spanner.admin.database.v1.CreateDatabaseRequest request) {
-      return blockingUnaryCall(getChannel(), getCreateDatabaseMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getCreateDatabaseMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1735,7 +1855,8 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.spanner.admin.database.v1.Database getDatabase(
         com.google.spanner.admin.database.v1.GetDatabaseRequest request) {
-      return blockingUnaryCall(getChannel(), getGetDatabaseMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getGetDatabaseMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1753,7 +1874,7 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.longrunning.Operation updateDatabaseDdl(
         com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest request) {
-      return blockingUnaryCall(
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getUpdateDatabaseDdlMethod(), getCallOptions(), request);
     }
 
@@ -1764,11 +1885,14 @@ public final class DatabaseAdminGrpc {
      * Drops (aka deletes) a Cloud Spanner database.
      * Completed backups for the database will be retained according to their
      * `expire_time`.
+     * Note: Cloud Spanner might continue to accept requests for a few seconds
+     * after the database has been deleted.
      * </pre>
      */
     public com.google.protobuf.Empty dropDatabase(
         com.google.spanner.admin.database.v1.DropDatabaseRequest request) {
-      return blockingUnaryCall(getChannel(), getDropDatabaseMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getDropDatabaseMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1782,7 +1906,8 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.spanner.admin.database.v1.GetDatabaseDdlResponse getDatabaseDdl(
         com.google.spanner.admin.database.v1.GetDatabaseDdlRequest request) {
-      return blockingUnaryCall(getChannel(), getGetDatabaseDdlMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getGetDatabaseDdlMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1798,7 +1923,8 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.iam.v1.Policy setIamPolicy(com.google.iam.v1.SetIamPolicyRequest request) {
-      return blockingUnaryCall(getChannel(), getSetIamPolicyMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getSetIamPolicyMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1815,7 +1941,8 @@ public final class DatabaseAdminGrpc {
      * </pre>
      */
     public com.google.iam.v1.Policy getIamPolicy(com.google.iam.v1.GetIamPolicyRequest request) {
-      return blockingUnaryCall(getChannel(), getGetIamPolicyMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getGetIamPolicyMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1835,7 +1962,7 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.iam.v1.TestIamPermissionsResponse testIamPermissions(
         com.google.iam.v1.TestIamPermissionsRequest request) {
-      return blockingUnaryCall(
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getTestIamPermissionsMethod(), getCallOptions(), request);
     }
 
@@ -1859,7 +1986,32 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.longrunning.Operation createBackup(
         com.google.spanner.admin.database.v1.CreateBackupRequest request) {
-      return blockingUnaryCall(getChannel(), getCreateBackupMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getCreateBackupMethod(), getCallOptions(), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Starts copying a Cloud Spanner Backup.
+     * The returned backup [long-running operation][google.longrunning.Operation]
+     * will have a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+     * and can be used to track copying of the backup. The operation is associated
+     * with the destination backup.
+     * The [metadata][google.longrunning.Operation.metadata] field type is
+     * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned operation will stop the
+     * copying and delete the backup.
+     * Concurrent CopyBackup requests can run on the same source backup.
+     * </pre>
+     */
+    public com.google.longrunning.Operation copyBackup(
+        com.google.spanner.admin.database.v1.CopyBackupRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getCopyBackupMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1871,7 +2023,8 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.spanner.admin.database.v1.Backup getBackup(
         com.google.spanner.admin.database.v1.GetBackupRequest request) {
-      return blockingUnaryCall(getChannel(), getGetBackupMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getGetBackupMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1883,7 +2036,8 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.spanner.admin.database.v1.Backup updateBackup(
         com.google.spanner.admin.database.v1.UpdateBackupRequest request) {
-      return blockingUnaryCall(getChannel(), getUpdateBackupMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getUpdateBackupMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1895,7 +2049,8 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.protobuf.Empty deleteBackup(
         com.google.spanner.admin.database.v1.DeleteBackupRequest request) {
-      return blockingUnaryCall(getChannel(), getDeleteBackupMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getDeleteBackupMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1909,7 +2064,8 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.spanner.admin.database.v1.ListBackupsResponse listBackups(
         com.google.spanner.admin.database.v1.ListBackupsRequest request) {
-      return blockingUnaryCall(getChannel(), getListBackupsMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getListBackupsMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1937,7 +2093,8 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.longrunning.Operation restoreDatabase(
         com.google.spanner.admin.database.v1.RestoreDatabaseRequest request) {
-      return blockingUnaryCall(getChannel(), getRestoreDatabaseMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getRestoreDatabaseMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1957,7 +2114,7 @@ public final class DatabaseAdminGrpc {
     public com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse
         listDatabaseOperations(
             com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest request) {
-      return blockingUnaryCall(
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getListDatabaseOperationsMethod(), getCallOptions(), request);
     }
 
@@ -1979,7 +2136,7 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.spanner.admin.database.v1.ListBackupOperationsResponse listBackupOperations(
         com.google.spanner.admin.database.v1.ListBackupOperationsRequest request) {
-      return blockingUnaryCall(
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getListBackupOperationsMethod(), getCallOptions(), request);
     }
   }
@@ -1989,10 +2146,11 @@ public final class DatabaseAdminGrpc {
    *
    * <pre>
    * Cloud Spanner Database Admin API
-   * The Cloud Spanner Database Admin API can be used to create, drop, and
-   * list databases. It also enables updating the schema of pre-existing
-   * databases. It can be also used to create, delete and list backups for a
-   * database and to restore from an existing backup.
+   * The Cloud Spanner Database Admin API can be used to:
+   *   * create, drop, and list databases
+   *   * update the schema of pre-existing databases
+   *   * create, delete and list backups for a database
+   *   * restore a database from an existing backup
    * </pre>
    */
   public static final class DatabaseAdminFutureStub
@@ -2017,7 +2175,7 @@ public final class DatabaseAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.database.v1.ListDatabasesResponse>
         listDatabases(com.google.spanner.admin.database.v1.ListDatabasesRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getListDatabasesMethod(), getCallOptions()), request);
     }
 
@@ -2037,7 +2195,7 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
         createDatabase(com.google.spanner.admin.database.v1.CreateDatabaseRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getCreateDatabaseMethod(), getCallOptions()), request);
     }
 
@@ -2051,7 +2209,7 @@ public final class DatabaseAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.database.v1.Database>
         getDatabase(com.google.spanner.admin.database.v1.GetDatabaseRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetDatabaseMethod(), getCallOptions()), request);
     }
 
@@ -2070,7 +2228,7 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
         updateDatabaseDdl(com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getUpdateDatabaseDdlMethod(), getCallOptions()), request);
     }
 
@@ -2081,11 +2239,13 @@ public final class DatabaseAdminGrpc {
      * Drops (aka deletes) a Cloud Spanner database.
      * Completed backups for the database will be retained according to their
      * `expire_time`.
+     * Note: Cloud Spanner might continue to accept requests for a few seconds
+     * after the database has been deleted.
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty>
         dropDatabase(com.google.spanner.admin.database.v1.DropDatabaseRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getDropDatabaseMethod(), getCallOptions()), request);
     }
 
@@ -2101,7 +2261,7 @@ public final class DatabaseAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.database.v1.GetDatabaseDdlResponse>
         getDatabaseDdl(com.google.spanner.admin.database.v1.GetDatabaseDdlRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetDatabaseDdlMethod(), getCallOptions()), request);
     }
 
@@ -2119,7 +2279,7 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.iam.v1.Policy>
         setIamPolicy(com.google.iam.v1.SetIamPolicyRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getSetIamPolicyMethod(), getCallOptions()), request);
     }
 
@@ -2138,7 +2298,7 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.iam.v1.Policy>
         getIamPolicy(com.google.iam.v1.GetIamPolicyRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetIamPolicyMethod(), getCallOptions()), request);
     }
 
@@ -2160,7 +2320,7 @@ public final class DatabaseAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.iam.v1.TestIamPermissionsResponse>
         testIamPermissions(com.google.iam.v1.TestIamPermissionsRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getTestIamPermissionsMethod(), getCallOptions()), request);
     }
 
@@ -2184,8 +2344,32 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
         createBackup(com.google.spanner.admin.database.v1.CreateBackupRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getCreateBackupMethod(), getCallOptions()), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Starts copying a Cloud Spanner Backup.
+     * The returned backup [long-running operation][google.longrunning.Operation]
+     * will have a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;`
+     * and can be used to track copying of the backup. The operation is associated
+     * with the destination backup.
+     * The [metadata][google.longrunning.Operation.metadata] field type is
+     * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned operation will stop the
+     * copying and delete the backup.
+     * Concurrent CopyBackup requests can run on the same source backup.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
+        copyBackup(com.google.spanner.admin.database.v1.CopyBackupRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getCopyBackupMethod(), getCallOptions()), request);
     }
 
     /**
@@ -2198,7 +2382,8 @@ public final class DatabaseAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.database.v1.Backup>
         getBackup(com.google.spanner.admin.database.v1.GetBackupRequest request) {
-      return futureUnaryCall(getChannel().newCall(getGetBackupMethod(), getCallOptions()), request);
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getGetBackupMethod(), getCallOptions()), request);
     }
 
     /**
@@ -2211,7 +2396,7 @@ public final class DatabaseAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.database.v1.Backup>
         updateBackup(com.google.spanner.admin.database.v1.UpdateBackupRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getUpdateBackupMethod(), getCallOptions()), request);
     }
 
@@ -2224,7 +2409,7 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty>
         deleteBackup(com.google.spanner.admin.database.v1.DeleteBackupRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getDeleteBackupMethod(), getCallOptions()), request);
     }
 
@@ -2240,7 +2425,7 @@ public final class DatabaseAdminGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.admin.database.v1.ListBackupsResponse>
         listBackups(com.google.spanner.admin.database.v1.ListBackupsRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getListBackupsMethod(), getCallOptions()), request);
     }
 
@@ -2269,7 +2454,7 @@ public final class DatabaseAdminGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
         restoreDatabase(com.google.spanner.admin.database.v1.RestoreDatabaseRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getRestoreDatabaseMethod(), getCallOptions()), request);
     }
 
@@ -2291,7 +2476,7 @@ public final class DatabaseAdminGrpc {
             com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse>
         listDatabaseOperations(
             com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getListDatabaseOperationsMethod(), getCallOptions()), request);
     }
 
@@ -2315,7 +2500,7 @@ public final class DatabaseAdminGrpc {
             com.google.spanner.admin.database.v1.ListBackupOperationsResponse>
         listBackupOperations(
             com.google.spanner.admin.database.v1.ListBackupOperationsRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getListBackupOperationsMethod(), getCallOptions()), request);
     }
   }
@@ -2330,13 +2515,14 @@ public final class DatabaseAdminGrpc {
   private static final int METHODID_GET_IAM_POLICY = 7;
   private static final int METHODID_TEST_IAM_PERMISSIONS = 8;
   private static final int METHODID_CREATE_BACKUP = 9;
-  private static final int METHODID_GET_BACKUP = 10;
-  private static final int METHODID_UPDATE_BACKUP = 11;
-  private static final int METHODID_DELETE_BACKUP = 12;
-  private static final int METHODID_LIST_BACKUPS = 13;
-  private static final int METHODID_RESTORE_DATABASE = 14;
-  private static final int METHODID_LIST_DATABASE_OPERATIONS = 15;
-  private static final int METHODID_LIST_BACKUP_OPERATIONS = 16;
+  private static final int METHODID_COPY_BACKUP = 10;
+  private static final int METHODID_GET_BACKUP = 11;
+  private static final int METHODID_UPDATE_BACKUP = 12;
+  private static final int METHODID_DELETE_BACKUP = 13;
+  private static final int METHODID_LIST_BACKUPS = 14;
+  private static final int METHODID_RESTORE_DATABASE = 15;
+  private static final int METHODID_LIST_DATABASE_OPERATIONS = 16;
+  private static final int METHODID_LIST_BACKUP_OPERATIONS = 17;
 
   private static final class MethodHandlers<Req, Resp>
       implements io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -2409,6 +2595,11 @@ public final class DatabaseAdminGrpc {
         case METHODID_CREATE_BACKUP:
           serviceImpl.createBackup(
               (com.google.spanner.admin.database.v1.CreateBackupRequest) request,
+              (io.grpc.stub.StreamObserver<com.google.longrunning.Operation>) responseObserver);
+          break;
+        case METHODID_COPY_BACKUP:
+          serviceImpl.copyBackup(
+              (com.google.spanner.admin.database.v1.CopyBackupRequest) request,
               (io.grpc.stub.StreamObserver<com.google.longrunning.Operation>) responseObserver);
           break;
         case METHODID_GET_BACKUP:
@@ -2528,6 +2719,7 @@ public final class DatabaseAdminGrpc {
                       .addMethod(getGetIamPolicyMethod())
                       .addMethod(getTestIamPermissionsMethod())
                       .addMethod(getCreateBackupMethod())
+                      .addMethod(getCopyBackupMethod())
                       .addMethod(getGetBackupMethod())
                       .addMethod(getUpdateBackupMethod())
                       .addMethod(getDeleteBackupMethod())

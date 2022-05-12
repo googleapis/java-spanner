@@ -22,6 +22,8 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.ServiceRpc;
+import com.google.cloud.spanner.BackupId;
+import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
@@ -31,31 +33,12 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
-import com.google.spanner.admin.database.v1.Backup;
-import com.google.spanner.admin.database.v1.CreateBackupMetadata;
-import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
-import com.google.spanner.admin.database.v1.Database;
-import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.*;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
-import com.google.spanner.v1.BeginTransactionRequest;
-import com.google.spanner.v1.CommitRequest;
-import com.google.spanner.v1.CommitResponse;
-import com.google.spanner.v1.ExecuteBatchDmlRequest;
-import com.google.spanner.v1.ExecuteBatchDmlResponse;
-import com.google.spanner.v1.ExecuteSqlRequest;
-import com.google.spanner.v1.PartialResultSet;
-import com.google.spanner.v1.PartitionQueryRequest;
-import com.google.spanner.v1.PartitionReadRequest;
-import com.google.spanner.v1.PartitionResponse;
-import com.google.spanner.v1.ReadRequest;
-import com.google.spanner.v1.ResultSet;
-import com.google.spanner.v1.RollbackRequest;
-import com.google.spanner.v1.Session;
-import com.google.spanner.v1.Transaction;
+import com.google.spanner.v1.*;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -109,7 +92,7 @@ public interface SpannerRpc extends ServiceRpc {
    *
    * @param <T> the type of result
    */
-  public static final class Paginated<T> {
+  final class Paginated<T> {
     private final Iterable<T> results;
     private final String nextPageToken;
 
@@ -122,7 +105,7 @@ public interface SpannerRpc extends ServiceRpc {
     public Paginated(@Nullable Iterable<T> results, @Nullable String nextPageToken) {
       // The generated HTTP client has null members when no results are present, rather than an
       // empty list.  Implicitly convert to an empty list to minimize the risk of NPEs.
-      this.results = (results == null) ? ImmutableList.<T>of() : results;
+      this.results = (results == null) ? ImmutableList.of() : results;
       this.nextPageToken =
           (nextPageToken == null || nextPageToken.isEmpty()) ? null : nextPageToken;
     }
@@ -157,7 +140,7 @@ public interface SpannerRpc extends ServiceRpc {
   interface StreamingCall {
 
     /**
-     * Requests more messages from the stream. We disable the auto flow control mechanisam in grpc,
+     * Requests more messages from the stream. We disable the auto flow control mechanism in grpc,
      * so we need to request messages ourself. This gives us more control over how much buffer we
      * maintain in the client. Grpc will request 1 initial message automatically so we don't need to
      * call this at the beginning. After that it should be called whenever there is a flow control
@@ -198,7 +181,10 @@ public interface SpannerRpc extends ServiceRpc {
       throws SpannerException;
 
   OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
-      String instanceName, String createDatabaseStatement, Iterable<String> additionalStatements)
+      String instanceName,
+      String createDatabaseStatement,
+      Iterable<String> additionalStatements,
+      com.google.cloud.spanner.Database database)
       throws SpannerException;
 
   OperationFuture<Empty, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
@@ -216,26 +202,36 @@ public interface SpannerRpc extends ServiceRpc {
       throws SpannerException;
 
   /**
-   * Creates a new backup from the source database specified in the {@link Backup} instance.
+   * Creates a new backup from the source database specified in the {@link
+   * com.google.cloud.spanner.Backup} instance.
    *
-   * @param instanceName the name of the instance where the backup should be created.
-   * @param backupId the id of the backup to create.
-   * @param backup the backup to create. The database and expireTime fields of the backup must be
-   *     filled.
+   * @param backupInfo the backup to create. The instance, database and expireTime fields of the
+   *     backup must be filled.
    * @return the operation that monitors the backup creation.
    */
   OperationFuture<Backup, CreateBackupMetadata> createBackup(
-      String instanceName, String backupId, Backup backup) throws SpannerException;
+      com.google.cloud.spanner.Backup backupInfo) throws SpannerException;
+
+  /**
+   * Creates a copy backup from the source backup specified.
+   *
+   * @param destinationBackup the backup to create. The instance, database, and expireTime fields of
+   *     the backup must be filled. It may also optionally have an encryption config set. If no
+   *     encryption config has been set, the new backup will use the same encryption config as the
+   *     source backup.
+   * @return the operation that monitors the backup creation.
+   */
+  default OperationFuture<Backup, CopyBackupMetadata> copyBackup(
+      BackupId sourceBackupId, com.google.cloud.spanner.Backup destinationBackup) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
 
   /**
    * Restore a backup into the given database.
    *
-   * @param instanceName Fully qualified name of instance where to restore the database
-   * @param databaseId DatabaseId to restore into
-   * @param backupName Fully qualified name of backup to restore from
+   * @param restore a {@link Restore} instance with the backup source and destination database
    */
-  OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
-      String instanceName, String databaseId, String backupName);
+  OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(Restore restore);
 
   /** Gets the backup with the specified name. */
   Backup getBackup(String backupName) throws SpannerException;
@@ -354,7 +350,7 @@ public interface SpannerRpc extends ServiceRpc {
   TestIamPermissionsResponse testInstanceAdminIAMPermissions(
       String resource, Iterable<String> permissions);
 
-  public void shutdown();
+  void shutdown();
 
   boolean isClosed();
 }

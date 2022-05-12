@@ -53,7 +53,7 @@ where ArtistId=1;
 CREATE TABLE FOO (ID INT64, NAME STRING(100)) PRIMARY KEY (ID);
 
 @EXPECT EXCEPTION FAILED_PRECONDITION 'FAILED_PRECONDITION: DDL statements are not allowed in read-only mode'
-/* The statement is recognized even if it is preceeded
+/* The statement is recognized even if it is preceded
  * by a multi-line comment */
 -- And a single line comment, and some spaces
 

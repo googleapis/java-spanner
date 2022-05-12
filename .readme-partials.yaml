@@ -67,9 +67,9 @@ custom_content: |
   * `cloud.google.com/java/spanner/max_allowed_sessions`: This shows the maximum
     number of sessions allowed.
 
-  * `cloud.google.com/java/spanner/in_use_sessions`: This metric allows users to
+  * `cloud.google.com/java/spanner/num_sessions_in_pool`: This metric allows users to
      see instance-level and database-level data for the total number of sessions in
-     use (or checked out from the pool) at this very moment.
+     the pool at this very moment.
 
   * `cloud.google.com/java/spanner/num_acquired_sessions`: This metric allows
     users to see the total number of acquired sessions.
@@ -83,24 +83,31 @@ custom_content: |
     it waits until a session is released into the pool by another thread) due to
     pool exhaustion since the server process started.
 
+  * `cloud.google.com/java/spanner/gfe_latency`: This metric shows latency between
+    Google's network receiving an RPC and reading back the first byte of the response.
+
+  * `cloud.google.com/java/spanner/gfe_header_missing_count`: This metric shows the
+    number of RPC responses received without the server-timing header, most likely
+    indicating that the RPC never reached Google's network.
+
   If you are using Maven, add this to your pom.xml file
   ```xml
   <dependency>
     <groupId>io.opencensus</groupId>
     <artifactId>opencensus-impl</artifactId>
-    <version>0.26.0</version>
+    <version>0.30.0</version>
     <scope>runtime</scope>
   </dependency>
   <dependency>
     <groupId>io.opencensus</groupId>
     <artifactId>opencensus-exporter-stats-stackdriver</artifactId>
-    <version>0.26.0</version>
+    <version>0.30.0</version>
   </dependency>
   ```
   If you are using Gradle, add this to your dependencies
   ```Groovy
-  compile 'io.opencensus:opencensus-impl:0.26.0'
-  compile 'io.opencensus:opencensus-exporter-stats-stackdriver:0.26.0'
+  compile 'io.opencensus:opencensus-impl:0.30.0'
+  compile 'io.opencensus:opencensus-exporter-stats-stackdriver:0.30.0'
   ```
 
   At the start of your application configure the exporter:

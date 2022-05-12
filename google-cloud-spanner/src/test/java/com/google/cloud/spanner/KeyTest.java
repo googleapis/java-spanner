@@ -51,6 +51,7 @@ public class KeyTest {
     String numeric = "3.141592";
     String timestamp = "2015-09-15T00:00:00Z";
     String date = "2015-09-15";
+    String json = "{\"color\":\"red\",\"value\":\"#f00\"}";
     k =
         Key.of(
             null,
@@ -61,10 +62,11 @@ public class KeyTest {
             4.0d,
             new BigDecimal(numeric),
             "x",
+            json,
             ByteArray.copyFrom("y"),
             Timestamp.parseTimestamp(timestamp),
             Date.parseDate(date));
-    assertThat(k.size()).isEqualTo(11);
+    assertThat(k.size()).isEqualTo(12);
     assertThat(k.getParts())
         .containsExactly(
             null,
@@ -75,6 +77,7 @@ public class KeyTest {
             4.0d,
             BigDecimal.valueOf(3141592, 6),
             "x",
+            json,
             ByteArray.copyFrom("y"),
             Timestamp.parseTimestamp(timestamp),
             Date.parseDate(date))
@@ -91,6 +94,7 @@ public class KeyTest {
     String numeric = "3.141592";
     String timestamp = "2015-09-15T00:00:00Z";
     String date = "2015-09-15";
+    String json = "{\"color\":\"red\",\"value\":\"#f00\"}";
     Key k =
         Key.newBuilder()
             .append((Boolean) null)
@@ -101,11 +105,12 @@ public class KeyTest {
             .append(4.0d)
             .append(new BigDecimal(numeric))
             .append("x")
+            .append(json)
             .append(ByteArray.copyFrom("y"))
             .append(Timestamp.parseTimestamp(timestamp))
             .append(Date.parseDate(date))
             .build();
-    assertThat(k.size()).isEqualTo(11);
+    assertThat(k.size()).isEqualTo(12);
     assertThat(k.getParts())
         .containsExactly(
             null,
@@ -116,6 +121,7 @@ public class KeyTest {
             4.0d,
             BigDecimal.valueOf(3141592, 6),
             "x",
+            json,
             ByteArray.copyFrom("y"),
             Timestamp.parseTimestamp(timestamp),
             Date.parseDate(date))
@@ -138,6 +144,8 @@ public class KeyTest {
     assertThat(Key.of(2.0).toString()).isEqualTo("[2.0]");
     assertThat(Key.of(new BigDecimal("3.14")).toString()).isEqualTo("[3.14]");
     assertThat(Key.of("xyz").toString()).isEqualTo("[xyz]");
+    assertThat(Key.of("{\"color\":\"red\",\"value\":\"#f00\"}").toString())
+        .isEqualTo("[{\"color\":\"red\",\"value\":\"#f00\"}]");
     ByteArray b = ByteArray.copyFrom("xyz");
     assertThat(Key.of(b).toString()).isEqualTo("[" + b.toString() + "]");
     String timestamp = "2015-09-15T00:00:00Z";
@@ -182,6 +190,9 @@ public class KeyTest {
     tester.addEqualityGroup(Key.of("a", "b", "c"));
     tester.addEqualityGroup(
         Key.of(ByteArray.copyFrom("a")), Key.newBuilder().append(ByteArray.copyFrom("a")).build());
+    tester.addEqualityGroup(
+        Key.of("{\"color\":\"red\",\"value\":\"#f00\"}"),
+        Key.newBuilder().append("{\"color\":\"red\",\"value\":\"#f00\"}").build());
     Timestamp t = Timestamp.parseTimestamp("2015-09-15T00:00:00Z");
     tester.addEqualityGroup(Key.of(t), Key.newBuilder().append(t).build());
     Date d = Date.parseDate("2016-09-15");
@@ -200,6 +211,7 @@ public class KeyTest {
     reserializeAndAssert(Key.of(2.0));
     reserializeAndAssert(Key.of(new BigDecimal("3.141592")));
     reserializeAndAssert(Key.of("xyz"));
+    reserializeAndAssert(Key.of("{\"color\":\"red\",\"value\":\"#f00\"}"));
     reserializeAndAssert(Key.of(ByteArray.copyFrom("xyz")));
     reserializeAndAssert(Key.of(Timestamp.parseTimestamp("2015-09-15T00:00:00Z")));
     reserializeAndAssert(Key.of(Date.parseDate("2015-09-15")));
@@ -220,6 +232,7 @@ public class KeyTest {
             .append(4.0d)
             .append(new BigDecimal("6.62607004e-34"))
             .append("x")
+            .append("{\"color\":\"red\",\"value\":\"#f00\"}")
             .append(ByteArray.copyFrom("y"))
             .append(Timestamp.parseTimestamp(timestamp))
             .append(Date.parseDate(date))
@@ -233,6 +246,7 @@ public class KeyTest {
     builder.addValuesBuilder().setNumberValue(4.0d);
     builder.addValuesBuilder().setStringValue("6.62607004E-34");
     builder.addValuesBuilder().setStringValue("x");
+    builder.addValuesBuilder().setStringValue("{\"color\":\"red\",\"value\":\"#f00\"}");
     builder.addValuesBuilder().setStringValue("eQ==");
     builder.addValuesBuilder().setStringValue(timestamp);
     builder.addValuesBuilder().setStringValue(date);

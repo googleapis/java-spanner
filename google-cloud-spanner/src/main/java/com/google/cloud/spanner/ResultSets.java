@@ -244,6 +244,16 @@ public final class ResultSets {
     }
 
     @Override
+    public String getJson(int columnIndex) {
+      return getCurrentRowAsStruct().getJson(columnIndex);
+    }
+
+    @Override
+    public String getJson(String columnName) {
+      return getCurrentRowAsStruct().getJson(columnName);
+    }
+
+    @Override
     public ByteArray getBytes(int columnIndex) {
       return getCurrentRowAsStruct().getBytes(columnIndex);
     }
@@ -271,6 +281,16 @@ public final class ResultSets {
     @Override
     public Date getDate(String columnName) {
       return getCurrentRowAsStruct().getDate(columnName);
+    }
+
+    @Override
+    public Value getValue(int columnIndex) {
+      return getCurrentRowAsStruct().getValue(columnIndex);
+    }
+
+    @Override
+    public Value getValue(String columnName) {
+      return getCurrentRowAsStruct().getValue(columnName);
     }
 
     @Override
@@ -351,6 +371,16 @@ public final class ResultSets {
     @Override
     public List<String> getStringList(String columnName) {
       return getCurrentRowAsStruct().getStringList(columnName);
+    }
+
+    @Override
+    public List<String> getJsonList(int columnIndex) {
+      return getCurrentRowAsStruct().getJsonList(columnIndex);
+    }
+
+    @Override
+    public List<String> getJsonList(String columnName) {
+      return getCurrentRowAsStruct().getJsonList(columnName);
     }
 
     @Override

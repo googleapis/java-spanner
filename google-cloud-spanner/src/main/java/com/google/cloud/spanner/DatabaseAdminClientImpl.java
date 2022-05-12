@@ -16,11 +16,9 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.ProtoOperationTransformers;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.longrunning.OperationFutureImpl;
-import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.cloud.Policy.DefaultMarshaller;
@@ -34,10 +32,7 @@ import com.google.common.base.Preconditions;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
-import com.google.spanner.admin.database.v1.CreateBackupMetadata;
-import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
-import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.*;
 import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -73,40 +68,49 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   }
 
   @Override
+  public Database.Builder newDatabaseBuilder(DatabaseId databaseId) {
+    return new Database.Builder(this, databaseId);
+  }
+
+  @Override
   public Backup.Builder newBackupBuilder(BackupId backupId) {
     return new Backup.Builder(this, backupId);
+  }
+
+  @Override
+  public Restore.Builder newRestoreBuilder(BackupId source, DatabaseId destination) {
+    return new Restore.Builder(source, destination);
   }
 
   @Override
   public OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(
       String backupInstanceId, String backupId, String restoreInstanceId, String restoreDatabaseId)
       throws SpannerException {
-    String databaseInstanceName = getInstanceName(restoreInstanceId);
-    String backupName = getBackupName(backupInstanceId, backupId);
+    return restoreDatabase(
+        newRestoreBuilder(
+                BackupId.of(projectId, backupInstanceId, backupId),
+                DatabaseId.of(projectId, restoreInstanceId, restoreDatabaseId))
+            .build());
+  }
 
-    OperationFuture<com.google.spanner.admin.database.v1.Database, RestoreDatabaseMetadata>
-        rawOperationFuture =
-            rpc.restoreDatabase(databaseInstanceName, restoreDatabaseId, backupName);
+  @Override
+  public OperationFuture<Database, RestoreDatabaseMetadata> restoreDatabase(Restore restore)
+      throws SpannerException {
+    final OperationFuture<com.google.spanner.admin.database.v1.Database, RestoreDatabaseMetadata>
+        rawOperationFuture = rpc.restoreDatabase(restore);
 
-    return new OperationFutureImpl<Database, RestoreDatabaseMetadata>(
+    return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
-        new ApiFunction<OperationSnapshot, Database>() {
-          @Override
-          public Database apply(OperationSnapshot snapshot) {
-            return Database.fromProto(
+        snapshot ->
+            Database.fromProto(
                 ProtoOperationTransformers.ResponseTransformer.create(
                         com.google.spanner.admin.database.v1.Database.class)
                     .apply(snapshot),
-                DatabaseAdminClientImpl.this);
-          }
-        },
+                DatabaseAdminClientImpl.this),
         ProtoOperationTransformers.MetadataTransformer.create(RestoreDatabaseMetadata.class),
-        new ApiFunction<Exception, Database>() {
-          @Override
-          public Database apply(Exception e) {
-            throw SpannerExceptionFactory.newSpannerException(e);
-          }
+        e -> {
+          throw SpannerExceptionFactory.newSpannerException(e);
         });
   }
 
@@ -114,40 +118,90 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   public OperationFuture<Backup, CreateBackupMetadata> createBackup(
       String instanceId, String backupId, String databaseId, Timestamp expireTime)
       throws SpannerException {
-    com.google.spanner.admin.database.v1.Backup backup =
-        com.google.spanner.admin.database.v1.Backup.newBuilder()
-            .setDatabase(getDatabaseName(instanceId, databaseId))
-            .setExpireTime(expireTime.toProto())
+    final Backup backupInfo =
+        newBackupBuilder(BackupId.of(projectId, instanceId, backupId))
+            .setDatabase(DatabaseId.of(projectId, instanceId, databaseId))
+            .setExpireTime(expireTime)
             .build();
-    String instanceName = getInstanceName(instanceId);
-    OperationFuture<com.google.spanner.admin.database.v1.Backup, CreateBackupMetadata>
-        rawOperationFuture = rpc.createBackup(instanceName, backupId, backup);
 
-    return new OperationFutureImpl<Backup, CreateBackupMetadata>(
+    return createBackup(backupInfo);
+  }
+
+  @Override
+  public OperationFuture<Backup, CreateBackupMetadata> createBackup(Backup backupInfo)
+      throws SpannerException {
+    Preconditions.checkArgument(
+        backupInfo.getExpireTime() != null, "Cannot create a backup without an expire time");
+    Preconditions.checkArgument(
+        backupInfo.getDatabase() != null, "Cannot create a backup without a source database");
+
+    final OperationFuture<com.google.spanner.admin.database.v1.Backup, CreateBackupMetadata>
+        rawOperationFuture = rpc.createBackup(backupInfo);
+
+    return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
-        new ApiFunction<OperationSnapshot, Backup>() {
-          @Override
-          public Backup apply(OperationSnapshot snapshot) {
-            com.google.spanner.admin.database.v1.Backup proto =
-                ProtoOperationTransformers.ResponseTransformer.create(
-                        com.google.spanner.admin.database.v1.Backup.class)
-                    .apply(snapshot);
-            return Backup.fromProto(
-                com.google.spanner.admin.database.v1.Backup.newBuilder(proto)
-                    .setName(proto.getName())
-                    .setExpireTime(proto.getExpireTime())
-                    .setState(proto.getState())
-                    .build(),
-                DatabaseAdminClientImpl.this);
-          }
+        snapshot -> {
+          com.google.spanner.admin.database.v1.Backup proto =
+              ProtoOperationTransformers.ResponseTransformer.create(
+                      com.google.spanner.admin.database.v1.Backup.class)
+                  .apply(snapshot);
+          return Backup.fromProto(
+              com.google.spanner.admin.database.v1.Backup.newBuilder(proto)
+                  .setName(proto.getName())
+                  .setExpireTime(proto.getExpireTime())
+                  .setVersionTime(proto.getVersionTime())
+                  .setState(proto.getState())
+                  .setEncryptionInfo(proto.getEncryptionInfo())
+                  .build(),
+              DatabaseAdminClientImpl.this);
         },
         ProtoOperationTransformers.MetadataTransformer.create(CreateBackupMetadata.class),
-        new ApiFunction<Exception, Backup>() {
-          @Override
-          public Backup apply(Exception e) {
-            throw SpannerExceptionFactory.newSpannerException(e);
-          }
+        e -> {
+          throw SpannerExceptionFactory.newSpannerException(e);
+        });
+  }
+
+  @Override
+  public OperationFuture<Backup, CopyBackupMetadata> copyBackup(
+      String instanceId, String sourceBackupId, String destinationBackupId, Timestamp expireTime)
+      throws SpannerException {
+    final Backup destinationBackup =
+        newBackupBuilder(BackupId.of(projectId, instanceId, destinationBackupId))
+            .setExpireTime(expireTime)
+            .build();
+
+    return copyBackup(BackupId.of(projectId, instanceId, sourceBackupId), destinationBackup);
+  }
+
+  @Override
+  public OperationFuture<Backup, CopyBackupMetadata> copyBackup(
+      BackupId sourceBackupId, Backup destinationBackup) throws SpannerException {
+    Preconditions.checkNotNull(sourceBackupId);
+    Preconditions.checkNotNull(destinationBackup);
+
+    final OperationFuture<com.google.spanner.admin.database.v1.Backup, CopyBackupMetadata>
+        rawOperationFuture = rpc.copyBackup(sourceBackupId, destinationBackup);
+
+    return new OperationFutureImpl<>(
+        rawOperationFuture.getPollingFuture(),
+        rawOperationFuture.getInitialFuture(),
+        snapshot -> {
+          com.google.spanner.admin.database.v1.Backup proto =
+              ProtoOperationTransformers.ResponseTransformer.create(
+                      com.google.spanner.admin.database.v1.Backup.class)
+                  .apply(snapshot);
+          return Backup.fromProto(
+              com.google.spanner.admin.database.v1.Backup.newBuilder(proto)
+                  .setName(proto.getName())
+                  .setExpireTime(proto.getExpireTime())
+                  .setEncryptionInfo(proto.getEncryptionInfo())
+                  .build(),
+              DatabaseAdminClientImpl.this);
+        },
+        ProtoOperationTransformers.MetadataTransformer.create(CopyBackupMetadata.class),
+        e -> {
+          throw SpannerExceptionFactory.newSpannerException(e);
         });
   }
 
@@ -265,30 +319,55 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   @Override
   public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       String instanceId, String databaseId, Iterable<String> statements) throws SpannerException {
-    // CreateDatabase() is not idempotent, so we're not retrying this request.
-    String instanceName = getInstanceName(instanceId);
-    String createStatement = "CREATE DATABASE `" + databaseId + "`";
+    return createDatabase(
+        newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
+            .setDialect(Dialect.GOOGLE_STANDARD_SQL)
+            .build(),
+        statements);
+  }
+
+  @Override
+  public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
+      Database database, Iterable<String> statements) throws SpannerException {
+    final Dialect dialect = Preconditions.checkNotNull(database.getDialect());
+    final String createStatement =
+        dialect.createDatabaseStatementFor(database.getId().getDatabase());
+
+    return createDatabase(createStatement, database, statements);
+  }
+
+  @Override
+  public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
+      String instanceId,
+      String createDatabaseStatement,
+      Dialect dialect,
+      Iterable<String> statements)
+      throws SpannerException {
+    Database database =
+        newDatabaseBuilder(DatabaseId.of(projectId, instanceId, "")).setDialect(dialect).build();
+
+    return createDatabase(createDatabaseStatement, database, statements);
+  }
+
+  private OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
+      String createStatement, Database database, Iterable<String> statements)
+      throws SpannerException {
     OperationFuture<com.google.spanner.admin.database.v1.Database, CreateDatabaseMetadata>
-        rawOperationFuture = rpc.createDatabase(instanceName, createStatement, statements);
-    return new OperationFutureImpl<Database, CreateDatabaseMetadata>(
+        rawOperationFuture =
+            rpc.createDatabase(
+                database.getId().getInstanceId().getName(), createStatement, statements, database);
+    return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
-        new ApiFunction<OperationSnapshot, Database>() {
-          @Override
-          public Database apply(OperationSnapshot snapshot) {
-            return Database.fromProto(
+        snapshot ->
+            Database.fromProto(
                 ProtoOperationTransformers.ResponseTransformer.create(
                         com.google.spanner.admin.database.v1.Database.class)
                     .apply(snapshot),
-                DatabaseAdminClientImpl.this);
-          }
-        },
+                DatabaseAdminClientImpl.this),
         ProtoOperationTransformers.MetadataTransformer.create(CreateDatabaseMetadata.class),
-        new ApiFunction<Exception, Database>() {
-          @Override
-          public Database apply(Exception e) {
-            throw SpannerExceptionFactory.newSpannerException(e);
-          }
+        e -> {
+          throw SpannerExceptionFactory.newSpannerException(e);
         });
   }
 
@@ -309,22 +388,16 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
     final String opId = operationId != null ? operationId : randomOperationId();
     OperationFuture<Empty, UpdateDatabaseDdlMetadata> rawOperationFuture =
         rpc.updateDatabaseDdl(dbName, statements, opId);
-    return new OperationFutureImpl<Void, UpdateDatabaseDdlMetadata>(
+    return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
-        new ApiFunction<OperationSnapshot, Void>() {
-          @Override
-          public Void apply(OperationSnapshot snapshot) {
-            ProtoOperationTransformers.ResponseTransformer.create(Empty.class).apply(snapshot);
-            return null;
-          }
+        snapshot -> {
+          ProtoOperationTransformers.ResponseTransformer.create(Empty.class).apply(snapshot);
+          return null;
         },
         ProtoOperationTransformers.MetadataTransformer.create(UpdateDatabaseDdlMetadata.class),
-        new ApiFunction<Exception, Void>() {
-          @Override
-          public Void apply(Exception e) {
-            throw SpannerExceptionFactory.newSpannerException(e);
-          }
+        e -> {
+          throw SpannerExceptionFactory.newSpannerException(e);
         });
   }
 

@@ -17,8 +17,10 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.common.base.Preconditions;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
@@ -105,6 +107,8 @@ class ClientSideStatementImpl implements ClientSideStatement {
   /** The result type of this statement. */
   private ResultType resultType;
 
+  private ClientSideStatementType statementType;
+
   /** The regular expression that should be used to recognize this class of statements. */
   private String regex;
 
@@ -130,10 +134,10 @@ class ClientSideStatementImpl implements ClientSideStatement {
   private ClientSideSetStatementImpl setStatement;
 
   /** The compiled regex pattern for recognizing this statement. */
-  private Pattern pattern;
+  private transient Pattern pattern;
 
   /** A reference to the executor that should be used. */
-  private ClientSideStatementExecutor executor;
+  private transient ClientSideStatementExecutor executor;
 
   /**
    * Compiles this {@link ClientSideStatementImpl}. Throws a {@link CompileException} if the
@@ -143,10 +147,12 @@ class ClientSideStatementImpl implements ClientSideStatement {
   ClientSideStatementImpl compile() throws CompileException {
     try {
       this.pattern = Pattern.compile(regex);
-      this.executor =
-          (ClientSideStatementExecutor)
-              Class.forName(getClass().getPackage().getName() + "." + executorName).newInstance();
-      this.executor.compile(this);
+      @SuppressWarnings("unchecked")
+      Constructor<ClientSideStatementExecutor> constructor =
+          (Constructor<ClientSideStatementExecutor>)
+              Class.forName(getClass().getPackage().getName() + "." + executorName)
+                  .getDeclaredConstructor(ClientSideStatementImpl.class);
+      this.executor = constructor.newInstance(this);
       return this;
     } catch (Exception e) {
       throw new CompileException(e, this);
@@ -178,6 +184,11 @@ class ClientSideStatementImpl implements ClientSideStatement {
   @Override
   public boolean isUpdate() {
     return resultType == ResultType.UPDATE_COUNT;
+  }
+
+  @Override
+  public ClientSideStatementType getStatementType() {
+    return statementType;
   }
 
   boolean matches(String statement) {

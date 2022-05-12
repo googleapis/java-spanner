@@ -23,6 +23,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -43,8 +44,8 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
-import com.google.cloud.spanner.connection.StatementParser.StatementType;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.Arrays;
@@ -247,6 +248,25 @@ public class ReadOnlyTransactionTest {
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
     }
+  }
+
+  @Test
+  public void testGetCommitResponse() {
+    ReadOnlyTransaction transaction = createSubject();
+    get(transaction.commitAsync());
+    try {
+      transaction.getCommitResponse();
+      fail("expected FAILED_PRECONDITION");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    }
+  }
+
+  @Test
+  public void testGetCommitResponseOrNull() {
+    ReadOnlyTransaction transaction = createSubject();
+    get(transaction.commitAsync());
+    assertNull(transaction.getCommitResponseOrNull());
   }
 
   @Test

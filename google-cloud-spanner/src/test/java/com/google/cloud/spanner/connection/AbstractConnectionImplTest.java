@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.DialectNamespaceMapper.getNamespace;
 import static com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.getTimeUnitAbbreviation;
 import static com.google.cloud.spanner.connection.SpannerExceptionMatcher.matchCode;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -23,43 +24,57 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
-import com.google.cloud.spanner.connection.StatementParser.StatementType;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * This test class and all its subclasses are used to generate the file
  * ConnectionImplGeneratedSqlScriptTest.sql.
  */
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public abstract class AbstractConnectionImplTest {
   public static final String UPDATE = "UPDATE foo SET bar=1";
   public static final String SELECT = "SELECT 1 AS TEST";
   public static final String DDL =
       "CREATE TABLE foo (id INT64 NOT NULL, name STRING(100)) PRIMARY KEY (id)";
 
-  static interface ConnectionConsumer {
+  @Parameter public Dialect dialect;
+
+  @Parameters(name = "dialect = {0}")
+  public static Object[] data() {
+    return Dialect.values();
+  }
+
+  interface ConnectionConsumer {
     void accept(Connection connection);
   }
 
@@ -72,11 +87,26 @@ public abstract class AbstractConnectionImplTest {
    * subclasses of {@link AbstractConnectionImplTest}.
    */
   private static final String LOG_FILE =
-      "src/test/resources/com/google/cloud/spanner/jdbc/ConnectionImplGeneratedSqlScriptTest.sql";
+      "src/test/resources/com/google/cloud/spanner/connection/ConnectionImplGeneratedSqlScriptTest.sql";
+
+  private static final String PG_LOG_FILE =
+      "src/test/resources/com/google/cloud/spanner/connection/postgresql/ConnectionImplGeneratedSqlScriptTest.sql";
+
+  private static String getLogFile(Dialect dialect) {
+    switch (dialect) {
+      case GOOGLE_STANDARD_SQL:
+        return LOG_FILE;
+      case POSTGRESQL:
+        return PG_LOG_FILE;
+      default:
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, "Unknown or unsupported dialect: " + dialect);
+    }
+  }
 
   private static final String DO_LOG_PROPERTY = "do_log_statements";
-  private static boolean doLog;
-  private static PrintWriter writer;
+  private boolean doLog;
+  private PrintWriter writer;
 
   abstract Connection getConnection();
 
@@ -100,8 +130,8 @@ public abstract class AbstractConnectionImplTest {
   AbstractConnectionImplTest() {}
 
   /** Makes an empty test script. Can be called before a new script is to be generated. */
-  static void emptyScript() {
-    openLog(false);
+  void emptyScript(Dialect dialect) {
+    openLog(false, dialect);
     closeLog();
   }
 
@@ -111,30 +141,42 @@ public abstract class AbstractConnectionImplTest {
     }
   }
 
-  @BeforeClass
-  public static void openLog() {
-    doLog = Boolean.valueOf(System.getProperty(DO_LOG_PROPERTY, "false"));
+  void logWithNamespace(String statement) {
     if (doLog) {
-      openLog(true);
+      writer.printf(statement, getNamespace(dialect));
+      writer.println();
+    }
+  }
+
+  @Before
+  public void openLog() {
+    doLog = Boolean.parseBoolean(System.getProperty(DO_LOG_PROPERTY, "false"));
+    if (doLog) {
+      if (writer == null) {
+        openLog(true, this.dialect);
+      }
     } else {
       writer = null;
     }
   }
 
-  private static void openLog(boolean append) {
+  private void openLog(boolean append, Dialect dialect) {
     try {
       writer =
           new PrintWriter(
-              new OutputStreamWriter(new FileOutputStream(LOG_FILE, append), "UTF8"), true);
+              new OutputStreamWriter(
+                  new FileOutputStream(getLogFile(dialect), append), StandardCharsets.UTF_8),
+              true);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  @AfterClass
-  public static void closeLog() {
+  @After
+  public void closeLog() {
     if (writer != null) {
       writer.close();
+      writer = null;
     }
   }
 
@@ -185,22 +227,22 @@ public abstract class AbstractConnectionImplTest {
   public void testSetReadOnly() {
     try (Connection connection = getConnection()) {
       if (isSetReadOnlyAllowed()) {
-        log("SET READONLY=FALSE;");
+        logWithNamespace("SET %sREADONLY=FALSE;");
         connection.setReadOnly(false);
 
-        log("@EXPECT RESULT_SET 'READONLY',FALSE");
-        log("SHOW VARIABLE READONLY;");
+        logWithNamespace("@EXPECT RESULT_SET '%sREADONLY',FALSE");
+        logWithNamespace("SHOW VARIABLE %sREADONLY;");
         assertThat(connection.isReadOnly(), is(false));
 
-        log("SET READONLY=TRUE;");
+        logWithNamespace("SET %sREADONLY=TRUE;");
         connection.setReadOnly(true);
 
-        log("@EXPECT RESULT_SET 'READONLY',TRUE");
-        log("SHOW VARIABLE READONLY;");
+        logWithNamespace("@EXPECT RESULT_SET '%sREADONLY',TRUE");
+        logWithNamespace("SHOW VARIABLE %sREADONLY;");
         assertThat(connection.isReadOnly(), is(true));
       } else {
         log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-        log("SET READONLY=" + (connection.isAutocommit() ? "FALSE;" : "TRUE;"));
+        logWithNamespace("SET %sREADONLY=" + (connection.isAutocommit() ? "FALSE;" : "TRUE;"));
         exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
         connection.setReadOnly(!connection.isReadOnly());
       }
@@ -220,10 +262,15 @@ public abstract class AbstractConnectionImplTest {
         log("SHOW VARIABLE STATEMENT_TIMEOUT;");
         assertThat(connection.getStatementTimeout(unit), is(equalTo(1L)));
 
-        log("SET STATEMENT_TIMEOUT=null;");
+        log(
+            String.format(
+                "SET STATEMENT_TIMEOUT=%s;", dialect == Dialect.POSTGRESQL ? "DEFAULT" : "null"));
         connection.clearStatementTimeout();
 
-        log("@EXPECT RESULT_SET 'STATEMENT_TIMEOUT',null");
+        log(
+            String.format(
+                "@EXPECT RESULT_SET 'STATEMENT_TIMEOUT',%s",
+                dialect == Dialect.POSTGRESQL ? "'0'" : "null"));
         log("SHOW VARIABLE STATEMENT_TIMEOUT;");
         assertThat(connection.getStatementTimeout(unit), is(equalTo(0L)));
         assertThat(connection.hasStatementTimeout(), is(false));
@@ -236,7 +283,10 @@ public abstract class AbstractConnectionImplTest {
           gotException = true;
         }
         assertThat(gotException, is(true));
-        log("@EXPECT RESULT_SET 'STATEMENT_TIMEOUT',null");
+        log(
+            String.format(
+                "@EXPECT RESULT_SET 'STATEMENT_TIMEOUT',%s",
+                dialect == Dialect.POSTGRESQL ? "'0'" : "null"));
         log("SHOW VARIABLE STATEMENT_TIMEOUT;");
         assertThat(connection.getStatementTimeout(unit), is(equalTo(0L)));
         assertThat(connection.hasStatementTimeout(), is(false));
@@ -259,24 +309,18 @@ public abstract class AbstractConnectionImplTest {
 
         expectSpannerException(
             "Select should not be allowed after startBatchDml()",
-            new ConnectionConsumer() {
-              @Override
-              public void accept(Connection t) {
-                log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-                log(SELECT + ";");
-                t.execute(Statement.of(SELECT));
-              }
+            t -> {
+              log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+              log(SELECT + ";");
+              t.execute(Statement.of(SELECT));
             },
             connection);
         expectSpannerException(
             "DDL should not be allowed after startBatchDml()",
-            new ConnectionConsumer() {
-              @Override
-              public void accept(Connection t) {
-                log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-                log(DDL + ";");
-                t.execute(Statement.of(DDL));
-              }
+            t -> {
+              log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+              log(DDL + ";");
+              t.execute(Statement.of(DDL));
             },
             connection);
         log(UPDATE + ";");
@@ -309,24 +353,18 @@ public abstract class AbstractConnectionImplTest {
 
         expectSpannerException(
             "Select should not be allowed after startBatchDdl()",
-            new ConnectionConsumer() {
-              @Override
-              public void accept(Connection t) {
-                log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-                log(SELECT + ";");
-                t.execute(Statement.of(SELECT));
-              }
+            t -> {
+              log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+              log(SELECT + ";");
+              t.execute(Statement.of(SELECT));
             },
             connection);
         expectSpannerException(
             "Update should not be allowed after startBatchDdl()",
-            new ConnectionConsumer() {
-              @Override
-              public void accept(Connection t) {
-                log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-                log(UPDATE + ";");
-                t.execute(Statement.of(UPDATE));
-              }
+            t -> {
+              log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+              log(UPDATE + ";");
+              t.execute(Statement.of(UPDATE));
             },
             connection);
         log(DDL + ";");
@@ -396,13 +434,10 @@ public abstract class AbstractConnectionImplTest {
         } else {
           expectSpannerException(
               "Select should not be allowed after beginTransaction",
-              new ConnectionConsumer() {
-                @Override
-                public void accept(Connection t) {
-                  log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-                  log(SELECT + ";");
-                  t.execute(Statement.of(SELECT));
-                }
+              t -> {
+                log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+                log(SELECT + ";");
+                t.execute(Statement.of(SELECT));
               },
               connection);
         }
@@ -412,13 +447,10 @@ public abstract class AbstractConnectionImplTest {
         } else {
           expectSpannerException(
               "Update should not be allowed after beginTransaction",
-              new ConnectionConsumer() {
-                @Override
-                public void accept(Connection t) {
-                  log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-                  log(UPDATE + ";");
-                  t.execute(Statement.of(UPDATE));
-                }
+              t -> {
+                log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+                log(UPDATE + ";");
+                t.execute(Statement.of(UPDATE));
               },
               connection);
         }
@@ -428,13 +460,10 @@ public abstract class AbstractConnectionImplTest {
         } else {
           expectSpannerException(
               "DDL should not be allowed after beginTransaction",
-              new ConnectionConsumer() {
-                @Override
-                public void accept(Connection t) {
-                  log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-                  log(DDL + ";");
-                  t.execute(Statement.of(DDL));
-                }
+              t -> {
+                log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+                log(DDL + ";");
+                t.execute(Statement.of(DDL));
               },
               connection);
         }
@@ -445,6 +474,38 @@ public abstract class AbstractConnectionImplTest {
       log("BEGIN TRANSACTION;");
       exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
       connection.beginTransaction();
+    }
+  }
+
+  abstract boolean isSetTransactionTagAllowed();
+
+  @Test
+  public void testSetTransactionTag() {
+    try (Connection connection = getConnection()) {
+      String tag = "some-tag";
+      if (isSetTransactionTagAllowed()) {
+        log(
+            String.format(
+                "SET %sTRANSACTION_TAG = '%s';",
+                DialectNamespaceMapper.getNamespace(dialect), tag));
+        connection.setTransactionTag(tag);
+        assertEquals(tag, connection.getTransactionTag());
+      } else {
+        expectSpannerException(
+            "SET TRANSACTION_TAG should not be allowed",
+            new ConnectionConsumer() {
+              @Override
+              public void accept(Connection t) {
+                log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+                log(
+                    String.format(
+                        "SET %sTRANSACTION_TAG = '%s';",
+                        DialectNamespaceMapper.getNamespace(dialect), tag));
+                t.setTransactionTag(tag);
+              }
+            },
+            connection);
+      }
     }
   }
 
@@ -466,13 +527,10 @@ public abstract class AbstractConnectionImplTest {
       } else {
         expectSpannerException(
             mode + " should not be allowed",
-            new ConnectionConsumer() {
-              @Override
-              public void accept(Connection t) {
-                log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-                log("SET TRANSACTION " + mode.getStatementString() + ";");
-                t.setTransactionMode(mode);
-              }
+            t -> {
+              log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+              log("SET TRANSACTION " + mode.getStatementString() + ";");
+              t.setTransactionMode(mode);
             },
             connection);
       }
@@ -500,17 +558,17 @@ public abstract class AbstractConnectionImplTest {
     try (Connection connection = getConnection()) {
       if (isSetAutocommitDmlModeAllowed()) {
         for (AutocommitDmlMode mode : AutocommitDmlMode.values()) {
-          log("SET AUTOCOMMIT_DML_MODE='" + mode.toString() + "';");
+          logWithNamespace("SET %sAUTOCOMMIT_DML_MODE='" + mode.toString() + "';");
           connection.setAutocommitDmlMode(mode);
 
-          log("@EXPECT RESULT_SET 'AUTOCOMMIT_DML_MODE','" + mode.toString() + "'");
-          log("SHOW VARIABLE AUTOCOMMIT_DML_MODE;");
+          logWithNamespace("@EXPECT RESULT_SET '%sAUTOCOMMIT_DML_MODE','" + mode.toString() + "'");
+          logWithNamespace("SHOW VARIABLE %sAUTOCOMMIT_DML_MODE;");
           assertThat(connection.getAutocommitDmlMode(), is(equalTo(mode)));
         }
       } else {
         log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-        log(
-            "SET AUTOCOMMIT_DML_MODE='"
+        logWithNamespace(
+            "SET %sAUTOCOMMIT_DML_MODE='"
                 + AutocommitDmlMode.PARTITIONED_NON_ATOMIC.toString()
                 + "';");
         exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
@@ -525,12 +583,12 @@ public abstract class AbstractConnectionImplTest {
   public void testGetAutocommitDmlMode() {
     try (Connection connection = getConnection()) {
       if (isGetAutocommitDmlModeAllowed()) {
-        log("@EXPECT RESULT_SET 'AUTOCOMMIT_DML_MODE'");
-        log("SHOW VARIABLE AUTOCOMMIT_DML_MODE;");
+        logWithNamespace("@EXPECT RESULT_SET '%sAUTOCOMMIT_DML_MODE'");
+        logWithNamespace("SHOW VARIABLE %sAUTOCOMMIT_DML_MODE;");
         assertThat(connection.getAutocommitDmlMode(), is(notNullValue()));
       } else {
         log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-        log("SHOW VARIABLE AUTOCOMMIT_DML_MODE;");
+        logWithNamespace("SHOW VARIABLE %sAUTOCOMMIT_DML_MODE;");
         exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
         connection.getAutocommitDmlMode();
       }
@@ -559,31 +617,28 @@ public abstract class AbstractConnectionImplTest {
   private void testSetReadOnlyStaleness(final TimestampBound staleness) {
     try (Connection connection = getConnection()) {
       if (isSetReadOnlyStalenessAllowed(staleness.getMode())) {
-        log(
-            "SET READ_ONLY_STALENESS='"
+        logWithNamespace(
+            "SET %sREAD_ONLY_STALENESS='"
                 + ReadOnlyStalenessUtil.timestampBoundToString(staleness)
                 + "';");
         connection.setReadOnlyStaleness(staleness);
 
-        log(
-            "@EXPECT RESULT_SET 'READ_ONLY_STALENESS','"
+        logWithNamespace(
+            "@EXPECT RESULT_SET '%sREAD_ONLY_STALENESS','"
                 + ReadOnlyStalenessUtil.timestampBoundToString(staleness)
                 + "'");
-        log("SHOW VARIABLE READ_ONLY_STALENESS;");
+        logWithNamespace("SHOW VARIABLE %sREAD_ONLY_STALENESS;");
         assertThat(connection.getReadOnlyStaleness(), is(equalTo(staleness)));
       } else {
         expectSpannerException(
             staleness.getMode() + " should not be allowed",
-            new ConnectionConsumer() {
-              @Override
-              public void accept(Connection t) {
-                log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-                log(
-                    "SET READ_ONLY_STALENESS='"
-                        + ReadOnlyStalenessUtil.timestampBoundToString(staleness)
-                        + "';");
-                t.setReadOnlyStaleness(staleness);
-              }
+            t -> {
+              log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+              logWithNamespace(
+                  "SET %sREAD_ONLY_STALENESS='"
+                      + ReadOnlyStalenessUtil.timestampBoundToString(staleness)
+                      + "';");
+              t.setReadOnlyStaleness(staleness);
             },
             connection);
       }
@@ -596,12 +651,12 @@ public abstract class AbstractConnectionImplTest {
   public void testGetReadOnlyStaleness() {
     try (Connection connection = getConnection()) {
       if (isGetReadOnlyStalenessAllowed()) {
-        log("@EXPECT RESULT_SET 'READ_ONLY_STALENESS'");
-        log("SHOW VARIABLE READ_ONLY_STALENESS;");
+        logWithNamespace("@EXPECT RESULT_SET '%sREAD_ONLY_STALENESS'");
+        logWithNamespace("SHOW VARIABLE %sREAD_ONLY_STALENESS;");
         assertThat(connection.getReadOnlyStaleness(), is(notNullValue()));
       } else {
         log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-        log("SHOW VARIABLE READ_ONLY_STALENESS;");
+        logWithNamespace("SHOW VARIABLE %sREAD_ONLY_STALENESS;");
         exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
         connection.getReadOnlyStaleness();
       }
@@ -617,16 +672,16 @@ public abstract class AbstractConnectionImplTest {
     try (Connection connection = getConnection()) {
       if (isSetOptimizerVersionAllowed()) {
         for (String version : new String[] {"1", "2", "latest", ""}) {
-          log("SET OPTIMIZER_VERSION='" + version + "';");
+          logWithNamespace("SET %sOPTIMIZER_VERSION='" + version + "';");
           connection.setOptimizerVersion(version);
 
-          log("@EXPECT RESULT_SET 'OPTIMIZER_VERSION','" + version + "'");
-          log("SHOW VARIABLE OPTIMIZER_VERSION;");
+          logWithNamespace("@EXPECT RESULT_SET '%sOPTIMIZER_VERSION','" + version + "'");
+          logWithNamespace("SHOW VARIABLE %sOPTIMIZER_VERSION;");
           assertThat(connection.getOptimizerVersion(), is(equalTo(version)));
         }
       } else {
         log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-        log("SET OPTIMIZER_VERSION='1';");
+        logWithNamespace("SET %sOPTIMIZER_VERSION='1';");
         exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
         connection.setOptimizerVersion("1");
       }
@@ -641,14 +696,60 @@ public abstract class AbstractConnectionImplTest {
   public void testGetOptimizerVersion() {
     try (Connection connection = getConnection()) {
       if (isGetOptimizerVersionAllowed()) {
-        log("@EXPECT RESULT_SET 'OPTIMIZER_VERSION'");
-        log("SHOW VARIABLE OPTIMIZER_VERSION;");
+        logWithNamespace("@EXPECT RESULT_SET '%sOPTIMIZER_VERSION'");
+        logWithNamespace("SHOW VARIABLE %sOPTIMIZER_VERSION;");
         assertThat(connection.getOptimizerVersion(), is(notNullValue()));
       } else {
         log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-        log("SHOW VARIABLE OPTIMIZER_VERSION;");
+        logWithNamespace("SHOW VARIABLE %sOPTIMIZER_VERSION;");
         exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
         connection.getOptimizerVersion();
+      }
+    }
+  }
+
+  boolean isSetOptimizerStatisticsPackageAllowed() {
+    return !getConnection().isClosed();
+  }
+
+  @Test
+  public void testSetOptimizerStatisticsPackage() {
+    try (Connection connection = getConnection()) {
+      if (isSetOptimizerStatisticsPackageAllowed()) {
+        for (String statisticsPackage : new String[] {"custom-package", ""}) {
+          logWithNamespace("SET %sOPTIMIZER_STATISTICS_PACKAGE='" + statisticsPackage + "';");
+          connection.setOptimizerStatisticsPackage(statisticsPackage);
+
+          logWithNamespace(
+              "@EXPECT RESULT_SET '%sOPTIMIZER_STATISTICS_PACKAGE','" + statisticsPackage + "'");
+          logWithNamespace("SHOW VARIABLE %sOPTIMIZER_STATISTICS_PACKAGE;");
+          assertThat(connection.getOptimizerStatisticsPackage(), is(equalTo(statisticsPackage)));
+        }
+      } else {
+        log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+        logWithNamespace("SET %sOPTIMIZER_STATISTICS_PACKAGE='custom-package';");
+        exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
+        connection.setOptimizerStatisticsPackage("custom-package");
+      }
+    }
+  }
+
+  boolean isGetOptimizerStatisticsPackageAllowed() {
+    return !getConnection().isClosed();
+  }
+
+  @Test
+  public void testGetOptimizerStatisticsPackage() {
+    try (Connection connection = getConnection()) {
+      if (isGetOptimizerStatisticsPackageAllowed()) {
+        logWithNamespace("@EXPECT RESULT_SET '%sOPTIMIZER_STATISTICS_PACKAGE'");
+        logWithNamespace("SHOW VARIABLE %sOPTIMIZER_STATISTICS_PACKAGE;");
+        assertThat(connection.getOptimizerStatisticsPackage(), is(notNullValue()));
+      } else {
+        log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+        logWithNamespace("SHOW VARIABLE %sOPTIMIZER_STATISTICS_PACKAGE;");
+        exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
+        connection.getOptimizerStatisticsPackage();
       }
     }
   }
@@ -705,12 +806,12 @@ public abstract class AbstractConnectionImplTest {
   public void testGetReadTimestamp() {
     try (Connection connection = getConnection()) {
       if (isGetReadTimestampAllowed()) {
-        log("@EXPECT RESULT_SET 'READ_TIMESTAMP'");
-        log("SHOW VARIABLE READ_TIMESTAMP;");
+        logWithNamespace("@EXPECT RESULT_SET '%sREAD_TIMESTAMP'");
+        logWithNamespace("SHOW VARIABLE %sREAD_TIMESTAMP;");
         assertThat(connection.getReadTimestamp(), is(notNullValue()));
       } else {
-        log("@EXPECT RESULT_SET 'READ_TIMESTAMP',null");
-        log("SHOW VARIABLE READ_TIMESTAMP;");
+        logWithNamespace("@EXPECT RESULT_SET '%sREAD_TIMESTAMP',null");
+        logWithNamespace("SHOW VARIABLE %sREAD_TIMESTAMP;");
         exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
         connection.getReadTimestamp();
       }
@@ -723,14 +824,30 @@ public abstract class AbstractConnectionImplTest {
   public void testGetCommitTimestamp() {
     try (Connection connection = getConnection()) {
       if (isGetCommitTimestampAllowed()) {
-        log("@EXPECT RESULT_SET 'COMMIT_TIMESTAMP'");
-        log("SHOW VARIABLE COMMIT_TIMESTAMP;");
+        logWithNamespace("@EXPECT RESULT_SET '%sCOMMIT_TIMESTAMP'");
+        logWithNamespace("SHOW VARIABLE %sCOMMIT_TIMESTAMP;");
         assertThat(connection.getCommitTimestamp(), is(notNullValue()));
       } else {
-        log("@EXPECT RESULT_SET 'COMMIT_TIMESTAMP',null");
-        log("SHOW VARIABLE COMMIT_TIMESTAMP;");
+        logWithNamespace("@EXPECT RESULT_SET '%sCOMMIT_TIMESTAMP',null");
+        logWithNamespace("SHOW VARIABLE %sCOMMIT_TIMESTAMP;");
         exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
         connection.getCommitTimestamp();
+      }
+    }
+  }
+
+  @Test
+  public void testGetCommitResponse() {
+    try (Connection connection = getConnection()) {
+      if (isGetCommitTimestampAllowed()) {
+        logWithNamespace("@EXPECT RESULT_SET '%sCOMMIT_TIMESTAMP'");
+        logWithNamespace("SHOW VARIABLE %sCOMMIT_RESPONSE;");
+        assertThat(connection.getCommitResponse(), is(notNullValue()));
+      } else {
+        logWithNamespace("@EXPECT RESULT_SET '%sCOMMIT_TIMESTAMP',null");
+        logWithNamespace("SHOW VARIABLE %sCOMMIT_RESPONSE;");
+        exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
+        connection.getCommitResponse();
       }
     }
   }
@@ -753,13 +870,10 @@ public abstract class AbstractConnectionImplTest {
       } else {
         expectSpannerException(
             type + " should not be allowed",
-            new ConnectionConsumer() {
-              @Override
-              public void accept(Connection t) {
-                log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-                log(getTestStatement(type).getSql() + ";");
-                t.execute(getTestStatement(type));
-              }
+            t -> {
+              log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+              log(getTestStatement(type).getSql() + ";");
+              t.execute(getTestStatement(type));
             },
             connection);
       }
@@ -801,25 +915,17 @@ public abstract class AbstractConnectionImplTest {
         // it is a query, but queries are not allowed for this connection state
         expectSpannerException(
             type + " should not be allowed",
-            new ConnectionConsumer() {
-              @Override
-              public void accept(Connection t) {
-                log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-                log(getTestStatement(type).getSql() + ";");
-                t.executeQuery(getTestStatement(type));
-              }
+            t -> {
+              log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+              log(getTestStatement(type).getSql() + ";");
+              t.executeQuery(getTestStatement(type));
             },
             connection,
             ErrorCode.FAILED_PRECONDITION);
       } else {
         expectSpannerException(
             type + " should be an invalid argument",
-            new ConnectionConsumer() {
-              @Override
-              public void accept(Connection t) {
-                t.executeQuery(getTestStatement(type));
-              }
-            },
+            t -> t.executeQuery(getTestStatement(type)),
             connection,
             ErrorCode.INVALID_ARGUMENT);
       }
@@ -848,23 +954,13 @@ public abstract class AbstractConnectionImplTest {
           // it is a query, but queries are not allowed for this connection state
           expectSpannerException(
               type + " should not be allowed",
-              new ConnectionConsumer() {
-                @Override
-                public void accept(Connection t) {
-                  t.analyzeQuery(getTestStatement(type), currentMode);
-                }
-              },
+              t -> t.analyzeQuery(getTestStatement(type), currentMode),
               connection,
               ErrorCode.FAILED_PRECONDITION);
         } else {
           expectSpannerException(
               type + " should be an invalid argument",
-              new ConnectionConsumer() {
-                @Override
-                public void accept(Connection t) {
-                  t.analyzeQuery(getTestStatement(type), currentMode);
-                }
-              },
+              t -> t.analyzeQuery(getTestStatement(type), currentMode),
               connection,
               ErrorCode.INVALID_ARGUMENT);
         }
@@ -890,25 +986,17 @@ public abstract class AbstractConnectionImplTest {
         // it is an update statement, but updates are not allowed for this connection state
         expectSpannerException(
             type + "should not be allowed",
-            new ConnectionConsumer() {
-              @Override
-              public void accept(Connection t) {
-                log("@EXPECT EXCEPTION FAILED_PRECONDITION");
-                log(getTestStatement(type).getSql() + ";");
-                t.executeUpdate(getTestStatement(type));
-              }
+            t -> {
+              log("@EXPECT EXCEPTION FAILED_PRECONDITION");
+              log(getTestStatement(type).getSql() + ";");
+              t.executeUpdate(getTestStatement(type));
             },
             connection,
             ErrorCode.FAILED_PRECONDITION);
       } else {
         expectSpannerException(
             type + " should be an invalid argument",
-            new ConnectionConsumer() {
-              @Override
-              public void accept(Connection t) {
-                t.executeUpdate(getTestStatement(type));
-              }
-            },
+            t -> t.executeUpdate(getTestStatement(type)),
             connection,
             ErrorCode.INVALID_ARGUMENT);
       }
@@ -933,7 +1021,7 @@ public abstract class AbstractConnectionImplTest {
       if (!isWriteAllowed() || !connection.isAutocommit()) {
         exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
       }
-      connection.write(Arrays.asList(createTestMutation()));
+      connection.write(Collections.singletonList(createTestMutation()));
     }
   }
 
@@ -953,7 +1041,7 @@ public abstract class AbstractConnectionImplTest {
       if (!isWriteAllowed() || connection.isAutocommit()) {
         exception.expect(matchCode(ErrorCode.FAILED_PRECONDITION));
       }
-      connection.bufferedWrite(Arrays.asList(createTestMutation()));
+      connection.bufferedWrite(Collections.singletonList(createTestMutation()));
     }
   }
 

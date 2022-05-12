@@ -93,6 +93,24 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
               source_ = s;
               break;
             }
+          case 34:
+            {
+              com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.Builder
+                  subBuilder = null;
+              if (encryptionConfig_ != null) {
+                subBuilder = encryptionConfig_.toBuilder();
+              }
+              encryptionConfig_ =
+                  input.readMessage(
+                      com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.parser(),
+                      extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(encryptionConfig_);
+                encryptionConfig_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -298,6 +316,21 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
    *
    * <code>string backup = 3 [(.google.api.resource_reference) = { ... }</code>
    *
+   * @return Whether the backup field is set.
+   */
+  public boolean hasBackup() {
+    return sourceCase_ == 3;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Name of the backup from which to restore.  Values are of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+   * </pre>
+   *
+   * <code>string backup = 3 [(.google.api.resource_reference) = { ... }</code>
+   *
    * @return The backup.
    */
   public java.lang.String getBackup() {
@@ -345,6 +378,77 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
     }
   }
 
+  public static final int ENCRYPTION_CONFIG_FIELD_NUMBER = 4;
+  private com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig encryptionConfig_;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. An encryption configuration describing the encryption type and key
+   * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+   * If this field is not specified, the restored database will use
+   * the same encryption configuration as the backup by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+   * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the encryptionConfig field is set.
+   */
+  @java.lang.Override
+  public boolean hasEncryptionConfig() {
+    return encryptionConfig_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. An encryption configuration describing the encryption type and key
+   * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+   * If this field is not specified, the restored database will use
+   * the same encryption configuration as the backup by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+   * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The encryptionConfig.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig
+      getEncryptionConfig() {
+    return encryptionConfig_ == null
+        ? com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.getDefaultInstance()
+        : encryptionConfig_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. An encryption configuration describing the encryption type and key
+   * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+   * If this field is not specified, the restored database will use
+   * the same encryption configuration as the backup by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+   * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfigOrBuilder
+      getEncryptionConfigOrBuilder() {
+    return getEncryptionConfig();
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -359,14 +463,17 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!getParentBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parent_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, parent_);
     }
-    if (!getDatabaseIdBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(databaseId_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, databaseId_);
     }
     if (sourceCase_ == 3) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, source_);
+    }
+    if (encryptionConfig_ != null) {
+      output.writeMessage(4, getEncryptionConfig());
     }
     unknownFields.writeTo(output);
   }
@@ -377,14 +484,17 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
     if (size != -1) return size;
 
     size = 0;
-    if (!getParentBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parent_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, parent_);
     }
-    if (!getDatabaseIdBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(databaseId_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, databaseId_);
     }
     if (sourceCase_ == 3) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, source_);
+    }
+    if (encryptionConfig_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, getEncryptionConfig());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -404,6 +514,10 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
 
     if (!getParent().equals(other.getParent())) return false;
     if (!getDatabaseId().equals(other.getDatabaseId())) return false;
+    if (hasEncryptionConfig() != other.hasEncryptionConfig()) return false;
+    if (hasEncryptionConfig()) {
+      if (!getEncryptionConfig().equals(other.getEncryptionConfig())) return false;
+    }
     if (!getSourceCase().equals(other.getSourceCase())) return false;
     switch (sourceCase_) {
       case 3:
@@ -427,6 +541,10 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
     hash = (53 * hash) + getParent().hashCode();
     hash = (37 * hash) + DATABASE_ID_FIELD_NUMBER;
     hash = (53 * hash) + getDatabaseId().hashCode();
+    if (hasEncryptionConfig()) {
+      hash = (37 * hash) + ENCRYPTION_CONFIG_FIELD_NUMBER;
+      hash = (53 * hash) + getEncryptionConfig().hashCode();
+    }
     switch (sourceCase_) {
       case 3:
         hash = (37 * hash) + BACKUP_FIELD_NUMBER;
@@ -586,6 +704,12 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
 
       databaseId_ = "";
 
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = null;
+      } else {
+        encryptionConfig_ = null;
+        encryptionConfigBuilder_ = null;
+      }
       sourceCase_ = 0;
       source_ = null;
       return this;
@@ -619,6 +743,11 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
       result.databaseId_ = databaseId_;
       if (sourceCase_ == 3) {
         result.source_ = source_;
+      }
+      if (encryptionConfigBuilder_ == null) {
+        result.encryptionConfig_ = encryptionConfig_;
+      } else {
+        result.encryptionConfig_ = encryptionConfigBuilder_.build();
       }
       result.sourceCase_ = sourceCase_;
       onBuilt();
@@ -678,6 +807,9 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
       if (!other.getDatabaseId().isEmpty()) {
         databaseId_ = other.databaseId_;
         onChanged();
+      }
+      if (other.hasEncryptionConfig()) {
+        mergeEncryptionConfig(other.getEncryptionConfig());
       }
       switch (other.getSourceCase()) {
         case BACKUP:
@@ -1003,6 +1135,22 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      *
      * <code>string backup = 3 [(.google.api.resource_reference) = { ... }</code>
      *
+     * @return Whether the backup field is set.
+     */
+    @java.lang.Override
+    public boolean hasBackup() {
+      return sourceCase_ == 3;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Name of the backup from which to restore.  Values are of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;`.
+     * </pre>
+     *
+     * <code>string backup = 3 [(.google.api.resource_reference) = { ... }</code>
+     *
      * @return The backup.
      */
     @java.lang.Override
@@ -1115,6 +1263,264 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
       source_ = value;
       onChanged();
       return this;
+    }
+
+    private com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig encryptionConfig_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig,
+            com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.Builder,
+            com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfigOrBuilder>
+        encryptionConfigBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the encryptionConfig field is set.
+     */
+    public boolean hasEncryptionConfig() {
+      return encryptionConfigBuilder_ != null || encryptionConfig_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The encryptionConfig.
+     */
+    public com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig
+        getEncryptionConfig() {
+      if (encryptionConfigBuilder_ == null) {
+        return encryptionConfig_ == null
+            ? com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig
+                .getDefaultInstance()
+            : encryptionConfig_;
+      } else {
+        return encryptionConfigBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setEncryptionConfig(
+        com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig value) {
+      if (encryptionConfigBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        encryptionConfig_ = value;
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setEncryptionConfig(
+        com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.Builder
+            builderForValue) {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = builderForValue.build();
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder mergeEncryptionConfig(
+        com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig value) {
+      if (encryptionConfigBuilder_ == null) {
+        if (encryptionConfig_ != null) {
+          encryptionConfig_ =
+              com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.newBuilder(
+                      encryptionConfig_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          encryptionConfig_ = value;
+        }
+        onChanged();
+      } else {
+        encryptionConfigBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder clearEncryptionConfig() {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfig_ = null;
+        onChanged();
+      } else {
+        encryptionConfig_ = null;
+        encryptionConfigBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.Builder
+        getEncryptionConfigBuilder() {
+
+      onChanged();
+      return getEncryptionConfigFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfigOrBuilder
+        getEncryptionConfigOrBuilder() {
+      if (encryptionConfigBuilder_ != null) {
+        return encryptionConfigBuilder_.getMessageOrBuilder();
+      } else {
+        return encryptionConfig_ == null
+            ? com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig
+                .getDefaultInstance()
+            : encryptionConfig_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. An encryption configuration describing the encryption type and key
+     * resources in Cloud KMS used to encrypt/decrypt the database to restore to.
+     * If this field is not specified, the restored database will use
+     * the same encryption configuration as the backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type] =
+     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig,
+            com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.Builder,
+            com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfigOrBuilder>
+        getEncryptionConfigFieldBuilder() {
+      if (encryptionConfigBuilder_ == null) {
+        encryptionConfigBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig,
+                com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.Builder,
+                com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfigOrBuilder>(
+                getEncryptionConfig(), getParentForChildren(), isClean());
+        encryptionConfig_ = null;
+      }
+      return encryptionConfigBuilder_;
     }
 
     @java.lang.Override

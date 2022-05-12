@@ -32,6 +32,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +45,7 @@ public class DirectExecuteResultSetTest {
     ResultSet delegate =
         ResultSets.forRows(
             Type.struct(StructField.of("test", Type.int64())),
-            Arrays.asList(Struct.newBuilder().set("test").to(1L).build()));
+            Collections.singletonList(Struct.newBuilder().set("test").to(1L).build()));
     return DirectExecuteResultSet.ofResultSet(delegate);
   }
 
@@ -52,7 +53,17 @@ public class DirectExecuteResultSetTest {
   public void testMethodCallBeforeNext()
       throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     List<String> excludedMethods =
-        Arrays.asList("getStats", "next", "close", "ofResultSet", "equals", "hashCode");
+        Arrays.asList(
+            "getStats",
+            "next",
+            "close",
+            "ofResultSet",
+            "equals",
+            "hashCode",
+            "getType",
+            "getColumnCount",
+            "getColumnIndex",
+            "getColumnType");
     DirectExecuteResultSet subject = createSubject();
     callMethods(subject, excludedMethods, IllegalStateException.class);
   }
@@ -228,6 +239,15 @@ public class DirectExecuteResultSetTest {
     verify(delegate).getStringList(2);
     subject.getStringList("test2");
     verify(delegate).getStringList("test2");
+
+    subject.getJson(0);
+    verify(delegate).getJson(0);
+    subject.getJson("test0");
+    verify(delegate).getJson("test0");
+    subject.getJsonList(2);
+    verify(delegate).getJsonList(2);
+    subject.getJsonList("test2");
+    verify(delegate).getJsonList("test2");
 
     subject.getStructList(0);
     subject.getStructList("test0");

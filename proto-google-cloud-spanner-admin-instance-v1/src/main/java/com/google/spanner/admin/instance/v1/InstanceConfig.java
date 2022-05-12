@@ -42,6 +42,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     name_ = "";
     displayName_ = "";
     replicas_ = java.util.Collections.emptyList();
+    leaderOptions_ = com.google.protobuf.LazyStringArrayList.EMPTY;
   }
 
   @java.lang.Override
@@ -101,6 +102,16 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
                       extensionRegistry));
               break;
             }
+          case 34:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
+              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
+                leaderOptions_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              leaderOptions_.add(s);
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -117,6 +128,9 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     } finally {
       if (((mutable_bitField0_ & 0x00000001) != 0)) {
         replicas_ = java.util.Collections.unmodifiableList(replicas_);
+      }
+      if (((mutable_bitField0_ & 0x00000002) != 0)) {
+        leaderOptions_ = leaderOptions_.getUnmodifiableView();
       }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
@@ -314,6 +328,71 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     return replicas_.get(index);
   }
 
+  public static final int LEADER_OPTIONS_FIELD_NUMBER = 4;
+  private com.google.protobuf.LazyStringList leaderOptions_;
+  /**
+   *
+   *
+   * <pre>
+   * Allowed values of the “default_leader” schema option for databases in
+   * instances that use this instance configuration.
+   * </pre>
+   *
+   * <code>repeated string leader_options = 4;</code>
+   *
+   * @return A list containing the leaderOptions.
+   */
+  public com.google.protobuf.ProtocolStringList getLeaderOptionsList() {
+    return leaderOptions_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Allowed values of the “default_leader” schema option for databases in
+   * instances that use this instance configuration.
+   * </pre>
+   *
+   * <code>repeated string leader_options = 4;</code>
+   *
+   * @return The count of leaderOptions.
+   */
+  public int getLeaderOptionsCount() {
+    return leaderOptions_.size();
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Allowed values of the “default_leader” schema option for databases in
+   * instances that use this instance configuration.
+   * </pre>
+   *
+   * <code>repeated string leader_options = 4;</code>
+   *
+   * @param index The index of the element to return.
+   * @return The leaderOptions at the given index.
+   */
+  public java.lang.String getLeaderOptions(int index) {
+    return leaderOptions_.get(index);
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Allowed values of the “default_leader” schema option for databases in
+   * instances that use this instance configuration.
+   * </pre>
+   *
+   * <code>repeated string leader_options = 4;</code>
+   *
+   * @param index The index of the value to return.
+   * @return The bytes of the leaderOptions at the given index.
+   */
+  public com.google.protobuf.ByteString getLeaderOptionsBytes(int index) {
+    return leaderOptions_.getByteString(index);
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -328,14 +407,17 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!getNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
     }
-    if (!getDisplayNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(displayName_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, displayName_);
     }
     for (int i = 0; i < replicas_.size(); i++) {
       output.writeMessage(3, replicas_.get(i));
+    }
+    for (int i = 0; i < leaderOptions_.size(); i++) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 4, leaderOptions_.getRaw(i));
     }
     unknownFields.writeTo(output);
   }
@@ -346,14 +428,22 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     if (size != -1) return size;
 
     size = 0;
-    if (!getNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
     }
-    if (!getDisplayNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(displayName_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, displayName_);
     }
     for (int i = 0; i < replicas_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(3, replicas_.get(i));
+    }
+    {
+      int dataSize = 0;
+      for (int i = 0; i < leaderOptions_.size(); i++) {
+        dataSize += computeStringSizeNoTag(leaderOptions_.getRaw(i));
+      }
+      size += dataSize;
+      size += 1 * getLeaderOptionsList().size();
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -374,6 +464,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     if (!getName().equals(other.getName())) return false;
     if (!getDisplayName().equals(other.getDisplayName())) return false;
     if (!getReplicasList().equals(other.getReplicasList())) return false;
+    if (!getLeaderOptionsList().equals(other.getLeaderOptionsList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -392,6 +483,10 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     if (getReplicasCount() > 0) {
       hash = (37 * hash) + REPLICAS_FIELD_NUMBER;
       hash = (53 * hash) + getReplicasList().hashCode();
+    }
+    if (getLeaderOptionsCount() > 0) {
+      hash = (37 * hash) + LEADER_OPTIONS_FIELD_NUMBER;
+      hash = (53 * hash) + getLeaderOptionsList().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -551,6 +646,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
       } else {
         replicasBuilder_.clear();
       }
+      leaderOptions_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000002);
       return this;
     }
 
@@ -590,6 +687,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
       } else {
         result.replicas_ = replicasBuilder_.build();
       }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        leaderOptions_ = leaderOptions_.getUnmodifiableView();
+        bitField0_ = (bitField0_ & ~0x00000002);
+      }
+      result.leaderOptions_ = leaderOptions_;
       onBuilt();
       return result;
     }
@@ -674,6 +776,16 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
             replicasBuilder_.addAllMessages(other.replicas_);
           }
         }
+      }
+      if (!other.leaderOptions_.isEmpty()) {
+        if (leaderOptions_.isEmpty()) {
+          leaderOptions_ = other.leaderOptions_;
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          ensureLeaderOptionsIsMutable();
+          leaderOptions_.addAll(other.leaderOptions_);
+        }
+        onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1297,6 +1409,183 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
         replicas_ = null;
       }
       return replicasBuilder_;
+    }
+
+    private com.google.protobuf.LazyStringList leaderOptions_ =
+        com.google.protobuf.LazyStringArrayList.EMPTY;
+
+    private void ensureLeaderOptionsIsMutable() {
+      if (!((bitField0_ & 0x00000002) != 0)) {
+        leaderOptions_ = new com.google.protobuf.LazyStringArrayList(leaderOptions_);
+        bitField0_ |= 0x00000002;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Allowed values of the “default_leader” schema option for databases in
+     * instances that use this instance configuration.
+     * </pre>
+     *
+     * <code>repeated string leader_options = 4;</code>
+     *
+     * @return A list containing the leaderOptions.
+     */
+    public com.google.protobuf.ProtocolStringList getLeaderOptionsList() {
+      return leaderOptions_.getUnmodifiableView();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Allowed values of the “default_leader” schema option for databases in
+     * instances that use this instance configuration.
+     * </pre>
+     *
+     * <code>repeated string leader_options = 4;</code>
+     *
+     * @return The count of leaderOptions.
+     */
+    public int getLeaderOptionsCount() {
+      return leaderOptions_.size();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Allowed values of the “default_leader” schema option for databases in
+     * instances that use this instance configuration.
+     * </pre>
+     *
+     * <code>repeated string leader_options = 4;</code>
+     *
+     * @param index The index of the element to return.
+     * @return The leaderOptions at the given index.
+     */
+    public java.lang.String getLeaderOptions(int index) {
+      return leaderOptions_.get(index);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Allowed values of the “default_leader” schema option for databases in
+     * instances that use this instance configuration.
+     * </pre>
+     *
+     * <code>repeated string leader_options = 4;</code>
+     *
+     * @param index The index of the value to return.
+     * @return The bytes of the leaderOptions at the given index.
+     */
+    public com.google.protobuf.ByteString getLeaderOptionsBytes(int index) {
+      return leaderOptions_.getByteString(index);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Allowed values of the “default_leader” schema option for databases in
+     * instances that use this instance configuration.
+     * </pre>
+     *
+     * <code>repeated string leader_options = 4;</code>
+     *
+     * @param index The index to set the value at.
+     * @param value The leaderOptions to set.
+     * @return This builder for chaining.
+     */
+    public Builder setLeaderOptions(int index, java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      ensureLeaderOptionsIsMutable();
+      leaderOptions_.set(index, value);
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Allowed values of the “default_leader” schema option for databases in
+     * instances that use this instance configuration.
+     * </pre>
+     *
+     * <code>repeated string leader_options = 4;</code>
+     *
+     * @param value The leaderOptions to add.
+     * @return This builder for chaining.
+     */
+    public Builder addLeaderOptions(java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      ensureLeaderOptionsIsMutable();
+      leaderOptions_.add(value);
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Allowed values of the “default_leader” schema option for databases in
+     * instances that use this instance configuration.
+     * </pre>
+     *
+     * <code>repeated string leader_options = 4;</code>
+     *
+     * @param values The leaderOptions to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAllLeaderOptions(java.lang.Iterable<java.lang.String> values) {
+      ensureLeaderOptionsIsMutable();
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(values, leaderOptions_);
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Allowed values of the “default_leader” schema option for databases in
+     * instances that use this instance configuration.
+     * </pre>
+     *
+     * <code>repeated string leader_options = 4;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearLeaderOptions() {
+      leaderOptions_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Allowed values of the “default_leader” schema option for databases in
+     * instances that use this instance configuration.
+     * </pre>
+     *
+     * <code>repeated string leader_options = 4;</code>
+     *
+     * @param value The bytes of the leaderOptions to add.
+     * @return This builder for chaining.
+     */
+    public Builder addLeaderOptionsBytes(com.google.protobuf.ByteString value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+      ensureLeaderOptionsIsMutable();
+      leaderOptions_.add(value);
+      onChanged();
+      return this;
     }
 
     @java.lang.Override

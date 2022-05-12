@@ -16,25 +16,12 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
-
 /**
  * A {@link ClientSideStatementExecutor} is used to compile {@link ClientSideStatement}s from the
  * json source file, and to execute these against a {@link Connection} (through a {@link
  * ConnectionStatementExecutor}).
  */
 interface ClientSideStatementExecutor {
-
-  /**
-   * Compiles the given {@link ClientSideStatementImpl} and registers this statement with this
-   * executor. A statement must be compiled before it can be executed. The parser automatically
-   * compiles all available statements during initialization.
-   *
-   * @param statement The statement to compile.
-   * @throws CompileException If the statement could not be compiled. This should never happen, as
-   *     it would indicate that an invalid statement has been defined in the source file.
-   */
-  void compile(ClientSideStatementImpl statement) throws CompileException;
 
   /**
    * Executes the {@link ClientSideStatementImpl} that has been compiled and registered with this

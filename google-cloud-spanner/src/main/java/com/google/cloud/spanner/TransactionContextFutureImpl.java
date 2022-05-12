@@ -91,7 +91,7 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
         ApiFuture<I> input,
         final AsyncTransactionFunction<I, O> function,
         Executor executor) {
-      this(SettableApiFuture.<O>create(), txnFuture, input, function, executor);
+      this(SettableApiFuture.create(), txnFuture, input, function, executor);
     }
 
     AsyncTransactionStatementImpl(
@@ -197,31 +197,28 @@ class TransactionContextFutureImpl extends ForwardingApiFuture<TransactionContex
     } else {
       final SettableApiFuture<O> res = SettableApiFuture.create();
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              try {
-                ApiFuture<O> functionResult =
-                    Preconditions.checkNotNull(
-                        function.apply(txn, input),
-                        "AsyncTransactionFunction returned <null>. Did you mean to return ApiFutures.immediateFuture(null)?");
-                ApiFutures.addCallback(
-                    functionResult,
-                    new ApiFutureCallback<O>() {
-                      @Override
-                      public void onFailure(Throwable t) {
-                        res.setException(t);
-                      }
+          () -> {
+            try {
+              ApiFuture<O> functionResult =
+                  Preconditions.checkNotNull(
+                      function.apply(txn, input),
+                      "AsyncTransactionFunction returned <null>. Did you mean to return ApiFutures.immediateFuture(null)?");
+              ApiFutures.addCallback(
+                  functionResult,
+                  new ApiFutureCallback<O>() {
+                    @Override
+                    public void onFailure(Throwable t) {
+                      res.setException(t);
+                    }
 
-                      @Override
-                      public void onSuccess(O result) {
-                        res.set(result);
-                      }
-                    },
-                    MoreExecutors.directExecutor());
-              } catch (Throwable t) {
-                res.setException(t);
-              }
+                    @Override
+                    public void onSuccess(O result) {
+                      res.set(result);
+                    }
+                  },
+                  MoreExecutors.directExecutor());
+            } catch (Throwable t) {
+              res.setException(t);
             }
           });
       return res;

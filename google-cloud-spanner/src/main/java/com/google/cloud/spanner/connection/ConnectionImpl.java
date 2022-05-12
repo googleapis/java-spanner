@@ -22,10 +22,15 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
@@ -35,21 +40,25 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
-import com.google.cloud.spanner.connection.StatementParser.StatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.threeten.bp.Instant;
 
 /** Implementation for {@link Connection}, the generic Spanner connection API (not JDBC). */
@@ -74,7 +83,7 @@ class ConnectionImpl implements Connection {
 
   private volatile LeakedConnectionException leakedException = new LeakedConnectionException();
   private final SpannerPool spannerPool;
-  private final StatementParser parser = StatementParser.INSTANCE;
+  private AbstractStatementParser statementParser;
   /**
    * The {@link ConnectionStatementExecutor} is responsible for translating parsed {@link
    * ClientSideStatement}s into actual method calls on this {@link ConnectionImpl}. I.e. the {@link
@@ -114,7 +123,7 @@ class ConnectionImpl implements Connection {
   enum BatchMode {
     NONE,
     DDL,
-    DML;
+    DML
   }
 
   /**
@@ -179,11 +188,12 @@ class ConnectionImpl implements Connection {
   private DatabaseClient dbClient;
   private boolean autocommit;
   private boolean readOnly;
+  private boolean returnCommitStats;
 
   private UnitOfWork currentUnitOfWork = null;
   /**
-   * The {@link ConnectionImpl#inTransaction} field is only used in autocommit mode to indicate that
-   * the user has explicitly started a transaction.
+   * This field is only used in autocommit mode to indicate that the user has explicitly started a
+   * transaction.
    */
   private boolean inTransaction = false;
   /**
@@ -200,6 +210,10 @@ class ConnectionImpl implements Connection {
   private AutocommitDmlMode autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
   private TimestampBound readOnlyStaleness = TimestampBound.strong();
   private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
+  private RpcPriority rpcPriority = null;
+
+  private String transactionTag;
+  private String statementTag;
 
   /** Create a connection and register it in the SpannerPool. */
   ConnectionImpl(ConnectionOptions options) {
@@ -208,11 +222,16 @@ class ConnectionImpl implements Connection {
     this.spannerPool = SpannerPool.INSTANCE;
     this.options = options;
     this.spanner = spannerPool.getSpanner(options, this);
+    if (options.isAutoConfigEmulator()) {
+      EmulatorUtil.maybeCreateInstanceAndDatabase(spanner, options.getDatabaseId());
+    }
     this.dbClient = spanner.getDatabaseClient(options.getDatabaseId());
     this.retryAbortsInternally = options.isRetryAbortsInternally();
     this.readOnly = options.isReadOnly();
     this.autocommit = options.isAutocommit();
     this.queryOptions = this.queryOptions.toBuilder().mergeFrom(options.getQueryOptions()).build();
+    this.rpcPriority = options.getRPCPriority();
+    this.returnCommitStats = options.isReturnCommitStats();
     this.ddlClient = createDdlClient();
     setDefaultTransactionOptions();
   }
@@ -228,8 +247,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(spannerPool);
     Preconditions.checkNotNull(ddlClient);
     Preconditions.checkNotNull(dbClient);
-    this.statementExecutor =
-        new StatementExecutor(Collections.<StatementExecutionInterceptor>emptyList());
+    this.statementExecutor = new StatementExecutor(Collections.emptyList());
     this.spannerPool = spannerPool;
     this.options = options;
     this.spanner = spannerPool.getSpanner(options, this);
@@ -237,7 +255,13 @@ class ConnectionImpl implements Connection {
     this.dbClient = dbClient;
     setReadOnly(options.isReadOnly());
     setAutocommit(options.isAutocommit());
+    setReturnCommitStats(options.isReturnCommitStats());
     setDefaultTransactionOptions();
+  }
+
+  @VisibleForTesting
+  Spanner getSpanner() {
+    return this.spanner;
   }
 
   private DdlClient createDdlClient() {
@@ -248,24 +272,44 @@ class ConnectionImpl implements Connection {
         .build();
   }
 
+  private AbstractStatementParser getStatementParser() {
+    if (this.statementParser == null) {
+      this.statementParser = AbstractStatementParser.getInstance(dbClient.getDialect());
+    }
+    return this.statementParser;
+  }
+
   @Override
   public void close() {
-    if (!isClosed()) {
-      try {
-        if (isTransactionStarted()) {
-          try {
-            rollback();
-          } catch (Exception e) {
-            // Ignore as we are closing the connection.
-          }
-        }
-        statementExecutor.shutdownNow();
-        spannerPool.removeConnection(options, this);
-        leakedException = null;
-      } finally {
-        this.closed = true;
-      }
+    try {
+      closeAsync().get(10L, TimeUnit.SECONDS);
+    } catch (SpannerException | InterruptedException | ExecutionException | TimeoutException e) {
+      // ignore and continue to close the connection.
+    } finally {
+      statementExecutor.shutdownNow();
     }
+  }
+
+  public ApiFuture<Void> closeAsync() {
+    if (!isClosed()) {
+      List<ApiFuture<Void>> futures = new ArrayList<>();
+      if (isTransactionStarted()) {
+        futures.add(rollbackAsync());
+      }
+      // Try to wait for the current statement to finish (if any) before we actually close the
+      // connection.
+      this.closed = true;
+      // Add a no-op statement to the execute. Once this has been executed, we know that all
+      // preceding statements have also been executed, as the executor is single-threaded and
+      // executes all statements in order of submitting.
+      futures.add(statementExecutor.submit(() -> null));
+      statementExecutor.shutdown();
+      leakedException = null;
+      spannerPool.removeConnection(options, this);
+      return ApiFutures.transform(
+          ApiFutures.allAsList(futures), ignored -> null, MoreExecutors.directExecutor());
+    }
+    return ApiFutures.immediateFuture(null);
   }
 
   /** Get the current unit-of-work type of this connection. */
@@ -286,6 +330,16 @@ class ConnectionImpl implements Connection {
   /** Get the call stack from when the {@link Connection} was opened. */
   LeakedConnectionException getLeakedException() {
     return leakedException;
+  }
+
+  @Override
+  public Dialect getDialect() {
+    return dbClient.getDialect();
+  }
+
+  @Override
+  public DatabaseClient getDatabaseClient() {
+    return dbClient;
   }
 
   @Override
@@ -412,6 +466,32 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
+  public void setOptimizerStatisticsPackage(String optimizerStatisticsPackage) {
+    Preconditions.checkNotNull(optimizerStatisticsPackage);
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    this.queryOptions =
+        queryOptions.toBuilder().setOptimizerStatisticsPackage(optimizerStatisticsPackage).build();
+  }
+
+  @Override
+  public String getOptimizerStatisticsPackage() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.queryOptions.getOptimizerStatisticsPackage();
+  }
+
+  @Override
+  public void setRPCPriority(RpcPriority rpcPriority) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    this.rpcPriority = rpcPriority;
+  }
+
+  @Override
+  public RpcPriority getRPCPriority() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.rpcPriority;
+  }
+
+  @Override
   public void setStatementTimeout(long timeout, TimeUnit unit) {
     Preconditions.checkArgument(timeout > 0L, "Zero or negative timeout values are not allowed");
     Preconditions.checkArgument(
@@ -474,6 +554,47 @@ class ConnectionImpl implements Connection {
 
     this.transactionBeginMarked = true;
     this.unitOfWorkType = UnitOfWorkType.of(transactionMode);
+  }
+
+  @Override
+  public String getTransactionTag() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(!isDdlBatchActive(), "This connection is in a DDL batch");
+    return transactionTag;
+  }
+
+  @Override
+  public void setTransactionTag(String tag) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Cannot set transaction tag while in a batch");
+    ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(),
+        "The transaction tag cannot be set after the transaction has started");
+    ConnectionPreconditions.checkState(
+        getTransactionMode() == TransactionMode.READ_WRITE_TRANSACTION,
+        "Transaction tag can only be set for a read/write transaction");
+
+    this.transactionBeginMarked = true;
+    this.transactionTag = tag;
+  }
+
+  @Override
+  public String getStatementTag() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Statement tags are not allowed inside a batch");
+    return statementTag;
+  }
+
+  @Override
+  public void setStatementTag(String tag) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Statement tags are not allowed inside a batch");
+
+    this.statementTag = tag;
   }
 
   /**
@@ -574,6 +695,31 @@ class ConnectionImpl implements Connection {
         : this.currentUnitOfWork.getCommitTimestampOrNull();
   }
 
+  @Override
+  public CommitResponse getCommitResponse() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        this.currentUnitOfWork != null, "There is no transaction on this connection");
+    return this.currentUnitOfWork.getCommitResponse();
+  }
+
+  CommitResponse getCommitResponseOrNull() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.currentUnitOfWork == null ? null : this.currentUnitOfWork.getCommitResponseOrNull();
+  }
+
+  @Override
+  public void setReturnCommitStats(boolean returnCommitStats) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    this.returnCommitStats = returnCommitStats;
+  }
+
+  @Override
+  public boolean isReturnCommitStats() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.returnCommitStats;
+  }
+
   /** Resets this connection to its default transaction options. */
   private void setDefaultTransactionOptions() {
     if (transactionStack.isEmpty()) {
@@ -582,6 +728,7 @@ class ConnectionImpl implements Connection {
               ? UnitOfWorkType.READ_ONLY_TRANSACTION
               : UnitOfWorkType.READ_WRITE_TRANSACTION;
       batchMode = BatchMode.NONE;
+      transactionTag = null;
     } else {
       popUnitOfWorkFromTransactionStack();
     }
@@ -611,8 +758,8 @@ class ConnectionImpl implements Connection {
   }
 
   /** Internal interface for ending a transaction (commit/rollback). */
-  private static interface EndTransactionMethod {
-    public ApiFuture<Void> endAsync(UnitOfWork t);
+  private interface EndTransactionMethod {
+    ApiFuture<Void> endAsync(UnitOfWork t);
   }
 
   private static final class Commit implements EndTransactionMethod {
@@ -656,6 +803,8 @@ class ConnectionImpl implements Connection {
   private ApiFuture<Void> endCurrentTransactionAsync(EndTransactionMethod endTransactionMethod) {
     ConnectionPreconditions.checkState(!isBatchActive(), "This connection has an active batch");
     ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
+    ConnectionPreconditions.checkState(
+        statementTag == null, "Statement tags are not supported for COMMIT or ROLLBACK");
     ApiFuture<Void> res;
     try {
       if (isTransactionStarted()) {
@@ -678,7 +827,7 @@ class ConnectionImpl implements Connection {
   public StatementResult execute(Statement statement) {
     Preconditions.checkNotNull(statement);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(statement, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(statement, this.queryOptions);
     switch (parsedStatement.getType()) {
       case CLIENT_SIDE:
         return parsedStatement
@@ -703,7 +852,7 @@ class ConnectionImpl implements Connection {
   public AsyncStatementResult executeAsync(Statement statement) {
     Preconditions.checkNotNull(statement);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(statement, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(statement, this.queryOptions);
     switch (parsedStatement.getType()) {
       case CLIENT_SIDE:
         return AsyncStatementResultImpl.of(
@@ -751,7 +900,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(query);
     Preconditions.checkNotNull(analyzeMode);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(query, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
     if (parsedStatement.isQuery()) {
       switch (parsedStatement.getType()) {
         case CLIENT_SIDE:
@@ -776,7 +925,7 @@ class ConnectionImpl implements Connection {
       Statement query, AnalyzeMode analyzeMode, QueryOption... options) {
     Preconditions.checkNotNull(query);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(query, this.queryOptions);
+    ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
     if (parsedStatement.isQuery()) {
       switch (parsedStatement.getType()) {
         case CLIENT_SIDE:
@@ -804,7 +953,7 @@ class ConnectionImpl implements Connection {
   public long executeUpdate(Statement update) {
     Preconditions.checkNotNull(update);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(update);
+    ParsedStatement parsedStatement = getStatementParser().parse(update);
     if (parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case UPDATE:
@@ -824,7 +973,7 @@ class ConnectionImpl implements Connection {
   public ApiFuture<Long> executeUpdateAsync(Statement update) {
     Preconditions.checkNotNull(update);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ParsedStatement parsedStatement = parser.parse(update);
+    ParsedStatement parsedStatement = getStatementParser().parse(update);
     if (parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case UPDATE:
@@ -848,7 +997,7 @@ class ConnectionImpl implements Connection {
     // Check that there are only DML statements in the input.
     List<ParsedStatement> parsedStatements = new LinkedList<>();
     for (Statement update : updates) {
-      ParsedStatement parsedStatement = parser.parse(update);
+      ParsedStatement parsedStatement = getStatementParser().parse(update);
       switch (parsedStatement.getType()) {
         case UPDATE:
           parsedStatements.add(parsedStatement);
@@ -874,7 +1023,7 @@ class ConnectionImpl implements Connection {
     // Check that there are only DML statements in the input.
     List<ParsedStatement> parsedStatements = new LinkedList<>();
     for (Statement update : updates) {
-      ParsedStatement parsedStatement = parser.parse(update);
+      ParsedStatement parsedStatement = getStatementParser().parse(update);
       switch (parsedStatement.getType()) {
         case UPDATE:
           parsedStatements.add(parsedStatement);
@@ -893,6 +1042,60 @@ class ConnectionImpl implements Connection {
     return internalExecuteBatchUpdateAsync(parsedStatements);
   }
 
+  private QueryOption[] mergeQueryStatementTag(QueryOption... options) {
+    if (this.statementTag != null) {
+      // Shortcut for the most common scenario.
+      if (options == null || options.length == 0) {
+        options = new QueryOption[] {Options.tag(statementTag)};
+      } else {
+        options = Arrays.copyOf(options, options.length + 1);
+        options[options.length - 1] = Options.tag(statementTag);
+      }
+      this.statementTag = null;
+    }
+    return options;
+  }
+
+  private QueryOption[] mergeQueryRequestOptions(QueryOption... options) {
+    if (this.rpcPriority != null) {
+      // Shortcut for the most common scenario.
+      if (options == null || options.length == 0) {
+        options = new QueryOption[] {Options.priority(this.rpcPriority)};
+      } else {
+        options = Arrays.copyOf(options, options.length + 1);
+        options[options.length - 1] = Options.priority(this.rpcPriority);
+      }
+    }
+    return options;
+  }
+
+  private UpdateOption[] mergeUpdateStatementTag(UpdateOption... options) {
+    if (this.statementTag != null) {
+      // Shortcut for the most common scenario.
+      if (options == null || options.length == 0) {
+        options = new UpdateOption[] {Options.tag(statementTag)};
+      } else {
+        options = Arrays.copyOf(options, options.length + 1);
+        options[options.length - 1] = Options.tag(statementTag);
+      }
+      this.statementTag = null;
+    }
+    return options;
+  }
+
+  private UpdateOption[] mergeUpdateRequestOptions(UpdateOption... options) {
+    if (this.rpcPriority != null) {
+      // Shortcut for the most common scenario.
+      if (options == null || options.length == 0) {
+        options = new UpdateOption[] {Options.priority(this.rpcPriority)};
+      } else {
+        options = Arrays.copyOf(options, options.length + 1);
+        options[options.length - 1] = Options.priority(this.rpcPriority);
+      }
+    }
+    return options;
+  }
+
   private ResultSet internalExecuteQuery(
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
@@ -900,7 +1103,9 @@ class ConnectionImpl implements Connection {
     Preconditions.checkArgument(
         statement.getType() == StatementType.QUERY, "Statement must be a query");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    return get(transaction.executeQueryAsync(statement, analyzeMode, options));
+    return get(
+        transaction.executeQueryAsync(
+            statement, analyzeMode, mergeQueryRequestOptions(mergeQueryStatementTag(options))));
   }
 
   private AsyncResultSet internalExecuteQueryAsync(
@@ -911,21 +1116,26 @@ class ConnectionImpl implements Connection {
         statement.getType() == StatementType.QUERY, "Statement must be a query");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return ResultSets.toAsyncResultSet(
-        transaction.executeQueryAsync(statement, analyzeMode, options),
+        transaction.executeQueryAsync(
+            statement, analyzeMode, mergeQueryRequestOptions(mergeQueryStatementTag(options))),
         spanner.getAsyncExecutorProvider(),
         options);
   }
 
-  private ApiFuture<Long> internalExecuteUpdateAsync(final ParsedStatement update) {
+  private ApiFuture<Long> internalExecuteUpdateAsync(
+      final ParsedStatement update, UpdateOption... options) {
     Preconditions.checkArgument(
         update.getType() == StatementType.UPDATE, "Statement must be an update");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    return transaction.executeUpdateAsync(update);
+    return transaction.executeUpdateAsync(
+        update, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
   }
 
-  private ApiFuture<long[]> internalExecuteBatchUpdateAsync(List<ParsedStatement> updates) {
+  private ApiFuture<long[]> internalExecuteBatchUpdateAsync(
+      List<ParsedStatement> updates, UpdateOption... options) {
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    return transaction.executeBatchUpdateAsync(updates);
+    return transaction.executeBatchUpdateAsync(
+        updates, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
   }
 
   /**
@@ -940,7 +1150,8 @@ class ConnectionImpl implements Connection {
     return this.currentUnitOfWork;
   }
 
-  private UnitOfWork createNewUnitOfWork() {
+  @VisibleForTesting
+  UnitOfWork createNewUnitOfWork() {
     if (isAutocommit() && !isInTransaction() && !isInBatch()) {
       return SingleUseTransaction.newBuilder()
           .setDdlClient(ddlClient)
@@ -948,6 +1159,7 @@ class ConnectionImpl implements Connection {
           .setReadOnly(isReadOnly())
           .setReadOnlyStaleness(readOnlyStaleness)
           .setAutocommitDmlMode(autocommitDmlMode)
+          .setReturnCommitStats(returnCommitStats)
           .setStatementTimeout(statementTimeout)
           .withStatementExecutor(statementExecutor)
           .build();
@@ -959,14 +1171,19 @@ class ConnectionImpl implements Connection {
               .setReadOnlyStaleness(readOnlyStaleness)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
+              .setTransactionTag(transactionTag)
+              .setRpcPriority(rpcPriority)
               .build();
         case READ_WRITE_TRANSACTION:
           return ReadWriteTransaction.newBuilder()
               .setDatabaseClient(dbClient)
               .setRetryAbortsInternally(retryAbortsInternally)
+              .setReturnCommitStats(returnCommitStats)
               .setTransactionRetryListeners(transactionRetryListeners)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
+              .setTransactionTag(transactionTag)
+              .setRpcPriority(rpcPriority)
               .build();
         case DML_BATCH:
           // A DML batch can run inside the current transaction. It should therefore only
@@ -976,6 +1193,8 @@ class ConnectionImpl implements Connection {
               .setTransaction(currentUnitOfWork)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
+              .setStatementTag(statementTag)
+              .setRpcPriority(rpcPriority)
               .build();
         case DDL_BATCH:
           return DdlBatch.newBuilder()

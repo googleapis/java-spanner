@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 
@@ -25,6 +26,15 @@ import com.google.cloud.spanner.Options.UpdateOption;
  * instance of this is tied to a specific database.
  */
 public interface DatabaseClient {
+
+  /**
+   * Returns the SQL dialect that is used by the database.
+   *
+   * @return the SQL dialect that is used by the database.
+   */
+  default Dialect getDialect() {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
   /**
    * Writes the given mutations atomically to the database.
@@ -75,8 +85,20 @@ public interface DatabaseClient {
    *         .set("LastName")
    *         .to("Joel")
    *         .build();
-   * dbClient.writeWithOptions(Collections.singletonList(mutation));
+   * dbClient.writeWithOptions(
+   *         Collections.singletonList(mutation),
+   *         Options.priority(RpcPriority.HIGH));
    * }</pre>
+   *
+   * Options for a transaction can include:
+   *
+   * <ul>
+   *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not be
+   *       applied to any other requests on the transaction.
+   *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
+   *       {@link CommitResponse}.
+   * </ul>
    *
    * @return a response with the timestamp at which the write was committed
    */
@@ -138,8 +160,20 @@ public interface DatabaseClient {
    *         .set("LastName")
    *         .to("Joel")
    *         .build();
-   * dbClient.writeAtLeastOnce(Collections.singletonList(mutation));
+   * dbClient.writeAtLeastOnceWithOptions(
+   *         Collections.singletonList(mutation),
+   *         Options.priority(RpcPriority.LOW));
    * }</pre>
+   *
+   * Options for a transaction can include:
+   *
+   * <ul>
+   *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not be
+   *       applied to any other requests on the transaction.
+   *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
+   *       {@link CommitResponse}.
+   * </ul>
    *
    * @return a response with the timestamp at which the write was committed
    */
@@ -308,6 +342,16 @@ public interface DatabaseClient {
    *       }
    *     });
    * </code></pre>
+   *
+   * Options for a transaction can include:
+   *
+   * <ul>
+   *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not be
+   *       applied to any other requests on the transaction.
+   *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
+   *       {@link CommitResponse}.
+   * </ul>
    */
   TransactionRunner readWriteTransaction(TransactionOption... options);
 
@@ -321,23 +365,33 @@ public interface DatabaseClient {
    * <pre>{@code
    * long singerId = my_singer_id;
    * try (TransactionManager manager = dbClient.transactionManager()) {
-   *   TransactionContext txn = manager.begin();
+   *   TransactionContext transaction = manager.begin();
    *   while (true) {
    *     String column = "FirstName";
-   *     Struct row = txn.readRow("Singers", Key.of(singerId), Collections.singleton(column));
+   *     Struct row = transaction.readRow("Singers", Key.of(singerId), Collections.singleton(column));
    *     String name = row.getString(column);
-   *     txn.buffer(
+   *     transaction.buffer(
    *         Mutation.newUpdateBuilder("Singers").set(column).to(name.toUpperCase()).build());
    *     try {
    *       manager.commit();
    *       break;
    *     } catch (AbortedException e) {
-   *       Thread.sleep(e.getRetryDelayInMillis() / 1000);
-   *       txn = manager.resetForRetry();
+   *       Thread.sleep(e.getRetryDelayInMillis());
+   *       transaction = manager.resetForRetry();
    *     }
    *   }
    * }
    * }</pre>
+   *
+   * Options for a transaction can include:
+   *
+   * <ul>
+   *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not be
+   *       applied to any other requests on the transaction.
+   *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
+   *       {@link CommitResponse}.
+   * </ul>
    */
   TransactionManager transactionManager(TransactionOption... options);
 
@@ -353,24 +407,31 @@ public interface DatabaseClient {
    * AsyncRunner runner = client.runAsync();
    * ApiFuture<Long> rowCount =
    *     runner.runAsync(
-   *         new AsyncWork<Long>() {
-   *           @Override
-   *           public ApiFuture<Long> doWorkAsync(TransactionContext txn) {
-   *             String column = "FirstName";
-   *             Struct row =
-   *                 txn.readRow("Singers", Key.of(singerId), Collections.singleton("Name"));
-   *             String name = row.getString("Name");
-   *             return txn.executeUpdateAsync(
-   *                 Statement.newBuilder("UPDATE Singers SET Name=@name WHERE SingerId=@id")
-   *                     .bind("id")
-   *                     .to(singerId)
-   *                     .bind("name")
-   *                     .to(name.toUpperCase())
-   *                     .build());
-   *           }
+   *         () -> {
+   *           String column = "FirstName";
+   *           Struct row =
+   *               txn.readRow("Singers", Key.of(singerId), Collections.singleton("Name"));
+   *           String name = row.getString("Name");
+   *           return txn.executeUpdateAsync(
+   *               Statement.newBuilder("UPDATE Singers SET Name=@name WHERE SingerId=@id")
+   *                   .bind("id")
+   *                   .to(singerId)
+   *                   .bind("name")
+   *                   .to(name.toUpperCase())
+   *                   .build());
    *         },
    *         executor);
    * </code></pre>
+   *
+   * Options for a transaction can include:
+   *
+   * <ul>
+   *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not be
+   *       applied to any other requests on the transaction.
+   *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
+   *       {@link CommitResponse}.
+   * </ul>
    */
   AsyncRunner runAsync(TransactionOption... options);
 
@@ -379,86 +440,52 @@ public interface DatabaseClient {
    * lifecycle. This API is meant for advanced users. Most users should instead use the {@link
    * #runAsync()} API instead.
    *
-   * <p>Example of using {@link AsyncTransactionManager} with lambda expressions (Java 8 and
-   * higher).
+   * <p>Example of using {@link AsyncTransactionManager}.
    *
    * <pre>{@code
    * long singerId = 1L;
    * try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
-   *   TransactionContextFuture txnFut = manager.beginAsync();
+   *   TransactionContextFuture transactionFuture = manager.beginAsync();
    *   while (true) {
    *     String column = "FirstName";
    *     CommitTimestampFuture commitTimestamp =
-   *         txnFut
+   *         transactionFuture
    *             .then(
-   *                 (txn, __) ->
-   *                     txn.readRowAsync(
+   *                 (transaction, __) ->
+   *                     transaction.readRowAsync(
    *                         "Singers", Key.of(singerId), Collections.singleton(column)))
    *             .then(
-   *                 (txn, row) -> {
+   *                 (transaction, row) -> {
    *                   String name = row.getString(column);
-   *                   txn.buffer(
+   *                   return transaction.bufferAsync(
    *                       Mutation.newUpdateBuilder("Singers")
    *                           .set(column)
    *                           .to(name.toUpperCase())
    *                           .build());
-   *                   return ApiFutures.immediateFuture(null);
    *                 })
    *             .commitAsync();
    *     try {
    *       commitTimestamp.get();
    *       break;
    *     } catch (AbortedException e) {
-   *       Thread.sleep(e.getRetryDelayInMillis() / 1000);
-   *       txnFut = manager.resetForRetryAsync();
+   *       Thread.sleep(e.getRetryDelayInMillis());
+   *       transactionFuture = manager.resetForRetryAsync();
    *     }
    *   }
    * }
    * }</pre>
    *
-   * <p>Example of using {@link AsyncTransactionManager} (Java 7).
+   * Options for a transaction can include:
    *
-   * <pre>{@code
-   * final long singerId = 1L;
-   * try (AsyncTransactionManager manager = client().transactionManagerAsync()) {
-   *   TransactionContextFuture txn = manager.beginAsync();
-   *   while (true) {
-   *     final String column = "FirstName";
-   *     CommitTimestampFuture commitTimestamp =
-   *         txn.then(
-   *                 new AsyncTransactionFunction<Void, Struct>() {
-   *                   @Override
-   *                   public ApiFuture<Struct> apply(TransactionContext txn, Void input)
-   *                       throws Exception {
-   *                     return txn.readRowAsync(
-   *                         "Singers", Key.of(singerId), Collections.singleton(column));
-   *                   }
-   *                 })
-   *             .then(
-   *                 new AsyncTransactionFunction<Struct, Void>() {
-   *                   @Override
-   *                   public ApiFuture<Void> apply(TransactionContext txn, Struct input)
-   *                       throws Exception {
-   *                     String name = input.getString(column);
-   *                     txn.buffer(
-   *                         Mutation.newUpdateBuilder("Singers")
-   *                             .set(column)
-   *                             .to(name.toUpperCase())
-   *                             .build());
-   *                     return ApiFutures.immediateFuture(null);
-   *                   }
-   *                 })
-   *             .commitAsync();
-   *     try {
-   *       commitTimestamp.get();
-   *       break;
-   *     } catch (AbortedException e) {
-   *       Thread.sleep(e.getRetryDelayInMillis() / 1000);
-   *       txn = manager.resetForRetryAsync();
-   *     }
-   *   }
-   * }
-   * }</pre>
+   * <p>Options for a transaction can include:
+   *
+   * <ul>
+   *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
+   *       RpcPriority} to use for the commit request of the transaction. The priority will not be
+   *       applied to any other requests on the transaction.
+   *   <li>{@link Options#commitStats()}: Request that the server includes commit statistics in the
+   *       {@link CommitResponse}.
+   * </ul>
    */
   AsyncTransactionManager transactionManagerAsync(TransactionOption... options);
 
@@ -466,9 +493,9 @@ public interface DatabaseClient {
    * Returns the lower bound of rows modified by this DML statement.
    *
    * <p>The method will block until the update is complete. Running a DML statement with this method
-   * does not offer exactly once semantics, and therfore the DML statement should be idempotent. The
-   * DML statement must be fully-partitionable. Specifically, the statement must be expressible as
-   * the union of many statements which each access only a single row of the table. This is a
+   * does not offer exactly once semantics, and therefore the DML statement should be idempotent.
+   * The DML statement must be fully-partitionable. Specifically, the statement must be expressible
+   * as the union of many statements which each access only a single row of the table. This is a
    * Partitioned DML transaction in which a single Partitioned DML statement is executed.
    * Partitioned DML partitions the key space and runs the DML statement over each partition in
    * parallel using separate, internal transactions that commit independently. Partitioned DML

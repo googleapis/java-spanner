@@ -29,7 +29,6 @@ import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
-import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
@@ -192,19 +191,16 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
         connection.executeQueryAsync(Statement.of("SELECT COUNT(*) AS C FROM TEST WHERE ID=1"))) {
       rs.setCallback(
           executor,
-          new ReadyCallback() {
-            @Override
-            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-              while (true) {
-                switch (resultSet.tryNext()) {
-                  case DONE:
-                    return CallbackResponse.DONE;
-                  case NOT_READY:
-                    return CallbackResponse.CONTINUE;
-                  case OK:
-                    count.set(resultSet.getLong("C"));
-                    break;
-                }
+          resultSet -> {
+            while (true) {
+              switch (resultSet.tryNext()) {
+                case DONE:
+                  return CallbackResponse.DONE;
+                case NOT_READY:
+                  return CallbackResponse.CONTINUE;
+                case OK:
+                  count.set(resultSet.getLong("C"));
+                  break;
               }
             }
           });
@@ -327,25 +323,22 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
           connection.executeQueryAsync(Statement.of("SELECT COUNT(*) AS C FROM TEST WHERE ID=1"))) {
         rs.setCallback(
             executor,
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                try {
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case DONE:
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                      case OK:
-                        countAfterInsert.set(resultSet.getLong("C"));
-                        break;
-                    }
+            resultSet -> {
+              try {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case DONE:
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case OK:
+                      countAfterInsert.set(resultSet.getLong("C"));
+                      break;
                   }
-                } catch (Throwable t) {
-                  countAfterInsert.setException(t);
-                  return CallbackResponse.DONE;
                 }
+              } catch (Throwable t) {
+                countAfterInsert.setException(t);
+                return CallbackResponse.DONE;
               }
             });
       }
@@ -447,24 +440,21 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
           connection.executeQueryAsync(Statement.of("SELECT * FROM TEST WHERE ID=1"))) {
         rs.setCallback(
             executor,
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                try {
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case DONE:
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                      case OK:
-                        initialRecord.set(resultSet.getCurrentRowAsStruct());
-                    }
+            resultSet -> {
+              try {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case DONE:
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case OK:
+                      initialRecord.set(resultSet.getCurrentRowAsStruct());
                   }
-                } catch (Throwable t) {
-                  initialRecord.setException(t);
-                  return CallbackResponse.DONE;
                 }
+              } catch (Throwable t) {
+                initialRecord.setException(t);
+                return CallbackResponse.DONE;
               }
             });
       }
@@ -480,24 +470,21 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
           connection.executeQueryAsync(Statement.of("SELECT * FROM TEST WHERE ID=1"))) {
         rs.setCallback(
             executor,
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                try {
-                  while (true) {
-                    switch (resultSet.tryNext()) {
-                      case DONE:
-                        return CallbackResponse.DONE;
-                      case NOT_READY:
-                        return CallbackResponse.CONTINUE;
-                      case OK:
-                        secondRecord.set(resultSet.getCurrentRowAsStruct());
-                    }
+            resultSet -> {
+              try {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case DONE:
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    case OK:
+                      secondRecord.set(resultSet.getCurrentRowAsStruct());
                   }
-                } catch (Throwable t) {
-                  secondRecord.setException(t);
-                  return CallbackResponse.DONE;
                 }
+              } catch (Throwable t) {
+                secondRecord.setException(t);
+                return CallbackResponse.DONE;
               }
             });
       }
@@ -565,18 +552,15 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
         // do nothing, just consume the result set
         rs.setCallback(
             executor,
-            new ReadyCallback() {
-              @Override
-              public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                while (true) {
-                  switch (resultSet.tryNext()) {
-                    case DONE:
-                      return CallbackResponse.DONE;
-                    case NOT_READY:
-                      return CallbackResponse.CONTINUE;
-                    case OK:
-                      break;
-                  }
+            resultSet -> {
+              while (true) {
+                switch (resultSet.tryNext()) {
+                  case DONE:
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  case OK:
+                    break;
                 }
               }
             });
@@ -611,18 +595,15 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
         get(
             rs.setCallback(
                 executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    while (true) {
-                      switch (resultSet.tryNext()) {
-                        case DONE:
-                          return CallbackResponse.DONE;
-                        case NOT_READY:
-                          return CallbackResponse.CONTINUE;
-                        case OK:
-                          break;
-                      }
+                resultSet -> {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case DONE:
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      case OK:
+                        break;
                     }
                   }
                 }));
@@ -670,18 +651,15 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
         get(
             rs.setCallback(
                 executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    while (true) {
-                      switch (resultSet.tryNext()) {
-                        case DONE:
-                          return CallbackResponse.DONE;
-                        case NOT_READY:
-                          return CallbackResponse.CONTINUE;
-                        case OK:
-                          break;
-                      }
+                resultSet -> {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case DONE:
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      case OK:
+                        break;
                     }
                   }
                 }));
@@ -727,18 +705,15 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
         get(
             rs.setCallback(
                 executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    while (true) {
-                      switch (resultSet.tryNext()) {
-                        case DONE:
-                          return CallbackResponse.DONE;
-                        case NOT_READY:
-                          return CallbackResponse.CONTINUE;
-                        case OK:
-                          break;
-                      }
+                resultSet -> {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case DONE:
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      case OK:
+                        break;
                     }
                   }
                 }));
@@ -795,34 +770,31 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
         ApiFuture<Void> finished =
             rs.setCallback(
                 executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    try {
-                      while (true) {
-                        switch (resultSet.tryNext()) {
-                          case DONE:
-                            return CallbackResponse.DONE;
-                          case NOT_READY:
-                            return CallbackResponse.CONTINUE;
-                          case OK:
-                            count.incrementAndGet();
-                            lastSeenId.set(resultSet.getLong("ID"));
-                            break;
-                        }
-                        if (count.get() == 1) {
-                          // Let the other transaction proceed.
-                          latch1.countDown();
-                          // Wait until the transaction has been aborted and retried.
-                          if (!latch2.await(120L, TimeUnit.SECONDS)) {
-                            throw SpannerExceptionFactory.newSpannerException(
-                                ErrorCode.DEADLINE_EXCEEDED, "Timeout while waiting for latch2");
-                          }
+                resultSet -> {
+                  try {
+                    while (true) {
+                      switch (resultSet.tryNext()) {
+                        case DONE:
+                          return CallbackResponse.DONE;
+                        case NOT_READY:
+                          return CallbackResponse.CONTINUE;
+                        case OK:
+                          count.incrementAndGet();
+                          lastSeenId.set(resultSet.getLong("ID"));
+                          break;
+                      }
+                      if (count.get() == 1) {
+                        // Let the other transaction proceed.
+                        latch1.countDown();
+                        // Wait until the transaction has been aborted and retried.
+                        if (!latch2.await(120L, TimeUnit.SECONDS)) {
+                          throw SpannerExceptionFactory.newSpannerException(
+                              ErrorCode.DEADLINE_EXCEEDED, "Timeout while waiting for latch2");
                         }
                       }
-                    } catch (Throwable t) {
-                      throw SpannerExceptionFactory.asSpannerException(t);
                     }
+                  } catch (Throwable t) {
+                    throw SpannerExceptionFactory.asSpannerException(t);
                   }
                 });
         // Open a new connection and transaction and do an additional insert. This insert will be
@@ -885,19 +857,16 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
         ApiFuture<Void> finished =
             rs.setCallback(
                 executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    // do nothing, just consume the result set
-                    while (true) {
-                      switch (resultSet.tryNext()) {
-                        case DONE:
-                          return CallbackResponse.DONE;
-                        case NOT_READY:
-                          return CallbackResponse.CONTINUE;
-                        case OK:
-                          break;
-                      }
+                resultSet -> {
+                  // do nothing, just consume the result set
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case DONE:
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      case OK:
+                        break;
                     }
                   }
                 });
@@ -952,19 +921,16 @@ public class ITAsyncTransactionRetryTest extends ITAbstractSpannerTest {
         ApiFuture<Void> finished =
             rs.setCallback(
                 executor,
-                new ReadyCallback() {
-                  @Override
-                  public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-                    // do nothing, just consume the result set
-                    while (true) {
-                      switch (resultSet.tryNext()) {
-                        case DONE:
-                          return CallbackResponse.DONE;
-                        case NOT_READY:
-                          return CallbackResponse.CONTINUE;
-                        case OK:
-                          break;
-                      }
+                resultSet -> {
+                  // do nothing, just consume the result set
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case DONE:
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      case OK:
+                        break;
                     }
                   }
                 });

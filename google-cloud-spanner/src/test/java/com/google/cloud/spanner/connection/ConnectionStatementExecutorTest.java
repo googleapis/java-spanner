@@ -19,23 +19,33 @@ package com.google.cloud.spanner.connection;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.protobuf.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class ConnectionStatementExecutorTest {
+  @Parameter public Dialect dialect;
+
+  @Parameters(name = "dialect = {0}")
+  public static Object[] data() {
+    return Dialect.values();
+  }
 
   private ConnectionImpl connection;
   private ConnectionStatementExecutorImpl subject;
@@ -45,6 +55,7 @@ public class ConnectionStatementExecutorTest {
     connection = mock(ConnectionImpl.class);
     when(connection.getAutocommitDmlMode()).thenReturn(AutocommitDmlMode.TRANSACTIONAL);
     when(connection.getReadOnlyStaleness()).thenReturn(TimestampBound.strong());
+    when(connection.getDialect()).thenReturn(dialect);
     subject = new ConnectionStatementExecutorImpl(connection);
   }
 
@@ -99,6 +110,12 @@ public class ConnectionStatementExecutorTest {
   public void testStatementGetOptimizerVersion() {
     subject.statementShowOptimizerVersion();
     verify(connection).getOptimizerVersion();
+  }
+
+  @Test
+  public void testStatementGetOptimizerStatisticsPackage() {
+    subject.statementShowOptimizerStatisticsPackage();
+    verify(connection).getOptimizerStatisticsPackage();
   }
 
   @Test
@@ -184,6 +201,14 @@ public class ConnectionStatementExecutorTest {
   }
 
   @Test
+  public void testStatementSetOptimizerStatisticsPackage() {
+    subject.statementSetOptimizerStatisticsPackage("custom-package");
+    verify(connection).setOptimizerStatisticsPackage("custom-package");
+    subject.statementSetOptimizerStatisticsPackage("");
+    verify(connection).setOptimizerStatisticsPackage("");
+  }
+
+  @Test
   public void testStatementSetStatementTimeout() {
     subject.statementSetStatementTimeout(Duration.newBuilder().setNanos(100).build());
     verify(connection).setStatementTimeout(100L, TimeUnit.NANOSECONDS);
@@ -195,5 +220,21 @@ public class ConnectionStatementExecutorTest {
     verify(connection).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
     subject.statementSetTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
     verify(connection).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
+  }
+
+  @Test
+  public void testStatementSetPgTransactionMode() {
+    subject.statementSetPgTransactionMode(PgTransactionMode.READ_ONLY_TRANSACTION);
+    verify(connection).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
+    subject.statementSetPgTransactionMode(PgTransactionMode.READ_WRITE_TRANSACTION);
+    verify(connection).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
+  }
+
+  @Test
+  public void testStatementSetPgTransactionModeNoOp() {
+    subject.statementSetPgTransactionMode(PgTransactionMode.ISOLATION_LEVEL_DEFAULT);
+    subject.statementSetPgTransactionMode(PgTransactionMode.ISOLATION_LEVEL_SERIALIZABLE);
+    verify(connection, never()).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
+    verify(connection, never()).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
   }
 }

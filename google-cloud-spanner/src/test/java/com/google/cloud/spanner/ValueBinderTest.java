@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultJson;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
@@ -27,6 +28,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -34,6 +36,10 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link com.google.cloud.spanner.ValueBinder}. */
 @RunWith(JUnit4.class)
 public class ValueBinderTest {
+  private static final String JSON_METHOD_NAME = "json";
+  private static final String PG_NUMERIC_METHOD_NAME = "pgNumeric";
+  public static final String DEFAULT_PG_NUMERIC = "1.23";
+
   private Value lastValue;
   private int lastReturnValue;
   private ValueBinder<Integer> binder = new BinderImpl();
@@ -47,12 +53,16 @@ public class ValueBinderTest {
   }
 
   @Test
-  public void reflection() throws InvocationTargetException, IllegalAccessException {
+  public void reflection()
+      throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
     // Test that every Value factory method has a counterpart in ValueBinder, and that invoking it
-    // produces the expected Value.
+    // produces the expected Value. The only exception is for untyped values, which must be
+    // constructed manually as an untyped value and then assigned as a parameter.
     for (Method method : Value.class.getMethods()) {
       if (!Modifier.isStatic(method.getModifiers())
-          || !method.getReturnType().equals(Value.class)) {
+          || !method.getReturnType().equals(Value.class)
+          || (method.getParameterTypes().length > 0
+              && method.getParameterTypes()[0].equals(com.google.protobuf.Value.class))) {
         continue;
       }
       Method binderMethod = findBinderMethod(method);
@@ -67,8 +77,9 @@ public class ValueBinderTest {
           // Array of structs.
           assertThat(binderMethod.getParameterTypes()).hasLength(2);
 
-          Value expected = (Value) method.invoke(Value.class, structType, Arrays.asList(struct));
-          assertThat(binderMethod.invoke(binder, structType, Arrays.asList(struct)))
+          Value expected =
+              (Value) method.invoke(Value.class, structType, Collections.singletonList(struct));
+          assertThat(binderMethod.invoke(binder, structType, Collections.singletonList(struct)))
               .isEqualTo(lastReturnValue);
           assertThat(lastValue).isEqualTo(expected);
 
@@ -109,17 +120,41 @@ public class ValueBinderTest {
       } else if (binderMethod.getParameterTypes().length == 1) {
         // Test unary null.
         if (!binderMethod.getParameterTypes()[0].isPrimitive()) {
+          if (method.getName().equalsIgnoreCase(JSON_METHOD_NAME)) {
+            // Special case for json to change the method from ValueBinder.to(String) to
+            // ValueBinder.to(Value)
+            binderMethod = ValueBinder.class.getMethod("to", Value.class);
+            assertThat(binderMethod.invoke(binder, Value.json(null))).isEqualTo(lastReturnValue);
+          } else if (method.getName().equalsIgnoreCase(PG_NUMERIC_METHOD_NAME)) {
+            binderMethod = ValueBinder.class.getMethod("to", Value.class);
+            assertThat(binderMethod.invoke(binder, Value.pgNumeric(null)))
+                .isEqualTo(lastReturnValue);
+          } else {
+            assertThat(binderMethod.invoke(binder, (Object) null)).isEqualTo(lastReturnValue);
+          }
           Value expected = (Value) method.invoke(Value.class, (Object) null);
-          assertThat(binderMethod.invoke(binder, (Object) null)).isEqualTo(lastReturnValue);
           assertThat(lastValue).isEqualTo(expected);
 
           assertThat(binder.to(expected)).isEqualTo(lastReturnValue);
           assertThat(lastValue).isEqualTo(expected);
         }
         // Test unary non-null.
-        Object defaultObject = DefaultValues.getDefault(method.getGenericParameterTypes()[0]);
+        Object defaultObject;
+        if (method.getName().equalsIgnoreCase(JSON_METHOD_NAME)) {
+          defaultObject = defaultJson();
+          binderMethod = ValueBinder.class.getMethod("to", Value.class);
+          assertThat(binderMethod.invoke(binder, Value.json(defaultJson())))
+              .isEqualTo(lastReturnValue);
+        } else if (method.getName().equalsIgnoreCase(PG_NUMERIC_METHOD_NAME)) {
+          defaultObject = DEFAULT_PG_NUMERIC;
+          binderMethod = ValueBinder.class.getMethod("to", Value.class);
+          assertThat(binderMethod.invoke(binder, Value.pgNumeric(DEFAULT_PG_NUMERIC)))
+              .isEqualTo(lastReturnValue);
+        } else {
+          defaultObject = DefaultValues.getDefault(method.getGenericParameterTypes()[0]);
+          assertThat(binderMethod.invoke(binder, defaultObject)).isEqualTo(lastReturnValue);
+        }
         Value expected = (Value) method.invoke(Value.class, defaultObject);
-        assertThat(binderMethod.invoke(binder, defaultObject)).isEqualTo(lastReturnValue);
         assertThat(lastValue).isEqualTo(expected);
 
         assertThat(binder.to(expected)).isEqualTo(lastReturnValue);
@@ -193,6 +228,10 @@ public class ValueBinderTest {
       return "x";
     }
 
+    public static String defaultJson() {
+      return "{\"color\":\"red\",\"value\":\"#f00\"}";
+    }
+
     public static ByteArray defaultByteArray() {
       return ByteArray.copyFrom(new byte[] {'x'});
     }
@@ -235,6 +274,10 @@ public class ValueBinderTest {
 
     public static Iterable<String> defaultStringIterable() {
       return Arrays.asList("a", "b");
+    }
+
+    public static Iterable<String> defaultJsonIterable() {
+      return Arrays.asList("{}", "[]", "{\"color\":\"red\",\"value\":\"#f00\"}");
     }
 
     public static Iterable<ByteArray> defaultByteArrayIterable() {

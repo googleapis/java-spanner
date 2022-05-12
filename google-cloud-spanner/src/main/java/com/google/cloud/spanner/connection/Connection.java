@@ -22,9 +22,13 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.CommitResponse;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
@@ -32,6 +36,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -95,6 +100,11 @@ import java.util.concurrent.TimeUnit;
  *   <li><code>
  *       SET OPTIMIZER_VERSION='&lt;version&gt;' | 'LATEST'
  *       </code>: Sets the value of <code>OPTIMIZER_VERSION</code> for this connection.
+ *   <li><code>SHOW OPTIMIZER_STATISTICS_PACKAGE</code>: Returns the current value of <code>
+ *       OPTIMIZER_STATISTICS_PACKAGE</code> of this connection as a {@link ResultSet}
+ *   <li><code>
+ *       SET OPTIMIZER_STATISTICS_PACKAGE='&lt;package&gt;' | ''
+ *       </code>: Sets the value of <code>OPTIMIZER_STATISTICS_PACKAGE</code> for this connection.
  *   <li><code>BEGIN [TRANSACTION]</code>: Begins a new transaction. This statement is optional when
  *       the connection is not in autocommit mode, as a new transaction will automatically be
  *       started when a query or update statement is issued. In autocommit mode, this statement will
@@ -138,9 +148,18 @@ import java.util.concurrent.TimeUnit;
  */
 @InternalApi
 public interface Connection extends AutoCloseable {
-  /** Closes this connection. This is a no-op if the {@link Connection} has alread been closed. */
+
+  /** Closes this connection. This is a no-op if the {@link Connection} has already been closed. */
   @Override
   void close();
+
+  /**
+   * Closes this connection without blocking. This is a no-op if the {@link Connection} has already
+   * been closed. The {@link Connection} is no longer usable directly after calling this method. The
+   * returned {@link ApiFuture} is done when the running statement(s) (if any) on the connection
+   * have finished.
+   */
+  ApiFuture<Void> closeAsync();
 
   /** @return <code>true</code> if this connection has been closed. */
   boolean isClosed();
@@ -316,6 +335,52 @@ public interface Connection extends AutoCloseable {
   TransactionMode getTransactionMode();
 
   /**
+   * Sets the transaction tag to use for the current transaction. This method may only be called
+   * when in a transaction and before any statements have been executed in the transaction.
+   *
+   * <p>The tag will be set as the transaction tag of all statements during the transaction, and as
+   * the transaction tag of the commit.
+   *
+   * <p>The transaction tag will automatically be cleared after the transaction has ended.
+   *
+   * @param tag The tag to use.
+   */
+  default void setTransactionTag(String tag) {
+    throw new UnsupportedOperationException();
+  }
+
+  /** @return The transaction tag of the current transaction. */
+  default String getTransactionTag() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Sets the statement tag to use for the next statement that is executed. The tag is automatically
+   * cleared after the statement is executed. Statement tags can be used both with autocommit=true
+   * and autocommit=false, and can be used for partitioned DML.
+   *
+   * <p>Statement tags are not allowed before COMMIT and ROLLBACK statements.
+   *
+   * <p>Statement tags are allowed before START BATCH DML statements and will be included in the
+   * {@link ExecuteBatchDmlRequest} that is sent to Spanner. Statement tags are not allowed inside a
+   * batch.
+   *
+   * @param tag The statement tag to use with the next statement that will be executed on this
+   *     connection.
+   */
+  default void setStatementTag(String tag) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * @return The statement tag that will be used with the next statement that is executed on this
+   *     connection.
+   */
+  default String getStatementTag() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
    * @return <code>true</code> if this connection will automatically retry read/write transactions
    *     that abort. This method may only be called when the connection is in read/write
    *     transactional mode and no transaction has been started yet.
@@ -437,6 +502,64 @@ public interface Connection extends AutoCloseable {
    * @return The query optimizer version that is currently used by this connection.
    */
   String getOptimizerVersion();
+
+  /**
+   * Sets the query optimizer statistics package
+   *
+   * @param optimizerStatisticsPackage The query optimizer statistics package to use. Must be a
+   *     string composed of letters, numbers, dashes and underscores or an empty string. The empty
+   *     string will instruct the connection to use the optimizer statistics package that is defined
+   *     the environment variable <code>SPANNER_OPTIMIZER_STATISTICS_PACKAGE</code>. If no value is
+   *     specified in the environment variable, the client level query optimizer is used. If none is
+   *     set, the default query optimizer of Cloud Spanner is used.
+   */
+  default void setOptimizerStatisticsPackage(String optimizerStatisticsPackage) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
+   * Gets the current query optimizer statistics package of this connection.
+   *
+   * @return The query optimizer statistics package that is currently used by this connection.
+   */
+  default String getOptimizerStatisticsPackage() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
+   * Sets whether this connection should request commit statistics from Cloud Spanner for read/write
+   * transactions and DML statements in autocommit mode.
+   */
+  void setReturnCommitStats(boolean returnCommitStats);
+
+  /** @return true if this connection requests commit statistics from Cloud Spanner */
+  boolean isReturnCommitStats();
+
+  /**
+   * Sets the priority to use for RPCs executed by this connection..
+   *
+   * @param rpcPriority The RPC priority to use.
+   *     <ul>
+   *       <li>{@link RpcPriority#HIGH} This specifies that the RPC's invocation will be of high
+   *           priority.
+   *       <li>{@link RpcPriority#MEDIUM} This specifies that the RPC's invocation will be of medium
+   *           priority.
+   *       <li>{@link RpcPriority#LOW} This specifies that the RPC's invocation will be of low
+   *           priority.
+   *     </ul>
+   */
+  default void setRPCPriority(RpcPriority rpcPriority) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
+   * Gets the current RPC priority of this connection.
+   *
+   * @return The RPC priority that is currently used by this connection.
+   */
+  default RpcPriority getRPCPriority() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
 
   /**
    * Commits the current transaction of this connection. All mutations that have been buffered
@@ -623,14 +746,25 @@ public interface Connection extends AutoCloseable {
 
   /**
    * @return the commit timestamp of the last {@link TransactionMode#READ_WRITE_TRANSACTION}
-   *     transaction. This method will throw a {@link SpannerException} if there is no last {@link
-   *     TransactionMode#READ_WRITE_TRANSACTION} transaction (i.e. the last transaction was a {@link
-   *     TransactionMode#READ_ONLY_TRANSACTION}), or if the last {@link
-   *     TransactionMode#READ_WRITE_TRANSACTION} transaction rolled back. It will also throw a
-   *     {@link SpannerException} if the last {@link TransactionMode#READ_WRITE_TRANSACTION}
-   *     transaction was empty when committed.
+   *     transaction. This method throws a {@link SpannerException} if there is no last {@link
+   *     TransactionMode#READ_WRITE_TRANSACTION} transaction. That is, if the last transaction was a
+   *     {@link TransactionMode#READ_ONLY_TRANSACTION}), or if the last {@link
+   *     TransactionMode#READ_WRITE_TRANSACTION} transaction rolled back. It also throws a {@link
+   *     SpannerException} if the last {@link TransactionMode#READ_WRITE_TRANSACTION} transaction
+   *     was empty when committed.
    */
   Timestamp getCommitTimestamp();
+
+  /**
+   * @return the {@link CommitResponse} of the last {@link TransactionMode#READ_WRITE_TRANSACTION}
+   *     transaction. This method throws a {@link SpannerException} if there is no last {@link
+   *     TransactionMode#READ_WRITE_TRANSACTION} transaction. That is, if the last transaction was a
+   *     {@link TransactionMode#READ_ONLY_TRANSACTION}), or if the last {@link
+   *     TransactionMode#READ_WRITE_TRANSACTION} transaction rolled back. It also throws a {@link
+   *     SpannerException} if the last {@link TransactionMode#READ_WRITE_TRANSACTION} transaction
+   *     was empty when committed.
+   */
+  CommitResponse getCommitResponse();
 
   /**
    * Starts a new DDL batch on this connection. A DDL batch allows several DDL statements to be
@@ -769,13 +903,6 @@ public interface Connection extends AutoCloseable {
    */
   ResultSet executeQuery(Statement query, QueryOption... options);
 
-  /**
-   * Same as {@link #executeQuery(Statement, QueryOption...)}, but is guaranteed to be non-blocking
-   * and returns the query result as an {@link AsyncResultSet}. See {@link
-   * AsyncResultSet#setCallback(java.util.concurrent.Executor,
-   * com.google.cloud.spanner.AsyncResultSet.ReadyCallback)} for more information on how to consume
-   * the results of the query asynchronously.
-   */
   /**
    * Executes the given statement asynchronously as a query and returns the result as an {@link
    * AsyncResultSet}. This method is guaranteed to be non-blocking. If the statement does not
@@ -973,6 +1100,17 @@ public interface Connection extends AutoCloseable {
    */
   void bufferedWrite(Iterable<Mutation> mutations);
 
+  /** The {@link Dialect} that is used by this {@link Connection}. */
+  default Dialect getDialect() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /** The {@link DatabaseClient} that is used by this {@link Connection}. */
+  @InternalApi
+  default DatabaseClient getDatabaseClient() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
   /**
    * This query option is used internally to indicate that a query is executed by the library itself
    * to fetch metadata. These queries are specifically allowed to be executed even when a DDL batch
@@ -981,7 +1119,7 @@ public interface Connection extends AutoCloseable {
    * <p>NOT INTENDED FOR EXTERNAL USE!
    */
   @InternalApi
-  public static final class InternalMetadataQuery implements QueryOption {
+  final class InternalMetadataQuery implements QueryOption {
     @InternalApi public static final InternalMetadataQuery INSTANCE = new InternalMetadataQuery();
 
     private InternalMetadataQuery() {}

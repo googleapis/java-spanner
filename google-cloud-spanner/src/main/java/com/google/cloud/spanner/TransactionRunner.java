@@ -30,6 +30,7 @@ import javax.annotation.Nullable;
  */
 public interface TransactionRunner {
   /** A unit of work to be performed in the context of a transaction. */
+  @FunctionalInterface
   interface TransactionCallable<T> {
     /**
      * Invoked by the library framework to perform a single attempt of a transaction. This method
@@ -73,6 +74,9 @@ public interface TransactionRunner {
    * {@link #run(TransactionCallable)} has returned normally.
    */
   Timestamp getCommitTimestamp();
+
+  /** Returns the {@link CommitResponse} of this transaction. */
+  CommitResponse getCommitResponse();
 
   /**
    * Allows overriding the default behaviour of blocking nested transactions.

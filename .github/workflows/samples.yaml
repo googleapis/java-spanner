@@ -12,3 +12,18 @@ jobs:
       - name: Run checkstyle
         run: mvn -P lint --quiet --batch-mode checkstyle:check
         working-directory: samples/snippets
+  compile:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [8, 11]
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-java@v1
+      with:
+        java-version: ${{matrix.java}}
+    - name: Compile Spanner
+      run: mvn clean install
+    - name: Compile samples
+      run: mvn compile
+      working-directory: samples

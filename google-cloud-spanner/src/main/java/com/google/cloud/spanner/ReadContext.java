@@ -221,5 +221,5 @@ public interface ReadContext extends AutoCloseable {
 
   /** Closes this read context and frees up the underlying resources. */
   @Override
-  public void close();
+  void close();
 }

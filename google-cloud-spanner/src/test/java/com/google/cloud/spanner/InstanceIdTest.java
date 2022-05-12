@@ -18,8 +18,8 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -42,11 +42,8 @@ public class InstanceIdTest {
 
   @Test
   public void badName() {
-    try {
-      InstanceId.of("bad name");
-      Assert.fail("Expected exception");
-    } catch (IllegalArgumentException e) {
-      assertNotNull(e.getMessage());
-    }
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> InstanceId.of("bad name"));
+    assertNotNull(e.getMessage());
   }
 }

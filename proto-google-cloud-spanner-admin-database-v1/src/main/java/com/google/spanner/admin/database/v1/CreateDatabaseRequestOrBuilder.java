@@ -149,4 +149,80 @@ public interface CreateDatabaseRequestOrBuilder
    * @return The bytes of the extraStatements at the given index.
    */
   com.google.protobuf.ByteString getExtraStatementsBytes(int index);
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The encryption configuration for the database. If this field is not
+   * specified, Cloud Spanner will encrypt/decrypt all data at rest using
+   * Google default encryption.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the encryptionConfig field is set.
+   */
+  boolean hasEncryptionConfig();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The encryption configuration for the database. If this field is not
+   * specified, Cloud Spanner will encrypt/decrypt all data at rest using
+   * Google default encryption.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The encryptionConfig.
+   */
+  com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The encryption configuration for the database. If this field is not
+   * specified, Cloud Spanner will encrypt/decrypt all data at rest using
+   * Google default encryption.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.EncryptionConfig encryption_config = 4 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder getEncryptionConfigOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The dialect of the Cloud Spanner Database.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for databaseDialect.
+   */
+  int getDatabaseDialectValue();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The dialect of the Cloud Spanner Database.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.database.v1.DatabaseDialect database_dialect = 5 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The databaseDialect.
+   */
+  com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,10 +74,10 @@ import org.junit.Test;
 
 @Generated("by gapic-generator-java")
 public class InstanceAdminClientTest {
-  private static MockServiceHelper mockServiceHelper;
-  private InstanceAdminClient client;
   private static MockInstanceAdmin mockInstanceAdmin;
+  private static MockServiceHelper mockServiceHelper;
   private LocalChannelProvider channelProvider;
+  private InstanceAdminClient client;
 
   @BeforeClass
   public static void startStaticServer() {
@@ -205,6 +205,7 @@ public class InstanceAdminClientTest {
             .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .addAllReplicas(new ArrayList<ReplicaInfo>())
+            .addAllLeaderOptions(new ArrayList<String>())
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
@@ -245,6 +246,7 @@ public class InstanceAdminClientTest {
             .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .addAllReplicas(new ArrayList<ReplicaInfo>())
+            .addAllLeaderOptions(new ArrayList<String>())
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
@@ -374,6 +376,7 @@ public class InstanceAdminClientTest {
             .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
+            .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
             .build();
@@ -417,6 +420,7 @@ public class InstanceAdminClientTest {
             .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
+            .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
             .build();
@@ -460,6 +464,7 @@ public class InstanceAdminClientTest {
             .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
+            .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
             .build();
@@ -517,6 +522,7 @@ public class InstanceAdminClientTest {
             .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
+            .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
             .build();
@@ -574,6 +580,7 @@ public class InstanceAdminClientTest {
             .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
+            .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
             .build();

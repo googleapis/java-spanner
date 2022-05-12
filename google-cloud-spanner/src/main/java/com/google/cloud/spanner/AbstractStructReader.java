@@ -22,6 +22,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -43,11 +44,19 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract String getStringInternal(int columnIndex);
 
+  protected String getJsonInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
   protected abstract ByteArray getBytesInternal(int columnIndex);
 
   protected abstract Timestamp getTimestampInternal(int columnIndex);
 
   protected abstract Date getDateInternal(int columnIndex);
+
+  protected Value getValueInternal(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
   protected abstract boolean[] getBooleanArrayInternal(int columnIndex);
 
@@ -64,6 +73,10 @@ public abstract class AbstractStructReader implements StructReader {
   protected abstract List<BigDecimal> getBigDecimalListInternal(int columnIndex);
 
   protected abstract List<String> getStringListInternal(int columnIndex);
+
+  protected List<String> getJsonListInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected abstract List<ByteArray> getBytesListInternal(int columnIndex);
 
@@ -147,15 +160,33 @@ public abstract class AbstractStructReader implements StructReader {
 
   @Override
   public String getString(int columnIndex) {
-    checkNonNullOfType(columnIndex, Type.string(), columnIndex);
+    checkNonNullOfTypes(
+        columnIndex,
+        Arrays.asList(Type.string(), Type.pgNumeric()),
+        columnIndex,
+        "STRING, NUMERIC");
     return getStringInternal(columnIndex);
   }
 
   @Override
   public String getString(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.string(), columnName);
+    checkNonNullOfTypes(
+        columnIndex, Arrays.asList(Type.string(), Type.pgNumeric()), columnName, "STRING, NUMERIC");
     return getStringInternal(columnIndex);
+  }
+
+  @Override
+  public String getJson(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.json(), columnIndex);
+    return getJsonInternal(columnIndex);
+  }
+
+  @Override
+  public String getJson(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.json(), columnName);
+    return getJsonInternal(columnIndex);
   }
 
   @Override
@@ -195,6 +226,18 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.date(), columnName);
     return getDateInternal(columnIndex);
+  }
+
+  @Override
+  public Value getValue(int columnIndex) {
+    checkNonNull(columnIndex, columnIndex);
+    return getValueInternal(columnIndex);
+  }
+
+  @Override
+  public Value getValue(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    return getValueInternal(columnIndex);
   }
 
   @Override
@@ -290,15 +333,36 @@ public abstract class AbstractStructReader implements StructReader {
 
   @Override
   public List<String> getStringList(int columnIndex) {
-    checkNonNullOfType(columnIndex, Type.array(Type.string()), columnIndex);
+    checkNonNullOfTypes(
+        columnIndex,
+        Arrays.asList(Type.array(Type.string()), Type.array(Type.pgNumeric())),
+        columnIndex,
+        "ARRAY<STRING>, ARRAY<NUMERIC>");
     return getStringListInternal(columnIndex);
   }
 
   @Override
   public List<String> getStringList(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.array(Type.string()), columnName);
+    checkNonNullOfTypes(
+        columnIndex,
+        Arrays.asList(Type.array(Type.string()), Type.array(Type.pgNumeric())),
+        columnName,
+        "ARRAY<STRING>, ARRAY<NUMERIC>");
     return getStringListInternal(columnIndex);
+  }
+
+  @Override
+  public List<String> getJsonList(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.array(Type.json()), columnIndex);
+    return getJsonListInternal(columnIndex);
+  }
+
+  @Override
+  public List<String> getJsonList(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.array(Type.json()), columnName);
+    return getJsonListInternal(columnIndex);
   }
 
   @Override
@@ -375,6 +439,21 @@ public abstract class AbstractStructReader implements StructReader {
         "Column %s is not of correct type: expected %s but was %s",
         columnNameForError,
         expectedType,
+        actualType);
+    checkNonNull(columnIndex, columnNameForError);
+  }
+
+  private void checkNonNullOfTypes(
+      int columnIndex,
+      List<Type> expectedTypes,
+      Object columnNameForError,
+      String expectedTypeNames) {
+    Type actualType = getColumnType(columnIndex);
+    checkState(
+        expectedTypes.contains(actualType),
+        "Column %s is not of correct type: expected one of [%s] but was %s",
+        columnNameForError,
+        expectedTypeNames,
         actualType);
     checkNonNull(columnIndex, columnNameForError);
   }

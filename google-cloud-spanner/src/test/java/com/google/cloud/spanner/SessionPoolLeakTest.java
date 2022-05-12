@@ -19,12 +19,12 @@ package com.google.cloud.spanner;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import io.grpc.Server;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -97,61 +97,38 @@ public class SessionPoolLeakTest {
   @Test
   public void testReadWriteTransactionExceptionOnCreateSession() {
     readWriteTransactionTest(
-        new Runnable() {
-          @Override
-          public void run() {
+        () ->
             mockSpanner.setBatchCreateSessionsExecutionTime(
-                SimulatedExecutionTime.ofException(FAILED_PRECONDITION));
-          }
-        },
+                SimulatedExecutionTime.ofException(FAILED_PRECONDITION)),
         0);
   }
 
   @Test
   public void testReadWriteTransactionExceptionOnBegin() {
     readWriteTransactionTest(
-        new Runnable() {
-          @Override
-          public void run() {
+        () ->
             mockSpanner.setBeginTransactionExecutionTime(
-                SimulatedExecutionTime.ofException(FAILED_PRECONDITION));
-          }
-        },
+                SimulatedExecutionTime.ofException(FAILED_PRECONDITION)),
         1);
   }
 
   private void readWriteTransactionTest(
       Runnable setup, int expectedNumberOfSessionsAfterExecution) {
-    assertThat(pool.getNumberOfSessionsInPool(), is(equalTo(0)));
+    assertEquals(0, pool.getNumberOfSessionsInPool());
     setup.run();
-    try {
-      client
-          .readWriteTransaction()
-          .run(
-              new TransactionCallable<Void>() {
-                @Override
-                public Void run(TransactionContext transaction) {
-                  return null;
-                }
-              });
-      fail("missing FAILED_PRECONDITION exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode(), is(equalTo(ErrorCode.FAILED_PRECONDITION)));
-    }
-    assertThat(
-        pool.getNumberOfSessionsInPool(), is(equalTo(expectedNumberOfSessionsAfterExecution)));
+    SpannerException e =
+        assertThrows(
+            SpannerException.class, () -> client.readWriteTransaction().run(transaction -> null));
+    assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+    assertEquals(expectedNumberOfSessionsAfterExecution, pool.getNumberOfSessionsInPool());
   }
 
   @Test
-  public void testTansactionManagerExceptionOnCreateSession() {
+  public void testTransactionManagerExceptionOnCreateSession() {
     transactionManagerTest(
-        new Runnable() {
-          @Override
-          public void run() {
+        () ->
             mockSpanner.setBatchCreateSessionsExecutionTime(
-                SimulatedExecutionTime.ofException(FAILED_PRECONDITION));
-          }
-        },
+                SimulatedExecutionTime.ofException(FAILED_PRECONDITION)),
         0);
   }
 
@@ -169,15 +146,12 @@ public class SessionPoolLeakTest {
   }
 
   private void transactionManagerTest(Runnable setup, int expectedNumberOfSessionsAfterExecution) {
-    assertThat(pool.getNumberOfSessionsInPool(), is(equalTo(0)));
+    assertEquals(0, pool.getNumberOfSessionsInPool());
     setup.run();
     try (TransactionManager txManager = client.transactionManager()) {
-      txManager.begin();
-      fail("missing FAILED_PRECONDITION exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode(), is(equalTo(ErrorCode.FAILED_PRECONDITION)));
+      SpannerException e = assertThrows(SpannerException.class, () -> txManager.begin());
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
-    assertThat(
-        pool.getNumberOfSessionsInPool(), is(equalTo(expectedNumberOfSessionsAfterExecution)));
+    assertEquals(expectedNumberOfSessionsAfterExecution, pool.getNumberOfSessionsInPool());
   }
 }

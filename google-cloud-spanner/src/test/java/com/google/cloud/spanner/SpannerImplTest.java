@@ -19,7 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 
 import com.google.api.core.NanoClock;
@@ -64,7 +64,7 @@ public class SpannerImplTest {
     when(spannerOptions.getPrefetchChunks()).thenReturn(1);
     when(spannerOptions.getRetrySettings()).thenReturn(RetrySettings.newBuilder().build());
     when(spannerOptions.getClock()).thenReturn(NanoClock.getDefaultClock());
-    when(spannerOptions.getSessionLabels()).thenReturn(Collections.<String, String>emptyMap());
+    when(spannerOptions.getSessionLabels()).thenReturn(Collections.emptyMap());
     impl = new SpannerImpl(rpc, spannerOptions);
   }
 
@@ -96,7 +96,11 @@ public class SpannerImplTest {
 
   @Test
   public void queryOptions() {
-    QueryOptions queryOptions = QueryOptions.newBuilder().setOptimizerVersion("2").build();
+    QueryOptions queryOptions =
+        QueryOptions.newBuilder()
+            .setOptimizerVersion("2")
+            .setOptimizerStatisticsPackage("custom-package")
+            .build();
     QueryOptions defaultOptions = QueryOptions.getDefaultInstance();
     DatabaseId db = DatabaseId.of("p", "i", "d");
     DatabaseId otherDb = DatabaseId.of("p", "i", "other");
@@ -159,12 +163,9 @@ public class SpannerImplTest {
 
     imp.close();
 
-    try {
-      imp.getDatabaseClient(db);
-      fail("Expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("Cloud Spanner client has been closed");
-    }
+    IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> imp.getDatabaseClient(db));
+    assertThat(e.getMessage()).contains("Cloud Spanner client has been closed");
   }
 
   @Test
@@ -263,15 +264,14 @@ public class SpannerImplTest {
     // thrown by the instance after it has been closed.
     closeSpannerAndIncludeStacktrace(spanner);
     assertThat(spanner.isClosed()).isTrue();
-    try {
-      spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      fail("missing expected exception");
-    } catch (IllegalStateException e) {
-      assertThat(e.getCause()).isInstanceOf(ClosedException.class);
-      StringWriter sw = new StringWriter();
-      e.getCause().printStackTrace(new PrintWriter(sw));
-      assertThat(sw.toString()).contains("closeSpannerAndIncludeStacktrace");
-    }
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> spanner.getDatabaseClient(DatabaseId.of("p", "i", "d")));
+    assertThat(e.getCause()).isInstanceOf(ClosedException.class);
+    StringWriter sw = new StringWriter();
+    e.getCause().printStackTrace(new PrintWriter(sw));
+    assertThat(sw.toString()).contains("closeSpannerAndIncludeStacktrace");
   }
 
   private void closeSpannerAndIncludeStacktrace(Spanner spanner) {

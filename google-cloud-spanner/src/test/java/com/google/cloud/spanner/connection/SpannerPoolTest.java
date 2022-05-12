@@ -16,23 +16,26 @@
 
 package com.google.cloud.spanner.connection;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.connection.ConnectionImpl.LeakedConnectionException;
 import com.google.cloud.spanner.connection.SpannerPool.CheckAndCloseSpannersMode;
+import com.google.cloud.spanner.connection.SpannerPool.SpannerPoolKey;
 import com.google.common.base.Ticker;
 import com.google.common.testing.FakeTicker;
 import java.io.ByteArrayOutputStream;
@@ -108,40 +111,40 @@ public class SpannerPoolTest {
     // assert equal
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options1, connection2);
-    assertThat(spanner1, is(equalTo(spanner2)));
+    assertThat(spanner1).isEqualTo(spanner2);
     spanner1 = pool.getSpanner(options2, connection1);
     spanner2 = pool.getSpanner(options2, connection2);
-    assertThat(spanner1, is(equalTo(spanner2)));
+    assertThat(spanner1).isEqualTo(spanner2);
     spanner1 = pool.getSpanner(options3, connection1);
     spanner2 = pool.getSpanner(options3, connection2);
-    assertThat(spanner1, is(equalTo(spanner2)));
+    assertThat(spanner1).isEqualTo(spanner2);
     spanner1 = pool.getSpanner(options4, connection1);
     spanner2 = pool.getSpanner(options4, connection2);
-    assertThat(spanner1, is(equalTo(spanner2)));
+    assertThat(spanner1).isEqualTo(spanner2);
     // Options 5 and 6 both use default credentials.
     spanner1 = pool.getSpanner(options5, connection1);
     spanner2 = pool.getSpanner(options6, connection2);
-    assertThat(spanner1, is(equalTo(spanner2)));
+    assertThat(spanner1).isEqualTo(spanner2);
 
     // assert not equal
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options2, connection2);
-    assertThat(spanner1, not(equalTo(spanner2)));
+    assertThat(spanner1).isNotEqualTo(spanner2);
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options3, connection2);
-    assertThat(spanner1, not(equalTo(spanner2)));
+    assertThat(spanner1).isNotEqualTo(spanner2);
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options4, connection2);
-    assertThat(spanner1, not(equalTo(spanner2)));
+    assertThat(spanner1).isNotEqualTo(spanner2);
     spanner1 = pool.getSpanner(options2, connection1);
     spanner2 = pool.getSpanner(options3, connection2);
-    assertThat(spanner1, not(equalTo(spanner2)));
+    assertThat(spanner1).isNotEqualTo(spanner2);
     spanner1 = pool.getSpanner(options2, connection1);
     spanner2 = pool.getSpanner(options4, connection2);
-    assertThat(spanner1, not(equalTo(spanner2)));
+    assertThat(spanner1).isNotEqualTo(spanner2);
     spanner1 = pool.getSpanner(options3, connection1);
     spanner2 = pool.getSpanner(options4, connection2);
-    assertThat(spanner1, not(equalTo(spanner2)));
+    assertThat(spanner1).isNotEqualTo(spanner2);
   }
 
   @Test
@@ -153,17 +156,17 @@ public class SpannerPoolTest {
     // assert equal
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options1, connection2);
-    assertThat(spanner1, is(equalTo(spanner2)));
+    assertThat(spanner1).isEqualTo(spanner2);
     // one connection removed, assert that we would still get the same Spanner
     pool.removeConnection(options1, connection1);
     spanner1 = pool.getSpanner(options1, connection1);
-    assertThat(spanner1, is(equalTo(spanner2)));
+    assertThat(spanner1).isEqualTo(spanner2);
     // remove two connections, assert that we would still get the same Spanner, as Spanners are not
     // directly closed and removed.
     pool.removeConnection(options1, connection1);
     pool.removeConnection(options1, connection2);
     spanner1 = pool.getSpanner(options1, connection1);
-    assertThat(spanner1, is(equalTo(spanner2)));
+    assertThat(spanner1).isEqualTo(spanner2);
     // remove the last connection again
     pool.removeConnection(options1, connection1);
   }
@@ -171,6 +174,7 @@ public class SpannerPoolTest {
   private static Logger log = Logger.getLogger(SpannerPool.class.getName());
   private static OutputStream logCapturingStream;
   private static StreamHandler customLogHandler;
+  private static boolean useParentHandlers;
 
   private void attachLogCapturer() {
     logCapturingStream = new ByteArrayOutputStream();
@@ -184,12 +188,21 @@ public class SpannerPoolTest {
       throw new IllegalStateException("no handlers found for logger");
     }
     customLogHandler = new StreamHandler(logCapturingStream, handlers[0].getFormatter());
+    useParentHandlers = log.getUseParentHandlers();
+    log.setUseParentHandlers(false);
     log.addHandler(customLogHandler);
   }
 
-  public String getTestCapturedLog() {
+  private String getTestCapturedLog() {
     customLogHandler.flush();
     return logCapturingStream.toString();
+  }
+
+  @AfterClass
+  public static void resetUseParentHandlers() {
+    if (useParentHandlers) {
+      log.setUseParentHandlers(true);
+    }
   }
 
   @Test
@@ -200,7 +213,7 @@ public class SpannerPoolTest {
     pool.getSpanner(options1, connection1);
     pool.removeConnection(options2, connection1);
     String capturedLog = getTestCapturedLog();
-    assertThat(capturedLog.contains(expectedLogPart), is(true));
+    assertThat(capturedLog.contains(expectedLogPart)).isTrue();
   }
 
   @Test
@@ -211,7 +224,7 @@ public class SpannerPoolTest {
     pool.getSpanner(options1, connection1);
     pool.removeConnection(options1, connection2);
     String capturedLog = getTestCapturedLog();
-    assertThat(capturedLog.contains(expectedLogPart), is(true));
+    assertThat(capturedLog.contains(expectedLogPart)).isTrue();
   }
 
   @Test
@@ -223,7 +236,7 @@ public class SpannerPoolTest {
     pool.removeConnection(options1, connection1);
     pool.removeConnection(options1, connection1);
     String capturedLog = getTestCapturedLog();
-    assertThat(capturedLog.contains(expectedLogPart), is(true));
+    assertThat(capturedLog.contains(expectedLogPart)).isTrue();
   }
 
   @Test
@@ -237,7 +250,7 @@ public class SpannerPoolTest {
     } catch (SpannerException e) {
       exception = e.getErrorCode() == ErrorCode.FAILED_PRECONDITION;
     }
-    assertThat(exception, is(true));
+    assertThat(exception).isTrue();
 
     // remove the connection and verify that it is possible to close
     pool.removeConnection(options1, connection1);
@@ -249,7 +262,7 @@ public class SpannerPoolTest {
     Spanner spanner2 = pool.getSpanner(options1, connection1);
     pool.checkAndCloseSpanners(CheckAndCloseSpannersMode.WARN);
     String capturedLog = getTestCapturedLog();
-    assertThat(capturedLog.contains(expectedLogPart), is(true));
+    assertThat(capturedLog.contains(expectedLogPart)).isTrue();
     verify(spanner2, never()).close();
 
     // remove the connection and verify that it is possible to close
@@ -260,24 +273,32 @@ public class SpannerPoolTest {
 
   @Test
   public void testLeakedConnection() {
+    attachLogCapturer();
     ConnectionOptions options =
         ConnectionOptions.newBuilder()
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOptions(SessionPoolOptions.newBuilder().setMinSessions(0).build())
+            .setSessionPoolOptions(
+                SessionPoolOptions.newBuilder()
+                    .setMinSessions(0)
+                    .setAutoDetectDialect(false)
+                    .build())
             .setUri(URI)
             .build();
+    DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     // create an actual connection object but not in a try-with-resources block
-    Connection connection = options.getConnection();
+    Connection connection = new ConnectionImpl(options, SpannerPool.INSTANCE, ddlClient, dbClient);
     // try to close the application which should fail
     try {
       ConnectionOptions.closeSpanner();
       fail("missing expected exception");
     } catch (SpannerException e) {
-      assertThat(e.getErrorCode(), is(equalTo(ErrorCode.FAILED_PRECONDITION)));
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
     }
     String capturedLog = getTestCapturedLog();
-    assertThat(capturedLog.contains(LeakedConnectionException.class.getName()), is(true));
-    assertThat(capturedLog.contains("testLeakedConnection"), is(true));
+    assertThat(capturedLog.contains(LeakedConnectionException.class.getName())).isTrue();
+    assertThat(capturedLog.contains("testLeakedConnection")).isTrue();
     // Now close the connection to avoid trouble with other test cases.
     connection.close();
   }
@@ -292,7 +313,7 @@ public class SpannerPoolTest {
     // create two connections that use the same Spanner
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options1, connection2);
-    assertThat(spanner1, is(equalTo(spanner2)));
+    assertThat(spanner1).isEqualTo(spanner2);
 
     // all spanners are in use, this should have no effect
     pool.closeUnusedSpanners(-1L);
@@ -312,8 +333,8 @@ public class SpannerPoolTest {
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options2, connection2);
     spanner3 = pool.getSpanner(options2, connection3);
-    assertThat(spanner1, not(equalTo(spanner2)));
-    assertThat(spanner2, is(equalTo(spanner3)));
+    assertThat(spanner1).isNotEqualTo(spanner2);
+    assertThat(spanner2).isEqualTo(spanner3);
 
     // all spanners are in use, this should have no effect
     pool.closeUnusedSpanners(-1L);
@@ -349,7 +370,7 @@ public class SpannerPoolTest {
   private static final long MILLISECOND = TimeUnit.NANOSECONDS.convert(1L, TimeUnit.MILLISECONDS);
 
   @Test
-  public void testAutomaticCloser() throws InterruptedException {
+  public void testAutomaticCloser() {
     FakeTicker ticker = new FakeTicker();
     SpannerPool pool = createSubjectAndMocks(TEST_AUTOMATIC_CLOSE_TIMEOUT_MILLIS, ticker);
     Spanner spanner1;
@@ -359,7 +380,7 @@ public class SpannerPoolTest {
     // create two connections that use the same Spanner
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options1, connection2);
-    assertThat(spanner1, is(equalTo(spanner2)));
+    assertThat(spanner1).isEqualTo(spanner2);
 
     // all spanners are in use, this should have no effect
     ticker.advance(TEST_AUTOMATIC_CLOSE_TIMEOUT_NANOS + MILLISECOND);
@@ -382,8 +403,8 @@ public class SpannerPoolTest {
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options2, connection2);
     spanner3 = pool.getSpanner(options2, connection3);
-    assertThat(spanner1, not(equalTo(spanner2)));
-    assertThat(spanner2, is(equalTo(spanner3)));
+    assertThat(spanner1).isNotEqualTo(spanner2);
+    assertThat(spanner2).isEqualTo(spanner3);
 
     // all spanners are in use, this should have no effect
     ticker.advance(TEST_AUTOMATIC_CLOSE_TIMEOUT_NANOS + MILLISECOND);
@@ -415,5 +436,38 @@ public class SpannerPoolTest {
     verify(spanner1).close();
     verify(spanner2).close();
     verify(spanner3).close();
+  }
+
+  @Test
+  public void testSpannerPoolKeyEquality() {
+    ConnectionOptions options1 =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner://localhost:9010/projects/p1/instances/i/databases/d"
+                    + "?minSessions=200;maxSessions=400;numChannels=8;usePlainText=true;userAgent=test-agent")
+            .setCredentials(mock(Credentials.class))
+            .build();
+    // options2 equals the default session pool options, and is therefore equal to ConnectionOptions
+    // without any session pool configuration.
+    ConnectionOptions options2 =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/p/instances/i/databases/d?minSessions=100;maxSessions=400")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
+    ConnectionOptions options3 =
+        ConnectionOptions.newBuilder()
+            .setUri("cloudspanner:/projects/p/instances/i/databases/d")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
+
+    SpannerPoolKey key1 = SpannerPoolKey.of(options1);
+    SpannerPoolKey key2 = SpannerPoolKey.of(options2);
+    SpannerPoolKey key3 = SpannerPoolKey.of(options3);
+
+    assertNotEquals(key1, key2);
+    assertEquals(key2, key3);
+    assertNotEquals(key1, key3);
+    assertNotEquals(key1, new Object());
   }
 }

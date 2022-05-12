@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.NoCredentials;
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
@@ -31,7 +30,6 @@ import com.google.spanner.v1.DeleteSessionRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.AuxCounters;
@@ -154,17 +152,14 @@ public class SessionPoolMaintainerBenchmark {
     for (int i = 0; i < totalQueries; i++) {
       futures.add(
           service.submit(
-              new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                  Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
-                  try (ResultSet rs =
-                      client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
-                    while (rs.next()) {
-                      Thread.sleep(RND.nextInt(HOLD_SESSION_TIME));
-                    }
-                    return null;
+              () -> {
+                Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
+                try (ResultSet rs =
+                    client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
+                  while (rs.next()) {
+                    Thread.sleep(RND.nextInt(HOLD_SESSION_TIME));
                   }
+                  return null;
                 }
               }));
     }
@@ -190,20 +185,12 @@ public class SessionPoolMaintainerBenchmark {
     for (int i = 0; i < totalWrites; i++) {
       futures.add(
           service.submit(
-              new Callable<Long>() {
-                @Override
-                public Long call() throws Exception {
-                  Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
-                  TransactionRunner runner = client.readWriteTransaction();
-                  return runner.run(
-                      new TransactionCallable<Long>() {
-                        @Override
-                        public Long run(TransactionContext transaction) throws Exception {
-                          return transaction.executeUpdate(
-                              StandardBenchmarkMockServer.UPDATE_STATEMENT);
-                        }
-                      });
-                }
+              () -> {
+                Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
+                TransactionRunner runner = client.readWriteTransaction();
+                return runner.run(
+                    transaction ->
+                        transaction.executeUpdate(StandardBenchmarkMockServer.UPDATE_STATEMENT));
               }));
     }
     Futures.allAsList(futures).get();
@@ -229,36 +216,25 @@ public class SessionPoolMaintainerBenchmark {
     for (int i = 0; i < totalWrites; i++) {
       futures.add(
           service.submit(
-              new Callable<Long>() {
-                @Override
-                public Long call() throws Exception {
-                  Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
-                  TransactionRunner runner = client.readWriteTransaction();
-                  return runner.run(
-                      new TransactionCallable<Long>() {
-                        @Override
-                        public Long run(TransactionContext transaction) throws Exception {
-                          return transaction.executeUpdate(
-                              StandardBenchmarkMockServer.UPDATE_STATEMENT);
-                        }
-                      });
-                }
+              () -> {
+                Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
+                TransactionRunner runner = client.readWriteTransaction();
+                return runner.run(
+                    transaction ->
+                        transaction.executeUpdate(StandardBenchmarkMockServer.UPDATE_STATEMENT));
               }));
     }
     for (int i = 0; i < totalReads; i++) {
       futures.add(
           service.submit(
-              new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                  Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
-                  try (ResultSet rs =
-                      client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
-                    while (rs.next()) {
-                      Thread.sleep(RND.nextInt(HOLD_SESSION_TIME));
-                    }
-                    return null;
+              () -> {
+                Thread.sleep(RND.nextInt(RND_WAIT_TIME_BETWEEN_REQUESTS));
+                try (ResultSet rs =
+                    client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
+                  while (rs.next()) {
+                    Thread.sleep(RND.nextInt(HOLD_SESSION_TIME));
                   }
+                  return null;
                 }
               }));
     }

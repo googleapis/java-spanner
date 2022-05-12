@@ -1,6 +1,6 @@
 # Getting Started with Cloud Spanner and the Google Cloud Client libraries
 
-<a href="https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/java-docs-samples&page=editor&open_in_editor=spanner/cloud-client/README.md">
+<a href="https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/README.md">
 <img alt="Open in Cloud Shell" src ="http://gstatic.com/cloudssh/images/open-btn.png"></a>
 
 [Cloud Spanner][Spanner] is a horizontally-scalable database-as-a-service
@@ -13,15 +13,15 @@ the [Google Cloud Client Library for Java][java-spanner].
 
 ## Quickstart
 
-Every command here should be run from the root directory of your project (`java-spanner`).
-
 Install [Maven](http://maven.apache.org/).
 
-Build your project with:
+Build your project from the root directory (`java-spanner`):
 
-    mvn clean package -DskipTests -DskipUTs -Penable-samples
+    mvn clean package -DskipTests
 
-You can then run a given `ClassName` via:
+Every subsequent command here should be run from a subdirectory (`cd samples/snippets`).
+
+You can run a given `ClassName` via:
 
     mvn exec:java -Dexec.mainClass=com.example.spanner.ClassName \
         -DpropertyName=propertyValue \

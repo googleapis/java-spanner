@@ -20,7 +20,7 @@ import static com.google.cloud.spanner.KeyRange.Endpoint.CLOSED;
 import static com.google.cloud.spanner.KeyRange.Endpoint.OPEN;
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import org.junit.Test;
@@ -102,22 +102,18 @@ public class KeyRangeTest {
 
   @Test
   public void builderRequiresStart() {
-    try {
-      KeyRange.newBuilder().setEnd(Key.of("z")).build();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("start(Key)");
-    }
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class, () -> KeyRange.newBuilder().setEnd(Key.of("z")).build());
+    assertThat(e.getMessage()).contains("start(Key)");
   }
 
   @Test
   public void builderRequiresEnd() {
-    try {
-      KeyRange.newBuilder().setStart(Key.of("a")).build();
-      fail("Expected exception");
-    } catch (IllegalStateException ex) {
-      assertThat(ex.getMessage()).contains("end(Key)");
-    }
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class, () -> KeyRange.newBuilder().setStart(Key.of("a")).build());
+    assertThat(e.getMessage()).contains("end(Key)");
   }
 
   @Test

@@ -30,7 +30,6 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_ABORTED_STATEM
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_COUNT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.UPDATE_STATEMENT;
 
-import com.google.api.core.ApiFunction;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import io.grpc.ManagedChannelBuilder;
@@ -89,19 +88,12 @@ public abstract class AbstractAsyncTransactionTest {
   }
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     String endpoint = address.getHostString() + ":" + server.getPort();
     spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
-            .setChannelConfigurator(
-                new ApiFunction<ManagedChannelBuilder, ManagedChannelBuilder>() {
-                  @Override
-                  public ManagedChannelBuilder apply(ManagedChannelBuilder input) {
-                    input.usePlaintext();
-                    return input;
-                  }
-                })
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
             .setHost("http://" + endpoint)
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(SessionPoolOptions.newBuilder().setFailOnSessionLeak().build())
@@ -122,7 +114,7 @@ public abstract class AbstractAsyncTransactionTest {
   }
 
   @After
-  public void after() throws Exception {
+  public void after() {
     spanner.close();
     spannerWithEmptySessionPool.close();
     mockSpanner.removeAllExecutionTimes();

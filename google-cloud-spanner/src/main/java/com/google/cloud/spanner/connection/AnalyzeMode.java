@@ -30,7 +30,7 @@ enum AnalyzeMode {
 
   private final QueryAnalyzeMode mode;
 
-  private AnalyzeMode(QueryAnalyzeMode mode) {
+  AnalyzeMode(QueryAnalyzeMode mode) {
     this.mode = mode;
   }
 

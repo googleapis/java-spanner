@@ -21,13 +21,16 @@ import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.connection.StatementParser.ParsedStatement;
-import com.google.cloud.spanner.connection.StatementParser.StatementType;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.ArrayList;
@@ -40,17 +43,24 @@ import java.util.List;
  */
 class DmlBatch extends AbstractBaseUnitOfWork {
   private final UnitOfWork transaction;
+  private final String statementTag;
   private final List<ParsedStatement> statements = new ArrayList<>();
   private UnitOfWorkState state = UnitOfWorkState.STARTED;
 
   static class Builder extends AbstractBaseUnitOfWork.Builder<Builder, DmlBatch> {
     private UnitOfWork transaction;
+    private String statementTag;
 
     private Builder() {}
 
     Builder setTransaction(UnitOfWork transaction) {
       Preconditions.checkNotNull(transaction);
       this.transaction = transaction;
+      return this;
+    }
+
+    Builder setStatementTag(String tag) {
+      this.statementTag = tag;
       return this;
     }
 
@@ -68,6 +78,7 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   private DmlBatch(Builder builder) {
     super(builder);
     this.transaction = builder.transaction;
+    this.statementTag = builder.statementTag;
   }
 
   @Override
@@ -120,13 +131,24 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
+  public CommitResponse getCommitResponse() {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.FAILED_PRECONDITION, "There is no commit response available for DML batches.");
+  }
+
+  @Override
+  public CommitResponse getCommitResponseOrNull() {
+    return null;
+  }
+
+  @Override
   public ApiFuture<Void> executeDdlAsync(ParsedStatement ddl) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing DDL statements is not allowed for DML batches.");
   }
 
   @Override
-  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update) {
+  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options) {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED,
         "The batch is no longer active and cannot be used for further statements");
@@ -140,7 +162,8 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<ParsedStatement> updates) {
+  public ApiFuture<long[]> executeBatchUpdateAsync(
+      Iterable<ParsedStatement> updates, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing batch updates is not allowed for DML batches.");
   }
@@ -166,7 +189,22 @@ class DmlBatch extends AbstractBaseUnitOfWork {
     // executed AFTER a Future is done, which means that a user could read the state of the Batch
     // before it has been changed.
     final SettableApiFuture<long[]> res = SettableApiFuture.create();
-    ApiFuture<long[]> updateCounts = transaction.executeBatchUpdateAsync(statements);
+    int numOptions = 0;
+    if (statementTag != null) {
+      numOptions++;
+    }
+    if (this.rpcPriority != null) {
+      numOptions++;
+    }
+    UpdateOption[] options = new UpdateOption[numOptions];
+    int index = 0;
+    if (statementTag != null) {
+      options[index++] = Options.tag(statementTag);
+    }
+    if (this.rpcPriority != null) {
+      options[index++] = Options.priority(this.rpcPriority);
+    }
+    ApiFuture<long[]> updateCounts = transaction.executeBatchUpdateAsync(statements, options);
     ApiFutures.addCallback(
         updateCounts,
         new ApiFutureCallback<long[]>() {

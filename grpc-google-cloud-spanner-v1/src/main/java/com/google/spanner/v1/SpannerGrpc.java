@@ -16,14 +16,6 @@
 package com.google.spanner.v1;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  *
@@ -37,6 +29,7 @@ import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 @javax.annotation.Generated(
     value = "by gRPC proto compiler",
     comments = "Source: google/spanner/v1/spanner.proto")
+@io.grpc.stub.annotations.GrpcGenerated
 public final class SpannerGrpc {
 
   private SpannerGrpc() {}
@@ -735,7 +728,8 @@ public final class SpannerGrpc {
     public void createSession(
         com.google.spanner.v1.CreateSessionRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.Session> responseObserver) {
-      asyncUnimplementedUnaryCall(getCreateSessionMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getCreateSessionMethod(), responseObserver);
     }
 
     /**
@@ -751,7 +745,8 @@ public final class SpannerGrpc {
         com.google.spanner.v1.BatchCreateSessionsRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.BatchCreateSessionsResponse>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getBatchCreateSessionsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getBatchCreateSessionsMethod(), responseObserver);
     }
 
     /**
@@ -766,7 +761,7 @@ public final class SpannerGrpc {
     public void getSession(
         com.google.spanner.v1.GetSessionRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.Session> responseObserver) {
-      asyncUnimplementedUnaryCall(getGetSessionMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetSessionMethod(), responseObserver);
     }
 
     /**
@@ -779,7 +774,8 @@ public final class SpannerGrpc {
     public void listSessions(
         com.google.spanner.v1.ListSessionsRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ListSessionsResponse> responseObserver) {
-      asyncUnimplementedUnaryCall(getListSessionsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getListSessionsMethod(), responseObserver);
     }
 
     /**
@@ -794,7 +790,8 @@ public final class SpannerGrpc {
     public void deleteSession(
         com.google.spanner.v1.DeleteSessionRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
-      asyncUnimplementedUnaryCall(getDeleteSessionMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getDeleteSessionMethod(), responseObserver);
     }
 
     /**
@@ -815,7 +812,7 @@ public final class SpannerGrpc {
     public void executeSql(
         com.google.spanner.v1.ExecuteSqlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ResultSet> responseObserver) {
-      asyncUnimplementedUnaryCall(getExecuteSqlMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getExecuteSqlMethod(), responseObserver);
     }
 
     /**
@@ -832,7 +829,8 @@ public final class SpannerGrpc {
     public void executeStreamingSql(
         com.google.spanner.v1.ExecuteSqlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartialResultSet> responseObserver) {
-      asyncUnimplementedUnaryCall(getExecuteStreamingSqlMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getExecuteStreamingSqlMethod(), responseObserver);
     }
 
     /**
@@ -854,7 +852,8 @@ public final class SpannerGrpc {
         com.google.spanner.v1.ExecuteBatchDmlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ExecuteBatchDmlResponse>
             responseObserver) {
-      asyncUnimplementedUnaryCall(getExecuteBatchDmlMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getExecuteBatchDmlMethod(), responseObserver);
     }
 
     /**
@@ -877,7 +876,7 @@ public final class SpannerGrpc {
     public void read(
         com.google.spanner.v1.ReadRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ResultSet> responseObserver) {
-      asyncUnimplementedUnaryCall(getReadMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getReadMethod(), responseObserver);
     }
 
     /**
@@ -894,7 +893,8 @@ public final class SpannerGrpc {
     public void streamingRead(
         com.google.spanner.v1.ReadRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartialResultSet> responseObserver) {
-      asyncUnimplementedUnaryCall(getStreamingReadMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getStreamingReadMethod(), responseObserver);
     }
 
     /**
@@ -910,7 +910,8 @@ public final class SpannerGrpc {
     public void beginTransaction(
         com.google.spanner.v1.BeginTransactionRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.Transaction> responseObserver) {
-      asyncUnimplementedUnaryCall(getBeginTransactionMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getBeginTransactionMethod(), responseObserver);
     }
 
     /**
@@ -924,12 +925,17 @@ public final class SpannerGrpc {
      * transactions. However, it can also happen for a variety of other
      * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt
      * the transaction from the beginning, re-using the same session.
+     * On very rare occasions, `Commit` might return `UNKNOWN`. This can happen,
+     * for example, if the client job experiences a 1+ hour networking failure.
+     * At that point, Cloud Spanner has lost track of the transaction outcome and
+     * we recommend that you perform another read from the database to see the
+     * state of things as they are now.
      * </pre>
      */
     public void commit(
         com.google.spanner.v1.CommitRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.CommitResponse> responseObserver) {
-      asyncUnimplementedUnaryCall(getCommitMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getCommitMethod(), responseObserver);
     }
 
     /**
@@ -948,7 +954,7 @@ public final class SpannerGrpc {
     public void rollback(
         com.google.spanner.v1.RollbackRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
-      asyncUnimplementedUnaryCall(getRollbackMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getRollbackMethod(), responseObserver);
     }
 
     /**
@@ -970,7 +976,8 @@ public final class SpannerGrpc {
     public void partitionQuery(
         com.google.spanner.v1.PartitionQueryRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartitionResponse> responseObserver) {
-      asyncUnimplementedUnaryCall(getPartitionQueryMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getPartitionQueryMethod(), responseObserver);
     }
 
     /**
@@ -994,7 +1001,8 @@ public final class SpannerGrpc {
     public void partitionRead(
         com.google.spanner.v1.PartitionReadRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartitionResponse> responseObserver) {
-      asyncUnimplementedUnaryCall(getPartitionReadMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getPartitionReadMethod(), responseObserver);
     }
 
     @java.lang.Override
@@ -1002,94 +1010,94 @@ public final class SpannerGrpc {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
               getCreateSessionMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.v1.CreateSessionRequest, com.google.spanner.v1.Session>(
                       this, METHODID_CREATE_SESSION)))
           .addMethod(
               getBatchCreateSessionsMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.v1.BatchCreateSessionsRequest,
                       com.google.spanner.v1.BatchCreateSessionsResponse>(
                       this, METHODID_BATCH_CREATE_SESSIONS)))
           .addMethod(
               getGetSessionMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.v1.GetSessionRequest, com.google.spanner.v1.Session>(
                       this, METHODID_GET_SESSION)))
           .addMethod(
               getListSessionsMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.v1.ListSessionsRequest,
                       com.google.spanner.v1.ListSessionsResponse>(this, METHODID_LIST_SESSIONS)))
           .addMethod(
               getDeleteSessionMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.v1.DeleteSessionRequest, com.google.protobuf.Empty>(
                       this, METHODID_DELETE_SESSION)))
           .addMethod(
               getExecuteSqlMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.v1.ExecuteSqlRequest, com.google.spanner.v1.ResultSet>(
                       this, METHODID_EXECUTE_SQL)))
           .addMethod(
               getExecuteStreamingSqlMethod(),
-              asyncServerStreamingCall(
+              io.grpc.stub.ServerCalls.asyncServerStreamingCall(
                   new MethodHandlers<
                       com.google.spanner.v1.ExecuteSqlRequest,
                       com.google.spanner.v1.PartialResultSet>(
                       this, METHODID_EXECUTE_STREAMING_SQL)))
           .addMethod(
               getExecuteBatchDmlMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.v1.ExecuteBatchDmlRequest,
                       com.google.spanner.v1.ExecuteBatchDmlResponse>(
                       this, METHODID_EXECUTE_BATCH_DML)))
           .addMethod(
               getReadMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.v1.ReadRequest, com.google.spanner.v1.ResultSet>(
                       this, METHODID_READ)))
           .addMethod(
               getStreamingReadMethod(),
-              asyncServerStreamingCall(
+              io.grpc.stub.ServerCalls.asyncServerStreamingCall(
                   new MethodHandlers<
                       com.google.spanner.v1.ReadRequest, com.google.spanner.v1.PartialResultSet>(
                       this, METHODID_STREAMING_READ)))
           .addMethod(
               getBeginTransactionMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.v1.BeginTransactionRequest,
                       com.google.spanner.v1.Transaction>(this, METHODID_BEGIN_TRANSACTION)))
           .addMethod(
               getCommitMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.v1.CommitRequest, com.google.spanner.v1.CommitResponse>(
                       this, METHODID_COMMIT)))
           .addMethod(
               getRollbackMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.v1.RollbackRequest, com.google.protobuf.Empty>(
                       this, METHODID_ROLLBACK)))
           .addMethod(
               getPartitionQueryMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.v1.PartitionQueryRequest,
                       com.google.spanner.v1.PartitionResponse>(this, METHODID_PARTITION_QUERY)))
           .addMethod(
               getPartitionReadMethod(),
-              asyncUnaryCall(
+              io.grpc.stub.ServerCalls.asyncUnaryCall(
                   new MethodHandlers<
                       com.google.spanner.v1.PartitionReadRequest,
                       com.google.spanner.v1.PartitionResponse>(this, METHODID_PARTITION_READ)))
@@ -1141,7 +1149,7 @@ public final class SpannerGrpc {
     public void createSession(
         com.google.spanner.v1.CreateSessionRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.Session> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getCreateSessionMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1160,7 +1168,7 @@ public final class SpannerGrpc {
         com.google.spanner.v1.BatchCreateSessionsRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.BatchCreateSessionsResponse>
             responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getBatchCreateSessionsMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1178,7 +1186,7 @@ public final class SpannerGrpc {
     public void getSession(
         com.google.spanner.v1.GetSessionRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.Session> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetSessionMethod(), getCallOptions()), request, responseObserver);
     }
 
@@ -1192,7 +1200,7 @@ public final class SpannerGrpc {
     public void listSessions(
         com.google.spanner.v1.ListSessionsRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ListSessionsResponse> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getListSessionsMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1210,7 +1218,7 @@ public final class SpannerGrpc {
     public void deleteSession(
         com.google.spanner.v1.DeleteSessionRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getDeleteSessionMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1234,7 +1242,7 @@ public final class SpannerGrpc {
     public void executeSql(
         com.google.spanner.v1.ExecuteSqlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ResultSet> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getExecuteSqlMethod(), getCallOptions()), request, responseObserver);
     }
 
@@ -1252,7 +1260,7 @@ public final class SpannerGrpc {
     public void executeStreamingSql(
         com.google.spanner.v1.ExecuteSqlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartialResultSet> responseObserver) {
-      asyncServerStreamingCall(
+      io.grpc.stub.ClientCalls.asyncServerStreamingCall(
           getChannel().newCall(getExecuteStreamingSqlMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1277,7 +1285,7 @@ public final class SpannerGrpc {
         com.google.spanner.v1.ExecuteBatchDmlRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ExecuteBatchDmlResponse>
             responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getExecuteBatchDmlMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1303,7 +1311,7 @@ public final class SpannerGrpc {
     public void read(
         com.google.spanner.v1.ReadRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.ResultSet> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getReadMethod(), getCallOptions()), request, responseObserver);
     }
 
@@ -1321,7 +1329,7 @@ public final class SpannerGrpc {
     public void streamingRead(
         com.google.spanner.v1.ReadRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartialResultSet> responseObserver) {
-      asyncServerStreamingCall(
+      io.grpc.stub.ClientCalls.asyncServerStreamingCall(
           getChannel().newCall(getStreamingReadMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1340,7 +1348,7 @@ public final class SpannerGrpc {
     public void beginTransaction(
         com.google.spanner.v1.BeginTransactionRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.Transaction> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getBeginTransactionMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1357,12 +1365,17 @@ public final class SpannerGrpc {
      * transactions. However, it can also happen for a variety of other
      * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt
      * the transaction from the beginning, re-using the same session.
+     * On very rare occasions, `Commit` might return `UNKNOWN`. This can happen,
+     * for example, if the client job experiences a 1+ hour networking failure.
+     * At that point, Cloud Spanner has lost track of the transaction outcome and
+     * we recommend that you perform another read from the database to see the
+     * state of things as they are now.
      * </pre>
      */
     public void commit(
         com.google.spanner.v1.CommitRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.CommitResponse> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getCommitMethod(), getCallOptions()), request, responseObserver);
     }
 
@@ -1382,7 +1395,7 @@ public final class SpannerGrpc {
     public void rollback(
         com.google.spanner.v1.RollbackRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getRollbackMethod(), getCallOptions()), request, responseObserver);
     }
 
@@ -1405,7 +1418,7 @@ public final class SpannerGrpc {
     public void partitionQuery(
         com.google.spanner.v1.PartitionQueryRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartitionResponse> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getPartitionQueryMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1432,7 +1445,7 @@ public final class SpannerGrpc {
     public void partitionRead(
         com.google.spanner.v1.PartitionReadRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartitionResponse> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getPartitionReadMethod(), getCallOptions()),
           request,
           responseObserver);
@@ -1483,7 +1496,8 @@ public final class SpannerGrpc {
      */
     public com.google.spanner.v1.Session createSession(
         com.google.spanner.v1.CreateSessionRequest request) {
-      return blockingUnaryCall(getChannel(), getCreateSessionMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getCreateSessionMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1497,7 +1511,7 @@ public final class SpannerGrpc {
      */
     public com.google.spanner.v1.BatchCreateSessionsResponse batchCreateSessions(
         com.google.spanner.v1.BatchCreateSessionsRequest request) {
-      return blockingUnaryCall(
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getBatchCreateSessionsMethod(), getCallOptions(), request);
     }
 
@@ -1512,7 +1526,8 @@ public final class SpannerGrpc {
      */
     public com.google.spanner.v1.Session getSession(
         com.google.spanner.v1.GetSessionRequest request) {
-      return blockingUnaryCall(getChannel(), getGetSessionMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getGetSessionMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1524,7 +1539,8 @@ public final class SpannerGrpc {
      */
     public com.google.spanner.v1.ListSessionsResponse listSessions(
         com.google.spanner.v1.ListSessionsRequest request) {
-      return blockingUnaryCall(getChannel(), getListSessionsMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getListSessionsMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1538,7 +1554,8 @@ public final class SpannerGrpc {
      */
     public com.google.protobuf.Empty deleteSession(
         com.google.spanner.v1.DeleteSessionRequest request) {
-      return blockingUnaryCall(getChannel(), getDeleteSessionMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getDeleteSessionMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1558,7 +1575,8 @@ public final class SpannerGrpc {
      */
     public com.google.spanner.v1.ResultSet executeSql(
         com.google.spanner.v1.ExecuteSqlRequest request) {
-      return blockingUnaryCall(getChannel(), getExecuteSqlMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getExecuteSqlMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1574,7 +1592,7 @@ public final class SpannerGrpc {
      */
     public java.util.Iterator<com.google.spanner.v1.PartialResultSet> executeStreamingSql(
         com.google.spanner.v1.ExecuteSqlRequest request) {
-      return blockingServerStreamingCall(
+      return io.grpc.stub.ClientCalls.blockingServerStreamingCall(
           getChannel(), getExecuteStreamingSqlMethod(), getCallOptions(), request);
     }
 
@@ -1595,7 +1613,8 @@ public final class SpannerGrpc {
      */
     public com.google.spanner.v1.ExecuteBatchDmlResponse executeBatchDml(
         com.google.spanner.v1.ExecuteBatchDmlRequest request) {
-      return blockingUnaryCall(getChannel(), getExecuteBatchDmlMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getExecuteBatchDmlMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1616,7 +1635,8 @@ public final class SpannerGrpc {
      * </pre>
      */
     public com.google.spanner.v1.ResultSet read(com.google.spanner.v1.ReadRequest request) {
-      return blockingUnaryCall(getChannel(), getReadMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getReadMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1632,7 +1652,7 @@ public final class SpannerGrpc {
      */
     public java.util.Iterator<com.google.spanner.v1.PartialResultSet> streamingRead(
         com.google.spanner.v1.ReadRequest request) {
-      return blockingServerStreamingCall(
+      return io.grpc.stub.ClientCalls.blockingServerStreamingCall(
           getChannel(), getStreamingReadMethod(), getCallOptions(), request);
     }
 
@@ -1648,7 +1668,7 @@ public final class SpannerGrpc {
      */
     public com.google.spanner.v1.Transaction beginTransaction(
         com.google.spanner.v1.BeginTransactionRequest request) {
-      return blockingUnaryCall(
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getBeginTransactionMethod(), getCallOptions(), request);
     }
 
@@ -1663,11 +1683,17 @@ public final class SpannerGrpc {
      * transactions. However, it can also happen for a variety of other
      * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt
      * the transaction from the beginning, re-using the same session.
+     * On very rare occasions, `Commit` might return `UNKNOWN`. This can happen,
+     * for example, if the client job experiences a 1+ hour networking failure.
+     * At that point, Cloud Spanner has lost track of the transaction outcome and
+     * we recommend that you perform another read from the database to see the
+     * state of things as they are now.
      * </pre>
      */
     public com.google.spanner.v1.CommitResponse commit(
         com.google.spanner.v1.CommitRequest request) {
-      return blockingUnaryCall(getChannel(), getCommitMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getCommitMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1684,7 +1710,8 @@ public final class SpannerGrpc {
      * </pre>
      */
     public com.google.protobuf.Empty rollback(com.google.spanner.v1.RollbackRequest request) {
-      return blockingUnaryCall(getChannel(), getRollbackMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getRollbackMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1705,7 +1732,8 @@ public final class SpannerGrpc {
      */
     public com.google.spanner.v1.PartitionResponse partitionQuery(
         com.google.spanner.v1.PartitionQueryRequest request) {
-      return blockingUnaryCall(getChannel(), getPartitionQueryMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getPartitionQueryMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1728,7 +1756,8 @@ public final class SpannerGrpc {
      */
     public com.google.spanner.v1.PartitionResponse partitionRead(
         com.google.spanner.v1.PartitionReadRequest request) {
-      return blockingUnaryCall(getChannel(), getPartitionReadMethod(), getCallOptions(), request);
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getPartitionReadMethod(), getCallOptions(), request);
     }
   }
 
@@ -1776,7 +1805,7 @@ public final class SpannerGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.spanner.v1.Session>
         createSession(com.google.spanner.v1.CreateSessionRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getCreateSessionMethod(), getCallOptions()), request);
     }
 
@@ -1792,7 +1821,7 @@ public final class SpannerGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.v1.BatchCreateSessionsResponse>
         batchCreateSessions(com.google.spanner.v1.BatchCreateSessionsRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getBatchCreateSessionsMethod(), getCallOptions()), request);
     }
 
@@ -1807,7 +1836,7 @@ public final class SpannerGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.spanner.v1.Session>
         getSession(com.google.spanner.v1.GetSessionRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetSessionMethod(), getCallOptions()), request);
     }
 
@@ -1821,7 +1850,7 @@ public final class SpannerGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.v1.ListSessionsResponse>
         listSessions(com.google.spanner.v1.ListSessionsRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getListSessionsMethod(), getCallOptions()), request);
     }
 
@@ -1836,7 +1865,7 @@ public final class SpannerGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty>
         deleteSession(com.google.spanner.v1.DeleteSessionRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getDeleteSessionMethod(), getCallOptions()), request);
     }
 
@@ -1857,7 +1886,7 @@ public final class SpannerGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.spanner.v1.ResultSet>
         executeSql(com.google.spanner.v1.ExecuteSqlRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getExecuteSqlMethod(), getCallOptions()), request);
     }
 
@@ -1879,7 +1908,7 @@ public final class SpannerGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.v1.ExecuteBatchDmlResponse>
         executeBatchDml(com.google.spanner.v1.ExecuteBatchDmlRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getExecuteBatchDmlMethod(), getCallOptions()), request);
     }
 
@@ -1902,7 +1931,8 @@ public final class SpannerGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.spanner.v1.ResultSet> read(
         com.google.spanner.v1.ReadRequest request) {
-      return futureUnaryCall(getChannel().newCall(getReadMethod(), getCallOptions()), request);
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getReadMethod(), getCallOptions()), request);
     }
 
     /**
@@ -1917,7 +1947,7 @@ public final class SpannerGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.spanner.v1.Transaction>
         beginTransaction(com.google.spanner.v1.BeginTransactionRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getBeginTransactionMethod(), getCallOptions()), request);
     }
 
@@ -1932,11 +1962,17 @@ public final class SpannerGrpc {
      * transactions. However, it can also happen for a variety of other
      * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt
      * the transaction from the beginning, re-using the same session.
+     * On very rare occasions, `Commit` might return `UNKNOWN`. This can happen,
+     * for example, if the client job experiences a 1+ hour networking failure.
+     * At that point, Cloud Spanner has lost track of the transaction outcome and
+     * we recommend that you perform another read from the database to see the
+     * state of things as they are now.
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.spanner.v1.CommitResponse>
         commit(com.google.spanner.v1.CommitRequest request) {
-      return futureUnaryCall(getChannel().newCall(getCommitMethod(), getCallOptions()), request);
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getCommitMethod(), getCallOptions()), request);
     }
 
     /**
@@ -1954,7 +1990,8 @@ public final class SpannerGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty> rollback(
         com.google.spanner.v1.RollbackRequest request) {
-      return futureUnaryCall(getChannel().newCall(getRollbackMethod(), getCallOptions()), request);
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getRollbackMethod(), getCallOptions()), request);
     }
 
     /**
@@ -1976,7 +2013,7 @@ public final class SpannerGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.v1.PartitionResponse>
         partitionQuery(com.google.spanner.v1.PartitionQueryRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getPartitionQueryMethod(), getCallOptions()), request);
     }
 
@@ -2001,7 +2038,7 @@ public final class SpannerGrpc {
     public com.google.common.util.concurrent.ListenableFuture<
             com.google.spanner.v1.PartitionResponse>
         partitionRead(com.google.spanner.v1.PartitionReadRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getPartitionReadMethod(), getCallOptions()), request);
     }
   }

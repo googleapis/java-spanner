@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ import com.google.spanner.v1.PartitionQueryRequest;
 import com.google.spanner.v1.PartitionReadRequest;
 import com.google.spanner.v1.PartitionResponse;
 import com.google.spanner.v1.ReadRequest;
+import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
@@ -89,9 +90,9 @@ import org.junit.Test;
 @Generated("by gapic-generator-java")
 public class SpannerClientTest {
   private static MockServiceHelper mockServiceHelper;
-  private SpannerClient client;
   private static MockSpanner mockSpanner;
   private LocalChannelProvider channelProvider;
+  private SpannerClient client;
 
   @BeforeClass
   public static void startStaticServer() {
@@ -548,6 +549,7 @@ public class SpannerClientTest {
             .setPartitionToken(ByteString.EMPTY)
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
+            .setRequestOptions(RequestOptions.newBuilder().build())
             .build();
 
     ResultSet actualResponse = client.executeSql(request);
@@ -567,6 +569,7 @@ public class SpannerClientTest {
     Assert.assertEquals(request.getPartitionToken(), actualRequest.getPartitionToken());
     Assert.assertEquals(request.getSeqno(), actualRequest.getSeqno());
     Assert.assertEquals(request.getQueryOptions(), actualRequest.getQueryOptions());
+    Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
     Assert.assertTrue(
         channelProvider.isHeaderSent(
             ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
@@ -591,6 +594,7 @@ public class SpannerClientTest {
               .setPartitionToken(ByteString.EMPTY)
               .setSeqno(109325920)
               .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
+              .setRequestOptions(RequestOptions.newBuilder().build())
               .build();
       client.executeSql(request);
       Assert.fail("No exception raised");
@@ -622,6 +626,7 @@ public class SpannerClientTest {
             .setPartitionToken(ByteString.EMPTY)
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
+            .setRequestOptions(RequestOptions.newBuilder().build())
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
@@ -651,6 +656,7 @@ public class SpannerClientTest {
             .setPartitionToken(ByteString.EMPTY)
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
+            .setRequestOptions(RequestOptions.newBuilder().build())
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
@@ -685,6 +691,7 @@ public class SpannerClientTest {
             .setTransaction(TransactionSelector.newBuilder().build())
             .addAllStatements(new ArrayList<ExecuteBatchDmlRequest.Statement>())
             .setSeqno(109325920)
+            .setRequestOptions(RequestOptions.newBuilder().build())
             .build();
 
     ExecuteBatchDmlResponse actualResponse = client.executeBatchDml(request);
@@ -698,6 +705,7 @@ public class SpannerClientTest {
     Assert.assertEquals(request.getTransaction(), actualRequest.getTransaction());
     Assert.assertEquals(request.getStatementsList(), actualRequest.getStatementsList());
     Assert.assertEquals(request.getSeqno(), actualRequest.getSeqno());
+    Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
     Assert.assertTrue(
         channelProvider.isHeaderSent(
             ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
@@ -717,6 +725,7 @@ public class SpannerClientTest {
               .setTransaction(TransactionSelector.newBuilder().build())
               .addAllStatements(new ArrayList<ExecuteBatchDmlRequest.Statement>())
               .setSeqno(109325920)
+              .setRequestOptions(RequestOptions.newBuilder().build())
               .build();
       client.executeBatchDml(request);
       Assert.fail("No exception raised");
@@ -747,6 +756,7 @@ public class SpannerClientTest {
             .setLimit(102976443)
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
+            .setRequestOptions(RequestOptions.newBuilder().build())
             .build();
 
     ResultSet actualResponse = client.read(request);
@@ -765,6 +775,7 @@ public class SpannerClientTest {
     Assert.assertEquals(request.getLimit(), actualRequest.getLimit());
     Assert.assertEquals(request.getResumeToken(), actualRequest.getResumeToken());
     Assert.assertEquals(request.getPartitionToken(), actualRequest.getPartitionToken());
+    Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
     Assert.assertTrue(
         channelProvider.isHeaderSent(
             ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
@@ -789,6 +800,7 @@ public class SpannerClientTest {
               .setLimit(102976443)
               .setResumeToken(ByteString.EMPTY)
               .setPartitionToken(ByteString.EMPTY)
+              .setRequestOptions(RequestOptions.newBuilder().build())
               .build();
       client.read(request);
       Assert.fail("No exception raised");
@@ -820,6 +832,7 @@ public class SpannerClientTest {
             .setLimit(102976443)
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
+            .setRequestOptions(RequestOptions.newBuilder().build())
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
@@ -849,6 +862,7 @@ public class SpannerClientTest {
             .setLimit(102976443)
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
+            .setRequestOptions(RequestOptions.newBuilder().build())
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
@@ -954,7 +968,10 @@ public class SpannerClientTest {
   @Test
   public void commitTest() throws Exception {
     CommitResponse expectedResponse =
-        CommitResponse.newBuilder().setCommitTimestamp(Timestamp.newBuilder().build()).build();
+        CommitResponse.newBuilder()
+            .setCommitTimestamp(Timestamp.newBuilder().build())
+            .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .build();
     mockSpanner.addResponse(expectedResponse);
 
     SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
@@ -996,7 +1013,10 @@ public class SpannerClientTest {
   @Test
   public void commitTest2() throws Exception {
     CommitResponse expectedResponse =
-        CommitResponse.newBuilder().setCommitTimestamp(Timestamp.newBuilder().build()).build();
+        CommitResponse.newBuilder()
+            .setCommitTimestamp(Timestamp.newBuilder().build())
+            .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .build();
     mockSpanner.addResponse(expectedResponse);
 
     SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
@@ -1038,7 +1058,10 @@ public class SpannerClientTest {
   @Test
   public void commitTest3() throws Exception {
     CommitResponse expectedResponse =
-        CommitResponse.newBuilder().setCommitTimestamp(Timestamp.newBuilder().build()).build();
+        CommitResponse.newBuilder()
+            .setCommitTimestamp(Timestamp.newBuilder().build())
+            .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .build();
     mockSpanner.addResponse(expectedResponse);
 
     String session = "session1984987798";
@@ -1080,7 +1103,10 @@ public class SpannerClientTest {
   @Test
   public void commitTest4() throws Exception {
     CommitResponse expectedResponse =
-        CommitResponse.newBuilder().setCommitTimestamp(Timestamp.newBuilder().build()).build();
+        CommitResponse.newBuilder()
+            .setCommitTimestamp(Timestamp.newBuilder().build())
+            .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
+            .build();
     mockSpanner.addResponse(expectedResponse);
 
     String session = "session1984987798";

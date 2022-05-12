@@ -62,7 +62,7 @@ public class PartitionOptions implements Serializable {
 
     /*
      * The desired maximum number of partitions to return. For example, this may be set to the
-     * number of workers available. This is only a hint and may provide differene results based on
+     * number of workers available. This is only a hint and may provide different results based on
      * the request.
      *
      * @param maxPartitions configuration for count of the partitions returned

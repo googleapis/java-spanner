@@ -37,8 +37,8 @@ import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_L
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
+import static com.google.common.base.Preconditions.checkState;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
@@ -68,7 +68,6 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.Empty;
 import io.opencensus.common.Scope;
-import io.opencensus.common.ToLongFunction;
 import io.opencensus.metrics.DerivedLongCumulative;
 import io.opencensus.metrics.DerivedLongGauge;
 import io.opencensus.metrics.LabelValue;
@@ -77,6 +76,7 @@ import io.opencensus.metrics.MetricRegistry;
 import io.opencensus.metrics.Metrics;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.AttributeValue;
+import io.opencensus.trace.BlankSpan;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracer;
@@ -174,14 +174,11 @@ class SessionPool {
       @Override
       public ApiFuture<Void> setCallback(Executor exec, ReadyCallback cb) {
         Runnable listener =
-            new Runnable() {
-              @Override
-              public void run() {
-                synchronized (lock) {
-                  if (asyncOperationsCount.decrementAndGet() == 0 && closed) {
-                    // All async operations for this read context have finished.
-                    AutoClosingReadContext.this.close();
-                  }
+            () -> {
+              synchronized (lock) {
+                if (asyncOperationsCount.decrementAndGet() == 0 && closed) {
+                  // All async operations for this read context have finished.
+                  AutoClosingReadContext.this.close();
                 }
               }
             };
@@ -203,7 +200,7 @@ class SessionPool {
     private final boolean isSingleUse;
     private final AtomicInteger asyncOperationsCount = new AtomicInteger();
 
-    private Object lock = new Object();
+    private final Object lock = new Object();
 
     @GuardedBy("lock")
     private boolean sessionUsedForQuery = false;
@@ -580,14 +577,11 @@ class SessionPool {
     public ApiFuture<Void> setCallback(Executor executor, final ReadyCallback callback) {
       return super.setCallback(
           executor,
-          new ReadyCallback() {
-            @Override
-            public CallbackResponse cursorReady(AsyncResultSet resultSet) {
-              try {
-                return callback.cursorReady(resultSet);
-              } catch (SessionNotFoundException e) {
-                throw handler.handleSessionNotFound(e);
-              }
+          resultSet -> {
+            try {
+              return callback.cursorReady(resultSet);
+            } catch (SessionNotFoundException e) {
+              throw handler.handleSessionNotFound(e);
             }
           });
     }
@@ -669,11 +663,8 @@ class SessionPool {
         return ApiFutures.catching(
             AbstractReadContext.consumeSingleRowAsync(rs),
             SessionNotFoundException.class,
-            new ApiFunction<SessionNotFoundException, Struct>() {
-              @Override
-              public Struct apply(SessionNotFoundException input) {
-                throw handler.handleSessionNotFound(input);
-              }
+            input -> {
+              throw handler.handleSessionNotFound(input);
             },
             MoreExecutors.directExecutor());
       }
@@ -682,6 +673,11 @@ class SessionPool {
     @Override
     public void buffer(Mutation mutation) {
       delegate.buffer(mutation);
+    }
+
+    @Override
+    public ApiFuture<Void> bufferAsync(Mutation mutation) {
+      return delegate.bufferAsync(mutation);
     }
 
     @Override
@@ -700,11 +696,8 @@ class SessionPool {
         return ApiFutures.catching(
             AbstractReadContext.consumeSingleRowAsync(rs),
             SessionNotFoundException.class,
-            new ApiFunction<SessionNotFoundException, Struct>() {
-              @Override
-              public Struct apply(SessionNotFoundException input) {
-                throw handler.handleSessionNotFound(input);
-              }
+            input -> {
+              throw handler.handleSessionNotFound(input);
             },
             MoreExecutors.directExecutor());
       }
@@ -713,6 +706,11 @@ class SessionPool {
     @Override
     public void buffer(Iterable<Mutation> mutations) {
       delegate.buffer(mutations);
+    }
+
+    @Override
+    public ApiFuture<Void> bufferAsync(Iterable<Mutation> mutations) {
+      return delegate.bufferAsync(mutations);
     }
 
     @Override
@@ -729,11 +727,8 @@ class SessionPool {
       return ApiFutures.catching(
           delegate.executeUpdateAsync(statement, options),
           SessionNotFoundException.class,
-          new ApiFunction<SessionNotFoundException, Long>() {
-            @Override
-            public Long apply(SessionNotFoundException input) {
-              throw handler.handleSessionNotFound(input);
-            }
+          input -> {
+            throw handler.handleSessionNotFound(input);
           },
           MoreExecutors.directExecutor());
     }
@@ -753,11 +748,8 @@ class SessionPool {
       return ApiFutures.catching(
           delegate.batchUpdateAsync(statements, options),
           SessionNotFoundException.class,
-          new ApiFunction<SessionNotFoundException, long[]>() {
-            @Override
-            public long[] apply(SessionNotFoundException input) {
-              throw handler.handleSessionNotFound(input);
-            }
+          input -> {
+            throw handler.handleSessionNotFound(input);
           },
           MoreExecutors.directExecutor());
     }
@@ -814,13 +806,21 @@ class SessionPool {
     }
 
     @Override
-    public SpannerException handleSessionNotFound(SessionNotFoundException notFound) {
-      session = sessionPool.replaceSession(notFound, session);
+    public SpannerException handleSessionNotFound(SessionNotFoundException notFoundException) {
+      session = sessionPool.replaceSession(notFoundException, session);
       PooledSession pooledSession = session.get();
       delegate = pooledSession.delegate.transactionManager(options);
       restartedAfterSessionNotFound = true;
+      return createAbortedExceptionWithMinimalRetryDelay(notFoundException);
+    }
+
+    private static SpannerException createAbortedExceptionWithMinimalRetryDelay(
+        SessionNotFoundException notFoundException) {
       return SpannerExceptionFactory.newSpannerException(
-          ErrorCode.ABORTED, notFound.getMessage(), notFound);
+          ErrorCode.ABORTED,
+          notFoundException.getMessage(),
+          SpannerExceptionFactory.createAbortedExceptionWithRetryDelay(
+              notFoundException.getMessage(), notFoundException, 0, 1));
     }
 
     @Override
@@ -859,7 +859,7 @@ class SessionPool {
         } catch (SessionNotFoundException e) {
           session = sessionPool.replaceSession(e, session);
           PooledSession pooledSession = session.get();
-          delegate = pooledSession.delegate.transactionManager();
+          delegate = pooledSession.delegate.transactionManager(options);
           restartedAfterSessionNotFound = true;
         }
       }
@@ -868,6 +868,11 @@ class SessionPool {
     @Override
     public Timestamp getCommitTimestamp() {
       return delegate.getCommitTimestamp();
+    }
+
+    @Override
+    public CommitResponse getCommitResponse() {
+      return delegate.getCommitResponse();
     }
 
     @Override
@@ -949,6 +954,11 @@ class SessionPool {
     }
 
     @Override
+    public CommitResponse getCommitResponse() {
+      return getRunner().getCommitResponse();
+    }
+
+    @Override
     public TransactionRunner allowNestedTransaction() {
       getRunner().allowNestedTransaction();
       return this;
@@ -959,7 +969,7 @@ class SessionPool {
     private final SessionPool sessionPool;
     private volatile PooledSessionFuture session;
     private final TransactionOption[] options;
-    private final SettableApiFuture<Timestamp> commitTimestamp = SettableApiFuture.create();
+    private SettableApiFuture<CommitResponse> commitResponse;
 
     private SessionPoolAsyncRunner(
         SessionPool sessionPool, PooledSessionFuture session, TransactionOption... options) {
@@ -970,67 +980,73 @@ class SessionPool {
 
     @Override
     public <R> ApiFuture<R> runAsync(final AsyncWork<R> work, Executor executor) {
+      commitResponse = SettableApiFuture.create();
       final SettableApiFuture<R> res = SettableApiFuture.create();
       executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              SpannerException exception = null;
-              R r = null;
-              AsyncRunner runner = null;
-              while (true) {
-                SpannerException se = null;
-                try {
-                  runner = session.get().runAsync(options);
-                  r = runner.runAsync(work, MoreExecutors.directExecutor()).get();
-                  break;
-                } catch (ExecutionException e) {
-                  se = SpannerExceptionFactory.asSpannerException(e.getCause());
-                } catch (InterruptedException e) {
-                  se = SpannerExceptionFactory.propagateInterrupt(e);
-                } catch (Throwable t) {
-                  se = SpannerExceptionFactory.newSpannerException(t);
-                } finally {
-                  if (se instanceof SessionNotFoundException) {
-                    try {
-                      // The replaceSession method will re-throw the SessionNotFoundException if the
-                      // session cannot be replaced with a new one.
-                      session = sessionPool.replaceSession((SessionNotFoundException) se, session);
-                      se = null;
-                    } catch (SessionNotFoundException e) {
-                      exception = e;
-                      break;
-                    }
-                  } else {
-                    exception = se;
+          () -> {
+            SpannerException exception = null;
+            R r = null;
+            AsyncRunner runner = null;
+            while (true) {
+              SpannerException se = null;
+              try {
+                runner = session.get().runAsync(options);
+                r = runner.runAsync(work, MoreExecutors.directExecutor()).get();
+                break;
+              } catch (ExecutionException e) {
+                se = SpannerExceptionFactory.asSpannerException(e.getCause());
+              } catch (InterruptedException e) {
+                se = SpannerExceptionFactory.propagateInterrupt(e);
+              } catch (Throwable t) {
+                se = SpannerExceptionFactory.newSpannerException(t);
+              } finally {
+                if (se instanceof SessionNotFoundException) {
+                  try {
+                    // The replaceSession method will re-throw the SessionNotFoundException if the
+                    // session cannot be replaced with a new one.
+                    session = sessionPool.replaceSession((SessionNotFoundException) se, session);
+                    se = null;
+                  } catch (SessionNotFoundException e) {
+                    exception = e;
                     break;
                   }
+                } else {
+                  exception = se;
+                  break;
                 }
               }
-              session.get().markUsed();
-              session.close();
-              setCommitTimestamp(runner);
-              if (exception != null) {
-                res.setException(exception);
-              } else {
-                res.set(r);
-              }
+            }
+            session.get().markUsed();
+            session.close();
+            setCommitResponse(runner);
+            if (exception != null) {
+              res.setException(exception);
+            } else {
+              res.set(r);
             }
           });
       return res;
     }
 
-    private void setCommitTimestamp(AsyncRunner delegate) {
+    private void setCommitResponse(AsyncRunner delegate) {
       try {
-        commitTimestamp.set(delegate.getCommitTimestamp().get());
+        commitResponse.set(delegate.getCommitResponse().get());
       } catch (Throwable t) {
-        commitTimestamp.setException(t);
+        commitResponse.setException(t);
       }
     }
 
     @Override
     public ApiFuture<Timestamp> getCommitTimestamp() {
-      return commitTimestamp;
+      checkState(commitResponse != null, "runAsync() has not yet been called");
+      return ApiFutures.transform(
+          commitResponse, CommitResponse::getCommitTimestamp, MoreExecutors.directExecutor());
+    }
+
+    @Override
+    public ApiFuture<CommitResponse> getCommitResponse() {
+      checkState(commitResponse != null, "runAsync() has not yet been called");
+      return commitResponse;
     }
   }
 
@@ -1111,12 +1127,9 @@ class SessionPool {
     public ReadContext singleUse() {
       try {
         return new AutoClosingReadContext<>(
-            new Function<PooledSessionFuture, ReadContext>() {
-              @Override
-              public ReadContext apply(PooledSessionFuture session) {
-                PooledSession ps = session.get();
-                return ps.delegate.singleUse();
-              }
+            session -> {
+              PooledSession ps = session.get();
+              return ps.delegate.singleUse();
             },
             SessionPool.this,
             this,
@@ -1131,12 +1144,9 @@ class SessionPool {
     public ReadContext singleUse(final TimestampBound bound) {
       try {
         return new AutoClosingReadContext<>(
-            new Function<PooledSessionFuture, ReadContext>() {
-              @Override
-              public ReadContext apply(PooledSessionFuture session) {
-                PooledSession ps = session.get();
-                return ps.delegate.singleUse(bound);
-              }
+            session -> {
+              PooledSession ps = session.get();
+              return ps.delegate.singleUse(bound);
             },
             SessionPool.this,
             this,
@@ -1150,12 +1160,9 @@ class SessionPool {
     @Override
     public ReadOnlyTransaction singleUseReadOnlyTransaction() {
       return internalReadOnlyTransaction(
-          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
-            @Override
-            public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              PooledSession ps = session.get();
-              return ps.delegate.singleUseReadOnlyTransaction();
-            }
+          session -> {
+            PooledSession ps = session.get();
+            return ps.delegate.singleUseReadOnlyTransaction();
           },
           true);
     }
@@ -1163,12 +1170,9 @@ class SessionPool {
     @Override
     public ReadOnlyTransaction singleUseReadOnlyTransaction(final TimestampBound bound) {
       return internalReadOnlyTransaction(
-          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
-            @Override
-            public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              PooledSession ps = session.get();
-              return ps.delegate.singleUseReadOnlyTransaction(bound);
-            }
+          session -> {
+            PooledSession ps = session.get();
+            return ps.delegate.singleUseReadOnlyTransaction(bound);
           },
           true);
     }
@@ -1176,12 +1180,9 @@ class SessionPool {
     @Override
     public ReadOnlyTransaction readOnlyTransaction() {
       return internalReadOnlyTransaction(
-          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
-            @Override
-            public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              PooledSession ps = session.get();
-              return ps.delegate.readOnlyTransaction();
-            }
+          session -> {
+            PooledSession ps = session.get();
+            return ps.delegate.readOnlyTransaction();
           },
           false);
     }
@@ -1189,12 +1190,9 @@ class SessionPool {
     @Override
     public ReadOnlyTransaction readOnlyTransaction(final TimestampBound bound) {
       return internalReadOnlyTransaction(
-          new Function<PooledSessionFuture, ReadOnlyTransaction>() {
-            @Override
-            public ReadOnlyTransaction apply(PooledSessionFuture session) {
-              PooledSession ps = session.get();
-              return ps.delegate.readOnlyTransaction(bound);
-            }
+          session -> {
+            PooledSession ps = session.get();
+            return ps.delegate.readOnlyTransaction(bound);
           },
           false);
     }
@@ -1252,25 +1250,27 @@ class SessionPool {
 
     @Override
     public void close() {
-      synchronized (lock) {
-        leakedException = null;
-        checkedOutSessions.remove(this);
-      }
-      PooledSession delegate = getOrNull();
-      if (delegate != null) {
-        delegate.close();
+      try {
+        asyncClose().get();
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      } catch (ExecutionException e) {
+        throw SpannerExceptionFactory.asSpannerException(e.getCause());
       }
     }
 
     @Override
     public ApiFuture<Empty> asyncClose() {
-      synchronized (lock) {
-        leakedException = null;
-        checkedOutSessions.remove(this);
-      }
-      PooledSession delegate = getOrNull();
-      if (delegate != null) {
-        return delegate.asyncClose();
+      try {
+        PooledSession delegate = getOrNull();
+        if (delegate != null) {
+          return delegate.asyncClose();
+        }
+      } finally {
+        synchronized (lock) {
+          leakedException = null;
+          checkedOutSessions.remove(this);
+        }
       }
       return ApiFutures.immediateFuture(Empty.getDefaultInstance());
     }
@@ -1472,11 +1472,43 @@ class SessionPool {
 
     private void keepAlive() {
       markUsed();
+      final Span previousSpan = delegate.getCurrentSpan();
+      delegate.setCurrentSpan(BlankSpan.INSTANCE);
       try (ResultSet resultSet =
           delegate
               .singleUse(TimestampBound.ofMaxStaleness(60, TimeUnit.SECONDS))
               .executeQuery(Statement.newBuilder("SELECT 1").build())) {
         resultSet.next();
+      } finally {
+        delegate.setCurrentSpan(previousSpan);
+      }
+    }
+
+    private void determineDialectAsync(final SettableFuture<Dialect> dialect) {
+      Preconditions.checkNotNull(dialect);
+      executor.submit(
+          () -> {
+            try {
+              dialect.set(determineDialect());
+            } catch (Throwable t) {
+              // Catch-all as we want to propagate all exceptions to anyone who might be interested
+              // in the database dialect, and there's nothing sensible that we can do with it here.
+              dialect.setException(t);
+            } finally {
+              releaseSession(this, Position.FIRST);
+            }
+          });
+    }
+
+    private Dialect determineDialect() {
+      try (ResultSet dialectResultSet =
+          delegate.singleUse().executeQuery(DETERMINE_DIALECT_STATEMENT)) {
+        if (dialectResultSet.next()) {
+          return Dialect.fromName(dialectResultSet.getString(0));
+        } else {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.NOT_FOUND, "No dialect found for database");
+        }
       }
     }
 
@@ -1582,14 +1614,15 @@ class SessionPool {
     @VisibleForTesting final long loopFrequency = options.getLoopFrequency();
     // Number of loop iterations in which we need to to close all the sessions waiting for closure.
     @VisibleForTesting final long numClosureCycles = windowLength.toMillis() / loopFrequency;
-    private final Duration keepAliveMilis =
+    private final Duration keepAliveMillis =
         Duration.ofMillis(TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()));
     // Number of loop iterations in which we need to keep alive all the sessions
-    @VisibleForTesting final long numKeepAliveCycles = keepAliveMilis.toMillis() / loopFrequency;
+    @VisibleForTesting final long numKeepAliveCycles = keepAliveMillis.toMillis() / loopFrequency;
 
     Instant lastResetTime = Instant.ofEpochMilli(0);
     int numSessionsToClose = 0;
     int sessionsToClosePerLoop = 0;
+    boolean closed = false;
 
     @GuardedBy("lock")
     ScheduledFuture<?> scheduledFuture;
@@ -1602,31 +1635,32 @@ class SessionPool {
       synchronized (lock) {
         scheduledFuture =
             executor.scheduleAtFixedRate(
-                new Runnable() {
-                  @Override
-                  public void run() {
-                    maintainPool();
-                  }
-                },
-                loopFrequency,
-                loopFrequency,
-                TimeUnit.MILLISECONDS);
+                this::maintainPool, loopFrequency, loopFrequency, TimeUnit.MILLISECONDS);
       }
     }
 
     void close() {
       synchronized (lock) {
-        scheduledFuture.cancel(false);
-        if (!running) {
-          decrementPendingClosures(1);
+        if (!closed) {
+          closed = true;
+          scheduledFuture.cancel(false);
+          if (!running) {
+            decrementPendingClosures(1);
+          }
         }
+      }
+    }
+
+    boolean isClosed() {
+      synchronized (lock) {
+        return closed;
       }
     }
 
     // Does various pool maintenance activities.
     void maintainPool() {
       synchronized (lock) {
-        if (isClosed()) {
+        if (SessionPool.this.isClosed()) {
           return;
         }
         running = true;
@@ -1638,7 +1672,7 @@ class SessionPool {
       replenishPool();
       synchronized (lock) {
         running = false;
-        if (isClosed()) {
+        if (SessionPool.this.isClosed()) {
           decrementPendingClosures(1);
         }
       }
@@ -1680,7 +1714,7 @@ class SessionPool {
                         / numKeepAliveCycles);
       }
       // Now go over all the remaining sessions and see if they need to be kept alive explicitly.
-      Instant keepAliveThreshold = currTime.minus(keepAliveMilis);
+      Instant keepAliveThreshold = currTime.minus(keepAliveMillis);
 
       // Keep chugging till there is no session that needs to be kept alive.
       while (numSessionsToKeepAlive > 0) {
@@ -1713,12 +1747,32 @@ class SessionPool {
     }
   }
 
-  private static enum Position {
+  private enum Position {
     FIRST,
-    RANDOM;
+    RANDOM
   }
 
+  /**
+   * This statement is (currently) used to determine the dialect of the database that is used by the
+   * session pool. This statement is subject to change when the INFORMATION_SCHEMA contains a table
+   * where the dialect of the database can be read directly, and any tests that want to detect the
+   * specific 'determine dialect statement' should rely on this constant instead of the actual
+   * value.
+   */
+  @VisibleForTesting
+  static final Statement DETERMINE_DIALECT_STATEMENT =
+      Statement.newBuilder(
+              "SELECT 'POSTGRESQL' AS DIALECT\n"
+                  + "FROM INFORMATION_SCHEMA.SCHEMATA\n"
+                  + "WHERE SCHEMA_NAME='information_schema'\n"
+                  + "UNION ALL\n"
+                  + "SELECT 'GOOGLE_STANDARD_SQL' AS DIALECT\n"
+                  + "FROM INFORMATION_SCHEMA.SCHEMATA\n"
+                  + "WHERE SCHEMA_NAME='INFORMATION_SCHEMA' AND CATALOG_NAME=''")
+          .build();
+
   private final SessionPoolOptions options;
+  private final SettableFuture<Dialect> dialect = SettableFuture.create();
   private final SessionClient sessionClient;
   private final ScheduledExecutorService executor;
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
@@ -1727,6 +1781,9 @@ class SessionPool {
   private final Clock clock;
   private final Object lock = new Object();
   private final Random random = new Random();
+
+  @GuardedBy("lock")
+  private boolean detectDialectStarted;
 
   @GuardedBy("lock")
   private int pendingClosure;
@@ -1773,7 +1830,8 @@ class SessionPool {
   private final Set<PooledSession> allSessions = new HashSet<>();
 
   @GuardedBy("lock")
-  private final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
+  @VisibleForTesting
+  final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
 
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
 
@@ -1852,6 +1910,39 @@ class SessionPool {
     this.clock = clock;
     this.poolMaintainer = new PoolMaintainer();
     this.initMetricsCollection(metricRegistry, labelValues);
+  }
+
+  /**
+   * @return the {@link Dialect} of the underlying database. This method will block until the
+   *     dialect is available. It will potentially execute one or two RPCs to get the dialect if
+   *     necessary: One to create a session if there are no sessions in the pool (yet), and one to
+   *     query the database for the dialect that is used. It is recommended that clients that always
+   *     need to know the dialect set {@link
+   *     SessionPoolOptions.Builder#setAutoDetectDialect(boolean)} to true. This will ensure that
+   *     the dialect is fetched automatically in a background task when a session pool is created.
+   */
+  Dialect getDialect() {
+    boolean mustDetectDialect = false;
+    synchronized (lock) {
+      if (!detectDialectStarted) {
+        mustDetectDialect = true;
+        detectDialectStarted = true;
+      }
+    }
+    if (mustDetectDialect) {
+      try (PooledSessionFuture session = getSession()) {
+        dialect.set(session.get().determineDialect());
+      }
+    }
+    try {
+      return dialect.get(60L, TimeUnit.SECONDS);
+    } catch (ExecutionException executionException) {
+      throw SpannerExceptionFactory.asSpannerException(executionException);
+    } catch (InterruptedException interruptedException) {
+      throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
+    } catch (TimeoutException timeoutException) {
+      throw SpannerExceptionFactory.propagateTimeout(timeoutException);
+    }
   }
 
   @VisibleForTesting
@@ -2022,7 +2113,7 @@ class SessionPool {
       logger.log(
           Level.FINE,
           "No session available in the pool. Blocking for one to become available/created");
-      span.addAnnotation(String.format("Waiting for a session to come available"));
+      span.addAnnotation("Waiting for a session to come available");
       sessionFuture = waiter;
     } else {
       SettableFuture<PooledSession> fut = SettableFuture.create();
@@ -2119,8 +2210,12 @@ class SessionPool {
           break;
         }
       }
+      if (!dialect.isDone()) {
+        dialect.setException(e);
+      }
       if (isDatabaseOrInstanceNotFound(e)) {
         setResourceNotFoundException((ResourceNotFoundException) e);
+        poolMaintainer.close();
       }
     }
   }
@@ -2156,10 +2251,14 @@ class SessionPool {
       }
       closureFuture = SettableFuture.create();
       retFuture = closureFuture;
-      pendingClosure =
-          totalSessions() + numSessionsBeingCreated + 1 /* For pool maintenance thread */;
 
-      poolMaintainer.close();
+      pendingClosure = totalSessions() + numSessionsBeingCreated;
+
+      if (!poolMaintainer.isClosed()) {
+        pendingClosure += 1; // For pool maintenance thread
+        poolMaintainer.close();
+      }
+
       sessions.clear();
       for (PooledSessionFuture session : checkedOutSessions) {
         if (session.leakedException != null) {
@@ -2175,15 +2274,14 @@ class SessionPool {
           closeSessionAsync(session);
         }
       }
+
+      // Nothing to be closed, mark as complete
+      if (pendingClosure == 0) {
+        closureFuture.set(null);
+      }
     }
-    retFuture.addListener(
-        new Runnable() {
-          @Override
-          public void run() {
-            executorFactory.release(executor);
-          }
-        },
-        MoreExecutors.directExecutor());
+
+    retFuture.addListener(() -> executorFactory.release(executor), MoreExecutors.directExecutor());
     return retFuture;
   }
 
@@ -2203,20 +2301,17 @@ class SessionPool {
   private ApiFuture<Empty> closeSessionAsync(final PooledSession sess) {
     ApiFuture<Empty> res = sess.delegate.asyncClose();
     res.addListener(
-        new Runnable() {
-          @Override
-          public void run() {
-            synchronized (lock) {
-              allSessions.remove(sess);
-              if (isClosed()) {
-                decrementPendingClosures(1);
-                return;
-              }
-              // Create a new session if needed to unblock some waiter.
-              if (numWaiters() > numSessionsBeingCreated) {
-                createSessions(
-                    getAllowedCreateSessions(numWaiters() - numSessionsBeingCreated), false);
-              }
+        () -> {
+          synchronized (lock) {
+            allSessions.remove(sess);
+            if (isClosed()) {
+              decrementPendingClosures(1);
+              return;
+            }
+            // Create a new session if needed to unblock some waiter.
+            if (numWaiters() > numSessionsBeingCreated) {
+              createSessions(
+                  getAllowedCreateSessions(numWaiters() - numSessionsBeingCreated), false);
             }
           }
         },
@@ -2282,10 +2377,17 @@ class SessionPool {
         } else {
           Preconditions.checkState(totalSessions() <= options.getMaxSessions() - 1);
           allSessions.add(pooledSession);
-          // Release the session to a random position in the pool to prevent the case that a batch
-          // of sessions that are affiliated with the same channel are all placed sequentially in
-          // the pool.
-          releaseSession(pooledSession, Position.RANDOM);
+          if (options.isAutoDetectDialect() && !detectDialectStarted) {
+            // Get the dialect of the underlying database if that has not yet been done. Note that
+            // this method will release the session into the pool once it is done.
+            detectDialectStarted = true;
+            pooledSession.determineDialectAsync(SessionPool.this.dialect);
+          } else {
+            // Release the session to a random position in the pool to prevent the case that a batch
+            // of sessions that are affiliated with the same channel are all placed sequentially in
+            // the pool.
+            releaseSession(pooledSession, Position.RANDOM);
+          }
         }
       }
       if (closeSession) {
@@ -2370,108 +2472,57 @@ class SessionPool {
 
     // The value of a maxSessionsInUse is observed from a callback function. This function is
     // invoked whenever metrics are collected.
+    maxInUseSessionsMetric.removeTimeSeries(labelValues);
     maxInUseSessionsMetric.createTimeSeries(
-        labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.maxSessionsInUse;
-          }
-        });
+        labelValues, this, sessionPool -> sessionPool.maxSessionsInUse);
 
     // The value of a maxSessions is observed from a callback function. This function is invoked
     // whenever metrics are collected.
+    maxAllowedSessionsMetric.removeTimeSeries(labelValues);
     maxAllowedSessionsMetric.createTimeSeries(
-        labelValues,
-        options,
-        new ToLongFunction<SessionPoolOptions>() {
-          @Override
-          public long applyAsLong(SessionPoolOptions options) {
-            return options.getMaxSessions();
-          }
-        });
+        labelValues, options, SessionPoolOptions::getMaxSessions);
 
     // The value of a numWaiterTimeouts is observed from a callback function. This function is
     // invoked whenever metrics are collected.
-    sessionsTimeouts.createTimeSeries(
-        labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.getNumWaiterTimeouts();
-          }
-        });
+    sessionsTimeouts.removeTimeSeries(labelValues);
+    sessionsTimeouts.createTimeSeries(labelValues, this, SessionPool::getNumWaiterTimeouts);
 
+    numAcquiredSessionsMetric.removeTimeSeries(labelValues);
     numAcquiredSessionsMetric.createTimeSeries(
-        labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.numSessionsAcquired;
-          }
-        });
+        labelValues, this, sessionPool -> sessionPool.numSessionsAcquired);
 
+    numReleasedSessionsMetric.removeTimeSeries(labelValues);
     numReleasedSessionsMetric.createTimeSeries(
-        labelValues,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.numSessionsReleased;
-          }
-        });
+        labelValues, this, sessionPool -> sessionPool.numSessionsReleased);
 
     List<LabelValue> labelValuesWithBeingPreparedType = new ArrayList<>(labelValues);
     labelValuesWithBeingPreparedType.add(NUM_SESSIONS_BEING_PREPARED);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithBeingPreparedType);
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithBeingPreparedType,
         this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            // TODO: Remove metric.
-            return 0L;
-          }
-        });
+        // TODO: Remove metric.
+        ignored -> 0L);
 
     List<LabelValue> labelValuesWithInUseType = new ArrayList<>(labelValues);
     labelValuesWithInUseType.add(NUM_IN_USE_SESSIONS);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithInUseType);
     numSessionsInPoolMetric.createTimeSeries(
-        labelValuesWithInUseType,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.numSessionsInUse;
-          }
-        });
+        labelValuesWithInUseType, this, sessionPool -> sessionPool.numSessionsInUse);
 
     List<LabelValue> labelValuesWithReadType = new ArrayList<>(labelValues);
     labelValuesWithReadType.add(NUM_READ_SESSIONS);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithReadType);
     numSessionsInPoolMetric.createTimeSeries(
-        labelValuesWithReadType,
-        this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            return sessionPool.sessions.size();
-          }
-        });
+        labelValuesWithReadType, this, sessionPool -> sessionPool.sessions.size());
 
     List<LabelValue> labelValuesWithWriteType = new ArrayList<>(labelValues);
     labelValuesWithWriteType.add(NUM_WRITE_SESSIONS);
+    numSessionsInPoolMetric.removeTimeSeries(labelValuesWithWriteType);
     numSessionsInPoolMetric.createTimeSeries(
         labelValuesWithWriteType,
         this,
-        new ToLongFunction<SessionPool>() {
-          @Override
-          public long applyAsLong(SessionPool sessionPool) {
-            // TODO: Remove metric.
-            return 0L;
-          }
-        });
+        // TODO: Remove metric.
+        ignored -> 0L);
   }
 }

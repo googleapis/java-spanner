@@ -21,6 +21,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -124,12 +125,12 @@ public class SqlScriptVerifier extends AbstractSqlScriptVerifier {
     }
 
     @Override
-    protected int getColumnCount() throws Exception {
+    protected int getColumnCount() {
       return resultSet.getColumnCount();
     }
 
     @Override
-    protected Object getFirstValue() throws Exception {
+    protected Object getFirstValue() {
       return getValue(resultSet.getType().getStructFields().get(0).getName());
     }
   }
@@ -151,10 +152,15 @@ public class SqlScriptVerifier extends AbstractSqlScriptVerifier {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
       if (this.connection != null) {
         this.connection.close();
       }
+    }
+
+    @Override
+    public Dialect getDialect() {
+      return connection.getDialect();
     }
   }
 

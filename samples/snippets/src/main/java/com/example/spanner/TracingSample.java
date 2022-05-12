@@ -22,6 +22,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.spi.v1.SpannerRpcViews;
 import io.opencensus.common.Scope;
 import io.opencensus.contrib.grpc.metrics.RpcViews;
 import io.opencensus.contrib.zpages.ZPageHandlers;
@@ -54,7 +55,9 @@ public class TracingSample {
 
     // Installs an exporter for stack driver stats.
     StackdriverStatsExporter.createAndRegister();
-    RpcViews.registerAllCumulativeViews();
+    RpcViews.registerAllGrpcViews();
+    // Capture GFE Latency and GFE Header missing count.
+    SpannerRpcViews.registerGfeLatencyAndHeaderMissingCountViews();
 
     // Name of your instance & database.
     String instanceId = args[0];

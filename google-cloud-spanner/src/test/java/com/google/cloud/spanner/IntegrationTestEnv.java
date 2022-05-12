@@ -19,12 +19,15 @@ package com.google.cloud.spanner;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.api.gax.paging.Page;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import io.grpc.Status;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.rules.ExternalResource;
@@ -42,6 +45,8 @@ public class IntegrationTestEnv extends ExternalResource {
   /** Names a property that provides the class name of the {@link TestEnvConfig} to use. */
   public static final String TEST_ENV_CONFIG_CLASS_NAME = "spanner.testenv.config.class";
 
+  public static final String CONFIG_CLASS = System.getProperty(TEST_ENV_CONFIG_CLASS_NAME, null);
+
   /**
    * Names a property that, if set, identifies an existing Cloud Spanner instance to use for tests.
    */
@@ -51,6 +56,7 @@ public class IntegrationTestEnv extends ExternalResource {
 
   private TestEnvConfig config;
   private InstanceAdminClient instanceAdminClient;
+  private DatabaseAdminClient databaseAdminClient;
   private boolean isOwnedInstance;
   private RemoteSpannerHelper testHelper;
 
@@ -62,12 +68,11 @@ public class IntegrationTestEnv extends ExternalResource {
   @SuppressWarnings("unchecked")
   protected void initializeConfig()
       throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-    String configClassName = System.getProperty(TEST_ENV_CONFIG_CLASS_NAME, null);
-    if (configClassName == null) {
+    if (CONFIG_CLASS == null) {
       throw new NullPointerException("Property " + TEST_ENV_CONFIG_CLASS_NAME + " needs to be set");
     }
     Class<? extends TestEnvConfig> configClass;
-    configClass = (Class<? extends TestEnvConfig>) Class.forName(configClassName);
+    configClass = (Class<? extends TestEnvConfig>) Class.forName(CONFIG_CLASS);
     config = configClass.newInstance();
   }
 
@@ -92,9 +97,12 @@ public class IntegrationTestEnv extends ExternalResource {
     }
     testHelper = createTestHelper(options, instanceId);
     instanceAdminClient = testHelper.getClient().getInstanceAdminClient();
+    databaseAdminClient = testHelper.getClient().getDatabaseAdminClient();
     logger.log(Level.FINE, "Test env endpoint is {0}", options.getHost());
     if (isOwnedInstance) {
       initializeInstance(instanceId);
+    } else {
+      cleanUpOldDatabases(instanceId);
     }
   }
 
@@ -159,6 +167,35 @@ public class IntegrationTestEnv extends ExternalResource {
       throw SpannerExceptionFactory.newSpannerException(e);
     }
     logger.log(Level.INFO, "Created test instance: {0}", createdInstance.getId());
+  }
+
+  private void cleanUpOldDatabases(InstanceId instanceId) {
+    long OLD_DB_THRESHOLD_SECS = TimeUnit.SECONDS.convert(24L, TimeUnit.HOURS);
+    Timestamp currentTimestamp = Timestamp.now();
+    int numDropped = 0;
+    Page<Database> page = databaseAdminClient.listDatabases(instanceId.getInstance());
+    String TEST_DB_REGEX = "(testdb_(.*)_(.*))|(mysample-(.*))";
+
+    logger.log(Level.INFO, "Dropping old test databases from {0}", instanceId.getName());
+    while (page != null) {
+      for (Database db : page.iterateAll()) {
+        try {
+          long timeDiff = currentTimestamp.getSeconds() - db.getCreateTime().getSeconds();
+          // Delete all databases which are more than OLD_DB_THRESHOLD_SECS seconds
+          // old.
+          if ((db.getId().getDatabase().matches(TEST_DB_REGEX))
+              && (timeDiff > OLD_DB_THRESHOLD_SECS)) {
+            logger.log(Level.INFO, "Dropping test database {0}", db.getId());
+            db.drop();
+            ++numDropped;
+          }
+        } catch (SpannerException e) {
+          logger.log(Level.SEVERE, "Failed to drop test database " + db.getId(), e);
+        }
+      }
+      page = page.getNextPage();
+    }
+    logger.log(Level.INFO, "Dropped {0} test database(s)", numDropped);
   }
 
   private void cleanUpInstance() {

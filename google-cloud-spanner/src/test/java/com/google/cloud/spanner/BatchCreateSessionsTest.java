@@ -140,7 +140,7 @@ public class BatchCreateSessionsTest {
   public void testClosePoolWhileInitializing() throws InterruptedException {
     int minSessions = 10_000;
     int maxSessions = 10_000;
-    DatabaseClientImpl client = null;
+    DatabaseClientImpl client;
     // Freeze the server to prevent it from creating sessions before we want to.
     mockSpanner.freeze();
     try (Spanner spanner = createSpanner(minSessions, maxSessions)) {
@@ -175,7 +175,7 @@ public class BatchCreateSessionsTest {
     // After this the server will return an error when batchCreateSessions is called.
     // This error is not propagated to the client.
     int maxServerSessions = 550;
-    DatabaseClientImpl client = null;
+    DatabaseClientImpl client;
     mockSpanner.setMaxTotalSessions(maxServerSessions);
     try (Spanner spanner = createSpanner(minSessions, maxSessions)) {
       // Create a database client which will create a session pool.
@@ -210,8 +210,8 @@ public class BatchCreateSessionsTest {
   public void testSpannerReturnsResourceExhausted() throws InterruptedException {
     int minSessions = 100;
     int maxSessions = 1000;
-    int expectedSessions = minSessions;
-    DatabaseClientImpl client = null;
+    int expectedSessions;
+    DatabaseClientImpl client;
     // Make the first BatchCreateSessions return an error.
     mockSpanner.addException(Status.RESOURCE_EXHAUSTED.asRuntimeException());
     try (Spanner spanner = createSpanner(minSessions, maxSessions)) {

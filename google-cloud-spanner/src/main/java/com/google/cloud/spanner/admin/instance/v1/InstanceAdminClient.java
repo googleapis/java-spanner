@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.admin.instance.v1;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.BetaApi;
@@ -85,6 +84,13 @@ import javax.annotation.Generated;
  * <p>This class provides the ability to make remote calls to the backing service through method
  * calls that map to API methods. Sample code to get started:
  *
+ * <pre>{@code
+ * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+ *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
+ *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name);
+ * }
+ * }</pre>
+ *
  * <p>Note: close() needs to be called on the InstanceAdminClient object to clean up resources such
  * as threads. In the example above, try-with-resources is used, which automatically calls close().
  *
@@ -131,8 +137,7 @@ import javax.annotation.Generated;
  *
  * <p>Please refer to the GitHub repository's samples for more quickstart code snippets.
  */
-@BetaApi
-@Generated("by gapic-generator")
+@Generated("by gapic-generator-java")
 public class InstanceAdminClient implements BackgroundResource {
   private final InstanceAdminSettings settings;
   private final InstanceAdminStub stub;
@@ -200,6 +205,17 @@ public class InstanceAdminClient implements BackgroundResource {
   /**
    * Lists the supported instance configurations for a given project.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
    * @param parent Required. The name of the project for which a list of supported instance
    *     configurations is requested. Values are of the form `projects/&lt;project&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -216,6 +232,17 @@ public class InstanceAdminClient implements BackgroundResource {
   /**
    * Lists the supported instance configurations for a given project.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String parent = ProjectName.of("[PROJECT]").toString();
+   *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
    * @param parent Required. The name of the project for which a list of supported instance
    *     configurations is requested. Values are of the form `projects/&lt;project&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -230,6 +257,22 @@ public class InstanceAdminClient implements BackgroundResource {
   /**
    * Lists the supported instance configurations for a given project.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstanceConfigsRequest request =
+   *       ListInstanceConfigsRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -243,6 +286,23 @@ public class InstanceAdminClient implements BackgroundResource {
    * Lists the supported instance configurations for a given project.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstanceConfigsRequest request =
+   *       ListInstanceConfigsRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   ApiFuture<InstanceConfig> future =
+   *       instanceAdminClient.listInstanceConfigsPagedCallable().futureCall(request);
+   *   // Do something.
+   *   for (InstanceConfig element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsPagedResponse>
       listInstanceConfigsPagedCallable() {
@@ -254,6 +314,30 @@ public class InstanceAdminClient implements BackgroundResource {
    * Lists the supported instance configurations for a given project.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstanceConfigsRequest request =
+   *       ListInstanceConfigsRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   while (true) {
+   *     ListInstanceConfigsResponse response =
+   *         instanceAdminClient.listInstanceConfigsCallable().call(request);
+   *     for (InstanceConfig element : response.getResponsesList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsResponse>
       listInstanceConfigsCallable() {
@@ -263,6 +347,15 @@ public class InstanceAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets information about a particular instance configuration.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
+   *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name);
+   * }
+   * }</pre>
    *
    * @param name Required. The name of the requested instance configuration. Values are of the form
    *     `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
@@ -280,6 +373,15 @@ public class InstanceAdminClient implements BackgroundResource {
   /**
    * Gets information about a particular instance configuration.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString();
+   *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name);
+   * }
+   * }</pre>
+   *
    * @param name Required. The name of the requested instance configuration. Values are of the form
    *     `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -293,6 +395,18 @@ public class InstanceAdminClient implements BackgroundResource {
   /**
    * Gets information about a particular instance configuration.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   GetInstanceConfigRequest request =
+   *       GetInstanceConfigRequest.newBuilder()
+   *           .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
+   *           .build();
+   *   InstanceConfig response = instanceAdminClient.getInstanceConfig(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -305,6 +419,19 @@ public class InstanceAdminClient implements BackgroundResource {
    * Gets information about a particular instance configuration.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   GetInstanceConfigRequest request =
+   *       GetInstanceConfigRequest.newBuilder()
+   *           .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
+   *           .build();
+   *   ApiFuture<InstanceConfig> future =
+   *       instanceAdminClient.getInstanceConfigCallable().futureCall(request);
+   *   // Do something.
+   *   InstanceConfig response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<GetInstanceConfigRequest, InstanceConfig> getInstanceConfigCallable() {
     return stub.getInstanceConfigCallable();
@@ -313,6 +440,17 @@ public class InstanceAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Lists all instances in the given project.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   for (Instance element : instanceAdminClient.listInstances(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
    *
    * @param parent Required. The name of the project for which a list of instances is requested.
    *     Values are of the form `projects/&lt;project&gt;`.
@@ -330,6 +468,17 @@ public class InstanceAdminClient implements BackgroundResource {
   /**
    * Lists all instances in the given project.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String parent = ProjectName.of("[PROJECT]").toString();
+   *   for (Instance element : instanceAdminClient.listInstances(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
    * @param parent Required. The name of the project for which a list of instances is requested.
    *     Values are of the form `projects/&lt;project&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -343,6 +492,23 @@ public class InstanceAdminClient implements BackgroundResource {
   /**
    * Lists all instances in the given project.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstancesRequest request =
+   *       ListInstancesRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setFilter("filter-1274492040")
+   *           .build();
+   *   for (Instance element : instanceAdminClient.listInstances(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -355,6 +521,24 @@ public class InstanceAdminClient implements BackgroundResource {
    * Lists all instances in the given project.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstancesRequest request =
+   *       ListInstancesRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setFilter("filter-1274492040")
+   *           .build();
+   *   ApiFuture<Instance> future =
+   *       instanceAdminClient.listInstancesPagedCallable().futureCall(request);
+   *   // Do something.
+   *   for (Instance element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ListInstancesRequest, ListInstancesPagedResponse>
       listInstancesPagedCallable() {
@@ -366,6 +550,30 @@ public class InstanceAdminClient implements BackgroundResource {
    * Lists all instances in the given project.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstancesRequest request =
+   *       ListInstancesRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setFilter("filter-1274492040")
+   *           .build();
+   *   while (true) {
+   *     ListInstancesResponse response = instanceAdminClient.listInstancesCallable().call(request);
+   *     for (Instance element : response.getResponsesList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * }</pre>
    */
   public final UnaryCallable<ListInstancesRequest, ListInstancesResponse> listInstancesCallable() {
     return stub.listInstancesCallable();
@@ -374,6 +582,15 @@ public class InstanceAdminClient implements BackgroundResource {
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
    * Gets information about a particular instance.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   Instance response = instanceAdminClient.getInstance(name);
+   * }
+   * }</pre>
    *
    * @param name Required. The name of the requested instance. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
@@ -389,6 +606,15 @@ public class InstanceAdminClient implements BackgroundResource {
   /**
    * Gets information about a particular instance.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String name = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   Instance response = instanceAdminClient.getInstance(name);
+   * }
+   * }</pre>
+   *
    * @param name Required. The name of the requested instance. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -402,6 +628,19 @@ public class InstanceAdminClient implements BackgroundResource {
   /**
    * Gets information about a particular instance.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   GetInstanceRequest request =
+   *       GetInstanceRequest.newBuilder()
+   *           .setName(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setFieldMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   Instance response = instanceAdminClient.getInstance(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -414,6 +653,19 @@ public class InstanceAdminClient implements BackgroundResource {
    * Gets information about a particular instance.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   GetInstanceRequest request =
+   *       GetInstanceRequest.newBuilder()
+   *           .setName(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setFieldMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Instance> future = instanceAdminClient.getInstanceCallable().futureCall(request);
+   *   // Do something.
+   *   Instance response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<GetInstanceRequest, Instance> getInstanceCallable() {
     return stub.getInstanceCallable();
@@ -450,6 +702,18 @@ public class InstanceAdminClient implements BackgroundResource {
    * [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The
    * [response][google.longrunning.Operation.response] field type is
    * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   String instanceId = "instanceId902024336";
+   *   Instance instance = Instance.newBuilder().build();
+   *   Instance response =
+   *       instanceAdminClient.createInstanceAsync(parent, instanceId, instance).get();
+   * }
+   * }</pre>
    *
    * @param parent Required. The name of the project in which to create the instance. Values are of
    *     the form `projects/&lt;project&gt;`.
@@ -502,6 +766,18 @@ public class InstanceAdminClient implements BackgroundResource {
    * [response][google.longrunning.Operation.response] field type is
    * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String parent = ProjectName.of("[PROJECT]").toString();
+   *   String instanceId = "instanceId902024336";
+   *   Instance instance = Instance.newBuilder().build();
+   *   Instance response =
+   *       instanceAdminClient.createInstanceAsync(parent, instanceId, instance).get();
+   * }
+   * }</pre>
+   *
    * @param parent Required. The name of the project in which to create the instance. Values are of
    *     the form `projects/&lt;project&gt;`.
    * @param instanceId Required. The ID of the instance to create. Valid identifiers are of the form
@@ -553,6 +829,20 @@ public class InstanceAdminClient implements BackgroundResource {
    * [response][google.longrunning.Operation.response] field type is
    * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   CreateInstanceRequest request =
+   *       CreateInstanceRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setInstanceId("instanceId902024336")
+   *           .setInstance(Instance.newBuilder().build())
+   *           .build();
+   *   Instance response = instanceAdminClient.createInstanceAsync(request).get();
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -594,6 +884,21 @@ public class InstanceAdminClient implements BackgroundResource {
    * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   CreateInstanceRequest request =
+   *       CreateInstanceRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setInstanceId("instanceId902024336")
+   *           .setInstance(Instance.newBuilder().build())
+   *           .build();
+   *   OperationFuture<Instance, CreateInstanceMetadata> future =
+   *       instanceAdminClient.createInstanceOperationCallable().futureCall(request);
+   *   // Do something.
+   *   Instance response = future.get();
+   * }
+   * }</pre>
    */
   public final OperationCallable<CreateInstanceRequest, Instance, CreateInstanceMetadata>
       createInstanceOperationCallable() {
@@ -633,6 +938,21 @@ public class InstanceAdminClient implements BackgroundResource {
    * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   CreateInstanceRequest request =
+   *       CreateInstanceRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setInstanceId("instanceId902024336")
+   *           .setInstance(Instance.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       instanceAdminClient.createInstanceCallable().futureCall(request);
+   *   // Do something.
+   *   Operation response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<CreateInstanceRequest, Operation> createInstanceCallable() {
     return stub.createInstanceCallable();
@@ -673,6 +993,16 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Authorization requires `spanner.instances.update` permission on resource
    * [name][google.spanner.admin.instance.v1.Instance.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   Instance instance = Instance.newBuilder().build();
+   *   FieldMask fieldMask = FieldMask.newBuilder().build();
+   *   Instance response = instanceAdminClient.updateInstanceAsync(instance, fieldMask).get();
+   * }
+   * }</pre>
    *
    * @param instance Required. The instance to update, which must always include the instance name.
    *     Otherwise, only fields mentioned in
@@ -728,6 +1058,19 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Authorization requires `spanner.instances.update` permission on resource
    * [name][google.spanner.admin.instance.v1.Instance.name].
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   UpdateInstanceRequest request =
+   *       UpdateInstanceRequest.newBuilder()
+   *           .setInstance(Instance.newBuilder().build())
+   *           .setFieldMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   Instance response = instanceAdminClient.updateInstanceAsync(request).get();
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -773,6 +1116,20 @@ public class InstanceAdminClient implements BackgroundResource {
    * [name][google.spanner.admin.instance.v1.Instance.name].
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   UpdateInstanceRequest request =
+   *       UpdateInstanceRequest.newBuilder()
+   *           .setInstance(Instance.newBuilder().build())
+   *           .setFieldMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   OperationFuture<Instance, UpdateInstanceMetadata> future =
+   *       instanceAdminClient.updateInstanceOperationCallable().futureCall(request);
+   *   // Do something.
+   *   Instance response = future.get();
+   * }
+   * }</pre>
    */
   public final OperationCallable<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
       updateInstanceOperationCallable() {
@@ -816,6 +1173,20 @@ public class InstanceAdminClient implements BackgroundResource {
    * [name][google.spanner.admin.instance.v1.Instance.name].
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   UpdateInstanceRequest request =
+   *       UpdateInstanceRequest.newBuilder()
+   *           .setInstance(Instance.newBuilder().build())
+   *           .setFieldMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       instanceAdminClient.updateInstanceCallable().futureCall(request);
+   *   // Do something.
+   *   Operation response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<UpdateInstanceRequest, Operation> updateInstanceCallable() {
     return stub.updateInstanceCallable();
@@ -833,6 +1204,15 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>&#42; The instance and &#42;all of its databases&#42; immediately and irrevocably disappear
    * from the API. All data in the databases is permanently deleted.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   instanceAdminClient.deleteInstance(name);
+   * }
+   * }</pre>
    *
    * @param name Required. The name of the instance to be deleted. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`
@@ -857,6 +1237,15 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>&#42; The instance and &#42;all of its databases&#42; immediately and irrevocably disappear
    * from the API. All data in the databases is permanently deleted.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String name = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   instanceAdminClient.deleteInstance(name);
+   * }
+   * }</pre>
+   *
    * @param name Required. The name of the instance to be deleted. Values are of the form
    *     `projects/&lt;project&gt;/instances/&lt;instance&gt;`
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -879,6 +1268,18 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>&#42; The instance and &#42;all of its databases&#42; immediately and irrevocably disappear
    * from the API. All data in the databases is permanently deleted.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   DeleteInstanceRequest request =
+   *       DeleteInstanceRequest.newBuilder()
+   *           .setName(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .build();
+   *   instanceAdminClient.deleteInstance(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -900,6 +1301,18 @@ public class InstanceAdminClient implements BackgroundResource {
    * from the API. All data in the databases is permanently deleted.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   DeleteInstanceRequest request =
+   *       DeleteInstanceRequest.newBuilder()
+   *           .setName(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .build();
+   *   ApiFuture<Empty> future = instanceAdminClient.deleteInstanceCallable().futureCall(request);
+   *   // Do something.
+   *   future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<DeleteInstanceRequest, Empty> deleteInstanceCallable() {
     return stub.deleteInstanceCallable();
@@ -911,6 +1324,16 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Authorization requires `spanner.instances.setIamPolicy` on
    * [resource][google.iam.v1.SetIamPolicyRequest.resource].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ResourceName resource = ProjectName.of("[PROJECT]");
+   *   Policy policy = Policy.newBuilder().build();
+   *   Policy response = instanceAdminClient.setIamPolicy(resource, policy);
+   * }
+   * }</pre>
    *
    * @param resource REQUIRED: The resource for which the policy is being specified. See the
    *     operation documentation for the appropriate value for this field.
@@ -935,6 +1358,16 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Authorization requires `spanner.instances.setIamPolicy` on
    * [resource][google.iam.v1.SetIamPolicyRequest.resource].
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String resource = ProjectName.of("[PROJECT]").toString();
+   *   Policy policy = Policy.newBuilder().build();
+   *   Policy response = instanceAdminClient.setIamPolicy(resource, policy);
+   * }
+   * }</pre>
+   *
    * @param resource REQUIRED: The resource for which the policy is being specified. See the
    *     operation documentation for the appropriate value for this field.
    * @param policy REQUIRED: The complete policy to be applied to the `resource`. The size of the
@@ -955,6 +1388,19 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Authorization requires `spanner.instances.setIamPolicy` on
    * [resource][google.iam.v1.SetIamPolicyRequest.resource].
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   SetIamPolicyRequest request =
+   *       SetIamPolicyRequest.newBuilder()
+   *           .setResource(ProjectName.of("[PROJECT]").toString())
+   *           .setPolicy(Policy.newBuilder().build())
+   *           .build();
+   *   Policy response = instanceAdminClient.setIamPolicy(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -970,6 +1416,19 @@ public class InstanceAdminClient implements BackgroundResource {
    * [resource][google.iam.v1.SetIamPolicyRequest.resource].
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   SetIamPolicyRequest request =
+   *       SetIamPolicyRequest.newBuilder()
+   *           .setResource(ProjectName.of("[PROJECT]").toString())
+   *           .setPolicy(Policy.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Policy> future = instanceAdminClient.setIamPolicyCallable().futureCall(request);
+   *   // Do something.
+   *   Policy response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<SetIamPolicyRequest, Policy> setIamPolicyCallable() {
     return stub.setIamPolicyCallable();
@@ -982,6 +1441,15 @@ public class InstanceAdminClient implements BackgroundResource {
    *
    * <p>Authorization requires `spanner.instances.getIamPolicy` on
    * [resource][google.iam.v1.GetIamPolicyRequest.resource].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ResourceName resource = ProjectName.of("[PROJECT]");
+   *   Policy response = instanceAdminClient.getIamPolicy(resource);
+   * }
+   * }</pre>
    *
    * @param resource REQUIRED: The resource for which the policy is being requested. See the
    *     operation documentation for the appropriate value for this field.
@@ -1003,6 +1471,15 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Authorization requires `spanner.instances.getIamPolicy` on
    * [resource][google.iam.v1.GetIamPolicyRequest.resource].
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String resource = ProjectName.of("[PROJECT]").toString();
+   *   Policy response = instanceAdminClient.getIamPolicy(resource);
+   * }
+   * }</pre>
+   *
    * @param resource REQUIRED: The resource for which the policy is being requested. See the
    *     operation documentation for the appropriate value for this field.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
@@ -1020,6 +1497,19 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Authorization requires `spanner.instances.getIamPolicy` on
    * [resource][google.iam.v1.GetIamPolicyRequest.resource].
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   GetIamPolicyRequest request =
+   *       GetIamPolicyRequest.newBuilder()
+   *           .setResource(ProjectName.of("[PROJECT]").toString())
+   *           .setOptions(GetPolicyOptions.newBuilder().build())
+   *           .build();
+   *   Policy response = instanceAdminClient.getIamPolicy(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -1036,6 +1526,19 @@ public class InstanceAdminClient implements BackgroundResource {
    * [resource][google.iam.v1.GetIamPolicyRequest.resource].
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   GetIamPolicyRequest request =
+   *       GetIamPolicyRequest.newBuilder()
+   *           .setResource(ProjectName.of("[PROJECT]").toString())
+   *           .setOptions(GetPolicyOptions.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Policy> future = instanceAdminClient.getIamPolicyCallable().futureCall(request);
+   *   // Do something.
+   *   Policy response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<GetIamPolicyRequest, Policy> getIamPolicyCallable() {
     return stub.getIamPolicyCallable();
@@ -1048,6 +1551,17 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Attempting this RPC on a non-existent Cloud Spanner instance resource will result in a
    * NOT_FOUND error if the user has `spanner.instances.list` permission on the containing Google
    * Cloud Project. Otherwise returns an empty set of permissions.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ResourceName resource = ProjectName.of("[PROJECT]");
+   *   List<String> permissions = new ArrayList<>();
+   *   TestIamPermissionsResponse response =
+   *       instanceAdminClient.testIamPermissions(resource, permissions);
+   * }
+   * }</pre>
    *
    * @param resource REQUIRED: The resource for which the policy detail is being requested. See the
    *     operation documentation for the appropriate value for this field.
@@ -1074,6 +1588,17 @@ public class InstanceAdminClient implements BackgroundResource {
    * NOT_FOUND error if the user has `spanner.instances.list` permission on the containing Google
    * Cloud Project. Otherwise returns an empty set of permissions.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String resource = ProjectName.of("[PROJECT]").toString();
+   *   List<String> permissions = new ArrayList<>();
+   *   TestIamPermissionsResponse response =
+   *       instanceAdminClient.testIamPermissions(resource, permissions);
+   * }
+   * }</pre>
+   *
    * @param resource REQUIRED: The resource for which the policy detail is being requested. See the
    *     operation documentation for the appropriate value for this field.
    * @param permissions The set of permissions to check for the `resource`. Permissions with
@@ -1099,6 +1624,19 @@ public class InstanceAdminClient implements BackgroundResource {
    * NOT_FOUND error if the user has `spanner.instances.list` permission on the containing Google
    * Cloud Project. Otherwise returns an empty set of permissions.
    *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   TestIamPermissionsRequest request =
+   *       TestIamPermissionsRequest.newBuilder()
+   *           .setResource(ProjectName.of("[PROJECT]").toString())
+   *           .addAllPermissions(new ArrayList<String>())
+   *           .build();
+   *   TestIamPermissionsResponse response = instanceAdminClient.testIamPermissions(request);
+   * }
+   * }</pre>
+   *
    * @param request The request object containing all of the parameters for the API call.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
@@ -1115,6 +1653,20 @@ public class InstanceAdminClient implements BackgroundResource {
    * Cloud Project. Otherwise returns an empty set of permissions.
    *
    * <p>Sample code:
+   *
+   * <pre>{@code
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   TestIamPermissionsRequest request =
+   *       TestIamPermissionsRequest.newBuilder()
+   *           .setResource(ProjectName.of("[PROJECT]").toString())
+   *           .addAllPermissions(new ArrayList<String>())
+   *           .build();
+   *   ApiFuture<TestIamPermissionsResponse> future =
+   *       instanceAdminClient.testIamPermissionsCallable().futureCall(request);
+   *   // Do something.
+   *   TestIamPermissionsResponse response = future.get();
+   * }
+   * }</pre>
    */
   public final UnaryCallable<TestIamPermissionsRequest, TestIamPermissionsResponse>
       testIamPermissionsCallable() {
@@ -1167,12 +1719,7 @@ public class InstanceAdminClient implements BackgroundResource {
           ListInstanceConfigsPage.createEmptyPage().createPageAsync(context, futureResponse);
       return ApiFutures.transform(
           futurePage,
-          new ApiFunction<ListInstanceConfigsPage, ListInstanceConfigsPagedResponse>() {
-            @Override
-            public ListInstanceConfigsPagedResponse apply(ListInstanceConfigsPage input) {
-              return new ListInstanceConfigsPagedResponse(input);
-            }
-          },
+          input -> new ListInstanceConfigsPagedResponse(input),
           MoreExecutors.directExecutor());
     }
 
@@ -1255,12 +1802,7 @@ public class InstanceAdminClient implements BackgroundResource {
           ListInstancesPage.createEmptyPage().createPageAsync(context, futureResponse);
       return ApiFutures.transform(
           futurePage,
-          new ApiFunction<ListInstancesPage, ListInstancesPagedResponse>() {
-            @Override
-            public ListInstancesPagedResponse apply(ListInstancesPage input) {
-              return new ListInstancesPagedResponse(input);
-            }
-          },
+          input -> new ListInstancesPagedResponse(input),
           MoreExecutors.directExecutor());
     }
 

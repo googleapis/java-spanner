@@ -208,6 +208,8 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
    *      for [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata] is
    *      `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
+   *      `metadata.&#64;type` must be specified first, if filtering on metadata
+   *      fields.
    *   * `error` - Error associated with the long-running operation.
    *   * `response.&#64;type` - the type of response.
    *   * `response.&lt;field_name&gt;` - any field in response.value.
@@ -216,11 +218,11 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
    * you can specify AND, OR, and NOT logic explicitly.
    * Here are a few examples:
    *   * `done:true` - The operation is complete.
-   *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &lt;br/&gt;
-   *     `(metadata.source_type:BACKUP) AND` &lt;br/&gt;
-   *     `(metadata.backup_info.backup:backup_howl) AND` &lt;br/&gt;
-   *     `(metadata.name:restored_howl) AND` &lt;br/&gt;
-   *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &lt;br/&gt;
+   *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &#92;
+   *     `(metadata.source_type:BACKUP) AND` &#92;
+   *     `(metadata.backup_info.backup:backup_howl) AND` &#92;
+   *     `(metadata.name:restored_howl) AND` &#92;
+   *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
    *     `(error:*)` - Return operations where:
    *     * The operation's metadata type is [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata].
    *     * The database is restored from a backup.
@@ -264,6 +266,8 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
    *      for [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata] is
    *      `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
+   *      `metadata.&#64;type` must be specified first, if filtering on metadata
+   *      fields.
    *   * `error` - Error associated with the long-running operation.
    *   * `response.&#64;type` - the type of response.
    *   * `response.&lt;field_name&gt;` - any field in response.value.
@@ -272,11 +276,11 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
    * you can specify AND, OR, and NOT logic explicitly.
    * Here are a few examples:
    *   * `done:true` - The operation is complete.
-   *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &lt;br/&gt;
-   *     `(metadata.source_type:BACKUP) AND` &lt;br/&gt;
-   *     `(metadata.backup_info.backup:backup_howl) AND` &lt;br/&gt;
-   *     `(metadata.name:restored_howl) AND` &lt;br/&gt;
-   *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &lt;br/&gt;
+   *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &#92;
+   *     `(metadata.source_type:BACKUP) AND` &#92;
+   *     `(metadata.backup_info.backup:backup_howl) AND` &#92;
+   *     `(metadata.name:restored_howl) AND` &#92;
+   *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
    *     `(error:*)` - Return operations where:
    *     * The operation's metadata type is [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata].
    *     * The database is restored from a backup.
@@ -391,16 +395,16 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!getParentBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parent_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, parent_);
     }
-    if (!getFilterBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(filter_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, filter_);
     }
     if (pageSize_ != 0) {
       output.writeInt32(3, pageSize_);
     }
-    if (!getPageTokenBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(pageToken_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 4, pageToken_);
     }
     unknownFields.writeTo(output);
@@ -412,16 +416,16 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
     if (size != -1) return size;
 
     size = 0;
-    if (!getParentBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parent_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, parent_);
     }
-    if (!getFilterBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(filter_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, filter_);
     }
     if (pageSize_ != 0) {
       size += com.google.protobuf.CodedOutputStream.computeInt32Size(3, pageSize_);
     }
-    if (!getPageTokenBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(pageToken_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, pageToken_);
     }
     size += unknownFields.getSerializedSize();
@@ -892,6 +896,8 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      *      for [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata] is
      *      `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
      *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
+     *      `metadata.&#64;type` must be specified first, if filtering on metadata
+     *      fields.
      *   * `error` - Error associated with the long-running operation.
      *   * `response.&#64;type` - the type of response.
      *   * `response.&lt;field_name&gt;` - any field in response.value.
@@ -900,11 +906,11 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      * you can specify AND, OR, and NOT logic explicitly.
      * Here are a few examples:
      *   * `done:true` - The operation is complete.
-     *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &lt;br/&gt;
-     *     `(metadata.source_type:BACKUP) AND` &lt;br/&gt;
-     *     `(metadata.backup_info.backup:backup_howl) AND` &lt;br/&gt;
-     *     `(metadata.name:restored_howl) AND` &lt;br/&gt;
-     *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &lt;br/&gt;
+     *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &#92;
+     *     `(metadata.source_type:BACKUP) AND` &#92;
+     *     `(metadata.backup_info.backup:backup_howl) AND` &#92;
+     *     `(metadata.name:restored_howl) AND` &#92;
+     *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
      *     `(error:*)` - Return operations where:
      *     * The operation's metadata type is [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata].
      *     * The database is restored from a backup.
@@ -947,6 +953,8 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      *      for [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata] is
      *      `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
      *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
+     *      `metadata.&#64;type` must be specified first, if filtering on metadata
+     *      fields.
      *   * `error` - Error associated with the long-running operation.
      *   * `response.&#64;type` - the type of response.
      *   * `response.&lt;field_name&gt;` - any field in response.value.
@@ -955,11 +963,11 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      * you can specify AND, OR, and NOT logic explicitly.
      * Here are a few examples:
      *   * `done:true` - The operation is complete.
-     *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &lt;br/&gt;
-     *     `(metadata.source_type:BACKUP) AND` &lt;br/&gt;
-     *     `(metadata.backup_info.backup:backup_howl) AND` &lt;br/&gt;
-     *     `(metadata.name:restored_howl) AND` &lt;br/&gt;
-     *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &lt;br/&gt;
+     *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &#92;
+     *     `(metadata.source_type:BACKUP) AND` &#92;
+     *     `(metadata.backup_info.backup:backup_howl) AND` &#92;
+     *     `(metadata.name:restored_howl) AND` &#92;
+     *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
      *     `(error:*)` - Return operations where:
      *     * The operation's metadata type is [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata].
      *     * The database is restored from a backup.
@@ -1002,6 +1010,8 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      *      for [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata] is
      *      `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
      *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
+     *      `metadata.&#64;type` must be specified first, if filtering on metadata
+     *      fields.
      *   * `error` - Error associated with the long-running operation.
      *   * `response.&#64;type` - the type of response.
      *   * `response.&lt;field_name&gt;` - any field in response.value.
@@ -1010,11 +1020,11 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      * you can specify AND, OR, and NOT logic explicitly.
      * Here are a few examples:
      *   * `done:true` - The operation is complete.
-     *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &lt;br/&gt;
-     *     `(metadata.source_type:BACKUP) AND` &lt;br/&gt;
-     *     `(metadata.backup_info.backup:backup_howl) AND` &lt;br/&gt;
-     *     `(metadata.name:restored_howl) AND` &lt;br/&gt;
-     *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &lt;br/&gt;
+     *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &#92;
+     *     `(metadata.source_type:BACKUP) AND` &#92;
+     *     `(metadata.backup_info.backup:backup_howl) AND` &#92;
+     *     `(metadata.name:restored_howl) AND` &#92;
+     *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
      *     `(error:*)` - Return operations where:
      *     * The operation's metadata type is [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata].
      *     * The database is restored from a backup.
@@ -1056,6 +1066,8 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      *      for [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata] is
      *      `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
      *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
+     *      `metadata.&#64;type` must be specified first, if filtering on metadata
+     *      fields.
      *   * `error` - Error associated with the long-running operation.
      *   * `response.&#64;type` - the type of response.
      *   * `response.&lt;field_name&gt;` - any field in response.value.
@@ -1064,11 +1076,11 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      * you can specify AND, OR, and NOT logic explicitly.
      * Here are a few examples:
      *   * `done:true` - The operation is complete.
-     *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &lt;br/&gt;
-     *     `(metadata.source_type:BACKUP) AND` &lt;br/&gt;
-     *     `(metadata.backup_info.backup:backup_howl) AND` &lt;br/&gt;
-     *     `(metadata.name:restored_howl) AND` &lt;br/&gt;
-     *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &lt;br/&gt;
+     *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &#92;
+     *     `(metadata.source_type:BACKUP) AND` &#92;
+     *     `(metadata.backup_info.backup:backup_howl) AND` &#92;
+     *     `(metadata.name:restored_howl) AND` &#92;
+     *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
      *     `(error:*)` - Return operations where:
      *     * The operation's metadata type is [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata].
      *     * The database is restored from a backup.
@@ -1106,6 +1118,8 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      *      for [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata] is
      *      `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
      *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
+     *      `metadata.&#64;type` must be specified first, if filtering on metadata
+     *      fields.
      *   * `error` - Error associated with the long-running operation.
      *   * `response.&#64;type` - the type of response.
      *   * `response.&lt;field_name&gt;` - any field in response.value.
@@ -1114,11 +1128,11 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      * you can specify AND, OR, and NOT logic explicitly.
      * Here are a few examples:
      *   * `done:true` - The operation is complete.
-     *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &lt;br/&gt;
-     *     `(metadata.source_type:BACKUP) AND` &lt;br/&gt;
-     *     `(metadata.backup_info.backup:backup_howl) AND` &lt;br/&gt;
-     *     `(metadata.name:restored_howl) AND` &lt;br/&gt;
-     *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &lt;br/&gt;
+     *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &#92;
+     *     `(metadata.source_type:BACKUP) AND` &#92;
+     *     `(metadata.backup_info.backup:backup_howl) AND` &#92;
+     *     `(metadata.name:restored_howl) AND` &#92;
+     *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
      *     `(error:*)` - Return operations where:
      *     * The operation's metadata type is [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata].
      *     * The database is restored from a backup.

@@ -17,6 +17,8 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -25,6 +27,8 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Identity;
 import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.DatabaseInfo.State;
+import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
 import com.google.common.collect.ImmutableList;
@@ -40,23 +44,25 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.Message;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DatabaseDialect;
+import com.google.spanner.admin.database.v1.EncryptionInfo;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 
-/** Unit tests for {@link com.google.cloud.spanner.SpannerImpl.DatabaseAdminClientImpl}. */
 @RunWith(JUnit4.class)
 public class DatabaseAdminClientImplTest {
   private static final String PROJECT_ID = "my-project";
@@ -67,8 +73,15 @@ public class DatabaseAdminClientImplTest {
   private static final String DB_NAME2 =
       "projects/my-project/instances/my-instance/databases/my-db2";
   private static final String BK_ID = "my-bk";
+  private static final String SOURCE_BK = "my-source-bk";
   private static final String BK_NAME = "projects/my-project/instances/my-instance/backups/my-bk";
   private static final String BK_NAME2 = "projects/my-project/instances/my-instance/backups/my-bk2";
+  private static final Timestamp EARLIEST_VERSION_TIME = Timestamp.now();
+  private static final String VERSION_RETENTION_PERIOD = "7d";
+  private static final String KMS_KEY_NAME =
+      "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key";
+  private static final String KMS_KEY_VERSION = "1";
+  private static final DatabaseDialect DIALECT = GOOGLE_STANDARD_SQL;
 
   @Mock SpannerRpc rpc;
   DatabaseAdminClientImpl client;
@@ -80,7 +93,23 @@ public class DatabaseAdminClientImplTest {
   }
 
   private Database getDatabaseProto() {
-    return Database.newBuilder().setName(DB_NAME).setState(Database.State.READY).build();
+    return Database.newBuilder()
+        .setName(DB_NAME)
+        .setState(Database.State.READY)
+        .setEarliestVersionTime(EARLIEST_VERSION_TIME.toProto())
+        .setVersionRetentionPeriod(VERSION_RETENTION_PERIOD)
+        .setDatabaseDialect(DIALECT)
+        .build();
+  }
+
+  private Database getEncryptedDatabaseProto() {
+    return getDatabaseProto()
+        .toBuilder()
+        .setEncryptionConfig(
+            com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder()
+                .setKmsKeyName(KMS_KEY_NAME)
+                .build())
+        .build();
   }
 
   private Database getAnotherDatabaseProto() {
@@ -102,6 +131,15 @@ public class DatabaseAdminClientImplTest {
         .build();
   }
 
+  private Backup getEncryptedBackupProto() {
+    return Backup.newBuilder()
+        .setName(BK_NAME)
+        .setDatabase(DB_NAME)
+        .setState(Backup.State.READY)
+        .setEncryptionInfo(EncryptionInfo.newBuilder().setKmsKeyVersion(KMS_KEY_VERSION).build())
+        .build();
+  }
+
   private Backup getAnotherBackupProto() {
     return Backup.newBuilder()
         .setName(BK_NAME2)
@@ -116,6 +154,8 @@ public class DatabaseAdminClientImplTest {
     com.google.cloud.spanner.Database db = client.getDatabase(INSTANCE_ID, DB_ID);
     assertThat(db.getId().getName()).isEqualTo(DB_NAME);
     assertThat(db.getState()).isEqualTo(DatabaseInfo.State.READY);
+    assertThat(db.getEarliestVersionTime()).isEqualTo(EARLIEST_VERSION_TIME);
+    assertThat(db.getVersionRetentionPeriod()).isEqualTo(VERSION_RETENTION_PERIOD);
   }
 
   @Test
@@ -124,10 +164,40 @@ public class DatabaseAdminClientImplTest {
         OperationFutureUtil.immediateOperationFuture(
             "createDatabase", getDatabaseProto(), CreateDatabaseMetadata.getDefaultInstance());
     when(rpc.createDatabase(
-            INSTANCE_NAME, "CREATE DATABASE `" + DB_ID + "`", Collections.<String>emptyList()))
+            INSTANCE_NAME,
+            "CREATE DATABASE `" + DB_ID + "`",
+            Collections.emptyList(),
+            client
+                .newDatabaseBuilder(DatabaseId.of(DB_NAME))
+                .setState(State.UNSPECIFIED)
+                .setDialect(Dialect.GOOGLE_STANDARD_SQL)
+                .build()))
         .thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Database, CreateDatabaseMetadata> op =
-        client.createDatabase(INSTANCE_ID, DB_ID, Collections.<String>emptyList());
+        client.createDatabase(INSTANCE_ID, DB_ID, Collections.emptyList());
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(DB_NAME);
+  }
+
+  @Test
+  public void createEncryptedDatabase() throws Exception {
+    com.google.cloud.spanner.Database database =
+        client
+            .newDatabaseBuilder(DatabaseId.of(DB_NAME))
+            .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME))
+            .setDialect(Dialect.GOOGLE_STANDARD_SQL)
+            .build();
+
+    OperationFuture<Database, CreateDatabaseMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "createDatabase",
+            getEncryptedDatabaseProto(),
+            CreateDatabaseMetadata.getDefaultInstance());
+    when(rpc.createDatabase(
+            INSTANCE_NAME, "CREATE DATABASE `" + DB_ID + "`", Collections.emptyList(), database))
+        .thenReturn(rawOperationFuture);
+    OperationFuture<com.google.cloud.spanner.Database, CreateDatabaseMetadata> op =
+        client.createDatabase(database, Collections.emptyList());
     assertThat(op.isDone()).isTrue();
     assertThat(op.get().getId().getName()).isEqualTo(DB_NAME);
   }
@@ -181,9 +251,9 @@ public class DatabaseAdminClientImplTest {
   public void listDatabases() {
     String pageToken = "token";
     when(rpc.listDatabases(INSTANCE_NAME, 1, null))
-        .thenReturn(new Paginated<>(ImmutableList.<Database>of(getDatabaseProto()), pageToken));
+        .thenReturn(new Paginated<>(ImmutableList.of(getDatabaseProto()), pageToken));
     when(rpc.listDatabases(INSTANCE_NAME, 1, pageToken))
-        .thenReturn(new Paginated<>(ImmutableList.<Database>of(getAnotherDatabaseProto()), ""));
+        .thenReturn(new Paginated<>(ImmutableList.of(getAnotherDatabaseProto()), ""));
     List<com.google.cloud.spanner.Database> dbs =
         Lists.newArrayList(client.listDatabases(INSTANCE_ID, Options.pageSize(1)).iterateAll());
     assertThat(dbs.get(0).getId().getName()).isEqualTo(DB_NAME);
@@ -196,32 +266,31 @@ public class DatabaseAdminClientImplTest {
     when(rpc.listDatabases(INSTANCE_NAME, 1, null))
         .thenThrow(
             SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Test error"));
-    try {
-      client.listDatabases(INSTANCE_ID, Options.pageSize(1));
-      Assert.fail("Missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getMessage()).contains(INSTANCE_NAME);
-      // Assert that the call was done without a page token.
-      assertThat(e.getMessage()).contains("with pageToken <null>");
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class, () -> client.listDatabases(INSTANCE_ID, Options.pageSize(1)));
+    assertThat(e.getMessage()).contains(INSTANCE_NAME);
+    // Assert that the call was done without a page token.
+    assertThat(e.getMessage()).contains("with pageToken <null>");
   }
 
   @Test
   public void listDatabaseErrorWithToken() {
     String pageToken = "token";
     when(rpc.listDatabases(INSTANCE_NAME, 1, null))
-        .thenReturn(new Paginated<>(ImmutableList.<Database>of(getDatabaseProto()), pageToken));
+        .thenReturn(new Paginated<>(ImmutableList.of(getDatabaseProto()), pageToken));
     when(rpc.listDatabases(INSTANCE_NAME, 1, pageToken))
         .thenThrow(
             SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Test error"));
-    try {
-      Lists.newArrayList(client.listDatabases(INSTANCE_ID, Options.pageSize(1)).iterateAll());
-      Assert.fail("Missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getMessage()).contains(INSTANCE_NAME);
-      // Assert that the call was done without a page token.
-      assertThat(e.getMessage()).contains(String.format("with pageToken %s", pageToken));
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                Lists.newArrayList(
+                    client.listDatabases(INSTANCE_ID, Options.pageSize(1)).iterateAll()));
+    assertThat(e.getMessage()).contains(INSTANCE_NAME);
+    // Assert that the call was done without a page token.
+    assertThat(e.getMessage()).contains(String.format("with pageToken %s", pageToken));
   }
 
   @Test
@@ -292,7 +361,7 @@ public class DatabaseAdminClientImplTest {
   }
 
   @Test
-  public void createBackup() throws Exception {
+  public void createBackupWithParams() throws Exception {
     OperationFuture<Backup, CreateBackupMetadata> rawOperationFuture =
         OperationFutureUtil.immediateOperationFuture(
             "createBackup", getBackupProto(), CreateBackupMetadata.getDefaultInstance());
@@ -300,12 +369,166 @@ public class DatabaseAdminClientImplTest {
         Timestamp.ofTimeMicroseconds(
             TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
                 + TimeUnit.HOURS.toMicros(28));
-    Backup backup = Backup.newBuilder().setDatabase(DB_NAME).setExpireTime(t.toProto()).build();
-    when(rpc.createBackup(INSTANCE_NAME, BK_ID, backup)).thenReturn(rawOperationFuture);
+    final com.google.cloud.spanner.Backup backup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .setExpireTime(t)
+            .build();
+    when(rpc.createBackup(backup)).thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Backup, CreateBackupMetadata> op =
         client.createBackup(INSTANCE_ID, BK_ID, DB_ID, t);
     assertThat(op.isDone()).isTrue();
     assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+  }
+
+  @Test
+  public void createBackupWithBackupObject() throws ExecutionException, InterruptedException {
+    final OperationFuture<Backup, CreateBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "createBackup", getBackupProto(), CreateBackupMetadata.getDefaultInstance());
+    final Timestamp expireTime =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
+                + TimeUnit.HOURS.toMicros(28));
+    final Timestamp versionTime =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis()) - TimeUnit.DAYS.toMicros(2));
+    final com.google.cloud.spanner.Backup requestBackup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
+            .build();
+
+    when(rpc.createBackup(requestBackup)).thenReturn(rawOperationFuture);
+
+    final OperationFuture<com.google.cloud.spanner.Backup, CreateBackupMetadata> op =
+        client.createBackup(requestBackup);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCreateBackupNoExpireTime() {
+    final com.google.cloud.spanner.Backup requestBackup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .build();
+
+    client.createBackup(requestBackup);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCreateBackupNoDatabase() {
+    final com.google.cloud.spanner.Backup requestBackup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setExpireTime(Timestamp.now())
+            .build();
+
+    client.createBackup(requestBackup);
+  }
+
+  @Test
+  public void createEncryptedBackup() throws ExecutionException, InterruptedException {
+    final OperationFuture<Backup, CreateBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "createBackup", getEncryptedBackupProto(), CreateBackupMetadata.getDefaultInstance());
+    final Timestamp t =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
+                + TimeUnit.HOURS.toMicros(28));
+    final com.google.cloud.spanner.Backup backup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .setExpireTime(t)
+            .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME))
+            .build();
+    when(rpc.createBackup(backup)).thenReturn(rawOperationFuture);
+    final OperationFuture<com.google.cloud.spanner.Backup, CreateBackupMetadata> op =
+        client.createBackup(backup);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+    assertThat(op.get().getEncryptionInfo().getKmsKeyVersion()).isEqualTo(KMS_KEY_VERSION);
+  }
+
+  @Test
+  public void copyBackupWithParams() throws Exception {
+    OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "copyBackup", getBackupProto(), CopyBackupMetadata.getDefaultInstance());
+    Timestamp t =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
+                + TimeUnit.HOURS.toMicros(28));
+    final com.google.cloud.spanner.Backup backup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setExpireTime(t)
+            .build();
+    when(rpc.copyBackup(BackupId.of(PROJECT_ID, INSTANCE_ID, SOURCE_BK), backup))
+        .thenReturn(rawOperationFuture);
+    OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
+        client.copyBackup(INSTANCE_ID, SOURCE_BK, BK_ID, t);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+  }
+
+  @Test
+  public void copyBackupWithBackupObject() throws ExecutionException, InterruptedException {
+    final OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "copyBackup", getBackupProto(), CopyBackupMetadata.getDefaultInstance());
+    final Timestamp expireTime =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
+                + TimeUnit.HOURS.toMicros(28));
+    final Timestamp versionTime =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis()) - TimeUnit.DAYS.toMicros(2));
+    final com.google.cloud.spanner.Backup requestBackup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
+            .build();
+    BackupId sourceBackupId = BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID);
+
+    when(rpc.copyBackup(sourceBackupId, requestBackup)).thenReturn(rawOperationFuture);
+
+    final OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
+        client.copyBackup(sourceBackupId, requestBackup);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+  }
+
+  @Test
+  public void copyEncryptedBackup() throws ExecutionException, InterruptedException {
+    final OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "copyBackup", getEncryptedBackupProto(), CopyBackupMetadata.getDefaultInstance());
+    final Timestamp t =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
+                + TimeUnit.HOURS.toMicros(28));
+    final com.google.cloud.spanner.Backup backup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .setExpireTime(t)
+            .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME))
+            .build();
+    BackupId sourceBackupId = BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID);
+    when(rpc.copyBackup(sourceBackupId, backup)).thenReturn(rawOperationFuture);
+    final OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
+        client.copyBackup(sourceBackupId, backup);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+    assertThat(op.get().getEncryptionInfo().getKmsKeyVersion()).isEqualTo(KMS_KEY_VERSION);
   }
 
   @Test
@@ -327,9 +550,9 @@ public class DatabaseAdminClientImplTest {
   public void listBackups() {
     String pageToken = "token";
     when(rpc.listBackups(INSTANCE_NAME, 1, null, null))
-        .thenReturn(new Paginated<>(ImmutableList.<Backup>of(getBackupProto()), pageToken));
+        .thenReturn(new Paginated<>(ImmutableList.of(getBackupProto()), pageToken));
     when(rpc.listBackups(INSTANCE_NAME, 1, null, pageToken))
-        .thenReturn(new Paginated<>(ImmutableList.<Backup>of(getAnotherBackupProto()), ""));
+        .thenReturn(new Paginated<>(ImmutableList.of(getAnotherBackupProto()), ""));
     List<com.google.cloud.spanner.Backup> backups =
         Lists.newArrayList(client.listBackups(INSTANCE_ID, Options.pageSize(1)).iterateAll());
     assertThat(backups.get(0).getId().getName()).isEqualTo(BK_NAME);
@@ -360,10 +583,35 @@ public class DatabaseAdminClientImplTest {
     OperationFuture<Database, RestoreDatabaseMetadata> rawOperationFuture =
         OperationFutureUtil.immediateOperationFuture(
             "restoreDatabase", getDatabaseProto(), RestoreDatabaseMetadata.getDefaultInstance());
-    when(rpc.restoreDatabase(INSTANCE_NAME, DB_ID, BK_NAME)).thenReturn(rawOperationFuture);
+    final Restore restore =
+        new Restore.Builder(
+                BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID),
+                DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .build();
+    when(rpc.restoreDatabase(restore)).thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Database, RestoreDatabaseMetadata> op =
-        client.restoreDatabase(INSTANCE_ID, BK_ID, INSTANCE_ID, DB_ID);
+        client.restoreDatabase(restore);
     assertThat(op.isDone()).isTrue();
     assertThat(op.get().getId().getName()).isEqualTo(DB_NAME);
+  }
+
+  @Test
+  public void restoreEncryptedDatabase() throws Exception {
+    OperationFuture<Database, RestoreDatabaseMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "restoreEncryptedDatabase",
+            getEncryptedDatabaseProto(),
+            RestoreDatabaseMetadata.getDefaultInstance());
+    final Restore restore =
+        new Restore.Builder(
+                BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID),
+                DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .build();
+    when(rpc.restoreDatabase(restore)).thenReturn(rawOperationFuture);
+    OperationFuture<com.google.cloud.spanner.Database, RestoreDatabaseMetadata> op =
+        client.restoreDatabase(restore);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(DB_NAME);
+    assertThat(op.get().getEncryptionConfig().getKmsKeyName()).isEqualTo(KMS_KEY_NAME);
   }
 }
