@@ -31,7 +31,6 @@ import javax.annotation.Nullable;
 public class PostgreSQLStatementParser extends AbstractStatementParser {
   PostgreSQLStatementParser() throws CompileException {
     super(
-        Dialect.POSTGRESQL,
         Collections.unmodifiableSet(
             ClientSideStatements.getInstance(Dialect.POSTGRESQL).getCompiledStatements()));
   }

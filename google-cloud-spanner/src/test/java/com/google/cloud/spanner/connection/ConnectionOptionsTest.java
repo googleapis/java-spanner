@@ -20,10 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.NoCredentials;
@@ -33,6 +35,7 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.io.BaseEncoding;
 import com.google.common.io.Files;
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -254,22 +257,14 @@ public class ConnectionOptionsTest {
   }
 
   private void setInvalidUri(ConnectionOptions.Builder builder, String uri) {
-    try {
-      builder.setUri(uri);
-      fail(uri + " should be considered an invalid uri");
-    } catch (IllegalArgumentException e) {
-      // Expected exception
-    }
+    assertThrows(IllegalArgumentException.class, () -> builder.setUri(uri));
   }
 
   private void setInvalidProperty(
       ConnectionOptions.Builder builder, String uri, String expectedInvalidProperties) {
-    try {
-      builder.setUri(uri);
-      fail("missing expected exception");
-    } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage()).contains(expectedInvalidProperties);
-    }
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, () -> builder.setUri(uri));
+    assertTrue(exception.getMessage(), exception.getMessage().contains(expectedInvalidProperties));
   }
 
   @Test
@@ -381,12 +376,14 @@ public class ConnectionOptionsTest {
             .setUri(
                 "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database"
                     + "?OAuthToken=RsT5OjbzRn430zqMLgV3Ia;credentials=/path/to/credentials.json");
-    try {
-      builder.build();
-      fail("missing expected exception");
-    } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage()).contains("Cannot specify both credentials and an OAuth token");
-    }
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, builder::build);
+    assertTrue(
+        exception.getMessage(),
+        exception
+            .getMessage()
+            .contains(
+                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
 
     // Now try to use only an OAuth token.
     builder =
@@ -416,17 +413,22 @@ public class ConnectionOptionsTest {
 
   @Test
   public void testSetOAuthTokenAndCredentials() {
-    try {
-      ConnectionOptions.newBuilder()
-          .setUri(
-              "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
-          .setOAuthToken("RsT5OjbzRn430zqMLgV3Ia")
-          .setCredentialsUrl(FILE_TEST_PATH)
-          .build();
-      fail("missing expected exception");
-    } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage()).contains("Cannot specify both credentials and an OAuth token");
-    }
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                ConnectionOptions.newBuilder()
+                    .setUri(
+                        "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+                    .setOAuthToken("RsT5OjbzRn430zqMLgV3Ia")
+                    .setCredentialsUrl(FILE_TEST_PATH)
+                    .build());
+    assertTrue(
+        exception.getMessage(),
+        exception
+            .getMessage()
+            .contains(
+                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
   }
 
   @Test
@@ -451,16 +453,16 @@ public class ConnectionOptionsTest {
     assertThat(options.getWarnings()).contains("bar");
     assertThat(options.getWarnings()).doesNotContain("lenient");
 
-    try {
-      ConnectionOptions.newBuilder()
-          .setUri(
-              "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?bar=foo")
-          .setCredentialsUrl(FILE_TEST_PATH)
-          .build();
-      fail("missing expected exception");
-    } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage()).contains("bar");
-    }
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                ConnectionOptions.newBuilder()
+                    .setUri(
+                        "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?bar=foo")
+                    .setCredentialsUrl(FILE_TEST_PATH)
+                    .build());
+    assertTrue(exception.getMessage(), exception.getMessage().contains("bar"));
   }
 
   @Test
@@ -492,29 +494,31 @@ public class ConnectionOptionsTest {
     String uri =
         "cloudspanner://localhost:1/projects/test-project/instances/test-instance/databases/test-database?usePlainText=true";
     ConnectionOptions options = ConnectionOptions.newBuilder().setUri(uri).build();
-    try (Connection connection = options.getConnection()) {
-      fail("Missing expected exception");
-    } catch (SpannerException e) {
-      assertEquals(ErrorCode.UNAVAILABLE, e.getErrorCode());
-      assertThat(e.getMessage())
-          .contains(
-              String.format(
-                  "The connection string '%s' contains host 'localhost:1', but no running", uri));
-    }
+    SpannerException exception = assertThrows(SpannerException.class, options::getConnection);
+    assertEquals(ErrorCode.UNAVAILABLE, exception.getErrorCode());
+    assertTrue(
+        exception.getMessage(),
+        exception
+            .getMessage()
+            .contains(
+                String.format(
+                    "The connection string '%s' contains host 'localhost:1', but no running",
+                    uri)));
   }
 
   @Test
   public void testInvalidCredentials() {
     String uri =
         "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?credentials=/some/non/existing/path";
-    try {
-      ConnectionOptions.newBuilder().setUri(uri).build();
-      fail("Missing expected exception");
-    } catch (SpannerException e) {
-      assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
-      assertThat(e.getMessage())
-          .contains("Invalid credentials path specified: /some/non/existing/path");
-    }
+    SpannerException exception =
+        assertThrows(
+            SpannerException.class, () -> ConnectionOptions.newBuilder().setUri(uri).build());
+    assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
+    assertTrue(
+        exception.getMessage(),
+        exception
+            .getMessage()
+            .contains("Invalid credentials path specified: /some/non/existing/path"));
   }
 
   @Test
@@ -571,9 +575,47 @@ public class ConnectionOptionsTest {
         assertThrows(
             IllegalArgumentException.class,
             () -> ConnectionOptions.newBuilder().setUri(uri).build());
-    assertThat(e.getMessage())
-        .contains(
-            "Cannot specify both a credentials URL and encoded credentials. Only set one of the properties.");
+    assertTrue(
+        e.getMessage(),
+        e.getMessage()
+            .contains(
+                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
+  }
+
+  public static class TestCredentialsProvider implements CredentialsProvider {
+    @Override
+    public Credentials getCredentials() throws IOException {
+      return NoCredentials.getInstance();
+    }
+  }
+
+  @Test
+  public void testValidCredentialsProvider() {
+    String uri =
+        String.format(
+            "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?credentialsProvider=%s",
+            TestCredentialsProvider.class.getName());
+
+    ConnectionOptions options = ConnectionOptions.newBuilder().setUri(uri).build();
+    assertEquals(NoCredentials.getInstance(), options.getCredentials());
+  }
+
+  @Test
+  public void testSetCredentialsAndCredentialsProvider() {
+    String uri =
+        String.format(
+            "cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?credentials=%s;credentialsProvider=%s",
+            FILE_TEST_PATH, NoCredentialsProvider.class.getName());
+
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> ConnectionOptions.newBuilder().setUri(uri).build());
+    assertTrue(
+        e.getMessage(),
+        e.getMessage()
+            .contains(
+                "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token"));
   }
 
   @Test

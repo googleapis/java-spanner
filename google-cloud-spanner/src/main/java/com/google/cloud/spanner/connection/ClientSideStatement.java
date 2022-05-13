@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import java.util.List;
 
 /**
@@ -46,6 +47,9 @@ interface ClientSideStatement {
 
   /** @return <code>true</code> if this {@link ClientSideStatement} will return an update count. */
   boolean isUpdate();
+
+  /** @return the statement type */
+  ClientSideStatementType getStatementType();
 
   /**
    * Execute this {@link ClientSideStatement} on the given {@link ConnectionStatementExecutor}. The

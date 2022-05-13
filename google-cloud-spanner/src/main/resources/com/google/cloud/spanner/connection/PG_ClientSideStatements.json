@@ -5,6 +5,7 @@
       "name": "SHOW [VARIABLE] AUTOCOMMIT",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_AUTOCOMMIT",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?autocommit\\s*\\z",
       "method": "statementShowAutocommit",
       "exampleStatements": ["show autocommit","show variable autocommit"]
@@ -13,6 +14,7 @@
       "name": "SHOW [VARIABLE] SPANNER.READONLY",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_READONLY",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.readonly\\s*\\z",
       "method": "statementShowReadOnly",
       "exampleStatements": ["show spanner.readonly","show variable spanner.readonly"]
@@ -21,6 +23,7 @@
       "name": "SHOW [VARIABLE] SPANNER.RETRY_ABORTS_INTERNALLY",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_RETRY_ABORTS_INTERNALLY",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.retry_aborts_internally\\s*\\z",
       "method": "statementShowRetryAbortsInternally",
       "exampleStatements": ["show spanner.retry_aborts_internally","show variable spanner.retry_aborts_internally"],
@@ -30,6 +33,7 @@
       "name": "SHOW [VARIABLE] SPANNER.AUTOCOMMIT_DML_MODE",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_AUTOCOMMIT_DML_MODE",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.autocommit_dml_mode\\s*\\z",
       "method": "statementShowAutocommitDmlMode",
       "exampleStatements": ["show spanner.autocommit_dml_mode","show variable spanner.autocommit_dml_mode"]
@@ -38,6 +42,7 @@
       "name": "SHOW [VARIABLE] STATEMENT_TIMEOUT",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_STATEMENT_TIMEOUT",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?statement_timeout\\s*\\z",
       "method": "statementShowStatementTimeout",
       "exampleStatements": ["show statement_timeout","show variable statement_timeout"]
@@ -46,6 +51,7 @@
       "name": "SHOW [VARIABLE] SPANNER.READ_TIMESTAMP",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_READ_TIMESTAMP",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.read_timestamp\\s*\\z",
       "method": "statementShowReadTimestamp",
       "exampleStatements": ["show spanner.read_timestamp","show variable spanner.read_timestamp"],
@@ -55,6 +61,7 @@
       "name": "SHOW [VARIABLE] SPANNER.COMMIT_TIMESTAMP",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_COMMIT_TIMESTAMP",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.commit_timestamp\\s*\\z",
       "method": "statementShowCommitTimestamp",
       "exampleStatements": ["show spanner.commit_timestamp","show variable spanner.commit_timestamp"],
@@ -64,6 +71,7 @@
       "name": "SHOW [VARIABLE] SPANNER.READ_ONLY_STALENESS",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_READ_ONLY_STALENESS",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.read_only_staleness\\s*\\z",
       "method": "statementShowReadOnlyStaleness",
       "exampleStatements": ["show spanner.read_only_staleness","show variable spanner.read_only_staleness"]
@@ -72,6 +80,7 @@
       "name": "SHOW [VARIABLE] SPANNER.OPTIMIZER_VERSION",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_OPTIMIZER_VERSION",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.optimizer_version\\s*\\z",
       "method": "statementShowOptimizerVersion",
       "exampleStatements": ["show spanner.optimizer_version","show variable spanner.optimizer_version"]
@@ -80,6 +89,7 @@
       "name": "SHOW [VARIABLE] SPANNER.OPTIMIZER_STATISTICS_PACKAGE",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_OPTIMIZER_STATISTICS_PACKAGE",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.optimizer_statistics_package\\s*\\z",
       "method": "statementShowOptimizerStatisticsPackage",
       "exampleStatements": ["show spanner.optimizer_statistics_package","show variable spanner.optimizer_statistics_package"]
@@ -88,6 +98,7 @@
       "name": "SHOW [VARIABLE] SPANNER.RETURN_COMMIT_STATS",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_RETURN_COMMIT_STATS",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.return_commit_stats\\s*\\z",
       "method": "statementShowReturnCommitStats",
       "exampleStatements": ["show spanner.return_commit_stats","show variable spanner.return_commit_stats"]
@@ -96,6 +107,7 @@
       "name": "SHOW [VARIABLE] SPANNER.COMMIT_RESPONSE",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_COMMIT_RESPONSE",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.commit_response\\s*\\z",
       "method": "statementShowCommitResponse",
       "exampleStatements": ["show spanner.commit_response","show variable spanner.commit_response"],
@@ -105,6 +117,7 @@
       "name": "SHOW [VARIABLE] SPANNER.STATEMENT_TAG",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_STATEMENT_TAG",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.statement_tag\\s*\\z",
       "method": "statementShowStatementTag",
       "exampleStatements": ["show spanner.statement_tag","show variable spanner.statement_tag"]
@@ -113,6 +126,7 @@
       "name": "SHOW [VARIABLE] SPANNER.TRANSACTION_TAG",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_TRANSACTION_TAG",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.transaction_tag\\s*\\z",
       "method": "statementShowTransactionTag",
       "exampleStatements": ["show spanner.transaction_tag","show variable spanner.transaction_tag"]
@@ -121,6 +135,7 @@
       "name": "SHOW [VARIABLE] SPANNER.RPC_PRIORITY",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_RPC_PRIORITY",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.rpc_priority\\s*\\z",
       "method": "statementShowRPCPriority",
       "exampleStatements": ["show spanner.rpc_priority","show variable spanner.rpc_priority"]
@@ -129,6 +144,7 @@
       "name": "SHOW [VARIABLE] TRANSACTION ISOLATION LEVEL",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "SHOW_TRANSACTION_ISOLATION_LEVEL",
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?transaction\\s*isolation\\s*level\\s*\\z",
       "method": "statementShowTransactionIsolationLevel",
       "exampleStatements": ["show transaction isolation level","show variable transaction isolation level"]
@@ -145,6 +161,7 @@
       "name": "{START | BEGIN} [TRANSACTION | WORK] [{ (READ ONLY|READ WRITE) | (ISOLATION LEVEL (DEFAULT|SERIALIZABLE)) }]",
       "executorName": "ClientSideStatementPgBeginExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "BEGIN",
       "regex": "(?is)\\A\\s*(?:begin|start)(?:\\s+transaction|\\s+work)?(\\s+read\\s+only|\\s+read\\s+write|\\s+isolation\\s+level\\s+default|\\s+isolation\\s+level\\s+serializable)?\\s*\\z",
       "method": "statementBeginPgTransaction",
       "exampleStatements": [
@@ -159,6 +176,7 @@
       "name": "COMMIT [TRANSACTION | WORK] [AND NO CHAIN]",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "COMMIT",
       "regex": "(?is)\\A\\s*(?:commit)(?:\\s+transaction|\\s+work)?(?:\\s+and\\s+no\\s+chain)?\\s*\\z",
       "method": "statementCommit",
       "exampleStatements": ["commit", "commit transaction", "commit work", "commit and no chain", "commit transaction and no chain", "commit work and no chain"],
@@ -168,6 +186,7 @@
       "name": "ROLLBACK [TRANSACTION | WORK] [AND NO CHAIN]",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "ROLLBACK",
       "regex": "(?is)\\A\\s*(?:rollback)(?:\\s+transaction|\\s+work)?(?:\\s+and\\s+no\\s+chain)?\\s*\\z",
       "method": "statementRollback",
       "exampleStatements": ["rollback", "rollback transaction", "rollback work", "rollback and no chain", "rollback transaction and no chain", "rollback work and no chain"],
@@ -177,6 +196,7 @@
       "name": "START BATCH DDL",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "START_BATCH_DDL",
       "regex": "(?is)\\A\\s*(?:start)(?:\\s+batch)(?:\\s+ddl)\\s*\\z",
       "method": "statementStartBatchDdl",
       "exampleStatements": ["start batch ddl"]
@@ -185,6 +205,7 @@
       "name": "START BATCH DML",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "START_BATCH_DML",
       "regex": "(?is)\\A\\s*(?:start)(?:\\s+batch)(?:\\s+dml)\\s*\\z",
       "method": "statementStartBatchDml",
       "exampleStatements": ["start batch dml"]
@@ -193,6 +214,7 @@
       "name": "RUN BATCH",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "RUN_BATCH",
       "regex": "(?is)\\A\\s*(?:run)(?:\\s+batch)\\s*\\z",
       "method": "statementRunBatch",
       "exampleStatements": ["run batch"],
@@ -202,6 +224,7 @@
       "name": "ABORT BATCH",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "ABORT_BATCH",
       "regex": "(?is)\\A\\s*(?:abort)(?:\\s+batch)\\s*\\z",
       "method": "statementAbortBatch",
       "exampleStatements": ["abort batch"],
@@ -211,6 +234,7 @@
       "name": "SET AUTOCOMMIT =|TO TRUE|FALSE",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "SET_AUTOCOMMIT",
       "regex": "(?is)\\A\\s*set\\s+autocommit(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetAutocommit",
       "exampleStatements": ["set autocommit = true", "set autocommit = false", "set autocommit to true", "set autocommit to false"],
@@ -225,6 +249,7 @@
       "name": "SET SPANNER.READONLY =|TO TRUE|FALSE",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "SET_READONLY",
       "regex": "(?is)\\A\\s*set\\s+spanner\\.readonly(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetReadOnly",
       "exampleStatements": ["set spanner.readonly = true", "set spanner.readonly = false", "set spanner.readonly to true", "set spanner.readonly to false"],
@@ -239,6 +264,7 @@
       "name": "SET SPANNER.RETRY_ABORTS_INTERNALLY =|TO TRUE|FALSE",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "SET_RETRY_ABORTS_INTERNALLY",
       "regex": "(?is)\\A\\s*set\\s+spanner\\.retry_aborts_internally(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetRetryAbortsInternally",
       "exampleStatements": ["set spanner.retry_aborts_internally = true", "set spanner.retry_aborts_internally = false", "set spanner.retry_aborts_internally to true", "set spanner.retry_aborts_internally to false"],
@@ -254,6 +280,7 @@
       "name": "SET SPANNER.AUTOCOMMIT_DML_MODE =|TO 'PARTITIONED_NON_ATOMIC'|'TRANSACTIONAL'",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "SET_AUTOCOMMIT_DML_MODE",
       "regex": "(?is)\\A\\s*set\\s+spanner\\.autocommit_dml_mode(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetAutocommitDmlMode",
       "exampleStatements": [
@@ -273,6 +300,7 @@
       "name": "SET STATEMENT_TIMEOUT =|TO '<duration>'|INT8|DEFAULT",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "SET_STATEMENT_TIMEOUT",
       "regex": "(?is)\\A\\s*set\\s+statement_timeout(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetStatementTimeout",
       "exampleStatements": [
@@ -300,6 +328,7 @@
       "name": "SET TRANSACTION { (READ ONLY|READ WRITE) | (ISOLATION LEVEL (DEFAULT|SERIALIZABLE)) }",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "SET_TRANSACTION_MODE",
       "regex": "(?is)\\A\\s*set\\s+transaction\\s*(?:\\s+)\\s*(.*)\\z",
       "method": "statementSetPgTransactionMode",
       "exampleStatements": ["set transaction read only", "set transaction read write", "set transaction isolation level default", "set transaction isolation level serializable"],
@@ -315,6 +344,7 @@
       "name": "SET SESSION CHARACTERISTICS AS TRANSACTION { (READ ONLY|READ WRITE) | (ISOLATION LEVEL (DEFAULT|SERIALIZABLE)) }",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "SET_READONLY",
       "regex": "(?is)\\A\\s*set\\s+session\\s+characteristics\\s+as\\s+transaction\\s*(?:\\s+)\\s*(.*)\\z",
       "method": "statementSetPgSessionCharacteristicsTransactionMode",
       "exampleStatements": ["set session characteristics as transaction read only", "set session characteristics as transaction read write", "set session characteristics as transaction isolation level default", "set session characteristics as transaction isolation level serializable"],
@@ -329,6 +359,7 @@
       "name": "SET SPANNER.READ_ONLY_STALENESS =|TO 'STRONG' | 'MIN_READ_TIMESTAMP <timestamp>' | 'READ_TIMESTAMP <timestamp>' | 'MAX_STALENESS <int64>s|ms|us|ns' | 'EXACT_STALENESS (<int64>s|ms|us|ns)'",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "SET_READ_ONLY_STALENESS",
       "regex": "(?is)\\A\\s*set\\s+spanner\\.read_only_staleness(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetReadOnlyStaleness",
       "exampleStatements": [
@@ -374,6 +405,7 @@
       "name": "SET SPANNER.OPTIMIZER_VERSION =|TO '<version>'|'LATEST'|''",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "SET_OPTIMIZER_VERSION",
       "regex": "(?is)\\A\\s*set\\s+spanner\\.optimizer_version(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetOptimizerVersion",
       "exampleStatements": [
@@ -397,6 +429,7 @@
       "name": "SET SPANNER.OPTIMIZER_STATISTICS_PACKAGE =|TO '<package>'|''",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "SET_OPTIMIZER_STATISTICS_PACKAGE",
       "regex": "(?is)\\A\\s*set\\s+spanner\\.optimizer_statistics_package(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetOptimizerStatisticsPackage",
       "exampleStatements": [
@@ -416,6 +449,7 @@
       "name": "SET SPANNER.RETURN_COMMIT_STATS =|TO TRUE|FALSE",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "SET_RETURN_COMMIT_STATS",
       "regex": "(?is)\\A\\s*set\\s+spanner\\.return_commit_stats(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetReturnCommitStats",
       "exampleStatements": ["set spanner.return_commit_stats = true", "set spanner.return_commit_stats = false", "set spanner.return_commit_stats to true", "set spanner.return_commit_stats to false"],
@@ -430,6 +464,7 @@
       "name": "SET SPANNER.STATEMENT_TAG =|TO '<tag>'",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "SET_STATEMENT_TAG",
       "regex": "(?is)\\A\\s*set\\s+spanner\\.statement_tag(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetStatementTag",
       "exampleStatements": [
@@ -451,6 +486,7 @@
       "name": "SET SPANNER.TRANSACTION_TAG =|TO '<tag>'",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "SET_TRANSACTION_TAG",
       "regex": "(?is)\\A\\s*set\\s+spanner\\.transaction_tag(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetTransactionTag",
       "exampleStatements": [
@@ -473,6 +509,7 @@
       "name": "SET SPANNER.RPC_PRIORITY =|TO 'HIGH'|'MEDIUM'|'LOW'|'NULL'",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
+      "statementType": "SET_RPC_PRIORITY",
       "regex": "(?is)\\A\\s*set\\s+spanner\\.rpc_priority(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetRPCPriority",
       "exampleStatements": [
