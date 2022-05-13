@@ -16,55 +16,54 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.cloud.spanner.Dialect;
-import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
+import static org.junit.Assert.assertEquals;
+
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.ExplainCommandConverter;
-import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(Parameterized.class)
 public class ExplainCommandConverterTest {
-  @Parameter public Dialect dialect;
-
-  @Parameters(name = "dialect = {0}")
-  public static Object[] data() {
-    return Dialect.values();
-  }
-
   @Test
-  public void testConvert() throws CompileException {
+  public void testConvert() {
     ExplainCommandConverter explainCommandConverter = new ExplainCommandConverter();
-    Assert.assertEquals(
+    assertEquals(
         "select * from table1", explainCommandConverter.convert("explain select * from table1"));
-    Assert.assertEquals(
+    assertEquals(
         "select    *   \t from table1",
         explainCommandConverter.convert("explain \tselect    *   \t from table1"));
-    Assert.assertEquals(
+    assertEquals(
+        "select    *   \t from table1",
+        explainCommandConverter.convert("EXPLAIN \tselect    *   \t from table1"));
+    assertEquals(
+        "select    *   \t from table1",
+        explainCommandConverter.convert("ExplAIn \tselect    *   \t from table1"));
+    assertEquals(
         "select    *   \t from table1",
         explainCommandConverter.convert("explain \n select    *   \t from table1"));
-    Assert.assertEquals(
+    assertEquals(
         "select    *   \t from table1",
         explainCommandConverter.convert("explain \n \t select    *   \t from table1"));
-    Assert.assertEquals("foo", explainCommandConverter.convert("explain   foo"));
-    Assert.assertEquals(null, explainCommandConverter.convert("explain"));
+    assertEquals("foo", explainCommandConverter.convert("explain   foo"));
+    assertEquals(null, explainCommandConverter.convert("explain"));
 
-    Assert.assertEquals(
+    assertEquals(
         "analyse select * from table1",
         explainCommandConverter.convert("explain analyse select * from table1"));
-    Assert.assertEquals(
-        "analyse \tselect    *   \t from table1",
-        explainCommandConverter.convert("explain \t analyse \tselect    *   \t from table1"));
-    Assert.assertEquals(
+    assertEquals(
+        "analyze \tselect    *   \t from table1",
+        explainCommandConverter.convert("explain \t analyze \tselect    *   \t from table1"));
+    assertEquals(
         "analyse \n select    *   \t from table1",
         explainCommandConverter.convert("explain \n analyse \n select    *   \t from table1"));
-    Assert.assertEquals(
+    assertEquals(
+        "ANALYZE \n select    *   \t from table1",
+        explainCommandConverter.convert("EXPLAIN \n ANALYZE \n select    *   \t from table1"));
+    assertEquals(
+        "aNALyzE \n select    *   \t from table1",
+        explainCommandConverter.convert("ExPLaiN \n aNALyzE \n select    *   \t from table1"));
+    assertEquals(
         "analyse \t select    *   \t from table1",
         explainCommandConverter.convert("explain \n analyse \t select    *   \t from table1"));
-    Assert.assertEquals("analyse foo", explainCommandConverter.convert("explain  analyse foo"));
-    Assert.assertEquals("analyse", explainCommandConverter.convert("explain analyse"));
+    assertEquals("analyse foo", explainCommandConverter.convert("explain  analyse foo"));
+    assertEquals("analyse", explainCommandConverter.convert("explain analyse"));
   }
 }

@@ -18,6 +18,8 @@ package com.google.cloud.spanner.connection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
@@ -39,7 +41,6 @@ import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
 import java.util.List;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -108,7 +109,7 @@ public class ExplainTest extends AbstractMockServerTest {
     mockSpanner.clearRequests();
   }
 
-  public void testExplain(String statement) {
+  private void testExplain(String statement) {
     mockSpanner.clearRequests();
     final Statement explainStatement = Statement.of(statement);
 
@@ -119,17 +120,18 @@ public class ExplainTest extends AbstractMockServerTest {
 
         while (resultSet.next()) {
           if (count == 1) {
-            Assert.assertEquals(true, false);
+            fail(
+                "The resultset was expected t contains exactly 1 row but it contains more than 1 row");
           }
 
           ++count;
 
           com.google.cloud.spanner.Struct row = resultSet.getCurrentRowAsStruct();
 
-          Assert.assertEquals(1, row.getColumnCount());
+          assertEquals(1, row.getColumnCount());
           assertNotNull(row.getString("QUERY PLAN"));
           String expectedQueryPlan = "some-plan-node : { subquery_cluster_node : 1 }";
-          Assert.assertEquals(expectedQueryPlan, row.getString("QUERY PLAN"));
+          assertEquals(expectedQueryPlan, row.getString("QUERY PLAN"));
         }
       }
     }
@@ -141,7 +143,7 @@ public class ExplainTest extends AbstractMockServerTest {
     assertEquals(QueryMode.PLAN, request.getQueryMode());
   }
 
-  public void testExplainAnalyze(String statement) {
+  private void testExplainAnalyze(String statement) {
     mockSpanner.clearRequests();
     final Statement explainAnalyseStatement = Statement.of(statement);
     try (Connection connection = createConnection()) {
@@ -151,22 +153,23 @@ public class ExplainTest extends AbstractMockServerTest {
 
         while (resultSet.next()) {
           if (count == 1) {
-            Assert.assertEquals(true, false);
+            fail(
+                "The resultset was expected t contains exactly 1 row but it contains more than 1 row");
           }
 
           ++count;
 
           com.google.cloud.spanner.Struct row = resultSet.getCurrentRowAsStruct();
 
-          Assert.assertEquals(2, row.getColumnCount());
+          assertEquals(2, row.getColumnCount());
 
           assertNotNull(row.getString("QUERY PLAN"));
           String expectedQueryPlan = "some-plan-node : { subquery_cluster_node : 1 }";
-          Assert.assertEquals(expectedQueryPlan, row.getString("QUERY PLAN"));
+          assertEquals(expectedQueryPlan, row.getString("QUERY PLAN"));
 
           assertNotNull(row.getString("EXECUTION STATS"));
           String expectedExecutionStats = "cpu_time : { unit : msec , total_time : 10 }";
-          Assert.assertEquals(expectedExecutionStats, row.getString("EXECUTION STATS"));
+          assertEquals(expectedExecutionStats, row.getString("EXECUTION STATS"));
         }
       }
     }
@@ -291,27 +294,30 @@ public class ExplainTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testInvalidExlain() {
+  public void testInvalidExplain() {
 
     String statement = " explain  verbose " + EXPLAIN_STATEMENT_QUERY;
-    Assert.assertThrows(SpannerException.class, () -> testExplain(statement));
+    assertThrows(SpannerException.class, () -> testExplain(statement));
 
     String statement2 = " explain  foo " + EXPLAIN_STATEMENT_QUERY;
-    Assert.assertThrows(SpannerException.class, () -> testExplain(statement2));
+    assertThrows(SpannerException.class, () -> testExplain(statement2));
 
     String statement3 = " explain  analyse analyse  " + EXPLAIN_STATEMENT_QUERY;
-    Assert.assertThrows(SpannerException.class, () -> testExplain(statement3));
+    assertThrows(SpannerException.class, () -> testExplain(statement3));
 
     String statement4 = " explain  analyse true  " + EXPLAIN_STATEMENT_QUERY;
-    Assert.assertThrows(SpannerException.class, () -> testExplain(statement4));
+    assertThrows(SpannerException.class, () -> testExplain(statement4));
 
     String statement5 = " explain  (analyse true , verbose )   " + EXPLAIN_STATEMENT_QUERY;
-    Assert.assertThrows(SpannerException.class, () -> testExplain(statement5));
+    assertThrows(SpannerException.class, () -> testExplain(statement5));
 
     String statement6 = " explain  (analyse hello)   " + EXPLAIN_STATEMENT_QUERY;
-    Assert.assertThrows(SpannerException.class, () -> testExplain(statement6));
+    assertThrows(SpannerException.class, () -> testExplain(statement6));
 
     String statement7 = " explain  (analyse true , verbose , costs )   " + EXPLAIN_STATEMENT_QUERY;
-    Assert.assertThrows(SpannerException.class, () -> testExplain(statement7));
+    assertThrows(SpannerException.class, () -> testExplain(statement7));
+
+    String statement8 = " explain  (analyse true , verbose , costs    " + EXPLAIN_STATEMENT_QUERY;
+    assertThrows(SpannerException.class, () -> testExplain(statement8));
   }
 }

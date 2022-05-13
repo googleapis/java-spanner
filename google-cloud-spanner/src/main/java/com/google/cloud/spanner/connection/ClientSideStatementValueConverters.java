@@ -351,6 +351,10 @@ class ClientSideStatementValueConverters {
 
     @Override
     public String convert(String value) {
+      /* The first word in the string should be "explain"
+       *  So, if the size of the string <= 7 (number of letters in the word "explain"), its an invalid statement
+       *  If the size is greater than 7, we'll consider everything after explain as the query.
+       */
       if (value.length() <= 7) {
         return null;
       }

@@ -452,36 +452,41 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   private String processQueryPlan(PlanNode planNode) {
-    String planNodeDescription = " : { ";
+    StringBuilder planNodeDescription = new StringBuilder(" : { ");
     com.google.protobuf.Struct metadata = planNode.getMetadata();
 
     for (String key : metadata.getFieldsMap().keySet()) {
-      planNodeDescription +=
-          key + " : " + metadata.getFieldsMap().get(key).getStringValue() + " , ";
+      planNodeDescription
+          .append(key)
+          .append(" : ")
+          .append(metadata.getFieldsMap().get(key).getStringValue())
+          .append(" , ");
     }
-    planNodeDescription = planNodeDescription.substring(0, planNodeDescription.length() - 3);
-    planNodeDescription += " }";
+    String substring = planNodeDescription.substring(0, planNodeDescription.length() - 3);
+    planNodeDescription.setLength(0);
+    planNodeDescription.append(substring).append(" }");
 
-    return planNodeDescription;
+    return planNodeDescription.toString();
   }
 
   private String processExecutionStats(PlanNode planNode) {
-    String executionStats = "";
+    StringBuilder executionStats = new StringBuilder("");
     for (String key : planNode.getExecutionStats().getFieldsMap().keySet()) {
-      executionStats += key + " : { ";
-
+      executionStats.append(key).append(" : { ");
       com.google.protobuf.Struct value =
           planNode.getExecutionStats().getFieldsMap().get(key).getStructValue();
       for (String newKey : value.getFieldsMap().keySet()) {
         String newValue = value.getFieldsMap().get(newKey).getStringValue();
-        executionStats += newKey + " : " + newValue + " , ";
+        executionStats.append(newKey).append(" : ").append(newValue).append(" , ");
       }
-      executionStats = executionStats.substring(0, executionStats.length() - 3);
-      executionStats += " } , ";
+      String substring = executionStats.substring(0, executionStats.length() - 3);
+      executionStats.setLength(0);
+      executionStats.append(substring).append(" } , ");
     }
-    executionStats = executionStats.substring(0, executionStats.length() - 3);
-
-    return executionStats;
+    String substring = executionStats.substring(0, executionStats.length() - 3);
+    executionStats.setLength(0);
+    executionStats.append(substring);
+    return executionStats.toString();
   }
 
   private StatementResult getStatementResultFromQueryPlan(QueryPlan queryPlan, boolean isAnalyse) {
@@ -501,50 +506,49 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
       if (isAnalyse && !planNode.getExecutionStats().toString().equals("")) {
         executionStats = processExecutionStats(planNode);
       }
+      Struct.Builder builder = Struct.newBuilder().set("QUERY PLAN").to(planNodeDescription);
 
       if (isAnalyse) {
-        list.add(
-            Struct.newBuilder()
-                .set("QUERY PLAN")
-                .to(planNodeDescription)
-                .set("EXECUTION STATS")
-                .to(executionStats)
-                .build());
-      } else {
-        list.add(Struct.newBuilder().set("QUERY PLAN").to(planNodeDescription).build());
+        builder.set("EXECUTION STATS").to(executionStats);
       }
+      list.add(builder.build());
     }
 
-    ResultSet rs;
+    ResultSet resultSet;
     if (isAnalyse) {
-      rs =
+      resultSet =
           ResultSets.forRows(
               Type.struct(
                   StructField.of("QUERY PLAN", Type.string()),
                   StructField.of("EXECUTION STATS", Type.string())),
               list);
     } else {
-      rs = ResultSets.forRows(Type.struct(StructField.of("QUERY PLAN", Type.string())), list);
+      resultSet =
+          ResultSets.forRows(Type.struct(StructField.of("QUERY PLAN", Type.string())), list);
     }
-    return StatementResultImpl.of(rs);
+    return StatementResultImpl.of(resultSet);
   }
 
-  private StatementResult executeStatement(String sql, QueryAnalyzeMode qam) {
+  private StatementResult executeStatement(String sql, QueryAnalyzeMode queryAnalyzeMode) {
     Statement statement = Statement.newBuilder(sql).build();
-    ResultSet rs = getConnection().analyzeQuery(statement, qam);
-    while (rs.next()) {
-      continue;
-    }
+    try (ResultSet resultSet = getConnection().analyzeQuery(statement, queryAnalyzeMode)) {
+      while (resultSet.next()) {
+        // ResultSet.next() should return false in order to access the ResultSet.Stats
+      }
 
-    if (rs.getStats() != null && rs.getStats().getQueryPlan() != null) {
-      return getStatementResultFromQueryPlan(
-          rs.getStats().getQueryPlan(), qam.equals(QueryAnalyzeMode.PROFILE));
+      if (resultSet.getStats() != null && resultSet.getStats().getQueryPlan() != null) {
+        return getStatementResultFromQueryPlan(
+            resultSet.getStats().getQueryPlan(), queryAnalyzeMode.equals(QueryAnalyzeMode.PROFILE));
+      }
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, String.format("Couldn't fetch stats for %s", sql));
   }
 
+  // This method removes parenthesis from the sql string assuming it is ending with the closing
+  // parenthesis
   private String removeParenthesisAndTrim(String sql) {
+    sql = sql.trim();
     if (sql.charAt(0) == '(') {
       sql = sql.substring(1, sql.length() - 1);
     }
@@ -553,10 +557,16 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   /*
    * This method executes the given SQL string in either PLAN or PROFILE mode and returns
-   * the query plan as a ResultSet containing a single String column with the query plan nodes.
+   * the query plan and execution stats (if necessary).
    *
    * The only additional option that is supported is ANALYZE. The method will throw a SpannerException
    * if it is invoked with a statement that includes any other options.
+   *
+   * If the SQL string has ANALYZE option, it will be executed in PROFILE mode and will return a resultset
+   * with two String columns namely QUERY PLAN and EXECUTION STATS.
+   *
+   * If the sql string doesn't have any option, it will be executed in PLAN mode and will return a resultset
+   * with one string column namely QUERY PLAN.
    */
   @Override
   public StatementResult statementExplain(String sql) {
@@ -567,7 +577,11 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
     if (sql.charAt(0) == '(') {
       int index = sql.indexOf(')');
-
+      if (index == -1) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT,
+            String.format("Missing closing parenthesis in the query: %s", sql));
+      }
       String options[] = sql.substring(1, index).split("\\s*,\\s*");
       boolean isAnalyse = false, startAfterIndex = false;
       for (String option : options) {
@@ -603,10 +617,10 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         }
       }
       if (isAnalyse) {
-        String newSql = removeParenthesisAndTrim(sql.substring(index + 1).trim());
+        String newSql = removeParenthesisAndTrim(sql.substring(index + 1));
         return executeStatement(newSql, QueryAnalyzeMode.PROFILE);
       } else if (startAfterIndex) {
-        String newSql = removeParenthesisAndTrim(sql.substring(index + 1).trim());
+        String newSql = removeParenthesisAndTrim(sql.substring(index + 1));
         return executeStatement(newSql, QueryAnalyzeMode.PLAN);
       } else {
         return executeStatement(removeParenthesisAndTrim(sql), QueryAnalyzeMode.PLAN);
