@@ -153,6 +153,7 @@
       "name": "EXPLAIN <sql>",
       "executorName": "ClientSideStatementExplainExecutor",
       "resultType": "RESULT_SET",
+      "statementType": "EXPLAIN",
       "regex": "(?is)\\A\\s*explain(\\s+|\\()(.*)\\z",
       "method": "statementExplain",
       "exampleStatements": ["explain analyse select * from table"]
