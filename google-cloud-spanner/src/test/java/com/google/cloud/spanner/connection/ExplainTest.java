@@ -26,7 +26,6 @@ import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
-import com.google.protobuf.Descriptors.DescriptorValidationException;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -52,7 +51,7 @@ public class ExplainTest extends AbstractMockServerTest {
       Statement.of("SELECT * FROM SomeTable ORDER BY Value");
 
   @BeforeClass
-  public static void setupAnalyzeResults() throws DescriptorValidationException {
+  public static void setupAnalyzeResults() {
     mockSpanner.putStatementResult(
         MockSpannerServiceImpl.StatementResult.detectDialectResult(Dialect.POSTGRESQL));
     Struct metadata =
@@ -145,10 +144,10 @@ public class ExplainTest extends AbstractMockServerTest {
 
   private void testExplainAnalyze(String statement) {
     mockSpanner.clearRequests();
-    final Statement explainAnalyseStatement = Statement.of(statement);
+    final Statement explainAnalyzeStatement = Statement.of(statement);
     try (Connection connection = createConnection()) {
 
-      try (ResultSet resultSet = connection.execute(explainAnalyseStatement).getResultSet()) {
+      try (ResultSet resultSet = connection.execute(explainAnalyzeStatement).getResultSet()) {
         int count = 0;
 
         while (resultSet.next()) {
@@ -206,88 +205,94 @@ public class ExplainTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testValidExplainWithFalseAnalyse() {
-    String statement = "    explain (analyse false)      " + EXPLAIN_STATEMENT_QUERY;
+  public void testValidExplainWithFalseAnalyze() {
+    String statement = "    explain (analyze false)      " + EXPLAIN_STATEMENT_QUERY;
     testExplain(statement);
 
-    statement = "    explain (analyse FALSE)      " + EXPLAIN_STATEMENT_QUERY + "    ";
+    statement = "    explain (analyze FALSE)      " + EXPLAIN_STATEMENT_QUERY + "    ";
     testExplain(statement);
 
-    statement = "    explain (analyse fAlsE)  (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
+    statement = "    explain (analyze fAlsE)  (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
     testExplain(statement);
 
-    statement = "    explain (analyse 0)  (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
+    statement = "    explain (analyze 0)  (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
     testExplain(statement);
 
-    statement = "    explain (analyse off)  (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
+    statement = "    explain (analyze off)  (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
     testExplain(statement);
 
     statement =
-        "    explain (analyse false, analyze true, analyse false, analyze false)      "
+        "    explain (analyze false, analyze true, analyze false, analyze false)      "
             + EXPLAIN_STATEMENT_QUERY;
     testExplain(statement);
 
     statement =
-        "    explain (   analyse off , analyse true , analyse 0  )  (    "
+        "    explain (   analyze off , analyze true , analyze 0  )  (    "
             + EXPLAIN_STATEMENT_QUERY
             + "   ) ";
     testExplain(statement);
 
     statement =
-        "    explain (   analyse off , analyse 0 , analyse 0  )  (    "
+        "    explain (   analyze off , analyze 0 , analyze 0  )  (    "
             + EXPLAIN_STATEMENT_QUERY
             + "   ) ";
     testExplain(statement);
 
     statement =
-        "    explain (   analyse off , analyse,   analyse 0 , analyse false  )  (    "
+        "    explain (   analyze off , analyze,   analyze 0 , analyze false  )  (    "
             + EXPLAIN_STATEMENT_QUERY
             + "   ) ";
     testExplain(statement);
   }
 
   @Test
-  public void testValidExplainAnalyse() {
-    String statement = "Explain analyse " + EXPLAIN_STATEMENT_QUERY;
+  public void testValidExplainAnalyze() {
+    String statement = "Explain analyze " + EXPLAIN_STATEMENT_QUERY;
     testExplainAnalyze(statement);
 
     statement = "explain analyze " + EXPLAIN_STATEMENT_QUERY;
     testExplainAnalyze(statement);
 
-    statement = "explain   analyse  " + EXPLAIN_STATEMENT_QUERY;
+    statement = "explain   analyze  " + EXPLAIN_STATEMENT_QUERY;
     testExplainAnalyze(statement);
 
-    statement = "explain analyse (" + EXPLAIN_STATEMENT_QUERY + ") ";
+    statement = "explain analyze (" + EXPLAIN_STATEMENT_QUERY + ") ";
     testExplainAnalyze(statement);
 
-    statement = "    explain (  analyse true  ) (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
+    statement = "    explain (  analyze true  ) (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
     testExplainAnalyze(statement);
 
-    statement = "    ExpLAin(   analyse 1  ) (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
+    statement = "    ExpLAin(   analyze 1  ) (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
     testExplainAnalyze(statement);
 
-    statement = "    ExpLAin(   analyse On  ) (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
+    statement = "    ExpLAin(   analyze On  ) (    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
     testExplainAnalyze(statement);
 
-    statement = "    EXPLAIN(analyse)(    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
-    testExplainAnalyze(statement);
-
-    statement =
-        "    EXPLAIN(analyse , analyse false , analyse 1)(    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
+    statement = "    EXPLAIN(analyze)(    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
     testExplainAnalyze(statement);
 
     statement =
-        "    EXPLAIN(analyse , analyse false , analyse  )(    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
+        "    EXPLAIN(analyze , analyze false , analyze 1)(    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
     testExplainAnalyze(statement);
 
     statement =
-        "    EXPLAIN(analyse off  , analyse false , analyse  )(    "
+        "    EXPLAIN(analyze , aNAlyzE false , analyze  )(    " + EXPLAIN_STATEMENT_QUERY + "   ) ";
+    testExplainAnalyze(statement);
+
+    statement =
+        "    EXPLAIN(analyze off  , analyze false , AnalYZE  )(    "
             + EXPLAIN_STATEMENT_QUERY
             + "   ) ";
     testExplainAnalyze(statement);
 
     statement =
-        "    EXPLAIN(analyse \n off  , analyse false , analyse  )(    "
+        "    EXPLAIN(analyze \n off  , analyze false , analyze  )(    "
+            + EXPLAIN_STATEMENT_QUERY
+            + " \t  ) ";
+    testExplainAnalyze(statement);
+
+    statement =
+        "    EXPLAIN(analyse \n off  , analyze false , analyse  )(    "
             + EXPLAIN_STATEMENT_QUERY
             + " \t  ) ";
     testExplainAnalyze(statement);
@@ -302,22 +307,22 @@ public class ExplainTest extends AbstractMockServerTest {
     String statement2 = " explain  foo " + EXPLAIN_STATEMENT_QUERY;
     assertThrows(SpannerException.class, () -> testExplain(statement2));
 
-    String statement3 = " explain  analyse analyse  " + EXPLAIN_STATEMENT_QUERY;
+    String statement3 = " explain  analyze analyze  " + EXPLAIN_STATEMENT_QUERY;
     assertThrows(SpannerException.class, () -> testExplain(statement3));
 
-    String statement4 = " explain  analyse true  " + EXPLAIN_STATEMENT_QUERY;
+    String statement4 = " explain  analyze true  " + EXPLAIN_STATEMENT_QUERY;
     assertThrows(SpannerException.class, () -> testExplain(statement4));
 
-    String statement5 = " explain  (analyse true , verbose )   " + EXPLAIN_STATEMENT_QUERY;
+    String statement5 = " explain  (analyze true , verbose )   " + EXPLAIN_STATEMENT_QUERY;
     assertThrows(SpannerException.class, () -> testExplain(statement5));
 
-    String statement6 = " explain  (analyse hello)   " + EXPLAIN_STATEMENT_QUERY;
+    String statement6 = " explain  (analyze hello)   " + EXPLAIN_STATEMENT_QUERY;
     assertThrows(SpannerException.class, () -> testExplain(statement6));
 
-    String statement7 = " explain  (analyse true , verbose , costs )   " + EXPLAIN_STATEMENT_QUERY;
+    String statement7 = " explain  (analyze true , verbose , costs )   " + EXPLAIN_STATEMENT_QUERY;
     assertThrows(SpannerException.class, () -> testExplain(statement7));
 
-    String statement8 = " explain  (analyse true , verbose , costs    " + EXPLAIN_STATEMENT_QUERY;
+    String statement8 = " explain  (analyze true , verbose , costs    " + EXPLAIN_STATEMENT_QUERY;
     assertThrows(SpannerException.class, () -> testExplain(statement8));
   }
 }

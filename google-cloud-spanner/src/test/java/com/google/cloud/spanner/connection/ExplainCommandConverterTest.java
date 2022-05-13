@@ -46,14 +46,14 @@ public class ExplainCommandConverterTest {
     assertEquals(null, explainCommandConverter.convert("explain"));
 
     assertEquals(
-        "analyse select * from table1",
-        explainCommandConverter.convert("explain analyse select * from table1"));
+        "analyze select * from table1",
+        explainCommandConverter.convert("explain analyze select * from table1"));
     assertEquals(
         "analyze \tselect    *   \t from table1",
         explainCommandConverter.convert("explain \t analyze \tselect    *   \t from table1"));
     assertEquals(
-        "analyse \n select    *   \t from table1",
-        explainCommandConverter.convert("explain \n analyse \n select    *   \t from table1"));
+        "analyze \n select    *   \t from table1",
+        explainCommandConverter.convert("explain \n analyze \n select    *   \t from table1"));
     assertEquals(
         "ANALYZE \n select    *   \t from table1",
         explainCommandConverter.convert("EXPLAIN \n ANALYZE \n select    *   \t from table1"));
@@ -61,8 +61,23 @@ public class ExplainCommandConverterTest {
         "aNALyzE \n select    *   \t from table1",
         explainCommandConverter.convert("ExPLaiN \n aNALyzE \n select    *   \t from table1"));
     assertEquals(
-        "analyse \t select    *   \t from table1",
-        explainCommandConverter.convert("explain \n analyse \t select    *   \t from table1"));
+        "analyze \t select    *   \t from table1",
+        explainCommandConverter.convert("explain \n analyze \t select    *   \t from table1"));
+    assertEquals("analyze foo", explainCommandConverter.convert("explain  analyze foo"));
+    assertEquals("analyze", explainCommandConverter.convert("explain analyze"));
+    assertEquals(
+        "(analyze \t select    *   \t from table1",
+        explainCommandConverter.convert("explain \n (analyze \t select    *   \t from table1"));
+    assertEquals(
+        "(analyze \t select    *   \t from table1)",
+        explainCommandConverter.convert("explain \n (analyze \t select    *   \t from table1)"));
+
+    assertEquals(
+        "analyse select * from table1",
+        explainCommandConverter.convert("explain analyse select * from table1"));
+    assertEquals(
+        "analyse \tselect    *   \t from table1",
+        explainCommandConverter.convert("explain \t analyse \tselect    *   \t from table1"));
     assertEquals("analyse foo", explainCommandConverter.convert("explain  analyse foo"));
     assertEquals("analyse", explainCommandConverter.convert("explain analyse"));
   }

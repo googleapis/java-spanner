@@ -489,7 +489,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     return executionStats.toString();
   }
 
-  private StatementResult getStatementResultFromQueryPlan(QueryPlan queryPlan, boolean isAnalyse) {
+  private StatementResult getStatementResultFromQueryPlan(QueryPlan queryPlan, boolean isAnalyze) {
     ArrayList<Struct> list = new ArrayList<>();
     for (PlanNode planNode : queryPlan.getPlanNodesList()) {
       String planNodeDescription = planNode.getDisplayName();
@@ -503,19 +503,19 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         planNodeDescription += " : " + planNode.getShortRepresentation().getDescription();
       }
 
-      if (isAnalyse && !planNode.getExecutionStats().toString().equals("")) {
+      if (isAnalyze && !planNode.getExecutionStats().toString().equals("")) {
         executionStats = processExecutionStats(planNode);
       }
       Struct.Builder builder = Struct.newBuilder().set("QUERY PLAN").to(planNodeDescription);
 
-      if (isAnalyse) {
+      if (isAnalyze) {
         builder.set("EXECUTION STATS").to(executionStats);
       }
       list.add(builder.build());
     }
 
     ResultSet resultSet;
-    if (isAnalyse) {
+    if (isAnalyze) {
       resultSet =
           ResultSets.forRows(
               Type.struct(
@@ -583,11 +583,11 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
             String.format("Missing closing parenthesis in the query: %s", sql));
       }
       String options[] = sql.substring(1, index).split("\\s*,\\s*");
-      boolean isAnalyse = false, startAfterIndex = false;
+      boolean isAnalyze = false, startAfterIndex = false;
       for (String option : options) {
         String optionExpression[] = option.trim().split("\\s+");
         if (optionExpression.length >= 3) {
-          isAnalyse = false;
+          isAnalyze = false;
           break;
         } else if (ClientSideStatementExplainExecutor.EXPLAIN_OPTIONS.contains(
             optionExpression[0].toLowerCase())) {
@@ -596,9 +596,9 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
               String.format("%s is not implemented yet", optionExpression[0]));
         } else if (optionExpression[0].equalsIgnoreCase("analyse")
             || optionExpression[0].equalsIgnoreCase("analyze")) {
-          isAnalyse = true;
+          isAnalyze = true;
         } else {
-          isAnalyse = false;
+          isAnalyze = false;
           break;
         }
 
@@ -606,17 +606,17 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
           if (optionExpression[1].equalsIgnoreCase("false")
               || optionExpression[1].equalsIgnoreCase("0")
               || optionExpression[1].equalsIgnoreCase("off")) {
-            isAnalyse = false;
+            isAnalyze = false;
             startAfterIndex = true;
           } else if (!(optionExpression[1].equalsIgnoreCase("true")
               || optionExpression[1].equalsIgnoreCase("1")
               || optionExpression[1].equalsIgnoreCase("on"))) {
-            isAnalyse = false;
+            isAnalyze = false;
             break;
           }
         }
       }
-      if (isAnalyse) {
+      if (isAnalyze) {
         String newSql = removeParenthesisAndTrim(sql.substring(index + 1));
         return executeStatement(newSql, QueryAnalyzeMode.PROFILE);
       } else if (startAfterIndex) {
