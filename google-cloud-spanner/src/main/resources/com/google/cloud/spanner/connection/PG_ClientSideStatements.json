@@ -139,7 +139,7 @@
       "resultType": "RESULT_SET",
       "regex": "(?is)\\A\\s*explain(\\s+|\\()(.*)\\z",
       "method": "statementExplain",
-      "exampleStatements": []
+      "exampleStatements": ["explain analyse select * from table"]
     },
     {
       "name": "{START | BEGIN} [TRANSACTION | WORK] [{ (READ ONLY|READ WRITE) | (ISOLATION LEVEL (DEFAULT|SERIALIZABLE)) }]",
