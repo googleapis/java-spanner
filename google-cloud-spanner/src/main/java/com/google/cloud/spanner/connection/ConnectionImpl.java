@@ -260,6 +260,11 @@ class ConnectionImpl implements Connection {
     setDefaultTransactionOptions();
   }
 
+  @VisibleForTesting
+  Spanner getSpanner() {
+    return this.spanner;
+  }
+
   private DdlClient createDdlClient() {
     return DdlClient.newBuilder()
         .setDatabaseAdminClient(spanner.getDatabaseAdminClient())
