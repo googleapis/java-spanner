@@ -294,12 +294,16 @@ class ConnectionImpl implements Connection {
     if (!isClosed()) {
       List<ApiFuture<Void>> futures = new ArrayList<>();
       if (isTransactionStarted()) {
-        futures.add(rollbackAsync());
+        try {
+          futures.add(rollbackAsync());
+        } catch (Exception exception) {
+          // ignore and continue to close the connection.
+        }
       }
       // Try to wait for the current statement to finish (if any) before we actually close the
       // connection.
       this.closed = true;
-      // Add a no-op statement to the execute. Once this has been executed, we know that all
+      // Add a no-op statement to the executor. Once this has been executed, we know that all
       // preceding statements have also been executed, as the executor is single-threaded and
       // executes all statements in order of submitting.
       futures.add(statementExecutor.submit(() -> null));
