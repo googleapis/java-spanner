@@ -95,7 +95,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
               resumeToken = rs.getResumeToken();
             }
             if (rs.hasStats()) {
-              foundStats = true;
+              foundStats = rs.getStats().hasRowCountLowerBound();
               updateCount += rs.getStats().getRowCountLowerBound();
             }
           }

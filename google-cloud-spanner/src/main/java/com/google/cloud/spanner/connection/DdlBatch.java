@@ -38,6 +38,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.SpannerGrpc;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -199,6 +200,13 @@ class DdlBatch extends AbstractBaseUnitOfWork {
   public ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing updates is not allowed for DDL batches.");
+  }
+
+  @Override
+  public ApiFuture<ResultSetStats> analyzeUpdateAsync(
+      ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.FAILED_PRECONDITION, "Analyzing updates is not allowed for DDL batches.");
   }
 
   @Override
