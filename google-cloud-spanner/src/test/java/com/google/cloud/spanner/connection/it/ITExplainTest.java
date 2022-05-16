@@ -16,13 +16,20 @@
 
 package com.google.cloud.spanner.connection.it;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.Connection;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import java.util.Arrays;
+import java.util.Collections;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -36,9 +43,27 @@ public class ITExplainTest extends ITAbstractSpannerTest {
     uri.append(";autocommit=false");
   }
 
-  @Override
-  public boolean doCreateDefaultTestTable() {
-    return true;
+  @BeforeClass
+  public static void setupPostgreSQL(){
+    database = env.getTestHelper().createTestDatabase(Dialect.POSTGRESQL, Collections.emptyList());;
+  }
+
+
+  @Before
+  public void createTestTable() {
+
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
+      if (!tableExists(connection, "TEST")) {
+        connection.setAutocommit(false);
+        connection.startBatchDdl();
+        connection.execute(
+            Statement.of(
+                "CREATE TABLE TEST (ID INT NOT NULL PRIMARY KEY, NAME VARCHAR(100) NOT NULL)"));
+        connection.runBatch();
+      }
+    }
+
   }
 
   @Test
@@ -52,6 +77,30 @@ public class ITExplainTest extends ITAbstractSpannerTest {
 
       ResultSet resultSet =
           connection.execute(Statement.of("EXPLAIN SELECT * from TEST")).getResultSet();
+      while(resultSet.next()){
+        assertNotNull(resultSet.getString("QUERY PLAN"));
+      }
+      assertEquals(1, resultSet.getColumnCount());
     }
   }
+
+  @Test
+  public void testExplainAnalyzeStatement() {
+    try (ITConnection connection = createConnection()) {
+      connection.bufferedWrite(
+          Arrays.asList(
+              Mutation.newInsertBuilder("TEST").set("ID").to(1L).set("NAME").to("TEST-1").build(),
+              Mutation.newInsertBuilder("TEST").set("ID").to(2L).set("NAME").to("TEST-2").build()));
+      connection.commit();
+
+      ResultSet resultSet =
+          connection.execute(Statement.of("EXPLAIN ANALYZE SELECT * from TEST")).getResultSet();
+      while(resultSet.next()){
+        assertNotNull(resultSet.getString("QUERY PLAN"));
+        assertNotNull(resultSet.getString("EXECUTION STATS"));
+      }
+      assertEquals(2, resultSet.getColumnCount());
+    }
+  }
+
 }
