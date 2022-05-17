@@ -18,7 +18,6 @@ package com.google.cloud.spanner.connection;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.GceTestEnvConfig;
 import com.google.cloud.spanner.IntegrationTestEnv;
@@ -323,7 +322,9 @@ public abstract class ITAbstractSpannerTest {
     try (ResultSet rs =
         connection.executeQuery(
             Statement.newBuilder(
-                    String.format("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE UPPER(TABLE_NAME)=UPPER(\'%s\')", table))
+                    String.format(
+                        "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE UPPER(TABLE_NAME)=UPPER(\'%s\')",
+                        table))
                 .build())) {
       while (rs.next()) {
         return true;

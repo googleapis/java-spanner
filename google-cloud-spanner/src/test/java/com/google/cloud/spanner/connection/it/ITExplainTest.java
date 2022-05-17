@@ -44,14 +44,13 @@ public class ITExplainTest extends ITAbstractSpannerTest {
   }
 
   @BeforeClass
-  public static void setupPostgreSQL(){
-    database = env.getTestHelper().createTestDatabase(Dialect.POSTGRESQL, Collections.emptyList());;
+  public static void setupPostgreSQL() {
+    database = env.getTestHelper().createTestDatabase(Dialect.POSTGRESQL, Collections.emptyList());
+    ;
   }
-
 
   @Before
   public void createTestTable() {
-
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       if (!tableExists(connection, "TEST")) {
@@ -63,7 +62,6 @@ public class ITExplainTest extends ITAbstractSpannerTest {
         connection.runBatch();
       }
     }
-
   }
 
   @Test
@@ -71,13 +69,13 @@ public class ITExplainTest extends ITAbstractSpannerTest {
     try (ITConnection connection = createConnection()) {
       connection.bufferedWrite(
           Arrays.asList(
-              Mutation.newInsertBuilder("TEST").set("ID").to(1L).set("NAME").to("TEST-1").build(),
-              Mutation.newInsertBuilder("TEST").set("ID").to(2L).set("NAME").to("TEST-2").build()));
+              Mutation.newInsertBuilder("TEST").set("ID").to(3L).set("NAME").to("TEST-3").build(),
+              Mutation.newInsertBuilder("TEST").set("ID").to(4L).set("NAME").to("TEST-4").build()));
       connection.commit();
 
       ResultSet resultSet =
           connection.execute(Statement.of("EXPLAIN SELECT * from TEST")).getResultSet();
-      while(resultSet.next()){
+      while (resultSet.next()) {
         assertNotNull(resultSet.getString("QUERY PLAN"));
       }
       assertEquals(1, resultSet.getColumnCount());
@@ -95,12 +93,11 @@ public class ITExplainTest extends ITAbstractSpannerTest {
 
       ResultSet resultSet =
           connection.execute(Statement.of("EXPLAIN ANALYZE SELECT * from TEST")).getResultSet();
-      while(resultSet.next()){
+      while (resultSet.next()) {
         assertNotNull(resultSet.getString("QUERY PLAN"));
         assertNotNull(resultSet.getString("EXECUTION STATS"));
       }
       assertEquals(2, resultSet.getColumnCount());
     }
   }
-
 }
