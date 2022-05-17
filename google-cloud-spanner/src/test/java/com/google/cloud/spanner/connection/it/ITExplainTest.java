@@ -47,6 +47,7 @@ public class ITExplainTest extends ITAbstractSpannerTest {
 
   @BeforeClass
   public static void setupPostgreSQL() {
+    assumeFalse("Emulator does not support PostgreSQL Dialect", isUsingEmulator());
     database = env.getTestHelper().createTestDatabase(Dialect.POSTGRESQL, Collections.emptyList());
   }
 
