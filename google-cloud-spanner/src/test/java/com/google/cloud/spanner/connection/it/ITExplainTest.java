@@ -16,8 +16,10 @@
 
 package com.google.cloud.spanner.connection.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Mutation;
@@ -46,7 +48,6 @@ public class ITExplainTest extends ITAbstractSpannerTest {
   @BeforeClass
   public static void setupPostgreSQL() {
     database = env.getTestHelper().createTestDatabase(Dialect.POSTGRESQL, Collections.emptyList());
-    ;
   }
 
   @Before
@@ -66,6 +67,7 @@ public class ITExplainTest extends ITAbstractSpannerTest {
 
   @Test
   public void testExplainStatement() {
+    assumeFalse("Emulator does not support PostgreSQL Dialect", isUsingEmulator());
     try (ITConnection connection = createConnection()) {
       connection.bufferedWrite(
           Arrays.asList(
@@ -84,6 +86,7 @@ public class ITExplainTest extends ITAbstractSpannerTest {
 
   @Test
   public void testExplainAnalyzeStatement() {
+    assumeFalse("Emulator does not support PostgreSQL Dialect", isUsingEmulator());
     try (ITConnection connection = createConnection()) {
       connection.bufferedWrite(
           Arrays.asList(
