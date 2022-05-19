@@ -510,6 +510,13 @@ public class StatementParserTest {
                         + "          CONCAT(Singers.FirstName, Singers.LastName) as Name\n"
                         + "   FROM Singers"))
             .isDdl());
+
+    assertTrue(parser.parse(Statement.of("analyze")).isDdl());
+    assertTrue(parser.parse(Statement.of("Analyze")).isDdl());
+    assertTrue(parser.parse(Statement.of("ANALYZE")).isDdl());
+    assertTrue(parser.parse(Statement.of("\t ANALYZE\n ")).isDdl());
+    assertTrue(parser.parse(Statement.of("/* This is a comment */ ANALYZE ")).isDdl());
+    assertTrue(parser.parse(Statement.of("-- comment\n ANALYZE ")).isDdl());
   }
 
   @Test
