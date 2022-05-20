@@ -15,6 +15,9 @@
 
 set -eo pipefail
 
+echo "Environment variables:"
+printenv
+
 ## Get the directory of the build script
 scriptDir=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 ## cd to the parent directory, i.e. the root of the git repo
@@ -65,7 +68,7 @@ set +e
 
 case ${JOB_TYPE} in
 test)
-    mvn test -B \
+    mvn test -B -V \
       -Dclirr.skip=true \
       -Denforcer.skip=true \
       -Djava.net.preferIPv4Stack=true
