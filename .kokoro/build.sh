@@ -15,9 +15,6 @@
 
 set -eo pipefail
 
-echo "Environment variables:"
-printenv
-
 ## Get the directory of the build script
 scriptDir=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 ## cd to the parent directory, i.e. the root of the git repo
