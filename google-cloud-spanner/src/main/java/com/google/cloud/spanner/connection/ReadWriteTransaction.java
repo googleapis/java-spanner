@@ -51,6 +51,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.SpannerGrpc;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -391,12 +392,26 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
+  public ApiFuture<ResultSetStats> analyzeUpdateAsync(
+      ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
+    return internalExecuteUpdateAsync(update, analyzeMode, options);
+  }
+
+  @Override
   public ApiFuture<Long> executeUpdateAsync(
       final ParsedStatement update, final UpdateOption... options) {
+    return ApiFutures.transform(
+        internalExecuteUpdateAsync(update, AnalyzeMode.NONE, options),
+        ResultSetStats::getRowCountExact,
+        MoreExecutors.directExecutor());
+  }
+
+  private ApiFuture<ResultSetStats> internalExecuteUpdateAsync(
+      ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "The statement is not an update statement");
     checkValidTransaction();
-    ApiFuture<Long> res;
+    ApiFuture<ResultSetStats> res;
     if (retryAbortsInternally) {
       res =
           executeStatementAsync(
@@ -411,9 +426,25 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                                 update,
                                 StatementExecutionStep.EXECUTE_STATEMENT,
                                 ReadWriteTransaction.this);
-                        long updateCount =
-                            get(txContextFuture).executeUpdate(update.getStatement(), options);
-                        createAndAddRetriableUpdate(update, updateCount, options);
+
+                        ResultSetStats updateCount;
+                        if (analyzeMode == AnalyzeMode.NONE) {
+                          updateCount =
+                              ResultSetStats.newBuilder()
+                                  .setRowCountExact(
+                                      get(txContextFuture)
+                                          .executeUpdate(update.getStatement(), options))
+                                  .build();
+                        } else {
+                          updateCount =
+                              get(txContextFuture)
+                                  .analyzeUpdate(
+                                      update.getStatement(),
+                                      analyzeMode.getQueryAnalyzeMode(),
+                                      options);
+                        }
+                        createAndAddRetriableUpdate(
+                            update, updateCount.getRowCountExact(), options);
                         return updateCount;
                       } catch (AbortedException e) {
                         throw e;
@@ -433,13 +464,21 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               () -> {
                 checkTimedOut();
                 checkAborted();
-                return get(txContextFuture).executeUpdate(update.getStatement());
+                if (analyzeMode == AnalyzeMode.NONE) {
+                  return ResultSetStats.newBuilder()
+                      .setRowCountExact(
+                          get(txContextFuture).executeUpdate(update.getStatement(), options))
+                      .build();
+                }
+                return get(txContextFuture)
+                    .analyzeUpdate(
+                        update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options);
               },
               SpannerGrpc.getExecuteSqlMethod());
     }
     ApiFutures.addCallback(
         res,
-        new ApiFutureCallback<Long>() {
+        new ApiFutureCallback<ResultSetStats>() {
           @Override
           public void onFailure(Throwable t) {
             if (t instanceof SpannerException) {
@@ -448,7 +487,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           }
 
           @Override
-          public void onSuccess(Long result) {}
+          public void onSuccess(ResultSetStats result) {}
         },
         MoreExecutors.directExecutor());
     return res;

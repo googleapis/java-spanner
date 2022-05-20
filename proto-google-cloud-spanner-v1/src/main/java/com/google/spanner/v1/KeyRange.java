@@ -199,6 +199,8 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
+    } catch (com.google.protobuf.UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
       throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
@@ -1172,8 +1174,9 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (startKeyTypeCase_ == 1) {
           startClosedBuilder_.mergeFrom(value);
+        } else {
+          startClosedBuilder_.setMessage(value);
         }
-        startClosedBuilder_.setMessage(value);
       }
       startKeyTypeCase_ = 1;
       return this;
@@ -1387,8 +1390,9 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (startKeyTypeCase_ == 2) {
           startOpenBuilder_.mergeFrom(value);
+        } else {
+          startOpenBuilder_.setMessage(value);
         }
-        startOpenBuilder_.setMessage(value);
       }
       startKeyTypeCase_ = 2;
       return this;
@@ -1601,8 +1605,9 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (endKeyTypeCase_ == 3) {
           endClosedBuilder_.mergeFrom(value);
+        } else {
+          endClosedBuilder_.setMessage(value);
         }
-        endClosedBuilder_.setMessage(value);
       }
       endKeyTypeCase_ = 3;
       return this;
@@ -1815,8 +1820,9 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (endKeyTypeCase_ == 4) {
           endOpenBuilder_.mergeFrom(value);
+        } else {
+          endOpenBuilder_.setMessage(value);
         }
-        endOpenBuilder_.setMessage(value);
       }
       endKeyTypeCase_ = 4;
       return this;

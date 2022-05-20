@@ -43,6 +43,7 @@ import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.RequestOptions;
+import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
@@ -670,12 +671,38 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     @Override
+    public ResultSetStats analyzeUpdate(
+        Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+      Preconditions.checkNotNull(analyzeMode);
+      QueryMode queryMode;
+      switch (analyzeMode) {
+        case PLAN:
+          queryMode = QueryMode.PLAN;
+          break;
+        case PROFILE:
+          queryMode = QueryMode.PROFILE;
+          break;
+        default:
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT, "Unknown analyze mode: " + analyzeMode);
+      }
+      return internalExecuteUpdate(statement, queryMode, options);
+    }
+
+    @Override
     public long executeUpdate(Statement statement, UpdateOption... options) {
+      ResultSetStats resultSetStats = internalExecuteUpdate(statement, QueryMode.NORMAL, options);
+      // For standard DML, using the exact row count.
+      return resultSetStats.getRowCountExact();
+    }
+
+    private ResultSetStats internalExecuteUpdate(
+        Statement statement, QueryMode queryMode, UpdateOption... options) {
       beforeReadOrQuery();
       final ExecuteSqlRequest.Builder builder =
           getExecuteSqlRequestBuilder(
               statement,
-              QueryMode.NORMAL,
+              queryMode,
               Options.fromUpdateOptions(options),
               /* withTransactionSelector = */ true);
       try {
@@ -689,8 +716,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           throw new IllegalArgumentException(
               "DML response missing stats possibly due to non-DML statement as input");
         }
-        // For standard DML, using the exact row count.
-        return resultSet.getStats().getRowCountExact();
+        return resultSet.getStats();
       } catch (Throwable t) {
         throw onError(
             SpannerExceptionFactory.asSpannerException(t), builder.getTransaction().hasBegin());

@@ -15,7 +15,7 @@
   </parent>
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
-    <opencensus.version>0.31.0</opencensus.version>
+    <opencensus.version>0.31.1</opencensus.version>
     <graalvm.version>22.0.0.2</graalvm.version>
     <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
     <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing-east1</spanner.testenv.instance>

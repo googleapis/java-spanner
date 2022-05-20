@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import com.google.api.gax.rpc.InvalidArgumentException;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.api.resourcenames.ResourceName;
 import com.google.common.collect.Lists;
+import com.google.iam.v1.AuditConfig;
 import com.google.iam.v1.Binding;
 import com.google.iam.v1.GetIamPolicyRequest;
 import com.google.iam.v1.Policy;
@@ -656,6 +657,7 @@ public class DatabaseAdminClientTest {
         Policy.newBuilder()
             .setVersion(351608024)
             .addAllBindings(new ArrayList<Binding>())
+            .addAllAuditConfigs(new ArrayList<AuditConfig>())
             .setEtag(ByteString.EMPTY)
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
@@ -699,6 +701,7 @@ public class DatabaseAdminClientTest {
         Policy.newBuilder()
             .setVersion(351608024)
             .addAllBindings(new ArrayList<Binding>())
+            .addAllAuditConfigs(new ArrayList<AuditConfig>())
             .setEtag(ByteString.EMPTY)
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
@@ -742,6 +745,7 @@ public class DatabaseAdminClientTest {
         Policy.newBuilder()
             .setVersion(351608024)
             .addAllBindings(new ArrayList<Binding>())
+            .addAllAuditConfigs(new ArrayList<AuditConfig>())
             .setEtag(ByteString.EMPTY)
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
@@ -782,6 +786,7 @@ public class DatabaseAdminClientTest {
         Policy.newBuilder()
             .setVersion(351608024)
             .addAllBindings(new ArrayList<Binding>())
+            .addAllAuditConfigs(new ArrayList<AuditConfig>())
             .setEtag(ByteString.EMPTY)
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
