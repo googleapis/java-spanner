@@ -60,8 +60,14 @@ jobs:
     - uses: actions/checkout@v3
     - uses: actions/setup-java@v3
       with:
-        distribution: zulu
         java-version: 8
+        distribution: zulu
+    - run: echo "JAVA8_HOME=${JAVA_HOME}" >> $GITHUB_ENV
+    - uses: actions/setup-java@v3
+      with:
+        java-version: 11
+        distribution: zulu
+    - run: echo "JAVA11_HOME=${JAVA_HOME}" >> $GITHUB_ENV
     - run: java -version
     - run: .kokoro/build.bat
       env:
