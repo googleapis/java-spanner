@@ -349,6 +349,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
+    } catch (com.google.protobuf.UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
       throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
@@ -438,6 +440,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
       } finally {
@@ -885,6 +889,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
       } finally {
@@ -1607,8 +1613,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
               break;
             case 8:
               {
-                timestampBoundCase_ = 1;
                 timestampBound_ = input.readBool();
+                timestampBoundCase_ = 1;
                 break;
               }
             case 18:
@@ -1687,6 +1693,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
       } finally {
@@ -2823,8 +2831,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         } else {
           if (timestampBoundCase_ == 2) {
             minReadTimestampBuilder_.mergeFrom(value);
+          } else {
+            minReadTimestampBuilder_.setMessage(value);
           }
-          minReadTimestampBuilder_.setMessage(value);
         }
         timestampBoundCase_ = 2;
         return this;
@@ -3105,8 +3114,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         } else {
           if (timestampBoundCase_ == 3) {
             maxStalenessBuilder_.mergeFrom(value);
+          } else {
+            maxStalenessBuilder_.setMessage(value);
           }
-          maxStalenessBuilder_.setMessage(value);
         }
         timestampBoundCase_ = 3;
         return this;
@@ -3398,8 +3408,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         } else {
           if (timestampBoundCase_ == 4) {
             readTimestampBuilder_.mergeFrom(value);
+          } else {
+            readTimestampBuilder_.setMessage(value);
           }
-          readTimestampBuilder_.setMessage(value);
         }
         timestampBoundCase_ = 4;
         return this;
@@ -3682,8 +3693,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         } else {
           if (timestampBoundCase_ == 5) {
             exactStalenessBuilder_.mergeFrom(value);
+          } else {
+            exactStalenessBuilder_.setMessage(value);
           }
-          exactStalenessBuilder_.setMessage(value);
         }
         timestampBoundCase_ = 5;
         return this;
@@ -4903,8 +4915,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       } else {
         if (modeCase_ == 1) {
           readWriteBuilder_.mergeFrom(value);
+        } else {
+          readWriteBuilder_.setMessage(value);
         }
-        readWriteBuilder_.setMessage(value);
       }
       modeCase_ = 1;
       return this;
@@ -5142,8 +5155,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       } else {
         if (modeCase_ == 3) {
           partitionedDmlBuilder_.mergeFrom(value);
+        } else {
+          partitionedDmlBuilder_.setMessage(value);
         }
-        partitionedDmlBuilder_.setMessage(value);
       }
       modeCase_ = 3;
       return this;
@@ -5380,8 +5394,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       } else {
         if (modeCase_ == 2) {
           readOnlyBuilder_.mergeFrom(value);
+        } else {
+          readOnlyBuilder_.setMessage(value);
         }
-        readOnlyBuilder_.setMessage(value);
       }
       modeCase_ = 2;
       return this;

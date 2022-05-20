@@ -33,6 +33,7 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStateme
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.spanner.v1.ResultSetStats;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -159,6 +160,13 @@ class DmlBatch extends AbstractBaseUnitOfWork {
             + "\" is not a DML-statement.");
     statements.add(update);
     return ApiFutures.immediateFuture(-1L);
+  }
+
+  @Override
+  public ApiFuture<ResultSetStats> analyzeUpdateAsync(
+      ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.FAILED_PRECONDITION, "Analyzing updates is not allowed for DML batches.");
   }
 
   @Override
