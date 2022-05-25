@@ -87,7 +87,7 @@ jobs:
       with:
         distribution: zulu
         java-version: ${{matrix.java}}
-    # For Java 8 builds, use JDK 11 to
+    # For Java 8 tests, use JDK 11 to compile
     - if: ${{matrix.java}} == '8'
       run: echo "JAVA8_HOME=${JAVA_HOME}" >> $GITHUB_ENV
       shell: bash

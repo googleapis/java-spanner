@@ -87,6 +87,7 @@ integration)
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
       -Denforcer.skip=true \
+      -Dmaven.main.skip=true \
       -fae \
       verify
     RETURN_CODE=$?
