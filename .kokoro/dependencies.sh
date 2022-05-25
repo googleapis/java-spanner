@@ -49,12 +49,20 @@ function determineMavenOpts() {
 
 export MAVEN_OPTS=$(determineMavenOpts)
 
+if [ ! -z "${JAVA11_HOME}" ]; then
+  setJava "${JAVA11_HOME}"
+fi
+
 # this should run maven enforcer
 retry_with_backoff 3 10 \
   mvn install -B -V -ntp \
     -DskipTests=true \
     -Dmaven.javadoc.skip=true \
     -Dclirr.skip=true
+
+if [ ! -z "${JAVA8_HOME}" ]; then
+  setJava "${JAVA8_HOME}"
+fi
 
 mvn -B dependency:analyze -DfailOnWarning=true
 

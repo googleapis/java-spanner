@@ -42,6 +42,8 @@ java.common_templates(
         ".github/blunderbuss.yml",
         ".github/workflows/samples.yaml",
         ".github/workflows/ci.yaml",
+        ".kokoro/common.sh",
         ".kokoro/build.sh",
+        ".kokoro/dependencies.sh",
     ]
 )
