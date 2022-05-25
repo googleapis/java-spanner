@@ -23,11 +23,6 @@ cd ${scriptDir}/..
 # include common functions
 source ${scriptDir}/common.sh
 
-function setJava() {
-  export JAVA_HOME=$1
-  export PATH=${JAVA_HOME}/bin:$PATH
-}
-
 # units-java8 uses both JDK 11 and JDK 8. GraalVM dependencies require JDK 11 to
 # compile the classes touching GraalVM classes.
 if [ ! -z "${JAVA11_HOME}" ]; then
@@ -57,7 +52,6 @@ fi
 # are compatible with Java 8 when running tests.
 if [ ! -z "${JAVA8_HOME}" ]; then
   setJava "${JAVA8_HOME}"
-  mvn -version
 fi
 
 RETURN_CODE=0
@@ -87,8 +81,19 @@ integration)
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
       -Denforcer.skip=true \
+      -Dmaven.main.skip=true \
       -fae \
       verify
+    RETURN_CODE=$?
+    ;;
+graalvm)
+    # Run Unit and Integration Tests with Native Image
+    mvn test -Pnative -Penable-integration-tests
+    RETURN_CODE=$?
+    ;;
+graalvm17)
+    # Run Unit and Integration Tests with Native Image
+    mvn test -Pnative -Penable-integration-tests
     RETURN_CODE=$?
     ;;
 slowtests)
@@ -100,6 +105,7 @@ slowtests)
     -DtrimStackTrace=false \
     -Dclirr.skip=true \
     -Denforcer.skip=true \
+    -Dmaven.main.skip=true \
     -fae \
     verify
   RETURN_CODE=$?
