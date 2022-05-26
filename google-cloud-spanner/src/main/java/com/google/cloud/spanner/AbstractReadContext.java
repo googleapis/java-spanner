@@ -584,7 +584,7 @@ abstract class AbstractReadContext
       com.google.protobuf.Struct.Builder paramsBuilder = builder.getParamsBuilder();
       for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
         paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
-        if (param.getValue() != null) {
+        if (param.getValue() != null && param.getValue().getType() != null) {
           builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
         }
       }
@@ -615,7 +615,7 @@ abstract class AbstractReadContext
             builder.getStatementsBuilder(idx).getParamsBuilder();
         for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
           paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
-          if (param.getValue() != null) {
+          if (param.getValue() != null && param.getValue().getType() != null) {
             builder
                 .getStatementsBuilder(idx)
                 .putParamTypes(param.getKey(), param.getValue().getType().toProto());

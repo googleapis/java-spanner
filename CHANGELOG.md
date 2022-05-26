@@ -1,5 +1,75 @@
 # Changelog
 
+### [6.25.2](https://github.com/googleapis/java-spanner/compare/v6.25.1...v6.25.2) (2022-05-25)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.3.0 ([#1888](https://github.com/googleapis/java-spanner/issues/1888)) ([1b109e9](https://github.com/googleapis/java-spanner/commit/1b109e9fd66c74b70af808eced162a684287200e))
+* update dependency com.google.cloud:google-cloud-trace to v2.2.0 ([#1889](https://github.com/googleapis/java-spanner/issues/1889)) ([f89f70e](https://github.com/googleapis/java-spanner/commit/f89f70e95e068998ff5f9e211fa1172c4fe37b94))
+
+### [6.25.1](https://github.com/googleapis/java-spanner/compare/v6.25.0...v6.25.1) (2022-05-23)
+
+
+### Dependencies
+
+* update dependency org.openjdk.jmh:jmh-generator-annprocess to v1.35 ([#1790](https://github.com/googleapis/java-spanner/issues/1790)) ([d68095b](https://github.com/googleapis/java-spanner/commit/d68095b274bb8ef778176d4ff88d54b607e3de73))
+
+## [6.25.0](https://github.com/googleapis/java-spanner/compare/v6.24.0...v6.25.0) (2022-05-20)
+
+
+### Features
+
+* add build scripts for native image testing in Java 17 ([#1440](https://github.com/googleapis/java-spanner/issues/1440)) ([#1881](https://github.com/googleapis/java-spanner/issues/1881)) ([993e893](https://github.com/googleapis/java-spanner/commit/993e89365d167e07114ebc352dfa835487045ecb))
+* Add support for Explain feature ([#1852](https://github.com/googleapis/java-spanner/issues/1852)) ([01f460e](https://github.com/googleapis/java-spanner/commit/01f460e9fc755c02797c50a50d8dc2df31116268))
+* AuditConfig for IAM v1 ([f7437b2](https://github.com/googleapis/java-spanner/commit/f7437b294a7c05f288142626d71c7aff00616c89))
+* support analyze DDL statement ([#1879](https://github.com/googleapis/java-spanner/issues/1879)) ([1704ac3](https://github.com/googleapis/java-spanner/commit/1704ac3dbcf959294b6d609b4dce2aa1fa80d594))
+* support analyzeUpdate ([#1867](https://github.com/googleapis/java-spanner/issues/1867)) ([2d8cfa4](https://github.com/googleapis/java-spanner/commit/2d8cfa40a22e5b77a39b6ec86552734ec47afbe0))
+
+
+### Bug Fixes
+
+* ignore errors during Connection.close() ([#1877](https://github.com/googleapis/java-spanner/issues/1877)) ([6ab8ed2](https://github.com/googleapis/java-spanner/commit/6ab8ed236b1393e67a4edc5d430d9535dffbadb5))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v2.12.0 ([#1880](https://github.com/googleapis/java-spanner/issues/1880)) ([daccd1b](https://github.com/googleapis/java-spanner/commit/daccd1b394a95f59246b36ef91c5d9459b3be577))
+* update opencensus.version to v0.31.1 ([#1863](https://github.com/googleapis/java-spanner/issues/1863)) ([2d2b526](https://github.com/googleapis/java-spanner/commit/2d2b526777b918f50511ef57433a809a672ab832))
+
+## [6.24.0](https://github.com/googleapis/java-spanner/compare/v6.23.3...v6.24.0) (2022-05-05)
+
+
+### Features
+
+* Copy backup samples ([#1802](https://github.com/googleapis/java-spanner/issues/1802)) ([787ccad](https://github.com/googleapis/java-spanner/commit/787ccadcba01193d541bfd1b80b055fb5d4c2bb3))
+* support CREATE DATABASE in Connection API ([#1845](https://github.com/googleapis/java-spanner/issues/1845)) ([40110fe](https://github.com/googleapis/java-spanner/commit/40110feb22986c6b5dac6885eae7f0b331aede61))
+* support CredentialsProvider in Connection API ([#1869](https://github.com/googleapis/java-spanner/issues/1869)) ([f1d2d3e](https://github.com/googleapis/java-spanner/commit/f1d2d3ef1dbd30c153616c2efcc362c1330705e1))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.2.8 ([#1831](https://github.com/googleapis/java-spanner/issues/1831)) ([088fb50](https://github.com/googleapis/java-spanner/commit/088fb50a673a99e6921503be0f84b8291173240e))
+* update dependency com.google.cloud:google-cloud-monitoring to v3.2.9 ([#1851](https://github.com/googleapis/java-spanner/issues/1851)) ([4d6bb2d](https://github.com/googleapis/java-spanner/commit/4d6bb2dd233fba60d213d36f15aead67dff57dec))
+* update dependency com.google.cloud:google-cloud-trace to v2.1.11 ([#1799](https://github.com/googleapis/java-spanner/issues/1799)) ([049635d](https://github.com/googleapis/java-spanner/commit/049635d4bc3210bd9ce41444f17c8b9d67af969a))
+
+
+### Documentation
+
+* add samples for PostgresSQL ([#1781](https://github.com/googleapis/java-spanner/issues/1781)) ([e832298](https://github.com/googleapis/java-spanner/commit/e8322986f158a86cdbb04332a9c49ead79fb2587))
+
+### [6.23.3](https://github.com/googleapis/java-spanner/compare/v6.23.2...v6.23.3) (2022-04-21)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v2.10.0 ([#1830](https://github.com/googleapis/java-spanner/issues/1830)) ([3c55eb3](https://github.com/googleapis/java-spanner/commit/3c55eb336e77ee1ddfb6c055722697f81419578c))
+
+
+### Documentation
+
+* add samples for PostgreSQL ([#1700](https://github.com/googleapis/java-spanner/issues/1700)) ([a024483](https://github.com/googleapis/java-spanner/commit/a02448388ba2415d31593a8c81b4430e2264c10c))
+
 ### [6.23.2](https://github.com/googleapis/java-spanner/compare/v6.23.1...v6.23.2) (2022-04-11)
 
 

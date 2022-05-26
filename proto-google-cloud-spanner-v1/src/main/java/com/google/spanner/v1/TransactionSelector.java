@@ -89,8 +89,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
             }
           case 18:
             {
-              selectorCase_ = 2;
               selector_ = input.readBytes();
+              selectorCase_ = 2;
               break;
             }
           case 26:
@@ -120,6 +120,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
+    } catch (com.google.protobuf.UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
       throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
@@ -875,8 +877,9 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       } else {
         if (selectorCase_ == 1) {
           singleUseBuilder_.mergeFrom(value);
+        } else {
+          singleUseBuilder_.setMessage(value);
         }
-        singleUseBuilder_.setMessage(value);
       }
       selectorCase_ = 1;
       return this;
@@ -1173,8 +1176,9 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       } else {
         if (selectorCase_ == 3) {
           beginBuilder_.mergeFrom(value);
+        } else {
+          beginBuilder_.setMessage(value);
         }
-        beginBuilder_.setMessage(value);
       }
       selectorCase_ = 3;
       return this;

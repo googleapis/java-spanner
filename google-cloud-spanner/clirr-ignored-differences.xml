@@ -60,4 +60,25 @@
     <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
     <method>com.google.api.gax.longrunning.OperationFuture copyBackup(com.google.cloud.spanner.BackupId, com.google.cloud.spanner.Backup)</method>
   </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.DatabaseClient getDatabaseClient()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseAdminClient</className>
+    <method>com.google.api.gax.longrunning.OperationFuture createDatabase(java.lang.String, java.lang.String, com.google.cloud.spanner.Dialect, java.lang.Iterable)</method>
+  </difference>
+  <!-- Support analyzeUpdate -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionContext</className>
+    <method>com.google.spanner.v1.ResultSetStats analyzeUpdate(com.google.cloud.spanner.Statement, com.google.cloud.spanner.ReadContext$QueryAnalyzeMode, com.google.cloud.spanner.Options$UpdateOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.spanner.v1.ResultSetStats analyzeUpdate(com.google.cloud.spanner.Statement, com.google.cloud.spanner.ReadContext$QueryAnalyzeMode)</method>
+  </difference>
 </differences>

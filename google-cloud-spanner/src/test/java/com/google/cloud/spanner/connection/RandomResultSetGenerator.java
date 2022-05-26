@@ -16,9 +16,10 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.api.client.util.Base64;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Dialect;
+import com.google.common.io.BaseEncoding;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.Value;
@@ -28,6 +29,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
+import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import java.math.BigDecimal;
 import java.util.Random;
@@ -37,86 +39,109 @@ import java.util.Random;
  * of Cloud Spanner filled with random data.
  */
 public class RandomResultSetGenerator {
-  private static final Type[] TYPES =
-      new Type[] {
-        Type.newBuilder().setCode(TypeCode.BOOL).build(),
-        Type.newBuilder().setCode(TypeCode.INT64).build(),
-        Type.newBuilder().setCode(TypeCode.FLOAT64).build(),
-        Type.newBuilder().setCode(TypeCode.NUMERIC).build(),
-        Type.newBuilder().setCode(TypeCode.STRING).build(),
-        Type.newBuilder().setCode(TypeCode.JSON).build(),
-        Type.newBuilder().setCode(TypeCode.BYTES).build(),
-        Type.newBuilder().setCode(TypeCode.DATE).build(),
-        Type.newBuilder().setCode(TypeCode.TIMESTAMP).build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.BOOL))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.INT64))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.FLOAT64))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.NUMERIC))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.STRING))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.JSON))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.BYTES))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.DATE))
-            .build(),
-        Type.newBuilder()
-            .setCode(TypeCode.ARRAY)
-            .setArrayElementType(Type.newBuilder().setCode(TypeCode.TIMESTAMP))
-            .build(),
-      };
+  private static Type[] generateTypes(Dialect dialect) {
+    return new Type[] {
+      Type.newBuilder().setCode(TypeCode.BOOL).build(),
+      Type.newBuilder().setCode(TypeCode.INT64).build(),
+      Type.newBuilder().setCode(TypeCode.FLOAT64).build(),
+      dialect == Dialect.POSTGRESQL
+          ? Type.newBuilder()
+              .setCode(TypeCode.NUMERIC)
+              .setTypeAnnotation(TypeAnnotationCode.PG_NUMERIC)
+              .build()
+          : Type.newBuilder().setCode(TypeCode.NUMERIC).build(),
+      Type.newBuilder().setCode(TypeCode.STRING).build(),
+      Type.newBuilder()
+          .setCode(dialect == Dialect.POSTGRESQL ? TypeCode.STRING : TypeCode.JSON)
+          .build(),
+      Type.newBuilder().setCode(TypeCode.BYTES).build(),
+      Type.newBuilder().setCode(TypeCode.DATE).build(),
+      Type.newBuilder().setCode(TypeCode.TIMESTAMP).build(),
+      Type.newBuilder()
+          .setCode(TypeCode.ARRAY)
+          .setArrayElementType(Type.newBuilder().setCode(TypeCode.BOOL))
+          .build(),
+      Type.newBuilder()
+          .setCode(TypeCode.ARRAY)
+          .setArrayElementType(Type.newBuilder().setCode(TypeCode.INT64))
+          .build(),
+      Type.newBuilder()
+          .setCode(TypeCode.ARRAY)
+          .setArrayElementType(Type.newBuilder().setCode(TypeCode.FLOAT64))
+          .build(),
+      Type.newBuilder()
+          .setCode(TypeCode.ARRAY)
+          .setArrayElementType(
+              dialect == Dialect.POSTGRESQL
+                  ? Type.newBuilder()
+                      .setCode(TypeCode.NUMERIC)
+                      .setTypeAnnotation(TypeAnnotationCode.PG_NUMERIC)
+                  : Type.newBuilder().setCode(TypeCode.NUMERIC))
+          .build(),
+      Type.newBuilder()
+          .setCode(TypeCode.ARRAY)
+          .setArrayElementType(Type.newBuilder().setCode(TypeCode.STRING))
+          .build(),
+      Type.newBuilder()
+          .setCode(TypeCode.ARRAY)
+          .setArrayElementType(
+              Type.newBuilder()
+                  .setCode(dialect == Dialect.POSTGRESQL ? TypeCode.STRING : TypeCode.JSON))
+          .build(),
+      Type.newBuilder()
+          .setCode(TypeCode.ARRAY)
+          .setArrayElementType(Type.newBuilder().setCode(TypeCode.BYTES))
+          .build(),
+      Type.newBuilder()
+          .setCode(TypeCode.ARRAY)
+          .setArrayElementType(Type.newBuilder().setCode(TypeCode.DATE))
+          .build(),
+      Type.newBuilder()
+          .setCode(TypeCode.ARRAY)
+          .setArrayElementType(Type.newBuilder().setCode(TypeCode.TIMESTAMP))
+          .build(),
+    };
+  }
 
-  private static ResultSetMetadata generateMetadata() {
+  private static ResultSetMetadata generateMetadata(Type[] types) {
     StructType.Builder rowTypeBuilder = StructType.newBuilder();
-    for (int col = 0; col < TYPES.length; col++) {
-      rowTypeBuilder.addFields(Field.newBuilder().setName("COL" + col).setType(TYPES[col])).build();
+    for (int col = 0; col < types.length; col++) {
+      rowTypeBuilder.addFields(Field.newBuilder().setName("COL" + col).setType(types[col])).build();
     }
     ResultSetMetadata.Builder builder = ResultSetMetadata.newBuilder();
     builder.setRowType(rowTypeBuilder.build());
     return builder.build();
   }
 
-  private static final ResultSetMetadata METADATA = generateMetadata();
-
+  private final ResultSetMetadata metadata;
+  private final Dialect dialect;
+  private final Type[] types;
   private final int rowCount;
   private final Random random = new Random();
 
   public RandomResultSetGenerator(int rowCount) {
+    this(rowCount, Dialect.GOOGLE_STANDARD_SQL);
+  }
+
+  public RandomResultSetGenerator(int rowCount, Dialect dialect) {
     this.rowCount = rowCount;
+    this.dialect = dialect;
+    this.types = generateTypes(dialect);
+    this.metadata = generateMetadata(types);
   }
 
   public ResultSet generate() {
     ResultSet.Builder builder = ResultSet.newBuilder();
     for (int row = 0; row < rowCount; row++) {
       ListValue.Builder rowBuilder = ListValue.newBuilder();
-      for (Type type : TYPES) {
+      for (Type type : types) {
         Value.Builder valueBuilder = Value.newBuilder();
         setRandomValue(valueBuilder, type);
         rowBuilder.addValues(valueBuilder.build());
       }
       builder.addRows(rowBuilder.build());
     }
-    builder.setMetadata(METADATA);
+    builder.setMetadata(metadata);
     return builder.build();
   }
 
@@ -142,7 +167,7 @@ public class RandomResultSetGenerator {
         case BYTES:
           byte[] bytes = new byte[random.nextInt(200)];
           random.nextBytes(bytes);
-          builder.setStringValue(Base64.encodeBase64String(bytes));
+          builder.setStringValue(BaseEncoding.base64().encode(bytes));
           break;
         case JSON:
           builder.setStringValue("\"" + random.nextInt(200) + "\":\"" + random.nextInt(200) + "\"");
@@ -154,10 +179,18 @@ public class RandomResultSetGenerator {
           builder.setStringValue(date.toString());
           break;
         case FLOAT64:
-          builder.setNumberValue(random.nextDouble());
+          if (randomNaN()) {
+            builder.setNumberValue(Double.NaN);
+          } else {
+            builder.setNumberValue(random.nextDouble());
+          }
           break;
         case NUMERIC:
-          builder.setStringValue(BigDecimal.valueOf(random.nextDouble()).toString());
+          if (dialect == Dialect.POSTGRESQL && randomNaN()) {
+            builder.setStringValue("NaN");
+          } else {
+            builder.setStringValue(BigDecimal.valueOf(random.nextDouble()).toString());
+          }
           break;
         case INT64:
           builder.setStringValue(String.valueOf(random.nextLong()));
@@ -182,6 +215,10 @@ public class RandomResultSetGenerator {
   }
 
   private boolean randomNull() {
+    return random.nextInt(10) == 0;
+  }
+
+  private boolean randomNaN() {
     return random.nextInt(10) == 0;
   }
 }

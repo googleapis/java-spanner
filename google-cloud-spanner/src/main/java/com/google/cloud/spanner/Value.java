@@ -88,6 +88,17 @@ public abstract class Value implements Serializable {
   private static final long serialVersionUID = -5289864325087675338L;
 
   /**
+   * Returns a {@link Value} that wraps the given proto value. This can be used to construct a value
+   * without a specific type, and let the backend infer the type based on the statement where it is
+   * used.
+   *
+   * @param value the non-null proto value (a {@link NullValue} is allowed)
+   */
+  public static Value untyped(com.google.protobuf.Value value) {
+    return new UntypedValueImpl(Preconditions.checkNotNull(value));
+  }
+
+  /**
    * Returns a {@code BOOL} value.
    *
    * @param v the value, which may be null
@@ -914,7 +925,7 @@ public abstract class Value implements Serializable {
       }
 
       AbstractValue that = (AbstractValue) o;
-      if (!getType().equals(that.getType()) || isNull != that.isNull) {
+      if (!Objects.equals(getType(), that.getType()) || isNull != that.isNull) {
         return false;
       }
 
@@ -960,6 +971,58 @@ public abstract class Value implements Serializable {
 
     final void checkNotNull() {
       Preconditions.checkState(!isNull(), "Illegal call to getter of null value.");
+    }
+  }
+
+  private static class UntypedValueImpl extends AbstractValue {
+    private final com.google.protobuf.Value value;
+
+    private UntypedValueImpl(com.google.protobuf.Value value) {
+      super(value.hasNullValue(), null);
+      this.value = value;
+    }
+
+    @Override
+    public boolean getBool() {
+      checkNotNull();
+      Preconditions.checkState(value.hasBoolValue(), "This value does not contain a bool value");
+      return value.getBoolValue();
+    }
+
+    @Override
+    public String getString() {
+      checkNotNull();
+      Preconditions.checkState(
+          value.hasStringValue(), "This value does not contain a string value");
+      return value.getStringValue();
+    }
+
+    @Override
+    public double getFloat64() {
+      checkNotNull();
+      Preconditions.checkState(
+          value.hasNumberValue(), "This value does not contain a number value");
+      return value.getNumberValue();
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value);
+    }
+
+    @Override
+    com.google.protobuf.Value valueToProto() {
+      return value;
+    }
+
+    @Override
+    boolean valueEquals(Value v) {
+      return ((UntypedValueImpl) v).value.equals(value);
+    }
+
+    @Override
+    int valueHash() {
+      return value.hashCode();
     }
   }
 

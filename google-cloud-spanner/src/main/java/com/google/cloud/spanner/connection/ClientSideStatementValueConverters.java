@@ -342,4 +342,23 @@ class ClientSideStatementValueConverters {
       return values.get("PRIORITY_" + value);
     }
   }
+
+  static class ExplainCommandConverter implements ClientSideStatementValueConverter<String> {
+    @Override
+    public Class<String> getParameterClass() {
+      return String.class;
+    }
+
+    @Override
+    public String convert(String value) {
+      /* The first word in the string should be "explain"
+       *  So, if the size of the string <= 7 (number of letters in the word "explain"), its an invalid statement
+       *  If the size is greater than 7, we'll consider everything after explain as the query.
+       */
+      if (value.length() <= 7) {
+        return null;
+      }
+      return value.substring(7).trim();
+    }
+  }
 }

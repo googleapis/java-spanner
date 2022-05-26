@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>6.23.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+  <version>6.25.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner</name>
   <url>https://github.com/googleapis/java-spanner</url>
@@ -11,11 +11,12 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.23.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.25.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
-    <opencensus.version>0.31.0</opencensus.version>
+    <opencensus.version>0.31.1</opencensus.version>
+    <graalvm.version>22.1.0</graalvm.version>
     <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
     <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing-east1</spanner.testenv.instance>
     <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
@@ -56,6 +57,16 @@
             <id>default-test</id>
             <configuration>
               <excludedGroups>com.google.cloud.spanner.TracerTest,com.google.cloud.spanner.IntegrationTest</excludedGroups>
+
+              <!-- These configurations are only needed for native tests. The native profile
+             in shared-config uses maven-surefire to run both unit tests and integration tests -->
+              <systemPropertyVariables>
+                <spanner.testenv.config.class>${spanner.testenv.config.class}</spanner.testenv.config.class>
+                <spanner.testenv.instance>${spanner.testenv.instance}</spanner.testenv.instance>
+                <spanner.gce.config.project_id>${spanner.gce.config.project_id}</spanner.gce.config.project_id>
+                <spanner.testenv.kms_key.name>${spanner.testenv.kms_key.name}</spanner.testenv.kms_key.name>
+              </systemPropertyVariables>
+
             </configuration>
           </execution>
           <execution>
@@ -105,20 +116,6 @@
         </executions>
       </plugin>
 
-  <!--Configurations for native image tests-->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <systemPropertyVariables>
-            <spanner.testenv.config.class>${spanner.testenv.config.class}</spanner.testenv.config.class>
-            <spanner.testenv.instance>${spanner.testenv.instance}</spanner.testenv.instance>
-            <spanner.gce.config.project_id>${spanner.gce.config.project_id}</spanner.gce.config.project_id>
-            <spanner.testenv.kms_key.name>${spanner.testenv.kms_key.name}</spanner.testenv.kms_key.name>
-          </systemPropertyVariables>
-          <forkedProcessTimeoutInSeconds>3000</forkedProcessTimeoutInSeconds>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>org.graalvm.buildtools</groupId>
         <artifactId>native-maven-plugin</artifactId>
@@ -142,7 +139,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
           <configuration>
-            <ignoredDependencies>io.grpc:grpc-protobuf-lite,org.hamcrest:hamcrest,org.hamcrest:hamcrest-core,com.google.errorprone:error_prone_annotations,org.openjdk.jmh:jmh-generator-annprocess,com.google.api.grpc:grpc-google-cloud-spanner-v1,com.google.api.grpc:grpc-google-cloud-spanner-admin-instance-v1,com.google.api.grpc:grpc-google-cloud-spanner-admin-database-v1,javax.annotation:javax.annotation-api,io.opencensus:opencensus-impl</ignoredDependencies>
+            <ignoredDependencies>io.grpc:grpc-protobuf-lite,org.hamcrest:hamcrest,org.hamcrest:hamcrest-core,com.google.errorprone:error_prone_annotations,org.openjdk.jmh:jmh-generator-annprocess,com.google.api.grpc:grpc-google-cloud-spanner-v1,com.google.api.grpc:grpc-google-cloud-spanner-admin-instance-v1,com.google.api.grpc:grpc-google-cloud-spanner-admin-database-v1,javax.annotation:javax.annotation-api,io.opencensus:opencensus-impl,org.graalvm.sdk:graal-sdk</ignoredDependencies>
           </configuration>
         </plugin>
       </plugins>
@@ -296,6 +293,13 @@
       <artifactId>grpc-alts</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.graalvm.sdk</groupId>
+      <artifactId>graal-sdk</artifactId>
+      <version>${graalvm.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- Test dependencies -->
     <dependency>
       <groupId>junit</groupId>
@@ -318,7 +322,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>4.4.0</version>
+      <version>4.5.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -349,9 +353,10 @@
     <dependency>
       <groupId>org.openjdk.jmh</groupId>
       <artifactId>jmh-generator-annprocess</artifactId>
-      <version>1.34</version>
+      <version>1.35</version>
       <scope>test</scope>
     </dependency>
+
   </dependencies>
 
   <profiles>

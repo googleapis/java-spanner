@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.common.base.Preconditions;
 import java.lang.reflect.Constructor;
@@ -106,6 +107,8 @@ class ClientSideStatementImpl implements ClientSideStatement {
   /** The result type of this statement. */
   private ResultType resultType;
 
+  private ClientSideStatementType statementType;
+
   /** The regular expression that should be used to recognize this class of statements. */
   private String regex;
 
@@ -181,6 +184,11 @@ class ClientSideStatementImpl implements ClientSideStatement {
   @Override
   public boolean isUpdate() {
     return resultType == ResultType.UPDATE_COUNT;
+  }
+
+  @Override
+  public ClientSideStatementType getStatementType() {
+    return statementType;
   }
 
   boolean matches(String statement) {

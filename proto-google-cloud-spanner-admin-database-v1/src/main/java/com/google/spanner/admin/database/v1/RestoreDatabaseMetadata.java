@@ -154,6 +154,8 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
+    } catch (com.google.protobuf.UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
       throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
@@ -1343,8 +1345,9 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
       } else {
         if (sourceInfoCase_ == 3) {
           backupInfoBuilder_.mergeFrom(value);
+        } else {
+          backupInfoBuilder_.setMessage(value);
         }
-        backupInfoBuilder_.setMessage(value);
       }
       sourceInfoCase_ = 3;
       return this;

@@ -23,6 +23,12 @@ cd ${scriptDir}/..
 # include common functions
 source ${scriptDir}/common.sh
 
+# units-java8 uses both JDK 11 and JDK 8. GraalVM dependencies require JDK 11 to
+# compile the classes touching GraalVM classes.
+if [ ! -z "${JAVA11_HOME}" ]; then
+  setJava "${JAVA11_HOME}"
+fi
+
 # Print out Maven & Java version
 mvn -version
 echo ${JOB_TYPE}
@@ -42,12 +48,18 @@ if [[ ! -z "${GOOGLE_APPLICATION_CREDENTIALS}" && "${GOOGLE_APPLICATION_CREDENTI
     export GOOGLE_APPLICATION_CREDENTIALS=$(realpath ${KOKORO_GFILE_DIR}/${GOOGLE_APPLICATION_CREDENTIALS})
 fi
 
+# units-java8 uses both JDK 11 and JDK 8. We ensure the generated class files
+# are compatible with Java 8 when running tests.
+if [ ! -z "${JAVA8_HOME}" ]; then
+  setJava "${JAVA8_HOME}"
+fi
+
 RETURN_CODE=0
 set +e
 
 case ${JOB_TYPE} in
 test)
-    mvn test -B \
+    mvn test -B -V \
       -Dclirr.skip=true \
       -Denforcer.skip=true \
       -Djava.net.preferIPv4Stack=true
@@ -69,8 +81,19 @@ integration)
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
       -Denforcer.skip=true \
+      -Dmaven.main.skip=true \
       -fae \
       verify
+    RETURN_CODE=$?
+    ;;
+graalvm)
+    # Run Unit and Integration Tests with Native Image
+    mvn test -Pnative -Penable-integration-tests
+    RETURN_CODE=$?
+    ;;
+graalvm17)
+    # Run Unit and Integration Tests with Native Image
+    mvn test -Pnative -Penable-integration-tests
     RETURN_CODE=$?
     ;;
 slowtests)
@@ -82,6 +105,7 @@ slowtests)
     -DtrimStackTrace=false \
     -Dclirr.skip=true \
     -Denforcer.skip=true \
+    -Dmaven.main.skip=true \
     -fae \
     verify
   RETURN_CODE=$?

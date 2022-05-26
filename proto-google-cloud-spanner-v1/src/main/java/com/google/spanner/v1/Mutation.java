@@ -161,6 +161,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
+    } catch (com.google.protobuf.UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
       throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
@@ -456,6 +458,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
       } finally {
@@ -2112,6 +2116,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
       } finally {
@@ -3920,8 +3926,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (operationCase_ == 1) {
           insertBuilder_.mergeFrom(value);
+        } else {
+          insertBuilder_.setMessage(value);
         }
-        insertBuilder_.setMessage(value);
       }
       operationCase_ = 1;
       return this;
@@ -4137,8 +4144,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (operationCase_ == 2) {
           updateBuilder_.mergeFrom(value);
+        } else {
+          updateBuilder_.setMessage(value);
         }
-        updateBuilder_.setMessage(value);
       }
       operationCase_ = 2;
       return this;
@@ -4374,8 +4382,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (operationCase_ == 3) {
           insertOrUpdateBuilder_.mergeFrom(value);
+        } else {
+          insertOrUpdateBuilder_.setMessage(value);
         }
-        insertOrUpdateBuilder_.setMessage(value);
       }
       operationCase_ = 3;
       return this;
@@ -4637,8 +4646,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (operationCase_ == 4) {
           replaceBuilder_.mergeFrom(value);
+        } else {
+          replaceBuilder_.setMessage(value);
         }
-        replaceBuilder_.setMessage(value);
       }
       operationCase_ = 4;
       return this;
@@ -4878,8 +4888,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (operationCase_ == 5) {
           deleteBuilder_.mergeFrom(value);
+        } else {
+          deleteBuilder_.setMessage(value);
         }
-        deleteBuilder_.setMessage(value);
       }
       operationCase_ = 5;
       return this;

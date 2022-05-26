@@ -20,17 +20,25 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
+import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import com.google.cloud.spanner.connection.SqlScriptVerifier;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
+import com.google.spanner.v1.ResultSetStats;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.junit.FixMethodOrder;
@@ -169,6 +177,44 @@ public class ITReadWriteAutocommitSpannerTest extends ITAbstractSpannerTest {
         assertThat(rs.next(), is(true));
         assertThat(rs.getLong(0), is(equalTo(0L)));
       }
+    }
+  }
+
+  @Test
+  public void test06_AnalyzeUpdate() {
+    assumeFalse(
+        "Emulator does not support PLAN and PROFILE", EmulatorSpannerHelper.isUsingEmulator());
+
+    // PLAN should not execute the update.
+    try (ITConnection connection = createConnection()) {
+      ResultSetStats resultSetStats =
+          connection.analyzeUpdate(
+              Statement.of("UPDATE TEST SET NAME='test_updated' WHERE ID > 0"),
+              QueryAnalyzeMode.PLAN);
+
+      assertNotNull(resultSetStats);
+      assertTrue(resultSetStats.hasQueryPlan());
+      assertFalse(resultSetStats.hasQueryStats());
+
+      // The backend indicates that the statement would return an exact row count, but as the
+      // statement is not executed, the actual row count is zero.
+      assertTrue(resultSetStats.hasRowCountExact());
+      assertEquals(0, resultSetStats.getRowCountExact());
+    }
+
+    try (ITConnection connection = createConnection()) {
+      ResultSetStats resultSetStats =
+          connection.analyzeUpdate(
+              Statement.of("UPDATE TEST SET NAME='test_updated' WHERE ID > 0"),
+              QueryAnalyzeMode.PROFILE);
+
+      // Executing the update in PROFILE mode should execute the update
+      assertNotNull(resultSetStats);
+      assertTrue(resultSetStats.hasQueryPlan());
+      assertTrue(resultSetStats.hasQueryStats());
+
+      assertTrue(resultSetStats.hasRowCountExact());
+      assertTrue(resultSetStats.getRowCountExact() > 0);
     }
   }
 }
