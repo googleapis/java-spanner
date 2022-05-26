@@ -1,5 +1,12 @@
 # Changelog
 
+### [6.25.4](https://github.com/googleapis/java-spanner/compare/v6.25.3...v6.25.4) (2022-05-26)
+
+
+### Dependencies
+
+* update dependency org.graalvm.sdk:graal-sdk to v22.1.0.1 ([#1894](https://github.com/googleapis/java-spanner/issues/1894)) ([cddb745](https://github.com/googleapis/java-spanner/commit/cddb745e0b7212225a430d1823e9670eb968f98a))
+
 ### [6.25.3](https://github.com/googleapis/java-spanner/compare/v6.25.2...v6.25.3) (2022-05-25)
 
 
