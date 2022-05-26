@@ -16,9 +16,14 @@
 
 package com.google.cloud.spanner.connection;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -58,6 +63,26 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
   public void testExecuteClientSideStatementsScript() throws Exception {
     SqlScriptVerifier verifier = new SqlScriptVerifier(new TestConnectionProvider(dialect));
     verifier.verifyStatementsInFile(getScriptFile(dialect), getClass(), true);
+  }
+
+  @Test
+  public void testClientSideStatementType() {
+    AbstractStatementParser parser = AbstractStatementParser.getInstance(dialect);
+
+    assertEquals(
+        ClientSideStatementType.BEGIN,
+        parser.parse(Statement.of("BEGIN TRANSACTION")).getClientSideStatementType());
+    assertEquals(
+        ClientSideStatementType.COMMIT,
+        parser.parse(Statement.of("COMMIT TRANSACTION")).getClientSideStatementType());
+    assertEquals(
+        ClientSideStatementType.ROLLBACK,
+        parser.parse(Statement.of("ROLLBACK TRANSACTION")).getClientSideStatementType());
+
+    for (ClientSideStatementImpl statement : parser.getClientSideStatements()) {
+      assertNotNull(
+          statement.toString() + " misses a statement type", statement.getStatementType());
+    }
   }
 
   private static PrintWriter writer;

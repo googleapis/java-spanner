@@ -56,10 +56,13 @@ public class ValueBinderTest {
   public void reflection()
       throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
     // Test that every Value factory method has a counterpart in ValueBinder, and that invoking it
-    // produces the expected Value.
+    // produces the expected Value. The only exception is for untyped values, which must be
+    // constructed manually as an untyped value and then assigned as a parameter.
     for (Method method : Value.class.getMethods()) {
       if (!Modifier.isStatic(method.getModifiers())
-          || !method.getReturnType().equals(Value.class)) {
+          || !method.getReturnType().equals(Value.class)
+          || (method.getParameterTypes().length > 0
+              && method.getParameterTypes()[0].equals(com.google.protobuf.Value.class))) {
         continue;
       }
       Method binderMethod = findBinderMethod(method);

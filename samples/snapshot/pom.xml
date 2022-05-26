@@ -21,9 +21,9 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <opencensus.version>0.31.0</opencensus.version>
-    <trace.version>2.1.9</trace.version>
-    <cloudmonitoring.version>3.2.9</cloudmonitoring.version>
+    <opencensus.version>0.31.1</opencensus.version>
+    <trace.version>2.2.0</trace.version>
+    <cloudmonitoring.version>3.3.0</cloudmonitoring.version>
   </properties>
 
   <dependencies>
@@ -31,7 +31,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.23.4-SNAPSHOT</version>
+      <version>6.25.5-SNAPSHOT</version>
     </dependency>
     <!-- {x-version-update-end} -->
     

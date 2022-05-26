@@ -182,7 +182,7 @@ public abstract class ITAbstractSpannerTest {
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static final String DEFAULT_KEY_FILE = null;
-  private static Database database;
+  public static Database database;
 
   protected static String getKeyFile() {
     return System.getProperty(GceTestEnvConfig.GCE_CREDENTIALS_FILE, DEFAULT_KEY_FILE);
@@ -322,9 +322,9 @@ public abstract class ITAbstractSpannerTest {
     try (ResultSet rs =
         connection.executeQuery(
             Statement.newBuilder(
-                    "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE UPPER(TABLE_NAME)=@table_name")
-                .bind("table_name")
-                .to(table.toUpperCase())
+                    String.format(
+                        "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE UPPER(TABLE_NAME)=UPPER(\'%s\')",
+                        table))
                 .build())) {
       while (rs.next()) {
         return true;

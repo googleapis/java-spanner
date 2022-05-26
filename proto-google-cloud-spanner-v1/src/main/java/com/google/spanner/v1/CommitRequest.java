@@ -81,8 +81,8 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
             }
           case 18:
             {
-              transactionCase_ = 2;
               transaction_ = input.readBytes();
+              transactionCase_ = 2;
               break;
             }
           case 26:
@@ -143,6 +143,8 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
+    } catch (com.google.protobuf.UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
       throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
@@ -1362,8 +1364,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (transactionCase_ == 3) {
           singleUseTransactionBuilder_.mergeFrom(value);
+        } else {
+          singleUseTransactionBuilder_.setMessage(value);
         }
-        singleUseTransactionBuilder_.setMessage(value);
       }
       transactionCase_ = 3;
       return this;
