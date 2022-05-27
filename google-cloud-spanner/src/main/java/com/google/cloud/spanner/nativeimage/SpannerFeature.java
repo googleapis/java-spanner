@@ -41,6 +41,8 @@ final class SpannerFeature implements Feature {
       "com.google.cloud.spanner.connection.ClientSideStatementSetExecutor";
   private static final String CLIENT_SIDE_STATEMENT_PG_EXECUTOR =
       "com.google.cloud.spanner.connection.ClientSideStatementPgBeginExecutor";
+  private static final String CLIENT_SIDE_STATEMENT_EXPLAIN_EXECUTOR =
+      "com.google.cloud.spanner.connection.ClientSideStatementExplainExecutor";
   private static final String ABSTRACT_STATEMENT_PARSER =
       "com.google.cloud.spanner.connection.AbstractStatementParser";
   private static final String STATEMENT_PARSER =
@@ -61,6 +63,9 @@ final class SpannerFeature implements Feature {
     }
     if (access.findClassByName(CLIENT_SIDE_STATEMENT_PG_EXECUTOR) != null) {
       NativeImageUtils.registerClassForReflection(access, CLIENT_SIDE_STATEMENT_PG_EXECUTOR);
+    }
+    if (access.findClassByName(CLIENT_SIDE_STATEMENT_EXPLAIN_EXECUTOR) != null) {
+      NativeImageUtils.registerClassForReflection(access, CLIENT_SIDE_STATEMENT_EXPLAIN_EXECUTOR);
     }
     if (access.findClassByName(CLIENT_SIDE_STATEMENT_SET_EXECUTOR) != null) {
       NativeImageUtils.registerClassForReflection(access, CLIENT_SIDE_STATEMENT_SET_EXECUTOR);
