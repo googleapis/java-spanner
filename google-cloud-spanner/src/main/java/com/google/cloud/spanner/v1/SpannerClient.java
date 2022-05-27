@@ -18,7 +18,6 @@ package com.google.cloud.spanner.v1;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
-import com.google.api.core.BetaApi;
 import com.google.api.gax.core.BackgroundResource;
 import com.google.api.gax.paging.AbstractFixedSizeCollection;
 import com.google.api.gax.paging.AbstractPage;
@@ -152,7 +151,6 @@ public class SpannerClient implements BackgroundResource {
    * Constructs an instance of SpannerClient, using the given stub for making calls. This is for
    * advanced usage - prefer using create(SpannerSettings).
    */
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   public static final SpannerClient create(SpannerStub stub) {
     return new SpannerClient(stub);
   }
@@ -166,7 +164,6 @@ public class SpannerClient implements BackgroundResource {
     this.stub = ((SpannerStubSettings) settings.getStubSettings()).createStub();
   }
 
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   protected SpannerClient(SpannerStub stub) {
     this.settings = null;
     this.stub = stub;
@@ -176,7 +173,6 @@ public class SpannerClient implements BackgroundResource {
     return settings;
   }
 
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   public SpannerStub getStub() {
     return stub;
   }

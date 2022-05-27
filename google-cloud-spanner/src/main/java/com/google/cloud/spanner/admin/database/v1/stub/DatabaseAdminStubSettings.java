@@ -541,7 +541,6 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     return listBackupOperationsSettings;
   }
 
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   public DatabaseAdminStub createStub() throws IOException {
     if (getTransportChannelProvider()
         .getTransportName()

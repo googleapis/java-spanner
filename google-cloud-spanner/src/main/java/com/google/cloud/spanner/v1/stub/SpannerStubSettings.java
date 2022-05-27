@@ -268,7 +268,6 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     return partitionReadSettings;
   }
 
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   public SpannerStub createStub() throws IOException {
     if (getTransportChannelProvider()
         .getTransportName()
