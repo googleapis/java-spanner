@@ -218,6 +218,7 @@ public class InstanceConfigInfo {
     BuilderImpl(InstanceConfigId id, InstanceConfigInfo baseConfig) {
       this.id = id;
       this.baseConfig = baseConfig;
+      this.replicas = new ArrayList<>(baseConfig.replicas);
     }
 
     BuilderImpl(InstanceConfigInfo instanceConfigInfo) {

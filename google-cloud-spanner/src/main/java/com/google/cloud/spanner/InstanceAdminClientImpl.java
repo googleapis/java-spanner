@@ -168,6 +168,7 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
 
   @Override
   public final Page<Operation> listInstanceConfigOperations(ListOption... options) {
+    String projectName = PROJECT_NAME_TEMPLATE.instantiate("project", projectId);
     final Options listOptions = Options.fromListOptions(options);
     final int pageSize = listOptions.hasPageSize() ? listOptions.pageSize() : 0;
     final String filter = listOptions.hasFilter() ? listOptions.filter() : null;
@@ -177,7 +178,7 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
         new PageFetcher<Operation, Operation>() {
           @Override
           public Paginated<Operation> getNextPage(String nextPageToken) {
-            return rpc.listInstanceConfigOperations(projectId, pageSize, filter, pageToken);
+            return rpc.listInstanceConfigOperations(projectName, pageSize, filter, pageToken);
           }
 
           @Override
