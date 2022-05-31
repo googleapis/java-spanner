@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.25.5](https://github.com/googleapis/java-spanner/compare/v6.25.4...v6.25.5) (2022-05-31)
+
+
+### Bug Fixes
+
+* add configurations for Explain feature ([#1899](https://github.com/googleapis/java-spanner/issues/1899)) ([86895b7](https://github.com/googleapis/java-spanner/commit/86895b756d963a13f138842a6743ea6d24b7c391))
+* gracefully ignore RejectedExecutionException during Connection#close() ([#1887](https://github.com/googleapis/java-spanner/issues/1887)) ([091bd1d](https://github.com/googleapis/java-spanner/commit/091bd1d3757751a29c962e2c0b7f4f8720e06a6a))
+
 ### [6.25.4](https://github.com/googleapis/java-spanner/compare/v6.25.3...v6.25.4) (2022-05-26)
 
 
