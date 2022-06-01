@@ -217,6 +217,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         recordCount++;
         currentRow++;
       }
+      if (currentRow == resultSet.getRowsCount()) {
+        builder.setStats(resultSet.getStats());
+      }
       builder.setResumeToken(ByteString.copyFromUtf8(String.format("%09d", currentRow)));
       hasNext = currentRow < resultSet.getRowsCount();
       return builder.build();

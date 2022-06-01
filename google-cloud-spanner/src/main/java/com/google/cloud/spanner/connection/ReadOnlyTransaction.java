@@ -30,6 +30,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
+import com.google.spanner.v1.ResultSetStats;
 
 /**
  * Transaction that is used when a {@link Connection} is in read-only mode or when the transaction
@@ -161,6 +162,14 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "Update statements are not allowed for read-only transactions");
+  }
+
+  @Override
+  public ApiFuture<ResultSetStats> analyzeUpdateAsync(
+      ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.FAILED_PRECONDITION,
+        "Analyzing updates is not allowed for read-only transactions");
   }
 
   @Override
