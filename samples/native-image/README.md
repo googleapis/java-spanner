@@ -36,9 +36,10 @@ You will need to follow these prerequisite steps in order to run these samples:
     ```
     $ java -version
    
-    openjdk version "11.0.7" 2020-04-14
-    OpenJDK Runtime Environment GraalVM CE 20.1.0 (build 11.0.7+10-jvmci-20.1-b02)
-    OpenJDK 64-Bit Server VM GraalVM CE 20.1.0 (build 11.0.7+10-jvmci-20.1-b02, mixed mode, sharing)
+   openjdk version "11.0.15" 2022-04-19
+   OpenJDK Runtime Environment GraalVM CE 22.1.0 (build 11.0.15+10-jvmci-22.1-b06)
+   OpenJDK 64-Bit Server VM GraalVM CE 22.1.0 (build 11.0.15+10-jvmci-22.1-b06, mixed mode, sharing)
+
     ```
 ## Run with Native Image Compilation
 
