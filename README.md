@@ -56,13 +56,13 @@ implementation 'com.google.cloud:google-cloud-spanner'
 If you are using Gradle without BOM, add this to your dependencies
 
 ```Groovy
-implementation 'com.google.cloud:google-cloud-spanner:6.25.4'
+implementation 'com.google.cloud:google-cloud-spanner:6.25.5'
 ```
 
 If you are using SBT, add this to your dependencies
 
 ```Scala
-libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.25.4"
+libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.25.5"
 ```
 
 ## Authentication
@@ -240,6 +240,9 @@ Samples are in the [`samples/`](https://github.com/googleapis/java-spanner/tree/
 
 | Sample                      | Source Code                       | Try it |
 | --------------------------- | --------------------------------- | ------ |
+| Database Operations | [source code](https://github.com/googleapis/java-spanner/blob/main/samples/native-image/src/main/java/com/example/spanner/DatabaseOperations.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/native-image/src/main/java/com/example/spanner/DatabaseOperations.java) |
+| Instance Operations | [source code](https://github.com/googleapis/java-spanner/blob/main/samples/native-image/src/main/java/com/example/spanner/InstanceOperations.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/native-image/src/main/java/com/example/spanner/InstanceOperations.java) |
+| Native Image Spanner Sample | [source code](https://github.com/googleapis/java-spanner/blob/main/samples/native-image/src/main/java/com/example/spanner/NativeImageSpannerSample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/native-image/src/main/java/com/example/spanner/NativeImageSpannerSample.java) |
 | Add Json Column Sample | [source code](https://github.com/googleapis/java-spanner/blob/main/samples/snippets/src/main/java/com/example/spanner/AddJsonColumnSample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/AddJsonColumnSample.java) |
 | Add Numeric Column Sample | [source code](https://github.com/googleapis/java-spanner/blob/main/samples/snippets/src/main/java/com/example/spanner/AddNumericColumnSample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/AddNumericColumnSample.java) |
 | Async Dml Example | [source code](https://github.com/googleapis/java-spanner/blob/main/samples/snippets/src/main/java/com/example/spanner/AsyncDmlExample.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-spanner&page=editor&open_in_editor=samples/snippets/src/main/java/com/example/spanner/AsyncDmlExample.java) |
