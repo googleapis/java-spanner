@@ -1,6 +1,6 @@
 # Spanner Sample Application with Native Image
 
-This is a sample application which uses the Cloud Spanner client libraries and demonstrates compatibility with Native Image native image compilation.
+This is a sample application which uses the Cloud Spanner client libraries and demonstrates compatibility with Native Image compilation.
 
 The application creates a new Spanner instance and database, and it runs basic operations including queries and Spanner mutations.
 
