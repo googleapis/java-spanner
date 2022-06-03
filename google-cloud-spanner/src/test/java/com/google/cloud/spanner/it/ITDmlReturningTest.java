@@ -63,8 +63,10 @@ public final class ITDmlReturningTest {
 
   private static final String INSERT_DML_RETURNING =
       "INSERT INTO T (k, v) VALUES ('%d-boo1', 1), ('%d-boo2', 2), ('%d-boo3', 3), ('%d-boo4', 4) THEN RETURN *;";
-  private static final String UPDATE_DML_RETURNING = "UPDATE T SET V = 100 WHERE K LIKE '%d-boo%%' THEN RETURN *;";
-  private static final String DELETE_DML_RETURNING = "DELETE FROM T WHERE K like '%d-boo%%' THEN RETURN *;";
+  private static final String UPDATE_DML_RETURNING =
+      "UPDATE T SET V = 100 WHERE K LIKE '%d-boo%%' THEN RETURN *;";
+  private static final String DELETE_DML_RETURNING =
+      "DELETE FROM T WHERE K like '%d-boo%%' THEN RETURN *;";
   private static final String DELETE_DML = "DELETE FROM T WHERE K like '%d-boo%%';";
 
   private static final long DML_COUNT = 4;
@@ -165,7 +167,12 @@ public final class ITDmlReturningTest {
 
   @Test
   public void dmlReturningWithExecutePartitionedUpdate() {
-    Throwable exception = assertThrows(SpannerException.class, () -> getClient(dialect.dialect).executePartitionedUpdate(Statement.of(updateDmlReturning())));
+    Throwable exception =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                getClient(dialect.dialect)
+                    .executePartitionedUpdate(Statement.of(updateDmlReturning())));
     assertThat(exception.getMessage()).ignoringCase().contains("not supported");
   }
 
@@ -173,44 +180,44 @@ public final class ITDmlReturningTest {
   public void dmlReturningWithExecuteQuery() {
     List<Struct> rows = executeQuery(DML_COUNT, insertDmlReturning());
     assertThat(
-        getClient(dialect.dialect)
-            .singleUse(TimestampBound.strong())
-            .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
-            .getLong(0))
+            getClient(dialect.dialect)
+                .singleUse(TimestampBound.strong())
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
+                .getLong(0))
         .isEqualTo(1);
 
     // executeQuery results have keys(K) sorted.
     // Check if keys(K) and V have expected values.
     for (int idx = 0; idx < rows.size(); idx++) {
-      assertThat(rows.get(idx).getLong("V")).isEqualTo(idx+1);
-      assertThat(rows.get(idx).getString("K")).isEqualTo(String.format("%d-boo%d", id, idx+1));
+      assertThat(rows.get(idx).getLong("V")).isEqualTo(idx + 1);
+      assertThat(rows.get(idx).getString("K")).isEqualTo(String.format("%d-boo%d", id, idx + 1));
     }
     rows = executeQuery(DML_COUNT, updateDmlReturning());
     assertThat(
-        getClient(dialect.dialect)
-            .singleUse(TimestampBound.strong())
-            .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
-            .getLong(0))
+            getClient(dialect.dialect)
+                .singleUse(TimestampBound.strong())
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
+                .getLong(0))
         .isEqualTo(100);
 
     // executeQuery results have keys(K) sorted.
     // Check if keys(K) and V have expected values.
     for (int idx = 0; idx < rows.size(); idx++) {
       assertThat(rows.get(idx).getLong("V")).isEqualTo(100);
-      assertThat(rows.get(idx).getString("K")).isEqualTo(String.format("%d-boo%d", id, idx+1));
+      assertThat(rows.get(idx).getString("K")).isEqualTo(String.format("%d-boo%d", id, idx + 1));
     }
     rows = executeQuery(DML_COUNT, deleteDmlReturning());
     assertThat(
-        getClient(dialect.dialect)
-            .singleUse(TimestampBound.strong())
-            .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V")))
+            getClient(dialect.dialect)
+                .singleUse(TimestampBound.strong())
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V")))
         .isNull();
 
     // executeQuery results have keys(K) sorted.
     // Check if keys(K) and V have expected values.
     for (int idx = 0; idx < rows.size(); idx++) {
       assertThat(rows.get(idx).getLong("V")).isEqualTo(100);
-      assertThat(rows.get(idx).getString("K")).isEqualTo(String.format("%d-boo%d", id, idx+1));
+      assertThat(rows.get(idx).getString("K")).isEqualTo(String.format("%d-boo%d", id, idx + 1));
     }
   }
 
@@ -222,7 +229,7 @@ public final class ITDmlReturningTest {
           // resultSet.next() returns false, when no more row exists.
           // So, number of times resultSet.next() returns true, is the number of rows
           // returned by the DML Returning statement.
-          while(resultSet.next()) {
+          while (resultSet.next()) {
             rows.add(resultSet.getCurrentRowAsStruct());
           }
           assertThat(resultSet.next()).isFalse();
@@ -247,7 +254,9 @@ public final class ITDmlReturningTest {
 
   private long[] batchUpdate(final String... stmts) {
     final TransactionCallable<long[]> callable =
-        transaction -> transaction.batchUpdate(Arrays.stream(stmts).map(Statement::of).collect(Collectors.toList()));
+        transaction ->
+            transaction.batchUpdate(
+                Arrays.stream(stmts).map(Statement::of).collect(Collectors.toList()));
     TransactionRunner runner = getClient(dialect.dialect).readWriteTransaction();
     return runner.run(callable);
   }
