@@ -39,6 +39,7 @@ import com.google.cloud.spanner.connection.ConnectionOptions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.AfterClass;
@@ -239,6 +240,7 @@ public final class ITDmlReturningTest {
         };
     TransactionRunner runner = getClient(dialect.dialect).readWriteTransaction();
     runner.run(callable);
+    rows.sort(Comparator.comparing(a -> a.getString("K")));
     return rows;
   }
 
