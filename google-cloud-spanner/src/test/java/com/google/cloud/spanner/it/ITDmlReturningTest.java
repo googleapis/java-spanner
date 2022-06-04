@@ -187,7 +187,6 @@ public final class ITDmlReturningTest {
                 .getLong(0))
         .isEqualTo(1);
 
-    // executeQuery results have keys(K) sorted.
     // Check if keys(K) and V have expected values.
     for (int idx = 0; idx < rows.size(); idx++) {
       assertThat(rows.get(idx).getLong("V")).isEqualTo(idx + 1);
@@ -201,7 +200,6 @@ public final class ITDmlReturningTest {
                 .getLong(0))
         .isEqualTo(100);
 
-    // executeQuery results have keys(K) sorted.
     // Check if keys(K) and V have expected values.
     for (int idx = 0; idx < rows.size(); idx++) {
       assertThat(rows.get(idx).getLong("V")).isEqualTo(100);
@@ -214,7 +212,6 @@ public final class ITDmlReturningTest {
                 .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V")))
         .isNull();
 
-    // executeQuery results have keys(K) sorted.
     // Check if keys(K) and V have expected values.
     for (int idx = 0; idx < rows.size(); idx++) {
       assertThat(rows.get(idx).getLong("V")).isEqualTo(100);
