@@ -23,6 +23,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import com.google.cloud.Identity;
 import com.google.cloud.Policy;
 import com.google.cloud.Role;
+import com.google.cloud.Timestamp;
 import com.google.common.testing.EqualsTester;
 import java.util.Collections;
 import org.junit.Before;
@@ -56,6 +57,8 @@ public class InstanceTest {
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
             .addLabel("region", "us")
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(36000))
+            .setCreateTime(Timestamp.ofTimeMicroseconds(46000))
             .build();
     assertThat(instance.getId()).isEqualTo(id);
     assertThat(instance.getInstanceConfigId()).isEqualTo(configId);
@@ -64,6 +67,8 @@ public class InstanceTest {
     assertThat(instance.getProcessingUnits()).isEqualTo(2000);
     assertThat(instance.getState()).isEqualTo(InstanceInfo.State.READY);
     assertThat(instance.getLabels()).containsExactly("env", "prod", "region", "us");
+    assertThat(instance.getUpdateTime()).isEqualTo(Timestamp.ofTimeMicroseconds(36000));
+    assertThat(instance.getCreateTime()).isEqualTo(Timestamp.ofTimeMicroseconds(46000));
 
     instance = instance.toBuilder().setDisplayName("new test instance").build();
     assertThat(instance.getId()).isEqualTo(id);
@@ -73,6 +78,8 @@ public class InstanceTest {
     assertThat(instance.getProcessingUnits()).isEqualTo(2000);
     assertThat(instance.getState()).isEqualTo(InstanceInfo.State.READY);
     assertThat(instance.getLabels()).containsExactly("env", "prod", "region", "us");
+    assertThat(instance.getUpdateTime()).isEqualTo(Timestamp.ofTimeMicroseconds(36000));
+    assertThat(instance.getCreateTime()).isEqualTo(Timestamp.ofTimeMicroseconds(46000));
   }
 
   @Test
@@ -89,6 +96,8 @@ public class InstanceTest {
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
             .addLabel("region", "us")
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(36000))
+            .setCreateTime(Timestamp.ofTimeMicroseconds(46000))
             .build();
     Instance instance2 =
         new Instance.Builder(instanceClient, dbClient, id)
@@ -99,6 +108,8 @@ public class InstanceTest {
             .setState(InstanceInfo.State.READY)
             .addLabel("region", "us")
             .addLabel("env", "prod")
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(36000))
+            .setCreateTime(Timestamp.ofTimeMicroseconds(46000))
             .build();
     Instance instance3 =
         new Instance.Builder(instanceClient, dbClient, id)
@@ -108,6 +119,8 @@ public class InstanceTest {
             .setProcessingUnits(2000)
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(3000))
+            .setCreateTime(Timestamp.ofTimeMicroseconds(4000))
             .build();
     EqualsTester tester = new EqualsTester();
     tester.addEqualityGroup(instance, instance2);
