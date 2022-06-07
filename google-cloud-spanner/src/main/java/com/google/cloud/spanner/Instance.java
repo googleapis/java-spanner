@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.ListOption;
 import com.google.longrunning.Operation;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
@@ -58,6 +59,18 @@ public class Instance extends InstanceInfo {
     @Override
     public Builder setDisplayName(String displayName) {
       infoBuilder.setDisplayName(displayName);
+      return this;
+    }
+
+    @Override
+    public Builder setUpdateTime(Timestamp updateTime) {
+      infoBuilder.setUpdateTime(updateTime);
+      return this;
+    }
+
+    @Override
+    public Builder setCreateTime(Timestamp createTime) {
+      infoBuilder.setCreateTime(createTime);
       return this;
     }
 
@@ -205,6 +218,8 @@ public class Instance extends InstanceInfo {
             .setInstanceConfigId(InstanceConfigId.of(proto.getConfig()))
             .setDisplayName(proto.getDisplayName())
             .setNodeCount(proto.getNodeCount())
+            .setCreateTime(Timestamp.fromProto(proto.getCreateTime()))
+            .setUpdateTime(Timestamp.fromProto(proto.getUpdateTime()))
             .setProcessingUnits(proto.getProcessingUnits());
     State state;
     switch (proto.getState()) {

@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.cloud.FieldSelector;
+import com.google.cloud.Timestamp;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.FieldMask;
@@ -77,6 +78,14 @@ public class InstanceInfo {
 
     public abstract Builder setDisplayName(String displayName);
 
+    public Builder setUpdateTime(Timestamp updateTime) {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
+
+    public Builder setCreateTime(Timestamp createTime) {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
+
     /**
      * Sets the number of nodes for the instance. Exactly one of processing units or node count must
      * be set when creating a new instance.
@@ -110,6 +119,8 @@ public class InstanceInfo {
     private int processingUnits;
     private State state;
     private Map<String, String> labels;
+    private Timestamp updateTime;
+    private Timestamp createTime;
 
     BuilderImpl(InstanceId id) {
       this.id = id;
@@ -124,6 +135,8 @@ public class InstanceInfo {
       this.processingUnits = instance.processingUnits;
       this.state = instance.state;
       this.labels = new HashMap<>(instance.labels);
+      this.updateTime = instance.updateTime;
+      this.createTime = instance.createTime;
     }
 
     @Override
@@ -135,6 +148,18 @@ public class InstanceInfo {
     @Override
     public BuilderImpl setDisplayName(String displayName) {
       this.displayName = displayName;
+      return this;
+    }
+
+    @Override
+    public Builder setUpdateTime(Timestamp updateTime) {
+      this.updateTime = updateTime;
+      return this;
+    }
+
+    @Override
+    public Builder setCreateTime(Timestamp createTime) {
+      this.createTime = createTime;
       return this;
     }
 
@@ -181,6 +206,8 @@ public class InstanceInfo {
   private final int processingUnits;
   private final State state;
   private final ImmutableMap<String, String> labels;
+  private final Timestamp updateTime;
+  private final Timestamp createTime;
 
   InstanceInfo(BuilderImpl builder) {
     this.id = builder.id;
@@ -190,6 +217,8 @@ public class InstanceInfo {
     this.processingUnits = builder.processingUnits;
     this.state = builder.state;
     this.labels = ImmutableMap.copyOf(builder.labels);
+    this.updateTime = builder.updateTime;
+    this.createTime = builder.createTime;
   }
 
   /** Returns the identifier of the instance. */
@@ -205,6 +234,14 @@ public class InstanceInfo {
   /** Returns the display name of the instance. */
   public String getDisplayName() {
     return displayName;
+  }
+
+  public Timestamp getUpdateTime() {
+    return updateTime;
+  }
+
+  public Timestamp getCreateTime() {
+    return createTime;
   }
 
   /** Returns the node count of the instance. */
@@ -241,6 +278,8 @@ public class InstanceInfo {
         .add("processingUnits", processingUnits)
         .add("state", state)
         .add("labels", labels)
+        .add("createTime", createTime)
+        .add("updateTime", updateTime)
         .toString();
   }
 
@@ -259,12 +298,23 @@ public class InstanceInfo {
         && nodeCount == that.nodeCount
         && processingUnits == that.processingUnits
         && state == that.state
-        && Objects.equals(labels, that.labels);
+        && Objects.equals(labels, that.labels)
+        && Objects.equals(updateTime, that.updateTime)
+        && Objects.equals(createTime, that.createTime);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, configId, displayName, nodeCount, processingUnits, state, labels);
+    return Objects.hash(
+        id,
+        configId,
+        displayName,
+        nodeCount,
+        processingUnits,
+        state,
+        labels,
+        updateTime,
+        createTime);
   }
 
   com.google.spanner.admin.instance.v1.Instance toProto() {
