@@ -59,6 +59,13 @@ class CreateInstanceExample {
       // Wait for the createInstance operation to finish.
       Instance instance = operation.get();
       System.out.printf("Instance %s was successfully created%n", instance.getId());
+
+      if (instance.getCreateTime() != null) {
+        System.out.printf("Create Time: %s", instance.getCreateTime().toString());
+      }
+      if (instance.getUpdateTime() != null) {
+        System.out.printf("Update Time: %s", instance.getUpdateTime().toString());
+      }
     } catch (ExecutionException e) {
       System.out.printf(
           "Error: Creating instance %s failed with error message %s%n",
