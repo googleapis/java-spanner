@@ -707,7 +707,7 @@ public class InstanceAdminClientTest {
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = ProjectName.of("[PROJECT]");
+    ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
     Policy policy = Policy.newBuilder().build();
 
     Policy actualResponse = client.setIamPolicy(resource, policy);
@@ -731,7 +731,7 @@ public class InstanceAdminClientTest {
     mockInstanceAdmin.addException(exception);
 
     try {
-      ResourceName resource = ProjectName.of("[PROJECT]");
+      ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
       Policy policy = Policy.newBuilder().build();
       client.setIamPolicy(resource, policy);
       Assert.fail("No exception raised");
@@ -795,7 +795,7 @@ public class InstanceAdminClientTest {
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = ProjectName.of("[PROJECT]");
+    ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
 
     Policy actualResponse = client.getIamPolicy(resource);
     Assert.assertEquals(expectedResponse, actualResponse);
@@ -817,7 +817,7 @@ public class InstanceAdminClientTest {
     mockInstanceAdmin.addException(exception);
 
     try {
-      ResourceName resource = ProjectName.of("[PROJECT]");
+      ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
       client.getIamPolicy(resource);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
@@ -872,7 +872,7 @@ public class InstanceAdminClientTest {
         TestIamPermissionsResponse.newBuilder().addAllPermissions(new ArrayList<String>()).build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = ProjectName.of("[PROJECT]");
+    ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
     List<String> permissions = new ArrayList<>();
 
     TestIamPermissionsResponse actualResponse = client.testIamPermissions(resource, permissions);
@@ -896,7 +896,7 @@ public class InstanceAdminClientTest {
     mockInstanceAdmin.addException(exception);
 
     try {
-      ResourceName resource = ProjectName.of("[PROJECT]");
+      ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
       List<String> permissions = new ArrayList<>();
       client.testIamPermissions(resource, permissions);
       Assert.fail("No exception raised");
