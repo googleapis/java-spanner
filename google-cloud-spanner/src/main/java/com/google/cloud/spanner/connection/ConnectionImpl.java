@@ -1138,8 +1138,7 @@ class ConnectionImpl implements Connection {
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
     Preconditions.checkArgument(
-        statement.getType() == StatementType.QUERY
-            || (statement.getType() == StatementType.UPDATE),
+        statement.getType() == StatementType.QUERY || (statement.getType() == StatementType.UPDATE),
         "Statement must either be a query or a DML (with Returning)");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return get(

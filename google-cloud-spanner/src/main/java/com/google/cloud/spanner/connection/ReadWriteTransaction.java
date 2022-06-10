@@ -337,7 +337,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
-    Preconditions.checkArgument(statement.isQuery() || statement.isUpdate(), "Statement is not a query or DML");
+    Preconditions.checkArgument(
+        statement.isQuery() || statement.isUpdate(), "Statement is not a query or DML");
     checkValidTransaction();
 
     ApiFuture<ResultSet> res;

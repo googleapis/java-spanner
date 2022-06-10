@@ -179,12 +179,14 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       final QueryOption... options) {
     Preconditions.checkNotNull(statement);
     Preconditions.checkArgument(
-        statement.isQuery() || (statement.isUpdate()),
-        "The statement must be a query, or the statement must be DML (with Returning)");
+        statement.isQuery() || (statement.isUpdate()), "The statement must be a query, or DML");
     checkAndMarkUsed();
 
-    if (statement.isUpdate() && analyzeMode != AnalyzeMode.NONE) {
-      return analyzeTransactionalUpdateAsync(statement, analyzeMode);
+    if (statement.isUpdate()) {
+      if (analyzeMode != AnalyzeMode.NONE) {
+        return analyzeTransactionalUpdateAsync(statement, analyzeMode);
+      }
+      return executeDmlReturningAsync(statement, options);
     }
 
     final ReadOnlyTransaction currentTransaction =
@@ -406,6 +408,30 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
                     });
             state = UnitOfWorkState.COMMITTED;
             return res;
+          } catch (Throwable t) {
+            state = UnitOfWorkState.COMMIT_FAILED;
+            throw t;
+          }
+        };
+    return executeStatementAsync(
+        update,
+        callable,
+        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
+  }
+
+  private ApiFuture<ResultSet> executeDmlReturningAsync(
+      final ParsedStatement update, QueryOption... options) {
+    Callable<ResultSet> callable =
+        () -> {
+          try {
+            writeTransaction = createWriteTransaction();
+            ResultSet resultSet =
+                writeTransaction.run(
+                    transaction ->
+                        DirectExecuteResultSet.ofResultSet(
+                            transaction.executeQuery(update.getStatement(), options)));
+            state = UnitOfWorkState.COMMITTED;
+            return resultSet;
           } catch (Throwable t) {
             state = UnitOfWorkState.COMMIT_FAILED;
             throw t;
