@@ -179,8 +179,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       final QueryOption... options) {
     Preconditions.checkNotNull(statement);
     Preconditions.checkArgument(
-        statement.isQuery() || (statement.isUpdate() && analyzeMode != AnalyzeMode.NONE),
-        "The statement must be a query, or the statement must be DML and AnalyzeMode must be PLAN or PROFILE");
+        statement.isQuery() || (statement.isUpdate()),
+        "The statement must be a query, or the statement must be DML (with Returning)");
     checkAndMarkUsed();
 
     if (statement.isUpdate() && analyzeMode != AnalyzeMode.NONE) {

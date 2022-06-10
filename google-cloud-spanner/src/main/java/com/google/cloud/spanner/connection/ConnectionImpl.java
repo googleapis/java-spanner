@@ -851,9 +851,8 @@ class ConnectionImpl implements Connection {
             .getClientSideStatement()
             .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments());
       case QUERY:
-        return StatementResultImpl.of(internalExecuteQuery(parsedStatement, AnalyzeMode.NONE));
       case UPDATE:
-        return StatementResultImpl.of(get(internalExecuteUpdateAsync(parsedStatement)));
+        return StatementResultImpl.of(internalExecuteQuery(parsedStatement, AnalyzeMode.NONE));
       case DDL:
         get(executeDdlAsync(parsedStatement));
         return StatementResultImpl.noResult();
@@ -878,10 +877,9 @@ class ConnectionImpl implements Connection {
                 .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments()),
             spanner.getAsyncExecutorProvider());
       case QUERY:
+      case UPDATE:
         return AsyncStatementResultImpl.of(
             internalExecuteQueryAsync(parsedStatement, AnalyzeMode.NONE));
-      case UPDATE:
-        return AsyncStatementResultImpl.of(internalExecuteUpdateAsync(parsedStatement));
       case DDL:
         return AsyncStatementResultImpl.noResult(executeDdlAsync(parsedStatement));
       case UNKNOWN:
@@ -918,7 +916,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(analyzeMode);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
-    if (parsedStatement.isQuery()) {
+    if (parsedStatement.isQuery() || parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case CLIENT_SIDE:
           return parsedStatement
@@ -926,8 +924,8 @@ class ConnectionImpl implements Connection {
               .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments())
               .getResultSet();
         case QUERY:
-          return internalExecuteQuery(parsedStatement, analyzeMode, options);
         case UPDATE:
+          return internalExecuteQuery(parsedStatement, analyzeMode, options);
         case DDL:
         case UNKNOWN:
         default:
@@ -943,7 +941,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(query);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
-    if (parsedStatement.isQuery()) {
+    if (parsedStatement.isQuery() || parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case CLIENT_SIDE:
           return ResultSets.toAsyncResultSet(
@@ -954,8 +952,8 @@ class ConnectionImpl implements Connection {
               spanner.getAsyncExecutorProvider(),
               options);
         case QUERY:
-          return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
         case UPDATE:
+          return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
         case DDL:
         case UNKNOWN:
         default:
@@ -1141,8 +1139,8 @@ class ConnectionImpl implements Connection {
       final QueryOption... options) {
     Preconditions.checkArgument(
         statement.getType() == StatementType.QUERY
-            || (statement.getType() == StatementType.UPDATE && analyzeMode != AnalyzeMode.NONE),
-        "Statement must either be a query or a DML mode with analyzeMode!=NONE");
+            || (statement.getType() == StatementType.UPDATE),
+        "Statement must either be a query or a DML (with Returning)");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return get(
         transaction.executeQueryAsync(
