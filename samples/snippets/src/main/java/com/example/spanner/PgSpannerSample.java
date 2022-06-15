@@ -1324,7 +1324,7 @@ public class PgSpannerSample {
       String command,
       DatabaseId database) {
     switch (command) {
-      case "createpgdatabase":
+      case "createdatabase":
         createPostgreSqlDatabase(dbAdminClient, database);
         break;
       case "write":
@@ -1472,7 +1472,7 @@ public class PgSpannerSample {
     System.err.println("    PgSpannerExample <command> <instance_id> <database_id>");
     System.err.println();
     System.err.println("Examples:");
-    System.err.println("    PgSpannerExample createpgdatabase my-instance example-db");
+    System.err.println("    PgSpannerExample createdatabase my-instance example-db");
     System.err.println("    PgSpannerExample write my-instance example-db");
     System.err.println("    PgSpannerExample delete my-instance example-db");
     System.err.println("    PgSpannerExample query my-instance example-db");
