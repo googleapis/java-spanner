@@ -66,7 +66,7 @@ import java.util.concurrent.TimeUnit;
  * Example code for using the Cloud Spanner PostgreSQL interface.
  */
 public class PgSpannerSample {
-  // [START spanner_insert_data]
+  // [START spanner_postgresql_insert_data]
   static final List<Singer> SINGERS =
       Arrays.asList(
           new Singer(1, "Marc", "Richards"),
@@ -81,7 +81,7 @@ public class PgSpannerSample {
           new Album(2, 1, "Green"),
           new Album(2, 2, "Forever Hold Your Peace"),
           new Album(2, 3, "Terrified"));
-  // [END spanner_insert_data]
+  // [END spanner_postgresql_insert_data]
 
   /** Class to contain performance sample data. */
   static class Performance {
