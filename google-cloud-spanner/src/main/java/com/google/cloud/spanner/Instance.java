@@ -63,13 +63,13 @@ public class Instance extends InstanceInfo {
     }
 
     @Override
-    public Builder setUpdateTime(Timestamp updateTime) {
+    Builder setUpdateTime(Timestamp updateTime) {
       infoBuilder.setUpdateTime(updateTime);
       return this;
     }
 
     @Override
-    public Builder setCreateTime(Timestamp createTime) {
+    Builder setCreateTime(Timestamp createTime) {
       infoBuilder.setCreateTime(createTime);
       return this;
     }

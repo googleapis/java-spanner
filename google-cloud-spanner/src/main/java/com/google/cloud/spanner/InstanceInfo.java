@@ -78,11 +78,11 @@ public class InstanceInfo {
 
     public abstract Builder setDisplayName(String displayName);
 
-    public Builder setUpdateTime(Timestamp updateTime) {
+    Builder setUpdateTime(Timestamp updateTime) {
       throw new UnsupportedOperationException("Unimplemented");
     }
 
-    public Builder setCreateTime(Timestamp createTime) {
+    Builder setCreateTime(Timestamp createTime) {
       throw new UnsupportedOperationException("Unimplemented");
     }
 
@@ -152,13 +152,13 @@ public class InstanceInfo {
     }
 
     @Override
-    public Builder setUpdateTime(Timestamp updateTime) {
+    Builder setUpdateTime(Timestamp updateTime) {
       this.updateTime = updateTime;
       return this;
     }
 
     @Override
-    public Builder setCreateTime(Timestamp createTime) {
+    Builder setCreateTime(Timestamp createTime) {
       this.createTime = createTime;
       return this;
     }

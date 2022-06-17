@@ -60,11 +60,9 @@ class CreateInstanceExample {
       Instance instance = operation.get();
       System.out.printf("Instance %s was successfully created%n", instance.getId());
 
-      if (instance.getCreateTime() != null) {
-        System.out.printf("Create Time: %s", instance.getCreateTime().toString());
-      }
-      if (instance.getUpdateTime() != null) {
-        System.out.printf("Update Time: %s", instance.getUpdateTime().toString());
+      if (instance.getCreateTime() != null && instance.getUpdateTime() != null) {
+        System.out.printf("Instance was created at: %s%n", instance.getCreateTime());
+        System.out.printf("Instance was last updated at: %s%n", instance.getUpdateTime());
       }
     } catch (ExecutionException e) {
       System.out.printf(
