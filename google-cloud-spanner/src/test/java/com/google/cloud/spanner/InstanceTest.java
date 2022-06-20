@@ -58,7 +58,7 @@ public class InstanceTest {
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
             .addLabel("region", "us")
-            .setUpdateTime(Timestamp.ofTimeMicroseconds(36000))
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(86000))
             .setCreateTime(Timestamp.ofTimeMicroseconds(46000))
             .build();
     assertThat(instance.getId()).isEqualTo(id);
@@ -97,7 +97,7 @@ public class InstanceTest {
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
             .addLabel("region", "us")
-            .setUpdateTime(Timestamp.ofTimeMicroseconds(36000))
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(86000))
             .setCreateTime(Timestamp.ofTimeMicroseconds(46000))
             .build();
     Instance instance2 =
@@ -109,7 +109,7 @@ public class InstanceTest {
             .setState(InstanceInfo.State.READY)
             .addLabel("region", "us")
             .addLabel("env", "prod")
-            .setUpdateTime(Timestamp.ofTimeMicroseconds(36000))
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(86000))
             .setCreateTime(Timestamp.ofTimeMicroseconds(46000))
             .build();
     Instance instance3 =
@@ -120,7 +120,7 @@ public class InstanceTest {
             .setProcessingUnits(2000)
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
-            .setUpdateTime(Timestamp.ofTimeMicroseconds(3000))
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(8000))
             .setCreateTime(Timestamp.ofTimeMicroseconds(4000))
             .build();
     EqualsTester tester = new EqualsTester();
