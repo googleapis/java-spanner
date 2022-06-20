@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -67,8 +68,8 @@ public class InstanceTest {
     assertThat(instance.getProcessingUnits()).isEqualTo(2000);
     assertThat(instance.getState()).isEqualTo(InstanceInfo.State.READY);
     assertThat(instance.getLabels()).containsExactly("env", "prod", "region", "us");
-    assertThat(instance.getUpdateTime()).isEqualTo(Timestamp.ofTimeMicroseconds(36000));
-    assertThat(instance.getCreateTime()).isEqualTo(Timestamp.ofTimeMicroseconds(46000));
+    assertEquals(Timestamp.ofTimeMicroseconds(86000), instance.getUpdateTime());
+    assertEquals(Timestamp.ofTimeMicroseconds(46000), instance.getCreateTime());
 
     instance = instance.toBuilder().setDisplayName("new test instance").build();
     assertThat(instance.getId()).isEqualTo(id);
@@ -78,8 +79,8 @@ public class InstanceTest {
     assertThat(instance.getProcessingUnits()).isEqualTo(2000);
     assertThat(instance.getState()).isEqualTo(InstanceInfo.State.READY);
     assertThat(instance.getLabels()).containsExactly("env", "prod", "region", "us");
-    assertThat(instance.getUpdateTime()).isEqualTo(Timestamp.ofTimeMicroseconds(36000));
-    assertThat(instance.getCreateTime()).isEqualTo(Timestamp.ofTimeMicroseconds(46000));
+    assertEquals(Timestamp.ofTimeMicroseconds(86000), instance.getUpdateTime());
+    assertEquals(Timestamp.ofTimeMicroseconds(46000), instance.getCreateTime());
   }
 
   @Test
