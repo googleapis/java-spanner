@@ -274,15 +274,24 @@ public class StatementParserTest {
   public void testPostgreSQLDialectUnicodeEscapedIdentifiers() {
     assumeTrue(dialect == Dialect.POSTGRESQL);
 
-    assertEquals("SELECT 'tricky' AS \"\\\"", parser.removeCommentsAndTrim("SELECT 'tricky' AS \"\\\""));
-    assertEquals("SELECT 'tricky' AS U&\"\\\" UESCAPE '!'", parser.removeCommentsAndTrim("SELECT 'tricky' AS U&\"\\\" UESCAPE '!'"));
-    assertEquals("SELECT '\\' AS \"tricky\"", parser.removeCommentsAndTrim("SELECT '\\' AS \"tricky\""));
+    assertEquals(
+        "SELECT 'tricky' AS \"\\\"", parser.removeCommentsAndTrim("SELECT 'tricky' AS \"\\\""));
+    assertEquals(
+        "SELECT 'tricky' AS U&\"\\\" UESCAPE '!'",
+        parser.removeCommentsAndTrim("SELECT 'tricky' AS U&\"\\\" UESCAPE '!'"));
+    assertEquals(
+        "SELECT '\\' AS \"tricky\"", parser.removeCommentsAndTrim("SELECT '\\' AS \"tricky\""));
     assertEquals("SELECT 'foo''bar'", parser.removeCommentsAndTrim("SELECT 'foo''bar'"));
     assertEquals("SELECT 'foo\"bar'", parser.removeCommentsAndTrim("SELECT 'foo\"bar'"));
     assertEquals("SELECT 'foo\"\"bar'", parser.removeCommentsAndTrim("SELECT 'foo\"\"bar'"));
-    assertEquals("SELECT  'foo'", parser.removeCommentsAndTrim("SELECT /* This is a 'comment' */ 'foo'"));
-    assertEquals("SELECT  'foo'", parser.removeCommentsAndTrim("SELECT /* This is a '''comment''' */ 'foo'"));
-    assertEquals("SELECT  '''foo''' FROM bar", parser.removeCommentsAndTrim("SELECT /* This is a '''comment''' */ '''foo''' FROM bar"));
+    assertEquals(
+        "SELECT  'foo'", parser.removeCommentsAndTrim("SELECT /* This is a 'comment' */ 'foo'"));
+    assertEquals(
+        "SELECT  'foo'",
+        parser.removeCommentsAndTrim("SELECT /* This is a '''comment''' */ 'foo'"));
+    assertEquals(
+        "SELECT  '''foo''' FROM bar",
+        parser.removeCommentsAndTrim("SELECT /* This is a '''comment''' */ '''foo''' FROM bar"));
     assertEquals(
         "SELECT  '''foo''' FROM \"\"\"\\bar\\\"\"\"",
         parser.removeCommentsAndTrim(
