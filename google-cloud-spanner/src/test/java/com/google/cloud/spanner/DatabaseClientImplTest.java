@@ -335,6 +335,24 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testCommitUnavailable() {
+    mockSpanner.setCommitExecutionTime(
+        SimulatedExecutionTime.ofException(Status.UNAVAILABLE.asRuntimeException()));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        transaction -> {
+          try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
+            while (resultSet.next()) {}
+          }
+          return null;
+        });
+    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
+  }
+
+  @Test
   public void testReadWriteExecuteQueryWithTag() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
