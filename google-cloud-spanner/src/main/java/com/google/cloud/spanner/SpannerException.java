@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.gax.rpc.ApiException;
+import com.google.api.gax.rpc.ErrorDetails;
 import com.google.cloud.grpc.BaseGrpcServiceException;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.util.Durations;
@@ -24,6 +26,7 @@ import com.google.rpc.RetryInfo;
 import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.protobuf.ProtoUtils;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Base exception type for all exceptions produced by the Cloud Spanner service. */
@@ -94,5 +97,33 @@ public class SpannerException extends BaseGrpcServiceException {
       }
     }
     return -1L;
+  }
+
+  public String getReason() {
+    if (this.getCause() instanceof ApiException) {
+      return ((ApiException) this.getCause()).getReason();
+    }
+    return null;
+  }
+
+  public String getDomain() {
+    if (this.getCause() instanceof ApiException) {
+      return ((ApiException) this.getCause()).getDomain();
+    }
+    return null;
+  }
+
+  public Map<String, String> getMetadata() {
+    if (this.getCause() instanceof ApiException) {
+      return ((ApiException) this.getCause()).getMetadata();
+    }
+    return null;
+  }
+
+  public ErrorDetails getErrorDetails() {
+    if (this.getCause() instanceof ApiException) {
+      return ((ApiException) this.getCause()).getErrorDetails();
+    }
+    return null;
   }
 }
