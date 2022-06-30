@@ -99,6 +99,14 @@ public class SpannerException extends BaseGrpcServiceException {
     return -1L;
   }
 
+  /**
+   * Checks the underlying reason of the exception and if it's {@link ApiException} then return the
+   * reason otherwise null.
+   *
+   * @see <a
+   *     href="https://github.com/googleapis/googleapis/blob/master/google/rpc/error_details.proto#L117">Reason</a>
+   * @return the reason of an error.
+   */
   public String getReason() {
     if (this.getCause() instanceof ApiException) {
       return ((ApiException) this.getCause()).getReason();
@@ -106,6 +114,14 @@ public class SpannerException extends BaseGrpcServiceException {
     return null;
   }
 
+  /**
+   * Checks the underlying reason of the exception and if it's {@link ApiException} then return the
+   * specific domain otherwise null.
+   *
+   * @see <a
+   *     href="https://github.com/googleapis/googleapis/blob/master/google/rpc/error_details.proto#L125">Domain</a>
+   * @return the logical grouping to which the "reason" belongs.
+   */
   public String getDomain() {
     if (this.getCause() instanceof ApiException) {
       return ((ApiException) this.getCause()).getDomain();
@@ -113,6 +129,14 @@ public class SpannerException extends BaseGrpcServiceException {
     return null;
   }
 
+  /**
+   * Checks the underlying reason of the exception and if it's {@link ApiException} then return a
+   * map of key-value pairs otherwise null.
+   *
+   * @see <a
+   *     href="https://github.com/googleapis/googleapis/blob/master/google/rpc/error_details.proto#L135">Metadata</a>
+   * @return the map of additional structured details about an error.
+   */
   public Map<String, String> getMetadata() {
     if (this.getCause() instanceof ApiException) {
       return ((ApiException) this.getCause()).getMetadata();
@@ -120,6 +144,17 @@ public class SpannerException extends BaseGrpcServiceException {
     return null;
   }
 
+  /**
+   * Checks the underlying reason of the exception and if it's {@link ApiException} then return the
+   * ErrorDetails otherwise null.
+   *
+   * @see <a
+   *     href="https://github.com/googleapis/googleapis/blob/master/google/rpc/status.proto">Status</a>
+   * @see <a
+   *     href="https://github.com/googleapis/googleapis/blob/master/google/rpc/error_details.proto">Error
+   *     Details</a>
+   * @return An object containing getters for structured objects from error_details.proto.
+   */
   public ErrorDetails getErrorDetails() {
     if (this.getCause() instanceof ApiException) {
       return ((ApiException) this.getCause()).getErrorDetails();
