@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.25.7](https://github.com/googleapis/java-spanner/compare/v6.25.6...v6.25.7) (2022-06-30)
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v2.13.0 ([#1924](https://github.com/googleapis/java-spanner/issues/1924)) ([dde5ee8](https://github.com/googleapis/java-spanner/commit/dde5ee8c5fcef36b415929aa32931dc811036eb4))
+* update dependency org.graalvm.buildtools:junit-platform-native to v0.9.12 ([#1906](https://github.com/googleapis/java-spanner/issues/1906)) ([1800cd9](https://github.com/googleapis/java-spanner/commit/1800cd917c26934768296253cbbcf7c91c54afef))
+
 ## [6.25.6](https://github.com/googleapis/java-spanner/compare/v6.25.5...v6.25.6) (2022-06-22)
 
 
