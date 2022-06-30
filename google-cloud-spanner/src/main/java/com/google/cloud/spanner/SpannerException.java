@@ -54,6 +54,7 @@ public class SpannerException extends BaseGrpcServiceException {
       ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
 
   private final ErrorCode code;
+  private final ApiException apiException;
 
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   SpannerException(
@@ -62,9 +63,22 @@ public class SpannerException extends BaseGrpcServiceException {
       boolean retryable,
       @Nullable String message,
       @Nullable Throwable cause) {
-    super(message, cause, code.getCode(), retryable);
+    super(
+        message,
+        // If the cause is instance of APIException then using its cause to avoid the breaking
+        // change, because earlier we were passing APIException's cause to constructor.
+        cause instanceof ApiException ? cause.getCause() : cause,
+        code.getCode(),
+        retryable);
+
     if (token != DoNotConstructDirectly.ALLOWED) {
       throw new AssertionError("Do not construct directly: use SpannerExceptionFactory");
+    }
+
+    if (cause instanceof ApiException) {
+      this.apiException = (ApiException) cause;
+    } else {
+      this.apiException = null;
     }
     this.code = Preconditions.checkNotNull(code);
   }
@@ -108,8 +122,8 @@ public class SpannerException extends BaseGrpcServiceException {
    * @return the reason of an error.
    */
   public String getReason() {
-    if (this.getCause() instanceof ApiException) {
-      return ((ApiException) this.getCause()).getReason();
+    if (this.apiException != null) {
+      return this.apiException.getReason();
     }
     return null;
   }
@@ -123,8 +137,8 @@ public class SpannerException extends BaseGrpcServiceException {
    * @return the logical grouping to which the "reason" belongs.
    */
   public String getDomain() {
-    if (this.getCause() instanceof ApiException) {
-      return ((ApiException) this.getCause()).getDomain();
+    if (this.apiException != null) {
+      return this.apiException.getDomain();
     }
     return null;
   }
@@ -138,8 +152,8 @@ public class SpannerException extends BaseGrpcServiceException {
    * @return the map of additional structured details about an error.
    */
   public Map<String, String> getMetadata() {
-    if (this.getCause() instanceof ApiException) {
-      return ((ApiException) this.getCause()).getMetadata();
+    if (this.apiException != null) {
+      return this.apiException.getMetadata();
     }
     return null;
   }
@@ -156,8 +170,8 @@ public class SpannerException extends BaseGrpcServiceException {
    * @return An object containing getters for structured objects from error_details.proto.
    */
   public ErrorDetails getErrorDetails() {
-    if (this.getCause() instanceof ApiException) {
-      return ((ApiException) this.getCause()).getErrorDetails();
+    if (this.apiException != null) {
+      return this.apiException.getErrorDetails();
     }
     return null;
   }
