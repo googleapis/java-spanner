@@ -39,8 +39,9 @@ public class SpannerException extends BaseGrpcServiceException {
         DoNotConstructDirectly token,
         @Nullable String message,
         ResourceInfo resourceInfo,
-        @Nullable Throwable cause) {
-      super(token, ErrorCode.NOT_FOUND, /* retryable */ false, message, cause);
+        @Nullable Throwable cause,
+        @Nullable ApiException apiException) {
+      super(token, ErrorCode.NOT_FOUND, /* retryable */ false, message, cause, apiException);
       this.resourceInfo = resourceInfo;
     }
 
@@ -63,24 +64,23 @@ public class SpannerException extends BaseGrpcServiceException {
       boolean retryable,
       @Nullable String message,
       @Nullable Throwable cause) {
-    super(
-        message,
-        // If the cause is instance of APIException then using its cause to avoid the breaking
-        // change, because earlier we were passing APIException's cause to constructor.
-        cause instanceof ApiException ? cause.getCause() : cause,
-        code.getCode(),
-        retryable);
+    this(token, code, retryable, message, cause, null);
+  }
 
+  /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
+  SpannerException(
+      DoNotConstructDirectly token,
+      ErrorCode code,
+      boolean retryable,
+      @Nullable String message,
+      @Nullable Throwable cause,
+      @Nullable ApiException apiException) {
+    super(message, cause, code.getCode(), retryable);
     if (token != DoNotConstructDirectly.ALLOWED) {
       throw new AssertionError("Do not construct directly: use SpannerExceptionFactory");
     }
-
-    if (cause instanceof ApiException) {
-      this.apiException = (ApiException) cause;
-    } else {
-      this.apiException = null;
-    }
     this.code = Preconditions.checkNotNull(code);
+    this.apiException = apiException;
   }
 
   /** Returns the error code associated with this exception. */

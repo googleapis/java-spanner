@@ -251,12 +251,15 @@ public final class SpannerExceptionFactory {
   }
 
   static SpannerException newSpannerExceptionPreformatted(
-      ErrorCode code, @Nullable String message, @Nullable Throwable cause) {
+      ErrorCode code,
+      @Nullable String message,
+      @Nullable Throwable cause,
+      @Nullable ApiException apiException) {
     // This is the one place in the codebase that is allowed to call constructors directly.
     DoNotConstructDirectly token = DoNotConstructDirectly.ALLOWED;
     switch (code) {
       case ABORTED:
-        return new AbortedException(token, message, cause);
+        return new AbortedException(token, message, cause, apiException);
       case RESOURCE_EXHAUSTED:
         ErrorInfo info = extractErrorInfo(cause);
         if (info != null
@@ -265,24 +268,33 @@ public final class SpannerExceptionFactory {
             && AdminRequestsPerMinuteExceededException.ADMIN_REQUESTS_LIMIT_VALUE.equals(
                 info.getMetadataMap()
                     .get(AdminRequestsPerMinuteExceededException.ADMIN_REQUESTS_LIMIT_KEY))) {
-          return new AdminRequestsPerMinuteExceededException(token, message, cause);
+          return new AdminRequestsPerMinuteExceededException(token, message, cause, apiException);
         }
       case NOT_FOUND:
         ResourceInfo resourceInfo = extractResourceInfo(cause);
         if (resourceInfo != null) {
           switch (resourceInfo.getResourceType()) {
             case SESSION_RESOURCE_TYPE:
-              return new SessionNotFoundException(token, message, resourceInfo, cause);
+              return new SessionNotFoundException(
+                  token, message, resourceInfo, cause, apiException);
             case DATABASE_RESOURCE_TYPE:
-              return new DatabaseNotFoundException(token, message, resourceInfo, cause);
+              return new DatabaseNotFoundException(
+                  token, message, resourceInfo, cause, apiException);
             case INSTANCE_RESOURCE_TYPE:
-              return new InstanceNotFoundException(token, message, resourceInfo, cause);
+              return new InstanceNotFoundException(
+                  token, message, resourceInfo, cause, apiException);
           }
         }
         // Fall through to the default.
       default:
-        return new SpannerException(token, code, isRetryable(code, cause), message, cause);
+        return new SpannerException(
+            token, code, isRetryable(code, cause), message, cause, apiException);
     }
+  }
+
+  static SpannerException newSpannerExceptionPreformatted(
+      ErrorCode code, @Nullable String message, @Nullable Throwable cause) {
+    return newSpannerExceptionPreformatted(code, message, cause, null);
   }
 
   private static SpannerException fromApiException(ApiException exception) {
@@ -295,8 +307,14 @@ public final class SpannerExceptionFactory {
       code = Status.Code.UNKNOWN;
     }
     ErrorCode errorCode = ErrorCode.fromGrpcStatus(Status.fromCode(code));
-    return SpannerExceptionFactory.newSpannerException(
-        errorCode, exception.getMessage(), exception);
+
+    Throwable exceptionCause = null;
+
+    if (exception.getCause() != null) {
+      exceptionCause = exception.getCause();
+    }
+    return SpannerExceptionFactory.newSpannerExceptionPreformatted(
+        errorCode, formatMessage(errorCode, exception.getMessage()), exceptionCause, exception);
   }
 
   private static boolean isRetryable(ErrorCode code, @Nullable Throwable cause) {
