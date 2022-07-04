@@ -40,6 +40,7 @@ import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
+import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
@@ -402,6 +403,8 @@ public class InstanceAdminClientHttpJsonTest {
             .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -452,6 +455,8 @@ public class InstanceAdminClientHttpJsonTest {
             .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -502,6 +507,8 @@ public class InstanceAdminClientHttpJsonTest {
             .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -561,6 +568,8 @@ public class InstanceAdminClientHttpJsonTest {
             .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -620,6 +629,8 @@ public class InstanceAdminClientHttpJsonTest {
             .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -638,6 +649,8 @@ public class InstanceAdminClientHttpJsonTest {
             .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
             .build();
     FieldMask fieldMask = FieldMask.newBuilder().build();
 
@@ -676,6 +689,8 @@ public class InstanceAdminClientHttpJsonTest {
               .setProcessingUnits(-329117885)
               .putAllLabels(new HashMap<String, String>())
               .addAllEndpointUris(new ArrayList<String>())
+              .setCreateTime(Timestamp.newBuilder().build())
+              .setUpdateTime(Timestamp.newBuilder().build())
               .build();
       FieldMask fieldMask = FieldMask.newBuilder().build();
       client.updateInstanceAsync(instance, fieldMask).get();
