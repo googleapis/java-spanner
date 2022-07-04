@@ -308,13 +308,11 @@ public final class SpannerExceptionFactory {
     }
     ErrorCode errorCode = ErrorCode.fromGrpcStatus(Status.fromCode(code));
 
-    Throwable exceptionCause = null;
-
-    if (exception.getCause() != null) {
-      exceptionCause = exception.getCause();
-    }
     return SpannerExceptionFactory.newSpannerExceptionPreformatted(
-        errorCode, formatMessage(errorCode, exception.getMessage()), exceptionCause, exception);
+        errorCode,
+        formatMessage(errorCode, exception.getMessage()),
+        exception.getCause(),
+        exception);
   }
 
   private static boolean isRetryable(ErrorCode code, @Nullable Throwable cause) {
