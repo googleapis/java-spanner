@@ -111,4 +111,6 @@ interface ConnectionStatementExecutor {
   StatementResult statementShowRPCPriority();
 
   StatementResult statementShowTransactionIsolationLevel();
+
+  StatementResult statementExplain(String sql);
 }

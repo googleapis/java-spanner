@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.google.cloud.spanner.admin.instance.v1;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
-import com.google.api.core.BetaApi;
 import com.google.api.gax.core.BackgroundResource;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.AbstractFixedSizeCollection;
@@ -85,6 +84,8 @@ import javax.annotation.Generated;
  * calls that map to API methods. Sample code to get started:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated for illustrative purposes only.
+ * // It may require modifications to work in your environment.
  * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
  *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
  *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name);
@@ -120,6 +121,8 @@ import javax.annotation.Generated;
  * <p>To customize credentials:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated for illustrative purposes only.
+ * // It may require modifications to work in your environment.
  * InstanceAdminSettings instanceAdminSettings =
  *     InstanceAdminSettings.newBuilder()
  *         .setCredentialsProvider(FixedCredentialsProvider.create(myCredentials))
@@ -130,6 +133,8 @@ import javax.annotation.Generated;
  * <p>To customize the endpoint:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated for illustrative purposes only.
+ * // It may require modifications to work in your environment.
  * InstanceAdminSettings instanceAdminSettings =
  *     InstanceAdminSettings.newBuilder().setEndpoint(myEndpoint).build();
  * InstanceAdminClient instanceAdminClient = InstanceAdminClient.create(instanceAdminSettings);
@@ -161,7 +166,6 @@ public class InstanceAdminClient implements BackgroundResource {
    * Constructs an instance of InstanceAdminClient, using the given stub for making calls. This is
    * for advanced usage - prefer using create(InstanceAdminSettings).
    */
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   public static final InstanceAdminClient create(InstanceAdminStub stub) {
     return new InstanceAdminClient(stub);
   }
@@ -177,7 +181,6 @@ public class InstanceAdminClient implements BackgroundResource {
     this.operationsClient = OperationsClient.create(this.stub.getOperationsStub());
   }
 
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   protected InstanceAdminClient(InstanceAdminStub stub) {
     this.settings = null;
     this.stub = stub;
@@ -188,7 +191,6 @@ public class InstanceAdminClient implements BackgroundResource {
     return settings;
   }
 
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   public InstanceAdminStub getStub() {
     return stub;
   }
@@ -208,6 +210,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ProjectName parent = ProjectName.of("[PROJECT]");
    *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(parent).iterateAll()) {
@@ -235,6 +239,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String parent = ProjectName.of("[PROJECT]").toString();
    *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(parent).iterateAll()) {
@@ -260,6 +266,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ListInstanceConfigsRequest request =
    *       ListInstanceConfigsRequest.newBuilder()
@@ -288,6 +296,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ListInstanceConfigsRequest request =
    *       ListInstanceConfigsRequest.newBuilder()
@@ -316,6 +326,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ListInstanceConfigsRequest request =
    *       ListInstanceConfigsRequest.newBuilder()
@@ -351,6 +363,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
    *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name);
@@ -376,6 +390,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString();
    *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name);
@@ -398,6 +414,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   GetInstanceConfigRequest request =
    *       GetInstanceConfigRequest.newBuilder()
@@ -421,6 +439,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   GetInstanceConfigRequest request =
    *       GetInstanceConfigRequest.newBuilder()
@@ -444,6 +464,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ProjectName parent = ProjectName.of("[PROJECT]");
    *   for (Instance element : instanceAdminClient.listInstances(parent).iterateAll()) {
@@ -471,6 +493,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String parent = ProjectName.of("[PROJECT]").toString();
    *   for (Instance element : instanceAdminClient.listInstances(parent).iterateAll()) {
@@ -495,6 +519,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ListInstancesRequest request =
    *       ListInstancesRequest.newBuilder()
@@ -523,6 +549,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ListInstancesRequest request =
    *       ListInstancesRequest.newBuilder()
@@ -552,6 +580,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ListInstancesRequest request =
    *       ListInstancesRequest.newBuilder()
@@ -586,6 +616,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   Instance response = instanceAdminClient.getInstance(name);
@@ -609,6 +641,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String name = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   Instance response = instanceAdminClient.getInstance(name);
@@ -631,6 +665,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   GetInstanceRequest request =
    *       GetInstanceRequest.newBuilder()
@@ -655,6 +691,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   GetInstanceRequest request =
    *       GetInstanceRequest.newBuilder()
@@ -706,6 +744,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ProjectName parent = ProjectName.of("[PROJECT]");
    *   String instanceId = "instanceId902024336";
@@ -769,6 +809,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String parent = ProjectName.of("[PROJECT]").toString();
    *   String instanceId = "instanceId902024336";
@@ -832,6 +874,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   CreateInstanceRequest request =
    *       CreateInstanceRequest.newBuilder()
@@ -886,6 +930,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   CreateInstanceRequest request =
    *       CreateInstanceRequest.newBuilder()
@@ -940,6 +986,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   CreateInstanceRequest request =
    *       CreateInstanceRequest.newBuilder()
@@ -997,6 +1045,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   Instance instance = Instance.newBuilder().build();
    *   FieldMask fieldMask = FieldMask.newBuilder().build();
@@ -1061,6 +1111,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   UpdateInstanceRequest request =
    *       UpdateInstanceRequest.newBuilder()
@@ -1118,6 +1170,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   UpdateInstanceRequest request =
    *       UpdateInstanceRequest.newBuilder()
@@ -1175,6 +1229,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   UpdateInstanceRequest request =
    *       UpdateInstanceRequest.newBuilder()
@@ -1208,6 +1264,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   instanceAdminClient.deleteInstance(name);
@@ -1240,6 +1298,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String name = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   instanceAdminClient.deleteInstance(name);
@@ -1271,6 +1331,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   DeleteInstanceRequest request =
    *       DeleteInstanceRequest.newBuilder()
@@ -1303,6 +1365,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   DeleteInstanceRequest request =
    *       DeleteInstanceRequest.newBuilder()
@@ -1328,6 +1392,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ResourceName resource = ProjectName.of("[PROJECT]");
    *   Policy policy = Policy.newBuilder().build();
@@ -1361,6 +1427,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String resource = ProjectName.of("[PROJECT]").toString();
    *   Policy policy = Policy.newBuilder().build();
@@ -1391,11 +1459,14 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   SetIamPolicyRequest request =
    *       SetIamPolicyRequest.newBuilder()
    *           .setResource(ProjectName.of("[PROJECT]").toString())
    *           .setPolicy(Policy.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
    *           .build();
    *   Policy response = instanceAdminClient.setIamPolicy(request);
    * }
@@ -1418,11 +1489,14 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   SetIamPolicyRequest request =
    *       SetIamPolicyRequest.newBuilder()
    *           .setResource(ProjectName.of("[PROJECT]").toString())
    *           .setPolicy(Policy.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
    *           .build();
    *   ApiFuture<Policy> future = instanceAdminClient.setIamPolicyCallable().futureCall(request);
    *   // Do something.
@@ -1445,6 +1519,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ResourceName resource = ProjectName.of("[PROJECT]");
    *   Policy response = instanceAdminClient.getIamPolicy(resource);
@@ -1474,6 +1550,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String resource = ProjectName.of("[PROJECT]").toString();
    *   Policy response = instanceAdminClient.getIamPolicy(resource);
@@ -1500,6 +1578,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   GetIamPolicyRequest request =
    *       GetIamPolicyRequest.newBuilder()
@@ -1528,6 +1608,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   GetIamPolicyRequest request =
    *       GetIamPolicyRequest.newBuilder()
@@ -1555,6 +1637,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ResourceName resource = ProjectName.of("[PROJECT]");
    *   List<String> permissions = new ArrayList<>();
@@ -1591,6 +1675,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String resource = ProjectName.of("[PROJECT]").toString();
    *   List<String> permissions = new ArrayList<>();
@@ -1627,6 +1713,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   TestIamPermissionsRequest request =
    *       TestIamPermissionsRequest.newBuilder()
@@ -1655,6 +1743,8 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   TestIamPermissionsRequest request =
    *       TestIamPermissionsRequest.newBuilder()

@@ -100,14 +100,14 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
             }
           case 24:
             {
-              rowCountCase_ = 3;
               rowCount_ = input.readInt64();
+              rowCountCase_ = 3;
               break;
             }
           case 32:
             {
-              rowCountCase_ = 4;
               rowCount_ = input.readInt64();
+              rowCountCase_ = 4;
               break;
             }
           default:
@@ -121,6 +121,8 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
+    } catch (com.google.protobuf.UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
       throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
