@@ -19,41 +19,31 @@ package com.google.cloud.spanner.v1;
 import static com.google.cloud.spanner.v1.SpannerClient.ListSessionsPagedResponse;
 
 import com.google.api.gax.core.NoCredentialsProvider;
-import com.google.api.gax.grpc.GaxGrpcProperties;
-import com.google.api.gax.grpc.testing.LocalChannelProvider;
-import com.google.api.gax.grpc.testing.MockGrpcService;
-import com.google.api.gax.grpc.testing.MockServiceHelper;
-import com.google.api.gax.grpc.testing.MockStreamObserver;
+import com.google.api.gax.httpjson.GaxHttpJsonProperties;
+import com.google.api.gax.httpjson.testing.MockHttpService;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
+import com.google.api.gax.rpc.ApiException;
+import com.google.api.gax.rpc.ApiExceptionFactory;
 import com.google.api.gax.rpc.InvalidArgumentException;
-import com.google.api.gax.rpc.ServerStreamingCallable;
 import com.google.api.gax.rpc.StatusCode;
+import com.google.api.gax.rpc.testing.FakeStatusCode;
+import com.google.cloud.spanner.v1.stub.HttpJsonSpannerStub;
 import com.google.common.collect.Lists;
-import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
-import com.google.protobuf.Value;
 import com.google.rpc.Status;
-import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
-import com.google.spanner.v1.BeginTransactionRequest;
-import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
-import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.DatabaseName;
-import com.google.spanner.v1.DeleteSessionRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
-import com.google.spanner.v1.GetSessionRequest;
 import com.google.spanner.v1.KeySet;
-import com.google.spanner.v1.ListSessionsRequest;
 import com.google.spanner.v1.ListSessionsResponse;
 import com.google.spanner.v1.Mutation;
-import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.Partition;
 import com.google.spanner.v1.PartitionOptions;
 import com.google.spanner.v1.PartitionQueryRequest;
@@ -64,21 +54,17 @@ import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
-import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.SessionName;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import com.google.spanner.v1.Type;
-import io.grpc.StatusRuntimeException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import javax.annotation.Generated;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -88,41 +74,37 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 @Generated("by gapic-generator-java")
-public class SpannerClientTest {
-  private static MockServiceHelper mockServiceHelper;
-  private static MockSpanner mockSpanner;
-  private LocalChannelProvider channelProvider;
-  private SpannerClient client;
+public class SpannerClientHttpJsonTest {
+  private static MockHttpService mockService;
+  private static SpannerClient client;
 
   @BeforeClass
-  public static void startStaticServer() {
-    mockSpanner = new MockSpanner();
-    mockServiceHelper =
-        new MockServiceHelper(
-            UUID.randomUUID().toString(), Arrays.<MockGrpcService>asList(mockSpanner));
-    mockServiceHelper.start();
-  }
-
-  @AfterClass
-  public static void stopServer() {
-    mockServiceHelper.stop();
-  }
-
-  @Before
-  public void setUp() throws IOException {
-    mockServiceHelper.reset();
-    channelProvider = mockServiceHelper.createChannelProvider();
+  public static void startStaticServer() throws IOException {
+    mockService =
+        new MockHttpService(
+            HttpJsonSpannerStub.getMethodDescriptors(), SpannerSettings.getDefaultEndpoint());
     SpannerSettings settings =
-        SpannerSettings.newBuilder()
-            .setTransportChannelProvider(channelProvider)
+        SpannerSettings.newHttpJsonBuilder()
+            .setTransportChannelProvider(
+                SpannerSettings.defaultHttpJsonTransportProviderBuilder()
+                    .setHttpTransport(mockService)
+                    .build())
             .setCredentialsProvider(NoCredentialsProvider.create())
             .build();
     client = SpannerClient.create(settings);
   }
 
+  @AfterClass
+  public static void stopServer() {
+    client.close();
+  }
+
+  @Before
+  public void setUp() {}
+
   @After
   public void tearDown() throws Exception {
-    client.close();
+    mockService.reset();
   }
 
   @Test
@@ -136,28 +118,34 @@ public class SpannerClientTest {
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
     DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
 
     Session actualResponse = client.createSession(database);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    CreateSessionRequest actualRequest = ((CreateSessionRequest) actualRequests.get(0));
 
-    Assert.assertEquals(database.toString(), actualRequest.getDatabase());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void createSessionExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
       DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
@@ -179,31 +167,37 @@ public class SpannerClientTest {
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
-    String database = "database1789464955";
+    String database = "projects/project-3102/instances/instance-3102/databases/database-3102";
 
     Session actualResponse = client.createSession(database);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    CreateSessionRequest actualRequest = ((CreateSessionRequest) actualRequests.get(0));
 
-    Assert.assertEquals(database, actualRequest.getDatabase());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void createSessionExceptionTest2() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
-      String database = "database1789464955";
+      String database = "projects/project-3102/instances/instance-3102/databases/database-3102";
       client.createSession(database);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
@@ -215,7 +209,7 @@ public class SpannerClientTest {
   public void batchCreateSessionsTest() throws Exception {
     BatchCreateSessionsResponse expectedResponse =
         BatchCreateSessionsResponse.newBuilder().addAllSession(new ArrayList<Session>()).build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
     DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
     int sessionCount = 185691686;
@@ -223,22 +217,27 @@ public class SpannerClientTest {
     BatchCreateSessionsResponse actualResponse = client.batchCreateSessions(database, sessionCount);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    BatchCreateSessionsRequest actualRequest = ((BatchCreateSessionsRequest) actualRequests.get(0));
 
-    Assert.assertEquals(database.toString(), actualRequest.getDatabase());
-    Assert.assertEquals(sessionCount, actualRequest.getSessionCount());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void batchCreateSessionsExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
       DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
@@ -254,33 +253,38 @@ public class SpannerClientTest {
   public void batchCreateSessionsTest2() throws Exception {
     BatchCreateSessionsResponse expectedResponse =
         BatchCreateSessionsResponse.newBuilder().addAllSession(new ArrayList<Session>()).build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
-    String database = "database1789464955";
+    String database = "projects/project-3102/instances/instance-3102/databases/database-3102";
     int sessionCount = 185691686;
 
     BatchCreateSessionsResponse actualResponse = client.batchCreateSessions(database, sessionCount);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    BatchCreateSessionsRequest actualRequest = ((BatchCreateSessionsRequest) actualRequests.get(0));
 
-    Assert.assertEquals(database, actualRequest.getDatabase());
-    Assert.assertEquals(sessionCount, actualRequest.getSessionCount());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void batchCreateSessionsExceptionTest2() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
-      String database = "database1789464955";
+      String database = "projects/project-3102/instances/instance-3102/databases/database-3102";
       int sessionCount = 185691686;
       client.batchCreateSessions(database, sessionCount);
       Assert.fail("No exception raised");
@@ -300,28 +304,34 @@ public class SpannerClientTest {
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
     SessionName name = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
 
     Session actualResponse = client.getSession(name);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    GetSessionRequest actualRequest = ((GetSessionRequest) actualRequests.get(0));
 
-    Assert.assertEquals(name.toString(), actualRequest.getName());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void getSessionExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
       SessionName name = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
@@ -343,31 +353,39 @@ public class SpannerClientTest {
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
-    String name = "name3373707";
+    String name =
+        "projects/project-199/instances/instance-199/databases/database-199/sessions/session-199";
 
     Session actualResponse = client.getSession(name);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    GetSessionRequest actualRequest = ((GetSessionRequest) actualRequests.get(0));
 
-    Assert.assertEquals(name, actualRequest.getName());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void getSessionExceptionTest2() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
-      String name = "name3373707";
+      String name =
+          "projects/project-199/instances/instance-199/databases/database-199/sessions/session-199";
       client.getSession(name);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
@@ -383,7 +401,7 @@ public class SpannerClientTest {
             .setNextPageToken("")
             .addAllSessions(Arrays.asList(responsesElement))
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
     DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
 
@@ -394,21 +412,27 @@ public class SpannerClientTest {
     Assert.assertEquals(1, resources.size());
     Assert.assertEquals(expectedResponse.getSessionsList().get(0), resources.get(0));
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    ListSessionsRequest actualRequest = ((ListSessionsRequest) actualRequests.get(0));
 
-    Assert.assertEquals(database.toString(), actualRequest.getDatabase());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void listSessionsExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
       DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
@@ -427,9 +451,9 @@ public class SpannerClientTest {
             .setNextPageToken("")
             .addAllSessions(Arrays.asList(responsesElement))
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
-    String database = "database1789464955";
+    String database = "projects/project-3102/instances/instance-3102/databases/database-3102";
 
     ListSessionsPagedResponse pagedListResponse = client.listSessions(database);
 
@@ -438,24 +462,30 @@ public class SpannerClientTest {
     Assert.assertEquals(1, resources.size());
     Assert.assertEquals(expectedResponse.getSessionsList().get(0), resources.get(0));
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    ListSessionsRequest actualRequest = ((ListSessionsRequest) actualRequests.get(0));
 
-    Assert.assertEquals(database, actualRequest.getDatabase());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void listSessionsExceptionTest2() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
-      String database = "database1789464955";
+      String database = "projects/project-3102/instances/instance-3102/databases/database-3102";
       client.listSessions(database);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
@@ -466,27 +496,33 @@ public class SpannerClientTest {
   @Test
   public void deleteSessionTest() throws Exception {
     Empty expectedResponse = Empty.newBuilder().build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
     SessionName name = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
 
     client.deleteSession(name);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    DeleteSessionRequest actualRequest = ((DeleteSessionRequest) actualRequests.get(0));
 
-    Assert.assertEquals(name.toString(), actualRequest.getName());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void deleteSessionExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
       SessionName name = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
@@ -500,30 +536,38 @@ public class SpannerClientTest {
   @Test
   public void deleteSessionTest2() throws Exception {
     Empty expectedResponse = Empty.newBuilder().build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
-    String name = "name3373707";
+    String name =
+        "projects/project-199/instances/instance-199/databases/database-199/sessions/session-199";
 
     client.deleteSession(name);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    DeleteSessionRequest actualRequest = ((DeleteSessionRequest) actualRequests.get(0));
 
-    Assert.assertEquals(name, actualRequest.getName());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void deleteSessionExceptionTest2() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
-      String name = "name3373707";
+      String name =
+          "projects/project-199/instances/instance-199/databases/database-199/sessions/session-199";
       client.deleteSession(name);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
@@ -539,7 +583,7 @@ public class SpannerClientTest {
             .addAllRows(new ArrayList<ListValue>())
             .setStats(ResultSetStats.newBuilder().build())
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
     ExecuteSqlRequest request =
         ExecuteSqlRequest.newBuilder()
@@ -559,31 +603,27 @@ public class SpannerClientTest {
     ResultSet actualResponse = client.executeSql(request);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    ExecuteSqlRequest actualRequest = ((ExecuteSqlRequest) actualRequests.get(0));
 
-    Assert.assertEquals(request.getSession(), actualRequest.getSession());
-    Assert.assertEquals(request.getTransaction(), actualRequest.getTransaction());
-    Assert.assertEquals(request.getSql(), actualRequest.getSql());
-    Assert.assertEquals(request.getParams(), actualRequest.getParams());
-    Assert.assertEquals(request.getParamTypesMap(), actualRequest.getParamTypesMap());
-    Assert.assertEquals(request.getResumeToken(), actualRequest.getResumeToken());
-    Assert.assertEquals(request.getQueryMode(), actualRequest.getQueryMode());
-    Assert.assertEquals(request.getPartitionToken(), actualRequest.getPartitionToken());
-    Assert.assertEquals(request.getSeqno(), actualRequest.getSeqno());
-    Assert.assertEquals(request.getQueryOptions(), actualRequest.getQueryOptions());
-    Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void executeSqlExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
       ExecuteSqlRequest request =
@@ -608,75 +648,14 @@ public class SpannerClientTest {
   }
 
   @Test
-  public void executeStreamingSqlTest() throws Exception {
-    PartialResultSet expectedResponse =
-        PartialResultSet.newBuilder()
-            .setMetadata(ResultSetMetadata.newBuilder().build())
-            .addAllValues(new ArrayList<Value>())
-            .setChunkedValue(true)
-            .setResumeToken(ByteString.EMPTY)
-            .setStats(ResultSetStats.newBuilder().build())
-            .build();
-    mockSpanner.addResponse(expectedResponse);
-    ExecuteSqlRequest request =
-        ExecuteSqlRequest.newBuilder()
-            .setSession(
-                SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
-            .setTransaction(TransactionSelector.newBuilder().build())
-            .setSql("sql114126")
-            .setParams(Struct.newBuilder().build())
-            .putAllParamTypes(new HashMap<String, Type>())
-            .setResumeToken(ByteString.EMPTY)
-            .setPartitionToken(ByteString.EMPTY)
-            .setSeqno(109325920)
-            .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
-            .setRequestOptions(RequestOptions.newBuilder().build())
-            .build();
-
-    MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
-
-    ServerStreamingCallable<ExecuteSqlRequest, PartialResultSet> callable =
-        client.executeStreamingSqlCallable();
-    callable.serverStreamingCall(request, responseObserver);
-
-    List<PartialResultSet> actualResponses = responseObserver.future().get();
-    Assert.assertEquals(1, actualResponses.size());
-    Assert.assertEquals(expectedResponse, actualResponses.get(0));
-  }
+  public void executeStreamingSqlTest() throws Exception {}
 
   @Test
   public void executeStreamingSqlExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
-    ExecuteSqlRequest request =
-        ExecuteSqlRequest.newBuilder()
-            .setSession(
-                SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
-            .setTransaction(TransactionSelector.newBuilder().build())
-            .setSql("sql114126")
-            .setParams(Struct.newBuilder().build())
-            .putAllParamTypes(new HashMap<String, Type>())
-            .setResumeToken(ByteString.EMPTY)
-            .setPartitionToken(ByteString.EMPTY)
-            .setSeqno(109325920)
-            .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
-            .setRequestOptions(RequestOptions.newBuilder().build())
-            .build();
-
-    MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
-
-    ServerStreamingCallable<ExecuteSqlRequest, PartialResultSet> callable =
-        client.executeStreamingSqlCallable();
-    callable.serverStreamingCall(request, responseObserver);
-
-    try {
-      List<PartialResultSet> actualResponses = responseObserver.future().get();
-      Assert.fail("No exception thrown");
-    } catch (ExecutionException e) {
-      Assert.assertTrue(e.getCause() instanceof InvalidArgumentException);
-      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
-      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
-    }
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
   }
 
   @Test
@@ -686,7 +665,7 @@ public class SpannerClientTest {
             .addAllResultSets(new ArrayList<ResultSet>())
             .setStatus(Status.newBuilder().build())
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
     ExecuteBatchDmlRequest request =
         ExecuteBatchDmlRequest.newBuilder()
@@ -701,25 +680,27 @@ public class SpannerClientTest {
     ExecuteBatchDmlResponse actualResponse = client.executeBatchDml(request);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    ExecuteBatchDmlRequest actualRequest = ((ExecuteBatchDmlRequest) actualRequests.get(0));
 
-    Assert.assertEquals(request.getSession(), actualRequest.getSession());
-    Assert.assertEquals(request.getTransaction(), actualRequest.getTransaction());
-    Assert.assertEquals(request.getStatementsList(), actualRequest.getStatementsList());
-    Assert.assertEquals(request.getSeqno(), actualRequest.getSeqno());
-    Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void executeBatchDmlExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
       ExecuteBatchDmlRequest request =
@@ -746,7 +727,7 @@ public class SpannerClientTest {
             .addAllRows(new ArrayList<ListValue>())
             .setStats(ResultSetStats.newBuilder().build())
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
     ReadRequest request =
         ReadRequest.newBuilder()
@@ -766,30 +747,27 @@ public class SpannerClientTest {
     ResultSet actualResponse = client.read(request);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    ReadRequest actualRequest = ((ReadRequest) actualRequests.get(0));
 
-    Assert.assertEquals(request.getSession(), actualRequest.getSession());
-    Assert.assertEquals(request.getTransaction(), actualRequest.getTransaction());
-    Assert.assertEquals(request.getTable(), actualRequest.getTable());
-    Assert.assertEquals(request.getIndex(), actualRequest.getIndex());
-    Assert.assertEquals(request.getColumnsList(), actualRequest.getColumnsList());
-    Assert.assertEquals(request.getKeySet(), actualRequest.getKeySet());
-    Assert.assertEquals(request.getLimit(), actualRequest.getLimit());
-    Assert.assertEquals(request.getResumeToken(), actualRequest.getResumeToken());
-    Assert.assertEquals(request.getPartitionToken(), actualRequest.getPartitionToken());
-    Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void readExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
       ReadRequest request =
@@ -814,75 +792,14 @@ public class SpannerClientTest {
   }
 
   @Test
-  public void streamingReadTest() throws Exception {
-    PartialResultSet expectedResponse =
-        PartialResultSet.newBuilder()
-            .setMetadata(ResultSetMetadata.newBuilder().build())
-            .addAllValues(new ArrayList<Value>())
-            .setChunkedValue(true)
-            .setResumeToken(ByteString.EMPTY)
-            .setStats(ResultSetStats.newBuilder().build())
-            .build();
-    mockSpanner.addResponse(expectedResponse);
-    ReadRequest request =
-        ReadRequest.newBuilder()
-            .setSession(
-                SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
-            .setTransaction(TransactionSelector.newBuilder().build())
-            .setTable("table110115790")
-            .setIndex("index100346066")
-            .addAllColumns(new ArrayList<String>())
-            .setKeySet(KeySet.newBuilder().build())
-            .setLimit(102976443)
-            .setResumeToken(ByteString.EMPTY)
-            .setPartitionToken(ByteString.EMPTY)
-            .setRequestOptions(RequestOptions.newBuilder().build())
-            .build();
-
-    MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
-
-    ServerStreamingCallable<ReadRequest, PartialResultSet> callable =
-        client.streamingReadCallable();
-    callable.serverStreamingCall(request, responseObserver);
-
-    List<PartialResultSet> actualResponses = responseObserver.future().get();
-    Assert.assertEquals(1, actualResponses.size());
-    Assert.assertEquals(expectedResponse, actualResponses.get(0));
-  }
+  public void streamingReadTest() throws Exception {}
 
   @Test
   public void streamingReadExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
-    ReadRequest request =
-        ReadRequest.newBuilder()
-            .setSession(
-                SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
-            .setTransaction(TransactionSelector.newBuilder().build())
-            .setTable("table110115790")
-            .setIndex("index100346066")
-            .addAllColumns(new ArrayList<String>())
-            .setKeySet(KeySet.newBuilder().build())
-            .setLimit(102976443)
-            .setResumeToken(ByteString.EMPTY)
-            .setPartitionToken(ByteString.EMPTY)
-            .setRequestOptions(RequestOptions.newBuilder().build())
-            .build();
-
-    MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
-
-    ServerStreamingCallable<ReadRequest, PartialResultSet> callable =
-        client.streamingReadCallable();
-    callable.serverStreamingCall(request, responseObserver);
-
-    try {
-      List<PartialResultSet> actualResponses = responseObserver.future().get();
-      Assert.fail("No exception thrown");
-    } catch (ExecutionException e) {
-      Assert.assertTrue(e.getCause() instanceof InvalidArgumentException);
-      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
-      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
-    }
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
   }
 
   @Test
@@ -892,7 +809,7 @@ public class SpannerClientTest {
             .setId(ByteString.EMPTY)
             .setReadTimestamp(Timestamp.newBuilder().build())
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
     SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
     TransactionOptions options = TransactionOptions.newBuilder().build();
@@ -900,22 +817,27 @@ public class SpannerClientTest {
     Transaction actualResponse = client.beginTransaction(session, options);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    BeginTransactionRequest actualRequest = ((BeginTransactionRequest) actualRequests.get(0));
 
-    Assert.assertEquals(session.toString(), actualRequest.getSession());
-    Assert.assertEquals(options, actualRequest.getOptions());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void beginTransactionExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
       SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
@@ -934,33 +856,40 @@ public class SpannerClientTest {
             .setId(ByteString.EMPTY)
             .setReadTimestamp(Timestamp.newBuilder().build())
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
-    String session = "session1984987798";
+    String session =
+        "projects/project-2078/instances/instance-2078/databases/database-2078/sessions/session-2078";
     TransactionOptions options = TransactionOptions.newBuilder().build();
 
     Transaction actualResponse = client.beginTransaction(session, options);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    BeginTransactionRequest actualRequest = ((BeginTransactionRequest) actualRequests.get(0));
 
-    Assert.assertEquals(session, actualRequest.getSession());
-    Assert.assertEquals(options, actualRequest.getOptions());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void beginTransactionExceptionTest2() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
-      String session = "session1984987798";
+      String session =
+          "projects/project-2078/instances/instance-2078/databases/database-2078/sessions/session-2078";
       TransactionOptions options = TransactionOptions.newBuilder().build();
       client.beginTransaction(session, options);
       Assert.fail("No exception raised");
@@ -976,7 +905,7 @@ public class SpannerClientTest {
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
     SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
     ByteString transactionId = ByteString.EMPTY;
@@ -985,23 +914,27 @@ public class SpannerClientTest {
     CommitResponse actualResponse = client.commit(session, transactionId, mutations);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    CommitRequest actualRequest = ((CommitRequest) actualRequests.get(0));
 
-    Assert.assertEquals(session.toString(), actualRequest.getSession());
-    Assert.assertEquals(transactionId, actualRequest.getTransactionId());
-    Assert.assertEquals(mutations, actualRequest.getMutationsList());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void commitExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
       SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
@@ -1021,7 +954,7 @@ public class SpannerClientTest {
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
     SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
     TransactionOptions singleUseTransaction = TransactionOptions.newBuilder().build();
@@ -1030,23 +963,27 @@ public class SpannerClientTest {
     CommitResponse actualResponse = client.commit(session, singleUseTransaction, mutations);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    CommitRequest actualRequest = ((CommitRequest) actualRequests.get(0));
 
-    Assert.assertEquals(session.toString(), actualRequest.getSession());
-    Assert.assertEquals(singleUseTransaction, actualRequest.getSingleUseTransaction());
-    Assert.assertEquals(mutations, actualRequest.getMutationsList());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void commitExceptionTest2() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
       SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
@@ -1066,35 +1003,41 @@ public class SpannerClientTest {
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
-    String session = "session1984987798";
+    String session =
+        "projects/project-2078/instances/instance-2078/databases/database-2078/sessions/session-2078";
     ByteString transactionId = ByteString.EMPTY;
     List<Mutation> mutations = new ArrayList<>();
 
     CommitResponse actualResponse = client.commit(session, transactionId, mutations);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    CommitRequest actualRequest = ((CommitRequest) actualRequests.get(0));
 
-    Assert.assertEquals(session, actualRequest.getSession());
-    Assert.assertEquals(transactionId, actualRequest.getTransactionId());
-    Assert.assertEquals(mutations, actualRequest.getMutationsList());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void commitExceptionTest3() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
-      String session = "session1984987798";
+      String session =
+          "projects/project-2078/instances/instance-2078/databases/database-2078/sessions/session-2078";
       ByteString transactionId = ByteString.EMPTY;
       List<Mutation> mutations = new ArrayList<>();
       client.commit(session, transactionId, mutations);
@@ -1111,35 +1054,41 @@ public class SpannerClientTest {
             .setCommitTimestamp(Timestamp.newBuilder().build())
             .setCommitStats(CommitResponse.CommitStats.newBuilder().build())
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
-    String session = "session1984987798";
+    String session =
+        "projects/project-2078/instances/instance-2078/databases/database-2078/sessions/session-2078";
     TransactionOptions singleUseTransaction = TransactionOptions.newBuilder().build();
     List<Mutation> mutations = new ArrayList<>();
 
     CommitResponse actualResponse = client.commit(session, singleUseTransaction, mutations);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    CommitRequest actualRequest = ((CommitRequest) actualRequests.get(0));
 
-    Assert.assertEquals(session, actualRequest.getSession());
-    Assert.assertEquals(singleUseTransaction, actualRequest.getSingleUseTransaction());
-    Assert.assertEquals(mutations, actualRequest.getMutationsList());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void commitExceptionTest4() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
-      String session = "session1984987798";
+      String session =
+          "projects/project-2078/instances/instance-2078/databases/database-2078/sessions/session-2078";
       TransactionOptions singleUseTransaction = TransactionOptions.newBuilder().build();
       List<Mutation> mutations = new ArrayList<>();
       client.commit(session, singleUseTransaction, mutations);
@@ -1152,29 +1101,34 @@ public class SpannerClientTest {
   @Test
   public void rollbackTest() throws Exception {
     Empty expectedResponse = Empty.newBuilder().build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
     SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
     ByteString transactionId = ByteString.EMPTY;
 
     client.rollback(session, transactionId);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    RollbackRequest actualRequest = ((RollbackRequest) actualRequests.get(0));
 
-    Assert.assertEquals(session.toString(), actualRequest.getSession());
-    Assert.assertEquals(transactionId, actualRequest.getTransactionId());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void rollbackExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
       SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
@@ -1189,32 +1143,39 @@ public class SpannerClientTest {
   @Test
   public void rollbackTest2() throws Exception {
     Empty expectedResponse = Empty.newBuilder().build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
-    String session = "session1984987798";
+    String session =
+        "projects/project-2078/instances/instance-2078/databases/database-2078/sessions/session-2078";
     ByteString transactionId = ByteString.EMPTY;
 
     client.rollback(session, transactionId);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    RollbackRequest actualRequest = ((RollbackRequest) actualRequests.get(0));
 
-    Assert.assertEquals(session, actualRequest.getSession());
-    Assert.assertEquals(transactionId, actualRequest.getTransactionId());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void rollbackExceptionTest2() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
-      String session = "session1984987798";
+      String session =
+          "projects/project-2078/instances/instance-2078/databases/database-2078/sessions/session-2078";
       ByteString transactionId = ByteString.EMPTY;
       client.rollback(session, transactionId);
       Assert.fail("No exception raised");
@@ -1230,7 +1191,7 @@ public class SpannerClientTest {
             .addAllPartitions(new ArrayList<Partition>())
             .setTransaction(Transaction.newBuilder().build())
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
     PartitionQueryRequest request =
         PartitionQueryRequest.newBuilder()
@@ -1246,26 +1207,27 @@ public class SpannerClientTest {
     PartitionResponse actualResponse = client.partitionQuery(request);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    PartitionQueryRequest actualRequest = ((PartitionQueryRequest) actualRequests.get(0));
 
-    Assert.assertEquals(request.getSession(), actualRequest.getSession());
-    Assert.assertEquals(request.getTransaction(), actualRequest.getTransaction());
-    Assert.assertEquals(request.getSql(), actualRequest.getSql());
-    Assert.assertEquals(request.getParams(), actualRequest.getParams());
-    Assert.assertEquals(request.getParamTypesMap(), actualRequest.getParamTypesMap());
-    Assert.assertEquals(request.getPartitionOptions(), actualRequest.getPartitionOptions());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void partitionQueryExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
       PartitionQueryRequest request =
@@ -1292,7 +1254,7 @@ public class SpannerClientTest {
             .addAllPartitions(new ArrayList<Partition>())
             .setTransaction(Transaction.newBuilder().build())
             .build();
-    mockSpanner.addResponse(expectedResponse);
+    mockService.addResponse(expectedResponse);
 
     PartitionReadRequest request =
         PartitionReadRequest.newBuilder()
@@ -1309,27 +1271,27 @@ public class SpannerClientTest {
     PartitionResponse actualResponse = client.partitionRead(request);
     Assert.assertEquals(expectedResponse, actualResponse);
 
-    List<AbstractMessage> actualRequests = mockSpanner.getRequests();
+    List<String> actualRequests = mockService.getRequestPaths();
     Assert.assertEquals(1, actualRequests.size());
-    PartitionReadRequest actualRequest = ((PartitionReadRequest) actualRequests.get(0));
 
-    Assert.assertEquals(request.getSession(), actualRequest.getSession());
-    Assert.assertEquals(request.getTransaction(), actualRequest.getTransaction());
-    Assert.assertEquals(request.getTable(), actualRequest.getTable());
-    Assert.assertEquals(request.getIndex(), actualRequest.getIndex());
-    Assert.assertEquals(request.getColumnsList(), actualRequest.getColumnsList());
-    Assert.assertEquals(request.getKeySet(), actualRequest.getKeySet());
-    Assert.assertEquals(request.getPartitionOptions(), actualRequest.getPartitionOptions());
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
     Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
   }
 
   @Test
   public void partitionReadExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockSpanner.addException(exception);
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
 
     try {
       PartitionReadRequest request =
