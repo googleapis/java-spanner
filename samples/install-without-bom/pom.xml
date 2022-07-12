@@ -22,7 +22,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <opencensus.version>0.31.1</opencensus.version>
-    <trace.version>2.2.0</trace.version>
+    <trace.version>2.3.0</trace.version>
     <cloudmonitoring.version>3.3.0</cloudmonitoring.version>
   </properties>
 
@@ -32,7 +32,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.25.5</version>
+      <version>6.25.6</version>
     </dependency>
     <!-- [END spanner_install_without_bom] -->
     
@@ -139,7 +139,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.0.0-M6</version>
+        <version>3.0.0-M7</version>
         <configuration>
           <systemPropertyVariables>
             <spanner.test.instance>spanner-testing-east1</spanner.test.instance>
