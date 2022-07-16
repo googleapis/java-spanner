@@ -30,7 +30,6 @@ import com.google.protobuf.util.Durations;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -290,11 +289,10 @@ class ClientSideStatementValueConverters {
     }
   }
 
-  static class PgTransactionIsolationConverter implements
-      ClientSideStatementValueConverter<IsolationLevel> {
+  static class PgTransactionIsolationConverter
+      implements ClientSideStatementValueConverter<IsolationLevel> {
     private final CaseInsensitiveEnumMap<IsolationLevel> values =
-        new CaseInsensitiveEnumMap<>(
-            IsolationLevel.class, IsolationLevel::getShortStatementString);
+        new CaseInsensitiveEnumMap<>(IsolationLevel.class, IsolationLevel::getShortStatementString);
 
     public PgTransactionIsolationConverter(String allowedValues) {}
 
@@ -330,7 +328,8 @@ class ClientSideStatementValueConverters {
     public PgTransactionMode convert(String value) {
       PgTransactionMode mode = new PgTransactionMode();
       // Transaction mode may contain multiple spaces.
-      String valueWithSingleSpaces = value.replaceAll("\\s+", " ").toLowerCase(Locale.ENGLISH).trim();
+      String valueWithSingleSpaces =
+          value.replaceAll("\\s+", " ").toLowerCase(Locale.ENGLISH).trim();
       int currentIndex = 0;
       while (currentIndex < valueWithSingleSpaces.length()) {
         // This will use the last access mode and isolation level that is encountered in the string.
@@ -342,23 +341,30 @@ class ClientSideStatementValueConverters {
         } else if (valueWithSingleSpaces.substring(currentIndex).startsWith("read write")) {
           currentIndex += "read write".length();
           mode.setAccessMode(AccessMode.READ_WRITE_TRANSACTION);
-        } else if (valueWithSingleSpaces.substring(currentIndex).startsWith("isolation level serializable")) {
+        } else if (valueWithSingleSpaces
+            .substring(currentIndex)
+            .startsWith("isolation level serializable")) {
           currentIndex += "isolation level serializable".length();
           mode.setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_SERIALIZABLE);
-        } else if (valueWithSingleSpaces.substring(currentIndex).startsWith("isolation level default")) {
+        } else if (valueWithSingleSpaces
+            .substring(currentIndex)
+            .startsWith("isolation level default")) {
           currentIndex += "isolation level default".length();
           mode.setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_DEFAULT);
         } else {
           return null;
         }
         // Skip space and/or comma that may separate multiple transaction modes.
-        if (currentIndex < valueWithSingleSpaces.length() && valueWithSingleSpaces.charAt(currentIndex) == ' ') {
+        if (currentIndex < valueWithSingleSpaces.length()
+            && valueWithSingleSpaces.charAt(currentIndex) == ' ') {
           currentIndex++;
         }
-        if (currentIndex < valueWithSingleSpaces.length() && valueWithSingleSpaces.charAt(currentIndex) == ',') {
+        if (currentIndex < valueWithSingleSpaces.length()
+            && valueWithSingleSpaces.charAt(currentIndex) == ',') {
           currentIndex++;
         }
-        if (currentIndex < valueWithSingleSpaces.length() && valueWithSingleSpaces.charAt(currentIndex) == ' ') {
+        if (currentIndex < valueWithSingleSpaces.length()
+            && valueWithSingleSpaces.charAt(currentIndex) == ' ') {
           currentIndex++;
         }
       }

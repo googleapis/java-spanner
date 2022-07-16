@@ -137,8 +137,7 @@ public class BeginPgTransactionTest {
             "begin isolation level default read only",
             "begin read write isolation level default read only",
             "begin read write, isolation level default, read only",
-            "begin read write  ,   \nisolation level default\n\t,read only"
-            )) {
+            "begin read write  ,   \nisolation level default\n\t,read only")) {
       ParsedStatement statement = parser.parse(Statement.of(sql));
       assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
       statement.getClientSideStatement().execute(executor, sql);
@@ -149,5 +148,4 @@ public class BeginPgTransactionTest {
       index++;
     }
   }
-
 }

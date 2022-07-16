@@ -74,38 +74,26 @@ public class PgTransactionModeConverterTest {
     assertEquals(create(READ_ONLY_TRANSACTION), converter.convert("READ\nONLY"));
     assertEquals(create(READ_ONLY_TRANSACTION), converter.convert("Read\tOnly"));
 
-    assertEquals(
-        create(ISOLATION_LEVEL_DEFAULT), converter.convert("isolation level default"));
-    assertEquals(
-        create(ISOLATION_LEVEL_DEFAULT), converter.convert("ISOLATION LEVEL DEFAULT"));
-    assertEquals(
-        create(ISOLATION_LEVEL_DEFAULT), converter.convert("Isolation Level Default"));
-    assertEquals(
-        create(ISOLATION_LEVEL_DEFAULT),
-        converter.convert("isolation    level  default"));
-    assertEquals(
-        create(ISOLATION_LEVEL_DEFAULT), converter.convert("ISOLATION\nLEVEL\nDEFAULT"));
-    assertEquals(
-        create(ISOLATION_LEVEL_DEFAULT), converter.convert("Isolation\tLevel\tDefault"));
+    assertEquals(create(ISOLATION_LEVEL_DEFAULT), converter.convert("isolation level default"));
+    assertEquals(create(ISOLATION_LEVEL_DEFAULT), converter.convert("ISOLATION LEVEL DEFAULT"));
+    assertEquals(create(ISOLATION_LEVEL_DEFAULT), converter.convert("Isolation Level Default"));
+    assertEquals(create(ISOLATION_LEVEL_DEFAULT), converter.convert("isolation    level  default"));
+    assertEquals(create(ISOLATION_LEVEL_DEFAULT), converter.convert("ISOLATION\nLEVEL\nDEFAULT"));
+    assertEquals(create(ISOLATION_LEVEL_DEFAULT), converter.convert("Isolation\tLevel\tDefault"));
 
     assertEquals(
-        create(ISOLATION_LEVEL_SERIALIZABLE),
-        converter.convert("isolation level serializable"));
+        create(ISOLATION_LEVEL_SERIALIZABLE), converter.convert("isolation level serializable"));
     assertEquals(
-        create(ISOLATION_LEVEL_SERIALIZABLE),
-        converter.convert("ISOLATION LEVEL SERIALIZABLE"));
+        create(ISOLATION_LEVEL_SERIALIZABLE), converter.convert("ISOLATION LEVEL SERIALIZABLE"));
     assertEquals(
-        create(ISOLATION_LEVEL_SERIALIZABLE),
-        converter.convert("Isolation Level Serializable"));
+        create(ISOLATION_LEVEL_SERIALIZABLE), converter.convert("Isolation Level Serializable"));
     assertEquals(
         create(ISOLATION_LEVEL_SERIALIZABLE),
         converter.convert("isolation    level  serializable"));
     assertEquals(
-        create(ISOLATION_LEVEL_SERIALIZABLE),
-        converter.convert("ISOLATION\nLEVEL\nSERIALIZABLE"));
+        create(ISOLATION_LEVEL_SERIALIZABLE), converter.convert("ISOLATION\nLEVEL\nSERIALIZABLE"));
     assertEquals(
-        create(ISOLATION_LEVEL_SERIALIZABLE),
-        converter.convert("Isolation\tLevel\tSerializable"));
+        create(ISOLATION_LEVEL_SERIALIZABLE), converter.convert("Isolation\tLevel\tSerializable"));
 
     assertEquals(new PgTransactionMode(), converter.convert(""));
     assertEquals(new PgTransactionMode(), converter.convert(" "));
@@ -122,25 +110,54 @@ public class PgTransactionModeConverterTest {
     assertNull(converter.convert("isolation level "));
     assertNull(converter.convert("isolation level_default"));
 
-    assertEquals(create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT), converter.convert("read write isolation level default"));
-    assertEquals(create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT), converter.convert("  read write isolation level default  "));
-    assertEquals(create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT), converter.convert("read write, isolation level default"));
-    assertEquals(create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT), converter.convert("read write,isolation level default"));
-    assertEquals(create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT), converter.convert("read write , isolation level default"));
-    assertEquals(create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT), converter.convert("read write\nisolation level default"));
-    assertEquals(create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT), converter.convert("isolation level default read write "));
-    assertEquals(create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT), converter.convert("isolation level default, read write"));
-    assertEquals(create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT), converter.convert("isolation level default\nread write"));
-    assertEquals(create(READ_ONLY_TRANSACTION, ISOLATION_LEVEL_DEFAULT), converter.convert("read only isolation level default"));
-    assertEquals(create(READ_ONLY_TRANSACTION, ISOLATION_LEVEL_SERIALIZABLE), converter.convert("read only isolation level serializable"));
+    assertEquals(
+        create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT),
+        converter.convert("read write isolation level default"));
+    assertEquals(
+        create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT),
+        converter.convert("  read write isolation level default  "));
+    assertEquals(
+        create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT),
+        converter.convert("read write, isolation level default"));
+    assertEquals(
+        create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT),
+        converter.convert("read write,isolation level default"));
+    assertEquals(
+        create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT),
+        converter.convert("read write , isolation level default"));
+    assertEquals(
+        create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT),
+        converter.convert("read write\nisolation level default"));
+    assertEquals(
+        create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT),
+        converter.convert("isolation level default read write "));
+    assertEquals(
+        create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT),
+        converter.convert("isolation level default, read write"));
+    assertEquals(
+        create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_DEFAULT),
+        converter.convert("isolation level default\nread write"));
+    assertEquals(
+        create(READ_ONLY_TRANSACTION, ISOLATION_LEVEL_DEFAULT),
+        converter.convert("read only isolation level default"));
+    assertEquals(
+        create(READ_ONLY_TRANSACTION, ISOLATION_LEVEL_SERIALIZABLE),
+        converter.convert("read only isolation level serializable"));
 
     assertNull(converter.convert("isolation level default, read-only"));
     assertNull(converter.convert("isolation level default, read"));
 
     // This is consistent with the behavior of PostgreSQL. Specifying multiple access modes or
     // isolation levels in the same string will return the last mode that is specified.
-    assertEquals(create(READ_ONLY_TRANSACTION, ISOLATION_LEVEL_DEFAULT), converter.convert("read write, isolation level default, read only"));
-    assertEquals(create(READ_ONLY_TRANSACTION, ISOLATION_LEVEL_SERIALIZABLE), converter.convert("isolation level default, read only, isolation level serializable"));
-    assertEquals(create(READ_ONLY_TRANSACTION, ISOLATION_LEVEL_SERIALIZABLE), converter.convert("read write, isolation level default, read only isolation level serializable"));
+    assertEquals(
+        create(READ_ONLY_TRANSACTION, ISOLATION_LEVEL_DEFAULT),
+        converter.convert("read write, isolation level default, read only"));
+    assertEquals(
+        create(READ_ONLY_TRANSACTION, ISOLATION_LEVEL_SERIALIZABLE),
+        converter.convert("isolation level default, read only, isolation level serializable"));
+    assertEquals(
+        create(READ_ONLY_TRANSACTION, ISOLATION_LEVEL_SERIALIZABLE),
+        converter.convert(
+            "read write, isolation level default, read only isolation level serializable"));
   }
 }

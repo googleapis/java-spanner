@@ -88,8 +88,7 @@ class PgTransactionMode {
   private AccessMode accessMode;
   private IsolationLevel isolationLevel;
 
-  PgTransactionMode() {
-  }
+  PgTransactionMode() {}
 
   AccessMode getAccessMode() {
     return this.accessMode;
@@ -118,7 +117,8 @@ class PgTransactionMode {
       return false;
     }
     PgTransactionMode other = (PgTransactionMode) o;
-    return Objects.equals(this.accessMode, other.accessMode) && Objects.equals(this.isolationLevel, other.isolationLevel);
+    return Objects.equals(this.accessMode, other.accessMode)
+        && Objects.equals(this.isolationLevel, other.isolationLevel);
   }
 
   @Override
@@ -135,5 +135,4 @@ class PgTransactionMode {
     }
     return result.toString();
   }
-
 }

@@ -94,7 +94,8 @@ public class SetPgSessionCharacteristicsTest {
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
-    String sql = "set   session   characteristics   as   transaction  isolation level serializable read write";
+    String sql =
+        "set   session   characteristics   as   transaction  isolation level serializable read write";
     ParsedStatement statement = parser.parse(Statement.of(sql));
     assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
     statement.getClientSideStatement().execute(executor, sql);
@@ -108,7 +109,8 @@ public class SetPgSessionCharacteristicsTest {
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
-    String sql = "set   session   characteristics   as   transaction  isolation level serializable read only";
+    String sql =
+        "set   session   characteristics   as   transaction  isolation level serializable read only";
     ParsedStatement statement = parser.parse(Statement.of(sql));
     assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
     statement.getClientSideStatement().execute(executor, sql);
@@ -121,7 +123,8 @@ public class SetPgSessionCharacteristicsTest {
     ConnectionImpl connection = mock(ConnectionImpl.class);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
 
-    String sql = "set session characteristics as transaction isolation level default, read only, isolation level serializable, read write";
+    String sql =
+        "set session characteristics as transaction isolation level default, read only, isolation level serializable, read write";
     ParsedStatement statement = parser.parse(Statement.of(sql));
     assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
     statement.getClientSideStatement().execute(executor, sql);
