@@ -122,4 +122,32 @@ public class BeginPgTransactionTest {
       index++;
     }
   }
+
+  @Test
+  public void testBeginReadOnlyWithIsolationLevel() {
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
+
+    int index = 1;
+    for (String sql :
+        ImmutableList.of(
+            "begin read only isolation level serializable",
+            "begin read only isolation level default",
+            "begin isolation level serializable read only",
+            "begin isolation level default read only",
+            "begin read write isolation level default read only",
+            "begin read write, isolation level default, read only",
+            "begin read write  ,   \nisolation level default\n\t,read only"
+            )) {
+      ParsedStatement statement = parser.parse(Statement.of(sql));
+      assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
+      statement.getClientSideStatement().execute(executor, sql);
+
+      verify(connection, times(index)).beginTransaction();
+      verify(connection, times(index)).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
+      verify(connection, never()).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
+      index++;
+    }
+  }
+
 }

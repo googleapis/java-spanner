@@ -16,36 +16,124 @@
 
 package com.google.cloud.spanner.connection;
 
+import java.util.Objects;
+
 /**
  * Enum for the possible PostgreSQL transaction modes. We need a separate class for PG transaction
  * modes to handle setting the isolation level.
  */
-enum PgTransactionMode {
-  READ_ONLY_TRANSACTION("READ ONLY"),
-  READ_WRITE_TRANSACTION("READ WRITE"),
-  ISOLATION_LEVEL_DEFAULT("ISOLATION LEVEL DEFAULT"),
-  ISOLATION_LEVEL_SERIALIZABLE("ISOLATION LEVEL SERIALIZABLE");
+class PgTransactionMode {
+  enum AccessMode {
+    READ_ONLY_TRANSACTION("READ ONLY"),
+    READ_WRITE_TRANSACTION("READ WRITE");
 
-  private final String statementString;
+    private final String statementString;
 
-  PgTransactionMode(String statement) {
-    this.statementString = statement;
+    AccessMode(String statement) {
+      this.statementString = statement;
+    }
+
+    /**
+     * Use this method to get the correct format for use in a SQL statement. The SQL statement for
+     * setting the mode to read-only should for example be without the underscore: <code>
+     * SET TRANSACTION READ ONLY</code>
+     *
+     * @return a string representation of this {@link TransactionMode} that can be used in a SQL
+     *     statement to set the transaction mode.
+     */
+    public String getStatementString() {
+      return statementString;
+    }
+
+    @Override
+    public String toString() {
+      return statementString;
+    }
   }
 
-  /**
-   * Use this method to get the correct format for use in a SQL statement. The SQL statement for
-   * setting the mode to read-only should for example be without the underscore: <code>
-   * SET TRANSACTION READ ONLY</code>
-   *
-   * @return a string representation of this {@link TransactionMode} that can be used in a SQL
-   *     statement to set the transaction mode.
-   */
-  public String getStatementString() {
-    return statementString;
+  enum IsolationLevel {
+    ISOLATION_LEVEL_DEFAULT("ISOLATION LEVEL DEFAULT", "DEFAULT"),
+    ISOLATION_LEVEL_SERIALIZABLE("ISOLATION LEVEL SERIALIZABLE", "SERIALIZABLE");
+
+    private final String statementString;
+    private final String shortStatementString;
+
+    IsolationLevel(String statement, String shortStatementString) {
+      this.statementString = statement;
+      this.shortStatementString = shortStatementString;
+    }
+
+    /**
+     * Use this method to get the correct format for use in a SQL statement. The SQL statement for
+     * setting the mode to read-only should for example be without the underscore: <code>
+     * SET TRANSACTION READ ONLY</code>
+     *
+     * @return a string representation of this {@link TransactionMode} that can be used in a SQL
+     *     statement to set the transaction mode.
+     */
+    public String getStatementString() {
+      return statementString;
+    }
+
+    public String getShortStatementString() {
+      return shortStatementString;
+    }
+
+    @Override
+    public String toString() {
+      return statementString;
+    }
+  }
+
+  private AccessMode accessMode;
+  private IsolationLevel isolationLevel;
+
+  PgTransactionMode() {
+  }
+
+  AccessMode getAccessMode() {
+    return this.accessMode;
+  }
+
+  void setAccessMode(AccessMode accessMode) {
+    this.accessMode = accessMode;
+  }
+
+  IsolationLevel getIsolationLevel() {
+    return this.isolationLevel;
+  }
+
+  void setIsolationLevel(IsolationLevel isolationLevel) {
+    this.isolationLevel = isolationLevel;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.accessMode, this.isolationLevel);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof PgTransactionMode)) {
+      return false;
+    }
+    PgTransactionMode other = (PgTransactionMode) o;
+    return Objects.equals(this.accessMode, other.accessMode) && Objects.equals(this.isolationLevel, other.isolationLevel);
   }
 
   @Override
   public String toString() {
-    return statementString;
+    StringBuilder result = new StringBuilder();
+    if (accessMode != null) {
+      result.append(accessMode.statementString);
+    }
+    if (isolationLevel != null) {
+      if (accessMode != null) {
+        result.append(' ');
+      }
+      result.append(isolationLevel.statementString);
+    }
+    return result.toString();
   }
+
 }

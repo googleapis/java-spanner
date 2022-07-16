@@ -21,6 +21,8 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.PgTransactionModeConverter;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 
 /** Specific executor for the BEGIN statement for PostgreSQL. */

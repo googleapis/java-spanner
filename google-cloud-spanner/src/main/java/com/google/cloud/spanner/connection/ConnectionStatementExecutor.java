@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.TimestampBound;
+import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
 import com.google.protobuf.Duration;
 import com.google.spanner.v1.RequestOptions.Priority;
 
@@ -97,6 +98,8 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementSetPgSessionCharacteristicsTransactionMode(
       PgTransactionMode transactionMode);
+
+  StatementResult statementSetPgDefaultTransactionIsolation(IsolationLevel isolationLevel);
 
   StatementResult statementStartBatchDdl();
 

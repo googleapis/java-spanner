@@ -13161,6 +13161,3654 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 start work isolation level/-serializable;
 NEW_CONNECTION;
+begin isolation level default read write;
+NEW_CONNECTION;
+BEGIN ISOLATION LEVEL DEFAULT READ WRITE;
+NEW_CONNECTION;
+begin isolation level default read write;
+NEW_CONNECTION;
+   begin isolation level default read write;
+NEW_CONNECTION;
+			begin isolation level default read write;
+NEW_CONNECTION;
+
+
+
+begin isolation level default read write;
+NEW_CONNECTION;
+begin isolation level default read write  ;
+NEW_CONNECTION;
+begin isolation level default read write		;
+NEW_CONNECTION;
+begin isolation level default read write
+
+;
+NEW_CONNECTION;
+begin   isolation   level   default   read   write;
+NEW_CONNECTION;
+begin	isolation	level	default	read	write;
+NEW_CONNECTION;
+begin
+isolation
+level
+default
+read
+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read%write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read&write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read$write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read@write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read!write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read*write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read(write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read)write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read-write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read-#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read\write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read?write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read-/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read/#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-begin isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read write/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level default read/-write;
+NEW_CONNECTION;
+start isolation level default read only;
+NEW_CONNECTION;
+START ISOLATION LEVEL DEFAULT READ ONLY;
+NEW_CONNECTION;
+start isolation level default read only;
+NEW_CONNECTION;
+   start isolation level default read only;
+NEW_CONNECTION;
+			start isolation level default read only;
+NEW_CONNECTION;
+
+
+
+start isolation level default read only;
+NEW_CONNECTION;
+start isolation level default read only  ;
+NEW_CONNECTION;
+start isolation level default read only		;
+NEW_CONNECTION;
+start isolation level default read only
+
+;
+NEW_CONNECTION;
+start   isolation   level   default   read   only;
+NEW_CONNECTION;
+start	isolation	level	default	read	only;
+NEW_CONNECTION;
+start
+isolation
+level
+default
+read
+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read%only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read_only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read&only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read$only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read@only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read!only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read*only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read(only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read)only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read-only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read-#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read\only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read?only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read-/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read/#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-start isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read only/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level default read/-only;
+NEW_CONNECTION;
+begin transaction isolation level default read only;
+NEW_CONNECTION;
+BEGIN TRANSACTION ISOLATION LEVEL DEFAULT READ ONLY;
+NEW_CONNECTION;
+begin transaction isolation level default read only;
+NEW_CONNECTION;
+   begin transaction isolation level default read only;
+NEW_CONNECTION;
+			begin transaction isolation level default read only;
+NEW_CONNECTION;
+
+
+
+begin transaction isolation level default read only;
+NEW_CONNECTION;
+begin transaction isolation level default read only  ;
+NEW_CONNECTION;
+begin transaction isolation level default read only		;
+NEW_CONNECTION;
+begin transaction isolation level default read only
+
+;
+NEW_CONNECTION;
+begin   transaction   isolation   level   default   read   only;
+NEW_CONNECTION;
+begin	transaction	isolation	level	default	read	only;
+NEW_CONNECTION;
+begin
+transaction
+isolation
+level
+default
+read
+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read%only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read_only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read&only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read$only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read@only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read!only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read*only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read(only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read)only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read-only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read-#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read\only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read?only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read-/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read/#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-begin transaction isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read only/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level default read/-only;
+NEW_CONNECTION;
+start transaction isolation level default read write;
+NEW_CONNECTION;
+START TRANSACTION ISOLATION LEVEL DEFAULT READ WRITE;
+NEW_CONNECTION;
+start transaction isolation level default read write;
+NEW_CONNECTION;
+   start transaction isolation level default read write;
+NEW_CONNECTION;
+			start transaction isolation level default read write;
+NEW_CONNECTION;
+
+
+
+start transaction isolation level default read write;
+NEW_CONNECTION;
+start transaction isolation level default read write  ;
+NEW_CONNECTION;
+start transaction isolation level default read write		;
+NEW_CONNECTION;
+start transaction isolation level default read write
+
+;
+NEW_CONNECTION;
+start   transaction   isolation   level   default   read   write;
+NEW_CONNECTION;
+start	transaction	isolation	level	default	read	write;
+NEW_CONNECTION;
+start
+transaction
+isolation
+level
+default
+read
+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read%write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read&write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read$write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read@write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read!write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read*write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read(write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read)write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read-write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read-#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read\write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read?write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read-/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read/#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-start transaction isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read write/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level default read/-write;
+NEW_CONNECTION;
+begin work isolation level default read write;
+NEW_CONNECTION;
+BEGIN WORK ISOLATION LEVEL DEFAULT READ WRITE;
+NEW_CONNECTION;
+begin work isolation level default read write;
+NEW_CONNECTION;
+   begin work isolation level default read write;
+NEW_CONNECTION;
+			begin work isolation level default read write;
+NEW_CONNECTION;
+
+
+
+begin work isolation level default read write;
+NEW_CONNECTION;
+begin work isolation level default read write  ;
+NEW_CONNECTION;
+begin work isolation level default read write		;
+NEW_CONNECTION;
+begin work isolation level default read write
+
+;
+NEW_CONNECTION;
+begin   work   isolation   level   default   read   write;
+NEW_CONNECTION;
+begin	work	isolation	level	default	read	write;
+NEW_CONNECTION;
+begin
+work
+isolation
+level
+default
+read
+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read%write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read&write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read$write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read@write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read!write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read*write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read(write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read)write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read-write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read-#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read\write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read?write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read-/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read/#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-begin work isolation level default read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read write/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level default read/-write;
+NEW_CONNECTION;
+start work isolation level default read only;
+NEW_CONNECTION;
+START WORK ISOLATION LEVEL DEFAULT READ ONLY;
+NEW_CONNECTION;
+start work isolation level default read only;
+NEW_CONNECTION;
+   start work isolation level default read only;
+NEW_CONNECTION;
+			start work isolation level default read only;
+NEW_CONNECTION;
+
+
+
+start work isolation level default read only;
+NEW_CONNECTION;
+start work isolation level default read only  ;
+NEW_CONNECTION;
+start work isolation level default read only		;
+NEW_CONNECTION;
+start work isolation level default read only
+
+;
+NEW_CONNECTION;
+start   work   isolation   level   default   read   only;
+NEW_CONNECTION;
+start	work	isolation	level	default	read	only;
+NEW_CONNECTION;
+start
+work
+isolation
+level
+default
+read
+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read%only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read_only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read&only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read$only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read@only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read!only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read*only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read(only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read)only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read-only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read-#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read\only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read?only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read-/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read/#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-start work isolation level default read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read only/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level default read/-only;
+NEW_CONNECTION;
+begin isolation level serializable read write;
+NEW_CONNECTION;
+BEGIN ISOLATION LEVEL SERIALIZABLE READ WRITE;
+NEW_CONNECTION;
+begin isolation level serializable read write;
+NEW_CONNECTION;
+   begin isolation level serializable read write;
+NEW_CONNECTION;
+			begin isolation level serializable read write;
+NEW_CONNECTION;
+
+
+
+begin isolation level serializable read write;
+NEW_CONNECTION;
+begin isolation level serializable read write  ;
+NEW_CONNECTION;
+begin isolation level serializable read write		;
+NEW_CONNECTION;
+begin isolation level serializable read write
+
+;
+NEW_CONNECTION;
+begin   isolation   level   serializable   read   write;
+NEW_CONNECTION;
+begin	isolation	level	serializable	read	write;
+NEW_CONNECTION;
+begin
+isolation
+level
+serializable
+read
+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read%write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read&write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read$write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read@write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read!write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read*write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read(write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read)write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read-write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read-#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read\write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read?write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read-/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read/#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-begin isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read write/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable read/-write;
+NEW_CONNECTION;
+start isolation level serializable read write;
+NEW_CONNECTION;
+START ISOLATION LEVEL SERIALIZABLE READ WRITE;
+NEW_CONNECTION;
+start isolation level serializable read write;
+NEW_CONNECTION;
+   start isolation level serializable read write;
+NEW_CONNECTION;
+			start isolation level serializable read write;
+NEW_CONNECTION;
+
+
+
+start isolation level serializable read write;
+NEW_CONNECTION;
+start isolation level serializable read write  ;
+NEW_CONNECTION;
+start isolation level serializable read write		;
+NEW_CONNECTION;
+start isolation level serializable read write
+
+;
+NEW_CONNECTION;
+start   isolation   level   serializable   read   write;
+NEW_CONNECTION;
+start	isolation	level	serializable	read	write;
+NEW_CONNECTION;
+start
+isolation
+level
+serializable
+read
+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read%write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read&write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read$write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read@write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read!write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read*write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read(write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read)write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read-write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read-#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read\write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read?write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read-/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read/#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-start isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read write/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable read/-write;
+NEW_CONNECTION;
+begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE READ ONLY;
+NEW_CONNECTION;
+begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+   begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+			begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+
+
+
+begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+begin transaction isolation level serializable read only  ;
+NEW_CONNECTION;
+begin transaction isolation level serializable read only		;
+NEW_CONNECTION;
+begin transaction isolation level serializable read only
+
+;
+NEW_CONNECTION;
+begin   transaction   isolation   level   serializable   read   only;
+NEW_CONNECTION;
+begin	transaction	isolation	level	serializable	read	only;
+NEW_CONNECTION;
+begin
+transaction
+isolation
+level
+serializable
+read
+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read%only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read_only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read&only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read$only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read@only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read!only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read*only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read(only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read)only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read-only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read-#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read\only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read?only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read-/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read/#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-begin transaction isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read only/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable read/-only;
+NEW_CONNECTION;
+start transaction isolation level serializable read write;
+NEW_CONNECTION;
+START TRANSACTION ISOLATION LEVEL SERIALIZABLE READ WRITE;
+NEW_CONNECTION;
+start transaction isolation level serializable read write;
+NEW_CONNECTION;
+   start transaction isolation level serializable read write;
+NEW_CONNECTION;
+			start transaction isolation level serializable read write;
+NEW_CONNECTION;
+
+
+
+start transaction isolation level serializable read write;
+NEW_CONNECTION;
+start transaction isolation level serializable read write  ;
+NEW_CONNECTION;
+start transaction isolation level serializable read write		;
+NEW_CONNECTION;
+start transaction isolation level serializable read write
+
+;
+NEW_CONNECTION;
+start   transaction   isolation   level   serializable   read   write;
+NEW_CONNECTION;
+start	transaction	isolation	level	serializable	read	write;
+NEW_CONNECTION;
+start
+transaction
+isolation
+level
+serializable
+read
+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read%write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read&write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read$write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read@write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read!write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read*write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read(write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read)write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read-write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read-#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read\write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read?write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read-/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read/#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-start transaction isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read write/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable read/-write;
+NEW_CONNECTION;
+begin work isolation level serializable read write;
+NEW_CONNECTION;
+BEGIN WORK ISOLATION LEVEL SERIALIZABLE READ WRITE;
+NEW_CONNECTION;
+begin work isolation level serializable read write;
+NEW_CONNECTION;
+   begin work isolation level serializable read write;
+NEW_CONNECTION;
+			begin work isolation level serializable read write;
+NEW_CONNECTION;
+
+
+
+begin work isolation level serializable read write;
+NEW_CONNECTION;
+begin work isolation level serializable read write  ;
+NEW_CONNECTION;
+begin work isolation level serializable read write		;
+NEW_CONNECTION;
+begin work isolation level serializable read write
+
+;
+NEW_CONNECTION;
+begin   work   isolation   level   serializable   read   write;
+NEW_CONNECTION;
+begin	work	isolation	level	serializable	read	write;
+NEW_CONNECTION;
+begin
+work
+isolation
+level
+serializable
+read
+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read%write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read&write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read$write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read@write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read!write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read*write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read(write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read)write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read-write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read-#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read\write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read?write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read-/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read/#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-begin work isolation level serializable read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read write/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable read/-write;
+NEW_CONNECTION;
+start work isolation level serializable read only;
+NEW_CONNECTION;
+START WORK ISOLATION LEVEL SERIALIZABLE READ ONLY;
+NEW_CONNECTION;
+start work isolation level serializable read only;
+NEW_CONNECTION;
+   start work isolation level serializable read only;
+NEW_CONNECTION;
+			start work isolation level serializable read only;
+NEW_CONNECTION;
+
+
+
+start work isolation level serializable read only;
+NEW_CONNECTION;
+start work isolation level serializable read only  ;
+NEW_CONNECTION;
+start work isolation level serializable read only		;
+NEW_CONNECTION;
+start work isolation level serializable read only
+
+;
+NEW_CONNECTION;
+start   work   isolation   level   serializable   read   only;
+NEW_CONNECTION;
+start	work	isolation	level	serializable	read	only;
+NEW_CONNECTION;
+start
+work
+isolation
+level
+serializable
+read
+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read%only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read_only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read&only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read$only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read@only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read!only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read*only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read(only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read)only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read-only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read-#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read\only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read?only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read-/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read/#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-start work isolation level serializable read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read only/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable read/-only;
+NEW_CONNECTION;
+begin isolation level serializable, read write;
+NEW_CONNECTION;
+BEGIN ISOLATION LEVEL SERIALIZABLE, READ WRITE;
+NEW_CONNECTION;
+begin isolation level serializable, read write;
+NEW_CONNECTION;
+   begin isolation level serializable, read write;
+NEW_CONNECTION;
+			begin isolation level serializable, read write;
+NEW_CONNECTION;
+
+
+
+begin isolation level serializable, read write;
+NEW_CONNECTION;
+begin isolation level serializable, read write  ;
+NEW_CONNECTION;
+begin isolation level serializable, read write		;
+NEW_CONNECTION;
+begin isolation level serializable, read write
+
+;
+NEW_CONNECTION;
+begin   isolation   level   serializable,   read   write;
+NEW_CONNECTION;
+begin	isolation	level	serializable,	read	write;
+NEW_CONNECTION;
+begin
+isolation
+level
+serializable,
+read
+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read%write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read&write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read$write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read@write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read!write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read*write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read(write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read)write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read-write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read-#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read\write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read?write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read-/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read/#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-begin isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read write/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin isolation level serializable, read/-write;
+NEW_CONNECTION;
+start isolation level serializable, read write;
+NEW_CONNECTION;
+START ISOLATION LEVEL SERIALIZABLE, READ WRITE;
+NEW_CONNECTION;
+start isolation level serializable, read write;
+NEW_CONNECTION;
+   start isolation level serializable, read write;
+NEW_CONNECTION;
+			start isolation level serializable, read write;
+NEW_CONNECTION;
+
+
+
+start isolation level serializable, read write;
+NEW_CONNECTION;
+start isolation level serializable, read write  ;
+NEW_CONNECTION;
+start isolation level serializable, read write		;
+NEW_CONNECTION;
+start isolation level serializable, read write
+
+;
+NEW_CONNECTION;
+start   isolation   level   serializable,   read   write;
+NEW_CONNECTION;
+start	isolation	level	serializable,	read	write;
+NEW_CONNECTION;
+start
+isolation
+level
+serializable,
+read
+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read%write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read&write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read$write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read@write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read!write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read*write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read(write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read)write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read-write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read-#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read\write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read?write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read-/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read/#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-start isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read write/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start isolation level serializable, read/-write;
+NEW_CONNECTION;
+begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE, READ ONLY;
+NEW_CONNECTION;
+begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+   begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+			begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+
+
+
+begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+begin transaction isolation level serializable, read only  ;
+NEW_CONNECTION;
+begin transaction isolation level serializable, read only		;
+NEW_CONNECTION;
+begin transaction isolation level serializable, read only
+
+;
+NEW_CONNECTION;
+begin   transaction   isolation   level   serializable,   read   only;
+NEW_CONNECTION;
+begin	transaction	isolation	level	serializable,	read	only;
+NEW_CONNECTION;
+begin
+transaction
+isolation
+level
+serializable,
+read
+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read%only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read_only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read&only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read$only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read@only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read!only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read*only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read(only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read)only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read-only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read-#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read\only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read?only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read-/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read/#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-begin transaction isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read only/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin transaction isolation level serializable, read/-only;
+NEW_CONNECTION;
+start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+START TRANSACTION ISOLATION LEVEL SERIALIZABLE, READ WRITE;
+NEW_CONNECTION;
+start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+   start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+			start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+
+
+
+start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+start transaction isolation level serializable, read write  ;
+NEW_CONNECTION;
+start transaction isolation level serializable, read write		;
+NEW_CONNECTION;
+start transaction isolation level serializable, read write
+
+;
+NEW_CONNECTION;
+start   transaction   isolation   level   serializable,   read   write;
+NEW_CONNECTION;
+start	transaction	isolation	level	serializable,	read	write;
+NEW_CONNECTION;
+start
+transaction
+isolation
+level
+serializable,
+read
+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read%write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read&write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read$write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read@write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read!write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read*write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read(write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read)write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read-write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read-#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read\write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read?write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read-/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read/#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-start transaction isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read write/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start transaction isolation level serializable, read/-write;
+NEW_CONNECTION;
+begin work isolation level serializable, read write;
+NEW_CONNECTION;
+BEGIN WORK ISOLATION LEVEL SERIALIZABLE, READ WRITE;
+NEW_CONNECTION;
+begin work isolation level serializable, read write;
+NEW_CONNECTION;
+   begin work isolation level serializable, read write;
+NEW_CONNECTION;
+			begin work isolation level serializable, read write;
+NEW_CONNECTION;
+
+
+
+begin work isolation level serializable, read write;
+NEW_CONNECTION;
+begin work isolation level serializable, read write  ;
+NEW_CONNECTION;
+begin work isolation level serializable, read write		;
+NEW_CONNECTION;
+begin work isolation level serializable, read write
+
+;
+NEW_CONNECTION;
+begin   work   isolation   level   serializable,   read   write;
+NEW_CONNECTION;
+begin	work	isolation	level	serializable,	read	write;
+NEW_CONNECTION;
+begin
+work
+isolation
+level
+serializable,
+read
+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read%write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read&write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read$write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read@write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read!write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read*write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read(write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read)write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read-write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read-#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read\write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read?write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read-/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read/#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-begin work isolation level serializable, read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read write/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+begin work isolation level serializable, read/-write;
+NEW_CONNECTION;
+start work isolation level serializable, read only;
+NEW_CONNECTION;
+START WORK ISOLATION LEVEL SERIALIZABLE, READ ONLY;
+NEW_CONNECTION;
+start work isolation level serializable, read only;
+NEW_CONNECTION;
+   start work isolation level serializable, read only;
+NEW_CONNECTION;
+			start work isolation level serializable, read only;
+NEW_CONNECTION;
+
+
+
+start work isolation level serializable, read only;
+NEW_CONNECTION;
+start work isolation level serializable, read only  ;
+NEW_CONNECTION;
+start work isolation level serializable, read only		;
+NEW_CONNECTION;
+start work isolation level serializable, read only
+
+;
+NEW_CONNECTION;
+start   work   isolation   level   serializable,   read   only;
+NEW_CONNECTION;
+start	work	isolation	level	serializable,	read	only;
+NEW_CONNECTION;
+start
+work
+isolation
+level
+serializable,
+read
+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read%only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read_only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read&only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read$only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read@only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read!only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read*only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read(only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read)only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read-only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read-#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read\only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read?only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read-/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read/#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-start work isolation level serializable, read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read only/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+start work isolation level serializable, read/-only;
+NEW_CONNECTION;
 begin transaction;
 commit;
 NEW_CONNECTION;
@@ -25312,6 +28960,1418 @@ set session characteristics as transaction isolation level serializable/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set session characteristics as transaction isolation level/-serializable;
+NEW_CONNECTION;
+set session characteristics as transaction read only;
+NEW_CONNECTION;
+SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;
+NEW_CONNECTION;
+set session characteristics as transaction read only;
+NEW_CONNECTION;
+   set session characteristics as transaction read only;
+NEW_CONNECTION;
+			set session characteristics as transaction read only;
+NEW_CONNECTION;
+
+
+
+set session characteristics as transaction read only;
+NEW_CONNECTION;
+set session characteristics as transaction read only  ;
+NEW_CONNECTION;
+set session characteristics as transaction read only		;
+NEW_CONNECTION;
+set session characteristics as transaction read only
+
+;
+NEW_CONNECTION;
+set   session   characteristics   as   transaction   read   only;
+NEW_CONNECTION;
+set	session	characteristics	as	transaction	read	only;
+NEW_CONNECTION;
+set
+session
+characteristics
+as
+transaction
+read
+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read%only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read_only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read&only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read$only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read@only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read!only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read*only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read(only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read)only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read-only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read+only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read-#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read\only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read?only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read-/only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read/#only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set session characteristics as transaction read only;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read only/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read/-only;
+NEW_CONNECTION;
+set session characteristics as transaction read write;
+NEW_CONNECTION;
+SET SESSION CHARACTERISTICS AS TRANSACTION READ WRITE;
+NEW_CONNECTION;
+set session characteristics as transaction read write;
+NEW_CONNECTION;
+   set session characteristics as transaction read write;
+NEW_CONNECTION;
+			set session characteristics as transaction read write;
+NEW_CONNECTION;
+
+
+
+set session characteristics as transaction read write;
+NEW_CONNECTION;
+set session characteristics as transaction read write  ;
+NEW_CONNECTION;
+set session characteristics as transaction read write		;
+NEW_CONNECTION;
+set session characteristics as transaction read write
+
+;
+NEW_CONNECTION;
+set   session   characteristics   as   transaction   read   write;
+NEW_CONNECTION;
+set	session	characteristics	as	transaction	read	write;
+NEW_CONNECTION;
+set
+session
+characteristics
+as
+transaction
+read
+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read%write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read&write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read$write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read@write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read!write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read*write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read(write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read)write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read-write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read+write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read-#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read\write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read?write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read-/write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read/#write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set session characteristics as transaction read write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read write/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction read/-write;
+NEW_CONNECTION;
+set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL DEFAULT;
+NEW_CONNECTION;
+set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+   set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+			set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+
+
+
+set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+set session characteristics as transaction isolation level default  ;
+NEW_CONNECTION;
+set session characteristics as transaction isolation level default		;
+NEW_CONNECTION;
+set session characteristics as transaction isolation level default
+
+;
+NEW_CONNECTION;
+set   session   characteristics   as   transaction   isolation   level   default;
+NEW_CONNECTION;
+set	session	characteristics	as	transaction	isolation	level	default;
+NEW_CONNECTION;
+set
+session
+characteristics
+as
+transaction
+isolation
+level
+default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level%default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level_default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level&default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level$default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level@default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level!default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level*default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level(default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level)default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level-default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level+default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level-#default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level/default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level\default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level?default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level-/default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level/#default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set session characteristics as transaction isolation level default;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level default/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level/-default;
+NEW_CONNECTION;
+set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+NEW_CONNECTION;
+set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+   set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+			set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+
+
+
+set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+set session characteristics as transaction isolation level serializable  ;
+NEW_CONNECTION;
+set session characteristics as transaction isolation level serializable		;
+NEW_CONNECTION;
+set session characteristics as transaction isolation level serializable
+
+;
+NEW_CONNECTION;
+set   session   characteristics   as   transaction   isolation   level   serializable;
+NEW_CONNECTION;
+set	session	characteristics	as	transaction	isolation	level	serializable;
+NEW_CONNECTION;
+set
+session
+characteristics
+as
+transaction
+isolation
+level
+serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level%serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level_serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level&serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level$serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level@serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level!serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level*serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level(serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level)serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level-serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level+serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level-#serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level/serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level\serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level?serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level-/serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level/#serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set session characteristics as transaction isolation level serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level serializable/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level/-serializable;
+NEW_CONNECTION;
+set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_ISOLATION=SERIALIZABLE;
+NEW_CONNECTION;
+set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+   set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+			set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+
+
+
+set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+set default_transaction_isolation=serializable  ;
+NEW_CONNECTION;
+set default_transaction_isolation=serializable		;
+NEW_CONNECTION;
+set default_transaction_isolation=serializable
+
+;
+NEW_CONNECTION;
+set   default_transaction_isolation=serializable;
+NEW_CONNECTION;
+set	default_transaction_isolation=serializable;
+NEW_CONNECTION;
+set
+default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_isolation=serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation=serializable/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-default_transaction_isolation=serializable;
+NEW_CONNECTION;
+set default_transaction_read_only = true;
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_READ_ONLY = TRUE;
+NEW_CONNECTION;
+set default_transaction_read_only = true;
+NEW_CONNECTION;
+   set default_transaction_read_only = true;
+NEW_CONNECTION;
+			set default_transaction_read_only = true;
+NEW_CONNECTION;
+
+
+
+set default_transaction_read_only = true;
+NEW_CONNECTION;
+set default_transaction_read_only = true  ;
+NEW_CONNECTION;
+set default_transaction_read_only = true		;
+NEW_CONNECTION;
+set default_transaction_read_only = true
+
+;
+NEW_CONNECTION;
+set   default_transaction_read_only   =   true;
+NEW_CONNECTION;
+set	default_transaction_read_only	=	true;
+NEW_CONNECTION;
+set
+default_transaction_read_only
+=
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_read_only = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/-true;
+NEW_CONNECTION;
+set default_transaction_read_only = false;
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_READ_ONLY = FALSE;
+NEW_CONNECTION;
+set default_transaction_read_only = false;
+NEW_CONNECTION;
+   set default_transaction_read_only = false;
+NEW_CONNECTION;
+			set default_transaction_read_only = false;
+NEW_CONNECTION;
+
+
+
+set default_transaction_read_only = false;
+NEW_CONNECTION;
+set default_transaction_read_only = false  ;
+NEW_CONNECTION;
+set default_transaction_read_only = false		;
+NEW_CONNECTION;
+set default_transaction_read_only = false
+
+;
+NEW_CONNECTION;
+set   default_transaction_read_only   =   false;
+NEW_CONNECTION;
+set	default_transaction_read_only	=	false;
+NEW_CONNECTION;
+set
+default_transaction_read_only
+=
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_read_only = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/-false;
 NEW_CONNECTION;
 set spanner.read_only_staleness='STRONG';
 NEW_CONNECTION;

@@ -88,4 +88,85 @@ public class SetPgSessionCharacteristicsTest {
     verify(connection).setReadOnly(false);
     verify(connection, never()).setReadOnly(true);
   }
+
+  @Test
+  public void testSetIsolationLevelSerializableReadWrite() {
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
+
+    String sql = "set   session   characteristics   as   transaction  isolation level serializable read write";
+    ParsedStatement statement = parser.parse(Statement.of(sql));
+    assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
+    statement.getClientSideStatement().execute(executor, sql);
+
+    verify(connection).setReadOnly(false);
+    verify(connection, never()).setReadOnly(true);
+  }
+
+  @Test
+  public void testSetIsolationLevelSerializableReadOnly() {
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
+
+    String sql = "set   session   characteristics   as   transaction  isolation level serializable read only";
+    ParsedStatement statement = parser.parse(Statement.of(sql));
+    assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
+    statement.getClientSideStatement().execute(executor, sql);
+
+    verify(connection).setReadOnly(true);
+  }
+
+  @Test
+  public void testSetMultipleTransactionModes() {
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
+
+    String sql = "set session characteristics as transaction isolation level default, read only, isolation level serializable, read write";
+    ParsedStatement statement = parser.parse(Statement.of(sql));
+    assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
+    statement.getClientSideStatement().execute(executor, sql);
+
+    verify(connection).setReadOnly(false);
+    verify(connection, never()).setReadOnly(true);
+  }
+
+  @Test
+  public void testDefaultTransactionIsolation() {
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
+
+    String sql = "set default_transaction_isolation = serializable";
+    ParsedStatement statement = parser.parse(Statement.of(sql));
+    assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
+    statement.getClientSideStatement().execute(executor, sql);
+
+    // Setting the isolation level is a no-op.
+    verify(connection, never()).setReadOnly(anyBoolean());
+  }
+
+  @Test
+  public void testDefaultTransactionReadOnlyTrue() {
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
+
+    String sql = "set default_transaction_read_only = true";
+    ParsedStatement statement = parser.parse(Statement.of(sql));
+    assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
+    statement.getClientSideStatement().execute(executor, sql);
+
+    verify(connection).setReadOnly(true);
+  }
+
+  @Test
+  public void testDefaultTransactionReadOnlyFalse() {
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
+
+    String sql = "set default_transaction_read_only = false";
+    ParsedStatement statement = parser.parse(Statement.of(sql));
+    assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
+    statement.getClientSideStatement().execute(executor, sql);
+
+    verify(connection).setReadOnly(false);
+  }
 }
