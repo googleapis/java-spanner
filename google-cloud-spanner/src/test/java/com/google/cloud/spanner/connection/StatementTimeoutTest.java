@@ -28,6 +28,7 @@ import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -331,6 +332,8 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testTimeoutExceptionReadWriteAutocommitPartitioned() {
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       connection.setAutocommitDmlMode(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);

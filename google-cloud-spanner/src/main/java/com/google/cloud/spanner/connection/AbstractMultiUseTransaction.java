@@ -62,7 +62,6 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
-    Preconditions.checkArgument(statement.isQuery(), "Statement is not a query");
     checkValidTransaction();
     return executeStatementAsync(
         statement,

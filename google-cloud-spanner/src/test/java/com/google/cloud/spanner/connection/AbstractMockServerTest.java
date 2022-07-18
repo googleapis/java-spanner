@@ -37,6 +37,7 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
@@ -98,6 +99,11 @@ public abstract class AbstractMockServerTest {
           .build();
   public static final Statement INSERT_STATEMENT =
       Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test aborted')");
+  public static final com.google.spanner.v1.ResultSet UPDATE_RESULTSET =
+      com.google.spanner.v1.ResultSet.newBuilder()
+          .setStats(ResultSetStats.newBuilder().setRowCountExact(1))
+          .setMetadata(ResultSetMetadata.getDefaultInstance().toBuilder().setRowType(StructType.getDefaultInstance()))
+          .build();
   public static final long UPDATE_COUNT = 1L;
 
   public static final int RANDOM_RESULT_SET_ROW_COUNT = 100;
@@ -191,6 +197,15 @@ public abstract class AbstractMockServerTest {
     mockSpanner.clearRequests();
     mockDatabaseAdmin.getRequests().clear();
     mockInstanceAdmin.getRequests().clear();
+  }
+
+  @Before
+  public void setupMockSpannerResults() {
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT_COUNT_STATEMENT, SELECT_COUNT_RESULTSET_BEFORE_INSERT));
+    mockSpanner.putStatementResult(StatementResult.query(INSERT_STATEMENT, UPDATE_RESULTSET));
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT_RANDOM_STATEMENT, RANDOM_RESULT_SET));
   }
 
   protected java.sql.Connection createJdbcConnection() throws SQLException {

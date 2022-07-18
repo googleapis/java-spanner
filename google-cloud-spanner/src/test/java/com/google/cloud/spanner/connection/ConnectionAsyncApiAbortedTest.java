@@ -40,6 +40,9 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.ResultSetStats;
+import com.google.spanner.v1.StructType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -611,7 +614,12 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   @Test
   public void testBlindUpdateAborted_SelectResults() {
     final Statement update1 = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=100");
-    mockSpanner.putStatementResult(StatementResult.update(update1, 100));
+    final com.google.spanner.v1.ResultSet UPDATE1_RESULTSET =
+        com.google.spanner.v1.ResultSet.newBuilder()
+            .setStats(ResultSetStats.newBuilder().setRowCountExact(100))
+            .setMetadata(ResultSetMetadata.getDefaultInstance().toBuilder().setRowType(StructType.getDefaultInstance()))
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(update1, UPDATE1_RESULTSET));
 
     RetryCounter counter = new RetryCounter();
     try (Connection connection = createConnection(counter)) {

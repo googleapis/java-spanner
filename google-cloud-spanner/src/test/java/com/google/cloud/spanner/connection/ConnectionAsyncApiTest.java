@@ -30,6 +30,7 @@ import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ForceCloseSpannerFunction;
+import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
@@ -240,6 +241,8 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
 
   @Test
   public void testReadWriteMultipleAsyncStatements() {
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       assertThat(connection.isAutocommit()).isFalse();
       ApiFuture<Long> update1 = connection.executeUpdateAsync(INSERT_STATEMENT);
@@ -314,6 +317,8 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
 
   @Test
   public void testAutocommitRunBatch() {
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       connection.execute(Statement.of("START BATCH DML"));
@@ -331,6 +336,8 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
 
   @Test
   public void testAutocommitRunBatchAsync() {
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connection.executeAsync(Statement.of("SET AUTOCOMMIT = TRUE"));
       connection.executeAsync(Statement.of("START BATCH DML"));
@@ -387,18 +394,6 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
             });
       }
       assertThat(get(autocommit)).isTrue();
-    }
-  }
-
-  @Test
-  public void testExecuteInvalidQueryAsync() {
-    try (Connection connection = createConnection()) {
-      try {
-        connection.executeQueryAsync(INSERT_STATEMENT);
-        fail("Missing expected exception");
-      } catch (SpannerException e) {
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
-      }
     }
   }
 
@@ -618,6 +613,8 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   }
 
   private void testExecuteBatchUpdateAsync(Function<Connection, Void> connectionConfigurator) {
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connectionConfigurator.apply(connection);
       for (boolean timeout : new boolean[] {true, false}) {
@@ -654,6 +651,8 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   }
 
   private void testExecuteBatchUpdate(Function<Connection, Void> connectionConfigurator) {
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connectionConfigurator.apply(connection);
       for (boolean timeout : new boolean[] {true, false}) {
@@ -825,6 +824,8 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   private void testExecuteBatchUpdateAsyncIsNonBlocking(
       Function<Connection, Void> connectionConfigurator) {
     mockSpanner.freeze();
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connectionConfigurator.apply(connection);
       ApiFuture<long[]> updateCounts =

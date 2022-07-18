@@ -24,6 +24,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
@@ -36,7 +37,7 @@ import java.util.List;
  * to the actual query execution. It also ensures that any invalid query will throw an exception at
  * execution instead of the first next() call by a client.
  */
-class DirectExecuteResultSet implements ResultSet {
+public class DirectExecuteResultSet implements ResultSet {
   private static final String MISSING_NEXT_CALL = "Must be preceded by a next() call";
   private final ResultSet delegate;
   private boolean nextCalledByClient = false;

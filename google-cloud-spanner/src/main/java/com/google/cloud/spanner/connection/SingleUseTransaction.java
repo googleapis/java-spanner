@@ -178,14 +178,14 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
     Preconditions.checkNotNull(statement);
-    Preconditions.checkArgument(
-        statement.isQuery() || (statement.isUpdate()), "The statement must be a query, or DML");
     checkAndMarkUsed();
 
     if (statement.isUpdate()) {
       if (analyzeMode != AnalyzeMode.NONE) {
         return analyzeTransactionalUpdateAsync(statement, analyzeMode);
       }
+      ConnectionPreconditions.checkState(
+          !isReadOnly(), "DML statements are not allowed in read-only mode");
       return executeDmlReturningAsync(statement, options);
     }
 

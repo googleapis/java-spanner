@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
@@ -142,6 +143,8 @@ public class TaggingTest extends AbstractMockServerTest {
 
   @Test
   public void testPartitionedUpdate_NoTags() {
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       connection.setAutocommitDmlMode(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);
@@ -169,6 +172,8 @@ public class TaggingTest extends AbstractMockServerTest {
 
   @Test
   public void testBatchUpdate_NoTags() {
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       for (boolean autocommit : new boolean[] {true, false}) {
         connection.setAutocommit(autocommit);
@@ -294,6 +299,8 @@ public class TaggingTest extends AbstractMockServerTest {
 
   @Test
   public void testPartitionedUpdate_StatementTag() {
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       connection.setAutocommitDmlMode(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);
@@ -342,6 +349,8 @@ public class TaggingTest extends AbstractMockServerTest {
 
   @Test
   public void testBatchUpdate_StatementTag() {
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       for (boolean autocommit : new boolean[] {true, false}) {
         connection.setAutocommit(autocommit);
@@ -548,6 +557,8 @@ public class TaggingTest extends AbstractMockServerTest {
 
   @Test
   public void testBatchUpdate_TransactionTag() {
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connection.setTransactionTag("tag-3");
       connection.executeBatchUpdate(Arrays.asList(INSERT_STATEMENT));
@@ -626,6 +637,8 @@ public class TaggingTest extends AbstractMockServerTest {
 
   @Test
   public void testDmlBatch_StatementTag() {
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       for (boolean autocommit : new boolean[] {true, false}) {
         connection.setAutocommit(autocommit);
@@ -659,6 +672,8 @@ public class TaggingTest extends AbstractMockServerTest {
 
   @Test
   public void testRunBatch_TransactionTag() {
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connection.setTransactionTag("batch-tag");
       connection.startBatchDml();

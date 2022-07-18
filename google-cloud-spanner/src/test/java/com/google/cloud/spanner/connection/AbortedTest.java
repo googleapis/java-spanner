@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -54,7 +55,6 @@ public class AbortedTest extends AbstractMockServerTest {
     for (int i = 0; i < 2; i++) {
       mockSpanner.putStatementResult(
           StatementResult.query(SELECT_COUNT_STATEMENT, SELECT_COUNT_RESULTSET_BEFORE_INSERT));
-      mockSpanner.putStatementResult(StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
       AbortInterceptor interceptor = new AbortInterceptor(0);
       try (ITConnection connection =
           createConnection(interceptor, new CountTransactionRetryListener())) {
@@ -247,19 +247,20 @@ public class AbortedTest extends AbstractMockServerTest {
 
   @Test
   public void testRetryUsesTags() {
-    mockSpanner.putStatementResult(
-        StatementResult.query(SELECT_COUNT_STATEMENT, SELECT_COUNT_RESULTSET_BEFORE_INSERT));
-    mockSpanner.putStatementResult(StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (ITConnection connection = createConnection()) {
       connection.setTransactionTag("transaction-tag");
       connection.setStatementTag("statement-tag");
       connection.executeUpdate(INSERT_STATEMENT);
       connection.setStatementTag("statement-tag");
+      mockSpanner.putStatementResult(
+          MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
       connection.executeBatchUpdate(Collections.singleton(INSERT_STATEMENT));
       connection.setStatementTag("statement-tag");
       connection.executeQuery(SELECT_COUNT_STATEMENT);
 
       mockSpanner.abortNextStatement();
+      mockSpanner.putStatementResult(
+          MockSpannerServiceImpl.StatementResult.query(INSERT_STATEMENT, UPDATE_RESULTSET));
       connection.commit();
     }
     long executeSqlRequestCount =

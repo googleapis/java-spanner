@@ -199,7 +199,16 @@ public class ConnectionImplTest {
     when(mockResultSet.getLong("TEST")).thenReturn(1L);
     when(mockResultSet.getColumnType(0)).thenReturn(Type.int64());
     when(mockResultSet.getColumnType("TEST")).thenReturn(Type.int64());
+    when(mockResultSet.getColumnCount()).thenReturn(1);
     return mockResultSet;
+  }
+
+  private static ResultSet createSelect1MockResultSetWithStats() {
+    ResultSet mockResultSetWithStats = mock(ResultSet.class);
+    when(mockResultSetWithStats.next()).thenReturn(false);
+    when(mockResultSetWithStats.getColumnCount()).thenReturn(0);
+    when(mockResultSetWithStats.getStats()).thenReturn(ResultSetStats.getDefaultInstance());
+    return mockResultSetWithStats;
   }
 
   private static DdlClient createDefaultMockDdlClient() {
@@ -234,13 +243,10 @@ public class ConnectionImplTest {
     when(dbClient.getDialect()).thenReturn(dialect);
     ReadOnlyTransaction singleUseReadOnlyTx = mock(ReadOnlyTransaction.class);
 
-    ResultSet mockResultSetWithStats = createSelect1MockResultSet();
-    when(mockResultSetWithStats.getStats()).thenReturn(ResultSetStats.getDefaultInstance());
-
     final SimpleResultSet select1ResultSet = new SimpleResultSet(createSelect1MockResultSet());
-    final SimpleResultSet select1ResultSetWithStats = new SimpleResultSet(mockResultSetWithStats);
+    final SimpleResultSet select1ResultSetWithStats = new SimpleResultSet(createSelect1MockResultSetWithStats());
     when(singleUseReadOnlyTx.executeQuery(
-            Mockito.argThat(statement -> statement.getSql().toUpperCase().startsWith("SHOW"))))
+        Mockito.argThat(statement -> statement.getSql().toUpperCase().startsWith("SHOW"))))
         .thenThrow(
             SpannerExceptionFactory.newSpannerException(
                 ErrorCode.UNIMPLEMENTED, "SHOW queries are not supported"));
@@ -282,9 +288,10 @@ public class ConnectionImplTest {
                         }
                         return select1ResultSet;
                       });
+              when(txContext.executeQuery(Statement.of(UPDATE))).thenReturn(select1ResultSetWithStats);
               when(txContext.executeQuery(
-                      Mockito.argThat(
-                          statement -> statement.getSql().toUpperCase().startsWith("SHOW"))))
+                  Mockito.argThat(
+                      statement -> statement.getSql().toUpperCase().startsWith("SHOW"))))
                   .thenThrow(
                       SpannerExceptionFactory.newSpannerException(
                           ErrorCode.UNIMPLEMENTED, "SHOW queries are not supported"));
@@ -309,6 +316,7 @@ public class ConnectionImplTest {
                         }
                         return select1ResultSet;
                       });
+              when(tx.executeQuery(Statement.of(UPDATE))).thenReturn(select1ResultSetWithStats);
               when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PLAN))
                   .thenReturn(select1ResultSetWithStats);
               when(tx.analyzeQuery(Statement.of(SELECT), QueryAnalyzeMode.PROFILE))
@@ -340,6 +348,7 @@ public class ConnectionImplTest {
                     commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
                     TransactionContext transaction = mock(TransactionContext.class);
                     when(transaction.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
+                    when(transaction.executeQuery(Statement.of(UPDATE))).thenReturn(select1ResultSetWithStats);
                     try {
                       return callable.run(transaction);
                     } catch (Exception e) {
@@ -1372,9 +1381,11 @@ public class ConnectionImplTest {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
+    ResultSet rs = mock(ResultSet.class);
+    when(rs.getColumnCount()).thenReturn(2);
     when(unitOfWork.executeQueryAsync(
-            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
-        .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
+        any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
+        .thenReturn(ApiFutures.immediateFuture(rs));
     try (ConnectionImpl impl =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
           @Override
@@ -1477,7 +1488,7 @@ public class ConnectionImplTest {
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
     when(unitOfWork.executeQueryAsync(
-            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
+        any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl connection =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
@@ -1584,7 +1595,7 @@ public class ConnectionImplTest {
     // Indicate that a transaction has been started.
     when(unitOfWork.getState()).thenReturn(UnitOfWorkState.STARTED);
     when(unitOfWork.executeQueryAsync(
-            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
+        any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     when(unitOfWork.rollbackAsync()).thenReturn(ApiFutures.immediateFuture(null));
     try (ConnectionImpl connection =
