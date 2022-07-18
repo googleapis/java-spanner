@@ -39,6 +39,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
 
   private Session() {
     name_ = "";
+    creatorRole_ = "";
   }
 
   @java.lang.Override
@@ -119,6 +120,13 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
                 approximateLastUseTime_ = subBuilder.buildPartial();
               }
 
+              break;
+            }
+          case 42:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              creatorRole_ = s;
               break;
             }
           default:
@@ -443,6 +451,55 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
     return getApproximateLastUseTime();
   }
 
+  public static final int CREATOR_ROLE_FIELD_NUMBER = 5;
+  private volatile java.lang.Object creatorRole_;
+  /**
+   *
+   *
+   * <pre>
+   * The database role which created this session.
+   * </pre>
+   *
+   * <code>string creator_role = 5;</code>
+   *
+   * @return The creatorRole.
+   */
+  @java.lang.Override
+  public java.lang.String getCreatorRole() {
+    java.lang.Object ref = creatorRole_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      creatorRole_ = s;
+      return s;
+    }
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The database role which created this session.
+   * </pre>
+   *
+   * <code>string creator_role = 5;</code>
+   *
+   * @return The bytes for creatorRole.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString getCreatorRoleBytes() {
+    java.lang.Object ref = creatorRole_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+      creatorRole_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -467,6 +524,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
     }
     if (approximateLastUseTime_ != null) {
       output.writeMessage(4, getApproximateLastUseTime());
+    }
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(creatorRole_)) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 5, creatorRole_);
     }
     unknownFields.writeTo(output);
   }
@@ -497,6 +557,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
       size +=
           com.google.protobuf.CodedOutputStream.computeMessageSize(4, getApproximateLastUseTime());
     }
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(creatorRole_)) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, creatorRole_);
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -522,6 +585,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
     if (hasApproximateLastUseTime()) {
       if (!getApproximateLastUseTime().equals(other.getApproximateLastUseTime())) return false;
     }
+    if (!getCreatorRole().equals(other.getCreatorRole())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -547,6 +611,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
       hash = (37 * hash) + APPROXIMATE_LAST_USE_TIME_FIELD_NUMBER;
       hash = (53 * hash) + getApproximateLastUseTime().hashCode();
     }
+    hash = (37 * hash) + CREATOR_ROLE_FIELD_NUMBER;
+    hash = (53 * hash) + getCreatorRole().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -725,6 +791,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
         approximateLastUseTime_ = null;
         approximateLastUseTimeBuilder_ = null;
       }
+      creatorRole_ = "";
+
       return this;
     }
 
@@ -765,6 +833,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
       } else {
         result.approximateLastUseTime_ = approximateLastUseTimeBuilder_.build();
       }
+      result.creatorRole_ = creatorRole_;
       onBuilt();
       return result;
     }
@@ -824,6 +893,10 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
       }
       if (other.hasApproximateLastUseTime()) {
         mergeApproximateLastUseTime(other.getApproximateLastUseTime());
+      }
+      if (!other.getCreatorRole().isEmpty()) {
+        creatorRole_ = other.creatorRole_;
+        onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1574,6 +1647,112 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
         approximateLastUseTime_ = null;
       }
       return approximateLastUseTimeBuilder_;
+    }
+
+    private java.lang.Object creatorRole_ = "";
+    /**
+     *
+     *
+     * <pre>
+     * The database role which created this session.
+     * </pre>
+     *
+     * <code>string creator_role = 5;</code>
+     *
+     * @return The creatorRole.
+     */
+    public java.lang.String getCreatorRole() {
+      java.lang.Object ref = creatorRole_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        creatorRole_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The database role which created this session.
+     * </pre>
+     *
+     * <code>string creator_role = 5;</code>
+     *
+     * @return The bytes for creatorRole.
+     */
+    public com.google.protobuf.ByteString getCreatorRoleBytes() {
+      java.lang.Object ref = creatorRole_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        creatorRole_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The database role which created this session.
+     * </pre>
+     *
+     * <code>string creator_role = 5;</code>
+     *
+     * @param value The creatorRole to set.
+     * @return This builder for chaining.
+     */
+    public Builder setCreatorRole(java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+
+      creatorRole_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The database role which created this session.
+     * </pre>
+     *
+     * <code>string creator_role = 5;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearCreatorRole() {
+
+      creatorRole_ = getDefaultInstance().getCreatorRole();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The database role which created this session.
+     * </pre>
+     *
+     * <code>string creator_role = 5;</code>
+     *
+     * @param value The bytes for creatorRole to set.
+     * @return This builder for chaining.
+     */
+    public Builder setCreatorRoleBytes(com.google.protobuf.ByteString value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+
+      creatorRole_ = value;
+      onChanged();
+      return this;
     }
 
     @java.lang.Override

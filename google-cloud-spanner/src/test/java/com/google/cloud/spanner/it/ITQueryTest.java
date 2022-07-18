@@ -24,6 +24,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -355,7 +356,6 @@ public class ITQueryTest {
 
   @Test
   public void bindDate() {
-    assumeFalse("date type is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Date d = Date.parseDate("2016-09-18");
     Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(d), Type.date());
     assertThat(row.isNull(0)).isFalse();
@@ -364,7 +364,6 @@ public class ITQueryTest {
 
   @Test
   public void bindDateNull() {
-    assumeFalse("date type is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct row =
         execute(Statement.newBuilder(selectValueQuery).bind("p1").to((Date) null), Type.date());
     assertThat(row.isNull(0)).isTrue();
@@ -682,13 +681,12 @@ public class ITQueryTest {
 
   @Test
   public void bindDateArray() {
-    assumeFalse("date type is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Date d1 = Date.parseDate("2016-09-18");
     Date d2 = Date.parseDate("2016-09-19");
 
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toDateArray(asList(d1, d2, null)),
+            Statement.newBuilder(selectValueQuery).bind("p1").toDateArray(asList(d1, d2, null)),
             Type.array(Type.date()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getDateList(0)).containsExactly(d1, d2, null).inOrder();
@@ -696,10 +694,9 @@ public class ITQueryTest {
 
   @Test
   public void bindDateArrayEmpty() {
-    assumeFalse("date type is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toDateArray(Collections.emptyList()),
+            Statement.newBuilder(selectValueQuery).bind("p1").toDateArray(Collections.emptyList()),
             Type.array(Type.date()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getDateList(0)).containsExactly();
@@ -707,18 +704,16 @@ public class ITQueryTest {
 
   @Test
   public void bindDateArrayNull() {
-    assumeFalse("date type is not supported on POSTGRESQL", dialect.dialect == Dialect.POSTGRESQL);
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toDateArray(null), Type.array(Type.date()));
+            Statement.newBuilder(selectValueQuery).bind("p1").toDateArray(null),
+            Type.array(Type.date()));
     assertThat(row.isNull(0)).isTrue();
   }
 
   @Test
-  public void bindNumericArray() {
-    assumeFalse(
-        "array numeric binding is not supported on POSTGRESQL",
-        dialect.dialect == Dialect.POSTGRESQL);
+  public void bindNumericArrayGoogleStandardSQL() {
+    assumeTrue(dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     BigDecimal b1 = new BigDecimal("3.14");
     BigDecimal b2 = new BigDecimal("6.626");
@@ -732,10 +727,22 @@ public class ITQueryTest {
   }
 
   @Test
-  public void bindNumericArrayEmpty() {
-    assumeFalse(
-        "array numeric binding is not supported on POSTGRESQL",
-        dialect.dialect == Dialect.POSTGRESQL);
+  public void bindNumericArrayPostgreSQL() {
+    assumeTrue(dialect.dialect == Dialect.POSTGRESQL);
+    assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toPgNumericArray(asList("3.14", "6.626", null)),
+            Type.array(Type.pgNumeric()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getStringList(0)).containsExactly("3.14", "6.626", null).inOrder();
+  }
+
+  @Test
+  public void bindNumericArrayEmptyGoogleStandardSQL() {
+    assumeTrue(dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
     Struct row =
         execute(
@@ -748,15 +755,36 @@ public class ITQueryTest {
   }
 
   @Test
-  public void bindNumericArrayNull() {
-    assumeFalse(
-        "array numeric binding is not supported on POSTGRESQL",
-        dialect.dialect == Dialect.POSTGRESQL);
+  public void bindNumericArrayEmptyPostgreSQL() {
+    assumeTrue(dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("Emulator does not yet support NUMERIC", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toPgNumericArray(Collections.emptyList()),
+            Type.array(Type.pgNumeric()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getStringList(0)).containsExactly();
+  }
+
+  @Test
+  public void bindNumericArrayNullGoogleStandardSQL() {
+    assumeTrue(dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").toNumericArray(null),
             Type.array(Type.numeric()));
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindNumericArrayNullPostgreSQL() {
+    assumeTrue(dialect.dialect == Dialect.POSTGRESQL);
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toPgNumericArray(null),
+            Type.array(Type.pgNumeric()));
     assertThat(row.isNull(0)).isTrue();
   }
 
@@ -771,7 +799,7 @@ public class ITQueryTest {
 
     Struct row =
         execute(
-            Statement.newBuilder("SELECT @v").bind("v").toNumericArray(asList(b1, b2, null)),
+            Statement.newBuilder(selectValueQuery).bind("p1").toNumericArray(asList(b1, b2, null)),
             Type.array(Type.numeric()));
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBigDecimalList(0))
