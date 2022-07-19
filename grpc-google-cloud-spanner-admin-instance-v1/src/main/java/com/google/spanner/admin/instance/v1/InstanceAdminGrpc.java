@@ -699,7 +699,7 @@ public final class InstanceAdminGrpc {
      * The [response][google.longrunning.Operation.response] field type is
      * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
      * Authorization requires `spanner.instances.update` permission on
-     * resource [name][google.spanner.admin.instance.v1.Instance.name].
+     * the resource [name][google.spanner.admin.instance.v1.Instance.name].
      * </pre>
      */
     public void updateInstance(
@@ -1034,7 +1034,7 @@ public final class InstanceAdminGrpc {
      * The [response][google.longrunning.Operation.response] field type is
      * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
      * Authorization requires `spanner.instances.update` permission on
-     * resource [name][google.spanner.admin.instance.v1.Instance.name].
+     * the resource [name][google.spanner.admin.instance.v1.Instance.name].
      * </pre>
      */
     public void updateInstance(
@@ -1290,7 +1290,7 @@ public final class InstanceAdminGrpc {
      * The [response][google.longrunning.Operation.response] field type is
      * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
      * Authorization requires `spanner.instances.update` permission on
-     * resource [name][google.spanner.admin.instance.v1.Instance.name].
+     * the resource [name][google.spanner.admin.instance.v1.Instance.name].
      * </pre>
      */
     public com.google.longrunning.Operation updateInstance(
@@ -1533,7 +1533,7 @@ public final class InstanceAdminGrpc {
      * The [response][google.longrunning.Operation.response] field type is
      * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
      * Authorization requires `spanner.instances.update` permission on
-     * resource [name][google.spanner.admin.instance.v1.Instance.name].
+     * the resource [name][google.spanner.admin.instance.v1.Instance.name].
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>

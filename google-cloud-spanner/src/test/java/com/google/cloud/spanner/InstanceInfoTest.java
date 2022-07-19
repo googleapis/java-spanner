@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.google.cloud.Timestamp;
 import com.google.common.testing.EqualsTester;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,6 +42,8 @@ public class InstanceInfoTest {
     assertEquals(0, info.getNodeCount());
     assertEquals(0, info.getProcessingUnits());
     assertTrue(info.getLabels().isEmpty());
+    assertNull(info.getUpdateTime());
+    assertNull(info.getCreateTime());
   }
 
   @Test
@@ -56,6 +59,8 @@ public class InstanceInfoTest {
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
             .addLabel("region", "us")
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(86000))
+            .setCreateTime(Timestamp.ofTimeMicroseconds(46000))
             .build();
     assertThat(info.getId()).isEqualTo(id);
     assertThat(info.getInstanceConfigId()).isEqualTo(configId);
@@ -64,6 +69,8 @@ public class InstanceInfoTest {
     assertThat(info.getProcessingUnits()).isEqualTo(2000);
     assertThat(info.getState()).isEqualTo(InstanceInfo.State.READY);
     assertThat(info.getLabels()).containsExactly("env", "prod", "region", "us");
+    assertEquals(Timestamp.ofTimeMicroseconds(86000), info.getUpdateTime());
+    assertEquals(Timestamp.ofTimeMicroseconds(46000), info.getCreateTime());
 
     info = info.toBuilder().setDisplayName("new test instance").build();
     assertThat(info.getId()).isEqualTo(id);
@@ -73,6 +80,8 @@ public class InstanceInfoTest {
     assertThat(info.getProcessingUnits()).isEqualTo(2000);
     assertThat(info.getState()).isEqualTo(InstanceInfo.State.READY);
     assertThat(info.getLabels()).containsExactly("env", "prod", "region", "us");
+    assertEquals(Timestamp.ofTimeMicroseconds(86000), info.getUpdateTime());
+    assertEquals(Timestamp.ofTimeMicroseconds(46000), info.getCreateTime());
   }
 
   @Test
@@ -88,6 +97,8 @@ public class InstanceInfoTest {
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
             .addLabel("region", "us")
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(86000))
+            .setCreateTime(Timestamp.ofTimeMicroseconds(46000))
             .build();
 
     InstanceInfo rebuilt = info.toBuilder().setDisplayName("new test instance").build();
@@ -98,6 +109,8 @@ public class InstanceInfoTest {
     assertThat(rebuilt.getProcessingUnits()).isEqualTo(2000);
     assertThat(rebuilt.getState()).isEqualTo(InstanceInfo.State.READY);
     assertThat(rebuilt.getLabels()).containsExactly("env", "prod", "region", "us");
+    assertEquals(Timestamp.ofTimeMicroseconds(86000), rebuilt.getUpdateTime());
+    assertEquals(Timestamp.ofTimeMicroseconds(46000), rebuilt.getCreateTime());
   }
 
   @Test
@@ -115,6 +128,8 @@ public class InstanceInfoTest {
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
             .addLabel("region", "us")
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(86000))
+            .setCreateTime(Timestamp.ofTimeMicroseconds(46000))
             .build();
     InstanceInfo instance2 =
         InstanceInfo.newBuilder(id)
@@ -125,6 +140,8 @@ public class InstanceInfoTest {
             .setState(InstanceInfo.State.READY)
             .addLabel("region", "us")
             .addLabel("env", "prod")
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(86000))
+            .setCreateTime(Timestamp.ofTimeMicroseconds(46000))
             .build();
     InstanceInfo instance3 =
         InstanceInfo.newBuilder(id)
@@ -134,6 +151,8 @@ public class InstanceInfoTest {
             .setProcessingUnits(2000)
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(8000))
+            .setCreateTime(Timestamp.ofTimeMicroseconds(4000))
             .build();
     EqualsTester tester = new EqualsTester();
     tester.addEqualityGroup(instance, instance2);

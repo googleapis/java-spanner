@@ -127,6 +127,20 @@ import javax.annotation.Generated;
  * SpannerClient spannerClient = SpannerClient.create(spannerSettings);
  * }</pre>
  *
+ * <p>To use REST (HTTP1.1/JSON) transport (instead of gRPC) for sending and receiving requests over
+ * the wire:
+ *
+ * <pre>{@code
+ * // This snippet has been automatically generated for illustrative purposes only.
+ * // It may require modifications to work in your environment.
+ * SpannerSettings spannerSettings =
+ *     SpannerSettings.newBuilder()
+ *         .setTransportChannelProvider(
+ *             SpannerSettings.defaultHttpJsonTransportProviderBuilder().build())
+ *         .build();
+ * SpannerClient spannerClient = SpannerClient.create(spannerSettings);
+ * }</pre>
+ *
  * <p>Please refer to the GitHub repository's samples for more quickstart code snippets.
  */
 @Generated("by gapic-generator-java")
@@ -701,7 +715,7 @@ public class SpannerClient implements BackgroundResource {
    *           .build();
    *   while (true) {
    *     ListSessionsResponse response = spannerClient.listSessionsCallable().call(request);
-   *     for (Session element : response.getResponsesList()) {
+   *     for (Session element : response.getSessionsList()) {
    *       // doThingsWith(element);
    *     }
    *     String nextPageToken = response.getNextPageToken();

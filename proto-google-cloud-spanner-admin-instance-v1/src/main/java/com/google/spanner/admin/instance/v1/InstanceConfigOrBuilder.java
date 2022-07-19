@@ -29,7 +29,7 @@ public interface InstanceConfigOrBuilder
    * <pre>
    * A unique identifier for the instance configuration.  Values
    * are of the form
-   * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`
+   * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`.
    * </pre>
    *
    * <code>string name = 1;</code>
@@ -43,7 +43,7 @@ public interface InstanceConfigOrBuilder
    * <pre>
    * A unique identifier for the instance configuration.  Values
    * are of the form
-   * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`
+   * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`.
    * </pre>
    *
    * <code>string name = 1;</code>
@@ -138,7 +138,7 @@ public interface InstanceConfigOrBuilder
    *
    *
    * <pre>
-   * Allowed values of the “default_leader” schema option for databases in
+   * Allowed values of the "default_leader" schema option for databases in
    * instances that use this instance configuration.
    * </pre>
    *
@@ -151,7 +151,7 @@ public interface InstanceConfigOrBuilder
    *
    *
    * <pre>
-   * Allowed values of the “default_leader” schema option for databases in
+   * Allowed values of the "default_leader" schema option for databases in
    * instances that use this instance configuration.
    * </pre>
    *
@@ -164,7 +164,7 @@ public interface InstanceConfigOrBuilder
    *
    *
    * <pre>
-   * Allowed values of the “default_leader” schema option for databases in
+   * Allowed values of the "default_leader" schema option for databases in
    * instances that use this instance configuration.
    * </pre>
    *
@@ -178,7 +178,7 @@ public interface InstanceConfigOrBuilder
    *
    *
    * <pre>
-   * Allowed values of the “default_leader” schema option for databases in
+   * Allowed values of the "default_leader" schema option for databases in
    * instances that use this instance configuration.
    * </pre>
    *

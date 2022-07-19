@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.gax.rpc.ApiException;
+import com.google.api.gax.rpc.ErrorDetails;
 import com.google.cloud.grpc.BaseGrpcServiceException;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.util.Durations;
@@ -24,6 +26,7 @@ import com.google.rpc.RetryInfo;
 import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.protobuf.ProtoUtils;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Base exception type for all exceptions produced by the Cloud Spanner service. */
@@ -36,8 +39,9 @@ public class SpannerException extends BaseGrpcServiceException {
         DoNotConstructDirectly token,
         @Nullable String message,
         ResourceInfo resourceInfo,
-        @Nullable Throwable cause) {
-      super(token, ErrorCode.NOT_FOUND, /* retryable */ false, message, cause);
+        @Nullable Throwable cause,
+        @Nullable ApiException apiException) {
+      super(token, ErrorCode.NOT_FOUND, /* retryable */ false, message, cause, apiException);
       this.resourceInfo = resourceInfo;
     }
 
@@ -51,6 +55,7 @@ public class SpannerException extends BaseGrpcServiceException {
       ProtoUtils.keyForProto(RetryInfo.getDefaultInstance());
 
   private final ErrorCode code;
+  private final ApiException apiException;
 
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   SpannerException(
@@ -59,11 +64,23 @@ public class SpannerException extends BaseGrpcServiceException {
       boolean retryable,
       @Nullable String message,
       @Nullable Throwable cause) {
+    this(token, code, retryable, message, cause, null);
+  }
+
+  /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
+  SpannerException(
+      DoNotConstructDirectly token,
+      ErrorCode code,
+      boolean retryable,
+      @Nullable String message,
+      @Nullable Throwable cause,
+      @Nullable ApiException apiException) {
     super(message, cause, code.getCode(), retryable);
     if (token != DoNotConstructDirectly.ALLOWED) {
       throw new AssertionError("Do not construct directly: use SpannerExceptionFactory");
     }
     this.code = Preconditions.checkNotNull(code);
+    this.apiException = apiException;
   }
 
   /** Returns the error code associated with this exception. */
@@ -94,5 +111,68 @@ public class SpannerException extends BaseGrpcServiceException {
       }
     }
     return -1L;
+  }
+
+  /**
+   * Checks the underlying reason of the exception and if it's {@link ApiException} then return the
+   * reason otherwise null.
+   *
+   * @see <a
+   *     href="https://github.com/googleapis/googleapis/blob/master/google/rpc/error_details.proto#L117">Reason</a>
+   * @return the reason of an error.
+   */
+  public String getReason() {
+    if (this.apiException != null) {
+      return this.apiException.getReason();
+    }
+    return null;
+  }
+
+  /**
+   * Checks the underlying reason of the exception and if it's {@link ApiException} then return the
+   * specific domain otherwise null.
+   *
+   * @see <a
+   *     href="https://github.com/googleapis/googleapis/blob/master/google/rpc/error_details.proto#L125">Domain</a>
+   * @return the logical grouping to which the "reason" belongs.
+   */
+  public String getDomain() {
+    if (this.apiException != null) {
+      return this.apiException.getDomain();
+    }
+    return null;
+  }
+
+  /**
+   * Checks the underlying reason of the exception and if it's {@link ApiException} then return a
+   * map of key-value pairs otherwise null.
+   *
+   * @see <a
+   *     href="https://github.com/googleapis/googleapis/blob/master/google/rpc/error_details.proto#L135">Metadata</a>
+   * @return the map of additional structured details about an error.
+   */
+  public Map<String, String> getMetadata() {
+    if (this.apiException != null) {
+      return this.apiException.getMetadata();
+    }
+    return null;
+  }
+
+  /**
+   * Checks the underlying reason of the exception and if it's {@link ApiException} then return the
+   * ErrorDetails otherwise null.
+   *
+   * @see <a
+   *     href="https://github.com/googleapis/googleapis/blob/master/google/rpc/status.proto">Status</a>
+   * @see <a
+   *     href="https://github.com/googleapis/googleapis/blob/master/google/rpc/error_details.proto">Error
+   *     Details</a>
+   * @return An object containing getters for structured objects from error_details.proto.
+   */
+  public ErrorDetails getErrorDetails() {
+    if (this.apiException != null) {
+      return this.apiException.getErrorDetails();
+    }
+    return null;
   }
 }

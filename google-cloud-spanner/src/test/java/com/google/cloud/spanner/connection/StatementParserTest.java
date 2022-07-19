@@ -154,6 +154,13 @@ public class StatementParserTest {
                   + "line\n"
                   + "comment\n"
                   + "*/SELECT \"FOO\nBAR\" FROM \"BAR\" WHERE name='test\ntest' and id=1"));
+      assertEquals(
+          "SELECT 1",
+          parser.removeCommentsAndTrim(
+              "/* This block comment surrounds a query which itself has a block comment...\n"
+                  + "SELECT /* embedded single line */ 'embedded' AS x2;\n"
+                  + "*/\n"
+                  + "SELECT 1"));
     }
   }
 
