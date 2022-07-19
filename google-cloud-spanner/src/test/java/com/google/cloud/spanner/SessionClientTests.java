@@ -54,7 +54,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 @RunWith(Parameterized.class)
-public class SessionClientTest {
+public class SessionClientTests {
   private final class TestExecutorFactory implements ExecutorFactory<ScheduledExecutorService> {
     @Override
     public ScheduledExecutorService get() {

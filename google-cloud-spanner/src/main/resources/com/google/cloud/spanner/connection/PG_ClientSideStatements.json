@@ -150,6 +150,15 @@
       "exampleStatements": ["show transaction isolation level","show variable transaction isolation level"]
     },
     {
+      "name": "EXPLAIN <sql>",
+      "executorName": "ClientSideStatementExplainExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "EXPLAIN",
+      "regex": "(?is)\\A\\s*explain(\\s+|\\()(.*)\\z",
+      "method": "statementExplain",
+      "exampleStatements": []
+    },
+    {
       "name": "{START | BEGIN} [TRANSACTION | WORK] [{ (READ ONLY|READ WRITE) | (ISOLATION LEVEL (DEFAULT|SERIALIZABLE)) }]",
       "executorName": "ClientSideStatementPgBeginExecutor",
       "resultType": "NO_RESULT",

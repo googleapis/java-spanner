@@ -37,6 +37,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
+import com.google.spanner.v1.ResultSetStats;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -922,7 +923,8 @@ public interface Connection extends AutoCloseable {
   AsyncResultSet executeQueryAsync(Statement query, QueryOption... options);
 
   /**
-   * Analyzes a query and returns query plan and/or query execution statistics information.
+   * Analyzes a query or a DML statement and returns query plan and/or query execution statistics
+   * information.
    *
    * <p>The query plan and query statistics information is contained in {@link
    * com.google.spanner.v1.ResultSetStats} that can be accessed by calling {@link
@@ -956,6 +958,18 @@ public interface Connection extends AutoCloseable {
    * @return the number of records that were inserted/updated/deleted by this statement
    */
   long executeUpdate(Statement update);
+
+  /**
+   * Analyzes a DML statement and returns query plan and/or execution statistics information.
+   *
+   * <p>{@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PLAN} only returns the plan for
+   * the statement. {@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PROFILE} executes
+   * the DML statement, returns the modified row count and execution statistics, and the effects of
+   * the DML statement will be visible to subsequent operations in the transaction.
+   */
+  default ResultSetStats analyzeUpdate(Statement update, QueryAnalyzeMode analyzeMode) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   /**
    * Executes the given statement asynchronously as a DML statement. If the statement does not

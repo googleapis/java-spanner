@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.BetaApi;
 import com.google.api.gax.core.BackgroundResource;
+import com.google.api.gax.httpjson.longrunning.OperationsClient;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.AbstractFixedSizeCollection;
 import com.google.api.gax.paging.AbstractPage;
@@ -37,7 +38,6 @@ import com.google.iam.v1.SetIamPolicyRequest;
 import com.google.iam.v1.TestIamPermissionsRequest;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
-import com.google.longrunning.OperationsClient;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.Timestamp;
@@ -88,6 +88,8 @@ import javax.annotation.Generated;
  * calls that map to API methods. Sample code to get started:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated for illustrative purposes only.
+ * // It may require modifications to work in your environment.
  * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
  *   DatabaseName name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
  *   Database response = databaseAdminClient.getDatabase(name);
@@ -123,6 +125,8 @@ import javax.annotation.Generated;
  * <p>To customize credentials:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated for illustrative purposes only.
+ * // It may require modifications to work in your environment.
  * DatabaseAdminSettings databaseAdminSettings =
  *     DatabaseAdminSettings.newBuilder()
  *         .setCredentialsProvider(FixedCredentialsProvider.create(myCredentials))
@@ -133,8 +137,24 @@ import javax.annotation.Generated;
  * <p>To customize the endpoint:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated for illustrative purposes only.
+ * // It may require modifications to work in your environment.
  * DatabaseAdminSettings databaseAdminSettings =
  *     DatabaseAdminSettings.newBuilder().setEndpoint(myEndpoint).build();
+ * DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create(databaseAdminSettings);
+ * }</pre>
+ *
+ * <p>To use REST (HTTP1.1/JSON) transport (instead of gRPC) for sending and receiving requests over
+ * the wire:
+ *
+ * <pre>{@code
+ * // This snippet has been automatically generated for illustrative purposes only.
+ * // It may require modifications to work in your environment.
+ * DatabaseAdminSettings databaseAdminSettings =
+ *     DatabaseAdminSettings.newBuilder()
+ *         .setTransportChannelProvider(
+ *             DatabaseAdminSettings.defaultHttpJsonTransportProviderBuilder().build())
+ *         .build();
  * DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create(databaseAdminSettings);
  * }</pre>
  *
@@ -144,7 +164,8 @@ import javax.annotation.Generated;
 public class DatabaseAdminClient implements BackgroundResource {
   private final DatabaseAdminSettings settings;
   private final DatabaseAdminStub stub;
-  private final OperationsClient operationsClient;
+  private final OperationsClient httpJsonOperationsClient;
+  private final com.google.longrunning.OperationsClient operationsClient;
 
   /** Constructs an instance of DatabaseAdminClient with default settings. */
   public static final DatabaseAdminClient create() throws IOException {
@@ -164,7 +185,6 @@ public class DatabaseAdminClient implements BackgroundResource {
    * Constructs an instance of DatabaseAdminClient, using the given stub for making calls. This is
    * for advanced usage - prefer using create(DatabaseAdminSettings).
    */
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   public static final DatabaseAdminClient create(DatabaseAdminStub stub) {
     return new DatabaseAdminClient(stub);
   }
@@ -177,21 +197,23 @@ public class DatabaseAdminClient implements BackgroundResource {
   protected DatabaseAdminClient(DatabaseAdminSettings settings) throws IOException {
     this.settings = settings;
     this.stub = ((DatabaseAdminStubSettings) settings.getStubSettings()).createStub();
-    this.operationsClient = OperationsClient.create(this.stub.getOperationsStub());
+    this.operationsClient =
+        com.google.longrunning.OperationsClient.create(this.stub.getOperationsStub());
+    this.httpJsonOperationsClient = OperationsClient.create(this.stub.getHttpJsonOperationsStub());
   }
 
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   protected DatabaseAdminClient(DatabaseAdminStub stub) {
     this.settings = null;
     this.stub = stub;
-    this.operationsClient = OperationsClient.create(this.stub.getOperationsStub());
+    this.operationsClient =
+        com.google.longrunning.OperationsClient.create(this.stub.getOperationsStub());
+    this.httpJsonOperationsClient = OperationsClient.create(this.stub.getHttpJsonOperationsStub());
   }
 
   public final DatabaseAdminSettings getSettings() {
     return settings;
   }
 
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   public DatabaseAdminStub getStub() {
     return stub;
   }
@@ -200,8 +222,17 @@ public class DatabaseAdminClient implements BackgroundResource {
    * Returns the OperationsClient that can be used to query the status of a long-running operation
    * returned by another API method call.
    */
-  public final OperationsClient getOperationsClient() {
+  public final com.google.longrunning.OperationsClient getOperationsClient() {
     return operationsClient;
+  }
+
+  /**
+   * Returns the OperationsClient that can be used to query the status of a long-running operation
+   * returned by another API method call.
+   */
+  @BetaApi
+  public final OperationsClient getHttpJsonOperationsClient() {
+    return httpJsonOperationsClient;
   }
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
@@ -211,6 +242,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   for (Database element : databaseAdminClient.listDatabases(parent).iterateAll()) {
@@ -238,6 +271,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   for (Database element : databaseAdminClient.listDatabases(parent).iterateAll()) {
@@ -262,6 +297,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListDatabasesRequest request =
    *       ListDatabasesRequest.newBuilder()
@@ -289,6 +326,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListDatabasesRequest request =
    *       ListDatabasesRequest.newBuilder()
@@ -317,6 +356,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListDatabasesRequest request =
    *       ListDatabasesRequest.newBuilder()
@@ -326,7 +367,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .build();
    *   while (true) {
    *     ListDatabasesResponse response = databaseAdminClient.listDatabasesCallable().call(request);
-   *     for (Database element : response.getResponsesList()) {
+   *     for (Database element : response.getDatabasesList()) {
    *       // doThingsWith(element);
    *     }
    *     String nextPageToken = response.getNextPageToken();
@@ -356,6 +397,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   String createStatement = "createStatement744686547";
@@ -395,6 +438,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   String createStatement = "createStatement744686547";
@@ -434,6 +479,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CreateDatabaseRequest request =
    *       CreateDatabaseRequest.newBuilder()
@@ -468,6 +515,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CreateDatabaseRequest request =
    *       CreateDatabaseRequest.newBuilder()
@@ -502,6 +551,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CreateDatabaseRequest request =
    *       CreateDatabaseRequest.newBuilder()
@@ -529,6 +580,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DatabaseName name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
    *   Database response = databaseAdminClient.getDatabase(name);
@@ -552,6 +605,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
    *   Database response = databaseAdminClient.getDatabase(name);
@@ -574,6 +629,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetDatabaseRequest request =
    *       GetDatabaseRequest.newBuilder()
@@ -597,6 +654,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetDatabaseRequest request =
    *       GetDatabaseRequest.newBuilder()
@@ -625,6 +684,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
    *   List<String> statements = new ArrayList<>();
@@ -659,6 +720,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
    *   List<String> statements = new ArrayList<>();
@@ -693,6 +756,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   UpdateDatabaseDdlRequest request =
    *       UpdateDatabaseDdlRequest.newBuilder()
@@ -725,6 +790,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   UpdateDatabaseDdlRequest request =
    *       UpdateDatabaseDdlRequest.newBuilder()
@@ -757,6 +824,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   UpdateDatabaseDdlRequest request =
    *       UpdateDatabaseDdlRequest.newBuilder()
@@ -784,6 +853,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
    *   databaseAdminClient.dropDatabase(database);
@@ -810,6 +881,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
    *   databaseAdminClient.dropDatabase(database);
@@ -833,6 +906,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DropDatabaseRequest request =
    *       DropDatabaseRequest.newBuilder()
@@ -858,6 +933,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DropDatabaseRequest request =
    *       DropDatabaseRequest.newBuilder()
@@ -882,6 +959,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
    *   GetDatabaseDdlResponse response = databaseAdminClient.getDatabaseDdl(database);
@@ -909,6 +988,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
    *   GetDatabaseDdlResponse response = databaseAdminClient.getDatabaseDdl(database);
@@ -934,6 +1015,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetDatabaseDdlRequest request =
    *       GetDatabaseDdlRequest.newBuilder()
@@ -959,6 +1042,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetDatabaseDdlRequest request =
    *       GetDatabaseDdlRequest.newBuilder()
@@ -988,6 +1073,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Policy policy = Policy.newBuilder().build();
@@ -1023,6 +1110,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   Policy policy = Policy.newBuilder().build();
@@ -1055,11 +1144,14 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   SetIamPolicyRequest request =
    *       SetIamPolicyRequest.newBuilder()
    *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .setPolicy(Policy.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
    *           .build();
    *   Policy response = databaseAdminClient.setIamPolicy(request);
    * }
@@ -1084,11 +1176,14 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   SetIamPolicyRequest request =
    *       SetIamPolicyRequest.newBuilder()
    *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .setPolicy(Policy.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
    *           .build();
    *   ApiFuture<Policy> future = databaseAdminClient.setIamPolicyCallable().futureCall(request);
    *   // Do something.
@@ -1113,6 +1208,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Policy response = databaseAdminClient.getIamPolicy(resource);
@@ -1144,6 +1241,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   Policy response = databaseAdminClient.getIamPolicy(resource);
@@ -1172,6 +1271,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetIamPolicyRequest request =
    *       GetIamPolicyRequest.newBuilder()
@@ -1202,6 +1303,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetIamPolicyRequest request =
    *       GetIamPolicyRequest.newBuilder()
@@ -1231,6 +1334,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   List<String> permissions = new ArrayList<>();
@@ -1269,6 +1374,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   List<String> permissions = new ArrayList<>();
@@ -1307,6 +1414,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   TestIamPermissionsRequest request =
    *       TestIamPermissionsRequest.newBuilder()
@@ -1337,6 +1446,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   TestIamPermissionsRequest request =
    *       TestIamPermissionsRequest.newBuilder()
@@ -1371,6 +1482,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   Backup backup = Backup.newBuilder().build();
@@ -1416,6 +1529,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   Backup backup = Backup.newBuilder().build();
@@ -1461,6 +1576,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CreateBackupRequest request =
    *       CreateBackupRequest.newBuilder()
@@ -1497,6 +1614,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CreateBackupRequest request =
    *       CreateBackupRequest.newBuilder()
@@ -1533,6 +1652,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CreateBackupRequest request =
    *       CreateBackupRequest.newBuilder()
@@ -1567,6 +1688,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   String backupId = "backupId2121930365";
@@ -1620,6 +1743,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   String backupId = "backupId2121930365";
@@ -1673,6 +1798,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   String backupId = "backupId2121930365";
@@ -1726,6 +1853,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   String backupId = "backupId2121930365";
@@ -1779,6 +1908,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CopyBackupRequest request =
    *       CopyBackupRequest.newBuilder()
@@ -1816,6 +1947,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CopyBackupRequest request =
    *       CopyBackupRequest.newBuilder()
@@ -1853,6 +1986,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CopyBackupRequest request =
    *       CopyBackupRequest.newBuilder()
@@ -1879,6 +2014,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Backup response = databaseAdminClient.getBackup(name);
@@ -1902,6 +2039,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   Backup response = databaseAdminClient.getBackup(name);
@@ -1924,6 +2063,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetBackupRequest request =
    *       GetBackupRequest.newBuilder()
@@ -1947,6 +2088,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetBackupRequest request =
    *       GetBackupRequest.newBuilder()
@@ -1969,6 +2112,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   Backup backup = Backup.newBuilder().build();
    *   FieldMask updateMask = FieldMask.newBuilder().build();
@@ -1998,6 +2143,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   UpdateBackupRequest request =
    *       UpdateBackupRequest.newBuilder()
@@ -2022,6 +2169,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   UpdateBackupRequest request =
    *       UpdateBackupRequest.newBuilder()
@@ -2045,6 +2194,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   databaseAdminClient.deleteBackup(name);
@@ -2068,6 +2219,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   databaseAdminClient.deleteBackup(name);
@@ -2090,6 +2243,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DeleteBackupRequest request =
    *       DeleteBackupRequest.newBuilder()
@@ -2113,6 +2268,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DeleteBackupRequest request =
    *       DeleteBackupRequest.newBuilder()
@@ -2136,6 +2293,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   for (Backup element : databaseAdminClient.listBackups(parent).iterateAll()) {
@@ -2164,6 +2323,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   for (Backup element : databaseAdminClient.listBackups(parent).iterateAll()) {
@@ -2189,6 +2350,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListBackupsRequest request =
    *       ListBackupsRequest.newBuilder()
@@ -2218,6 +2381,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListBackupsRequest request =
    *       ListBackupsRequest.newBuilder()
@@ -2247,6 +2412,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListBackupsRequest request =
    *       ListBackupsRequest.newBuilder()
@@ -2257,7 +2424,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .build();
    *   while (true) {
    *     ListBackupsResponse response = databaseAdminClient.listBackupsCallable().call(request);
-   *     for (Backup element : response.getResponsesList()) {
+   *     for (Backup element : response.getBackupsList()) {
    *       // doThingsWith(element);
    *     }
    *     String nextPageToken = response.getNextPageToken();
@@ -2294,6 +2461,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   String databaseId = "databaseId1688905718";
@@ -2346,6 +2515,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   String databaseId = "databaseId1688905718";
@@ -2398,6 +2569,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   String databaseId = "databaseId1688905718";
@@ -2450,6 +2623,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   String databaseId = "databaseId1688905718";
@@ -2502,6 +2677,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   RestoreDatabaseRequest request =
    *       RestoreDatabaseRequest.newBuilder()
@@ -2541,6 +2718,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   RestoreDatabaseRequest request =
    *       RestoreDatabaseRequest.newBuilder()
@@ -2580,6 +2759,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   RestoreDatabaseRequest request =
    *       RestoreDatabaseRequest.newBuilder()
@@ -2610,6 +2791,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   for (Operation element : databaseAdminClient.listDatabaseOperations(parent).iterateAll()) {
@@ -2642,6 +2825,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   for (Operation element : databaseAdminClient.listDatabaseOperations(parent).iterateAll()) {
@@ -2672,6 +2857,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListDatabaseOperationsRequest request =
    *       ListDatabaseOperationsRequest.newBuilder()
@@ -2706,6 +2893,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListDatabaseOperationsRequest request =
    *       ListDatabaseOperationsRequest.newBuilder()
@@ -2740,6 +2929,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListDatabaseOperationsRequest request =
    *       ListDatabaseOperationsRequest.newBuilder()
@@ -2751,7 +2942,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *   while (true) {
    *     ListDatabaseOperationsResponse response =
    *         databaseAdminClient.listDatabaseOperationsCallable().call(request);
-   *     for (Operation element : response.getResponsesList()) {
+   *     for (Operation element : response.getOperationsList()) {
    *       // doThingsWith(element);
    *     }
    *     String nextPageToken = response.getNextPageToken();
@@ -2783,6 +2974,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   for (Operation element : databaseAdminClient.listBackupOperations(parent).iterateAll()) {
@@ -2817,6 +3010,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   for (Operation element : databaseAdminClient.listBackupOperations(parent).iterateAll()) {
@@ -2849,6 +3044,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListBackupOperationsRequest request =
    *       ListBackupOperationsRequest.newBuilder()
@@ -2885,6 +3082,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListBackupOperationsRequest request =
    *       ListBackupOperationsRequest.newBuilder()
@@ -2921,6 +3120,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated for illustrative purposes only.
+   * // It may require modifications to work in your environment.
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListBackupOperationsRequest request =
    *       ListBackupOperationsRequest.newBuilder()
@@ -2932,7 +3133,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *   while (true) {
    *     ListBackupOperationsResponse response =
    *         databaseAdminClient.listBackupOperationsCallable().call(request);
-   *     for (Operation element : response.getResponsesList()) {
+   *     for (Operation element : response.getOperationsList()) {
    *       // doThingsWith(element);
    *     }
    *     String nextPageToken = response.getNextPageToken();

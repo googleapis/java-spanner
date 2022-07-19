@@ -67,6 +67,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.Empty;
+import com.google.spanner.v1.ResultSetStats;
 import io.opencensus.common.Scope;
 import io.opencensus.metrics.DerivedLongCumulative;
 import io.opencensus.metrics.DerivedLongGauge;
@@ -711,6 +712,16 @@ class SessionPool {
     @Override
     public ApiFuture<Void> bufferAsync(Iterable<Mutation> mutations) {
       return delegate.bufferAsync(mutations);
+    }
+
+    @Override
+    public ResultSetStats analyzeUpdate(
+        Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+      try {
+        return delegate.analyzeUpdate(statement, analyzeMode, options);
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
+      }
     }
 
     @Override

@@ -123,6 +123,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
+    } catch (com.google.protobuf.UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
       throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
@@ -160,7 +162,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * A unique identifier for the instance configuration.  Values
    * are of the form
-   * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`
+   * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`.
    * </pre>
    *
    * <code>string name = 1;</code>
@@ -185,7 +187,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * A unique identifier for the instance configuration.  Values
    * are of the form
-   * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`
+   * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`.
    * </pre>
    *
    * <code>string name = 1;</code>
@@ -334,7 +336,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Allowed values of the “default_leader” schema option for databases in
+   * Allowed values of the "default_leader" schema option for databases in
    * instances that use this instance configuration.
    * </pre>
    *
@@ -349,7 +351,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Allowed values of the “default_leader” schema option for databases in
+   * Allowed values of the "default_leader" schema option for databases in
    * instances that use this instance configuration.
    * </pre>
    *
@@ -364,7 +366,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Allowed values of the “default_leader” schema option for databases in
+   * Allowed values of the "default_leader" schema option for databases in
    * instances that use this instance configuration.
    * </pre>
    *
@@ -380,7 +382,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Allowed values of the “default_leader” schema option for databases in
+   * Allowed values of the "default_leader" schema option for databases in
    * instances that use this instance configuration.
    * </pre>
    *
@@ -826,7 +828,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * A unique identifier for the instance configuration.  Values
      * are of the form
-     * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`
+     * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`.
      * </pre>
      *
      * <code>string name = 1;</code>
@@ -850,7 +852,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * A unique identifier for the instance configuration.  Values
      * are of the form
-     * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`
+     * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`.
      * </pre>
      *
      * <code>string name = 1;</code>
@@ -874,7 +876,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * A unique identifier for the instance configuration.  Values
      * are of the form
-     * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`
+     * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`.
      * </pre>
      *
      * <code>string name = 1;</code>
@@ -897,7 +899,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * A unique identifier for the instance configuration.  Values
      * are of the form
-     * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`
+     * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`.
      * </pre>
      *
      * <code>string name = 1;</code>
@@ -916,7 +918,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * A unique identifier for the instance configuration.  Values
      * are of the form
-     * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`
+     * `projects/&lt;project&gt;/instanceConfigs/[a-z][-a-z0-9]*`.
      * </pre>
      *
      * <code>string name = 1;</code>
@@ -1424,7 +1426,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Allowed values of the “default_leader” schema option for databases in
+     * Allowed values of the "default_leader" schema option for databases in
      * instances that use this instance configuration.
      * </pre>
      *
@@ -1439,7 +1441,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Allowed values of the “default_leader” schema option for databases in
+     * Allowed values of the "default_leader" schema option for databases in
      * instances that use this instance configuration.
      * </pre>
      *
@@ -1454,7 +1456,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Allowed values of the “default_leader” schema option for databases in
+     * Allowed values of the "default_leader" schema option for databases in
      * instances that use this instance configuration.
      * </pre>
      *
@@ -1470,7 +1472,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Allowed values of the “default_leader” schema option for databases in
+     * Allowed values of the "default_leader" schema option for databases in
      * instances that use this instance configuration.
      * </pre>
      *
@@ -1486,7 +1488,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Allowed values of the “default_leader” schema option for databases in
+     * Allowed values of the "default_leader" schema option for databases in
      * instances that use this instance configuration.
      * </pre>
      *
@@ -1509,7 +1511,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Allowed values of the “default_leader” schema option for databases in
+     * Allowed values of the "default_leader" schema option for databases in
      * instances that use this instance configuration.
      * </pre>
      *
@@ -1531,7 +1533,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Allowed values of the “default_leader” schema option for databases in
+     * Allowed values of the "default_leader" schema option for databases in
      * instances that use this instance configuration.
      * </pre>
      *
@@ -1550,7 +1552,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Allowed values of the “default_leader” schema option for databases in
+     * Allowed values of the "default_leader" schema option for databases in
      * instances that use this instance configuration.
      * </pre>
      *
@@ -1568,7 +1570,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Allowed values of the “default_leader” schema option for databases in
+     * Allowed values of the "default_leader" schema option for databases in
      * instances that use this instance configuration.
      * </pre>
      *

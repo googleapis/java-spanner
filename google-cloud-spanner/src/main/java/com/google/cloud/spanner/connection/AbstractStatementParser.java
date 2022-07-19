@@ -320,7 +320,7 @@ public abstract class AbstractStatementParser {
     }
   }
 
-  static final Set<String> ddlStatements = ImmutableSet.of("CREATE", "DROP", "ALTER");
+  static final Set<String> ddlStatements = ImmutableSet.of("CREATE", "DROP", "ALTER", "ANALYZE");
   static final Set<String> selectStatements = ImmutableSet.of("SELECT", "WITH", "SHOW");
   static final Set<String> dmlStatements = ImmutableSet.of("INSERT", "UPDATE", "DELETE");
   private final Set<ClientSideStatementImpl> statements;

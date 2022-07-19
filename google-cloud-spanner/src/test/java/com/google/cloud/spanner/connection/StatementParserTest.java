@@ -154,6 +154,13 @@ public class StatementParserTest {
                   + "line\n"
                   + "comment\n"
                   + "*/SELECT \"FOO\nBAR\" FROM \"BAR\" WHERE name='test\ntest' and id=1"));
+      assertEquals(
+          "SELECT 1",
+          parser.removeCommentsAndTrim(
+              "/* This block comment surrounds a query which itself has a block comment...\n"
+                  + "SELECT /* embedded single line */ 'embedded' AS x2;\n"
+                  + "*/\n"
+                  + "SELECT 1"));
     }
   }
 
@@ -268,6 +275,34 @@ public class StatementParserTest {
     assertThat(
             parser.removeCommentsAndTrim("SELECT FOO, $BAR -- This is a comment\nFROM SOME_TABLE"))
         .isEqualTo("SELECT FOO, $BAR \nFROM SOME_TABLE");
+  }
+
+  @Test
+  public void testPostgreSQLDialectUnicodeEscapedIdentifiers() {
+    assumeTrue(dialect == Dialect.POSTGRESQL);
+
+    assertEquals(
+        "SELECT 'tricky' AS \"\\\"", parser.removeCommentsAndTrim("SELECT 'tricky' AS \"\\\""));
+    assertEquals(
+        "SELECT 'tricky' AS U&\"\\\" UESCAPE '!'",
+        parser.removeCommentsAndTrim("SELECT 'tricky' AS U&\"\\\" UESCAPE '!'"));
+    assertEquals(
+        "SELECT '\\' AS \"tricky\"", parser.removeCommentsAndTrim("SELECT '\\' AS \"tricky\""));
+    assertEquals("SELECT 'foo''bar'", parser.removeCommentsAndTrim("SELECT 'foo''bar'"));
+    assertEquals("SELECT 'foo\"bar'", parser.removeCommentsAndTrim("SELECT 'foo\"bar'"));
+    assertEquals("SELECT 'foo\"\"bar'", parser.removeCommentsAndTrim("SELECT 'foo\"\"bar'"));
+    assertEquals(
+        "SELECT  'foo'", parser.removeCommentsAndTrim("SELECT /* This is a 'comment' */ 'foo'"));
+    assertEquals(
+        "SELECT  'foo'",
+        parser.removeCommentsAndTrim("SELECT /* This is a '''comment''' */ 'foo'"));
+    assertEquals(
+        "SELECT  '''foo''' FROM bar",
+        parser.removeCommentsAndTrim("SELECT /* This is a '''comment''' */ '''foo''' FROM bar"));
+    assertEquals(
+        "SELECT  '''foo''' FROM \"\"\"\\bar\\\"\"\"",
+        parser.removeCommentsAndTrim(
+            "SELECT /* This is a '''comment''' */ '''foo''' FROM \"\"\"\\bar\\\"\"\""));
   }
 
   @Test
@@ -510,6 +545,13 @@ public class StatementParserTest {
                         + "          CONCAT(Singers.FirstName, Singers.LastName) as Name\n"
                         + "   FROM Singers"))
             .isDdl());
+
+    assertTrue(parser.parse(Statement.of("analyze")).isDdl());
+    assertTrue(parser.parse(Statement.of("Analyze")).isDdl());
+    assertTrue(parser.parse(Statement.of("ANALYZE")).isDdl());
+    assertTrue(parser.parse(Statement.of("\t ANALYZE\n ")).isDdl());
+    assertTrue(parser.parse(Statement.of("/* This is a comment */ ANALYZE ")).isDdl());
+    assertTrue(parser.parse(Statement.of("-- comment\n ANALYZE ")).isDdl());
   }
 
   @Test
@@ -1102,25 +1144,25 @@ public class StatementParserTest {
                 .sqlWithNamedParameters)
         .isEqualTo("$1'?test?\"?test?\"?'$2");
     assertThat(
-            parser.convertPositionalParametersToNamedParameters('?', "?'?it\\'?s'?")
+            parser.convertPositionalParametersToNamedParameters('?', "?'?it\\''?s'?")
                 .sqlWithNamedParameters)
-        .isEqualTo("$1'?it\\'?s'$2");
+        .isEqualTo("$1'?it\\''?s'$2");
     assertThat(
             parser.convertPositionalParametersToNamedParameters('?', "?'?it\\\"?s'?")
                 .sqlWithNamedParameters)
         .isEqualTo("$1'?it\\\"?s'$2");
     assertThat(
-            parser.convertPositionalParametersToNamedParameters('?', "?\"?it\\\"?s\"?")
+            parser.convertPositionalParametersToNamedParameters('?', "?\"?it\\\"\"?s\"?")
                 .sqlWithNamedParameters)
-        .isEqualTo("$1\"?it\\\"?s\"$2");
+        .isEqualTo("$1\"?it\\\"\"?s\"$2");
     assertThat(
-            parser.convertPositionalParametersToNamedParameters('?', "?'''?it\\'?s'''?")
+            parser.convertPositionalParametersToNamedParameters('?', "?'''?it\\''?s'''?")
                 .sqlWithNamedParameters)
-        .isEqualTo("$1'''?it\\'?s'''$2");
+        .isEqualTo("$1'''?it\\''?s'''$2");
     assertThat(
-            parser.convertPositionalParametersToNamedParameters('?', "?\"\"\"?it\\\"?s\"\"\"?")
+            parser.convertPositionalParametersToNamedParameters('?', "?\"\"\"?it\\\"\"?s\"\"\"?")
                 .sqlWithNamedParameters)
-        .isEqualTo("$1\"\"\"?it\\\"?s\"\"\"$2");
+        .isEqualTo("$1\"\"\"?it\\\"\"?s\"\"\"$2");
 
     assertThat(
             parser.convertPositionalParametersToNamedParameters('?', "?$$?it$?s$$?")
@@ -1137,13 +1179,13 @@ public class StatementParserTest {
 
     // Note: PostgreSQL allows a single-quoted string literal to contain line feeds.
     assertEquals(
-        "$1'?it\\'?s \n ?it\\'?s'$2",
-        parser.convertPositionalParametersToNamedParameters('?', "?'?it\\'?s \n ?it\\'?s'?")
+        "$1'?it\\''?s \n ?it\\''?s'$2",
+        parser.convertPositionalParametersToNamedParameters('?', "?'?it\\''?s \n ?it\\''?s'?")
             .sqlWithNamedParameters);
-    assertUnclosedLiteral("?'?it\\'?s \n ?it\\'?s?");
+    assertUnclosedLiteral("?'?it\\''?s \n ?it\\''?s?");
     assertEquals(
-        "$1'''?it\\'?s \n ?it\\'?s'$2",
-        parser.convertPositionalParametersToNamedParameters('?', "?'''?it\\'?s \n ?it\\'?s'?")
+        "$1'''?it\\''?s \n ?it\\''?s'$2",
+        parser.convertPositionalParametersToNamedParameters('?', "?'''?it\\''?s \n ?it\\''?s'?")
             .sqlWithNamedParameters);
 
     assertThat(

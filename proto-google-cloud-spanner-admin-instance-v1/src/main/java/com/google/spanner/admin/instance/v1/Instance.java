@@ -136,6 +136,36 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
               processingUnits_ = input.readInt32();
               break;
             }
+          case 90:
+            {
+              com.google.protobuf.Timestamp.Builder subBuilder = null;
+              if (createTime_ != null) {
+                subBuilder = createTime_.toBuilder();
+              }
+              createTime_ =
+                  input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(createTime_);
+                createTime_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+          case 98:
+            {
+              com.google.protobuf.Timestamp.Builder subBuilder = null;
+              if (updateTime_ != null) {
+                subBuilder = updateTime_.toBuilder();
+              }
+              updateTime_ =
+                  input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(updateTime_);
+                updateTime_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
           default:
             {
               if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
@@ -147,6 +177,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
+    } catch (com.google.protobuf.UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
       throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
@@ -518,11 +550,13 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Required. The number of nodes allocated to this instance. This may be zero
-   * in API responses for instances that are not yet in state `READY`.
+   * The number of nodes allocated to this instance. At most one of either
+   * node_count or processing_units should be present in the message. This
+   * may be zero in API responses for instances that are not yet in state
+   * `READY`.
    * See [the
-   * documentation](https://cloud.google.com/spanner/docs/instances#node_count)
-   * for more information about nodes.
+   * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+   * for more information about nodes and processing units.
    * </pre>
    *
    * <code>int32 node_count = 5;</code>
@@ -543,6 +577,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * The number of processing units allocated to this instance. At most one of
    * processing_units or node_count should be present in the message. This may
    * be zero in API responses for instances that are not yet in state `READY`.
+   * See [the
+   * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+   * for more information about nodes and processing units.
    * </pre>
    *
    * <code>int32 processing_units = 9;</code>
@@ -640,9 +677,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
    *  * Label keys must be between 1 and 63 characters long and must conform to
-   *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+   *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
-   *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+   *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
    * If you plan to use labels in your own code, please note that additional
@@ -658,7 +695,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
   @java.lang.Override
   public boolean containsLabels(java.lang.String key) {
     if (key == null) {
-      throw new java.lang.NullPointerException();
+      throw new NullPointerException("map key");
     }
     return internalGetLabels().getMap().containsKey(key);
   }
@@ -679,9 +716,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
    *  * Label keys must be between 1 and 63 characters long and must conform to
-   *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+   *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
-   *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+   *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
    * If you plan to use labels in your own code, please note that additional
@@ -709,9 +746,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
    *  * Label keys must be between 1 and 63 characters long and must conform to
-   *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+   *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
-   *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+   *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
    * If you plan to use labels in your own code, please note that additional
@@ -727,7 +764,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
   @java.lang.Override
   public java.lang.String getLabelsOrDefault(java.lang.String key, java.lang.String defaultValue) {
     if (key == null) {
-      throw new java.lang.NullPointerException();
+      throw new NullPointerException("map key");
     }
     java.util.Map<java.lang.String, java.lang.String> map = internalGetLabels().getMap();
     return map.containsKey(key) ? map.get(key) : defaultValue;
@@ -743,9 +780,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
    *  * Label keys must be between 1 and 63 characters long and must conform to
-   *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+   *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
-   *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+   *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
    * If you plan to use labels in your own code, please note that additional
@@ -761,7 +798,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
   @java.lang.Override
   public java.lang.String getLabelsOrThrow(java.lang.String key) {
     if (key == null) {
-      throw new java.lang.NullPointerException();
+      throw new NullPointerException("map key");
     }
     java.util.Map<java.lang.String, java.lang.String> map = internalGetLabels().getMap();
     if (!map.containsKey(key)) {
@@ -831,6 +868,104 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     return endpointUris_.getByteString(index);
   }
 
+  public static final int CREATE_TIME_FIELD_NUMBER = 11;
+  private com.google.protobuf.Timestamp createTime_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was created.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the createTime field is set.
+   */
+  @java.lang.Override
+  public boolean hasCreateTime() {
+    return createTime_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was created.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The createTime.
+   */
+  @java.lang.Override
+  public com.google.protobuf.Timestamp getCreateTime() {
+    return createTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : createTime_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was created.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder() {
+    return getCreateTime();
+  }
+
+  public static final int UPDATE_TIME_FIELD_NUMBER = 12;
+  private com.google.protobuf.Timestamp updateTime_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was most recently updated.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the updateTime field is set.
+   */
+  @java.lang.Override
+  public boolean hasUpdateTime() {
+    return updateTime_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was most recently updated.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The updateTime.
+   */
+  @java.lang.Override
+  public com.google.protobuf.Timestamp getUpdateTime() {
+    return updateTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : updateTime_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was most recently updated.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.protobuf.TimestampOrBuilder getUpdateTimeOrBuilder() {
+    return getUpdateTime();
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -868,6 +1003,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     }
     if (processingUnits_ != 0) {
       output.writeInt32(9, processingUnits_);
+    }
+    if (createTime_ != null) {
+      output.writeMessage(11, getCreateTime());
+    }
+    if (updateTime_ != null) {
+      output.writeMessage(12, getUpdateTime());
     }
     unknownFields.writeTo(output);
   }
@@ -915,6 +1056,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (processingUnits_ != 0) {
       size += com.google.protobuf.CodedOutputStream.computeInt32Size(9, processingUnits_);
     }
+    if (createTime_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(11, getCreateTime());
+    }
+    if (updateTime_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(12, getUpdateTime());
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -939,6 +1086,14 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (state_ != other.state_) return false;
     if (!internalGetLabels().equals(other.internalGetLabels())) return false;
     if (!getEndpointUrisList().equals(other.getEndpointUrisList())) return false;
+    if (hasCreateTime() != other.hasCreateTime()) return false;
+    if (hasCreateTime()) {
+      if (!getCreateTime().equals(other.getCreateTime())) return false;
+    }
+    if (hasUpdateTime() != other.hasUpdateTime()) return false;
+    if (hasUpdateTime()) {
+      if (!getUpdateTime().equals(other.getUpdateTime())) return false;
+    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -969,6 +1124,14 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (getEndpointUrisCount() > 0) {
       hash = (37 * hash) + ENDPOINT_URIS_FIELD_NUMBER;
       hash = (53 * hash) + getEndpointUrisList().hashCode();
+    }
+    if (hasCreateTime()) {
+      hash = (37 * hash) + CREATE_TIME_FIELD_NUMBER;
+      hash = (53 * hash) + getCreateTime().hashCode();
+    }
+    if (hasUpdateTime()) {
+      hash = (37 * hash) + UPDATE_TIME_FIELD_NUMBER;
+      hash = (53 * hash) + getUpdateTime().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -1150,6 +1313,18 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       internalGetMutableLabels().clear();
       endpointUris_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       bitField0_ = (bitField0_ & ~0x00000002);
+      if (createTimeBuilder_ == null) {
+        createTime_ = null;
+      } else {
+        createTime_ = null;
+        createTimeBuilder_ = null;
+      }
+      if (updateTimeBuilder_ == null) {
+        updateTime_ = null;
+      } else {
+        updateTime_ = null;
+        updateTimeBuilder_ = null;
+      }
       return this;
     }
 
@@ -1191,6 +1366,16 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         bitField0_ = (bitField0_ & ~0x00000002);
       }
       result.endpointUris_ = endpointUris_;
+      if (createTimeBuilder_ == null) {
+        result.createTime_ = createTime_;
+      } else {
+        result.createTime_ = createTimeBuilder_.build();
+      }
+      if (updateTimeBuilder_ == null) {
+        result.updateTime_ = updateTime_;
+      } else {
+        result.updateTime_ = updateTimeBuilder_.build();
+      }
       onBuilt();
       return result;
     }
@@ -1271,6 +1456,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
           endpointUris_.addAll(other.endpointUris_);
         }
         onChanged();
+      }
+      if (other.hasCreateTime()) {
+        mergeCreateTime(other.getCreateTime());
+      }
+      if (other.hasUpdateTime()) {
+        mergeUpdateTime(other.getUpdateTime());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1671,11 +1862,13 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required. The number of nodes allocated to this instance. This may be zero
-     * in API responses for instances that are not yet in state `READY`.
+     * The number of nodes allocated to this instance. At most one of either
+     * node_count or processing_units should be present in the message. This
+     * may be zero in API responses for instances that are not yet in state
+     * `READY`.
      * See [the
-     * documentation](https://cloud.google.com/spanner/docs/instances#node_count)
-     * for more information about nodes.
+     * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+     * for more information about nodes and processing units.
      * </pre>
      *
      * <code>int32 node_count = 5;</code>
@@ -1690,11 +1883,13 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required. The number of nodes allocated to this instance. This may be zero
-     * in API responses for instances that are not yet in state `READY`.
+     * The number of nodes allocated to this instance. At most one of either
+     * node_count or processing_units should be present in the message. This
+     * may be zero in API responses for instances that are not yet in state
+     * `READY`.
      * See [the
-     * documentation](https://cloud.google.com/spanner/docs/instances#node_count)
-     * for more information about nodes.
+     * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+     * for more information about nodes and processing units.
      * </pre>
      *
      * <code>int32 node_count = 5;</code>
@@ -1712,11 +1907,13 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required. The number of nodes allocated to this instance. This may be zero
-     * in API responses for instances that are not yet in state `READY`.
+     * The number of nodes allocated to this instance. At most one of either
+     * node_count or processing_units should be present in the message. This
+     * may be zero in API responses for instances that are not yet in state
+     * `READY`.
      * See [the
-     * documentation](https://cloud.google.com/spanner/docs/instances#node_count)
-     * for more information about nodes.
+     * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+     * for more information about nodes and processing units.
      * </pre>
      *
      * <code>int32 node_count = 5;</code>
@@ -1738,6 +1935,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * The number of processing units allocated to this instance. At most one of
      * processing_units or node_count should be present in the message. This may
      * be zero in API responses for instances that are not yet in state `READY`.
+     * See [the
+     * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+     * for more information about nodes and processing units.
      * </pre>
      *
      * <code>int32 processing_units = 9;</code>
@@ -1755,6 +1955,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * The number of processing units allocated to this instance. At most one of
      * processing_units or node_count should be present in the message. This may
      * be zero in API responses for instances that are not yet in state `READY`.
+     * See [the
+     * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+     * for more information about nodes and processing units.
      * </pre>
      *
      * <code>int32 processing_units = 9;</code>
@@ -1775,6 +1978,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * The number of processing units allocated to this instance. At most one of
      * processing_units or node_count should be present in the message. This may
      * be zero in API responses for instances that are not yet in state `READY`.
+     * See [the
+     * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+     * for more information about nodes and processing units.
      * </pre>
      *
      * <code>int32 processing_units = 9;</code>
@@ -1947,9 +2153,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
      *  * Label keys must be between 1 and 63 characters long and must conform to
-     *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+     *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
-     *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+     *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
      * If you plan to use labels in your own code, please note that additional
@@ -1965,7 +2171,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public boolean containsLabels(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       return internalGetLabels().getMap().containsKey(key);
     }
@@ -1986,9 +2192,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
      *  * Label keys must be between 1 and 63 characters long and must conform to
-     *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+     *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
-     *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+     *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
      * If you plan to use labels in your own code, please note that additional
@@ -2016,9 +2222,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
      *  * Label keys must be between 1 and 63 characters long and must conform to
-     *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+     *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
-     *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+     *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
      * If you plan to use labels in your own code, please note that additional
@@ -2035,7 +2241,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     public java.lang.String getLabelsOrDefault(
         java.lang.String key, java.lang.String defaultValue) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       java.util.Map<java.lang.String, java.lang.String> map = internalGetLabels().getMap();
       return map.containsKey(key) ? map.get(key) : defaultValue;
@@ -2051,9 +2257,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
      *  * Label keys must be between 1 and 63 characters long and must conform to
-     *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+     *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
-     *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+     *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
      * If you plan to use labels in your own code, please note that additional
@@ -2069,7 +2275,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public java.lang.String getLabelsOrThrow(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       java.util.Map<java.lang.String, java.lang.String> map = internalGetLabels().getMap();
       if (!map.containsKey(key)) {
@@ -2093,9 +2299,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
      *  * Label keys must be between 1 and 63 characters long and must conform to
-     *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+     *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
-     *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+     *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
      * If you plan to use labels in your own code, please note that additional
@@ -2110,7 +2316,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder removeLabels(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       internalGetMutableLabels().getMutableMap().remove(key);
       return this;
@@ -2131,9 +2337,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
      *  * Label keys must be between 1 and 63 characters long and must conform to
-     *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+     *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
-     *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+     *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
      * If you plan to use labels in your own code, please note that additional
@@ -2148,11 +2354,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder putLabels(java.lang.String key, java.lang.String value) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       if (value == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map value");
       }
+
       internalGetMutableLabels().getMutableMap().put(key, value);
       return this;
     }
@@ -2167,9 +2374,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
      *  * Label keys must be between 1 and 63 characters long and must conform to
-     *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+     *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
-     *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+     *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
      * If you plan to use labels in your own code, please note that additional
@@ -2353,6 +2560,408 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       endpointUris_.add(value);
       onChanged();
       return this;
+    }
+
+    private com.google.protobuf.Timestamp createTime_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        createTimeBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return Whether the createTime field is set.
+     */
+    public boolean hasCreateTime() {
+      return createTimeBuilder_ != null || createTime_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The createTime.
+     */
+    public com.google.protobuf.Timestamp getCreateTime() {
+      if (createTimeBuilder_ == null) {
+        return createTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : createTime_;
+      } else {
+        return createTimeBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setCreateTime(com.google.protobuf.Timestamp value) {
+      if (createTimeBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        createTime_ = value;
+        onChanged();
+      } else {
+        createTimeBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setCreateTime(com.google.protobuf.Timestamp.Builder builderForValue) {
+      if (createTimeBuilder_ == null) {
+        createTime_ = builderForValue.build();
+        onChanged();
+      } else {
+        createTimeBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder mergeCreateTime(com.google.protobuf.Timestamp value) {
+      if (createTimeBuilder_ == null) {
+        if (createTime_ != null) {
+          createTime_ =
+              com.google.protobuf.Timestamp.newBuilder(createTime_).mergeFrom(value).buildPartial();
+        } else {
+          createTime_ = value;
+        }
+        onChanged();
+      } else {
+        createTimeBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder clearCreateTime() {
+      if (createTimeBuilder_ == null) {
+        createTime_ = null;
+        onChanged();
+      } else {
+        createTime_ = null;
+        createTimeBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.protobuf.Timestamp.Builder getCreateTimeBuilder() {
+
+      onChanged();
+      return getCreateTimeFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder() {
+      if (createTimeBuilder_ != null) {
+        return createTimeBuilder_.getMessageOrBuilder();
+      } else {
+        return createTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : createTime_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        getCreateTimeFieldBuilder() {
+      if (createTimeBuilder_ == null) {
+        createTimeBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.protobuf.Timestamp,
+                com.google.protobuf.Timestamp.Builder,
+                com.google.protobuf.TimestampOrBuilder>(
+                getCreateTime(), getParentForChildren(), isClean());
+        createTime_ = null;
+      }
+      return createTimeBuilder_;
+    }
+
+    private com.google.protobuf.Timestamp updateTime_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        updateTimeBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return Whether the updateTime field is set.
+     */
+    public boolean hasUpdateTime() {
+      return updateTimeBuilder_ != null || updateTime_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The updateTime.
+     */
+    public com.google.protobuf.Timestamp getUpdateTime() {
+      if (updateTimeBuilder_ == null) {
+        return updateTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : updateTime_;
+      } else {
+        return updateTimeBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setUpdateTime(com.google.protobuf.Timestamp value) {
+      if (updateTimeBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        updateTime_ = value;
+        onChanged();
+      } else {
+        updateTimeBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setUpdateTime(com.google.protobuf.Timestamp.Builder builderForValue) {
+      if (updateTimeBuilder_ == null) {
+        updateTime_ = builderForValue.build();
+        onChanged();
+      } else {
+        updateTimeBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder mergeUpdateTime(com.google.protobuf.Timestamp value) {
+      if (updateTimeBuilder_ == null) {
+        if (updateTime_ != null) {
+          updateTime_ =
+              com.google.protobuf.Timestamp.newBuilder(updateTime_).mergeFrom(value).buildPartial();
+        } else {
+          updateTime_ = value;
+        }
+        onChanged();
+      } else {
+        updateTimeBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder clearUpdateTime() {
+      if (updateTimeBuilder_ == null) {
+        updateTime_ = null;
+        onChanged();
+      } else {
+        updateTime_ = null;
+        updateTimeBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.protobuf.Timestamp.Builder getUpdateTimeBuilder() {
+
+      onChanged();
+      return getUpdateTimeFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.protobuf.TimestampOrBuilder getUpdateTimeOrBuilder() {
+      if (updateTimeBuilder_ != null) {
+        return updateTimeBuilder_.getMessageOrBuilder();
+      } else {
+        return updateTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : updateTime_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        getUpdateTimeFieldBuilder() {
+      if (updateTimeBuilder_ == null) {
+        updateTimeBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.protobuf.Timestamp,
+                com.google.protobuf.Timestamp.Builder,
+                com.google.protobuf.TimestampOrBuilder>(
+                getUpdateTime(), getParentForChildren(), isClean());
+        updateTime_ = null;
+      }
+      return updateTimeBuilder_;
     }
 
     @java.lang.Override

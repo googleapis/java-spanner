@@ -56,3 +56,8 @@ function retry_with_backoff {
 function now() { date +"%Y-%m-%d %H:%M:%S" | tr -d '\n'; }
 function msg() { println "$*" >&2; }
 function println() { printf '%s\n' "$(now) $*"; }
+
+function setJava() {
+  export JAVA_HOME=$1
+  export PATH=${JAVA_HOME}/bin:$PATH
+}

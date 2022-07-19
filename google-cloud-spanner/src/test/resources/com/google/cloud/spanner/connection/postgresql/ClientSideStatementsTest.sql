@@ -6770,6 +6770,407 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION UNIMPLEMENTED
 show variable/-spanner.rpc_priority;
 NEW_CONNECTION;
+show transaction isolation level;
+NEW_CONNECTION;
+SHOW TRANSACTION ISOLATION LEVEL;
+NEW_CONNECTION;
+show transaction isolation level;
+NEW_CONNECTION;
+   show transaction isolation level;
+NEW_CONNECTION;
+			show transaction isolation level;
+NEW_CONNECTION;
+
+
+
+show transaction isolation level;
+NEW_CONNECTION;
+show transaction isolation level  ;
+NEW_CONNECTION;
+show transaction isolation level		;
+NEW_CONNECTION;
+show transaction isolation level
+
+;
+NEW_CONNECTION;
+show   transaction   isolation   level;
+NEW_CONNECTION;
+show	transaction	isolation	level;
+NEW_CONNECTION;
+show
+transaction
+isolation
+level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation%level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation_level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation&level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation$level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation@level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation!level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation*level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation(level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation)level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation-level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation+level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation-#level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation/level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation\level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation?level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation-/level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation/#level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation level/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show transaction isolation/-level;
+NEW_CONNECTION;
+show variable transaction isolation level;
+NEW_CONNECTION;
+SHOW VARIABLE TRANSACTION ISOLATION LEVEL;
+NEW_CONNECTION;
+show variable transaction isolation level;
+NEW_CONNECTION;
+   show variable transaction isolation level;
+NEW_CONNECTION;
+			show variable transaction isolation level;
+NEW_CONNECTION;
+
+
+
+show variable transaction isolation level;
+NEW_CONNECTION;
+show variable transaction isolation level  ;
+NEW_CONNECTION;
+show variable transaction isolation level		;
+NEW_CONNECTION;
+show variable transaction isolation level
+
+;
+NEW_CONNECTION;
+show   variable   transaction   isolation   level;
+NEW_CONNECTION;
+show	variable	transaction	isolation	level;
+NEW_CONNECTION;
+show
+variable
+transaction
+isolation
+level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation%level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation_level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation&level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation$level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation@level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation!level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation*level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation(level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation)level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation-level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation+level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation-#level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation/level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation\level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation?level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation-/level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation/#level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable transaction isolation level;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation level/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable transaction isolation/-level;
+NEW_CONNECTION;
 begin;
 NEW_CONNECTION;
 BEGIN;
