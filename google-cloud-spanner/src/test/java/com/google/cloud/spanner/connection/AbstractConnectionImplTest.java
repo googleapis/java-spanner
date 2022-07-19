@@ -856,7 +856,8 @@ public abstract class AbstractConnectionImplTest {
 
   @Test
   public void testExecute() {
-    for (StatementType type : new StatementType[] {StatementType.UPDATE, StatementType.DDL}) {
+    for (StatementType type :
+        new StatementType[] {StatementType.QUERY, StatementType.UPDATE, StatementType.DDL}) {
       testExecute(type);
     }
   }
