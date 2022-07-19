@@ -929,7 +929,8 @@ class ConnectionImpl implements Connection {
         if (analyzeMode == AnalyzeMode.NONE && this.isReadOnly()) {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.FAILED_PRECONDITION,
-              "Update cannot be executed in read-only mode: " + parsedStatement.getSqlWithoutComments());
+              "Update cannot be executed in read-only mode: "
+                  + parsedStatement.getSqlWithoutComments());
         }
       case QUERY:
         ResultSet resultSet = internalExecuteQuery(parsedStatement, analyzeMode, options);
@@ -991,9 +992,10 @@ class ConnectionImpl implements Connection {
         if (rs.getColumnCount() > 0) {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INVALID_ARGUMENT,
-              "Statement is not an normal DML statement: " + parsedStatement.getSqlWithoutComments());
+              "Statement is not an normal DML statement: "
+                  + parsedStatement.getSqlWithoutComments());
         }
-        while(rs.next());
+        while (rs.next()) ;
         return Objects.requireNonNull(rs.getStats()).getRowCountExact();
       case DDL:
         execute(update);

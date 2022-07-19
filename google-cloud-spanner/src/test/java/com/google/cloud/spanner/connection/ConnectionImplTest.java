@@ -244,9 +244,10 @@ public class ConnectionImplTest {
     ReadOnlyTransaction singleUseReadOnlyTx = mock(ReadOnlyTransaction.class);
 
     final SimpleResultSet select1ResultSet = new SimpleResultSet(createSelect1MockResultSet());
-    final SimpleResultSet select1ResultSetWithStats = new SimpleResultSet(createSelect1MockResultSetWithStats());
+    final SimpleResultSet select1ResultSetWithStats =
+        new SimpleResultSet(createSelect1MockResultSetWithStats());
     when(singleUseReadOnlyTx.executeQuery(
-        Mockito.argThat(statement -> statement.getSql().toUpperCase().startsWith("SHOW"))))
+            Mockito.argThat(statement -> statement.getSql().toUpperCase().startsWith("SHOW"))))
         .thenThrow(
             SpannerExceptionFactory.newSpannerException(
                 ErrorCode.UNIMPLEMENTED, "SHOW queries are not supported"));
@@ -288,10 +289,11 @@ public class ConnectionImplTest {
                         }
                         return select1ResultSet;
                       });
-              when(txContext.executeQuery(Statement.of(UPDATE))).thenReturn(select1ResultSetWithStats);
+              when(txContext.executeQuery(Statement.of(UPDATE)))
+                  .thenReturn(select1ResultSetWithStats);
               when(txContext.executeQuery(
-                  Mockito.argThat(
-                      statement -> statement.getSql().toUpperCase().startsWith("SHOW"))))
+                      Mockito.argThat(
+                          statement -> statement.getSql().toUpperCase().startsWith("SHOW"))))
                   .thenThrow(
                       SpannerExceptionFactory.newSpannerException(
                           ErrorCode.UNIMPLEMENTED, "SHOW queries are not supported"));
@@ -348,7 +350,8 @@ public class ConnectionImplTest {
                     commitResponse = new CommitResponse(Timestamp.ofTimeSecondsAndNanos(1, 1));
                     TransactionContext transaction = mock(TransactionContext.class);
                     when(transaction.executeUpdate(Statement.of(UPDATE))).thenReturn(1L);
-                    when(transaction.executeQuery(Statement.of(UPDATE))).thenReturn(select1ResultSetWithStats);
+                    when(transaction.executeQuery(Statement.of(UPDATE)))
+                        .thenReturn(select1ResultSetWithStats);
                     try {
                       return callable.run(transaction);
                     } catch (Exception e) {
@@ -1384,7 +1387,7 @@ public class ConnectionImplTest {
     ResultSet rs = mock(ResultSet.class);
     when(rs.getColumnCount()).thenReturn(2);
     when(unitOfWork.executeQueryAsync(
-        any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
+            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(rs));
     try (ConnectionImpl impl =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
@@ -1488,7 +1491,7 @@ public class ConnectionImplTest {
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
     when(unitOfWork.executeQueryAsync(
-        any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
+            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl connection =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
@@ -1595,7 +1598,7 @@ public class ConnectionImplTest {
     // Indicate that a transaction has been started.
     when(unitOfWork.getState()).thenReturn(UnitOfWorkState.STARTED);
     when(unitOfWork.executeQueryAsync(
-        any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
+            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     when(unitOfWork.rollbackAsync()).thenReturn(ApiFutures.immediateFuture(null));
     try (ConnectionImpl connection =

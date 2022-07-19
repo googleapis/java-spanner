@@ -102,7 +102,10 @@ public abstract class AbstractMockServerTest {
   public static final com.google.spanner.v1.ResultSet UPDATE_RESULTSET =
       com.google.spanner.v1.ResultSet.newBuilder()
           .setStats(ResultSetStats.newBuilder().setRowCountExact(1))
-          .setMetadata(ResultSetMetadata.getDefaultInstance().toBuilder().setRowType(StructType.getDefaultInstance()))
+          .setMetadata(
+              ResultSetMetadata.getDefaultInstance()
+                  .toBuilder()
+                  .setRowType(StructType.getDefaultInstance()))
           .build();
   public static final long UPDATE_COUNT = 1L;
 

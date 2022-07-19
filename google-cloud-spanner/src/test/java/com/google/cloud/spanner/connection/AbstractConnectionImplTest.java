@@ -856,8 +856,7 @@ public abstract class AbstractConnectionImplTest {
 
   @Test
   public void testExecute() {
-    for (StatementType type :
-        new StatementType[] {StatementType.UPDATE, StatementType.DDL}) {
+    for (StatementType type : new StatementType[] {StatementType.UPDATE, StatementType.DDL}) {
       testExecute(type);
     }
   }
@@ -922,8 +921,8 @@ public abstract class AbstractConnectionImplTest {
             },
             connection,
             ErrorCode.FAILED_PRECONDITION);
-      } else if(type == StatementType.UPDATE) {
-        if(connection.isReadOnly() || connection.isDdlBatchActive()) {
+      } else if (type == StatementType.UPDATE) {
+        if (connection.isReadOnly() || connection.isDdlBatchActive()) {
           expectSpannerException(
               type + " cannot be executed in read-only/batch ddl mode",
               t -> t.executeQuery(getTestStatement(type)),
@@ -971,7 +970,7 @@ public abstract class AbstractConnectionImplTest {
               t -> t.analyzeQuery(getTestStatement(type), currentMode),
               connection,
               ErrorCode.FAILED_PRECONDITION);
-        } else if (type != StatementType.UPDATE){
+        } else if (type != StatementType.UPDATE) {
           expectSpannerException(
               type + " should be an invalid argument",
               t -> t.analyzeQuery(getTestStatement(type), currentMode),
@@ -996,13 +995,13 @@ public abstract class AbstractConnectionImplTest {
         log("@EXPECT UPDATE_COUNT 1");
         log(getTestStatement(type).getSql() + ";");
         assertThat(connection.executeUpdate(getTestStatement(type)), is(notNullValue()));
-      } else if(type == StatementType.DDL && isExecuteAllowed(StatementType.DDL)) {
+      } else if (type == StatementType.DDL && isExecuteAllowed(StatementType.DDL)) {
         log("@EXPECT UPDATE_COUNT 0");
         log(getTestStatement(type).getSql() + ";");
         assertThat(connection.executeUpdate(getTestStatement(type)), is(notNullValue()));
       } else if (type == StatementType.UPDATE) {
         // it is an update statement, but updates are not allowed for this connection state
-        if(connection.isReadOnly() || connection.isDdlBatchActive()) {
+        if (connection.isReadOnly() || connection.isDdlBatchActive()) {
           expectSpannerException(
               type + " cannot be executed in read-only/batch ddl mode",
               t -> t.executeQuery(getTestStatement(type)),

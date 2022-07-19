@@ -569,7 +569,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private Queue<Exception> exceptions = new ConcurrentLinkedQueue<>();
   private boolean stickyGlobalExceptions = false;
   private ConcurrentMap<Statement, StatementResult> statementResults = new ConcurrentHashMap<>();
-  private ConcurrentMap<Statement, ConcurrentMap<StatementResult.StatementResultType, StatementResult>> allStatementResults = new ConcurrentHashMap<>();
+  private ConcurrentMap<
+          Statement, ConcurrentMap<StatementResult.StatementResultType, StatementResult>>
+      allStatementResults = new ConcurrentHashMap<>();
   private ConcurrentMap<Statement, Long> statementGetCounts = new ConcurrentHashMap<>();
   private ConcurrentMap<String, StatementResult> partialStatementResults =
       new ConcurrentHashMap<>();
@@ -711,7 +713,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private StatementResult getResult(Statement statement, StatementResult.StatementResultType type) {
     StatementResult res;
     synchronized (lock) {
-      if (!(allStatementResults.containsKey(statement) && allStatementResults.get(statement).containsKey(type))) {
+      if (!(allStatementResults.containsKey(statement)
+          && allStatementResults.get(statement).containsKey(type))) {
         return null;
       }
       res = allStatementResults.get(statement).get(type);

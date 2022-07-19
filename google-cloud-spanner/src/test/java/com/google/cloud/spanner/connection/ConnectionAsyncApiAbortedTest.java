@@ -617,7 +617,10 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
     final com.google.spanner.v1.ResultSet UPDATE1_RESULTSET =
         com.google.spanner.v1.ResultSet.newBuilder()
             .setStats(ResultSetStats.newBuilder().setRowCountExact(100))
-            .setMetadata(ResultSetMetadata.getDefaultInstance().toBuilder().setRowType(StructType.getDefaultInstance()))
+            .setMetadata(
+                ResultSetMetadata.getDefaultInstance()
+                    .toBuilder()
+                    .setRowType(StructType.getDefaultInstance()))
             .build();
     mockSpanner.putStatementResult(StatementResult.query(update1, UPDATE1_RESULTSET));
 

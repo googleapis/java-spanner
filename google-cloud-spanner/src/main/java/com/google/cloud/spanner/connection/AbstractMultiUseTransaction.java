@@ -24,7 +24,6 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
-import com.google.common.base.Preconditions;
 import com.google.spanner.v1.SpannerGrpc;
 
 /**
