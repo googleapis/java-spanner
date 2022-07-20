@@ -360,17 +360,23 @@
       }
     },
     {
-      "name": "SET DEFAULT_TRANSACTION_ISOLATION = SERIALIZABLE",
+      "name": "SET DEFAULT_TRANSACTION_ISOLATION =|TO 'SERIALIZABLE'|SERIALIZABLE",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
       "statementType": "SET_READONLY",
-      "regex": "(?is)\\A\\s*set\\s+default_transaction_isolation\\s*(?:=)\\s*(.*)\\z",
+      "regex": "(?is)\\A\\s*set\\s+default_transaction_isolation(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetPgDefaultTransactionIsolation",
-      "exampleStatements": ["set default_transaction_isolation=serializable"],
+      "exampleStatements": [
+        "set default_transaction_isolation=serializable",
+        "set default_transaction_isolation to serializable",
+        "set default_transaction_isolation to 'serializable'",
+        "set default_transaction_isolation = 'serializable'",
+        "set default_transaction_isolation = \"SERIALIZABLE\""
+      ],
       "setStatement": {
         "propertyName": "default_transaction_isolation",
-        "separator": "=",
-        "allowedValues": "(SERIALIZABLE)",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(SERIALIZABLE|'SERIALIZABLE'|\"SERIALIZABLE\")",
         "converterName": "ClientSideStatementValueConverters$PgTransactionIsolationConverter"
       }
     },
@@ -379,14 +385,21 @@
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
       "statementType": "SET_READONLY",
-      "regex": "(?is)\\A\\s*set\\s+default_transaction_read_only\\s*(?:=)\\s*(.*)\\z",
+      "regex": "(?is)\\A\\s*set\\s+default_transaction_read_only(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetReadOnly",
-      "exampleStatements": ["set default_transaction_read_only = true", "set default_transaction_read_only = false"],
+      "exampleStatements": [
+        "set default_transaction_read_only = true",
+        "set default_transaction_read_only = false",
+        "set default_transaction_read_only = t",
+        "set default_transaction_read_only = f",
+        "set default_transaction_read_only to 't'",
+        "set default_transaction_read_only to \"f\""
+      ],
       "setStatement": {
         "propertyName": "DEFAULT_TRANSACTION_READ_ONLY",
-        "separator": "=",
-        "allowedValues": "(TRUE|FALSE)",
-        "converterName": "ClientSideStatementValueConverters$BooleanConverter"
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(.+)",
+        "converterName": "ClientSideStatementValueConverters$PgBooleanConverter"
       }
     },
     {

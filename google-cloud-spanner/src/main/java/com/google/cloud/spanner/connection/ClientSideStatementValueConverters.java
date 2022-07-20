@@ -88,6 +88,43 @@ class ClientSideStatementValueConverters {
     }
   }
 
+  /** Converter from string to {@link Boolean} */
+  static class PgBooleanConverter implements ClientSideStatementValueConverter<Boolean> {
+
+    public PgBooleanConverter(String allowedValues) {}
+
+    @Override
+    public Class<Boolean> getParameterClass() {
+      return Boolean.class;
+    }
+
+    @Override
+    public Boolean convert(String value) {
+      if (value == null) {
+        return null;
+      }
+      if (value.length() > 1
+          && ((value.startsWith("'") && value.endsWith("'"))
+              || (value.startsWith("\"") && value.endsWith("\"")))) {
+        value = value.substring(1, value.length() - 1);
+      }
+      if ("true".equalsIgnoreCase(value)
+          || "tru".equalsIgnoreCase(value)
+          || "tr".equalsIgnoreCase(value)
+          || "t".equalsIgnoreCase(value)) {
+        return Boolean.TRUE;
+      }
+      if ("false".equalsIgnoreCase(value)
+          || "fals".equalsIgnoreCase(value)
+          || "fal".equalsIgnoreCase(value)
+          || "fa".equalsIgnoreCase(value)
+          || "f".equalsIgnoreCase(value)) {
+        return Boolean.FALSE;
+      }
+      return null;
+    }
+  }
+
   /** Converter from string to {@link Duration}. */
   static class DurationConverter implements ClientSideStatementValueConverter<Duration> {
     private final Pattern allowedValues;
@@ -305,6 +342,13 @@ class ClientSideStatementValueConverters {
     public IsolationLevel convert(String value) {
       // Isolation level may contain multiple spaces.
       String valueWithSingleSpaces = value.replaceAll("\\s+", " ");
+      if (valueWithSingleSpaces.length() > 1
+          && ((valueWithSingleSpaces.startsWith("'") && valueWithSingleSpaces.endsWith("'"))
+              || (valueWithSingleSpaces.startsWith("\"")
+                  && valueWithSingleSpaces.endsWith("\"")))) {
+        valueWithSingleSpaces =
+            valueWithSingleSpaces.substring(1, valueWithSingleSpaces.length() - 1);
+      }
       return values.get(valueWithSingleSpaces);
     }
   }

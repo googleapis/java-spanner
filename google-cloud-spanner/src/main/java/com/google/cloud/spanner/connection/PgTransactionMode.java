@@ -33,18 +33,6 @@ class PgTransactionMode {
       this.statementString = statement;
     }
 
-    /**
-     * Use this method to get the correct format for use in a SQL statement. The SQL statement for
-     * setting the mode to read-only should for example be without the underscore: <code>
-     * SET TRANSACTION READ ONLY</code>
-     *
-     * @return a string representation of this {@link TransactionMode} that can be used in a SQL
-     *     statement to set the transaction mode.
-     */
-    public String getStatementString() {
-      return statementString;
-    }
-
     @Override
     public String toString() {
       return statementString;
