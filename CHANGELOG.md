@@ -1,5 +1,20 @@
 # Changelog
 
+## [6.27.0](https://github.com/googleapis/java-spanner/compare/v6.26.0...v6.27.0) (2022-07-19)
+
+
+### Features
+
+* Adding new fields for Instance Create Time and Update Time  ([#1913](https://github.com/googleapis/java-spanner/issues/1913)) ([2c71e02](https://github.com/googleapis/java-spanner/commit/2c71e0233333803f271931f6ef471b7eacfa52d7))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.3.1 ([#1933](https://github.com/googleapis/java-spanner/issues/1933)) ([e3d646b](https://github.com/googleapis/java-spanner/commit/e3d646bae4abf2215d44f282d4faf722c638b823))
+* update dependency org.graalvm.buildtools:junit-platform-native to v0.9.13 ([#1944](https://github.com/googleapis/java-spanner/issues/1944)) ([765d11b](https://github.com/googleapis/java-spanner/commit/765d11b2e5ee7b1f12d2d27a139f92efbc1caa07))
+* update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.13 ([#1945](https://github.com/googleapis/java-spanner/issues/1945)) ([0da75b8](https://github.com/googleapis/java-spanner/commit/0da75b819d6e9d0f7c6850d77656e46b76ddad6d))
+* update dependency org.graalvm.sdk:graal-sdk to v22.2.0 ([#1953](https://github.com/googleapis/java-spanner/issues/1953)) ([c7f1040](https://github.com/googleapis/java-spanner/commit/c7f1040d849901194e5672b270ccee7fbc695d17))
+
 ## [6.26.0](https://github.com/googleapis/java-spanner/compare/v6.25.7...v6.26.0) (2022-07-13)
 
 
