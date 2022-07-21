@@ -31159,6 +31159,1606 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set default_transaction_read_only to/-"f";
 NEW_CONNECTION;
+set default_transaction_read_only = on;
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_READ_ONLY = ON;
+NEW_CONNECTION;
+set default_transaction_read_only = on;
+NEW_CONNECTION;
+   set default_transaction_read_only = on;
+NEW_CONNECTION;
+			set default_transaction_read_only = on;
+NEW_CONNECTION;
+
+
+
+set default_transaction_read_only = on;
+NEW_CONNECTION;
+set default_transaction_read_only = on  ;
+NEW_CONNECTION;
+set default_transaction_read_only = on		;
+NEW_CONNECTION;
+set default_transaction_read_only = on
+
+;
+NEW_CONNECTION;
+set   default_transaction_read_only   =   on;
+NEW_CONNECTION;
+set	default_transaction_read_only	=	on;
+NEW_CONNECTION;
+set
+default_transaction_read_only
+=
+on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =%on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =_on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =&on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =$on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =@on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =!on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =*on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =(on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =)on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =+on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-#on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =\on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =?on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-/on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/#on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_read_only = on;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = on/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/-on;
+NEW_CONNECTION;
+set default_transaction_read_only = off;
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_READ_ONLY = OFF;
+NEW_CONNECTION;
+set default_transaction_read_only = off;
+NEW_CONNECTION;
+   set default_transaction_read_only = off;
+NEW_CONNECTION;
+			set default_transaction_read_only = off;
+NEW_CONNECTION;
+
+
+
+set default_transaction_read_only = off;
+NEW_CONNECTION;
+set default_transaction_read_only = off  ;
+NEW_CONNECTION;
+set default_transaction_read_only = off		;
+NEW_CONNECTION;
+set default_transaction_read_only = off
+
+;
+NEW_CONNECTION;
+set   default_transaction_read_only   =   off;
+NEW_CONNECTION;
+set	default_transaction_read_only	=	off;
+NEW_CONNECTION;
+set
+default_transaction_read_only
+=
+off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =%off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =_off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =&off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =$off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =@off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =!off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =*off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =(off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =)off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =+off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-#off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =\off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =?off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-/off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/#off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_read_only = off;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = off/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/-off;
+NEW_CONNECTION;
+set default_transaction_read_only = 1;
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_READ_ONLY = 1;
+NEW_CONNECTION;
+set default_transaction_read_only = 1;
+NEW_CONNECTION;
+   set default_transaction_read_only = 1;
+NEW_CONNECTION;
+			set default_transaction_read_only = 1;
+NEW_CONNECTION;
+
+
+
+set default_transaction_read_only = 1;
+NEW_CONNECTION;
+set default_transaction_read_only = 1  ;
+NEW_CONNECTION;
+set default_transaction_read_only = 1		;
+NEW_CONNECTION;
+set default_transaction_read_only = 1
+
+;
+NEW_CONNECTION;
+set   default_transaction_read_only   =   1;
+NEW_CONNECTION;
+set	default_transaction_read_only	=	1;
+NEW_CONNECTION;
+set
+default_transaction_read_only
+=
+1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =%1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =_1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =&1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =$1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =@1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =!1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =*1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =(1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =)1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =+1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-#1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =\1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =?1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-/1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/#1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_read_only = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 1/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/-1;
+NEW_CONNECTION;
+set default_transaction_read_only = 0;
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_READ_ONLY = 0;
+NEW_CONNECTION;
+set default_transaction_read_only = 0;
+NEW_CONNECTION;
+   set default_transaction_read_only = 0;
+NEW_CONNECTION;
+			set default_transaction_read_only = 0;
+NEW_CONNECTION;
+
+
+
+set default_transaction_read_only = 0;
+NEW_CONNECTION;
+set default_transaction_read_only = 0  ;
+NEW_CONNECTION;
+set default_transaction_read_only = 0		;
+NEW_CONNECTION;
+set default_transaction_read_only = 0
+
+;
+NEW_CONNECTION;
+set   default_transaction_read_only   =   0;
+NEW_CONNECTION;
+set	default_transaction_read_only	=	0;
+NEW_CONNECTION;
+set
+default_transaction_read_only
+=
+0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =%0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =_0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =&0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =$0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =@0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =!0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =*0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =(0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =)0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =+0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-#0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =\0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =?0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-/0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/#0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_read_only = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = 0/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/-0;
+NEW_CONNECTION;
+set default_transaction_read_only = yes;
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_READ_ONLY = YES;
+NEW_CONNECTION;
+set default_transaction_read_only = yes;
+NEW_CONNECTION;
+   set default_transaction_read_only = yes;
+NEW_CONNECTION;
+			set default_transaction_read_only = yes;
+NEW_CONNECTION;
+
+
+
+set default_transaction_read_only = yes;
+NEW_CONNECTION;
+set default_transaction_read_only = yes  ;
+NEW_CONNECTION;
+set default_transaction_read_only = yes		;
+NEW_CONNECTION;
+set default_transaction_read_only = yes
+
+;
+NEW_CONNECTION;
+set   default_transaction_read_only   =   yes;
+NEW_CONNECTION;
+set	default_transaction_read_only	=	yes;
+NEW_CONNECTION;
+set
+default_transaction_read_only
+=
+yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =%yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =_yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =&yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =$yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =@yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =!yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =*yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =(yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =)yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =+yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-#yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =\yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =?yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-/yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/#yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_read_only = yes;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = yes/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/-yes;
+NEW_CONNECTION;
+set default_transaction_read_only = no;
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_READ_ONLY = NO;
+NEW_CONNECTION;
+set default_transaction_read_only = no;
+NEW_CONNECTION;
+   set default_transaction_read_only = no;
+NEW_CONNECTION;
+			set default_transaction_read_only = no;
+NEW_CONNECTION;
+
+
+
+set default_transaction_read_only = no;
+NEW_CONNECTION;
+set default_transaction_read_only = no  ;
+NEW_CONNECTION;
+set default_transaction_read_only = no		;
+NEW_CONNECTION;
+set default_transaction_read_only = no
+
+;
+NEW_CONNECTION;
+set   default_transaction_read_only   =   no;
+NEW_CONNECTION;
+set	default_transaction_read_only	=	no;
+NEW_CONNECTION;
+set
+default_transaction_read_only
+=
+no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =%no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =_no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =&no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =$no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =@no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =!no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =*no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =(no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =)no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =+no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-#no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =\no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =?no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-/no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/#no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_read_only = no;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = no/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/-no;
+NEW_CONNECTION;
+set default_transaction_read_only = y;
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_READ_ONLY = Y;
+NEW_CONNECTION;
+set default_transaction_read_only = y;
+NEW_CONNECTION;
+   set default_transaction_read_only = y;
+NEW_CONNECTION;
+			set default_transaction_read_only = y;
+NEW_CONNECTION;
+
+
+
+set default_transaction_read_only = y;
+NEW_CONNECTION;
+set default_transaction_read_only = y  ;
+NEW_CONNECTION;
+set default_transaction_read_only = y		;
+NEW_CONNECTION;
+set default_transaction_read_only = y
+
+;
+NEW_CONNECTION;
+set   default_transaction_read_only   =   y;
+NEW_CONNECTION;
+set	default_transaction_read_only	=	y;
+NEW_CONNECTION;
+set
+default_transaction_read_only
+=
+y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =%y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =_y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =&y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =$y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =@y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =!y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =*y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =(y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =)y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =+y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-#y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =\y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =?y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-/y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/#y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_read_only = y;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = y/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/-y;
+NEW_CONNECTION;
+set default_transaction_read_only = n;
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_READ_ONLY = N;
+NEW_CONNECTION;
+set default_transaction_read_only = n;
+NEW_CONNECTION;
+   set default_transaction_read_only = n;
+NEW_CONNECTION;
+			set default_transaction_read_only = n;
+NEW_CONNECTION;
+
+
+
+set default_transaction_read_only = n;
+NEW_CONNECTION;
+set default_transaction_read_only = n  ;
+NEW_CONNECTION;
+set default_transaction_read_only = n		;
+NEW_CONNECTION;
+set default_transaction_read_only = n
+
+;
+NEW_CONNECTION;
+set   default_transaction_read_only   =   n;
+NEW_CONNECTION;
+set	default_transaction_read_only	=	n;
+NEW_CONNECTION;
+set
+default_transaction_read_only
+=
+n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =%n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =_n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =&n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =$n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =@n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =!n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =*n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =(n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =)n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =+n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-#n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =\n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =?n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =-/n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/#n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_read_only = n;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only = n/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_read_only =/-n;
+NEW_CONNECTION;
 set spanner.read_only_staleness='STRONG';
 NEW_CONNECTION;
 SET SPANNER.READ_ONLY_STALENESS='STRONG';

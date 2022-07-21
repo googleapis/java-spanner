@@ -175,6 +175,11 @@ public class SetPgSessionCharacteristicsTest {
           "set default_transaction_read_only to tru",
           "set default_transaction_read_only to 'tr'",
           "set default_transaction_read_only to \"t\"",
+          "set default_transaction_read_only = on",
+          "set default_transaction_read_only = 1",
+          "set default_transaction_read_only = yes",
+          "set default_transaction_read_only = ye",
+          "set default_transaction_read_only = y",
         };
 
     for (String sql : statements) {
@@ -204,6 +209,11 @@ public class SetPgSessionCharacteristicsTest {
           "set default_transaction_read_only to fal",
           "set default_transaction_read_only to 'fa'",
           "set default_transaction_read_only to \"f\"",
+          "set default_transaction_read_only = off",
+          "set default_transaction_read_only = of",
+          "set default_transaction_read_only = 0",
+          "set default_transaction_read_only = no",
+          "set default_transaction_read_only = n",
         };
 
     for (String sql : statements) {

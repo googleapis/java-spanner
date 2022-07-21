@@ -111,14 +111,24 @@ class ClientSideStatementValueConverters {
       if ("true".equalsIgnoreCase(value)
           || "tru".equalsIgnoreCase(value)
           || "tr".equalsIgnoreCase(value)
-          || "t".equalsIgnoreCase(value)) {
+          || "t".equalsIgnoreCase(value)
+          || "on".equalsIgnoreCase(value)
+          || "1".equalsIgnoreCase(value)
+          || "yes".equalsIgnoreCase(value)
+          || "ye".equalsIgnoreCase(value)
+          || "y".equalsIgnoreCase(value)) {
         return Boolean.TRUE;
       }
       if ("false".equalsIgnoreCase(value)
           || "fals".equalsIgnoreCase(value)
           || "fal".equalsIgnoreCase(value)
           || "fa".equalsIgnoreCase(value)
-          || "f".equalsIgnoreCase(value)) {
+          || "f".equalsIgnoreCase(value)
+          || "off".equalsIgnoreCase(value)
+          || "of".equalsIgnoreCase(value)
+          || "0".equalsIgnoreCase(value)
+          || "no".equalsIgnoreCase(value)
+          || "n".equalsIgnoreCase(value)) {
         return Boolean.FALSE;
       }
       return null;
