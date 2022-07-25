@@ -84,7 +84,6 @@ public class AutocommitDmlModeTest {
       assertThat(connection.isAutocommit(), is(true));
       assertThat(connection.isReadOnly(), is(false));
       assertThat(connection.getAutocommitDmlMode(), is(AutocommitDmlMode.TRANSACTIONAL));
-
       connection.execute(Statement.of(UPDATE));
       verify(txContext).executeUpdate(Statement.of(UPDATE));
       verify(dbClient, never()).executePartitionedUpdate(Statement.of(UPDATE));

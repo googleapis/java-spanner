@@ -923,7 +923,10 @@ public abstract class AbstractConnectionImplTest {
             connection,
             ErrorCode.FAILED_PRECONDITION);
       } else if (type == StatementType.UPDATE) {
-        if (connection.isReadOnly() || connection.isDdlBatchActive()) {
+        if (connection.isReadOnly()
+            || connection.isDdlBatchActive()
+            || (connection.isInTransaction()
+                && connection.getTransactionMode() == TransactionMode.READ_ONLY_TRANSACTION)) {
           expectSpannerException(
               type + " cannot be executed in read-only/batch ddl mode",
               t -> t.executeQuery(getTestStatement(type)),
@@ -1002,7 +1005,10 @@ public abstract class AbstractConnectionImplTest {
         assertThat(connection.executeUpdate(getTestStatement(type)), is(notNullValue()));
       } else if (type == StatementType.UPDATE) {
         // it is an update statement, but updates are not allowed for this connection state
-        if (connection.isReadOnly() || connection.isDdlBatchActive()) {
+        if (connection.isReadOnly()
+            || connection.isDdlBatchActive()
+            || (connection.isInTransaction()
+                && connection.getTransactionMode() == TransactionMode.READ_ONLY_TRANSACTION)) {
           expectSpannerException(
               type + " cannot be executed in read-only/batch ddl mode",
               t -> t.executeQuery(getTestStatement(type)),

@@ -82,7 +82,8 @@ public class IntegrationTestEnv extends ExternalResource {
     this.config.setUp();
 
     SpannerOptions options = config.spannerOptions();
-    String instanceProperty = System.getProperty(TEST_INSTANCE_PROPERTY, "");
+    // String instanceProperty = System.getProperty(TEST_INSTANCE_PROPERTY, "");
+    String instanceProperty = "projects/span-cloud-testing/instances/rajatrb-test-instance";
     InstanceId instanceId;
     if (!instanceProperty.isEmpty()) {
       instanceId = InstanceId.of(instanceProperty);

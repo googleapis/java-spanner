@@ -854,7 +854,31 @@ class ConnectionImpl implements Connection {
       case QUERY:
         return StatementResultImpl.of(internalExecuteQuery(parsedStatement, AnalyzeMode.NONE));
       case UPDATE:
-        return StatementResultImpl.of(get(internalExecuteUpdateAsync(parsedStatement)));
+        if (this.isReadOnly()
+            || (this.isInTransaction()
+                && this.getTransactionMode() == TransactionMode.READ_ONLY_TRANSACTION)) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.FAILED_PRECONDITION,
+              "Update cannot be executed in read-only mode/read-only transaction: "
+                  + parsedStatement.getSqlWithoutComments());
+        }
+        // If autocommit mode is ON, Partitioned DML in autocommit mode, or in batch.
+        // Return update count.
+        if (this.isAutocommit()
+            || (this.autocommitDmlMode == AutocommitDmlMode.PARTITIONED_NON_ATOMIC)
+            || this.isInBatch()) {
+          return StatementResultImpl.of(get(internalExecuteUpdateAsync(parsedStatement)));
+        }
+        ResultSet rs = internalExecuteQuery(parsedStatement, AnalyzeMode.NONE);
+
+        // DML with Returning clause. Return ResultSet.
+        if (rs.getColumnCount() > 0) {
+          return StatementResultImpl.of(rs);
+        }
+
+        // Normal DML. Return update count.
+        while (rs.next()) {}
+        return StatementResultImpl.of(Objects.requireNonNull(rs.getStats()).getRowCountExact());
       case DDL:
         get(executeDdlAsync(parsedStatement));
         return StatementResultImpl.noResult();
@@ -882,7 +906,42 @@ class ConnectionImpl implements Connection {
         return AsyncStatementResultImpl.of(
             internalExecuteQueryAsync(parsedStatement, AnalyzeMode.NONE));
       case UPDATE:
-        return AsyncStatementResultImpl.of(internalExecuteUpdateAsync(parsedStatement));
+        ApiFuture<ResultSet> resultSet =
+            internalExecuteQueryAsyncGetApiFutureResultSet(parsedStatement, AnalyzeMode.NONE);
+
+        ApiFuture<ResultSet> resultSetApiFuture =
+            ApiFutures.transformAsync(
+                resultSet,
+                input -> {
+                  // DML with Returning clause. Return ResultSet.
+                  if (input.getColumnCount() > 0) {
+                    return ApiFutures.immediateFuture(input);
+                  }
+                  // Normal DML statement. Need to return update count.
+                  // Cancel as this transformAsync cannot return
+                  // ApiFuture<Long>.
+                  // <DOUBT>
+                  return ApiFutures.immediateCancelledFuture();
+                },
+                MoreExecutors.directExecutor());
+
+        if (!resultSetApiFuture.isCancelled()) {
+          return AsyncStatementResultImpl.of(
+              ResultSets.toAsyncResultSet(resultSetApiFuture, spanner.getAsyncExecutorProvider()));
+        }
+
+        // Normal DML statement. Need to return update count.
+        ApiFuture<Long> longApiFuture =
+            ApiFutures.transformAsync(
+                resultSet,
+                input -> {
+                  while (input.next()) {}
+                  return ApiFutures.immediateFuture(
+                      Objects.requireNonNull(input.getStats()).getRowCountExact());
+                },
+                MoreExecutors.directExecutor());
+
+        return AsyncStatementResultImpl.of(longApiFuture);
       case DDL:
         return AsyncStatementResultImpl.noResult(executeDdlAsync(parsedStatement));
       case UNKNOWN:
@@ -926,7 +985,10 @@ class ConnectionImpl implements Connection {
             .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments())
             .getResultSet();
       case UPDATE:
-        if (analyzeMode == AnalyzeMode.NONE && this.isReadOnly()) {
+        if (analyzeMode == AnalyzeMode.NONE
+            && (this.isReadOnly()
+                || (this.isInTransaction()
+                    && this.getTransactionMode() == TransactionMode.READ_ONLY_TRANSACTION))) {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.FAILED_PRECONDITION,
               "Update cannot be executed in read-only mode: "
@@ -955,6 +1017,7 @@ class ConnectionImpl implements Connection {
   private AsyncResultSet parseAndExecuteQueryAsync(
       Statement query, AnalyzeMode analyzeMode, QueryOption... options) {
     Preconditions.checkNotNull(query);
+    Preconditions.checkNotNull(analyzeMode);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
     switch (parsedStatement.getType()) {
@@ -963,12 +1026,37 @@ class ConnectionImpl implements Connection {
             parsedStatement
                 .getClientSideStatement()
                 .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments())
-                .getResultSet(),
-            spanner.getAsyncExecutorProvider(),
-            options);
-      case QUERY:
+                .getResultSet());
       case UPDATE:
-        return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
+        if (analyzeMode == AnalyzeMode.NONE
+            && (this.isReadOnly()
+                || (this.isInTransaction()
+                    && this.getTransactionMode() == TransactionMode.READ_ONLY_TRANSACTION))) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.FAILED_PRECONDITION,
+              "Update cannot be executed in read-only mode: "
+                  + parsedStatement.getSqlWithoutComments());
+        }
+      case QUERY:
+        ApiFuture<ResultSet> resultSet =
+            internalExecuteQueryAsyncGetApiFutureResultSet(parsedStatement, analyzeMode, options);
+        if (analyzeMode != AnalyzeMode.NONE) {
+          return ResultSets.toAsyncResultSet(resultSet, spanner.getAsyncExecutorProvider());
+        }
+        return ResultSets.toAsyncResultSet(
+            ApiFutures.transformAsync(
+                resultSet,
+                input -> {
+                  if (input.getColumnCount() == 0) {
+                    throw SpannerExceptionFactory.newSpannerException(
+                        ErrorCode.INVALID_ARGUMENT,
+                        "No results were returned by the query: "
+                            + parsedStatement.getSqlWithoutComments());
+                  }
+                  return ApiFutures.immediateFuture(input);
+                },
+                MoreExecutors.directExecutor()),
+            spanner.getAsyncExecutorProvider());
       case DDL:
       case UNKNOWN:
       default:
@@ -985,7 +1073,9 @@ class ConnectionImpl implements Connection {
     ParsedStatement parsedStatement = getStatementParser().parse(update);
     switch (parsedStatement.getType()) {
       case UPDATE:
-        if (this.autocommitDmlMode == AutocommitDmlMode.PARTITIONED_NON_ATOMIC) {
+        if (this.isAutocommit()
+            || (this.autocommitDmlMode == AutocommitDmlMode.PARTITIONED_NON_ATOMIC)
+            || this.isInBatch()) {
           return get(internalExecuteUpdateAsync(parsedStatement));
         }
         ResultSet rs = internalExecuteQuery(parsedStatement, AnalyzeMode.NONE);
@@ -995,7 +1085,7 @@ class ConnectionImpl implements Connection {
               "Statement is not an normal DML statement: "
                   + parsedStatement.getSqlWithoutComments());
         }
-        while (rs.next()) ;
+        while (rs.next()) {}
         return Objects.requireNonNull(rs.getStats()).getRowCountExact();
       case DDL:
         execute(update);
@@ -1017,7 +1107,28 @@ class ConnectionImpl implements Connection {
     ParsedStatement parsedStatement = getStatementParser().parse(update);
     switch (parsedStatement.getType()) {
       case UPDATE:
-        return internalExecuteUpdateAsync(parsedStatement);
+        if (this.isAutocommit()
+            || (this.autocommitDmlMode == AutocommitDmlMode.PARTITIONED_NON_ATOMIC)
+            || this.isInBatch()) {
+          return internalExecuteUpdateAsync(parsedStatement);
+        }
+        ApiFuture<ResultSet> rs =
+            internalExecuteQueryAsyncGetApiFutureResultSet(parsedStatement, AnalyzeMode.NONE);
+
+        return ApiFutures.transformAsync(
+            rs,
+            input -> {
+              if (input.getColumnCount() > 0) {
+                throw SpannerExceptionFactory.newSpannerException(
+                    ErrorCode.INVALID_ARGUMENT,
+                    "Statement is not an normal DML statement: "
+                        + parsedStatement.getSqlWithoutComments());
+              }
+              while (input.next()) {}
+              return ApiFutures.immediateFuture(
+                  Objects.requireNonNull(input.getStats()).getRowCountExact());
+            },
+            MoreExecutors.directExecutor());
       case CLIENT_SIDE:
       case QUERY:
       case DDL:
@@ -1170,12 +1281,19 @@ class ConnectionImpl implements Connection {
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
-    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return ResultSets.toAsyncResultSet(
-        transaction.executeQueryAsync(
-            statement, analyzeMode, mergeQueryRequestOptions(mergeQueryStatementTag(options))),
+        internalExecuteQueryAsyncGetApiFutureResultSet(statement, analyzeMode, options),
         spanner.getAsyncExecutorProvider(),
         options);
+  }
+
+  private ApiFuture<ResultSet> internalExecuteQueryAsyncGetApiFutureResultSet(
+      final ParsedStatement statement,
+      final AnalyzeMode analyzeMode,
+      final QueryOption... options) {
+    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
+    return transaction.executeQueryAsync(
+        statement, analyzeMode, mergeQueryRequestOptions(mergeQueryStatementTag(options)));
   }
 
   private ApiFuture<Long> internalExecuteUpdateAsync(
