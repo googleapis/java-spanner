@@ -1082,7 +1082,7 @@ class ConnectionImpl implements Connection {
         if (rs.getColumnCount() > 0) {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INVALID_ARGUMENT,
-              "Statement is not an normal DML statement: "
+              "The statement returned a query result, for example because it is a query or a DML statement with a returning clause. Use executeQuery instead to execute these statements. Statement: "
                   + parsedStatement.getSqlWithoutComments());
         }
         while (rs.next()) {}
