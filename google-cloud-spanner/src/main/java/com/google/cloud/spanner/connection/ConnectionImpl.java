@@ -924,6 +924,7 @@ class ConnectionImpl implements Connection {
                     return ApiFutures.immediateFuture(StatementResultImpl.of(input));
                   }
                   // Normal DML statement. Need to return update count.
+                  // Call resultSet.next() until all rows are exhausted to obtain stats.
                   while (input.next()) {}
                   return ApiFutures.immediateFuture(
                       StatementResultImpl.of(Objects.requireNonNull(input.getStats()).getRowCountExact()));
@@ -1114,6 +1115,7 @@ class ConnectionImpl implements Connection {
                     "Statement is not an normal DML statement: "
                         + parsedStatement.getSqlWithoutComments()));
               }
+              // Call resultSet.next() until all rows are exhausted to obtain stats.
               while (input.next()) {}
               return ApiFutures.immediateFuture(
                   Objects.requireNonNull(input.getStats()).getRowCountExact());

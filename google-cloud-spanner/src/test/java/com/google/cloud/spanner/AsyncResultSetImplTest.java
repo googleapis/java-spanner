@@ -195,7 +195,7 @@ public class AsyncResultSetImplTest {
     finishedLatch.await();
     // There should be between 1 and 4 callbacks, depending on the timing of the threads.
     // Normally, there should be just 1 callback.
-    assertThat(callbackCounter.get()).isIn(Range.closed(1, 5));
+    assertThat(callbackCounter.get()).isIn(Range.closed(1, 4));
     assertThat(rowCounter.get()).isEqualTo(3);
   }
 
