@@ -392,6 +392,18 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   }
 
   @Test
+  public void testExecuteInvalidQueryAsync() {
+    try (Connection connection = createConnection()) {
+      try {
+        connection.executeQueryAsync(INSERT_STATEMENT).next();
+        fail("Missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      }
+    }
+  }
+
+  @Test
   public void testExecuteInvalidUpdateAsync() {
     try (Connection connection = createConnection()) {
       try {
