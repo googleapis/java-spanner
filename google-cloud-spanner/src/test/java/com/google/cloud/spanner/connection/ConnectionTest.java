@@ -211,8 +211,6 @@ public class ConnectionTest {
 
     @Test
     public void testBatchUpdateAborted() {
-      mockSpanner.putStatementResult(
-          MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
       try (Connection connection = createConnection()) {
         connection.setRetryAbortsInternally(false);
         for (boolean abort : new Boolean[] {true, false}) {
@@ -349,8 +347,6 @@ public class ConnectionTest {
 
     @Test
     public void testPartitionedUpdate_RPCPriority() {
-      mockSpanner.putStatementResult(
-          MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
       try (Connection connection = createConnection()) {
         connection.setAutocommit(true);
         connection.setAutocommitDmlMode(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);
@@ -370,8 +366,6 @@ public class ConnectionTest {
 
     @Test
     public void testBatchUpdate_RPCPriority() {
-      mockSpanner.putStatementResult(
-          MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
       try (Connection connection = createConnection()) {
         connection.executeBatchUpdate(Collections.singleton(INSERT_STATEMENT));
         connection.commit();
@@ -398,8 +392,6 @@ public class ConnectionTest {
 
     @Test
     public void testDmlBatch_RPCPriority() {
-      mockSpanner.putStatementResult(
-          MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
       try (Connection connection = createConnection()) {
         for (boolean autocommit : new boolean[] {true, false}) {
           connection.setAutocommit(autocommit);
@@ -424,8 +416,6 @@ public class ConnectionTest {
 
     @Test
     public void testRunBatch_RPCPriority() {
-      mockSpanner.putStatementResult(
-          MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
       try (Connection connection = createConnection()) {
         connection.startBatchDml();
         connection.execute(INSERT_STATEMENT);

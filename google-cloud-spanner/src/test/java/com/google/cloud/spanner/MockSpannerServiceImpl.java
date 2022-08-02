@@ -1658,7 +1658,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
             .build();
     if (exact) {
-      System.out.println(transaction.getId() == ByteString.empty());
       responseObserver.onNext(
           PartialResultSet.newBuilder()
               .setMetadata(
@@ -1821,7 +1820,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     ensureMostRecentTransaction(session, transactionId);
     if (isReadWriteTransaction(transactionId)) {
       if (abortNextStatement.getAndSet(false) || abortProbability > random.nextDouble()) {
-        System.out.println("Simulating abort");
         rollbackTransaction(transactionId);
         throw createAbortedException(transactionId);
       }
