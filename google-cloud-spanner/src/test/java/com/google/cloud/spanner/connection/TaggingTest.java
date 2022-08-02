@@ -143,8 +143,6 @@ public class TaggingTest extends AbstractMockServerTest {
 
   @Test
   public void testPartitionedUpdate_NoTags() {
-    mockSpanner.putStatementResult(
-        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       connection.setAutocommitDmlMode(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);
@@ -299,8 +297,6 @@ public class TaggingTest extends AbstractMockServerTest {
 
   @Test
   public void testPartitionedUpdate_StatementTag() {
-    mockSpanner.putStatementResult(
-        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       connection.setAutocommitDmlMode(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);

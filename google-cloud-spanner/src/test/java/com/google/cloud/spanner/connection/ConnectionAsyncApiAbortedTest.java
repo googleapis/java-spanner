@@ -30,6 +30,7 @@ import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
@@ -614,15 +615,7 @@ public class ConnectionAsyncApiAbortedTest extends AbstractMockServerTest {
   @Test
   public void testBlindUpdateAborted_SelectResults() {
     final Statement update1 = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=100");
-    final com.google.spanner.v1.ResultSet UPDATE1_RESULTSET =
-        com.google.spanner.v1.ResultSet.newBuilder()
-            .setStats(ResultSetStats.newBuilder().setRowCountExact(100))
-            .setMetadata(
-                ResultSetMetadata.getDefaultInstance()
-                    .toBuilder()
-                    .setRowType(StructType.getDefaultInstance()))
-            .build();
-    mockSpanner.putStatementResult(StatementResult.query(update1, UPDATE1_RESULTSET));
+    mockSpanner.putStatementResult(StatementResult.update(update1, 100));
 
     RetryCounter counter = new RetryCounter();
     try (Connection connection = createConnection(counter)) {

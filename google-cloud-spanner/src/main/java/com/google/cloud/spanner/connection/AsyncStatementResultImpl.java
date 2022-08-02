@@ -22,9 +22,14 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.protobuf.Api;
+import java.util.concurrent.Executor;
 
 class AsyncStatementResultImpl implements AsyncStatementResult {
 
@@ -125,5 +130,92 @@ class AsyncStatementResultImpl implements AsyncStatementResult {
     ConnectionPreconditions.checkState(
         type == ResultType.NO_RESULT, "This result does not contain a 'no-result' result");
     return noResult;
+  }
+}
+
+class AsyncStatementResultFromFutureImpl implements AsyncStatementResult {
+
+  static AsyncStatementResult of(ApiFuture<StatementResult> statementResultApiFuture, ExecutorProvider executorProvider) {
+    return new AsyncStatementResultFromFutureImpl(statementResultApiFuture, executorProvider);
+  }
+
+  private final ApiFuture<StatementResult> statementResult;
+  private final ExecutorProvider executorProvider;
+
+  private AsyncStatementResultFromFutureImpl(ApiFuture<StatementResult> statementResultApiFuture, ExecutorProvider executorProvider) {
+    this.statementResult = statementResultApiFuture;
+    this.executorProvider = executorProvider;
+  }
+
+  public ApiFuture<ResultType> getResultTypeAsync() {
+    return ApiFutures.transformAsync(
+        this.statementResult,
+        input -> {
+          return ApiFutures.immediateFuture(input.getResultType());
+        },
+        MoreExecutors.directExecutor());
+  }
+
+  @Override
+  public ResultType getResultType() {
+    return get(getResultTypeAsync());
+  }
+
+  @Override
+  public ClientSideStatementType getClientSideStatementType() {
+    return null;
+  }
+
+  @Override
+  public ResultSet getResultSet() {
+    return getResultSetAsync();
+  }
+
+  @Override
+  public Long getUpdateCount() {
+    return get(getUpdateCountAsync());
+  }
+
+  @Override
+  public AsyncResultSet getResultSetAsync() {
+    ApiFuture<ResultSet> resultSetApiFuture = ApiFutures.transformAsync(
+        this.statementResult,
+        input -> {
+          if (input.getResultType() == ResultType.RESULT_SET) {
+            return ApiFutures.immediateFuture(input.getResultSet());
+          }
+          return ApiFutures.immediateFailedFuture(SpannerExceptionFactory.newSpannerException(
+              ErrorCode.FAILED_PRECONDITION, "This result does not contain a ResultSet"));
+        },
+        MoreExecutors.directExecutor());
+    return ResultSets.toAsyncResultSet(resultSetApiFuture, executorProvider);
+  }
+
+  @Override
+  public ApiFuture<Long> getUpdateCountAsync() {
+    return ApiFutures.transformAsync(
+        this.statementResult,
+        input -> {
+          if (input.getResultType() == ResultType.UPDATE_COUNT) {
+            return ApiFutures.immediateFuture(input.getUpdateCount());
+          }
+          return ApiFutures.immediateFailedFuture(SpannerExceptionFactory.newSpannerException(
+              ErrorCode.FAILED_PRECONDITION, "This result does not contain an update count"));
+        },
+        MoreExecutors.directExecutor());
+  }
+
+  @Override
+  public ApiFuture<Void> getNoResultAsync() {
+    return ApiFutures.transformAsync(
+        this.statementResult,
+        input -> {
+          if (input.getResultType() == ResultType.NO_RESULT) {
+            return ApiFutures.immediateFuture(null);
+          }
+          return ApiFutures.immediateFailedFuture(SpannerExceptionFactory.newSpannerException(
+              ErrorCode.FAILED_PRECONDITION, "This result does not contain a 'no-result' result"));
+        },
+        MoreExecutors.directExecutor());
   }
 }

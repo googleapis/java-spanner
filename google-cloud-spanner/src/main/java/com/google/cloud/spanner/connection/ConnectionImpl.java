@@ -906,42 +906,32 @@ class ConnectionImpl implements Connection {
         return AsyncStatementResultImpl.of(
             internalExecuteQueryAsync(parsedStatement, AnalyzeMode.NONE));
       case UPDATE:
+        if (this.isAutocommit()
+            || (this.autocommitDmlMode == AutocommitDmlMode.PARTITIONED_NON_ATOMIC)
+            || this.isInBatch()) {
+          return AsyncStatementResultImpl.of(internalExecuteUpdateAsync(parsedStatement));
+        }
         ApiFuture<ResultSet> resultSet =
             internalExecuteQueryAsyncGetApiFutureResultSet(parsedStatement, AnalyzeMode.NONE);
 
-        ApiFuture<ResultSet> resultSetApiFuture =
+        ApiFuture<StatementResult> statementResultApiFuture =
             ApiFutures.transformAsync(
                 resultSet,
                 input -> {
+                  System.out.println(input.getColumnCount());
                   // DML with Returning clause. Return ResultSet.
                   if (input.getColumnCount() > 0) {
-                    return ApiFutures.immediateFuture(input);
+                    return ApiFutures.immediateFuture(StatementResultImpl.of(input));
                   }
                   // Normal DML statement. Need to return update count.
-                  // Cancel as this transformAsync cannot return
-                  // ApiFuture<Long>.
-                  // <DOUBT>
-                  return ApiFutures.immediateCancelledFuture();
-                },
-                MoreExecutors.directExecutor());
-
-        if (!resultSetApiFuture.isCancelled()) {
-          return AsyncStatementResultImpl.of(
-              ResultSets.toAsyncResultSet(resultSetApiFuture, spanner.getAsyncExecutorProvider()));
-        }
-
-        // Normal DML statement. Need to return update count.
-        ApiFuture<Long> longApiFuture =
-            ApiFutures.transformAsync(
-                resultSet,
-                input -> {
                   while (input.next()) {}
                   return ApiFutures.immediateFuture(
-                      Objects.requireNonNull(input.getStats()).getRowCountExact());
+                      StatementResultImpl.of(Objects.requireNonNull(input.getStats()).getRowCountExact()));
                 },
                 MoreExecutors.directExecutor());
 
-        return AsyncStatementResultImpl.of(longApiFuture);
+        return AsyncStatementResultFromFutureImpl.of(
+            statementResultApiFuture, spanner.getAsyncExecutorProvider());
       case DDL:
         return AsyncStatementResultImpl.noResult(executeDdlAsync(parsedStatement));
       case UNKNOWN:
@@ -1119,10 +1109,10 @@ class ConnectionImpl implements Connection {
             rs,
             input -> {
               if (input.getColumnCount() > 0) {
-                throw SpannerExceptionFactory.newSpannerException(
+                return ApiFutures.immediateFailedFuture(SpannerExceptionFactory.newSpannerException(
                     ErrorCode.INVALID_ARGUMENT,
                     "Statement is not an normal DML statement: "
-                        + parsedStatement.getSqlWithoutComments());
+                        + parsedStatement.getSqlWithoutComments()));
               }
               while (input.next()) {}
               return ApiFutures.immediateFuture(

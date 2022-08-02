@@ -252,15 +252,11 @@ public class AbortedTest extends AbstractMockServerTest {
       connection.setStatementTag("statement-tag");
       connection.executeUpdate(INSERT_STATEMENT);
       connection.setStatementTag("statement-tag");
-      mockSpanner.putStatementResult(
-          MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
       connection.executeBatchUpdate(Collections.singleton(INSERT_STATEMENT));
       connection.setStatementTag("statement-tag");
       connection.executeQuery(SELECT_COUNT_STATEMENT);
 
       mockSpanner.abortNextStatement();
-      mockSpanner.putStatementResult(
-          MockSpannerServiceImpl.StatementResult.query(INSERT_STATEMENT, UPDATE_RESULTSET));
       connection.commit();
     }
     long executeSqlRequestCount =

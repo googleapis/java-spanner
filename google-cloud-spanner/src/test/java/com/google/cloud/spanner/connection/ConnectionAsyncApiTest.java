@@ -241,8 +241,6 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
 
   @Test
   public void testReadWriteMultipleAsyncStatements() {
-    mockSpanner.putStatementResult(
-        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       assertThat(connection.isAutocommit()).isFalse();
       ApiFuture<Long> update1 = connection.executeUpdateAsync(INSERT_STATEMENT);
@@ -317,8 +315,6 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
 
   @Test
   public void testAutocommitRunBatch() {
-    mockSpanner.putStatementResult(
-        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       connection.execute(Statement.of("START BATCH DML"));
@@ -336,8 +332,6 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
 
   @Test
   public void testAutocommitRunBatchAsync() {
-    mockSpanner.putStatementResult(
-        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connection.executeAsync(Statement.of("SET AUTOCOMMIT = TRUE"));
       connection.executeAsync(Statement.of("START BATCH DML"));
@@ -546,7 +540,7 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
       connectionConfigurator.apply(connection);
       for (boolean timeout : new boolean[] {true, false}) {
         if (timeout) {
-          mockSpanner.setExecuteSqlExecutionTime(
+          mockSpanner.setExecuteStreamingSqlExecutionTime(
               SimulatedExecutionTime.ofMinimumAndRandomTime(10, 0));
           connection.setStatementTimeout(1L, TimeUnit.NANOSECONDS);
         } else {
@@ -613,8 +607,6 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   }
 
   private void testExecuteBatchUpdateAsync(Function<Connection, Void> connectionConfigurator) {
-    mockSpanner.putStatementResult(
-        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connectionConfigurator.apply(connection);
       for (boolean timeout : new boolean[] {true, false}) {
@@ -651,8 +643,6 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   }
 
   private void testExecuteBatchUpdate(Function<Connection, Void> connectionConfigurator) {
-    mockSpanner.putStatementResult(
-        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connectionConfigurator.apply(connection);
       for (boolean timeout : new boolean[] {true, false}) {
@@ -824,8 +814,6 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
   private void testExecuteBatchUpdateAsyncIsNonBlocking(
       Function<Connection, Void> connectionConfigurator) {
     mockSpanner.freeze();
-    mockSpanner.putStatementResult(
-        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connectionConfigurator.apply(connection);
       ApiFuture<long[]> updateCounts =

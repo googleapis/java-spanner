@@ -36,6 +36,7 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.StructType;
@@ -200,15 +201,6 @@ public abstract class AbstractMockServerTest {
     mockSpanner.clearRequests();
     mockDatabaseAdmin.getRequests().clear();
     mockInstanceAdmin.getRequests().clear();
-  }
-
-  @Before
-  public void setupMockSpannerResults() {
-    mockSpanner.putStatementResult(
-        StatementResult.query(SELECT_COUNT_STATEMENT, SELECT_COUNT_RESULTSET_BEFORE_INSERT));
-    mockSpanner.putStatementResult(StatementResult.query(INSERT_STATEMENT, UPDATE_RESULTSET));
-    mockSpanner.putStatementResult(
-        StatementResult.query(SELECT_RANDOM_STATEMENT, RANDOM_RESULT_SET));
   }
 
   protected java.sql.Connection createJdbcConnection() throws SQLException {

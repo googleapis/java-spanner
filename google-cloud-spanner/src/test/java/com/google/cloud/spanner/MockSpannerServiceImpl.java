@@ -20,7 +20,6 @@ import com.google.api.gax.grpc.testing.MockGrpcService;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.spanner.AbstractResultSet.GrpcStruct;
-import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult.StatementResultType;
 import com.google.cloud.spanner.SessionPool.SessionPoolTransactionContext;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.base.Optional;
@@ -234,7 +233,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   /** The result of a statement that is executed on a {@link MockSpannerServiceImpl}. */
   public static class StatementResult {
-    public enum StatementResultType {
+    private enum StatementResultType {
       RESULT_SET,
       UPDATE_COUNT,
       EXCEPTION
@@ -569,9 +568,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private Queue<Exception> exceptions = new ConcurrentLinkedQueue<>();
   private boolean stickyGlobalExceptions = false;
   private ConcurrentMap<Statement, StatementResult> statementResults = new ConcurrentHashMap<>();
-  private ConcurrentMap<
-          Statement, ConcurrentMap<StatementResult.StatementResultType, StatementResult>>
-      allStatementResults = new ConcurrentHashMap<>();
   private ConcurrentMap<Statement, Long> statementGetCounts = new ConcurrentHashMap<>();
   private ConcurrentMap<String, StatementResult> partialStatementResults =
       new ConcurrentHashMap<>();
@@ -654,11 +650,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     Preconditions.checkNotNull(result);
     synchronized (lock) {
       statementResults.put(result.statement, result);
-      if (!allStatementResults.containsKey(result.statement)) {
-        allStatementResults.put(result.statement, new ConcurrentHashMap<>());
-      }
-      allStatementResults.get(result.statement).put(result.getType(), result);
-      allStatementResults.put(result.statement, allStatementResults.get(result.statement));
     }
   }
 
@@ -666,11 +657,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     synchronized (lock) {
       for (StatementResult result : results) {
         statementResults.put(result.statement, result);
-        if (!allStatementResults.containsKey(result.statement)) {
-          allStatementResults.put(result.statement, new ConcurrentHashMap<>());
-        }
-        allStatementResults.get(result.statement).put(result.getType(), result);
-        allStatementResults.put(result.statement, allStatementResults.get(result.statement));
       }
     }
   }
@@ -706,18 +692,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                       + "Call TestSpannerImpl#addStatementResult(StatementResult) before executing the statement.",
                   statement.toString()))
           .asRuntimeException();
-    }
-    return res;
-  }
-
-  private StatementResult getResult(Statement statement, StatementResult.StatementResultType type) {
-    StatementResult res;
-    synchronized (lock) {
-      if (!(allStatementResults.containsKey(statement)
-          && allStatementResults.get(statement).containsKey(type))) {
-        return null;
-      }
-      res = allStatementResults.get(statement).get(type);
     }
     return res;
   }
@@ -1119,13 +1093,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                       .build();
               break resultLoop;
             case RESULT_SET:
-              // Check if result containing UPDATE_COUNT exists. If not, throw an exception.
-              res = getResult(spannerStatement, StatementResult.StatementResultType.UPDATE_COUNT);
-              if (res == null) {
-                throw Status.INVALID_ARGUMENT
-                    .withDescription("Not a DML statement: " + statement.getSql())
-                    .asRuntimeException();
-              }
+              throw Status.INVALID_ARGUMENT
+                  .withDescription("Not a DML statement: " + statement.getSql())
+                  .asRuntimeException();
             case UPDATE_COUNT:
               results.add(res);
               break;
@@ -1188,23 +1158,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
     sessionLastUsed.put(session.getName(), Instant.now());
     try {
+      executeStreamingSqlExecutionTime.simulateExecutionTime(
+          exceptions, stickyGlobalExceptions, freezeLock);
       Statement statement =
           buildStatement(request.getSql(), request.getParamTypesMap(), request.getParams());
       ByteString transactionId = getTransactionId(session, request.getTransaction());
       boolean isPartitioned = isPartitionedDmlTransaction(transactionId);
-      if (isPartitioned) {
-        StatementResult firstRes = getResult(statement);
-        if (firstRes.getType() == StatementResultType.EXCEPTION) {
-          throw firstRes.getException();
-        }
-        StatementResult res = getResult(statement, StatementResultType.UPDATE_COUNT);
-        if (res != null) {
-          returnPartialResultSet(
-              session, 0L, !isPartitioned, responseObserver, request.getTransaction(), false);
-        }
-      }
-      executeStreamingSqlExecutionTime.simulateExecutionTime(
-          exceptions, stickyGlobalExceptions, freezeLock);
       // Get or start transaction
       if (!request.getPartitionToken().isEmpty()) {
         List<ByteString> tokens =
@@ -1234,13 +1193,34 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         case UPDATE_COUNT:
           if (isPartitioned) {
             commitTransaction(transactionId);
+            ResultSet resultSet = ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(StructType.getDefaultInstance())
+                        .build())
+                .setStats(ResultSetStats.newBuilder().setRowCountLowerBound(res.getUpdateCount()).build())
+                .build();
+            returnPartialResultSet(
+                resultSet,
+                transactionId,
+                request.getTransaction(),
+                responseObserver,
+                getExecuteStreamingSqlExecutionTime());
+          } else {
+            ResultSet resultSet = ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(StructType.getDefaultInstance())
+                        .build())
+                .setStats(ResultSetStats.newBuilder().setRowCountExact(res.getUpdateCount()).build())
+                .build();
+            returnPartialResultSet(
+                resultSet,
+                transactionId,
+                request.getTransaction(),
+                responseObserver,
+                getExecuteStreamingSqlExecutionTime());
           }
-          returnPartialResultSet(
-              session,
-              res.getUpdateCount(),
-              !isPartitioned,
-              responseObserver,
-              request.getTransaction());
           break;
         default:
           throw new IllegalStateException("Unknown result type: " + res.getType());
@@ -1678,6 +1658,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
             .build();
     if (exact) {
+      System.out.println(transaction.getId() == ByteString.empty());
       responseObserver.onNext(
           PartialResultSet.newBuilder()
               .setMetadata(
@@ -1840,6 +1821,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     ensureMostRecentTransaction(session, transactionId);
     if (isReadWriteTransaction(transactionId)) {
       if (abortNextStatement.getAndSet(false) || abortProbability > random.nextDouble()) {
+        System.out.println("Simulating abort");
         rollbackTransaction(transactionId);
         throw createAbortedException(transactionId);
       }

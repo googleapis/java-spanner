@@ -249,7 +249,7 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testTimeoutExceptionReadWriteAutocommitSlowUpdate() {
-    mockSpanner.setExecuteSqlExecutionTime(
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
 
     try (Connection connection = createConnection()) {
@@ -263,8 +263,9 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testTimeoutExceptionReadWriteAutocommitSlowUpdateMultipleStatements() {
-    mockSpanner.setExecuteSqlExecutionTime(
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(EXECUTION_TIME_SLOW_STATEMENT, 0));
+    mockSpanner.putStatementResult(MockSpannerServiceImpl.StatementResult.update(Statement.of(SLOW_UPDATE), 1));
 
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
@@ -332,8 +333,6 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
   @Test
   public void testTimeoutExceptionReadWriteAutocommitPartitioned() {
-    mockSpanner.putStatementResult(
-        MockSpannerServiceImpl.StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       connection.setAutocommitDmlMode(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);

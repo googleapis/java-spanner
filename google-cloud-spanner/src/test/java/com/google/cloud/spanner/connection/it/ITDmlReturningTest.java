@@ -130,9 +130,9 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
       try {
         connection.executeUpdateAsync(Statement.of(UPDATE)).get();
         fail("missing exception");
-      } catch (SpannerException e) {
-        assertEquals(e.getErrorCode(), ErrorCode.INVALID_ARGUMENT);
-      } catch (ExecutionException | InterruptedException e) {
+      } catch (ExecutionException e) {
+        assertEquals(((SpannerException)e.getCause()).getErrorCode(), ErrorCode.INVALID_ARGUMENT);
+      } catch (InterruptedException e) {
         // ignore exception
       }
     }

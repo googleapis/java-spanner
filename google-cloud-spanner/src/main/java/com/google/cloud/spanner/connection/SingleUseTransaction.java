@@ -416,7 +416,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     return executeStatementAsync(
         update,
         callable,
-        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
+        ImmutableList.of(SpannerGrpc.getExecuteStreamingSqlMethod(), SpannerGrpc.getCommitMethod()));
   }
 
   private ApiFuture<ResultSet> executeDmlReturningAsync(
@@ -466,7 +466,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     return executeStatementAsync(
         update,
         callable,
-        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
+        ImmutableList.of(SpannerGrpc.getExecuteStreamingSqlMethod(), SpannerGrpc.getCommitMethod()));
   }
 
   private ApiFuture<Long> executePartitionedUpdateAsync(

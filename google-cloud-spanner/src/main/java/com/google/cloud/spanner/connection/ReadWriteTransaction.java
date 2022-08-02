@@ -455,7 +455,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               },
               // ignore interceptors here as they are invoked in the Callable.
               InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.of(SpannerGrpc.getExecuteSqlMethod()));
+              ImmutableList.of(SpannerGrpc.getExecuteStreamingSqlMethod()));
     } else {
       res =
           executeStatementAsync(
@@ -473,7 +473,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                     .analyzeUpdate(
                         update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options);
               },
-              SpannerGrpc.getExecuteSqlMethod());
+              SpannerGrpc.getExecuteStreamingSqlMethod());
     }
     ApiFutures.addCallback(
         res,
