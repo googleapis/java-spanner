@@ -31,7 +31,7 @@ import com.google.protobuf.Empty;
  * <p>It is a good idea to delete idle and/or unneeded sessions. Aside from explicit deletes,
  * Cloud Spanner can delete sessions for which no operations are sent for more than an hour,
  * or due to internal errors. If a session is deleted, requests to it return
- * {@link ErrorCode#NOT_FOUND}. 
+ * {@link ErrorCode#NOT_FOUND}.
  *
  * <p>Idle sessions can be kept alive by sending a trivial SQL query periodically, for example,
  * {@code SELECT 1}.
