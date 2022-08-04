@@ -198,6 +198,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected String getPgJsonbInternal(int columnIndex) {
+      return values.get(columnIndex).getPgJsonb();
+    }
+
+    @Override
     protected ByteArray getBytesInternal(int columnIndex) {
       return values.get(columnIndex).getBytes();
     }
@@ -265,6 +270,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     @Override
     protected List<String> getJsonListInternal(int columnIndex) {
       return values.get(columnIndex).getJsonArray();
+    }
+
+    @Override
+    protected List<String> getPgJsonbListInternal(int columnIndex) {
+      return values.get(columnIndex).getPgJsonbArray();
     }
 
     @Override
@@ -355,6 +365,8 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
         return getStringInternal(columnIndex);
       case JSON:
         return getJsonInternal(columnIndex);
+      case PG_JSONB:
+        return getPgJsonbInternal(columnIndex);
       case BYTES:
         return getBytesInternal(columnIndex);
       case TIMESTAMP:
@@ -379,6 +391,8 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
             return getStringListInternal(columnIndex);
           case JSON:
             return getJsonListInternal(columnIndex);
+          case PG_JSONB:
+            return getPgJsonbListInternal(columnIndex);
           case BYTES:
             return getBytesListInternal(columnIndex);
           case TIMESTAMP:

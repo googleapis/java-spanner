@@ -67,6 +67,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /** Implementation of {@link ResultSet}. */
@@ -384,6 +385,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           case JSON:
             builder.set(fieldName).to(Value.json((String) value));
             break;
+          case PG_JSONB:
+            builder.set(fieldName).to(Value.pgJsonb((String) value));
+            break;
           case BYTES:
             builder.set(fieldName).to((ByteArray) value);
             break;
@@ -416,6 +420,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 break;
               case JSON:
                 builder.set(fieldName).toJsonArray((Iterable<String>) value);
+                break;
+              case PG_JSONB:
+                builder.set(fieldName).toPgJsonbArray((Iterable<String>) value);
                 break;
               case BYTES:
                 builder.set(fieldName).toBytesArray((Iterable<ByteArray>) value);
@@ -491,10 +498,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return new BigDecimal(proto.getStringValue());
         case PG_NUMERIC:
-          checkType(fieldType, proto, KindCase.STRING_VALUE);
-          return proto.getStringValue();
         case STRING:
         case JSON:
+        case PG_JSONB:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return proto.getStringValue();
         case BYTES:
@@ -558,14 +564,14 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             return list;
           }
         case PG_NUMERIC:
-          return Lists.transform(
-              listValue.getValuesList(),
-              input -> input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue());
         case STRING:
         case JSON:
-          return Lists.transform(
-              listValue.getValuesList(),
-              input -> input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue());
+        case PG_JSONB:
+          return listValue.getValuesList().stream()
+              .map(
+                  input ->
+                      input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue())
+              .collect(Collectors.toList());
         case BYTES:
           {
             // Materialize list: element conversion is expensive and should happen only once.
@@ -680,6 +686,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
+    protected String getPgJsonbInternal(int columnIndex) {
+      return (String) rowData.get(columnIndex);
+    }
+
+    @Override
     protected ByteArray getBytesInternal(int columnIndex) {
       return (ByteArray) rowData.get(columnIndex);
     }
@@ -715,6 +726,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return Value.string(isNull ? null : getStringInternal(columnIndex));
         case JSON:
           return Value.json(isNull ? null : getJsonInternal(columnIndex));
+        case PG_JSONB:
+          return Value.pgJsonb(isNull ? null : getPgJsonbInternal(columnIndex));
         case BYTES:
           return Value.bytes(isNull ? null : getBytesInternal(columnIndex));
         case TIMESTAMP:
@@ -740,6 +753,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               return Value.stringArray(isNull ? null : getStringListInternal(columnIndex));
             case JSON:
               return Value.jsonArray(isNull ? null : getJsonListInternal(columnIndex));
+            case PG_JSONB:
+              return Value.pgJsonbArray(isNull ? null : getPgJsonbListInternal(columnIndex));
             case BYTES:
               return Value.bytesArray(isNull ? null : getBytesListInternal(columnIndex));
             case TIMESTAMP:
@@ -816,8 +831,14 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
-    @SuppressWarnings("unchecked") // We know ARRAY<String> produces a List<String>.
+    @SuppressWarnings("unchecked") // We know ARRAY<JSON> produces a List<String>.
     protected List<String> getJsonListInternal(int columnIndex) {
+      return Collections.unmodifiableList((List<String>) rowData.get(columnIndex));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked") // We know ARRAY<JSONB> produces a List<String>.
+    protected List<String> getPgJsonbListInternal(int columnIndex) {
       return Collections.unmodifiableList((List<String>) rowData.get(columnIndex));
     }
 
@@ -1353,6 +1374,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   }
 
   @Override
+  protected String getPgJsonbInternal(int columnIndex) {
+    return currRow().getPgJsonbInternal(columnIndex);
+  }
+
+  @Override
   protected ByteArray getBytesInternal(int columnIndex) {
     return currRow().getBytesInternal(columnIndex);
   }
@@ -1414,6 +1440,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
   @Override
   protected List<String> getJsonListInternal(int columnIndex) {
+    return currRow().getJsonListInternal(columnIndex);
+  }
+
+  @Override
+  protected List<String> getPgJsonbListInternal(int columnIndex) {
     return currRow().getJsonListInternal(columnIndex);
   }
 

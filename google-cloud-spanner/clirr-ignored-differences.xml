@@ -131,4 +131,25 @@
     <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
     <method>com.google.iam.v1.Policy getDatabaseAdminIAMPolicy(java.lang.String)</method>
   </difference>
+  <!-- PG JSONB -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.String getPgJsonb(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.String getPgJsonb(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getPgJsonbList(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getPgJsonbList(java.lang.String)</method>
+  </difference>
 </differences>

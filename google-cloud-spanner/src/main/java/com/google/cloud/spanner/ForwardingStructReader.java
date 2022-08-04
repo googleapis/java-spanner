@@ -169,6 +169,18 @@ public class ForwardingStructReader implements StructReader {
   }
 
   @Override
+  public String getPgJsonb(int columnIndex) {
+    checkValidState();
+    return delegate.get().getPgJsonb(columnIndex);
+  }
+
+  @Override
+  public String getPgJsonb(String columnName) {
+    checkValidState();
+    return delegate.get().getPgJsonb(columnName);
+  }
+
+  @Override
   public ByteArray getBytes(int columnIndex) {
     checkValidState();
     return delegate.get().getBytes(columnIndex);
@@ -308,6 +320,18 @@ public class ForwardingStructReader implements StructReader {
   public List<String> getJsonList(String columnName) {
     checkValidState();
     return delegate.get().getJsonList(columnName);
+  }
+
+  @Override
+  public List<String> getPgJsonbList(int columnIndex) {
+    checkValidState();
+    return delegate.get().getPgJsonbList(columnIndex);
+  }
+
+  @Override
+  public List<String> getPgJsonbList(String columnName) {
+    checkValidState();
+    return delegate.get().getPgJsonbList(columnName);
   }
 
   @Override
