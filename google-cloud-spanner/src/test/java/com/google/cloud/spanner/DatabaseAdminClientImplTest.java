@@ -49,9 +49,11 @@ import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseDialect;
+import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -74,6 +76,8 @@ public class DatabaseAdminClientImplTest {
       "projects/my-project/instances/my-instance/databases/my-db2";
   private static final String BK_ID = "my-bk";
   private static final String SOURCE_BK = "my-source-bk";
+  private static final String DB_ROLE = "dummy-role";
+  private static final String DB_ROLE2 = "dummy-role-2";
   private static final String BK_NAME = "projects/my-project/instances/my-instance/backups/my-bk";
   private static final String BK_NAME2 = "projects/my-project/instances/my-instance/backups/my-bk2";
   private static final Timestamp EARLIEST_VERSION_TIME = Timestamp.now();
@@ -100,6 +104,14 @@ public class DatabaseAdminClientImplTest {
         .setVersionRetentionPeriod(VERSION_RETENTION_PERIOD)
         .setDatabaseDialect(DIALECT)
         .build();
+  }
+
+  private DatabaseRole getDatabaseRoleProto() {
+    return DatabaseRole.newBuilder().setName(DB_ROLE).build();
+  }
+
+  private DatabaseRole getAnotherDatabaseRoleProto() {
+    return DatabaseRole.newBuilder().setName(DB_ROLE2).build();
   }
 
   private Database getEncryptedDatabaseProto() {
@@ -294,8 +306,59 @@ public class DatabaseAdminClientImplTest {
   }
 
   @Test
+  public void listDatabaseRoles() {
+    String pageToken = "token";
+    when(rpc.listDatabaseRoles(DB_NAME, 1, null))
+        .thenReturn(new Paginated<>(ImmutableList.of(getDatabaseRoleProto()), pageToken));
+    when(rpc.listDatabaseRoles(DB_NAME, 1, pageToken))
+        .thenReturn(new Paginated<>(ImmutableList.of(getAnotherDatabaseRoleProto()), ""));
+
+    ArrayList<com.google.cloud.spanner.DatabaseRole> databaseRoles =
+        Lists.newArrayList(
+            client.listDatabaseRoles(INSTANCE_ID, DB_ID, Options.pageSize(1)).iterateAll());
+    assertThat(databaseRoles.get(0).getName()).isEqualTo(DB_ROLE);
+    assertThat(databaseRoles.get(1).getName()).isEqualTo(DB_ROLE2);
+    assertThat(databaseRoles.size()).isEqualTo(2);
+  }
+
+  @Test
+  public void listDatabaseRolesError() {
+    when(rpc.listDatabaseRoles(DB_NAME, 1, null))
+        .thenThrow(
+            SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Test error"));
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> client.listDatabaseRoles(INSTANCE_ID, DB_ID, Options.pageSize(1)));
+    assertThat(e.getMessage()).contains(INSTANCE_NAME);
+    // Assert that the call was done without a page token.
+    assertThat(e.getMessage()).contains("with pageToken <null>");
+  }
+
+  @Test
+  public void listDatabaseRolesErrorWithToken() {
+    String pageToken = "token";
+    when(rpc.listDatabaseRoles(DB_NAME, 1, null))
+        .thenReturn(new Paginated<>(ImmutableList.of(getDatabaseRoleProto()), pageToken));
+    when(rpc.listDatabaseRoles(DB_NAME, 1, pageToken))
+        .thenThrow(
+            SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Test error"));
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                Lists.newArrayList(
+                    client
+                        .listDatabaseRoles(INSTANCE_ID, DB_ID, Options.pageSize(1))
+                        .iterateAll()));
+    assertThat(e.getMessage()).contains(INSTANCE_NAME);
+    // Assert that the call was done without a page token.
+    assertThat(e.getMessage()).contains(String.format("with pageToken %s", pageToken));
+  }
+
+  @Test
   public void getDatabaseIAMPolicy() {
-    when(rpc.getDatabaseAdminIAMPolicy(DB_NAME))
+    when(rpc.getDatabaseAdminIAMPolicy(DB_NAME, null))
         .thenReturn(
             Policy.newBuilder()
                 .addBindings(
@@ -304,11 +367,11 @@ public class DatabaseAdminClientImplTest {
                         .setRole("roles/viewer")
                         .build())
                 .build());
-    com.google.cloud.Policy policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID);
+    com.google.cloud.Policy policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID, 1);
     assertThat(policy.getBindings())
         .containsExactly(Role.viewer(), Sets.newHashSet(Identity.user("joe@example.com")));
 
-    when(rpc.getDatabaseAdminIAMPolicy(DB_NAME))
+    when(rpc.getDatabaseAdminIAMPolicy(DB_NAME, null))
         .thenReturn(
             Policy.newBuilder()
                 .addBindings(
@@ -317,7 +380,7 @@ public class DatabaseAdminClientImplTest {
                         .setRole("roles/viewer")
                         .build())
                 .build());
-    policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID);
+    policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID, 1);
     assertThat(policy.getBindings())
         .containsExactly(
             Role.viewer(),

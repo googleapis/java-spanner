@@ -89,6 +89,7 @@ import com.google.common.io.Resources;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.iam.v1.GetIamPolicyRequest;
+import com.google.iam.v1.GetPolicyOptions;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.SetIamPolicyRequest;
 import com.google.iam.v1.TestIamPermissionsRequest;
@@ -111,6 +112,7 @@ import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
+import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
 import com.google.spanner.admin.database.v1.GetBackupRequest;
@@ -122,6 +124,8 @@ import com.google.spanner.admin.database.v1.ListBackupsRequest;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
@@ -1003,6 +1007,27 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public Paginated<DatabaseRole> listDatabaseRoles(
+      String databaseName, int pageSize, @Nullable String pageToken) {
+    acquireAdministrativeRequestsRateLimiter();
+    ListDatabaseRolesRequest.Builder requestBuilder =
+        ListDatabaseRolesRequest.newBuilder().setParent(databaseName).setPageSize(pageSize);
+
+    if (pageToken != null) {
+      requestBuilder.setPageToken(pageToken);
+    }
+    final ListDatabaseRolesRequest request = requestBuilder.build();
+
+    final GrpcCallContext context =
+        newCallContext(null, databaseName, request, DatabaseAdminGrpc.getListDatabaseRolesMethod());
+    ListDatabaseRolesResponse response =
+        runWithRetryOnAdministrativeRequestsExceeded(
+            () -> get(databaseAdminStub.listDatabaseRolesCallable().futureCall(request, context)));
+
+    return new Paginated<>(response.getDatabaseRolesList(), response.getNextPageToken());
+  }
+
+  @Override
   public Paginated<Backup> listBackups(
       String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken)
       throws SpannerException {
@@ -1450,6 +1475,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   public List<Session> batchCreateSessions(
       String databaseName,
       int sessionCount,
+      @Nullable String databaseRole,
       @Nullable Map<String, String> labels,
       @Nullable Map<Option, ?> options)
       throws SpannerException {
@@ -1457,10 +1483,14 @@ public class GapicSpannerRpc implements SpannerRpc {
         BatchCreateSessionsRequest.newBuilder()
             .setDatabase(databaseName)
             .setSessionCount(sessionCount);
+    Session.Builder sessionBuilder = Session.newBuilder();
     if (labels != null && !labels.isEmpty()) {
-      Session.Builder session = Session.newBuilder().putAllLabels(labels);
-      requestBuilder.setSessionTemplate(session);
+      sessionBuilder.putAllLabels(labels);
     }
+    if (databaseRole != null && !databaseRole.isEmpty()) {
+      sessionBuilder.setCreatorRole(databaseRole);
+    }
+    requestBuilder.setSessionTemplate(sessionBuilder);
     BatchCreateSessionsRequest request = requestBuilder.build();
     GrpcCallContext context =
         newCallContext(options, databaseName, request, SpannerGrpc.getBatchCreateSessionsMethod());
@@ -1470,14 +1500,21 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public Session createSession(
-      String databaseName, @Nullable Map<String, String> labels, @Nullable Map<Option, ?> options)
+      String databaseName,
+      @Nullable String databaseRole,
+      @Nullable Map<String, String> labels,
+      @Nullable Map<Option, ?> options)
       throws SpannerException {
     CreateSessionRequest.Builder requestBuilder =
         CreateSessionRequest.newBuilder().setDatabase(databaseName);
+    Session.Builder sessionBuilder = Session.newBuilder();
     if (labels != null && !labels.isEmpty()) {
-      Session.Builder session = Session.newBuilder().putAllLabels(labels);
-      requestBuilder.setSession(session);
+      sessionBuilder.putAllLabels(labels);
     }
+    if (databaseRole != null && !databaseRole.isEmpty()) {
+      sessionBuilder.setCreatorRole(databaseRole);
+    }
+    requestBuilder.setSession(sessionBuilder);
     CreateSessionRequest request = requestBuilder.build();
     GrpcCallContext context =
         newCallContext(options, databaseName, request, SpannerGrpc.getCreateSessionMethod());
@@ -1658,10 +1695,13 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public Policy getDatabaseAdminIAMPolicy(String resource) {
+  public Policy getDatabaseAdminIAMPolicy(String resource, @Nullable GetPolicyOptions options) {
     acquireAdministrativeRequestsRateLimiter();
-    final GetIamPolicyRequest request =
-        GetIamPolicyRequest.newBuilder().setResource(resource).build();
+    GetIamPolicyRequest.Builder builder = GetIamPolicyRequest.newBuilder().setResource(resource);
+    if (options != null) {
+      builder.setOptions(options);
+    }
+    final GetIamPolicyRequest request = builder.build();
     final GrpcCallContext context =
         newCallContext(null, resource, request, DatabaseAdminGrpc.getGetIamPolicyMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
