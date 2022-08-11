@@ -26,35 +26,32 @@ import com.google.cloud.spanner.SpannerOptions;
 import java.util.concurrent.ExecutionException;
 
 public class ListRolesSample {
-    static void listRoles() throws InterruptedException, ExecutionException {
-        // TODO(developer): Replace these variables before running the sample.
-        String projectId = "my-project";
-        String instanceId = "my-instance";
-        String databaseId = "my-database";
-        listRoles(projectId, instanceId, databaseId);
-    }
+  static void listRoles() throws InterruptedException, ExecutionException {
+    // TODO(developer): Replace these variables before running the sample.
+    String projectId = "my-project";
+    String instanceId = "my-instance";
+    String databaseId = "my-database";
+    listRoles(projectId, instanceId, databaseId);
+  }
 
-    static void listRoles(String projectId, String instanceId, String databaseId) {
-        try (Spanner spanner =
-                     SpannerOptions.newBuilder()
-                             .setProjectId(projectId)
-                             .build()
-                             .getService()) {
-            final DatabaseAdminClient adminClient = spanner.getDatabaseAdminClient();
-            String databasePath = DatabaseId.of(projectId, instanceId, databaseId).getName();
-            for (DatabaseRole role : adminClient.listDatabaseRoles(instanceId, databaseId).iterateAll()) {
-                if (!role.getName().startsWith(databasePath + "/databaseRoles/")) {
-                    throw new RuntimeException(
-                            "Role +"
-                                    + role.getName()
-                                    + "does not have prefix ["
-                                    + databasePath
-                                    + "/databaseRoles/"
-                                    + "]");
-                }
-                System.out.printf("%s%n", role.getName());
-            }
+  static void listRoles(String projectId, String instanceId, String databaseId) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
+      final DatabaseAdminClient adminClient = spanner.getDatabaseAdminClient();
+      String databasePath = DatabaseId.of(projectId, instanceId, databaseId).getName();
+      for (DatabaseRole role : adminClient.listDatabaseRoles(instanceId, databaseId).iterateAll()) {
+        if (!role.getName().startsWith(databasePath + "/databaseRoles/")) {
+          throw new RuntimeException(
+              "Role +"
+                  + role.getName()
+                  + "does not have prefix ["
+                  + databasePath
+                  + "/databaseRoles/"
+                  + "]");
         }
+        System.out.printf("%s%n", role.getName());
+      }
     }
+  }
 }
 // [END spanner_list_database_roles]

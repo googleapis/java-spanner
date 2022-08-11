@@ -28,38 +28,38 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 public class ReadDataWithRoleSample {
-    static void readDataWithRole() throws InterruptedException, ExecutionException {
-        // TODO(developer): Replace these variables before running the sample.
-        String projectId = "my-project";
-        String instanceId = "my-instance";
-        String databaseId = "my-database";
-        String role = "my-role";
-        readDataWithRole(projectId, instanceId, databaseId, role);
-    }
+  static void readDataWithRole() throws InterruptedException, ExecutionException {
+    // TODO(developer): Replace these variables before running the sample.
+    String projectId = "my-project";
+    String instanceId = "my-instance";
+    String databaseId = "my-database";
+    String role = "my-role";
+    readDataWithRole(projectId, instanceId, databaseId, role);
+  }
 
-    static void readDataWithRole(String projectId, String instanceId, String databaseId, String role)
-            throws InterruptedException, ExecutionException {
-        try (Spanner spanner =
-                     SpannerOptions.newBuilder()
-                             .setProjectId(projectId)
-                             .setDatabaseRole(role)
-                             .build()
-                             .getService()) {
-            final DatabaseClient dbClient =
-                    spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
-            try (ResultSet resultSet =
-                         dbClient
-                                 .singleUse()
-                                 .read(
-                                         "Albums",
-                                         KeySet.all(), // Read all rows in a table.
-                                         Arrays.asList("SingerId", "AlbumId", "AlbumTitle"))) {
-                while (resultSet.next()) {
-                    System.out.printf(
-                            "%d %d %s\n", resultSet.getLong(0), resultSet.getLong(1), resultSet.getString(2));
-                }
-            }
+  static void readDataWithRole(String projectId, String instanceId, String databaseId, String role)
+      throws InterruptedException, ExecutionException {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .setDatabaseRole(role)
+            .build()
+            .getService()) {
+      final DatabaseClient dbClient =
+          spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+      try (ResultSet resultSet =
+          dbClient
+              .singleUse()
+              .read(
+                  "Albums",
+                  KeySet.all(), // Read all rows in a table.
+                  Arrays.asList("SingerId", "AlbumId", "AlbumTitle"))) {
+        while (resultSet.next()) {
+          System.out.printf(
+              "%d %d %s\n", resultSet.getLong(0), resultSet.getLong(1), resultSet.getString(2));
         }
+      }
     }
+  }
 }
 // [END spanner_read_data_with_database_role]
