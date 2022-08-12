@@ -149,7 +149,7 @@ public class ITPgJsonbTest {
 
   @Test
   public void testPgJsonbInSecondaryIndex() {
-    // JSONB is not allowed as a primary key.
+    // JSONB is not allowed as a key in a secondary index.
     ExecutionException executionException =
         assertThrows(
             ExecutionException.class,
