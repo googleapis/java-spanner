@@ -367,7 +367,7 @@ public class DatabaseAdminClientImplTest {
                         .setRole("roles/viewer")
                         .build())
                 .build());
-    com.google.cloud.Policy policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID, 1);
+    com.google.cloud.Policy policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID, 0);
     assertThat(policy.getBindings())
         .containsExactly(Role.viewer(), Sets.newHashSet(Identity.user("joe@example.com")));
 
@@ -380,7 +380,7 @@ public class DatabaseAdminClientImplTest {
                         .setRole("roles/viewer")
                         .build())
                 .build());
-    policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID, 1);
+    policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID, 0);
     assertThat(policy.getBindings())
         .containsExactly(
             Role.viewer(),
