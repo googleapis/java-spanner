@@ -1050,13 +1050,13 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testPartitionedDmlDoesNotTimeout() {
-    mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(10, 0));
+    mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(20, 0));
     final RetrySettings retrySettings =
         RetrySettings.newBuilder()
-            .setInitialRpcTimeout(Duration.ofMillis(10L))
-            .setMaxRpcTimeout(Duration.ofMillis(10L))
+            .setInitialRpcTimeout(Duration.ofMillis(1L))
+            .setMaxRpcTimeout(Duration.ofMillis(1L))
             .setMaxAttempts(1)
-            .setTotalTimeout(Duration.ofMillis(10L))
+            .setTotalTimeout(Duration.ofMillis(1L))
             .build();
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
