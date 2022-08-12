@@ -1053,10 +1053,10 @@ public class DatabaseClientImplTest {
     mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(10, 0));
     final RetrySettings retrySettings =
         RetrySettings.newBuilder()
-            .setInitialRpcTimeout(Duration.ofMillis(1L))
-            .setMaxRpcTimeout(Duration.ofMillis(1L))
+            .setInitialRpcTimeout(Duration.ofMillis(2L))
+            .setMaxRpcTimeout(Duration.ofMillis(2L))
             .setMaxAttempts(1)
-            .setTotalTimeout(Duration.ofMillis(1L))
+            .setTotalTimeout(Duration.ofMillis(2L))
             .build();
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
