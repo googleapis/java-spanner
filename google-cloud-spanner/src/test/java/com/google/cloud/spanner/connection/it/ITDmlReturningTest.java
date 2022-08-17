@@ -23,6 +23,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
+import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
@@ -34,6 +36,7 @@ import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import com.google.cloud.spanner.connection.StatementResult;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.TransactionMode;
+import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -96,16 +99,31 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
   public void testDmlReturningExecuteQueryAsync() {
     try (Connection connection = createConnection()) {
       AsyncResultSet rs = connection.executeQueryAsync(Statement.of(UPDATE));
-      assertTrue(rs.next());
-      assertEquals(rs.getColumnCount(), 3);
-      assertEquals(rs.getString(1), "ABC");
-      assertTrue(rs.next());
-      assertEquals(rs.getString(1), "ABC");
-      assertTrue(rs.next());
-      assertEquals(rs.getString(1), "ABC");
-      assertFalse(rs.next());
-      assertNotNull(rs.getStats());
-      assertEquals(rs.getStats().getRowCountExact(), 3);
+      rs.setCallback(
+          Executors.newSingleThreadExecutor(),
+          resultSet -> {
+            try {
+              while (true) {
+                switch (resultSet.tryNext()) {
+                  case OK:
+                    assertEquals(resultSet.getColumnCount(), 3);
+                    assertEquals(resultSet.getString(1), "ABC");
+                    break;
+                  case DONE:
+                    assertNotNull(resultSet.getStats());
+                    assertEquals(resultSet.getStats().getRowCountExact(), 3);
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  default:
+                    throw new IllegalStateException();
+                }
+              }
+            } catch (SpannerException e) {
+              System.out.printf("Error in callback: %s%n", e.getMessage());
+              return CallbackResponse.DONE;
+            }
+          });
     }
   }
 
@@ -162,16 +180,31 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
       AsyncStatementResult res = connection.executeAsync(Statement.of(UPDATE));
       assertEquals(res.getResultType(), ResultType.RESULT_SET);
       AsyncResultSet rs = res.getResultSetAsync();
-      assertTrue(rs.next());
-      assertEquals(rs.getColumnCount(), 3);
-      assertEquals(rs.getString(1), "ABC");
-      assertTrue(rs.next());
-      assertEquals(rs.getString(1), "ABC");
-      assertTrue(rs.next());
-      assertEquals(rs.getString(1), "ABC");
-      assertFalse(rs.next());
-      assertNotNull(rs.getStats());
-      assertEquals(rs.getStats().getRowCountExact(), 3);
+      rs.setCallback(
+          Executors.newSingleThreadExecutor(),
+          resultSet -> {
+            try {
+              while (true) {
+                switch (resultSet.tryNext()) {
+                  case OK:
+                    assertEquals(resultSet.getColumnCount(), 3);
+                    assertEquals(resultSet.getString(1), "ABC");
+                    break;
+                  case DONE:
+                    assertNotNull(resultSet.getStats());
+                    assertEquals(resultSet.getStats().getRowCountExact(), 3);
+                    return CallbackResponse.DONE;
+                  case NOT_READY:
+                    return CallbackResponse.CONTINUE;
+                  default:
+                    throw new IllegalStateException();
+                }
+              }
+            } catch (SpannerException e) {
+              System.out.printf("Error in callback: %s%n", e.getMessage());
+              return CallbackResponse.DONE;
+            }
+          });
     }
   }
 
