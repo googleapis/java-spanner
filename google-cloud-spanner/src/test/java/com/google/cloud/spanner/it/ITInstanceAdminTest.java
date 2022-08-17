@@ -33,7 +33,7 @@ import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -45,11 +45,13 @@ import org.junit.runners.JUnit4;
 @Category(SerialIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITInstanceAdminTest {
-  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
-  InstanceAdminClient instanceClient;
 
-  @Before
-  public void setUp() {
+  @ClassRule
+  public static IntegrationTestEnv env = new IntegrationTestEnv(true);
+  static InstanceAdminClient instanceClient;
+
+  @BeforeClass
+  public static void setUp() {
     instanceClient = env.getTestHelper().getClient().getInstanceAdminClient();
   }
 
