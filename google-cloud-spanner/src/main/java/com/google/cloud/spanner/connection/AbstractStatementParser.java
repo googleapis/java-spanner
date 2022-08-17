@@ -233,6 +233,7 @@ public abstract class AbstractStatementParser {
       return type;
     }
 
+    /** Returns whether the statement has a returning clause or not. **/
     @InternalApi
     public boolean hasReturningClause() {
       return this.returningClause;

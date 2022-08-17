@@ -245,7 +245,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         update,
         callable,
         ImmutableList.of(
-            SpannerGrpc.getExecuteStreamingSqlMethod(), SpannerGrpc.getCommitMethod()));
+            SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
   }
 
   @Override
