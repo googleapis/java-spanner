@@ -58,8 +58,10 @@ public class GceTestEnvConfig implements TestEnvConfig {
   private final SpannerOptions options;
 
   public GceTestEnvConfig() {
-    String projectId = System.getProperty(GCE_PROJECT_ID, "");
-    String serverUrl = System.getProperty(GCE_SERVER_URL, "");
+    // String projectId = System.getProperty(GCE_PROJECT_ID, "");
+    String projectId = "span-cloud-testing";
+    // String serverUrl = System.getProperty(GCE_SERVER_URL, "");
+    String serverUrl = "https://staging-wrenchworks.sandbox.googleapis.com";
     String credentialsFile = System.getProperty(GCE_CREDENTIALS_FILE, "");
     double errorProbability =
         Double.parseDouble(System.getProperty(GCE_STREAM_BROKEN_PROBABILITY, "0.0"));

@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 @InternalApi
@@ -65,6 +66,8 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
     Preconditions.checkNotNull(sql);
     boolean isInSingleLineComment = false;
     int multiLineCommentLevel = 0;
+    boolean whitespaceBeforeOrAfterMultiLineComment = false;
+    int multiLineCommentStartIdx = -1;
     StringBuilder res = new StringBuilder(sql.length());
     int index = 0;
     while (index < sql.length()) {
@@ -78,6 +81,19 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
       } else if (multiLineCommentLevel > 0) {
         if (sql.length() > index + 1 && c == ASTERISK && sql.charAt(index + 1) == SLASH) {
           multiLineCommentLevel--;
+          if (multiLineCommentLevel == 0) {
+            if (!whitespaceBeforeOrAfterMultiLineComment && (sql.length() > index + 2)) {
+              whitespaceBeforeOrAfterMultiLineComment =
+                  Character.isWhitespace(sql.charAt(index + 2));
+            }
+            // If the multiline comment does not have any whitespace before or after it, and it is
+            // neither at the start nor at the end of SQL string, append an extra space.
+            if (!whitespaceBeforeOrAfterMultiLineComment
+                && (multiLineCommentStartIdx != 0)
+                && (index != sql.length() - 2)) {
+              res.append(' ');
+            }
+          }
           index++;
         } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
           multiLineCommentLevel++;
@@ -92,6 +108,10 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
           continue;
         } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
           multiLineCommentLevel++;
+          if (index >= 1) {
+            whitespaceBeforeOrAfterMultiLineComment = Character.isWhitespace(sql.charAt(index - 1));
+          }
+          multiLineCommentStartIdx = index;
           index += 2;
           continue;
         } else {
@@ -266,5 +286,37 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
     if (result != null) {
       result.append(prefix).append(tag).append(suffix);
     }
+  }
+
+  private boolean isReturning(String sql, int index) {
+    // RETURNING is a reserved keyword in PG, but requires a
+    // leading AS to be used as column label, to avoid ambiguity.
+    // We thus check for cases which do not have a leading AS.
+    // (https://www.postgresql.org/docs/current/sql-keywords-appendix.html)
+    return Pattern.compile("[\\s)]RETURNING[\\s(][\\s\\S]*", Pattern.CASE_INSENSITIVE)
+            .matcher(sql.substring(index))
+            .matches()
+        && !((index >= 3)
+            && Pattern.compile("[\\s]AS[\\s]RETURNING[\\s(][\\s\\S]*", Pattern.CASE_INSENSITIVE)
+                .matcher(sql.substring(index - 3))
+                .matches());
+  }
+
+  @InternalApi
+  @Override
+  boolean checkReturningClauseInternal(String rawSql) {
+    Preconditions.checkNotNull(rawSql);
+    int index = 0;
+    String sql = rawSql.replaceAll("\\s+", " ");
+    boolean hasReturningClause = false;
+    while (index < sql.length()) {
+      if (!hasReturningClause && isReturning(sql, index)) {
+        hasReturningClause = true;
+        index++;
+      } else {
+        index = skip(sql, index, null);
+      }
+    }
+    return hasReturningClause;
   }
 }

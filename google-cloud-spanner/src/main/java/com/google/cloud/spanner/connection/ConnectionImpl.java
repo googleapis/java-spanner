@@ -853,6 +853,9 @@ class ConnectionImpl implements Connection {
       case QUERY:
         return StatementResultImpl.of(internalExecuteQuery(parsedStatement, AnalyzeMode.NONE));
       case UPDATE:
+        if (parsedStatement.hasReturningClause()) {
+          return StatementResultImpl.of(internalExecuteQuery(parsedStatement, AnalyzeMode.NONE));
+        }
         return StatementResultImpl.of(get(internalExecuteUpdateAsync(parsedStatement)));
       case DDL:
         get(executeDdlAsync(parsedStatement));
@@ -881,6 +884,10 @@ class ConnectionImpl implements Connection {
         return AsyncStatementResultImpl.of(
             internalExecuteQueryAsync(parsedStatement, AnalyzeMode.NONE));
       case UPDATE:
+        if (parsedStatement.hasReturningClause()) {
+          return AsyncStatementResultImpl.of(
+              internalExecuteQueryAsync(parsedStatement, AnalyzeMode.NONE));
+        }
         return AsyncStatementResultImpl.of(internalExecuteUpdateAsync(parsedStatement));
       case DDL:
         return AsyncStatementResultImpl.noResult(executeDdlAsync(parsedStatement));
@@ -918,7 +925,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(analyzeMode);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
-    if (parsedStatement.isQuery()) {
+    if (parsedStatement.isQuery() || parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case CLIENT_SIDE:
           return parsedStatement
@@ -928,6 +935,19 @@ class ConnectionImpl implements Connection {
         case QUERY:
           return internalExecuteQuery(parsedStatement, analyzeMode, options);
         case UPDATE:
+          if (parsedStatement.hasReturningClause()) {
+            // Cannot execute in read-only mode or in READ_ONLY_TRANSACTION transaction mode.
+            if (this.isReadOnly()
+                || (this.isInTransaction()
+                    && this.getTransactionMode() == TransactionMode.READ_ONLY_TRANSACTION)) {
+              throw SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.FAILED_PRECONDITION,
+                  "DML statement with returning clause cannot be executed in read-only mode: "
+                      + parsedStatement.getSqlWithoutComments());
+            }
+            return internalExecuteQuery(parsedStatement, analyzeMode, options);
+          }
+
         case DDL:
         case UNKNOWN:
         default:
@@ -943,7 +963,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(query);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
-    if (parsedStatement.isQuery()) {
+    if (parsedStatement.isQuery() || parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case CLIENT_SIDE:
           return ResultSets.toAsyncResultSet(
@@ -956,6 +976,19 @@ class ConnectionImpl implements Connection {
         case QUERY:
           return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
         case UPDATE:
+          if (parsedStatement.hasReturningClause()) {
+            // Cannot execute in read-only mode or in READ_ONLY_TRANSACTION transaction mode.
+            if (this.isReadOnly()
+                || (this.isInTransaction()
+                    && this.getTransactionMode() == TransactionMode.READ_ONLY_TRANSACTION)) {
+              throw SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.FAILED_PRECONDITION,
+                  "DML statement with returning clause cannot be executed in read-only mode: "
+                      + parsedStatement.getSqlWithoutComments());
+            }
+            return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
+          }
+
         case DDL:
         case UNKNOWN:
         default:
@@ -974,6 +1007,13 @@ class ConnectionImpl implements Connection {
     if (parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case UPDATE:
+          if (parsedStatement.hasReturningClause()) {
+            throw SpannerExceptionFactory.newSpannerException(
+                ErrorCode.FAILED_PRECONDITION,
+                "DML statement with returning clause cannot be executed over executeUpdate: "
+                    + parsedStatement.getSqlWithoutComments()
+                    + ". Please use executeQuery instead.");
+          }
           return get(internalExecuteUpdateAsync(parsedStatement));
         case CLIENT_SIDE:
         case QUERY:
@@ -995,6 +1035,13 @@ class ConnectionImpl implements Connection {
     if (parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case UPDATE:
+          if (parsedStatement.hasReturningClause()) {
+            throw SpannerExceptionFactory.newSpannerException(
+                ErrorCode.FAILED_PRECONDITION,
+                "DML statement with returning clause cannot be executed over executeUpdateAsync: "
+                    + parsedStatement.getSqlWithoutComments()
+                    + ". Please use executeQueryAsync instead.");
+          }
           return internalExecuteUpdateAsync(parsedStatement);
         case CLIENT_SIDE:
         case QUERY:
@@ -1141,8 +1188,9 @@ class ConnectionImpl implements Connection {
       final QueryOption... options) {
     Preconditions.checkArgument(
         statement.getType() == StatementType.QUERY
-            || (statement.getType() == StatementType.UPDATE && analyzeMode != AnalyzeMode.NONE),
-        "Statement must either be a query or a DML mode with analyzeMode!=NONE");
+            || (statement.getType() == StatementType.UPDATE
+                && (analyzeMode != AnalyzeMode.NONE || statement.hasReturningClause())),
+        "Statement must either be a query or a DML mode with analyzeMode!=NONE or returning clause");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return get(
         transaction.executeQueryAsync(
@@ -1154,7 +1202,9 @@ class ConnectionImpl implements Connection {
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
     Preconditions.checkArgument(
-        statement.getType() == StatementType.QUERY, "Statement must be a query");
+        (statement.getType() == StatementType.QUERY)
+            || (statement.getType() == StatementType.UPDATE && statement.hasReturningClause()),
+        "Statement must be a query or DML with returning clause.");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return ResultSets.toAsyncResultSet(
         transaction.executeQueryAsync(

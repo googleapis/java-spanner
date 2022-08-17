@@ -140,6 +140,7 @@ public abstract class AbstractStatementParser {
     private final ClientSideStatementImpl clientSideStatement;
     private final Statement statement;
     private final String sqlWithoutComments;
+    private final boolean returningClause;
 
     private static ParsedStatement clientSideStatement(
         ClientSideStatementImpl clientSideStatement,
@@ -155,11 +156,13 @@ public abstract class AbstractStatementParser {
     private static ParsedStatement query(
         Statement statement, String sqlWithoutComments, QueryOptions defaultQueryOptions) {
       return new ParsedStatement(
-          StatementType.QUERY, statement, sqlWithoutComments, defaultQueryOptions);
+          StatementType.QUERY, statement, sqlWithoutComments, defaultQueryOptions, false);
     }
 
-    private static ParsedStatement update(Statement statement, String sqlWithoutComments) {
-      return new ParsedStatement(StatementType.UPDATE, statement, sqlWithoutComments);
+    private static ParsedStatement update(
+        Statement statement, String sqlWithoutComments, boolean returningClause) {
+      return new ParsedStatement(
+          StatementType.UPDATE, statement, sqlWithoutComments, returningClause);
     }
 
     private static ParsedStatement unknown(Statement statement, String sqlWithoutComments) {
@@ -176,23 +179,34 @@ public abstract class AbstractStatementParser {
       this.clientSideStatement = clientSideStatement;
       this.statement = statement;
       this.sqlWithoutComments = sqlWithoutComments;
-    }
-
-    private ParsedStatement(StatementType type, Statement statement, String sqlWithoutComments) {
-      this(type, statement, sqlWithoutComments, null);
+      this.returningClause = false;
     }
 
     private ParsedStatement(
         StatementType type,
         Statement statement,
         String sqlWithoutComments,
-        QueryOptions defaultQueryOptions) {
+        boolean returningClause) {
+      this(type, statement, sqlWithoutComments, null, returningClause);
+    }
+
+    private ParsedStatement(StatementType type, Statement statement, String sqlWithoutComments) {
+      this(type, statement, sqlWithoutComments, null, false);
+    }
+
+    private ParsedStatement(
+        StatementType type,
+        Statement statement,
+        String sqlWithoutComments,
+        QueryOptions defaultQueryOptions,
+        boolean returningClause) {
       Preconditions.checkNotNull(type);
       Preconditions.checkNotNull(statement);
       this.type = type;
       this.clientSideStatement = null;
       this.statement = mergeQueryOptions(statement, defaultQueryOptions);
       this.sqlWithoutComments = sqlWithoutComments;
+      this.returningClause = returningClause;
     }
 
     @Override
@@ -217,6 +231,11 @@ public abstract class AbstractStatementParser {
     @InternalApi
     public StatementType getType() {
       return type;
+    }
+
+    @InternalApi
+    public boolean hasReturningClause() {
+      return this.returningClause;
     }
 
     /**
@@ -354,7 +373,7 @@ public abstract class AbstractStatementParser {
     } else if (isQuery(sql)) {
       return ParsedStatement.query(statement, sql, defaultQueryOptions);
     } else if (isUpdateStatement(sql)) {
-      return ParsedStatement.update(statement, sql);
+      return ParsedStatement.update(statement, sql, checkReturningClause(sql));
     } else if (isDdlStatement(sql)) {
       return ParsedStatement.ddl(statement, sql);
     }
@@ -520,5 +539,13 @@ public abstract class AbstractStatementParser {
       }
     }
     return res;
+  }
+
+  @InternalApi
+  abstract boolean checkReturningClauseInternal(String sql);
+
+  @InternalApi
+  public boolean checkReturningClause(String sql) {
+    return checkReturningClauseInternal(sql);
   }
 }
