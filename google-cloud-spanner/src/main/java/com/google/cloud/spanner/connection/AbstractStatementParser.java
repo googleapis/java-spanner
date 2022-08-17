@@ -542,6 +542,14 @@ public abstract class AbstractStatementParser {
     return res;
   }
 
+  /**
+   * Checks if the given SQL string contains a Returning clause. This method is used only in case
+   * of a DML statement.
+   *
+   * @param sql The sql string without comments that has to be evaluated.
+   * @return A boolean indicating whether the sql string has a Returning clause or not.
+   * @throws SpannerException If the input sql string contains an unclosed string/byte literal.
+   */
   @InternalApi
   abstract boolean checkReturningClauseInternal(String sql);
 
