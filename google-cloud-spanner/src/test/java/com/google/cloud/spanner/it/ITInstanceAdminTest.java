@@ -46,8 +46,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ITInstanceAdminTest {
 
-  @ClassRule
-  public static IntegrationTestEnv env = new IntegrationTestEnv(true);
+  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv(true);
   static InstanceAdminClient instanceClient;
 
   @BeforeClass
