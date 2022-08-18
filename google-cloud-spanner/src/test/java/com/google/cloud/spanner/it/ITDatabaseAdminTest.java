@@ -16,10 +16,12 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
@@ -209,6 +211,7 @@ public class ITDatabaseAdminTest {
 
   @Test
   public void createAndListDatabaseRoles() throws Exception {
+    assumeFalse("Emulator does not support create & list database roles", isUsingEmulator());
     List<String> dbRoles =
         ImmutableList.of(
             testHelper.getUniqueDatabaseRole(),

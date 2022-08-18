@@ -16,8 +16,10 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.rpc.PermissionDeniedException;
 import com.google.cloud.spanner.Database;
@@ -52,6 +54,7 @@ public class ITDatabaseRolePermissionTest {
 
   @Before
   public void setUp() {
+    assumeFalse("Emulator does not support database roles", isUsingEmulator());
     testHelper = env.getTestHelper();
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
   }
