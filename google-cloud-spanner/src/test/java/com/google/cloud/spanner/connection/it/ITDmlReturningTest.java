@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection.it;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -24,6 +25,7 @@ import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
+qimport com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
@@ -35,6 +37,8 @@ import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import com.google.cloud.spanner.connection.StatementResult;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.TransactionMode;
+import com.google.common.collect.ImmutableList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Test;
@@ -149,6 +153,30 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
       } catch (SpannerException e) {
         assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
       }
+    }
+  }
+
+  @Test
+  public void testDmlReturningExecuteBatchUpdate() {
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(false);
+      final Statement UPDATE_STMT = Statement.of(UPDATE);
+      long[] counts =
+          connection.executeBatchUpdate(ImmutableList.of(UPDATE_STMT, UPDATE_STMT, UPDATE_STMT));
+      assertArrayEquals(counts, new long[] {3, 3, 3});
+    }
+  }
+
+  @Test
+  public void testDmlReturningExecuteBatchUpdateAsync() {
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(false);
+      final Statement UPDATE_STMT = Statement.of(UPDATE);
+      long[] counts =
+          connection.executeBatchUpdateAsync(ImmutableList.of(UPDATE_STMT, UPDATE_STMT, UPDATE_STMT)).get();
+      assertArrayEquals(counts, new long[] {3, 3, 3});
+    } catch (ExecutionException | InterruptedException e) {
+      // ignore
     }
   }
 
