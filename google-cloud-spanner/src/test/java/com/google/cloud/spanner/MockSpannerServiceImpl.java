@@ -270,6 +270,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       return new StatementResult(statement, updateCount);
     }
 
+    /**
+     * Creates a {@link StatementResult} for a DML statement with returning clause that returns a
+     * ResultSet.
+     */
+    public static StatementResult updateReturning(Statement statement, ResultSet resultSet) {
+      return new StatementResult(statement, resultSet);
+    }
+
     /** Creates a {@link StatementResult} for statement that should return an error. */
     public static StatementResult exception(Statement statement, StatusRuntimeException exception) {
       return new StatementResult(statement, exception);
@@ -1093,9 +1101,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                       .build();
               break resultLoop;
             case RESULT_SET:
-              throw Status.INVALID_ARGUMENT
-                  .withDescription("Not a DML statement: " + statement.getSql())
-                  .asRuntimeException();
             case UPDATE_COUNT:
               results.add(res);
               break;
@@ -1120,10 +1125,21 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       }
       ExecuteBatchDmlResponse.Builder builder = ExecuteBatchDmlResponse.newBuilder();
       for (StatementResult res : results) {
+        Long updateCount;
+        switch (res.getType()) {
+          case UPDATE_COUNT:
+            updateCount = res.getUpdateCount();
+            break;
+          case RESULT_SET:
+            updateCount = res.getResultSet().getStats().getRowCountExact();
+            break;
+          default:
+            throw new IllegalStateException("Invalid result type: " + res.getType());
+        }
         builder.addResultSets(
             ResultSet.newBuilder()
                 .setStats(
-                    ResultSetStats.newBuilder().setRowCountExact(res.getUpdateCount()).build())
+                    ResultSetStats.newBuilder().setRowCountExact(updateCount).build())
                 .setMetadata(
                     ResultSetMetadata.newBuilder()
                         .setTransaction(
