@@ -33,6 +33,7 @@ import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Logger;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -48,6 +49,7 @@ public class ITInstanceAdminTest {
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv(true);
   static InstanceAdminClient instanceClient;
+  private static final Logger logger = Logger.getLogger(ITInstanceAdminTest.class.getName());
 
   @BeforeClass
   public static void setUp() {
@@ -79,6 +81,7 @@ public class ITInstanceAdminTest {
 
   @Test
   public void listInstances() {
+    logger.info(env.getTestHelper().getInstanceId().getInstance());
     Instance instance =
         Iterators.getOnlyElement(
             instanceClient
