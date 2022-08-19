@@ -58,14 +58,16 @@ public class IntegrationTestEnv extends ExternalResource {
   private InstanceAdminClient instanceAdminClient;
   private DatabaseAdminClient databaseAdminClient;
   private boolean isOwnedInstance;
-  private boolean useNewInstance;
+  private final boolean createNewInstance;
   private RemoteSpannerHelper testHelper;
 
-  public IntegrationTestEnv(final boolean useNewInstance) {
-    this.useNewInstance = useNewInstance;
+  public IntegrationTestEnv() {
+    this(false);
   }
 
-  public IntegrationTestEnv() {}
+  public IntegrationTestEnv(final boolean createNewInstance) {
+    this.createNewInstance = createNewInstance;
+  }
 
   public RemoteSpannerHelper getTestHelper() {
     checkInitialized();
@@ -91,7 +93,7 @@ public class IntegrationTestEnv extends ExternalResource {
     SpannerOptions options = config.spannerOptions();
     String instanceProperty = System.getProperty(TEST_INSTANCE_PROPERTY, "");
     InstanceId instanceId;
-    if (!instanceProperty.isEmpty() && !useNewInstance) {
+    if (!instanceProperty.isEmpty() && !createNewInstance) {
       instanceId = InstanceId.of(instanceProperty);
       isOwnedInstance = false;
       logger.log(Level.INFO, "Using existing test instance: {0}", instanceId);
