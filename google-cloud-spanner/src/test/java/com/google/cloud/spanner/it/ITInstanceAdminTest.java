@@ -79,6 +79,8 @@ public class ITInstanceAdminTest {
 
   @Test
   public void listInstances() {
+    assumeFalse("The emulator does not support filtering on instances", isUsingEmulator());
+
     Instance instance =
         Iterators.getOnlyElement(
             instanceClient
