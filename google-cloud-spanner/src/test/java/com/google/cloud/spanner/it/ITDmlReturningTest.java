@@ -357,7 +357,6 @@ public final class ITDmlReturningTest {
                     }
                   }
                 } catch (SpannerException e) {
-                  System.out.printf("Error in callback: %s%n", e.getMessage());
                   return CallbackResponse.DONE;
                 }
               });
