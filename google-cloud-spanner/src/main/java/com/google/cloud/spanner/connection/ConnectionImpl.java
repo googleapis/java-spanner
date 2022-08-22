@@ -936,7 +936,8 @@ class ConnectionImpl implements Connection {
           return internalExecuteQuery(parsedStatement, analyzeMode, options);
         case UPDATE:
           if (parsedStatement.hasReturningClause()) {
-            // Cannot execute in read-only mode or in READ_ONLY_TRANSACTION transaction mode.
+            // Cannot execute DML statement with returning clause in read-only mode or in
+            // READ_ONLY_TRANSACTION transaction mode.
             if (this.isReadOnly()
                 || (this.isInTransaction()
                     && this.getTransactionMode() == TransactionMode.READ_ONLY_TRANSACTION)) {
@@ -955,7 +956,8 @@ class ConnectionImpl implements Connection {
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
-        "Statement is not a query: " + parsedStatement.getSqlWithoutComments());
+        "Statement is not a query or DML with returning clause: "
+            + parsedStatement.getSqlWithoutComments());
   }
 
   private AsyncResultSet parseAndExecuteQueryAsync(
@@ -977,7 +979,8 @@ class ConnectionImpl implements Connection {
           return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
         case UPDATE:
           if (parsedStatement.hasReturningClause()) {
-            // Cannot execute in read-only mode or in READ_ONLY_TRANSACTION transaction mode.
+            // Cannot execute DML statement with returning clause in read-only mode or in
+            // READ_ONLY_TRANSACTION transaction mode.
             if (this.isReadOnly()
                 || (this.isInTransaction()
                     && this.getTransactionMode() == TransactionMode.READ_ONLY_TRANSACTION)) {
@@ -996,7 +999,8 @@ class ConnectionImpl implements Connection {
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
-        "Statement is not a query: " + parsedStatement.getSqlWithoutComments());
+        "Statement is not a query or DML with returning clause: "
+            + parsedStatement.getSqlWithoutComments());
   }
 
   @Override
