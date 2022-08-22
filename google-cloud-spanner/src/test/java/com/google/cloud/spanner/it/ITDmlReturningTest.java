@@ -18,8 +18,12 @@ package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
+import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Dialect;
@@ -32,7 +36,6 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
-import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.connection.ConnectionOptions;
@@ -41,6 +44,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -62,14 +67,6 @@ public final class ITDmlReturningTest {
   /** Id prefix per test case. */
   private static int id;
 
-  private static final String INSERT_DML_RETURNING =
-      "INSERT INTO T (k, v) VALUES ('%d-boo1', 1), ('%d-boo2', 2), ('%d-boo3', 3), ('%d-boo4', 4) THEN RETURN *;";
-  private static final String UPDATE_DML_RETURNING =
-      "UPDATE T SET V = 100 WHERE K LIKE '%d-boo%%' THEN RETURN *;";
-  private static final String DELETE_DML_RETURNING =
-      "DELETE FROM T WHERE K like '%d-boo%%' THEN RETURN *;";
-  private static final String DELETE_DML = "DELETE FROM T WHERE K like '%d-boo%%';";
-
   private static final long DML_COUNT = 4;
 
   @BeforeClass
@@ -88,7 +85,10 @@ public final class ITDmlReturningTest {
               .createTestDatabase(
                   Dialect.POSTGRESQL,
                   Collections.singletonList(
-                      "CREATE TABLE T (" + "  K    VARCHAR PRIMARY KEY," + "  V    BIGINT" + ")"));
+                      "CREATE TABLE T ("
+                          + "  \"K\"    VARCHAR PRIMARY KEY,"
+                          + "  \"V\"    BIGINT"
+                          + ")"));
       postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
     }
   }
@@ -112,34 +112,61 @@ public final class ITDmlReturningTest {
 
   @Parameterized.Parameters(name = "Dialect = {0}")
   public static List<DialectTestParameter> data() {
-    // DML Returning does not support PG dialect yet.
-    // So we run tests only for Google Standard SQL for now.
     List<DialectTestParameter> params = new ArrayList<>();
     params.add(new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL));
+    params.add(new DialectTestParameter(Dialect.POSTGRESQL));
     return params;
   }
 
   @Parameterized.Parameter(0)
   public DialectTestParameter dialect;
 
+  private String getInsertDmlReturningTemplate() {
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      return "INSERT INTO T (\"K\", \"V\") VALUES ('%d-boo1', 1), ('%d-boo2', 2), ('%d-boo3', 3), ('%d-boo4', 4) RETURNING *";
+    }
+    return "INSERT INTO T (K, V) VALUES ('%d-boo1', 1), ('%d-boo2', 2), ('%d-boo3', 3), ('%d-boo4', 4) THEN RETURN *";
+  }
+
+  private String getUpdateDmlReturningTemplate() {
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      return "UPDATE T SET \"V\" = 100 WHERE \"K\" LIKE '%d-boo%%' RETURNING *";
+    }
+    return "UPDATE T SET V = 100 WHERE K LIKE '%d-boo%%' THEN RETURN *";
+  }
+
+  private String getDeleteDmlReturningTemplate() {
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      return "DELETE FROM T WHERE \"K\" like '%d-boo%%' RETURNING *";
+    }
+    return "DELETE FROM T WHERE K like '%d-boo%%' THEN RETURN *";
+  }
+
+  private String getDeleteDmlTemplate() {
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      return "DELETE FROM T WHERE \"K\" like '%d-boo%%'";
+    }
+    return "DELETE FROM T WHERE K like '%d-boo%%'";
+  }
+
   private String insertDmlReturning() {
-    return String.format(INSERT_DML_RETURNING, id, id, id, id);
+    return String.format(getInsertDmlReturningTemplate(), id, id, id, id);
   }
 
   private String updateDmlReturning() {
-    return String.format(UPDATE_DML_RETURNING, id);
+    return String.format(getUpdateDmlReturningTemplate(), id);
   }
 
   private String deleteDmlReturning() {
-    return String.format(DELETE_DML_RETURNING, id);
+    return String.format(getDeleteDmlReturningTemplate(), id);
   }
 
   private String deleteDml() {
-    return String.format(DELETE_DML, id);
+    return String.format(getDeleteDmlTemplate(), id);
   }
 
-  private DatabaseClient getClient(Dialect dialect) {
-    if (dialect == Dialect.POSTGRESQL) {
+  private DatabaseClient getClient() {
+    if (dialect.dialect == Dialect.POSTGRESQL) {
       return postgreSQLClient;
     }
     return googleStandardSQLClient;
@@ -161,7 +188,28 @@ public final class ITDmlReturningTest {
           }
           return rowCount;
         };
-    TransactionRunner runner = getClient(dialect.dialect).readWriteTransaction();
+    TransactionRunner runner = getClient().readWriteTransaction();
+    Long rowCount = runner.run(callable);
+    assertThat(rowCount).isEqualTo(expectedCount);
+  }
+
+  @Test
+  public void dmlReturningWithExecuteUpdateAsync() {
+    executeUpdateAsync(DML_COUNT, insertDmlReturning());
+    // checks for multi-stmts within a txn, therefore also verifying seqNo.
+    executeUpdateAsync(DML_COUNT * 2, updateDmlReturning(), deleteDmlReturning());
+  }
+
+  private void executeUpdateAsync(long expectedCount, final String... stmts) {
+    final TransactionCallable<Long> callable =
+        transaction -> {
+          long rowCount = 0;
+          for (String stmt : stmts) {
+            rowCount += transaction.executeUpdateAsync(Statement.of(stmt)).get(1, TimeUnit.MINUTES);
+          }
+          return rowCount;
+        };
+    TransactionRunner runner = getClient().readWriteTransaction();
     Long rowCount = runner.run(callable);
     assertThat(rowCount).isEqualTo(expectedCount);
   }
@@ -171,9 +219,7 @@ public final class ITDmlReturningTest {
     Throwable exception =
         assertThrows(
             SpannerException.class,
-            () ->
-                getClient(dialect.dialect)
-                    .executePartitionedUpdate(Statement.of(updateDmlReturning())));
+            () -> getClient().executePartitionedUpdate(Statement.of(updateDmlReturning())));
     assertThat(exception.getMessage()).ignoringCase().contains("not supported");
   }
 
@@ -181,8 +227,8 @@ public final class ITDmlReturningTest {
   public void dmlReturningWithExecuteQuery() {
     List<Struct> rows = executeQuery(DML_COUNT, insertDmlReturning());
     assertThat(
-            getClient(dialect.dialect)
-                .singleUse(TimestampBound.strong())
+            getClient()
+                .singleUse()
                 .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(1);
@@ -194,8 +240,8 @@ public final class ITDmlReturningTest {
     }
     rows = executeQuery(DML_COUNT, updateDmlReturning());
     assertThat(
-            getClient(dialect.dialect)
-                .singleUse(TimestampBound.strong())
+            getClient()
+                .singleUse()
                 .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
                 .getLong(0))
         .isEqualTo(100);
@@ -207,8 +253,8 @@ public final class ITDmlReturningTest {
     }
     rows = executeQuery(DML_COUNT, deleteDmlReturning());
     assertThat(
-            getClient(dialect.dialect)
-                .singleUse(TimestampBound.strong())
+            getClient()
+                .singleUse()
                 .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V")))
         .isNull();
 
@@ -235,7 +281,89 @@ public final class ITDmlReturningTest {
           assertThat(expectedCount).isEqualTo(resultSet.getStats().getRowCountExact());
           return null;
         };
-    TransactionRunner runner = getClient(dialect.dialect).readWriteTransaction();
+    TransactionRunner runner = getClient().readWriteTransaction();
+    runner.run(callable);
+    rows.sort(Comparator.comparing(a -> a.getString("K")));
+    return rows;
+  }
+
+  @Test
+  public void dmlReturningWithExecuteQueryAsync() {
+    List<Struct> rows = executeQueryAsync(DML_COUNT, insertDmlReturning());
+    assertThat(
+            getClient()
+                .singleUse()
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
+                .getLong(0))
+        .isEqualTo(1);
+
+    // Check if keys(K) and V have expected values.
+    for (int idx = 0; idx < rows.size(); idx++) {
+      assertThat(rows.get(idx).getLong("V")).isEqualTo(idx + 1);
+      assertThat(rows.get(idx).getString("K")).isEqualTo(String.format("%d-boo%d", id, idx + 1));
+    }
+    rows = executeQueryAsync(DML_COUNT, updateDmlReturning());
+    assertThat(
+            getClient()
+                .singleUse()
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
+                .getLong(0))
+        .isEqualTo(100);
+
+    // Check if keys(K) and V have expected values.
+    for (int idx = 0; idx < rows.size(); idx++) {
+      assertThat(rows.get(idx).getLong("V")).isEqualTo(100);
+      assertThat(rows.get(idx).getString("K")).isEqualTo(String.format("%d-boo%d", id, idx + 1));
+    }
+    rows = executeQueryAsync(DML_COUNT, deleteDmlReturning());
+    assertThat(
+            getClient()
+                .singleUse()
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V")))
+        .isNull();
+
+    // Check if keys(K) and V have expected values.
+    for (int idx = 0; idx < rows.size(); idx++) {
+      assertThat(rows.get(idx).getLong("V")).isEqualTo(100);
+      assertThat(rows.get(idx).getString("K")).isEqualTo(String.format("%d-boo%d", id, idx + 1));
+    }
+  }
+
+  private List<Struct> executeQueryAsync(long expectedCount, String stmt) {
+    List<Struct> rows = new ArrayList<>();
+    final TransactionCallable<Void> callable =
+        transaction -> {
+          AsyncResultSet rs = transaction.executeQueryAsync(Statement.of(stmt));
+          // resultSet.next() returns false, when no more row exists.
+          // So, number of times resultSet.next() returns true, is the number of rows
+          // returned by the DML Returning statement.
+          rs.setCallback(
+              Executors.newSingleThreadExecutor(),
+              resultSet -> {
+                try {
+                  while (true) {
+                    switch (resultSet.tryNext()) {
+                      case OK:
+                        rows.add(resultSet.getCurrentRowAsStruct());
+                        break;
+                      case DONE:
+                        assertNotNull(resultSet.getStats());
+                        assertEquals(resultSet.getStats().getRowCountExact(), expectedCount);
+                        return CallbackResponse.DONE;
+                      case NOT_READY:
+                        return CallbackResponse.CONTINUE;
+                      default:
+                        throw new IllegalStateException();
+                    }
+                  }
+                } catch (SpannerException e) {
+                  System.out.printf("Error in callback: %s%n", e.getMessage());
+                  return CallbackResponse.DONE;
+                }
+              });
+          return null;
+        };
+    TransactionRunner runner = getClient().readWriteTransaction();
     runner.run(callable);
     rows.sort(Comparator.comparing(a -> a.getString("K")));
     return rows;
@@ -243,7 +371,7 @@ public final class ITDmlReturningTest {
 
   @Test
   public void dmlReturningWithBatchUpdate() {
-    // We pass in a mix of DML and DML Returning statements, to batchUpdate.
+    // Check if batchUpdate works well with a mix of Simple DML and DML Returning statements.
     long[] rowCounts = batchUpdate(insertDmlReturning(), updateDmlReturning(), deleteDml());
     assertThat(rowCounts.length).isEqualTo(3);
     assertThat(rowCounts[0]).isEqualTo(DML_COUNT);
@@ -256,7 +384,28 @@ public final class ITDmlReturningTest {
         transaction ->
             transaction.batchUpdate(
                 Arrays.stream(stmts).map(Statement::of).collect(Collectors.toList()));
-    TransactionRunner runner = getClient(dialect.dialect).readWriteTransaction();
+    TransactionRunner runner = getClient().readWriteTransaction();
+    return runner.run(callable);
+  }
+
+  @Test
+  public void dmlReturningWithBatchUpdateAsync() {
+    // Check if batchUpdateAsync works well with a mix of Simple DML and DML Returning statements.
+    long[] rowCounts = batchUpdateAsync(insertDmlReturning(), updateDmlReturning(), deleteDml());
+    assertThat(rowCounts.length).isEqualTo(3);
+    assertThat(rowCounts[0]).isEqualTo(DML_COUNT);
+    assertThat(rowCounts[1]).isEqualTo(DML_COUNT);
+    assertThat(rowCounts[2]).isEqualTo(DML_COUNT);
+  }
+
+  private long[] batchUpdateAsync(final String... stmts) {
+    final TransactionCallable<long[]> callable =
+        transaction ->
+            transaction
+                .batchUpdateAsync(
+                    Arrays.stream(stmts).map(Statement::of).collect(Collectors.toList()))
+                .get();
+    TransactionRunner runner = getClient().readWriteTransaction();
     return runner.run(callable);
   }
 }
