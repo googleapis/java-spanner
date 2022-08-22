@@ -25,7 +25,9 @@ import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -37,53 +39,100 @@ import com.google.cloud.spanner.connection.StatementResult;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.TransactionMode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 /** Execute DML Returning statements using the generic connection API. */
 @Category(ParallelIntegrationTest.class)
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class ITDmlReturningTest extends ITAbstractSpannerTest {
-  private final String UPDATE =
-      "UPDATE Singers SET LastName = \"XYZ\" WHERE FirstName = \"ABC\" THEN RETURN *";
-  private static boolean initialized = false;
+  private final ImmutableMap<Dialect, Statement> UPDATE_RETURNING_MAP =
+      ImmutableMap.of(
+          Dialect.GOOGLE_STANDARD_SQL,
+          Statement.of("UPDATE Singers SET LastName = 'XYZ' WHERE FirstName = 'ABC' THEN RETURN *"),
+          Dialect.POSTGRESQL,
+          Statement.of("UPDATE Singers SET LastName = 'XYZ' WHERE FirstName = 'ABC' RETURNING *"));
+  private final ImmutableMap<Dialect, String> DDL_MAP =
+      ImmutableMap.of(
+          Dialect.GOOGLE_STANDARD_SQL,
+          "CREATE TABLE Singers ("
+              + "  SingerId INT64,"
+              + "  FirstName STRING(1024),"
+              + "  LastName STRING(1024)"
+              + ")  PRIMARY KEY(SingerId)",
+          Dialect.POSTGRESQL,
+          "CREATE TABLE Singers ("
+              + "  SingerId BIGINT PRIMARY KEY,"
+              + "  FirstName character varying(1024),"
+              + "  LastName character varying(1024))");
+  private final Map<Dialect, Boolean> IS_INITIALIZED = new HashMap<>();
+
+  public ITDmlReturningTest() {
+    IS_INITIALIZED.put(Dialect.GOOGLE_STANDARD_SQL, false);
+    IS_INITIALIZED.put(Dialect.POSTGRESQL, false);
+  }
+
+  @Parameter public Dialect dialect;
+
+  @Parameters(name = "dialect = {0}")
+  public static Object[] data() {
+    return Dialect.values();
+  }
+
+  private boolean checkAndSetInitialized() {
+    if ((dialect == Dialect.GOOGLE_STANDARD_SQL) && !IS_INITIALIZED.get(dialect)) {
+      IS_INITIALIZED.put(dialect, true);
+      return true;
+    }
+    if ((dialect == Dialect.POSTGRESQL) && !IS_INITIALIZED.get(dialect)) {
+      IS_INITIALIZED.put(dialect, true);
+      return true;
+    }
+    return false;
+  }
 
   @Before
   public void setupTable() {
-    if (!initialized) {
-      try (Connection connection = createConnection()) {
-        if (!tableExists(connection, "Singers")) {
-          connection.execute(
-              Statement.of(
-                  "CREATE TABLE Singers ("
-                      + "  SingerId INT64 NOT NULL,"
-                      + "  FirstName STRING(1024),"
-                      + "  LastName STRING(1024)"
-                      + ")  PRIMARY KEY(SingerId)"));
-          connection.execute(
-              Statement.of(
-                  "INSERT INTO SINGERS "
-                      + "(SINGERID, FIRSTNAME, LASTNAME) VALUES "
-                      + "(1, \"ABC\", \"XYZ\"), "
-                      + "(2, \"ABC\", \"DEF\"), "
-                      + "(3, \"DEF\", \"XYZ\"), "
-                      + "(4, \"PQR\", \"ABC\"), "
-                      + "(5, \"ABC\", \"GHI\")"));
-        }
+    if (checkAndSetInitialized()) {
+      database =
+          env.getTestHelper()
+              .createTestDatabase(dialect, Collections.singleton(DDL_MAP.get(dialect)));
+      List<String> firstNames = Arrays.asList("ABC", "ABC", "DEF", "PQR", "ABC");
+      List<String> lastNames = Arrays.asList("XYZ", "DEF", "XYZ", "ABC", "GHI");
+      List<Mutation> mutations = new ArrayList<>();
+      for (int id = 1; id <= 5; id++) {
+        mutations.add(
+            Mutation.newInsertBuilder("SINGERS")
+                .set("SINGERID")
+                .to(id)
+                .set("FIRSTNAME")
+                .to(firstNames.get(id - 1))
+                .set("LASTNAME")
+                .to(lastNames.get(id - 1))
+                .build());
       }
-      initialized = true;
+      env.getTestHelper().getDatabaseClient(database).write(mutations);
     }
   }
 
   @Test
   public void testDmlReturningExecuteQuery() {
     try (Connection connection = createConnection()) {
-      ResultSet rs = connection.executeQuery(Statement.of(UPDATE));
+      ResultSet rs = connection.executeQuery(UPDATE_RETURNING_MAP.get(dialect));
       assertEquals(rs.getColumnCount(), 3);
       assertTrue(rs.next());
       assertEquals(rs.getString(1), "ABC");
@@ -100,7 +149,7 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
   @Test
   public void testDmlReturningExecuteQueryAsync() {
     try (Connection connection = createConnection()) {
-      AsyncResultSet rs = connection.executeQueryAsync(Statement.of(UPDATE));
+      AsyncResultSet rs = connection.executeQueryAsync(UPDATE_RETURNING_MAP.get(dialect));
       rs.setCallback(
           Executors.newSingleThreadExecutor(),
           resultSet -> {
@@ -134,7 +183,7 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(false);
       try {
-        connection.executeUpdate(Statement.of(UPDATE));
+        connection.executeUpdate(UPDATE_RETURNING_MAP.get(dialect));
         fail("missing exception");
       } catch (SpannerException e) {
         assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
@@ -147,7 +196,7 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(false);
       try {
-        connection.executeUpdateAsync(Statement.of(UPDATE));
+        connection.executeUpdateAsync(UPDATE_RETURNING_MAP.get(dialect));
         fail("missing exception");
       } catch (SpannerException e) {
         assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
@@ -159,7 +208,7 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
   public void testDmlReturningExecuteBatchUpdate() {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(false);
-      final Statement UPDATE_STMT = Statement.of(UPDATE);
+      final Statement UPDATE_STMT = UPDATE_RETURNING_MAP.get(dialect);
       long[] counts =
           connection.executeBatchUpdate(ImmutableList.of(UPDATE_STMT, UPDATE_STMT, UPDATE_STMT));
       assertArrayEquals(counts, new long[] {3, 3, 3});
@@ -170,9 +219,11 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
   public void testDmlReturningExecuteBatchUpdateAsync() {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(false);
-      final Statement UPDATE_STMT = Statement.of(UPDATE);
+      final Statement UPDATE_STMT = UPDATE_RETURNING_MAP.get(dialect);
       long[] counts =
-          connection.executeBatchUpdateAsync(ImmutableList.of(UPDATE_STMT, UPDATE_STMT, UPDATE_STMT)).get();
+          connection
+              .executeBatchUpdateAsync(ImmutableList.of(UPDATE_STMT, UPDATE_STMT, UPDATE_STMT))
+              .get();
       assertArrayEquals(counts, new long[] {3, 3, 3});
     } catch (ExecutionException | InterruptedException e) {
       // ignore
@@ -183,7 +234,7 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
   public void testDmlReturningExecute() {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(false);
-      StatementResult res = connection.execute(Statement.of(UPDATE));
+      StatementResult res = connection.execute(UPDATE_RETURNING_MAP.get(dialect));
       assertEquals(res.getResultType(), ResultType.RESULT_SET);
       ResultSet rs = res.getResultSet();
       assertEquals(rs.getColumnCount(), 3);
@@ -203,7 +254,7 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
   public void testDmlReturningExecuteAsync() {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(false);
-      AsyncStatementResult res = connection.executeAsync(Statement.of(UPDATE));
+      AsyncStatementResult res = connection.executeAsync(UPDATE_RETURNING_MAP.get(dialect));
       assertEquals(res.getResultType(), ResultType.RESULT_SET);
       AsyncResultSet rs = res.getResultSetAsync();
       rs.setCallback(
@@ -239,7 +290,7 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
     try (Connection connection = createConnection()) {
       connection.setReadOnly(true);
       try {
-        connection.executeQuery(Statement.of(UPDATE));
+        connection.executeQuery(UPDATE_RETURNING_MAP.get(dialect));
         fail("missing exception");
       } catch (SpannerException e) {
         assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
@@ -254,7 +305,7 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
       connection.setAutocommit(false);
       connection.setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
       try {
-        connection.executeQuery(Statement.of(UPDATE));
+        connection.executeQuery(UPDATE_RETURNING_MAP.get(dialect));
         fail("missing exception");
       } catch (SpannerException e) {
         assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
@@ -267,7 +318,7 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
     try (Connection connection = createConnection()) {
       connection.setReadOnly(true);
       try {
-        connection.executeQueryAsync(Statement.of(UPDATE));
+        connection.executeQueryAsync(UPDATE_RETURNING_MAP.get(dialect));
         fail("missing exception");
       } catch (SpannerException e) {
         assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
@@ -282,7 +333,7 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
       connection.setAutocommit(false);
       connection.setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
       try {
-        connection.executeQueryAsync(Statement.of(UPDATE));
+        connection.executeQueryAsync(UPDATE_RETURNING_MAP.get(dialect));
         fail("missing exception");
       } catch (SpannerException e) {
         assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);

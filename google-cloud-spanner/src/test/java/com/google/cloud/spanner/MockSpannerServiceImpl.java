@@ -1138,8 +1138,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         }
         builder.addResultSets(
             ResultSet.newBuilder()
-                .setStats(
-                    ResultSetStats.newBuilder().setRowCountExact(updateCount).build())
+                .setStats(ResultSetStats.newBuilder().setRowCountExact(updateCount).build())
                 .setMetadata(
                     ResultSetMetadata.newBuilder()
                         .setTransaction(

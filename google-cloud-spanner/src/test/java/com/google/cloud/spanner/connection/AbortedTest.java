@@ -155,8 +155,9 @@ public class AbortedTest extends AbstractMockServerTest {
 
   @Test
   public void testAbortedDuringRetryOfFailedUpdate() {
-    final Iterable<Statement> invalidStatements = ImmutableList.of(
-        Statement.of("INSERT INTO FOO"), Statement.of("INSERT INTO FOO THEN RETURN *"));
+    final Iterable<Statement> invalidStatements =
+        ImmutableList.of(
+            Statement.of("INSERT INTO FOO"), Statement.of("INSERT INTO FOO THEN RETURN *"));
     StatusRuntimeException notFound =
         Status.NOT_FOUND.withDescription("Table not found").asRuntimeException();
     for (Statement invalidStatement : invalidStatements) {
@@ -187,8 +188,9 @@ public class AbortedTest extends AbstractMockServerTest {
 
   @Test
   public void testAbortedDuringRetryOfFailedBatchUpdate() {
-    final Iterable<Statement> invalidStatements = ImmutableList.of(
-        Statement.of("INSERT INTO FOO"), Statement.of("INSERT INTO FOO THEN RETURN *"));
+    final Iterable<Statement> invalidStatements =
+        ImmutableList.of(
+            Statement.of("INSERT INTO FOO"), Statement.of("INSERT INTO FOO THEN RETURN *"));
     StatusRuntimeException notFound =
         Status.NOT_FOUND.withDescription("Table not found").asRuntimeException();
     for (Statement invalidStatement : invalidStatements) {
@@ -249,8 +251,9 @@ public class AbortedTest extends AbstractMockServerTest {
 
   @Test
   public void testAbortedDuringRetryOfFailedUpdateAsFirstStatement() {
-    final Iterable<Statement> invalidStatements = ImmutableList.of(
-        Statement.of("INSERT INTO FOO"), Statement.of("INSERT INTO FOO THEN RETURN *"));
+    final Iterable<Statement> invalidStatements =
+        ImmutableList.of(
+            Statement.of("INSERT INTO FOO"), Statement.of("INSERT INTO FOO THEN RETURN *"));
     StatusRuntimeException notFound =
         Status.NOT_FOUND.withDescription("Table not found").asRuntimeException();
     for (Statement invalidStatement : invalidStatements) {
@@ -276,8 +279,9 @@ public class AbortedTest extends AbstractMockServerTest {
 
   @Test
   public void testAbortedDuringRetryOfFailedBatchUpdateAsFirstStatement() {
-    final Iterable<Statement> invalidStatements = ImmutableList.of(
-        Statement.of("INSERT INTO FOO"), Statement.of("INSERT INTO FOO THEN RETURN *"));
+    final Iterable<Statement> invalidStatements =
+        ImmutableList.of(
+            Statement.of("INSERT INTO FOO"), Statement.of("INSERT INTO FOO THEN RETURN *"));
     StatusRuntimeException notFound =
         Status.NOT_FOUND.withDescription("Table not found").asRuntimeException();
     for (Statement invalidStatement : invalidStatements) {
