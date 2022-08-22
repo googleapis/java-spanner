@@ -19,6 +19,7 @@ package com.google.cloud.spanner.admin.database.v1;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseRolesPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabasesPagedResponse;
 
 import com.google.api.core.ApiFunction;
@@ -26,6 +27,7 @@ import com.google.api.core.BetaApi;
 import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.api.gax.core.InstantiatingExecutorProvider;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.api.gax.httpjson.InstantiatingHttpJsonChannelProvider;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.ClientContext;
 import com.google.api.gax.rpc.ClientSettings;
@@ -61,6 +63,8 @@ import com.google.spanner.admin.database.v1.ListBackupsRequest;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
@@ -239,6 +243,13 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
     return ((DatabaseAdminStubSettings) getStubSettings()).listBackupOperationsSettings();
   }
 
+  /** Returns the object with the settings used for calls to listDatabaseRoles. */
+  public PagedCallSettings<
+          ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
+      listDatabaseRolesSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).listDatabaseRolesSettings();
+  }
+
   public static final DatabaseAdminSettings create(DatabaseAdminStubSettings stub)
       throws IOException {
     return new DatabaseAdminSettings.Builder(stub.toBuilder()).build();
@@ -264,9 +275,16 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
     return DatabaseAdminStubSettings.defaultCredentialsProviderBuilder();
   }
 
-  /** Returns a builder for the default ChannelProvider for this service. */
+  /** Returns a builder for the default gRPC ChannelProvider for this service. */
   public static InstantiatingGrpcChannelProvider.Builder defaultGrpcTransportProviderBuilder() {
     return DatabaseAdminStubSettings.defaultGrpcTransportProviderBuilder();
+  }
+
+  /** Returns a builder for the default REST ChannelProvider for this service. */
+  @BetaApi
+  public static InstantiatingHttpJsonChannelProvider.Builder
+      defaultHttpJsonTransportProviderBuilder() {
+    return DatabaseAdminStubSettings.defaultHttpJsonTransportProviderBuilder();
   }
 
   public static TransportChannelProvider defaultTransportChannelProvider() {
@@ -278,9 +296,15 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
     return DatabaseAdminStubSettings.defaultApiClientHeaderProviderBuilder();
   }
 
-  /** Returns a new builder for this class. */
+  /** Returns a new gRPC builder for this class. */
   public static Builder newBuilder() {
     return Builder.createDefault();
+  }
+
+  /** Returns a new REST builder for this class. */
+  @BetaApi
+  public static Builder newHttpJsonBuilder() {
+    return Builder.createHttpJsonDefault();
   }
 
   /** Returns a new builder for this class. */
@@ -318,6 +342,11 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
 
     private static Builder createDefault() {
       return new Builder(DatabaseAdminStubSettings.newBuilder());
+    }
+
+    @BetaApi
+    private static Builder createHttpJsonDefault() {
+      return new Builder(DatabaseAdminStubSettings.newHttpJsonBuilder());
     }
 
     public DatabaseAdminStubSettings.Builder getStubSettingsBuilder() {
@@ -469,6 +498,13 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
             ListBackupOperationsPagedResponse>
         listBackupOperationsSettings() {
       return getStubSettingsBuilder().listBackupOperationsSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to listDatabaseRoles. */
+    public PagedCallSettings.Builder<
+            ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
+        listDatabaseRolesSettings() {
+      return getStubSettingsBuilder().listDatabaseRolesSettings();
     }
 
     @Override

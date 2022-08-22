@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR;
 import static org.junit.Assert.assertEquals;
 
 import com.google.cloud.NoCredentials;
@@ -134,7 +135,7 @@ public class ChannelUsageTest {
                     Attributes.Key<InetSocketAddress> key =
                         (Attributes.Key<InetSocketAddress>)
                             attributes.keys().stream()
-                                .filter(k -> k.toString().equals("remote-addr"))
+                                .filter(k -> k.equals(TRANSPORT_ATTR_REMOTE_ADDR))
                                 .findFirst()
                                 .orElse(null);
                     if (key != null) {

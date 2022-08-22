@@ -165,6 +165,7 @@ public class ConnectionOptions {
   private static final String DEFAULT_MAX_SESSIONS = null;
   private static final String DEFAULT_NUM_CHANNELS = null;
   private static final String DEFAULT_CHANNEL_PROVIDER = null;
+  private static final String DEFAULT_DATABASE_ROLE = null;
   private static final String DEFAULT_USER_AGENT = null;
   private static final String DEFAULT_OPTIMIZER_VERSION = "";
   private static final String DEFAULT_OPTIMIZER_STATISTICS_PACKAGE = "";
@@ -215,7 +216,8 @@ public class ConnectionOptions {
   public static final String RPC_PRIORITY_NAME = "rpcPriority";
   /** Dialect to use for a connection. */
   private static final String DIALECT_PROPERTY_NAME = "dialect";
-
+  /** Name of the 'databaseRole' connection property. */
+  public static final String DATABASE_ROLE_PROPERTY_NAME = "databaseRole";
   /** All valid connection properties. */
   public static final Set<ConnectionProperty> VALID_PROPERTIES =
       Collections.unmodifiableSet(
@@ -282,7 +284,10 @@ public class ConnectionOptions {
                       RPC_PRIORITY_NAME,
                       "Sets the priority for all RPC invocations from this connection (HIGH/MEDIUM/LOW). The default is HIGH."),
                   ConnectionProperty.createStringProperty(
-                      DIALECT_PROPERTY_NAME, "Sets the dialect to use for this connection."))));
+                      DIALECT_PROPERTY_NAME, "Sets the dialect to use for this connection."),
+                  ConnectionProperty.createStringProperty(
+                      DATABASE_ROLE_PROPERTY_NAME,
+                      "Sets the database role to use for this connection. The default is privileges assigned to IAM role"))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -533,6 +538,7 @@ public class ConnectionOptions {
   private final String channelProvider;
   private final Integer minSessions;
   private final Integer maxSessions;
+  private final String databaseRole;
   private final String userAgent;
   private final QueryOptions queryOptions;
   private final boolean returnCommitStats;
@@ -620,6 +626,7 @@ public class ConnectionOptions {
     this.numChannels =
         parseIntegerProperty(NUM_CHANNELS_PROPERTY_NAME, parseNumChannels(builder.uri));
     this.channelProvider = parseChannelProvider(builder.uri);
+    this.databaseRole = parseDatabaseRole(this.uri);
 
     String projectId = matcher.group(Builder.PROJECT_GROUP);
     if (Builder.DEFAULT_PROJECT_ID_PLACEHOLDER.equalsIgnoreCase(projectId)) {
@@ -791,6 +798,12 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
+  static String parseDatabaseRole(String uri) {
+    String value = parseUriProperty(uri, DATABASE_ROLE_PROPERTY_NAME);
+    return value != null ? value : DEFAULT_DATABASE_ROLE;
+  }
+
+  @VisibleForTesting
   static String parseUserAgent(String uri) {
     String value = parseUriProperty(uri, USER_AGENT_PROPERTY_NAME);
     return value != null ? value : DEFAULT_USER_AGENT;
@@ -957,6 +970,14 @@ public class ConnectionOptions {
               "%s : Failed to create channel with external provider: %s",
               e.toString(), channelProvider));
     }
+  }
+
+  /**
+   * The database role that is used for this connection. Assigning a role to a connection can be
+   * used to for example restrict the access of a connection to a specific set of tables.
+   */
+  public String getDatabaseRole() {
+    return databaseRole;
   }
 
   /** The host and port number that this {@link ConnectionOptions} will connect to */

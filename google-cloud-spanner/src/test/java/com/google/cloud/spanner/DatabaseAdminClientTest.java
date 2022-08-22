@@ -754,13 +754,13 @@ public class DatabaseAdminClientTest {
 
   @Test
   public void getAndSetIAMPolicy() {
-    Policy policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID);
+    Policy policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID, 1);
     assertThat(policy).isEqualTo(Policy.newBuilder().build());
     Policy newPolicy =
         Policy.newBuilder().addIdentity(Role.editor(), Identity.user("joe@example.com")).build();
     Policy returnedPolicy = client.setDatabaseIAMPolicy(INSTANCE_ID, DB_ID, newPolicy);
     assertThat(returnedPolicy).isEqualTo(newPolicy);
-    assertThat(client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID)).isEqualTo(newPolicy);
+    assertThat(client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID, 1)).isEqualTo(newPolicy);
   }
 
   @Test

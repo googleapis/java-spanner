@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.gax.rpc.ApiException;
 import javax.annotation.Nullable;
 
 /**
@@ -31,6 +32,15 @@ public class AdminRequestsPerMinuteExceededException extends SpannerException {
   /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
   AdminRequestsPerMinuteExceededException(
       DoNotConstructDirectly token, @Nullable String message, @Nullable Throwable cause) {
-    super(token, ErrorCode.RESOURCE_EXHAUSTED, true, message, cause);
+    this(token, message, cause, null);
+  }
+
+  /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
+  AdminRequestsPerMinuteExceededException(
+      DoNotConstructDirectly token,
+      @Nullable String message,
+      @Nullable Throwable cause,
+      @Nullable ApiException apiException) {
+    super(token, ErrorCode.RESOURCE_EXHAUSTED, true, message, cause, apiException);
   }
 }

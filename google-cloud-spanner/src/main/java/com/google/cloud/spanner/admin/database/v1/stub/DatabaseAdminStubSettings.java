@@ -19,6 +19,7 @@ package com.google.cloud.spanner.admin.database.v1.stub;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseRolesPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabasesPagedResponse;
 
 import com.google.api.core.ApiFunction;
@@ -31,6 +32,9 @@ import com.google.api.gax.grpc.GaxGrpcProperties;
 import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.grpc.ProtoOperationTransformers;
+import com.google.api.gax.httpjson.GaxHttpJsonProperties;
+import com.google.api.gax.httpjson.HttpJsonTransportChannel;
+import com.google.api.gax.httpjson.InstantiatingHttpJsonChannelProvider;
 import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
@@ -66,6 +70,7 @@ import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
 import com.google.spanner.admin.database.v1.GetBackupRequest;
@@ -78,6 +83,8 @@ import com.google.spanner.admin.database.v1.ListBackupsRequest;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
@@ -174,6 +181,9 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
           ListBackupOperationsResponse,
           ListBackupOperationsPagedResponse>
       listBackupOperationsSettings;
+  private final PagedCallSettings<
+          ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
+      listDatabaseRolesSettings;
 
   private static final PagedListDescriptor<ListDatabasesRequest, ListDatabasesResponse, Database>
       LIST_DATABASES_PAGE_STR_DESC =
@@ -329,6 +339,46 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
             }
           };
 
+  private static final PagedListDescriptor<
+          ListDatabaseRolesRequest, ListDatabaseRolesResponse, DatabaseRole>
+      LIST_DATABASE_ROLES_PAGE_STR_DESC =
+          new PagedListDescriptor<
+              ListDatabaseRolesRequest, ListDatabaseRolesResponse, DatabaseRole>() {
+            @Override
+            public String emptyToken() {
+              return "";
+            }
+
+            @Override
+            public ListDatabaseRolesRequest injectToken(
+                ListDatabaseRolesRequest payload, String token) {
+              return ListDatabaseRolesRequest.newBuilder(payload).setPageToken(token).build();
+            }
+
+            @Override
+            public ListDatabaseRolesRequest injectPageSize(
+                ListDatabaseRolesRequest payload, int pageSize) {
+              return ListDatabaseRolesRequest.newBuilder(payload).setPageSize(pageSize).build();
+            }
+
+            @Override
+            public Integer extractPageSize(ListDatabaseRolesRequest payload) {
+              return payload.getPageSize();
+            }
+
+            @Override
+            public String extractNextToken(ListDatabaseRolesResponse payload) {
+              return payload.getNextPageToken();
+            }
+
+            @Override
+            public Iterable<DatabaseRole> extractResources(ListDatabaseRolesResponse payload) {
+              return payload.getDatabaseRolesList() == null
+                  ? ImmutableList.<DatabaseRole>of()
+                  : payload.getDatabaseRolesList();
+            }
+          };
+
   private static final PagedListResponseFactory<
           ListDatabasesRequest, ListDatabasesResponse, ListDatabasesPagedResponse>
       LIST_DATABASES_PAGE_STR_FACT =
@@ -407,6 +457,27 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
                       PageContext.create(
                           callable, LIST_BACKUP_OPERATIONS_PAGE_STR_DESC, request, context);
               return ListBackupOperationsPagedResponse.createAsync(pageContext, futureResponse);
+            }
+          };
+
+  private static final PagedListResponseFactory<
+          ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
+      LIST_DATABASE_ROLES_PAGE_STR_FACT =
+          new PagedListResponseFactory<
+              ListDatabaseRolesRequest,
+              ListDatabaseRolesResponse,
+              ListDatabaseRolesPagedResponse>() {
+            @Override
+            public ApiFuture<ListDatabaseRolesPagedResponse> getFuturePagedResponse(
+                UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesResponse> callable,
+                ListDatabaseRolesRequest request,
+                ApiCallContext context,
+                ApiFuture<ListDatabaseRolesResponse> futureResponse) {
+              PageContext<ListDatabaseRolesRequest, ListDatabaseRolesResponse, DatabaseRole>
+                  pageContext =
+                      PageContext.create(
+                          callable, LIST_DATABASE_ROLES_PAGE_STR_DESC, request, context);
+              return ListDatabaseRolesPagedResponse.createAsync(pageContext, futureResponse);
             }
           };
 
@@ -541,11 +612,23 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     return listBackupOperationsSettings;
   }
 
+  /** Returns the object with the settings used for calls to listDatabaseRoles. */
+  public PagedCallSettings<
+          ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
+      listDatabaseRolesSettings() {
+    return listDatabaseRolesSettings;
+  }
+
   public DatabaseAdminStub createStub() throws IOException {
     if (getTransportChannelProvider()
         .getTransportName()
         .equals(GrpcTransportChannel.getGrpcTransportName())) {
       return GrpcDatabaseAdminStub.create(this);
+    }
+    if (getTransportChannelProvider()
+        .getTransportName()
+        .equals(HttpJsonTransportChannel.getHttpJsonTransportName())) {
+      return HttpJsonDatabaseAdminStub.create(this);
     }
     throw new UnsupportedOperationException(
         String.format(
@@ -579,10 +662,17 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
         .setUseJwtAccessWithScope(true);
   }
 
-  /** Returns a builder for the default ChannelProvider for this service. */
+  /** Returns a builder for the default gRPC ChannelProvider for this service. */
   public static InstantiatingGrpcChannelProvider.Builder defaultGrpcTransportProviderBuilder() {
     return InstantiatingGrpcChannelProvider.newBuilder()
         .setMaxInboundMessageSize(Integer.MAX_VALUE);
+  }
+
+  /** Returns a builder for the default REST ChannelProvider for this service. */
+  @BetaApi
+  public static InstantiatingHttpJsonChannelProvider.Builder
+      defaultHttpJsonTransportProviderBuilder() {
+    return InstantiatingHttpJsonChannelProvider.newBuilder();
   }
 
   public static TransportChannelProvider defaultTransportChannelProvider() {
@@ -590,7 +680,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
   }
 
   @BetaApi("The surface for customizing headers is not stable yet and may change in the future.")
-  public static ApiClientHeaderProvider.Builder defaultApiClientHeaderProviderBuilder() {
+  public static ApiClientHeaderProvider.Builder defaultGrpcApiClientHeaderProviderBuilder() {
     return ApiClientHeaderProvider.newBuilder()
         .setGeneratedLibToken(
             "gapic", GaxProperties.getLibraryVersion(DatabaseAdminStubSettings.class))
@@ -598,9 +688,28 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
             GaxGrpcProperties.getGrpcTokenName(), GaxGrpcProperties.getGrpcVersion());
   }
 
-  /** Returns a new builder for this class. */
+  @BetaApi("The surface for customizing headers is not stable yet and may change in the future.")
+  public static ApiClientHeaderProvider.Builder defaultHttpJsonApiClientHeaderProviderBuilder() {
+    return ApiClientHeaderProvider.newBuilder()
+        .setGeneratedLibToken(
+            "gapic", GaxProperties.getLibraryVersion(DatabaseAdminStubSettings.class))
+        .setTransportToken(
+            GaxHttpJsonProperties.getHttpJsonTokenName(),
+            GaxHttpJsonProperties.getHttpJsonVersion());
+  }
+
+  public static ApiClientHeaderProvider.Builder defaultApiClientHeaderProviderBuilder() {
+    return DatabaseAdminStubSettings.defaultGrpcApiClientHeaderProviderBuilder();
+  }
+
+  /** Returns a new gRPC builder for this class. */
   public static Builder newBuilder() {
     return Builder.createDefault();
+  }
+
+  /** Returns a new REST builder for this class. */
+  public static Builder newHttpJsonBuilder() {
+    return Builder.createHttpJsonDefault();
   }
 
   /** Returns a new builder for this class. */
@@ -640,6 +749,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     restoreDatabaseOperationSettings = settingsBuilder.restoreDatabaseOperationSettings().build();
     listDatabaseOperationsSettings = settingsBuilder.listDatabaseOperationsSettings().build();
     listBackupOperationsSettings = settingsBuilder.listBackupOperationsSettings().build();
+    listDatabaseRolesSettings = settingsBuilder.listDatabaseRolesSettings().build();
   }
 
   /** Builder for DatabaseAdminStubSettings. */
@@ -693,6 +803,9 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
             ListBackupOperationsResponse,
             ListBackupOperationsPagedResponse>
         listBackupOperationsSettings;
+    private final PagedCallSettings.Builder<
+            ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
+        listDatabaseRolesSettings;
     private static final ImmutableMap<String, ImmutableSet<StatusCode.Code>>
         RETRYABLE_CODE_DEFINITIONS;
 
@@ -794,6 +907,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
           PagedCallSettings.newBuilder(LIST_DATABASE_OPERATIONS_PAGE_STR_FACT);
       listBackupOperationsSettings =
           PagedCallSettings.newBuilder(LIST_BACKUP_OPERATIONS_PAGE_STR_FACT);
+      listDatabaseRolesSettings = PagedCallSettings.newBuilder(LIST_DATABASE_ROLES_PAGE_STR_FACT);
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
@@ -814,7 +928,8 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
               listBackupsSettings,
               restoreDatabaseSettings,
               listDatabaseOperationsSettings,
-              listBackupOperationsSettings);
+              listBackupOperationsSettings,
+              listDatabaseRolesSettings);
       initDefaults(this);
     }
 
@@ -844,6 +959,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
       restoreDatabaseOperationSettings = settings.restoreDatabaseOperationSettings.toBuilder();
       listDatabaseOperationsSettings = settings.listDatabaseOperationsSettings.toBuilder();
       listBackupOperationsSettings = settings.listBackupOperationsSettings.toBuilder();
+      listDatabaseRolesSettings = settings.listDatabaseRolesSettings.toBuilder();
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
@@ -864,7 +980,8 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
               listBackupsSettings,
               restoreDatabaseSettings,
               listDatabaseOperationsSettings,
-              listBackupOperationsSettings);
+              listBackupOperationsSettings,
+              listDatabaseRolesSettings);
     }
 
     private static Builder createDefault() {
@@ -873,6 +990,19 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
       builder.setTransportChannelProvider(defaultTransportChannelProvider());
       builder.setCredentialsProvider(defaultCredentialsProviderBuilder().build());
       builder.setInternalHeaderProvider(defaultApiClientHeaderProviderBuilder().build());
+      builder.setEndpoint(getDefaultEndpoint());
+      builder.setMtlsEndpoint(getDefaultMtlsEndpoint());
+      builder.setSwitchToMtlsEndpointAllowed(true);
+
+      return initDefaults(builder);
+    }
+
+    private static Builder createHttpJsonDefault() {
+      Builder builder = new Builder(((ClientContext) null));
+
+      builder.setTransportChannelProvider(defaultHttpJsonTransportProviderBuilder().build());
+      builder.setCredentialsProvider(defaultCredentialsProviderBuilder().build());
+      builder.setInternalHeaderProvider(defaultHttpJsonApiClientHeaderProviderBuilder().build());
       builder.setEndpoint(getDefaultEndpoint());
       builder.setMtlsEndpoint(getDefaultMtlsEndpoint());
       builder.setSwitchToMtlsEndpointAllowed(true);
@@ -968,6 +1098,11 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
 
       builder
           .listBackupOperationsSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
+
+      builder
+          .listDatabaseRolesSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
 
@@ -1252,6 +1387,13 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
             ListBackupOperationsPagedResponse>
         listBackupOperationsSettings() {
       return listBackupOperationsSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to listDatabaseRoles. */
+    public PagedCallSettings.Builder<
+            ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
+        listDatabaseRolesSettings() {
+      return listDatabaseRolesSettings;
     }
 
     @Override

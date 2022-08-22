@@ -42,6 +42,7 @@ import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
+import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
@@ -380,6 +381,8 @@ public class InstanceAdminClientTest {
             .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
@@ -424,6 +427,8 @@ public class InstanceAdminClientTest {
             .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
@@ -468,6 +473,8 @@ public class InstanceAdminClientTest {
             .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -526,6 +533,8 @@ public class InstanceAdminClientTest {
             .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -584,6 +593,8 @@ public class InstanceAdminClientTest {
             .setProcessingUnits(-329117885)
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -707,7 +718,7 @@ public class InstanceAdminClientTest {
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = ProjectName.of("[PROJECT]");
+    ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
     Policy policy = Policy.newBuilder().build();
 
     Policy actualResponse = client.setIamPolicy(resource, policy);
@@ -731,7 +742,7 @@ public class InstanceAdminClientTest {
     mockInstanceAdmin.addException(exception);
 
     try {
-      ResourceName resource = ProjectName.of("[PROJECT]");
+      ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
       Policy policy = Policy.newBuilder().build();
       client.setIamPolicy(resource, policy);
       Assert.fail("No exception raised");
@@ -795,7 +806,7 @@ public class InstanceAdminClientTest {
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = ProjectName.of("[PROJECT]");
+    ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
 
     Policy actualResponse = client.getIamPolicy(resource);
     Assert.assertEquals(expectedResponse, actualResponse);
@@ -817,7 +828,7 @@ public class InstanceAdminClientTest {
     mockInstanceAdmin.addException(exception);
 
     try {
-      ResourceName resource = ProjectName.of("[PROJECT]");
+      ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
       client.getIamPolicy(resource);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
@@ -872,7 +883,7 @@ public class InstanceAdminClientTest {
         TestIamPermissionsResponse.newBuilder().addAllPermissions(new ArrayList<String>()).build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
-    ResourceName resource = ProjectName.of("[PROJECT]");
+    ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
     List<String> permissions = new ArrayList<>();
 
     TestIamPermissionsResponse actualResponse = client.testIamPermissions(resource, permissions);
@@ -896,7 +907,7 @@ public class InstanceAdminClientTest {
     mockInstanceAdmin.addException(exception);
 
     try {
-      ResourceName resource = ProjectName.of("[PROJECT]");
+      ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
       List<String> permissions = new ArrayList<>();
       client.testIamPermissions(resource, permissions);
       Assert.fail("No exception raised");

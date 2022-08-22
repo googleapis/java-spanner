@@ -61,6 +61,7 @@ public class SpannerImplTest {
   public void setUp() {
     MockitoAnnotations.initMocks(this);
     when(spannerOptions.getNumChannels()).thenReturn(4);
+    when(spannerOptions.getDatabaseRole()).thenReturn("role");
     when(spannerOptions.getPrefetchChunks()).thenReturn(1);
     when(spannerOptions.getRetrySettings()).thenReturn(RetrySettings.newBuilder().build());
     when(spannerOptions.getClock()).thenReturn(NanoClock.getDefaultClock());
@@ -78,6 +79,7 @@ public class SpannerImplTest {
     Map<String, String> labels = new HashMap<>();
     labels.put("env", "dev");
     Mockito.when(spannerOptions.getSessionLabels()).thenReturn(labels);
+    Mockito.when(spannerOptions.getDatabaseRole()).thenReturn("role");
     String dbName = "projects/p1/instances/i1/databases/d1";
     DatabaseId db = DatabaseId.of(dbName);
 
@@ -160,7 +162,7 @@ public class SpannerImplTest {
         .thenReturn(GrpcTransportOptions.newBuilder().build());
     Mockito.when(spannerOptions.getSessionPoolOptions())
         .thenReturn(SessionPoolOptions.newBuilder().build());
-
+    Mockito.when(spannerOptions.getDatabaseRole()).thenReturn("role");
     imp.close();
 
     IllegalStateException e =
@@ -210,6 +212,7 @@ public class SpannerImplTest {
         .thenReturn(GrpcTransportOptions.newBuilder().build());
     Mockito.when(spannerOptions.getSessionPoolOptions())
         .thenReturn(SessionPoolOptions.newBuilder().setMinSessions(0).build());
+    Mockito.when(spannerOptions.getDatabaseRole()).thenReturn("role");
 
     DatabaseClientImpl databaseClient = (DatabaseClientImpl) impl.getDatabaseClient(db);
     assertThat(databaseClient.clientId).isEqualTo("client-1");
