@@ -30,6 +30,8 @@ import java.util.regex.Pattern;
 @InternalApi
 public class SpannerStatementParser extends AbstractStatementParser {
 
+  final Pattern THEN_RETURN_PATTERN = Pattern.compile("[ `')\"]then return[ `'(\"]");
+
   public SpannerStatementParser() throws CompileException {
     super(
         Collections.unmodifiableSet(
@@ -271,16 +273,16 @@ public class SpannerStatementParser extends AbstractStatementParser {
   }
 
   private boolean isReturning(String sql, int index) {
-    return Pattern.compile("[\\s)]THEN(\\s+)RETURN[\\s(][\\s\\S]*", Pattern.CASE_INSENSITIVE)
-        .matcher(sql.substring(index))
-        .matches();
+    return (index >= 1)
+        && (index + 12 <= sql.length())
+        && THEN_RETURN_PATTERN.matcher(sql.substring(index - 1, index + 12)).matches();
   }
 
   @InternalApi
   @Override
   boolean checkReturningClauseInternal(String rawSql) {
     Preconditions.checkNotNull(rawSql);
-    String sql = rawSql.replaceAll("\\s+", " ");
+    String sql = rawSql.replaceAll("\\s+", " ").toLowerCase();
     final char SINGLE_QUOTE = '\'';
     final char DOUBLE_QUOTE = '"';
     final char BACKTICK_QUOTE = '`';
@@ -288,7 +290,6 @@ public class SpannerStatementParser extends AbstractStatementParser {
     char startQuote = 0;
     boolean lastCharWasEscapeChar = false;
     boolean isTripleQuoted = false;
-    boolean hasReturningClause = false;
     for (int index = 0; index < sql.length(); index++) {
       char c = sql.charAt(index);
       if (isInQuoted) {
@@ -313,8 +314,8 @@ public class SpannerStatementParser extends AbstractStatementParser {
           lastCharWasEscapeChar = false;
         }
       } else {
-        if (!hasReturningClause && isReturning(sql, index)) {
-          hasReturningClause = true;
+        if (isReturning(sql, index)) {
+          return true;
         } else {
           if (c == SINGLE_QUOTE || c == DOUBLE_QUOTE || c == BACKTICK_QUOTE) {
             isInQuoted = true;
@@ -329,10 +330,6 @@ public class SpannerStatementParser extends AbstractStatementParser {
         }
       }
     }
-    if (isInQuoted) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
-    }
-    return hasReturningClause;
+    return false;
   }
 }

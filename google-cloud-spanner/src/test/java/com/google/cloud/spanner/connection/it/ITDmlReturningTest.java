@@ -20,8 +20,8 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
@@ -171,7 +171,6 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
                 }
               }
             } catch (SpannerException e) {
-              System.out.printf("Error in callback: %s%n", e.getMessage());
               return CallbackResponse.DONE;
             }
           });
@@ -182,12 +181,11 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
   public void testDmlReturningExecuteUpdate() {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(false);
-      try {
-        connection.executeUpdate(UPDATE_RETURNING_MAP.get(dialect));
-        fail("missing exception");
-      } catch (SpannerException e) {
-        assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () -> connection.executeUpdate(UPDATE_RETURNING_MAP.get(dialect)));
+      assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
     }
   }
 
@@ -195,12 +193,11 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
   public void testDmlReturningExecuteUpdateAsync() {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(false);
-      try {
-        connection.executeUpdateAsync(UPDATE_RETURNING_MAP.get(dialect));
-        fail("missing exception");
-      } catch (SpannerException e) {
-        assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () -> connection.executeUpdateAsync(UPDATE_RETURNING_MAP.get(dialect)));
+      assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
     }
   }
 
@@ -289,12 +286,11 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
   public void testDmlReturningExecuteQueryReadOnlyMode() {
     try (Connection connection = createConnection()) {
       connection.setReadOnly(true);
-      try {
-        connection.executeQuery(UPDATE_RETURNING_MAP.get(dialect));
-        fail("missing exception");
-      } catch (SpannerException e) {
-        assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () -> connection.executeQuery(UPDATE_RETURNING_MAP.get(dialect)));
+      assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
     }
   }
 
@@ -304,12 +300,11 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
       connection.setReadOnly(false);
       connection.setAutocommit(false);
       connection.setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
-      try {
-        connection.executeQuery(UPDATE_RETURNING_MAP.get(dialect));
-        fail("missing exception");
-      } catch (SpannerException e) {
-        assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () -> connection.executeQuery(UPDATE_RETURNING_MAP.get(dialect)));
+      assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
     }
   }
 
@@ -317,12 +312,11 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
   public void testDmlReturningExecuteQueryAsyncReadOnlyMode() {
     try (Connection connection = createConnection()) {
       connection.setReadOnly(true);
-      try {
-        connection.executeQueryAsync(UPDATE_RETURNING_MAP.get(dialect));
-        fail("missing exception");
-      } catch (SpannerException e) {
-        assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () -> connection.executeQueryAsync(UPDATE_RETURNING_MAP.get(dialect)));
+      assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
     }
   }
 
@@ -332,12 +326,11 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
       connection.setReadOnly(false);
       connection.setAutocommit(false);
       connection.setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
-      try {
-        connection.executeQueryAsync(UPDATE_RETURNING_MAP.get(dialect));
-        fail("missing exception");
-      } catch (SpannerException e) {
-        assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
-      }
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () -> connection.executeQueryAsync(UPDATE_RETURNING_MAP.get(dialect)));
+      assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
     }
   }
 }

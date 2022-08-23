@@ -30,6 +30,9 @@ import javax.annotation.Nullable;
 
 @InternalApi
 public class PostgreSQLStatementParser extends AbstractStatementParser {
+  private static final Pattern RETURNING_PATTERN = Pattern.compile("[ ')\"]returning[ '(\"]");
+  private static final Pattern AS_RETURNING_PATTERN = Pattern.compile("[ ')\"]as returning[ '(\"]");
+
   PostgreSQLStatementParser() throws CompileException {
     super(
         Collections.unmodifiableSet(
@@ -293,13 +296,11 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
     // leading AS to be used as column label, to avoid ambiguity.
     // We thus check for cases which do not have a leading AS.
     // (https://www.postgresql.org/docs/current/sql-keywords-appendix.html)
-    return Pattern.compile("[\\s)]RETURNING[\\s(][\\s\\S]*", Pattern.CASE_INSENSITIVE)
-            .matcher(sql.substring(index))
-            .matches()
-        && !((index >= 3)
-            && Pattern.compile("[\\s]AS[\\s]RETURNING[\\s(][\\s\\S]*", Pattern.CASE_INSENSITIVE)
-                .matcher(sql.substring(index - 3))
-                .matches());
+    return (index >= 1)
+        && (index + 10 <= sql.length())
+        && RETURNING_PATTERN.matcher(sql.substring(index - 1, index + 10)).matches()
+        && !((index >= 4)
+            && AS_RETURNING_PATTERN.matcher(sql.substring(index - 4, index + 10)).matches());
   }
 
   @InternalApi
@@ -307,16 +308,14 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
   boolean checkReturningClauseInternal(String rawSql) {
     Preconditions.checkNotNull(rawSql);
     int index = 0;
-    String sql = rawSql.replaceAll("\\s+", " ");
-    boolean hasReturningClause = false;
+    String sql = rawSql.replaceAll("\\s+", " ").toLowerCase();
     while (index < sql.length()) {
-      if (!hasReturningClause && isReturning(sql, index)) {
-        hasReturningClause = true;
-        index++;
+      if (isReturning(sql, index)) {
+        return true;
       } else {
         index = skip(sql, index, null);
       }
     }
-    return hasReturningClause;
+    return false;
   }
 }

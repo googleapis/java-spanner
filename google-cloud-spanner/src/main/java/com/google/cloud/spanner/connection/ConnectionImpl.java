@@ -948,7 +948,6 @@ class ConnectionImpl implements Connection {
             }
             return internalExecuteQuery(parsedStatement, analyzeMode, options);
           }
-
         case DDL:
         case UNKNOWN:
         default:
@@ -991,7 +990,6 @@ class ConnectionImpl implements Connection {
             }
             return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
           }
-
         case DDL:
         case UNKNOWN:
         default:

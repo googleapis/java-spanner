@@ -1336,6 +1336,12 @@ public class StatementParserTest {
                         + "*/return/*"
                         + "comment*/(a)"))
             .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("delete from x where y=\"z\"then return *"))
+            .hasReturningClause());
+    assertTrue(
+        parser.parse(Statement.of("delete from x where 10=`z`then return *")).hasReturningClause());
     assertFalse(
         parser
             .parse(Statement.of("insert into x (a,b) values (1,2) returning (a)"))
@@ -1390,8 +1396,20 @@ public class StatementParserTest {
             .hasReturningClause());
     assertTrue(
         parser
-            .parse(Statement.of("insert into t1 select 1 as returning returning *"))
+            .parse(Statement.of("insert into x select 1 as returning returning *"))
             .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x select 'returning' as returning returning *"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x select 'returning'as returning returning *"))
+            .hasReturningClause());
+    assertTrue(
+        parser.parse(Statement.of("delete from x where y=\"z\"returning *")).hasReturningClause());
+    assertTrue(
+        parser.parse(Statement.of("delete from x where y='z'returning *")).hasReturningClause());
     assertTrue(
         parser
             .parse(Statement.of("insert into t1 select 1/*as /*returning*/ returning*/returning *"))
