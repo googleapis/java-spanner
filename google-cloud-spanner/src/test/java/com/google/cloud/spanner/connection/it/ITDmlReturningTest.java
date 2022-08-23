@@ -132,48 +132,50 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
   @Test
   public void testDmlReturningExecuteQuery() {
     try (Connection connection = createConnection()) {
-      ResultSet rs = connection.executeQuery(UPDATE_RETURNING_MAP.get(dialect));
-      assertEquals(rs.getColumnCount(), 3);
-      assertTrue(rs.next());
-      assertEquals(rs.getString(1), "ABC");
-      assertTrue(rs.next());
-      assertEquals(rs.getString(1), "ABC");
-      assertTrue(rs.next());
-      assertEquals(rs.getString(1), "ABC");
-      assertFalse(rs.next());
-      assertNotNull(rs.getStats());
-      assertEquals(rs.getStats().getRowCountExact(), 3);
+      try (ResultSet rs = connection.executeQuery(UPDATE_RETURNING_MAP.get(dialect))) {
+        assertEquals(rs.getColumnCount(), 3);
+        assertTrue(rs.next());
+        assertEquals(rs.getString(1), "ABC");
+        assertTrue(rs.next());
+        assertEquals(rs.getString(1), "ABC");
+        assertTrue(rs.next());
+        assertEquals(rs.getString(1), "ABC");
+        assertFalse(rs.next());
+        assertNotNull(rs.getStats());
+        assertEquals(rs.getStats().getRowCountExact(), 3);
+      }
     }
   }
 
   @Test
   public void testDmlReturningExecuteQueryAsync() {
     try (Connection connection = createConnection()) {
-      AsyncResultSet rs = connection.executeQueryAsync(UPDATE_RETURNING_MAP.get(dialect));
-      rs.setCallback(
-          Executors.newSingleThreadExecutor(),
-          resultSet -> {
-            try {
-              while (true) {
-                switch (resultSet.tryNext()) {
-                  case OK:
-                    assertEquals(resultSet.getColumnCount(), 3);
-                    assertEquals(resultSet.getString(1), "ABC");
-                    break;
-                  case DONE:
-                    assertNotNull(resultSet.getStats());
-                    assertEquals(resultSet.getStats().getRowCountExact(), 3);
-                    return CallbackResponse.DONE;
-                  case NOT_READY:
-                    return CallbackResponse.CONTINUE;
-                  default:
-                    throw new IllegalStateException();
+      try (AsyncResultSet rs = connection.executeQueryAsync(UPDATE_RETURNING_MAP.get(dialect))) {
+        rs.setCallback(
+            Executors.newSingleThreadExecutor(),
+            resultSet -> {
+              try {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case OK:
+                      assertEquals(resultSet.getColumnCount(), 3);
+                      assertEquals(resultSet.getString(1), "ABC");
+                      break;
+                    case DONE:
+                      assertNotNull(resultSet.getStats());
+                      assertEquals(resultSet.getStats().getRowCountExact(), 3);
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    default:
+                      throw new IllegalStateException();
+                  }
                 }
+              } catch (SpannerException e) {
+                return CallbackResponse.DONE;
               }
-            } catch (SpannerException e) {
-              return CallbackResponse.DONE;
-            }
-          });
+            });
+      }
     }
   }
 
@@ -233,17 +235,18 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
       connection.setAutocommit(false);
       StatementResult res = connection.execute(UPDATE_RETURNING_MAP.get(dialect));
       assertEquals(res.getResultType(), ResultType.RESULT_SET);
-      ResultSet rs = res.getResultSet();
-      assertEquals(rs.getColumnCount(), 3);
-      assertTrue(rs.next());
-      assertEquals(rs.getString(1), "ABC");
-      assertTrue(rs.next());
-      assertEquals(rs.getString(1), "ABC");
-      assertTrue(rs.next());
-      assertEquals(rs.getString(1), "ABC");
-      assertFalse(rs.next());
-      assertNotNull(rs.getStats());
-      assertEquals(rs.getStats().getRowCountExact(), 3);
+      try (ResultSet rs = res.getResultSet()) {
+        assertEquals(rs.getColumnCount(), 3);
+        assertTrue(rs.next());
+        assertEquals(rs.getString(1), "ABC");
+        assertTrue(rs.next());
+        assertEquals(rs.getString(1), "ABC");
+        assertTrue(rs.next());
+        assertEquals(rs.getString(1), "ABC");
+        assertFalse(rs.next());
+        assertNotNull(rs.getStats());
+        assertEquals(rs.getStats().getRowCountExact(), 3);
+      }
     }
   }
 
@@ -253,32 +256,33 @@ public class ITDmlReturningTest extends ITAbstractSpannerTest {
       connection.setAutocommit(false);
       AsyncStatementResult res = connection.executeAsync(UPDATE_RETURNING_MAP.get(dialect));
       assertEquals(res.getResultType(), ResultType.RESULT_SET);
-      AsyncResultSet rs = res.getResultSetAsync();
-      rs.setCallback(
-          Executors.newSingleThreadExecutor(),
-          resultSet -> {
-            try {
-              while (true) {
-                switch (resultSet.tryNext()) {
-                  case OK:
-                    assertEquals(resultSet.getColumnCount(), 3);
-                    assertEquals(resultSet.getString(1), "ABC");
-                    break;
-                  case DONE:
-                    assertNotNull(resultSet.getStats());
-                    assertEquals(resultSet.getStats().getRowCountExact(), 3);
-                    return CallbackResponse.DONE;
-                  case NOT_READY:
-                    return CallbackResponse.CONTINUE;
-                  default:
-                    throw new IllegalStateException();
+      try (AsyncResultSet rs = res.getResultSetAsync()) {
+        rs.setCallback(
+            Executors.newSingleThreadExecutor(),
+            resultSet -> {
+              try {
+                while (true) {
+                  switch (resultSet.tryNext()) {
+                    case OK:
+                      assertEquals(resultSet.getColumnCount(), 3);
+                      assertEquals(resultSet.getString(1), "ABC");
+                      break;
+                    case DONE:
+                      assertNotNull(resultSet.getStats());
+                      assertEquals(resultSet.getStats().getRowCountExact(), 3);
+                      return CallbackResponse.DONE;
+                    case NOT_READY:
+                      return CallbackResponse.CONTINUE;
+                    default:
+                      throw new IllegalStateException();
+                  }
                 }
+              } catch (SpannerException e) {
+                System.out.printf("Error in callback: %s%n", e.getMessage());
+                return CallbackResponse.DONE;
               }
-            } catch (SpannerException e) {
-              System.out.printf("Error in callback: %s%n", e.getMessage());
-              return CallbackResponse.DONE;
-            }
-          });
+            });
+      }
     }
   }
 
