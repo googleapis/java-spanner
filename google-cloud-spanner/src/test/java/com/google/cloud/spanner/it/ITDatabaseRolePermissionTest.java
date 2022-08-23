@@ -25,6 +25,7 @@ import com.google.api.gax.rpc.PermissionDeniedException;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.ParallelIntegrationTest;
@@ -35,8 +36,13 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -49,14 +55,30 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ITDatabaseRolePermissionTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
-  private DatabaseAdminClient dbAdminClient;
-  private RemoteSpannerHelper testHelper;
+  private static DatabaseAdminClient dbAdminClient;
+  private static RemoteSpannerHelper testHelper;
+
+  private static List<DatabaseId> databasesToDrop;
 
   @Before
   public void setUp() {
     assumeFalse("Emulator does not support database roles", isUsingEmulator());
     testHelper = env.getTestHelper();
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
+    databasesToDrop = new ArrayList<>();
+  }
+
+  @AfterClass
+  public static void afterClass() throws Exception {
+    if (databasesToDrop != null) {
+      for (DatabaseId id : databasesToDrop) {
+        try {
+          dbAdminClient.dropDatabase(id.getInstanceId().getInstance(), id.getDatabase());
+        } catch (Exception e) {
+          System.err.println("Failed to drop database " + id + ", skipping...: " + e.getMessage());
+        }
+      }
+    }
   }
 
   @Test
@@ -119,6 +141,7 @@ public class ITDatabaseRolePermissionTest {
     dbAdminClient
         .updateDatabaseDdl(instanceId, databaseId, Arrays.asList(dropTableT, dropRoleParent), null)
         .get();
+    databasesToDrop.add(createdDatabase.getId());
   }
 
   @Test
@@ -157,5 +180,6 @@ public class ITDatabaseRolePermissionTest {
     dbAdminClient
         .updateDatabaseDdl(instanceId, databaseId, Arrays.asList(dropTableT, dropRoleParent), null)
         .get();
+    databasesToDrop.add(createdDatabase.getId());
   }
 }
