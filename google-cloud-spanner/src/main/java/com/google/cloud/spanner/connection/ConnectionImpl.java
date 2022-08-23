@@ -1042,7 +1042,7 @@ class ConnectionImpl implements Connection {
           if (parsedStatement.hasReturningClause()) {
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.FAILED_PRECONDITION,
-                "DML statement with returning clause cannot be executed over executeUpdateAsync: "
+                "DML statement with returning clause cannot be executed using executeUpdateAsync: "
                     + parsedStatement.getSqlWithoutComments()
                     + ". Please use executeQueryAsync instead.");
           }
