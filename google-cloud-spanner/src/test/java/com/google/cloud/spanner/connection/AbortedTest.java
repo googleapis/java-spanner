@@ -155,63 +155,104 @@ public class AbortedTest extends AbstractMockServerTest {
 
   @Test
   public void testAbortedDuringRetryOfFailedUpdate() {
-    final Iterable<Statement> invalidStatements =
-        ImmutableList.of(
-            Statement.of("INSERT INTO FOO"), Statement.of("INSERT INTO FOO THEN RETURN *"));
+    final Statement invalidStatement = Statement.of("INSERT INTO FOO");
     StatusRuntimeException notFound =
         Status.NOT_FOUND.withDescription("Table not found").asRuntimeException();
-    for (Statement invalidStatement : invalidStatements) {
-      mockSpanner.putStatementResult(StatementResult.exception(invalidStatement, notFound));
-      try (ITConnection connection =
-          createConnection(createAbortFirstRetryListener(invalidStatement, notFound))) {
-        connection.execute(INSERT_STATEMENT);
-        try {
-          connection.execute(invalidStatement);
-          fail("missing expected exception");
-        } catch (SpannerException e) {
-          assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
-        }
-        // Force an abort and retry.
-        mockSpanner.abortNextStatement();
-        connection.commit();
+    mockSpanner.putStatementResult(StatementResult.exception(invalidStatement, notFound));
+    try (ITConnection connection =
+        createConnection(createAbortFirstRetryListener(invalidStatement, notFound))) {
+      connection.execute(INSERT_STATEMENT);
+      try {
+        connection.execute(invalidStatement);
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
       }
-      assertThat(mockSpanner.countRequestsOfType(CommitRequest.class)).isEqualTo(2);
-      // The transaction will be executed 3 times, which means that there will be 6
-      // ExecuteSqlRequests:
-      // 1. The initial attempt.
-      // 2. The first retry attempt. This will fail on the invalid statement as it is aborted.
-      // 3. the second retry attempt. This will succeed.
-      assertThat(mockSpanner.countRequestsOfType(ExecuteSqlRequest.class)).isEqualTo(6);
-      mockSpanner.clearRequests();
+      // Force an abort and retry.
+      mockSpanner.abortNextStatement();
+      connection.commit();
     }
+    assertThat(mockSpanner.countRequestsOfType(CommitRequest.class)).isEqualTo(2);
+    // The transaction will be executed 3 times, which means that there will be 6
+    // ExecuteSqlRequests:
+    // 1. The initial attempt.
+    // 2. The first retry attempt. This will fail on the invalid statement as it is aborted.
+    // 3. the second retry attempt. This will succeed.
+    assertThat(mockSpanner.countRequestsOfType(ExecuteSqlRequest.class)).isEqualTo(6);
+  }
+
+  @Test
+  public void testAbortedDuringRetryOfFailedUpdateWithReturning() {
+    final Statement invalidStatement = Statement.of("INSERT INTO FOO THEN RETURN *");
+    StatusRuntimeException notFound =
+        Status.NOT_FOUND.withDescription("Table not found").asRuntimeException();
+    mockSpanner.putStatementResult(StatementResult.exception(invalidStatement, notFound));
+    try (ITConnection connection =
+        createConnection(createAbortFirstRetryListener(invalidStatement, notFound))) {
+      connection.execute(INSERT_STATEMENT);
+      try {
+        connection.execute(invalidStatement);
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+      }
+      // Force an abort and retry.
+      mockSpanner.abortNextStatement();
+      connection.commit();
+    }
+    assertThat(mockSpanner.countRequestsOfType(CommitRequest.class)).isEqualTo(2);
+    // The transaction will be executed 3 times, which means that there will be 6
+    // ExecuteSqlRequests:
+    // 1. The initial attempt.
+    // 2. The first retry attempt. This will fail on the invalid statement as it is aborted.
+    // 3. the second retry attempt. This will succeed.
+    assertThat(mockSpanner.countRequestsOfType(ExecuteSqlRequest.class)).isEqualTo(6);
   }
 
   @Test
   public void testAbortedDuringRetryOfFailedBatchUpdate() {
-    final Iterable<Statement> invalidStatements =
-        ImmutableList.of(
-            Statement.of("INSERT INTO FOO"), Statement.of("INSERT INTO FOO THEN RETURN *"));
+    final Statement invalidStatement = Statement.of("INSERT INTO FOO");
     StatusRuntimeException notFound =
         Status.NOT_FOUND.withDescription("Table not found").asRuntimeException();
-    for (Statement invalidStatement : invalidStatements) {
-      mockSpanner.putStatementResult(StatementResult.exception(invalidStatement, notFound));
-      try (ITConnection connection =
-          createConnection(createAbortFirstRetryListener(invalidStatement, notFound))) {
-        connection.execute(INSERT_STATEMENT);
-        try {
-          connection.executeBatchUpdate(Collections.singletonList(invalidStatement));
-          fail("missing expected exception");
-        } catch (SpannerException e) {
-          assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
-        }
-        // Force an abort and retry.
-        mockSpanner.abortNextStatement();
-        connection.commit();
+    mockSpanner.putStatementResult(StatementResult.exception(invalidStatement, notFound));
+    try (ITConnection connection =
+        createConnection(createAbortFirstRetryListener(invalidStatement, notFound))) {
+      connection.execute(INSERT_STATEMENT);
+      try {
+        connection.executeBatchUpdate(Collections.singletonList(invalidStatement));
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
       }
-      assertThat(mockSpanner.countRequestsOfType(CommitRequest.class)).isEqualTo(2);
-      assertThat(mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class)).isEqualTo(3);
-      mockSpanner.clearRequests();
+      // Force an abort and retry.
+      mockSpanner.abortNextStatement();
+      connection.commit();
     }
+    assertThat(mockSpanner.countRequestsOfType(CommitRequest.class)).isEqualTo(2);
+    assertThat(mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class)).isEqualTo(3);
+  }
+
+  @Test
+  public void testAbortedDuringRetryOfFailedBatchUpdateWithReturning() {
+    final Statement invalidStatement = Statement.of("INSERT INTO FOO THEN RETURN *");
+    StatusRuntimeException notFound =
+        Status.NOT_FOUND.withDescription("Table not found").asRuntimeException();
+    mockSpanner.putStatementResult(StatementResult.exception(invalidStatement, notFound));
+    try (ITConnection connection =
+        createConnection(createAbortFirstRetryListener(invalidStatement, notFound))) {
+      connection.execute(INSERT_STATEMENT);
+      try {
+        connection.executeBatchUpdate(Collections.singletonList(invalidStatement));
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+      }
+      // Force an abort and retry.
+      mockSpanner.abortNextStatement();
+      connection.commit();
+    }
+    assertThat(mockSpanner.countRequestsOfType(CommitRequest.class)).isEqualTo(2);
+    assertThat(mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class)).isEqualTo(3);
   }
 
   @Test
@@ -251,62 +292,152 @@ public class AbortedTest extends AbstractMockServerTest {
 
   @Test
   public void testAbortedDuringRetryOfFailedUpdateAsFirstStatement() {
-    final Iterable<Statement> invalidStatements =
-        ImmutableList.of(
-            Statement.of("INSERT INTO FOO"), Statement.of("INSERT INTO FOO THEN RETURN *"));
+    final Statement invalidStatement = Statement.of("INSERT INTO FOO");
     StatusRuntimeException notFound =
         Status.NOT_FOUND.withDescription("Table not found").asRuntimeException();
-    for (Statement invalidStatement : invalidStatements) {
-      mockSpanner.putStatementResult(StatementResult.exception(invalidStatement, notFound));
-      try (ITConnection connection =
-          createConnection(createAbortRetryListener(2, invalidStatement, notFound))) {
-        try {
-          connection.execute(invalidStatement);
-          fail("missing expected exception");
-        } catch (SpannerException e) {
-          assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
-        }
-        connection.execute(INSERT_STATEMENT);
-        // Force an abort and retry.
-        mockSpanner.abortNextStatement();
-        connection.commit();
+    mockSpanner.putStatementResult(StatementResult.exception(invalidStatement, notFound));
+    try (ITConnection connection =
+        createConnection(createAbortRetryListener(2, invalidStatement, notFound))) {
+      try {
+        connection.execute(invalidStatement);
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
       }
-      assertThat(mockSpanner.countRequestsOfType(CommitRequest.class)).isEqualTo(2);
-      assertThat(mockSpanner.countRequestsOfType(ExecuteSqlRequest.class)).isEqualTo(8);
-      mockSpanner.clearRequests();
+      connection.execute(INSERT_STATEMENT);
+      // Force an abort and retry.
+      mockSpanner.abortNextStatement();
+      connection.commit();
     }
+    assertThat(mockSpanner.countRequestsOfType(CommitRequest.class)).isEqualTo(2);
+    assertThat(mockSpanner.countRequestsOfType(ExecuteSqlRequest.class)).isEqualTo(8);
+  }
+
+  @Test
+  public void testAbortedDuringRetryOfFailedUpdateWithReturningAsFirstStatement() {
+    final Statement invalidStatement = Statement.of("INSERT INTO FOO THEN RETURN *");
+    StatusRuntimeException notFound =
+        Status.NOT_FOUND.withDescription("Table not found").asRuntimeException();
+    mockSpanner.putStatementResult(StatementResult.exception(invalidStatement, notFound));
+    try (ITConnection connection =
+        createConnection(createAbortRetryListener(2, invalidStatement, notFound))) {
+      try {
+        connection.execute(invalidStatement);
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+      }
+      connection.execute(INSERT_STATEMENT);
+      // Force an abort and retry.
+      mockSpanner.abortNextStatement();
+      connection.commit();
+    }
+    assertThat(mockSpanner.countRequestsOfType(CommitRequest.class)).isEqualTo(2);
+    assertThat(mockSpanner.countRequestsOfType(ExecuteSqlRequest.class)).isEqualTo(8);
   }
 
   @Test
   public void testAbortedDuringRetryOfFailedBatchUpdateAsFirstStatement() {
-    final Iterable<Statement> invalidStatements =
-        ImmutableList.of(
-            Statement.of("INSERT INTO FOO"), Statement.of("INSERT INTO FOO THEN RETURN *"));
+    final Statement invalidStatement = Statement.of("INSERT INTO FOO");
     StatusRuntimeException notFound =
         Status.NOT_FOUND.withDescription("Table not found").asRuntimeException();
-    for (Statement invalidStatement : invalidStatements) {
-      mockSpanner.putStatementResult(StatementResult.exception(invalidStatement, notFound));
-      try (ITConnection connection =
-          createConnection(createAbortFirstRetryListener(invalidStatement, notFound))) {
-        try {
-          connection.executeBatchUpdate(Collections.singletonList(invalidStatement));
-          fail("missing expected exception");
-        } catch (SpannerException e) {
-          assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
-        }
-        connection.execute(INSERT_STATEMENT);
-        // Force an abort and retry.
-        mockSpanner.abortNextStatement();
-        connection.commit();
+    mockSpanner.putStatementResult(StatementResult.exception(invalidStatement, notFound));
+    try (ITConnection connection =
+        createConnection(createAbortFirstRetryListener(invalidStatement, notFound))) {
+      try {
+        connection.executeBatchUpdate(Collections.singletonList(invalidStatement));
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
       }
-      assertThat(mockSpanner.countRequestsOfType(CommitRequest.class)).isEqualTo(2);
-      assertThat(mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class)).isEqualTo(6);
-      mockSpanner.clearRequests();
+      connection.execute(INSERT_STATEMENT);
+      // Force an abort and retry.
+      mockSpanner.abortNextStatement();
+      connection.commit();
     }
+    assertThat(mockSpanner.countRequestsOfType(CommitRequest.class)).isEqualTo(2);
+    assertThat(mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class)).isEqualTo(6);
+  }
+
+  @Test
+  public void testAbortedDuringRetryOfFailedBatchUpdateWithReturningAsFirstStatement() {
+    final Statement invalidStatement = Statement.of("INSERT INTO FOO THEN RETURN *");
+    StatusRuntimeException notFound =
+        Status.NOT_FOUND.withDescription("Table not found").asRuntimeException();
+    mockSpanner.putStatementResult(StatementResult.exception(invalidStatement, notFound));
+    try (ITConnection connection =
+        createConnection(createAbortFirstRetryListener(invalidStatement, notFound))) {
+      try {
+        connection.executeBatchUpdate(Collections.singletonList(invalidStatement));
+        fail("missing expected exception");
+      } catch (SpannerException e) {
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+      }
+      connection.execute(INSERT_STATEMENT);
+      // Force an abort and retry.
+      mockSpanner.abortNextStatement();
+      connection.commit();
+    }
+    assertThat(mockSpanner.countRequestsOfType(CommitRequest.class)).isEqualTo(2);
+    assertThat(mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class)).isEqualTo(6);
   }
 
   @Test
   public void testRetryUsesTags() {
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT_COUNT_STATEMENT, SELECT_COUNT_RESULTSET_BEFORE_INSERT));
+    mockSpanner.putStatementResult(StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
+    try (ITConnection connection = createConnection()) {
+      connection.setTransactionTag("transaction-tag");
+      connection.setStatementTag("statement-tag");
+      connection.executeUpdate(INSERT_STATEMENT);
+      connection.setStatementTag("statement-tag");
+      connection.executeBatchUpdate(Collections.singleton(INSERT_STATEMENT));
+      connection.setStatementTag("statement-tag");
+      connection.executeQuery(SELECT_COUNT_STATEMENT);
+
+      mockSpanner.abortNextStatement();
+      connection.commit();
+    }
+    long executeSqlRequestCount =
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+            .filter(
+                request ->
+                    request.getRequestOptions().getRequestTag().equals("statement-tag")
+                        && request
+                            .getRequestOptions()
+                            .getTransactionTag()
+                            .equals("transaction-tag"))
+            .count();
+    assertEquals(4L, executeSqlRequestCount);
+
+    long executeBatchSqlRequestCount =
+        mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()
+            .filter(
+                request ->
+                    request.getRequestOptions().getRequestTag().equals("statement-tag")
+                        && request
+                            .getRequestOptions()
+                            .getTransactionTag()
+                            .equals("transaction-tag"))
+            .count();
+    assertEquals(2L, executeBatchSqlRequestCount);
+
+    long commitRequestCount =
+        mockSpanner.getRequestsOfType(CommitRequest.class).stream()
+            .filter(
+                request ->
+                    request.getRequestOptions().getRequestTag().equals("")
+                        && request
+                            .getRequestOptions()
+                            .getTransactionTag()
+                            .equals("transaction-tag"))
+            .count();
+    assertEquals(2L, commitRequestCount);
+  }
+
+  @Test
+  public void testRetryUsesTagsWithUpdateReturning() {
     mockSpanner.putStatementResult(
         StatementResult.query(SELECT_COUNT_STATEMENT, SELECT_COUNT_RESULTSET_BEFORE_INSERT));
     mockSpanner.putStatementResult(StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));

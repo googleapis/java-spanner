@@ -101,9 +101,14 @@ public abstract class AbstractMockServerTest {
       com.google.spanner.v1.ResultSet.newBuilder()
           .setStats(ResultSetStats.newBuilder().setRowCountExact(1))
           .setMetadata(
-              ResultSetMetadata.getDefaultInstance()
-                  .toBuilder()
-                  .setRowType(StructType.getDefaultInstance()))
+              ResultSetMetadata.newBuilder()
+                  .setRowType(
+                      StructType.newBuilder()
+                          .addFields(
+                              Field.newBuilder()
+                                  .setName("col")
+                                  .setType(Type.newBuilder().setCodeValue(TypeCode.INT64_VALUE))
+                                  .build())))
           .build();
   public static final Statement INSERT_STATEMENT =
       Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test aborted')");
