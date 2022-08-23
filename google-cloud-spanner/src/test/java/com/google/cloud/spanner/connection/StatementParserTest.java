@@ -1341,6 +1341,10 @@ public class StatementParserTest {
             .parse(Statement.of("delete from x where y=\"z\"then return *"))
             .hasReturningClause());
     assertTrue(
+        parser
+            .parse(Statement.of("insert into x select 'then return' as returning then return *"))
+            .hasReturningClause());
+    assertTrue(
         parser.parse(Statement.of("delete from x where 10=`z`then return *")).hasReturningClause());
     assertFalse(
         parser
