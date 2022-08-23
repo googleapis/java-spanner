@@ -41,7 +41,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -58,8 +58,8 @@ public class ITDatabaseRolePermissionTest {
 
   private static List<DatabaseId> databasesToDrop;
 
-  @Before
-  public void setUp() {
+  @BeforeClass
+  public static void setUp() {
     assumeFalse("Emulator does not support database roles", isUsingEmulator());
     testHelper = env.getTestHelper();
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
@@ -104,7 +104,6 @@ public class ITDatabaseRolePermissionTest {
 
     Spanner spanner = options.getService();
     DatabaseClient dbClient = spanner.getDatabaseClient(createdDatabase.getId());
-    DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient();
 
     // Test SELECT permissions to role dbRoleParent on table T.
     // Query using dbRoleParent should return result.
@@ -123,7 +122,7 @@ public class ITDatabaseRolePermissionTest {
     dbAdminClient
         .updateDatabaseDdl(
             instanceId, databaseId, Arrays.asList(revokeSelectOnTableFromParent), null)
-        .get();
+        .get(5, TimeUnit.MINUTES);
 
     // Test SELECT permissions to role dbRoleParent on table T.
     // Query using dbRoleParent should return PermissionDeniedException.
@@ -138,7 +137,7 @@ public class ITDatabaseRolePermissionTest {
     final String dropRoleParent = String.format("DROP ROLE %s", dbRoleParent);
     dbAdminClient
         .updateDatabaseDdl(instanceId, databaseId, Arrays.asList(dropTableT, dropRoleParent), null)
-        .get();
+        .get(5, TimeUnit.MINUTES);
     databasesToDrop.add(createdDatabase.getId());
   }
 
@@ -162,7 +161,6 @@ public class ITDatabaseRolePermissionTest {
 
     Spanner spanner = options.getService();
     DatabaseClient dbClient = spanner.getDatabaseClient(createdDatabase.getId());
-    DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient();
 
     // Test SELECT permissions to role dbRoleOrphan on table T.
     // Query using dbRoleOrphan should return PermissionDeniedException.
@@ -177,7 +175,7 @@ public class ITDatabaseRolePermissionTest {
     final String dropRoleParent = String.format("DROP ROLE %s", dbRoleOrphan);
     dbAdminClient
         .updateDatabaseDdl(instanceId, databaseId, Arrays.asList(dropTableT, dropRoleParent), null)
-        .get();
+        .get(5, TimeUnit.MINUTES);
     databasesToDrop.add(createdDatabase.getId());
   }
 }
