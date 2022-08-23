@@ -67,7 +67,7 @@ public class ITDatabaseRolePermissionTest {
   }
 
   @AfterClass
-  public static void afterClass() throws Exception {
+  public static void cleanup() throws Exception {
     if (databasesToDrop != null) {
       for (DatabaseId id : databasesToDrop) {
         try {
