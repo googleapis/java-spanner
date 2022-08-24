@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -64,6 +65,8 @@ import org.junit.runners.JUnit4;
 /** Integration tests for VPC-SC */
 @Category(SerialIntegrationTest.class)
 @RunWith(JUnit4.class)
+// FIXME: Re-enable the tests as soon as possible
+@Ignore("Temporarily disables vpc tests")
 public class ITVPCNegativeTest {
   private static final Logger logger = Logger.getLogger(ITVPCNegativeTest.class.getName());
   private static final String IN_VPCSC_TEST = System.getenv("GOOGLE_CLOUD_TESTS_IN_VPCSC");
