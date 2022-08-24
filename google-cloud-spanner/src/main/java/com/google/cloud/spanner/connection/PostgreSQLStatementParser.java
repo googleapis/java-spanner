@@ -307,8 +307,13 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
   @Override
   boolean checkReturningClauseInternal(String rawSql) {
     Preconditions.checkNotNull(rawSql);
-    int index = 0;
     String sql = rawSql.replaceAll("\\s+", " ").toLowerCase();
+    // Do a pre-check to check if the SQL string definitely does not have a returning clause.
+    // If this check fails, do a more involved check to check for a returning clause.
+    if (!sql.contains("returning")) {
+      return false;
+    }
+    int index = 0;
     while (index < sql.length()) {
       if (isReturning(sql, index)) {
         return true;
