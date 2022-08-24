@@ -1436,6 +1436,25 @@ public class StatementParserTest {
         parser
             .parse(Statement.of("insert into t1 select 1 as/*eomment*/returning returning *"))
             .hasReturningClause());
+    assertFalse(
+        parser
+            .parse(Statement.of("UPDATE x SET y = $$ RETURNING a, b, c$$ WHERE z = 123"))
+            .hasReturningClause());
+    assertFalse(
+        parser
+            .parse(
+                Statement.of("UPDATE x SET y = $foobar$ RETURNING a, b, c$foobar$ WHERE z = 123"))
+            .hasReturningClause());
+    assertFalse(
+        parser
+            .parse(Statement.of("UPDATE x SET y = $returning$ returning $returning$ WHERE z = 123"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "UPDATE x SET y = $returning$returning$returning$ WHERE z = 123 ReTuRnInG *"))
+            .hasReturningClause());
   }
 
   private void assertUnclosedLiteral(String sql) {
