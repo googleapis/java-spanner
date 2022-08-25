@@ -549,7 +549,6 @@ public abstract class AbstractStatementParser {
    *
    * @param sql The sql string without comments that has to be evaluated.
    * @return A boolean indicating whether the sql string has a Returning clause or not.
-   * @throws SpannerException If the input sql string contains an unclosed string/byte literal.
    */
   @InternalApi
   abstract boolean checkReturningClauseInternal(String sql);
