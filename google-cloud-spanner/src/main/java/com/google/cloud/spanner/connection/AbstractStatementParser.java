@@ -551,7 +551,7 @@ public abstract class AbstractStatementParser {
    * @return A boolean indicating whether the sql string has a Returning clause or not.
    */
   @InternalApi
-  abstract boolean checkReturningClauseInternal(String sql);
+  abstract protected boolean checkReturningClauseInternal(String sql);
 
   @InternalApi
   public boolean checkReturningClause(String sql) {

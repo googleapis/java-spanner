@@ -32,6 +32,7 @@ import javax.annotation.Nullable;
 public class PostgreSQLStatementParser extends AbstractStatementParser {
   private static final Pattern RETURNING_PATTERN = Pattern.compile("[ ')\"]returning[ '(\"]");
   private static final Pattern AS_RETURNING_PATTERN = Pattern.compile("[ ')\"]as returning[ '(\"]");
+  private static final String RETURNING_STRING = "returning";
 
   PostgreSQLStatementParser() throws CompileException {
     super(
@@ -305,12 +306,12 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
 
   @InternalApi
   @Override
-  boolean checkReturningClauseInternal(String rawSql) {
+  protected boolean checkReturningClauseInternal(String rawSql) {
     Preconditions.checkNotNull(rawSql);
     String sql = rawSql.toLowerCase();
     // Do a pre-check to check if the SQL string definitely does not have a returning clause.
     // If this check fails, do a more involved check to check for a returning clause.
-    if (!sql.contains("returning")) {
+    if (!sql.contains(RETURNING_STRING)) {
       return false;
     }
     sql = sql.replaceAll("\\s+", " ");

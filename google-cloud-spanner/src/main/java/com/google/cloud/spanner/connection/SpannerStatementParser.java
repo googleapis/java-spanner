@@ -30,7 +30,9 @@ import java.util.regex.Pattern;
 @InternalApi
 public class SpannerStatementParser extends AbstractStatementParser {
 
-  final Pattern THEN_RETURN_PATTERN = Pattern.compile("[ `')\"]then return[ `'(\"]");
+  private static final Pattern THEN_RETURN_PATTERN = Pattern.compile("[ `')\"]then return[ `'(\"]");
+  private static final String THEN_STRING = "then";
+  private static final String RETURN_STRING = "return";
 
   public SpannerStatementParser() throws CompileException {
     super(
@@ -280,12 +282,12 @@ public class SpannerStatementParser extends AbstractStatementParser {
 
   @InternalApi
   @Override
-  boolean checkReturningClauseInternal(String rawSql) {
+  protected boolean checkReturningClauseInternal(String rawSql) {
     Preconditions.checkNotNull(rawSql);
     String sql = rawSql.toLowerCase();
     // Do a pre-check to check if the SQL string definitely does not have a returning clause.
     // If this check fails, do a more involved check to check for a returning clause.
-    if (!(sql.contains("then") && sql.contains("return"))) {
+    if (!(sql.contains(THEN_STRING) && sql.contains(RETURN_STRING))) {
       return false;
     }
     sql = sql.replaceAll("\\s+", " ");
