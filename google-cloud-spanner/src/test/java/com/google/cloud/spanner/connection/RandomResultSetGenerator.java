@@ -51,9 +51,12 @@ public class RandomResultSetGenerator {
               .build()
           : Type.newBuilder().setCode(TypeCode.NUMERIC).build(),
       Type.newBuilder().setCode(TypeCode.STRING).build(),
-      Type.newBuilder()
-          .setCode(dialect == Dialect.POSTGRESQL ? TypeCode.STRING : TypeCode.JSON)
-          .build(),
+      dialect == Dialect.POSTGRESQL
+          ? Type.newBuilder()
+              .setCode(TypeCode.JSON)
+              .setTypeAnnotation(TypeAnnotationCode.PG_JSONB)
+              .build()
+          : Type.newBuilder().setCode(TypeCode.JSON).build(),
       Type.newBuilder().setCode(TypeCode.BYTES).build(),
       Type.newBuilder().setCode(TypeCode.DATE).build(),
       Type.newBuilder().setCode(TypeCode.TIMESTAMP).build(),
@@ -85,8 +88,11 @@ public class RandomResultSetGenerator {
       Type.newBuilder()
           .setCode(TypeCode.ARRAY)
           .setArrayElementType(
-              Type.newBuilder()
-                  .setCode(dialect == Dialect.POSTGRESQL ? TypeCode.STRING : TypeCode.JSON))
+              dialect == Dialect.POSTGRESQL
+                  ? Type.newBuilder()
+                      .setCode(TypeCode.JSON)
+                      .setTypeAnnotation(TypeAnnotationCode.PG_JSONB)
+                  : Type.newBuilder().setCode(TypeCode.JSON))
           .build(),
       Type.newBuilder()
           .setCode(TypeCode.ARRAY)

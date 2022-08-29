@@ -209,6 +209,18 @@ class ReplaceableForwardingResultSet implements ResultSet {
   }
 
   @Override
+  public String getPgJsonb(int columnIndex) {
+    checkClosed();
+    return delegate.getPgJsonb(columnIndex);
+  }
+
+  @Override
+  public String getPgJsonb(String columnName) {
+    checkClosed();
+    return delegate.getPgJsonb(columnName);
+  }
+
+  @Override
   public ByteArray getBytes(int columnIndex) {
     checkClosed();
     return delegate.getBytes(columnIndex);
@@ -362,6 +374,18 @@ class ReplaceableForwardingResultSet implements ResultSet {
   public List<String> getJsonList(String columnName) {
     checkClosed();
     return delegate.getJsonList(columnName);
+  }
+
+  @Override
+  public List<String> getPgJsonbList(int columnIndex) {
+    checkClosed();
+    return delegate.getPgJsonbList(columnIndex);
+  }
+
+  @Override
+  public List<String> getPgJsonbList(String columnName) {
+    checkClosed();
+    return delegate.getPgJsonbList(columnName);
   }
 
   @Override

@@ -153,6 +153,16 @@ public class TypeTest {
   }
 
   @Test
+  public void pgJsonb() {
+    new ScalarTypeTester(Code.PG_JSONB, TypeCode.JSON, TypeAnnotationCode.PG_JSONB) {
+      @Override
+      Type newType() {
+        return Type.pgJsonb();
+      }
+    }.test();
+  }
+
+  @Test
   public void bytes() {
     new ScalarTypeTester(Type.Code.BYTES, TypeCode.BYTES) {
       @Override
@@ -302,6 +312,16 @@ public class TypeTest {
       @Override
       Type newElementType() {
         return Type.json();
+      }
+    }.test();
+  }
+
+  @Test
+  public void pgJsonbArray() {
+    new ArrayTypeTester(Code.PG_JSONB, TypeCode.JSON, TypeAnnotationCode.PG_JSONB, true) {
+      @Override
+      Type newElementType() {
+        return Type.pgJsonb();
       }
     }.test();
   }

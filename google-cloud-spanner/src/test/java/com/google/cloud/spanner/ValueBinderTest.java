@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultJson;
+import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultPgJsonb;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
@@ -37,6 +38,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ValueBinderTest {
   private static final String JSON_METHOD_NAME = "json";
+  private static final String PG_JSONB_METHOD_NAME = "pgJsonb";
   private static final String PG_NUMERIC_METHOD_NAME = "pgNumeric";
   public static final String DEFAULT_PG_NUMERIC = "1.23";
 
@@ -125,6 +127,9 @@ public class ValueBinderTest {
             // ValueBinder.to(Value)
             binderMethod = ValueBinder.class.getMethod("to", Value.class);
             assertThat(binderMethod.invoke(binder, Value.json(null))).isEqualTo(lastReturnValue);
+          } else if (method.getName().equalsIgnoreCase(PG_JSONB_METHOD_NAME)) {
+            binderMethod = ValueBinder.class.getMethod("to", Value.class);
+            assertThat(binderMethod.invoke(binder, Value.pgJsonb(null))).isEqualTo(lastReturnValue);
           } else if (method.getName().equalsIgnoreCase(PG_NUMERIC_METHOD_NAME)) {
             binderMethod = ValueBinder.class.getMethod("to", Value.class);
             assertThat(binderMethod.invoke(binder, Value.pgNumeric(null)))
@@ -144,6 +149,11 @@ public class ValueBinderTest {
           defaultObject = defaultJson();
           binderMethod = ValueBinder.class.getMethod("to", Value.class);
           assertThat(binderMethod.invoke(binder, Value.json(defaultJson())))
+              .isEqualTo(lastReturnValue);
+        } else if (method.getName().equalsIgnoreCase(PG_JSONB_METHOD_NAME)) {
+          defaultObject = defaultPgJsonb();
+          binderMethod = ValueBinder.class.getMethod("to", Value.class);
+          assertThat(binderMethod.invoke(binder, Value.pgJsonb(defaultPgJsonb())))
               .isEqualTo(lastReturnValue);
         } else if (method.getName().equalsIgnoreCase(PG_NUMERIC_METHOD_NAME)) {
           defaultObject = DEFAULT_PG_NUMERIC;
@@ -229,6 +239,10 @@ public class ValueBinderTest {
     }
 
     public static String defaultJson() {
+      return "{\"color\":\"red\",\"value\":\"#f00\"}";
+    }
+
+    public static String defaultPgJsonb() {
       return "{\"color\":\"red\",\"value\":\"#f00\"}";
     }
 
