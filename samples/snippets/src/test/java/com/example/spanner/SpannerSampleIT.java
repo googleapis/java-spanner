@@ -104,8 +104,8 @@ public class SpannerSampleIT {
 
     /*
      * Delete stale instances that have been created earlier by this test but not deleted.
-     * Backups needed to be deleted from the instance first, as the instance can only be deleted once
-     * all backups have been deleted.
+     * Backups needed to be deleted from the instance first, as the instance can only be
+     * deleted once all backups have been deleted.
      * */
     deleteStaleTestEncryptedInstances();
   }
@@ -114,7 +114,7 @@ public class SpannerSampleIT {
    * Deleting all the test instances with name beginning from 'encrypted-test-' and were created
    * before 24 hours.
    *
-   * @throws InterruptedException
+   * @throws InterruptedException If Thread.sleep() interrupted
    */
   static void deleteStaleTestEncryptedInstances() throws InterruptedException {
     List<Instance> instances =
