@@ -56,6 +56,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.threeten.bp.Duration;
 
+// TODO: Re-enable when jsonb is GA.
+@Ignore("Feature is not yet generally available")
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITPgJsonbTest {
