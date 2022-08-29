@@ -26,18 +26,22 @@ import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceConfigId;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.InstanceInfo;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -93,10 +97,45 @@ public class SpannerSampleIT {
     dbId = DatabaseId.of(options.getProjectId(), instanceId, databaseId);
     // Delete stale test databases that have been created earlier by this test, but not deleted.
     deleteStaleTestDatabases(instanceId, baseDbId);
-    key = String.format("projects/%s/locations/%s/keyRings/%s/cryptoKeys/%s",
-        options.getProjectId(), keyLocation, keyRing, keyName);
+    key =
+        String.format(
+            "projects/%s/locations/%s/keyRings/%s/cryptoKeys/%s",
+            options.getProjectId(), keyLocation, keyRing, keyName);
+
+    /*
+     * Delete stale instances that have been created earlier by this test but not deleted.
+     * Backups needed to be deleted from the instance first, as the instance can only be deleted once
+     * all backups have been deleted.
+     * */
+    deleteStaleTestEncryptedInstances();
   }
-  
+
+  /**
+   * Deleting all the test instances with name beginning from 'encrypted-test-' and were created
+   * before 24 hours.
+   *
+   * @throws InterruptedException
+   */
+  static void deleteStaleTestEncryptedInstances() throws InterruptedException {
+    List<Instance> instances =
+        Lists.newArrayList(
+            spanner
+                .getInstanceAdminClient()
+                .listInstances(Options.filter("name:encrypted-test-"))
+                .iterateAll());
+
+    Timestamp now = Timestamp.now();
+
+    for (Instance instance : instances) {
+      if (TimeUnit.HOURS.convert(
+              now.getSeconds() - instance.getCreateTime().getSeconds(), TimeUnit.SECONDS)
+          > 24) {
+        deleteAllBackups(instanceId);
+        instance.delete();
+      }
+    }
+  }
+
   static void deleteStaleTestDatabases(String instanceId, String baseDbId) {
     Timestamp now = Timestamp.now();
     Pattern samplePattern = getTestDbIdPattern(baseDbId);
@@ -410,7 +449,7 @@ public class SpannerSampleIT {
     out = runSample("deletebackup");
     assertThat(out).contains("Deleted backup [" + backupId + "]");
   }
-  
+
   @Test
   public void testEncryptedDatabaseAndBackupSamples() throws Exception {
     String projectId = spanner.getOptions().getProjectId();
@@ -459,7 +498,7 @@ public class SpannerSampleIT {
     }
   }
 
-  private void deleteAllBackups(String instanceId) throws InterruptedException {
+  private static void deleteAllBackups(String instanceId) throws InterruptedException {
     for (Backup backup : dbClient.listBackups(instanceId).iterateAll()) {
       int attempts = 0;
       while (attempts < 30) {
@@ -513,7 +552,7 @@ public class SpannerSampleIT {
   private static int countOccurrences(String input, String search) {
     return input.split(search).length - 1;
   }
-  
+
   private static String toComparableId(String baseId, String existingId) {
     String zeroUuid = "00000000-0000-0000-0000-0000-00000000";
     int shouldBeLength = (baseId + "-" + zeroUuid).length();
@@ -526,7 +565,7 @@ public class SpannerSampleIT {
         baseDbId + "-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{8}",
         Pattern.CASE_INSENSITIVE);
   }
-  
+
   static String formatForTest(String name) {
     return name + "-" + UUID.randomUUID().toString().substring(0, DBID_LENGTH);
   }
