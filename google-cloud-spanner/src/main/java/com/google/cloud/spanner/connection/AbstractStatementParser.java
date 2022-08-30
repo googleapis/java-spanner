@@ -480,6 +480,10 @@ public abstract class AbstractStatementParser {
   static final char SLASH = '/';
   static final char ASTERISK = '*';
   static final char DOLLAR = '$';
+  static final char SPACE = ' ';
+  static final char CLOSE_PARENTHESIS = ')';
+  static final char COMMA = ',';
+  static final char UNDERSCORE = '_';
 
   /**
    * Removes comments from and trims the given sql statement using the dialect of this parser.
@@ -551,7 +555,7 @@ public abstract class AbstractStatementParser {
    * @return A boolean indicating whether the sql string has a Returning clause or not.
    */
   @InternalApi
-  abstract protected boolean checkReturningClauseInternal(String sql);
+  protected abstract boolean checkReturningClauseInternal(String sql);
 
   @InternalApi
   public boolean checkReturningClause(String sql) {

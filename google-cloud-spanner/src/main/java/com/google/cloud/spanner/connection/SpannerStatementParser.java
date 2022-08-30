@@ -30,7 +30,8 @@ import java.util.regex.Pattern;
 @InternalApi
 public class SpannerStatementParser extends AbstractStatementParser {
 
-  private static final Pattern THEN_RETURN_PATTERN = Pattern.compile("[ `')\"]then return[ `'(\"]");
+  private static final Pattern THEN_RETURN_PATTERN =
+      Pattern.compile("[ `')\"]then return[ *`'(\"]");
   private static final String THEN_STRING = "then";
   private static final String RETURN_STRING = "return";
 

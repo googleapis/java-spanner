@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
 
 @InternalApi
 public class PostgreSQLStatementParser extends AbstractStatementParser {
-  private static final Pattern RETURNING_PATTERN = Pattern.compile("[ ')\"]returning[ '(\"]");
+  private static final Pattern RETURNING_PATTERN = Pattern.compile("returning[ '(\"*]");
   private static final Pattern AS_RETURNING_PATTERN = Pattern.compile("[ ')\"]as returning[ '(\"]");
   private static final String RETURNING_STRING = "returning";
 
@@ -144,7 +144,7 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
       if (c == DOLLAR) {
         return tag.toString();
       }
-      if (!Character.isJavaIdentifierPart(c)) {
+      if (!isValidIdentifierChar(c)) {
         break;
       }
       tag.append(c);
@@ -292,16 +292,55 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
     }
   }
 
+  private boolean isValidIdentifierFirstChar(char c) {
+    return Character.isLetter(c) || c == UNDERSCORE;
+  }
+
+  private boolean isValidIdentifierChar(char c) {
+    return isValidIdentifierFirstChar(c) || Character.isDigit(c) || c == DOLLAR;
+  }
+
+  private boolean checkCharPrecedingReturning(char ch) {
+    return (ch == SPACE)
+        || (ch == SINGLE_QUOTE)
+        || (ch == CLOSE_PARENTHESIS)
+        || (ch == DOUBLE_QUOTE)
+        || (ch == DOLLAR);
+  }
+
+  private boolean checkCharPrecedingSubstrWithReturning(char ch) {
+    return (ch == SPACE)
+        || (ch == SINGLE_QUOTE)
+        || (ch == CLOSE_PARENTHESIS)
+        || (ch == DOUBLE_QUOTE)
+        || (ch == COMMA);
+  }
+
   private boolean isReturning(String sql, int index) {
     // RETURNING is a reserved keyword in PG, but requires a
     // leading AS to be used as column label, to avoid ambiguity.
     // We thus check for cases which do not have a leading AS.
     // (https://www.postgresql.org/docs/current/sql-keywords-appendix.html)
-    return (index >= 1)
-        && (index + 10 <= sql.length())
-        && RETURNING_PATTERN.matcher(sql.substring(index - 1, index + 10)).matches()
-        && !((index >= 4)
-            && AS_RETURNING_PATTERN.matcher(sql.substring(index - 4, index + 10)).matches());
+    if (index >= 1) {
+      if (((index + 10 <= sql.length())
+          && RETURNING_PATTERN.matcher(sql.substring(index, index + 10)).matches()
+          && !((index >= 4)
+              && AS_RETURNING_PATTERN.matcher(sql.substring(index - 4, index + 10)).matches()))) {
+        if (checkCharPrecedingReturning(sql.charAt(index - 1))) {
+          return true;
+        }
+        // Check for cases where returning clause is part of a substring which starts with an
+        // invalid first character of an identifier.
+        // For example,
+        // insert into t select 2returning *;
+        int ind = index - 1;
+        while ((ind >= 0) && !checkCharPrecedingSubstrWithReturning(sql.charAt(ind))) {
+          ind--;
+        }
+        return !isValidIdentifierFirstChar(sql.charAt(ind + 1));
+      }
+    }
+    return false;
   }
 
   @InternalApi
