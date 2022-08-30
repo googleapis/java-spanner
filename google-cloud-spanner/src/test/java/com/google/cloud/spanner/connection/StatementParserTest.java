@@ -1471,6 +1471,8 @@ public class StatementParserTest {
             .hasReturningClause());
     assertTrue(
         parser.parse(Statement.of("insert into t select 2,3returning*")).hasReturningClause());
+    assertTrue(
+        parser.parse(Statement.of("insert into t1 select 10.returning*")).hasReturningClause());
   }
 
   private void assertUnclosedLiteral(String sql) {
