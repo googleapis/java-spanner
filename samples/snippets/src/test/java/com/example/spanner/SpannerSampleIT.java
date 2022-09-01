@@ -70,7 +70,8 @@ public class SpannerSampleIT {
   private static final String encryptedDatabaseId = formatForTest(baseDbId);
   private static final String encryptedBackupId = formatForTest(baseDbId);
   private static final String encryptedRestoreId = formatForTest(baseDbId);
-  private static final long SECONDS_IN_ONE_DAY = TimeUnit.SECONDS.convert(24L, TimeUnit.HOURS);
+  private static final long STALE_INSTANCE_THRESHOLD_SECS =
+      TimeUnit.SECONDS.convert(24L, TimeUnit.HOURS);
   static Spanner spanner;
   static DatabaseId dbId;
   static DatabaseAdminClient dbClient;
@@ -123,7 +124,8 @@ public class SpannerSampleIT {
             .getInstanceAdminClient()
             .listInstances(Options.filter("name:encrypted-test-"))
             .iterateAll()) {
-      if ((now.getSeconds() - instance.getCreateTime().getSeconds()) > SECONDS_IN_ONE_DAY) {
+      if ((now.getSeconds() - instance.getCreateTime().getSeconds())
+          > STALE_INSTANCE_THRESHOLD_SECS) {
         deleteAllBackups(instanceId);
         instance.delete();
       }
