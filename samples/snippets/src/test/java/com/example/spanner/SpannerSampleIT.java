@@ -37,11 +37,9 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -72,6 +70,7 @@ public class SpannerSampleIT {
   private static final String encryptedDatabaseId = formatForTest(baseDbId);
   private static final String encryptedBackupId = formatForTest(baseDbId);
   private static final String encryptedRestoreId = formatForTest(baseDbId);
+  private static final long SECONDS_IN_ONE_DAY = 86400;
   static Spanner spanner;
   static DatabaseId dbId;
   static DatabaseAdminClient dbClient;
@@ -107,7 +106,7 @@ public class SpannerSampleIT {
      * Backups needed to be deleted from the instance first, as the instance can only be
      * deleted once all backups have been deleted.
      * */
-    deleteStaleTestEncryptedInstances();
+    deleteStaleEncryptedTestInstances();
   }
 
   /**
@@ -116,20 +115,15 @@ public class SpannerSampleIT {
    *
    * @throws InterruptedException If Thread.sleep() interrupted
    */
-  static void deleteStaleTestEncryptedInstances() throws InterruptedException {
-    List<Instance> instances =
-        Lists.newArrayList(
-            spanner
-                .getInstanceAdminClient()
-                .listInstances(Options.filter("name:encrypted-test-"))
-                .iterateAll());
-
+  private static void deleteStaleEncryptedTestInstances() throws InterruptedException {
     Timestamp now = Timestamp.now();
 
-    for (Instance instance : instances) {
-      if (TimeUnit.HOURS.convert(
-              now.getSeconds() - instance.getCreateTime().getSeconds(), TimeUnit.SECONDS)
-          > 24) {
+    for (Instance instance :
+        spanner
+            .getInstanceAdminClient()
+            .listInstances(Options.filter("name:encrypted-test-"))
+            .iterateAll()) {
+      if ((now.getSeconds() - instance.getCreateTime().getSeconds()) > SECONDS_IN_ONE_DAY) {
         deleteAllBackups(instanceId);
         instance.delete();
       }
