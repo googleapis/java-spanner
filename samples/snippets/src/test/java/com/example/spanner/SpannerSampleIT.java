@@ -110,7 +110,7 @@ public class SpannerSampleIT {
   }
 
   /**
-   * Deleting all the test instances with name beginning from 'encrypted-test-' and were created
+   * Deleting all the test instances with name starting with 'encrypted-test-' and were created
    * before 24 hours.
    *
    * @throws InterruptedException If Thread.sleep() interrupted
