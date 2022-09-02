@@ -19,6 +19,7 @@ package com.google.cloud.spanner.admin.database.v1;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseRolesPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabasesPagedResponse;
 
 import com.google.api.gax.core.NoCredentialsProvider;
@@ -48,6 +49,7 @@ import com.google.spanner.admin.database.v1.BackupName;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseDialect;
 import com.google.spanner.admin.database.v1.DatabaseName;
+import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.EncryptionConfig;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
@@ -55,6 +57,7 @@ import com.google.spanner.admin.database.v1.InstanceName;
 import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreInfo;
 import java.io.IOException;
@@ -2163,6 +2166,106 @@ public class DatabaseAdminClientHttpJsonTest {
     try {
       String parent = "projects/project-8887/instances/instance-8887";
       client.listBackupOperations(parent);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void listDatabaseRolesTest() throws Exception {
+    DatabaseRole responsesElement = DatabaseRole.newBuilder().build();
+    ListDatabaseRolesResponse expectedResponse =
+        ListDatabaseRolesResponse.newBuilder()
+            .setNextPageToken("")
+            .addAllDatabaseRoles(Arrays.asList(responsesElement))
+            .build();
+    mockService.addResponse(expectedResponse);
+
+    DatabaseName parent = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+
+    ListDatabaseRolesPagedResponse pagedListResponse = client.listDatabaseRoles(parent);
+
+    List<DatabaseRole> resources = Lists.newArrayList(pagedListResponse.iterateAll());
+
+    Assert.assertEquals(1, resources.size());
+    Assert.assertEquals(expectedResponse.getDatabaseRolesList().get(0), resources.get(0));
+
+    List<String> actualRequests = mockService.getRequestPaths();
+    Assert.assertEquals(1, actualRequests.size());
+
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
+    Assert.assertTrue(
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
+  }
+
+  @Test
+  public void listDatabaseRolesExceptionTest() throws Exception {
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
+
+    try {
+      DatabaseName parent = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      client.listDatabaseRoles(parent);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void listDatabaseRolesTest2() throws Exception {
+    DatabaseRole responsesElement = DatabaseRole.newBuilder().build();
+    ListDatabaseRolesResponse expectedResponse =
+        ListDatabaseRolesResponse.newBuilder()
+            .setNextPageToken("")
+            .addAllDatabaseRoles(Arrays.asList(responsesElement))
+            .build();
+    mockService.addResponse(expectedResponse);
+
+    String parent = "projects/project-9347/instances/instance-9347/databases/database-9347";
+
+    ListDatabaseRolesPagedResponse pagedListResponse = client.listDatabaseRoles(parent);
+
+    List<DatabaseRole> resources = Lists.newArrayList(pagedListResponse.iterateAll());
+
+    Assert.assertEquals(1, resources.size());
+    Assert.assertEquals(expectedResponse.getDatabaseRolesList().get(0), resources.get(0));
+
+    List<String> actualRequests = mockService.getRequestPaths();
+    Assert.assertEquals(1, actualRequests.size());
+
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
+    Assert.assertTrue(
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
+  }
+
+  @Test
+  public void listDatabaseRolesExceptionTest2() throws Exception {
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
+
+    try {
+      String parent = "projects/project-9347/instances/instance-9347/databases/database-9347";
+      client.listDatabaseRoles(parent);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception.

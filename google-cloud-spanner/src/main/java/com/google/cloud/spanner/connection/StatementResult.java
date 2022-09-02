@@ -77,6 +77,7 @@ public interface StatementResult {
     COMMIT,
     ROLLBACK,
     SET_TRANSACTION_MODE,
+    SET_DEFAULT_TRANSACTION_ISOLATION,
     START_BATCH_DDL,
     START_BATCH_DML,
     RUN_BATCH,

@@ -204,6 +204,18 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
+  public String getPgJsonb(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getPgJsonb(columnIndex);
+  }
+
+  @Override
+  public String getPgJsonb(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getPgJsonb(columnName);
+  }
+
+  @Override
   public ByteArray getBytes(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getBytes(columnIndex);
@@ -357,6 +369,18 @@ class DirectExecuteResultSet implements ResultSet {
   public List<String> getJsonList(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getJsonList(columnName);
+  }
+
+  @Override
+  public List<String> getPgJsonbList(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getPgJsonbList(columnIndex);
+  }
+
+  @Override
+  public List<String> getPgJsonbList(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getPgJsonbList(columnName);
   }
 
   @Override

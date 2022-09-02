@@ -183,8 +183,8 @@ public class DatabaseTest {
     Database database =
         new Database(
             DatabaseId.of("test-project", "test-instance", "test-database"), State.READY, dbClient);
-    database.getIAMPolicy();
-    verify(dbClient).getDatabaseIAMPolicy("test-instance", "test-database");
+    database.getIAMPolicy(1);
+    verify(dbClient).getDatabaseIAMPolicy("test-instance", "test-database", 1);
   }
 
   @Test

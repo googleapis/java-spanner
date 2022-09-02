@@ -48,6 +48,10 @@ public abstract class AbstractStructReader implements StructReader {
     throw new UnsupportedOperationException("Not implemented");
   }
 
+  protected String getPgJsonbInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
   protected abstract ByteArray getBytesInternal(int columnIndex);
 
   protected abstract Timestamp getTimestampInternal(int columnIndex);
@@ -75,6 +79,10 @@ public abstract class AbstractStructReader implements StructReader {
   protected abstract List<String> getStringListInternal(int columnIndex);
 
   protected List<String> getJsonListInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  protected List<String> getPgJsonbListInternal(int columnIndex) {
     throw new UnsupportedOperationException("Not implemented");
   }
 
@@ -187,6 +195,19 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.json(), columnName);
     return getJsonInternal(columnIndex);
+  }
+
+  @Override
+  public String getPgJsonb(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.pgJsonb(), columnIndex);
+    return getPgJsonbInternal(columnIndex);
+  }
+
+  @Override
+  public String getPgJsonb(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.pgJsonb(), columnName);
+    return getPgJsonbInternal(columnIndex);
   }
 
   @Override
@@ -363,6 +384,19 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.array(Type.json()), columnName);
     return getJsonListInternal(columnIndex);
+  }
+
+  @Override
+  public List<String> getPgJsonbList(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.array(Type.pgJsonb()), columnIndex);
+    return getPgJsonbListInternal(columnIndex);
+  }
+
+  @Override
+  public List<String> getPgJsonbList(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.array(Type.pgJsonb()), columnName);
+    return getPgJsonbListInternal(columnIndex);
   }
 
   @Override

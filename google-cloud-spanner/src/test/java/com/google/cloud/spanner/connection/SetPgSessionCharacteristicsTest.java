@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.google.cloud.spanner.Dialect;
@@ -87,5 +88,140 @@ public class SetPgSessionCharacteristicsTest {
 
     verify(connection).setReadOnly(false);
     verify(connection, never()).setReadOnly(true);
+  }
+
+  @Test
+  public void testSetIsolationLevelSerializableReadWrite() {
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
+
+    String sql =
+        "set   session   characteristics   as   transaction  isolation level serializable read write";
+    ParsedStatement statement = parser.parse(Statement.of(sql));
+    assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
+    statement.getClientSideStatement().execute(executor, sql);
+
+    verify(connection).setReadOnly(false);
+    verify(connection, never()).setReadOnly(true);
+  }
+
+  @Test
+  public void testSetIsolationLevelSerializableReadOnly() {
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
+
+    String sql =
+        "set   session   characteristics   as   transaction  isolation level serializable read only";
+    ParsedStatement statement = parser.parse(Statement.of(sql));
+    assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
+    statement.getClientSideStatement().execute(executor, sql);
+
+    verify(connection).setReadOnly(true);
+  }
+
+  @Test
+  public void testSetMultipleTransactionModes() {
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
+
+    String sql =
+        "set session characteristics as transaction isolation level default, read only, isolation level serializable, read write";
+    ParsedStatement statement = parser.parse(Statement.of(sql));
+    assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
+    statement.getClientSideStatement().execute(executor, sql);
+
+    verify(connection).setReadOnly(false);
+    verify(connection, never()).setReadOnly(true);
+  }
+
+  @Test
+  public void testDefaultTransactionIsolation() {
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
+
+    for (String sql :
+        new String[] {
+          "set default_transaction_isolation = serializable",
+          "set default_transaction_isolation = 'serializable'",
+          "set default_transaction_isolation to serializable",
+          "set default_transaction_isolation to 'serializable'",
+          "set default_transaction_isolation to 'SERIALIZABLE'",
+          "set default_transaction_isolation to \"SERIALIZABLE\"",
+        }) {
+      ParsedStatement statement = parser.parse(Statement.of(sql));
+      assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
+      statement.getClientSideStatement().execute(executor, sql);
+    }
+
+    // Setting the isolation level is a no-op.
+    verify(connection, never()).setReadOnly(anyBoolean());
+  }
+
+  @Test
+  public void testDefaultTransactionReadOnlyTrue() {
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
+    String[] statements =
+        new String[] {
+          "set default_transaction_read_only = true",
+          "set default_transaction_read_only = 'true'",
+          "set default_transaction_read_only = \"true\"",
+          "set default_transaction_read_only to true",
+          "set default_transaction_read_only to 'true'",
+          "set default_transaction_read_only to \"true\"",
+          "set default_transaction_read_only = t",
+          "set default_transaction_read_only = 'tr'",
+          "set default_transaction_read_only = \"tru\"",
+          "set default_transaction_read_only to tru",
+          "set default_transaction_read_only to 'tr'",
+          "set default_transaction_read_only to \"t\"",
+          "set default_transaction_read_only = on",
+          "set default_transaction_read_only = 1",
+          "set default_transaction_read_only = yes",
+          "set default_transaction_read_only = ye",
+          "set default_transaction_read_only = y",
+        };
+
+    for (String sql : statements) {
+      ParsedStatement statement = parser.parse(Statement.of(sql));
+      assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
+      statement.getClientSideStatement().execute(executor, sql);
+    }
+
+    verify(connection, times(statements.length)).setReadOnly(true);
+  }
+
+  @Test
+  public void testDefaultTransactionReadOnlyFalse() {
+    ConnectionImpl connection = mock(ConnectionImpl.class);
+    ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
+    String[] statements =
+        new String[] {
+          "set default_transaction_read_only = false",
+          "set default_transaction_read_only = 'false'",
+          "set default_transaction_read_only = \"false\"",
+          "set default_transaction_read_only to false",
+          "set default_transaction_read_only to 'false'",
+          "set default_transaction_read_only to \"false\"",
+          "set default_transaction_read_only = f",
+          "set default_transaction_read_only = 'fa'",
+          "set default_transaction_read_only = \"fal\"",
+          "set default_transaction_read_only to fal",
+          "set default_transaction_read_only to 'fa'",
+          "set default_transaction_read_only to \"f\"",
+          "set default_transaction_read_only = off",
+          "set default_transaction_read_only = of",
+          "set default_transaction_read_only = 0",
+          "set default_transaction_read_only = no",
+          "set default_transaction_read_only = n",
+        };
+
+    for (String sql : statements) {
+      ParsedStatement statement = parser.parse(Statement.of(sql));
+      assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
+      statement.getClientSideStatement().execute(executor, sql);
+    }
+
+    verify(connection, times(statements.length)).setReadOnly(false);
   }
 }

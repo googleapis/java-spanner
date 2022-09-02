@@ -63,13 +63,14 @@ public final class TypeProto {
           + "\004BOOL\020\001\022\t\n\005INT64\020\002\022\013\n\007FLOAT64\020\003\022\r\n\tTIMES"
           + "TAMP\020\004\022\010\n\004DATE\020\005\022\n\n\006STRING\020\006\022\t\n\005BYTES\020\007\022"
           + "\t\n\005ARRAY\020\010\022\n\n\006STRUCT\020\t\022\013\n\007NUMERIC\020\n\022\010\n\004J"
-          + "SON\020\013*J\n\022TypeAnnotationCode\022$\n TYPE_ANNO"
+          + "SON\020\013*X\n\022TypeAnnotationCode\022$\n TYPE_ANNO"
           + "TATION_CODE_UNSPECIFIED\020\000\022\016\n\nPG_NUMERIC\020"
-          + "\002B\257\001\n\025com.google.spanner.v1B\tTypeProtoP\001"
-          + "Z8google.golang.org/genproto/googleapis/"
-          + "spanner/v1;spanner\252\002\027Google.Cloud.Spanne"
-          + "r.V1\312\002\027Google\\Cloud\\Spanner\\V1\352\002\032Google:"
-          + ":Cloud::Spanner::V1b\006proto3"
+          + "\002\022\014\n\010PG_JSONB\020\003B\257\001\n\025com.google.spanner.v"
+          + "1B\tTypeProtoP\001Z8google.golang.org/genpro"
+          + "to/googleapis/spanner/v1;spanner\252\002\027Googl"
+          + "e.Cloud.Spanner.V1\312\002\027Google\\Cloud\\Spanne"
+          + "r\\V1\352\002\032Google::Cloud::Spanner::V1b\006proto"
+          + "3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(

@@ -28,6 +28,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
 import com.google.common.collect.ImmutableList;
+import com.google.iam.v1.GetPolicyOptions;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
@@ -253,6 +254,9 @@ public interface SpannerRpc extends ServiceRpc {
   Paginated<Operation> listDatabaseOperations(
       String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken);
 
+  Paginated<DatabaseRole> listDatabaseRoles(
+      String databaseName, int pageSize, @Nullable String pageToken);
+
   /** Retrieves a long running operation. */
   Operation getOperation(String name) throws SpannerException;
 
@@ -262,12 +266,16 @@ public interface SpannerRpc extends ServiceRpc {
   List<Session> batchCreateSessions(
       String databaseName,
       int sessionCount,
+      @Nullable String databaseRole,
       @Nullable Map<String, String> labels,
       @Nullable Map<Option, ?> options)
       throws SpannerException;
 
   Session createSession(
-      String databaseName, @Nullable Map<String, String> labels, @Nullable Map<Option, ?> options)
+      String databaseName,
+      @Nullable String databaseRole,
+      @Nullable Map<String, String> labels,
+      @Nullable Map<Option, ?> options)
       throws SpannerException;
 
   void deleteSession(String sessionName, @Nullable Map<Option, ?> options) throws SpannerException;
@@ -321,7 +329,7 @@ public interface SpannerRpc extends ServiceRpc {
       throws SpannerException;
 
   /** Gets the IAM policy for the given resource using the {@link DatabaseAdminStub}. */
-  Policy getDatabaseAdminIAMPolicy(String resource);
+  Policy getDatabaseAdminIAMPolicy(String resource, @Nullable GetPolicyOptions options);
 
   /**
    * Updates the IAM policy for the given resource using the {@link DatabaseAdminStub}. It is highly

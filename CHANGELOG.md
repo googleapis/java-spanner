@@ -1,5 +1,41 @@
 # Changelog
 
+## [6.29.0](https://github.com/googleapis/java-spanner/compare/v6.28.0...v6.29.0) (2022-08-29)
+
+
+### Features
+
+* add support for db roles list  ([#1916](https://github.com/googleapis/java-spanner/issues/1916)) ([8034c67](https://github.com/googleapis/java-spanner/commit/8034c67af6cfe24e96cc26b1cea51c3405ed98d6))
+* add support for PG JSONB data type ([#1964](https://github.com/googleapis/java-spanner/issues/1964)) ([d2b426f](https://github.com/googleapis/java-spanner/commit/d2b426fda2cd1463dfa0719dd80f8346cbef51c6))
+* Adds auto-generated CL for googleapis for jsonb ([#1983](https://github.com/googleapis/java-spanner/issues/1983)) ([23e57ff](https://github.com/googleapis/java-spanner/commit/23e57ffc627d0f688fa656887d82f8f1f99f3675))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.4.1 ([#1968](https://github.com/googleapis/java-spanner/issues/1968)) ([e93ab4c](https://github.com/googleapis/java-spanner/commit/e93ab4cc4031ee2300f4e73d7d3a8e41de1bc7ae))
+* update dependency com.google.cloud:google-cloud-trace to v2.3.1 ([#1967](https://github.com/googleapis/java-spanner/issues/1967)) ([6479d19](https://github.com/googleapis/java-spanner/commit/6479d19dcca2b3e3df43a2858f5dcaf85685c31f))
+
+## [6.28.0](https://github.com/googleapis/java-spanner/compare/v6.27.0...v6.28.0) (2022-08-11)
+
+
+### Features
+
+* Add ListDatabaseRoles API to support role based access control ([cb13534](https://github.com/googleapis/java-spanner/commit/cb13534d7ca2e1b581cb4551d0f95834fbf7b640))
+* support multiple PostgreSQL transaction options ([#1949](https://github.com/googleapis/java-spanner/issues/1949)) ([8b99f30](https://github.com/googleapis/java-spanner/commit/8b99f30285e4ef68376aa9bfc11617f74e110bf2))
+
+
+### Bug Fixes
+
+* target new spanner db admin service config ([#1956](https://github.com/googleapis/java-spanner/issues/1956)) ([cb13534](https://github.com/googleapis/java-spanner/commit/cb13534d7ca2e1b581cb4551d0f95834fbf7b640))
+* Use the key instead of the value to verify the number of channels created in ChannelUsageTest. ([#1965](https://github.com/googleapis/java-spanner/issues/1965)) ([ea329bb](https://github.com/googleapis/java-spanner/commit/ea329bb57b343c58bab2680b0c9412e51522b90b))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.3.6 ([#1962](https://github.com/googleapis/java-spanner/issues/1962)) ([5bb9844](https://github.com/googleapis/java-spanner/commit/5bb98441d65ba462c49810f980770406df8ca127))
+* update dependency com.google.cloud:google-cloud-shared-dependencies to v3 ([#1960](https://github.com/googleapis/java-spanner/issues/1960)) ([327b5f0](https://github.com/googleapis/java-spanner/commit/327b5f069f8fe4625be49c258c721a4db5fb0f6e))
+* update dependency org.junit.vintage:junit-vintage-engine to v5.9.0 ([#1959](https://github.com/googleapis/java-spanner/issues/1959)) ([f908626](https://github.com/googleapis/java-spanner/commit/f90862667613280a8c7a2901ba4b5940b0647eb2))
+
 ## [6.27.0](https://github.com/googleapis/java-spanner/compare/v6.26.0...v6.27.0) (2022-07-19)
 
 

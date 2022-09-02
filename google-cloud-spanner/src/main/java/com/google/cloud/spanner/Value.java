@@ -200,12 +200,21 @@ public abstract class Value implements Serializable {
   }
 
   /**
-   * Returns a {@code STRING} value.
+   * Returns a {@code JSON} value.
    *
    * @param v the value, which may be null
    */
   public static Value json(@Nullable String v) {
     return new JsonImpl(v == null, v);
+  }
+
+  /**
+   * Returns a {@code PG JSONB} value.
+   *
+   * @param v the value, which may be null
+   */
+  public static Value pgJsonb(@Nullable String v) {
+    return new PgJsonbImpl(v == null, v);
   }
 
   /**
@@ -393,13 +402,23 @@ public abstract class Value implements Serializable {
   }
 
   /**
-   * Returns an {@code ARRAY<STRING>} value.
+   * Returns an {@code ARRAY<JSON>} value.
    *
    * @param v the source of element values. This may be {@code null} to produce a value for which
    *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
    */
   public static Value jsonArray(@Nullable Iterable<String> v) {
     return new JsonArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+  }
+
+  /**
+   * Returns an {@code ARRAY<JSONB>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   */
+  public static Value pgJsonbArray(@Nullable Iterable<String> v) {
+    return new PgJsonbArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
   }
 
   /**
@@ -514,6 +533,15 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns the value of a {@code JSONB}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public String getPgJsonb() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
    * Returns the value of a {@code BYTES}-typed instance.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
@@ -592,6 +620,16 @@ public abstract class Value implements Serializable {
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
   public List<String> getJsonArray() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Returns the value of an {@code ARRAY<JSONB>}-typed instance. While the returned list itself
+   * will never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public List<String> getPgJsonbArray() {
     throw new UnsupportedOperationException("Not implemented");
   }
 
@@ -809,6 +847,11 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public String getPgJsonb() {
+      throw defaultGetter(Type.pgJsonb());
+    }
+
+    @Override
     public ByteArray getBytes() {
       throw defaultGetter(Type.bytes());
     }
@@ -860,6 +903,11 @@ public abstract class Value implements Serializable {
     @Override
     public List<String> getJsonArray() {
       throw defaultGetter(Type.array(Type.json()));
+    }
+
+    @Override
+    public List<String> getPgJsonbArray() {
+      throw defaultGetter(Type.array(Type.pgJsonb()));
     }
 
     @Override
@@ -1217,6 +1265,34 @@ public abstract class Value implements Serializable {
     @Override
     public String getString() {
       return getJson();
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      if (value.length() > MAX_DEBUG_STRING_LENGTH) {
+        b.append(value, 0, MAX_DEBUG_STRING_LENGTH - ELLIPSIS.length()).append(ELLIPSIS);
+      } else {
+        b.append(value);
+      }
+    }
+  }
+
+  private static class PgJsonbImpl extends AbstractObjectValue<String> {
+
+    private PgJsonbImpl(boolean isNull, @Nullable String value) {
+      super(isNull, Type.pgJsonb(), value);
+    }
+
+    @Override
+    public String getPgJsonb() {
+      checkType(Type.pgJsonb());
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    public String getString() {
+      return getPgJsonb();
     }
 
     @Override
@@ -1666,6 +1742,30 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class PgJsonbArrayImpl extends AbstractArrayValue<String> {
+
+    private PgJsonbArrayImpl(boolean isNull, @Nullable List<String> values) {
+      super(isNull, Type.pgJsonb(), values);
+    }
+
+    @Override
+    public List<String> getPgJsonbArray() {
+      checkType(getType());
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    public List<String> getStringArray() {
+      return this.getPgJsonbArray();
+    }
+
+    @Override
+    void appendElement(StringBuilder b, String element) {
+      b.append(element);
+    }
+  }
+
   private static class BytesArrayImpl extends AbstractArrayValue<ByteArray> {
     private BytesArrayImpl(boolean isNull, @Nullable List<ByteArray> values) {
       super(isNull, Type.bytes(), values);
@@ -1857,6 +1957,8 @@ public abstract class Value implements Serializable {
           return Value.string(value.getString(fieldIndex));
         case JSON:
           return Value.json(value.getJson(fieldIndex));
+        case PG_JSONB:
+          return Value.pgJsonb(value.getPgJsonb(fieldIndex));
         case BYTES:
           return Value.bytes(value.getBytes(fieldIndex));
         case FLOAT64:
@@ -1883,6 +1985,8 @@ public abstract class Value implements Serializable {
                 return Value.stringArray(value.getStringList(fieldIndex));
               case JSON:
                 return Value.jsonArray(value.getJsonList(fieldIndex));
+              case PG_JSONB:
+                return Value.pgJsonbArray(value.getPgJsonbList(fieldIndex));
               case BYTES:
                 return Value.bytesArray(value.getBytesList(fieldIndex));
               case FLOAT64:

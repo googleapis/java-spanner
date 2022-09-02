@@ -40,6 +40,7 @@ import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.Database.State;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc.DatabaseAdminImplBase;
+import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
 import com.google.spanner.admin.database.v1.GetBackupRequest;
@@ -52,6 +53,8 @@ import com.google.spanner.admin.database.v1.ListBackupsRequest;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.OperationProgress;
@@ -436,6 +439,7 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
   private final ConcurrentMap<String, MockDatabase> databases = new ConcurrentHashMap<>();
   private final ConcurrentMap<String, MockBackup> backups = new ConcurrentHashMap<>();
   private final ConcurrentMap<String, Set<String>> filterMatches = new ConcurrentHashMap<>();
+  private final List<DatabaseRole> databaseRoles = new ArrayList<>();
   private final MockOperationsServiceImpl operations;
 
   private long createBackupOperationExecutionTime;
@@ -579,6 +583,25 @@ public class MockDatabaseAdminServiceImpl extends DatabaseAdminImplBase implemen
     } catch (Exception e) {
       responseObserver.onError(e);
     }
+  }
+
+  @Override
+  public void listDatabaseRoles(
+      ListDatabaseRolesRequest request,
+      StreamObserver<ListDatabaseRolesResponse> responseObserver) {
+    requests.add(request);
+    List<com.google.spanner.admin.database.v1.DatabaseRole> dbRoles =
+        new ArrayList<>(databaseRoles.size());
+    for (DatabaseRole entry : databaseRoles) {
+      dbRoles.add(
+          com.google.spanner.admin.database.v1.DatabaseRole.newBuilder()
+              .setName(entry.getName())
+              .build());
+    }
+
+    responseObserver.onNext(
+        ListDatabaseRolesResponse.newBuilder().addAllDatabaseRoles(dbRoles).build());
+    responseObserver.onCompleted();
   }
 
   private boolean matchesFilter(Object obj, String filter) throws Exception {
