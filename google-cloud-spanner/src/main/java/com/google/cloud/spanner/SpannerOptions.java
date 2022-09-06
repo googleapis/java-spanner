@@ -74,6 +74,7 @@ import org.threeten.bp.Duration;
 
 /** Options for the Cloud Spanner service. */
 public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
+
   private static final long serialVersionUID = 2789571558532701170L;
   private static SpannerEnvironment environment = SpannerEnvironmentImpl.INSTANCE;
 
@@ -135,6 +136,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * {@link SpannerOptions}.
    */
   public interface CallCredentialsProvider {
+
     /** Return the {@link CallCredentials} to use for a gRPC call. */
     CallCredentials getCallCredentials();
   }
@@ -189,6 +191,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * }</pre>
    */
   public interface CallContextConfigurator {
+
     /**
      * Configure a {@link ApiCallContext} for a specific RPC call.
      *
@@ -309,6 +312,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * }</pre>
    */
   public static class SpannerCallContextTimeoutConfigurator implements CallContextConfigurator {
+
     private Duration commitTimeout;
     private Duration rollbackTimeout;
 
@@ -455,6 +459,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   /** Default implementation of {@code SpannerFactory}. */
   private static class DefaultSpannerFactory implements SpannerFactory {
+
     private static final DefaultSpannerFactory INSTANCE = new DefaultSpannerFactory();
 
     @Override
@@ -465,6 +470,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   /** Default implementation of {@code SpannerRpcFactory}. */
   private static class DefaultSpannerRpcFactory implements SpannerRpcFactory {
+
     private static final DefaultSpannerRpcFactory INSTANCE = new DefaultSpannerRpcFactory();
 
     @Override
@@ -477,6 +483,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   /** {@link ExecutorProvider} that is used for {@link AsyncResultSet}. */
   public interface CloseableExecutorProvider extends ExecutorProvider, AutoCloseable {
+
     /** Overridden to suppress the throws declaration of the super interface. */
     @Override
     void close();
@@ -487,6 +494,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * ScheduledExecutorService}.
    */
   public static class FixedCloseableExecutorProvider implements CloseableExecutorProvider {
+
     private final ScheduledExecutorService executor;
 
     private FixedCloseableExecutorProvider(ScheduledExecutorService executor) {
@@ -604,6 +612,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * variables.
    */
   public interface SpannerEnvironment {
+
     /**
      * The optimizer version to use. Must return an empty string to indicate that no value has been
      * set.
@@ -626,6 +635,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * variables.
    */
   private static class SpannerEnvironmentImpl implements SpannerEnvironment {
+
     private static final SpannerEnvironmentImpl INSTANCE = new SpannerEnvironmentImpl();
     private static final String SPANNER_OPTIMIZER_VERSION_ENV_VAR = "SPANNER_OPTIMIZER_VERSION";
     private static final String SPANNER_OPTIMIZER_STATISTICS_PACKAGE_ENV_VAR =
@@ -648,6 +658,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   /** Builder for {@link SpannerOptions} instances. */
   public static class Builder
       extends ServiceOptions.Builder<Spanner, SpannerOptions, SpannerOptions.Builder> {
+
     static final int DEFAULT_PREFETCH_CHUNKS = 4;
     static final QueryOptions DEFAULT_QUERY_OPTIONS = QueryOptions.getDefaultInstance();
     static final RetrySettings DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
@@ -1175,6 +1186,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       }
       // Set the number of channels if not set
       if (this.numChannels == null) {
+        /** By default, we create 4 channels per {@link SpannerOptions} */
         this.numChannels = DEFAULT_NUM_CHANNELS;
       }
 
