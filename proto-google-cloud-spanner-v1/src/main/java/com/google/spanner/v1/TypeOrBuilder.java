@@ -158,4 +158,17 @@ public interface TypeOrBuilder
    * @return The typeAnnotation.
    */
   com.google.spanner.v1.TypeAnnotationCode getTypeAnnotation();
+
+  /**
+   * <code>string proto_type_fqn = 5;</code>
+   *
+   * @return The protoTypeFqn.
+   */
+  java.lang.String getProtoTypeFqn();
+  /**
+   * <code>string proto_type_fqn = 5;</code>
+   *
+   * @return The bytes for protoTypeFqn.
+   */
+  com.google.protobuf.ByteString getProtoTypeFqnBytes();
 }
