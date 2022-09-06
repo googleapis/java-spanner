@@ -682,9 +682,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     private GrpcInterceptorProvider interceptorProvider;
 
-    /**
-     * By default, we create 4 channels per {@link SpannerOptions}
-     */
+    /** By default, we create 4 channels per {@link SpannerOptions} */
     private Integer numChannels;
 
     private String transportChannelExecutorThreadNameFormat = "Cloud-Spanner-TransportChannel-%d";
