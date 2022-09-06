@@ -89,6 +89,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
           "https://www.googleapis.com/auth/spanner.admin",
           "https://www.googleapis.com/auth/spanner.data");
   private static final int MAX_CHANNELS = 256;
+  private static final int DEFAULT_NUM_CHANNELS = 4;
+  private static final int GRPC_GCP_ENABLED_DEFAULT_NUM_CHANNELS = 8;
   private final TransportChannelProvider channelProvider;
 
   @SuppressWarnings("rawtypes")
@@ -669,8 +671,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     private GrpcInterceptorProvider interceptorProvider;
 
-    /** By default, we create 4 channels per {@link SpannerOptions} */
-    private int numChannels = 4;
+    /**
+     * By default, we create 4 channels per {@link SpannerOptions}
+     */
+    private Integer numChannels;
 
     private String transportChannelExecutorThreadNameFormat = "Cloud-Spanner-TransportChannel-%d";
 
@@ -696,7 +700,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private CloseableExecutorProvider asyncExecutorProvider;
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
-    private boolean userSpecifiedNumChannels = false;
 
     private Builder() {
       // Manually set retry and polling settings that work.
@@ -816,7 +819,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setNumChannels(int numChannels) {
       this.numChannels = numChannels;
-      this.userSpecifiedNumChannels = true;
       return this;
     }
 
@@ -1124,11 +1126,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /** Enables gRPC-GCP extension with the default settings. */
     public Builder enableGrpcGcpExtension() {
-      this.grpcGcpExtensionEnabled = true;
-      if (!userSpecifiedNumChannels) { // If numChannels is not set through options
-        this.numChannels = 8; // default when grpc-gcp channel pool is enabled
-      }
-      return this;
+      return this.enableGrpcGcpExtension(null);
     }
 
     /**
@@ -1138,6 +1136,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     public Builder enableGrpcGcpExtension(GcpManagedChannelOptions options) {
       this.grpcGcpExtensionEnabled = true;
       this.grpcGcpOptions = options;
+      // By default, set number of channels to 8 if grpc-gcp extension is enabled
+      if (this.numChannels == null) {
+        this.numChannels = GRPC_GCP_ENABLED_DEFAULT_NUM_CHANNELS;
+      }
       return this;
     }
 
@@ -1171,6 +1173,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
       }
+      // Set the number of channels if not set
+      if (this.numChannels == null) {
+        this.numChannels = DEFAULT_NUM_CHANNELS;
+      }
+
       return new SpannerOptions(this);
     }
   }
