@@ -693,6 +693,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private CloseableExecutorProvider asyncExecutorProvider;
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
+    private boolean userSpecifiedNumChannels = false;
 
     private Builder() {
       // Manually set retry and polling settings that work.
@@ -811,6 +812,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setNumChannels(int numChannels) {
       this.numChannels = numChannels;
+      this.userSpecifiedNumChannels = true;
       return this;
     }
 
@@ -1108,6 +1110,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     /** Enables gRPC-GCP extension with the default settings. */
     public Builder enableGrpcGcpExtension() {
       this.grpcGcpExtensionEnabled = true;
+      if (!userSpecifiedNumChannels) { // If numChannels is not set through options
+        this.numChannels = 8; // default when grpc-gcp channel pool is enabled
+      }
       return this;
     }
 
