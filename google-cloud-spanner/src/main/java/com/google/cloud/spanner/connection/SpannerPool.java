@@ -153,6 +153,7 @@ public class SpannerPool {
     private final Integer numChannels;
     private final boolean usePlainText;
     private final String userAgent;
+    private final String databaseRole;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -170,6 +171,7 @@ public class SpannerPool {
       this.host = options.getHost();
       this.projectId = options.getProjectId();
       this.credentialsKey = CredentialsKey.create(options);
+      this.databaseRole = options.getDatabaseRole();
       this.sessionPoolOptions =
           options.getSessionPoolOptions() == null
               ? SessionPoolOptions.newBuilder().build()
@@ -190,6 +192,7 @@ public class SpannerPool {
           && Objects.equals(this.credentialsKey, other.credentialsKey)
           && Objects.equals(this.sessionPoolOptions, other.sessionPoolOptions)
           && Objects.equals(this.numChannels, other.numChannels)
+          && Objects.equals(this.databaseRole, other.databaseRole)
           && Objects.equals(this.usePlainText, other.usePlainText)
           && Objects.equals(this.userAgent, other.userAgent);
     }
@@ -203,6 +206,7 @@ public class SpannerPool {
           this.sessionPoolOptions,
           this.numChannels,
           this.usePlainText,
+          this.databaseRole,
           this.userAgent);
     }
   }
@@ -329,6 +333,7 @@ public class SpannerPool {
         .setClientLibToken(MoreObjects.firstNonNull(key.userAgent, CONNECTION_API_CLIENT_LIB_TOKEN))
         .setHost(key.host)
         .setProjectId(key.projectId)
+        .setDatabaseRole(options.getDatabaseRole())
         .setCredentials(options.getCredentials());
     builder.setSessionPoolOption(key.sessionPoolOptions);
     if (key.numChannels != null) {

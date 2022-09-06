@@ -339,6 +339,9 @@ public interface DatabaseAdminClient {
   /** Lists long-running database operations on the specified instance. */
   Page<Operation> listDatabaseOperations(String instanceId, ListOption... options);
 
+  /** Lists database roles on the specified database. */
+  Page<DatabaseRole> listDatabaseRoles(String instanceId, String databaseId, ListOption... options);
+
   /** Lists long-running backup operations on the specified instance. */
   Page<Operation> listBackupOperations(String instanceId, ListOption... options);
 
@@ -491,8 +494,24 @@ public interface DatabaseAdminClient {
   /** Gets the specified long-running operation. */
   Operation getOperation(String name);
 
-  /** Returns the IAM policy for the given database. */
-  Policy getDatabaseIAMPolicy(String instanceId, String databaseId);
+  /**
+   * Returns the IAM policy for the given database.
+   *
+   * <p>Version specifies the format used to create the policy, valid values are 0, 1, and 3.
+   * Requests specifying an invalid value will be rejected. Requests for policies with any
+   * conditional role bindings must specify version 3. Policies with no conditional role bindings
+   * may specify any valid value or leave the field unset.
+   *
+   * <p>The policy in the response might use the policy version that you specified, or it might use
+   * a lower policy version. For example, if you specify version 3, but the policy has no
+   * conditional role bindings, the response uses version 1.
+   *
+   * <p>To learn which resources support conditions in their IAM policies, see the
+   *
+   * @see <a href="https://cloud.google.com/iam/help/conditions/resource-policies">IAM
+   *     documentation</a>.
+   */
+  Policy getDatabaseIAMPolicy(String instanceId, String databaseId, int version);
 
   /**
    * Updates the IAM policy for the given database and returns the resulting policy. It is highly

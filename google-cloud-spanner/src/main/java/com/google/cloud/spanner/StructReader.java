@@ -114,13 +114,23 @@ public interface StructReader {
   /** Returns the value of a non-{@code NULL} column with type {@link Type#string()}. */
   String getString(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#string()}. */
+  /** Returns the value of a non-{@code NULL} column with type {@link Type#json()}. */
   default String getJson(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#string()}. */
+  /** Returns the value of a non-{@code NULL} column with type {@link Type#json()}. */
   default String getJson(String columnName) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /** Returns the value of a non-{@code NULL} column with type {@link Type#pgJsonb()}. */
+  default String getPgJsonb(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /** Returns the value of a non-{@code NULL} column with type {@link Type#pgJsonb()}. */
+  default String getPgJsonb(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
@@ -238,13 +248,27 @@ public interface StructReader {
   /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. */
   List<String> getStringList(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. */
+  /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.json())}. */
   default List<String> getJsonList(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
   };
 
-  /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. */
+  /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.json())}. */
   default List<String> getJsonList(String columnName) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  };
+
+  /**
+   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.pgJsonb())}.
+   */
+  default List<String> getPgJsonbList(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  };
+
+  /**
+   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.pgJsonb())}.
+   */
+  default List<String> getPgJsonbList(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
   };
 

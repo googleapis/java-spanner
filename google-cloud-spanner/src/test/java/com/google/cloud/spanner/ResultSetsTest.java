@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
@@ -89,6 +90,7 @@ public class ResultSetsTest {
             Type.StructField.of("bigDecimalVal", Type.numeric()),
             Type.StructField.of("stringVal", Type.string()),
             Type.StructField.of("jsonVal", Type.json()),
+            Type.StructField.of("pgJsonbVal", Type.pgJsonb()),
             Type.StructField.of("byteVal", Type.bytes()),
             Type.StructField.of("timestamp", Type.timestamp()),
             Type.StructField.of("date", Type.date()),
@@ -100,7 +102,8 @@ public class ResultSetsTest {
             Type.StructField.of("timestampArray", Type.array(Type.timestamp())),
             Type.StructField.of("dateArray", Type.array(Type.date())),
             Type.StructField.of("stringArray", Type.array(Type.string())),
-            Type.StructField.of("jsonArray", Type.array(Type.json())));
+            Type.StructField.of("jsonArray", Type.array(Type.json())),
+            Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())));
     Struct struct1 =
         Struct.newBuilder()
             .set("f1")
@@ -117,6 +120,8 @@ public class ResultSetsTest {
             .to(stringVal)
             .set("jsonVal")
             .to(Value.json(jsonVal))
+            .set("pgJsonbVal")
+            .to(Value.pgJsonb(jsonVal))
             .set("byteVal")
             .to(Value.bytes(ByteArray.copyFrom(byteVal)))
             .set("timestamp")
@@ -141,6 +146,8 @@ public class ResultSetsTest {
             .to(Value.stringArray(Arrays.asList(stringArray)))
             .set("jsonArray")
             .to(Value.jsonArray(Arrays.asList(jsonArray)))
+            .set("pgJsonbArray")
+            .to(Value.pgJsonbArray(Arrays.asList(jsonArray)))
             .build();
     Struct struct2 =
         Struct.newBuilder()
@@ -158,6 +165,8 @@ public class ResultSetsTest {
             .to(stringVal)
             .set("jsonVal")
             .to(Value.json(jsonVal))
+            .set("pgJsonbVal")
+            .to(Value.pgJsonb(jsonVal))
             .set("byteVal")
             .to(Value.bytes(ByteArray.copyFrom(byteVal)))
             .set("timestamp")
@@ -182,10 +191,12 @@ public class ResultSetsTest {
             .to(Value.stringArray(Arrays.asList(stringArray)))
             .set("jsonArray")
             .to(Value.jsonArray(Arrays.asList(jsonArray)))
+            .set("pgJsonbArray")
+            .to(Value.pgJsonbArray(Arrays.asList(jsonArray)))
             .build();
     ResultSet rs = ResultSets.forRows(type, Arrays.asList(struct1, struct2));
 
-    IllegalStateException e = assertThrows(IllegalStateException.class, () -> rs.getType());
+    IllegalStateException e = assertThrows(IllegalStateException.class, rs::getType);
     assertThat(e.getMessage()).contains("Must be preceded by a next() call");
 
     int columnIndex = 0;
@@ -227,6 +238,12 @@ public class ResultSetsTest {
     assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.json(jsonVal));
     assertThat(rs.getJson("jsonVal")).isEqualTo(jsonVal);
     assertThat(rs.getValue("jsonVal")).isEqualTo(Value.json(jsonVal));
+
+    assertEquals(jsonVal, rs.getPgJsonb(columnIndex));
+    assertEquals(Value.pgJsonb(jsonVal), rs.getValue(columnIndex++));
+    assertEquals(jsonVal, rs.getPgJsonb("pgJsonbVal"));
+    assertEquals(Value.pgJsonb(jsonVal), rs.getValue("pgJsonbVal"));
+
     assertThat(rs.getBytes(columnIndex)).isEqualTo(ByteArray.copyFrom(byteVal));
     assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.bytes(ByteArray.copyFrom(byteVal)));
     assertThat(rs.getBytes("byteVal")).isEqualTo(ByteArray.copyFrom(byteVal));
@@ -285,8 +302,11 @@ public class ResultSetsTest {
     assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.stringArray(Arrays.asList(stringArray)));
     assertThat(rs.getStringList("stringArray")).isEqualTo(Arrays.asList(stringArray));
     assertThat(rs.getValue("stringArray")).isEqualTo(Value.stringArray(Arrays.asList(stringArray)));
-    assertThat(rs.getJsonList(columnIndex)).isEqualTo(Arrays.asList(jsonArray));
+    assertThat(rs.getJsonList(columnIndex++)).isEqualTo(Arrays.asList(jsonArray));
     assertThat(rs.getJsonList("jsonArray")).isEqualTo(Arrays.asList(jsonArray));
+
+    assertEquals(Arrays.asList(jsonArray), rs.getPgJsonbList(columnIndex));
+    assertEquals(Arrays.asList(jsonArray), rs.getPgJsonbList("pgJsonbArray"));
 
     assertThat(rs.next()).isTrue();
     assertThat(rs.getCurrentRowAsStruct()).isEqualTo(struct2);
@@ -296,7 +316,7 @@ public class ResultSetsTest {
     assertThat(rs.next()).isFalse();
 
     UnsupportedOperationException unsupported =
-        assertThrows(UnsupportedOperationException.class, () -> rs.getStats());
+        assertThrows(UnsupportedOperationException.class, rs::getStats);
     assertThat(unsupported.getMessage())
         .contains("ResultSetStats are available only for results returned from analyzeQuery");
   }

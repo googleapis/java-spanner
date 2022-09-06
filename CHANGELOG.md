@@ -1,5 +1,27 @@
 # Changelog
 
+## [6.29.1](https://github.com/googleapis/java-spanner/compare/v6.29.0...v6.29.1) (2022-09-02)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud ([e90575d](https://github.com/googleapis/java-spanner/commit/e90575dcb30782d6c8f15a5765b487faf4b66d58))
+
+## [6.29.0](https://github.com/googleapis/java-spanner/compare/v6.28.0...v6.29.0) (2022-08-29)
+
+
+### Features
+
+* add support for db roles list  ([#1916](https://github.com/googleapis/java-spanner/issues/1916)) ([8034c67](https://github.com/googleapis/java-spanner/commit/8034c67af6cfe24e96cc26b1cea51c3405ed98d6))
+* add support for PG JSONB data type ([#1964](https://github.com/googleapis/java-spanner/issues/1964)) ([d2b426f](https://github.com/googleapis/java-spanner/commit/d2b426fda2cd1463dfa0719dd80f8346cbef51c6))
+* Adds auto-generated CL for googleapis for jsonb ([#1983](https://github.com/googleapis/java-spanner/issues/1983)) ([23e57ff](https://github.com/googleapis/java-spanner/commit/23e57ffc627d0f688fa656887d82f8f1f99f3675))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-monitoring to v3.4.1 ([#1968](https://github.com/googleapis/java-spanner/issues/1968)) ([e93ab4c](https://github.com/googleapis/java-spanner/commit/e93ab4cc4031ee2300f4e73d7d3a8e41de1bc7ae))
+* update dependency com.google.cloud:google-cloud-trace to v2.3.1 ([#1967](https://github.com/googleapis/java-spanner/issues/1967)) ([6479d19](https://github.com/googleapis/java-spanner/commit/6479d19dcca2b3e3df43a2858f5dcaf85685c31f))
+
 ## [6.28.0](https://github.com/googleapis/java-spanner/compare/v6.27.0...v6.28.0) (2022-08-11)
 
 
