@@ -921,34 +921,35 @@ public class SpannerOptionsTest {
 
   @Test
   public void testDefaultNumChannelsWithGrpcGcpExtensionEnabled() {
-    SpannerOptions.Builder builder =
-        SpannerOptions.newBuilder().setProjectId("test-project").enableGrpcGcpExtension();
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setProjectId("test-project").enableGrpcGcpExtension().build();
 
-    SpannerOptions options = builder.build();
-    assertEquals(options.getNumChannels(), 8);
+    assertEquals(options.getNumChannels(), SpannerOptions.GRPC_GCP_ENABLED_DEFAULT_CHANNELS);
   }
 
   @Test
   public void testNumChannelsWithGrpcGcpExtensionEnabled() {
-    // Set number of channels before enabling grpc-gcp channel pool
+    // Set number of channels explicitly, before enabling gRPC-GCP channel pool in SpannerOptions
+    // builder.
     int numChannels = 5;
-    SpannerOptions.Builder builder1 =
+    SpannerOptions options1 =
         SpannerOptions.newBuilder()
             .setProjectId("test-project")
             .setNumChannels(numChannels)
-            .enableGrpcGcpExtension();
+            .enableGrpcGcpExtension()
+            .build();
 
-    SpannerOptions options1 = builder1.build();
     assertEquals(options1.getNumChannels(), numChannels);
 
-    // Set number of channels after enabling grpc-gcp channel pool
-    SpannerOptions.Builder builder2 =
+    // Set number of channels explicitly, after enabling gRPC-GCP channel pool in SpannerOptions
+    // builder.
+    SpannerOptions options2 =
         SpannerOptions.newBuilder()
             .setProjectId("test-project")
             .enableGrpcGcpExtension()
-            .setNumChannels(numChannels);
+            .setNumChannels(numChannels)
+            .build();
 
-    SpannerOptions options2 = builder2.build();
     assertEquals(options2.getNumChannels(), numChannels);
   }
 }

@@ -90,8 +90,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
           "https://www.googleapis.com/auth/spanner.admin",
           "https://www.googleapis.com/auth/spanner.data");
   private static final int MAX_CHANNELS = 256;
-  private static final int DEFAULT_NUM_CHANNELS = 4;
-  private static final int GRPC_GCP_ENABLED_DEFAULT_NUM_CHANNELS = 8;
+  private static final int DEFAULT_CHANNELS = 4;
+  @VisibleForTesting static final int GRPC_GCP_ENABLED_DEFAULT_CHANNELS = 8;
   private final TransportChannelProvider channelProvider;
 
   @SuppressWarnings("rawtypes")
@@ -682,7 +682,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     private GrpcInterceptorProvider interceptorProvider;
 
-    /** By default, we create 4 channels per {@link SpannerOptions} */
     private Integer numChannels;
 
     private String transportChannelExecutorThreadNameFormat = "Cloud-Spanner-TransportChannel-%d";
@@ -1145,9 +1144,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     public Builder enableGrpcGcpExtension(GcpManagedChannelOptions options) {
       this.grpcGcpExtensionEnabled = true;
       this.grpcGcpOptions = options;
-      // By default, set number of channels to 8 if grpc-gcp extension is enabled
+      // By default, set number of channels to GRPC_GCP_ENABLED_DEFAULT_CHANNELS if gRPC-GCP
+      // extension is enabled
       if (this.numChannels == null) {
-        this.numChannels = GRPC_GCP_ENABLED_DEFAULT_NUM_CHANNELS;
+        this.numChannels = GRPC_GCP_ENABLED_DEFAULT_CHANNELS;
       }
       return this;
     }
@@ -1184,8 +1184,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       }
       // Set the number of channels if not set
       if (this.numChannels == null) {
-        /** By default, we create 4 channels per {@link SpannerOptions} */
-        this.numChannels = DEFAULT_NUM_CHANNELS;
+        // By default, we create 4 channels per {@link SpannerOptions}
+        this.numChannels = DEFAULT_CHANNELS;
       }
 
       return new SpannerOptions(this);
