@@ -1184,7 +1184,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       }
       // Set the number of channels to DEFAULT_CHANNELS if not set
       if (this.numChannels == null) {
-        // By default, we create 4 channels per {@link SpannerOptions}
         this.numChannels = DEFAULT_CHANNELS;
       }
 
