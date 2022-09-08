@@ -1171,9 +1171,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
       }
-      // Set the number of channels if not set
+      // Set the number of channels to DEFAULT_CHANNELS if not set
       if (this.numChannels == null) {
-        // By default, we create 4 channels per {@link SpannerOptions}
         this.numChannels = DEFAULT_CHANNELS;
       }
 
