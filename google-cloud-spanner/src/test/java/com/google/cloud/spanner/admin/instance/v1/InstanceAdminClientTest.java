@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.admin.instance.v1;
 
-import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancesPagedResponse;
 
@@ -44,9 +43,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.Timestamp;
-import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
-import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
@@ -54,15 +51,12 @@ import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import com.google.spanner.admin.instance.v1.InstanceName;
-import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
-import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
 import com.google.spanner.admin.instance.v1.ProjectName;
 import com.google.spanner.admin.instance.v1.ReplicaInfo;
-import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import io.grpc.StatusRuntimeException;
 import java.io.IOException;
@@ -213,12 +207,7 @@ public class InstanceAdminClientTest {
             .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .addAllReplicas(new ArrayList<ReplicaInfo>())
-            .addAllOptionalReplicas(new ArrayList<ReplicaInfo>())
-            .setBaseConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
-            .putAllLabels(new HashMap<String, String>())
-            .setEtag("etag3123477")
             .addAllLeaderOptions(new ArrayList<String>())
-            .setReconciling(true)
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
@@ -259,12 +248,7 @@ public class InstanceAdminClientTest {
             .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
             .setDisplayName("displayName1714148973")
             .addAllReplicas(new ArrayList<ReplicaInfo>())
-            .addAllOptionalReplicas(new ArrayList<ReplicaInfo>())
-            .setBaseConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
-            .putAllLabels(new HashMap<String, String>())
-            .setEtag("etag3123477")
             .addAllLeaderOptions(new ArrayList<String>())
-            .setReconciling(true)
             .build();
     mockInstanceAdmin.addResponse(expectedResponse);
 
@@ -292,351 +276,6 @@ public class InstanceAdminClientTest {
     try {
       String name = "name3373707";
       client.getInstanceConfig(name);
-      Assert.fail("No exception raised");
-    } catch (InvalidArgumentException e) {
-      // Expected exception.
-    }
-  }
-
-  @Test
-  public void createInstanceConfigTest() throws Exception {
-    InstanceConfig expectedResponse =
-        InstanceConfig.newBuilder()
-            .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
-            .setDisplayName("displayName1714148973")
-            .addAllReplicas(new ArrayList<ReplicaInfo>())
-            .addAllOptionalReplicas(new ArrayList<ReplicaInfo>())
-            .setBaseConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
-            .putAllLabels(new HashMap<String, String>())
-            .setEtag("etag3123477")
-            .addAllLeaderOptions(new ArrayList<String>())
-            .setReconciling(true)
-            .build();
-    Operation resultOperation =
-        Operation.newBuilder()
-            .setName("createInstanceConfigTest")
-            .setDone(true)
-            .setResponse(Any.pack(expectedResponse))
-            .build();
-    mockInstanceAdmin.addResponse(resultOperation);
-
-    ProjectName parent = ProjectName.of("[PROJECT]");
-    InstanceConfig instanceConfig = InstanceConfig.newBuilder().build();
-    String instanceConfigId = "instanceConfigId1750947762";
-
-    InstanceConfig actualResponse =
-        client.createInstanceConfigAsync(parent, instanceConfig, instanceConfigId).get();
-    Assert.assertEquals(expectedResponse, actualResponse);
-
-    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
-    Assert.assertEquals(1, actualRequests.size());
-    CreateInstanceConfigRequest actualRequest =
-        ((CreateInstanceConfigRequest) actualRequests.get(0));
-
-    Assert.assertEquals(parent.toString(), actualRequest.getParent());
-    Assert.assertEquals(instanceConfig, actualRequest.getInstanceConfig());
-    Assert.assertEquals(instanceConfigId, actualRequest.getInstanceConfigId());
-    Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
-  }
-
-  @Test
-  public void createInstanceConfigExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockInstanceAdmin.addException(exception);
-
-    try {
-      ProjectName parent = ProjectName.of("[PROJECT]");
-      InstanceConfig instanceConfig = InstanceConfig.newBuilder().build();
-      String instanceConfigId = "instanceConfigId1750947762";
-      client.createInstanceConfigAsync(parent, instanceConfig, instanceConfigId).get();
-      Assert.fail("No exception raised");
-    } catch (ExecutionException e) {
-      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
-      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
-      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
-    }
-  }
-
-  @Test
-  public void createInstanceConfigTest2() throws Exception {
-    InstanceConfig expectedResponse =
-        InstanceConfig.newBuilder()
-            .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
-            .setDisplayName("displayName1714148973")
-            .addAllReplicas(new ArrayList<ReplicaInfo>())
-            .addAllOptionalReplicas(new ArrayList<ReplicaInfo>())
-            .setBaseConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
-            .putAllLabels(new HashMap<String, String>())
-            .setEtag("etag3123477")
-            .addAllLeaderOptions(new ArrayList<String>())
-            .setReconciling(true)
-            .build();
-    Operation resultOperation =
-        Operation.newBuilder()
-            .setName("createInstanceConfigTest")
-            .setDone(true)
-            .setResponse(Any.pack(expectedResponse))
-            .build();
-    mockInstanceAdmin.addResponse(resultOperation);
-
-    String parent = "parent-995424086";
-    InstanceConfig instanceConfig = InstanceConfig.newBuilder().build();
-    String instanceConfigId = "instanceConfigId1750947762";
-
-    InstanceConfig actualResponse =
-        client.createInstanceConfigAsync(parent, instanceConfig, instanceConfigId).get();
-    Assert.assertEquals(expectedResponse, actualResponse);
-
-    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
-    Assert.assertEquals(1, actualRequests.size());
-    CreateInstanceConfigRequest actualRequest =
-        ((CreateInstanceConfigRequest) actualRequests.get(0));
-
-    Assert.assertEquals(parent, actualRequest.getParent());
-    Assert.assertEquals(instanceConfig, actualRequest.getInstanceConfig());
-    Assert.assertEquals(instanceConfigId, actualRequest.getInstanceConfigId());
-    Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
-  }
-
-  @Test
-  public void createInstanceConfigExceptionTest2() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockInstanceAdmin.addException(exception);
-
-    try {
-      String parent = "parent-995424086";
-      InstanceConfig instanceConfig = InstanceConfig.newBuilder().build();
-      String instanceConfigId = "instanceConfigId1750947762";
-      client.createInstanceConfigAsync(parent, instanceConfig, instanceConfigId).get();
-      Assert.fail("No exception raised");
-    } catch (ExecutionException e) {
-      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
-      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
-      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
-    }
-  }
-
-  @Test
-  public void updateInstanceConfigTest() throws Exception {
-    InstanceConfig expectedResponse =
-        InstanceConfig.newBuilder()
-            .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
-            .setDisplayName("displayName1714148973")
-            .addAllReplicas(new ArrayList<ReplicaInfo>())
-            .addAllOptionalReplicas(new ArrayList<ReplicaInfo>())
-            .setBaseConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
-            .putAllLabels(new HashMap<String, String>())
-            .setEtag("etag3123477")
-            .addAllLeaderOptions(new ArrayList<String>())
-            .setReconciling(true)
-            .build();
-    Operation resultOperation =
-        Operation.newBuilder()
-            .setName("updateInstanceConfigTest")
-            .setDone(true)
-            .setResponse(Any.pack(expectedResponse))
-            .build();
-    mockInstanceAdmin.addResponse(resultOperation);
-
-    InstanceConfig instanceConfig = InstanceConfig.newBuilder().build();
-    FieldMask updateMask = FieldMask.newBuilder().build();
-
-    InstanceConfig actualResponse =
-        client.updateInstanceConfigAsync(instanceConfig, updateMask).get();
-    Assert.assertEquals(expectedResponse, actualResponse);
-
-    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
-    Assert.assertEquals(1, actualRequests.size());
-    UpdateInstanceConfigRequest actualRequest =
-        ((UpdateInstanceConfigRequest) actualRequests.get(0));
-
-    Assert.assertEquals(instanceConfig, actualRequest.getInstanceConfig());
-    Assert.assertEquals(updateMask, actualRequest.getUpdateMask());
-    Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
-  }
-
-  @Test
-  public void updateInstanceConfigExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockInstanceAdmin.addException(exception);
-
-    try {
-      InstanceConfig instanceConfig = InstanceConfig.newBuilder().build();
-      FieldMask updateMask = FieldMask.newBuilder().build();
-      client.updateInstanceConfigAsync(instanceConfig, updateMask).get();
-      Assert.fail("No exception raised");
-    } catch (ExecutionException e) {
-      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
-      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
-      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
-    }
-  }
-
-  @Test
-  public void deleteInstanceConfigTest() throws Exception {
-    Empty expectedResponse = Empty.newBuilder().build();
-    mockInstanceAdmin.addResponse(expectedResponse);
-
-    InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
-
-    client.deleteInstanceConfig(name);
-
-    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
-    Assert.assertEquals(1, actualRequests.size());
-    DeleteInstanceConfigRequest actualRequest =
-        ((DeleteInstanceConfigRequest) actualRequests.get(0));
-
-    Assert.assertEquals(name.toString(), actualRequest.getName());
-    Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
-  }
-
-  @Test
-  public void deleteInstanceConfigExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockInstanceAdmin.addException(exception);
-
-    try {
-      InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
-      client.deleteInstanceConfig(name);
-      Assert.fail("No exception raised");
-    } catch (InvalidArgumentException e) {
-      // Expected exception.
-    }
-  }
-
-  @Test
-  public void deleteInstanceConfigTest2() throws Exception {
-    Empty expectedResponse = Empty.newBuilder().build();
-    mockInstanceAdmin.addResponse(expectedResponse);
-
-    String name = "name3373707";
-
-    client.deleteInstanceConfig(name);
-
-    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
-    Assert.assertEquals(1, actualRequests.size());
-    DeleteInstanceConfigRequest actualRequest =
-        ((DeleteInstanceConfigRequest) actualRequests.get(0));
-
-    Assert.assertEquals(name, actualRequest.getName());
-    Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
-  }
-
-  @Test
-  public void deleteInstanceConfigExceptionTest2() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockInstanceAdmin.addException(exception);
-
-    try {
-      String name = "name3373707";
-      client.deleteInstanceConfig(name);
-      Assert.fail("No exception raised");
-    } catch (InvalidArgumentException e) {
-      // Expected exception.
-    }
-  }
-
-  @Test
-  public void listInstanceConfigOperationsTest() throws Exception {
-    Operation responsesElement = Operation.newBuilder().build();
-    ListInstanceConfigOperationsResponse expectedResponse =
-        ListInstanceConfigOperationsResponse.newBuilder()
-            .setNextPageToken("")
-            .addAllOperations(Arrays.asList(responsesElement))
-            .build();
-    mockInstanceAdmin.addResponse(expectedResponse);
-
-    ProjectName parent = ProjectName.of("[PROJECT]");
-
-    ListInstanceConfigOperationsPagedResponse pagedListResponse =
-        client.listInstanceConfigOperations(parent);
-
-    List<Operation> resources = Lists.newArrayList(pagedListResponse.iterateAll());
-
-    Assert.assertEquals(1, resources.size());
-    Assert.assertEquals(expectedResponse.getOperationsList().get(0), resources.get(0));
-
-    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
-    Assert.assertEquals(1, actualRequests.size());
-    ListInstanceConfigOperationsRequest actualRequest =
-        ((ListInstanceConfigOperationsRequest) actualRequests.get(0));
-
-    Assert.assertEquals(parent.toString(), actualRequest.getParent());
-    Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
-  }
-
-  @Test
-  public void listInstanceConfigOperationsExceptionTest() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockInstanceAdmin.addException(exception);
-
-    try {
-      ProjectName parent = ProjectName.of("[PROJECT]");
-      client.listInstanceConfigOperations(parent);
-      Assert.fail("No exception raised");
-    } catch (InvalidArgumentException e) {
-      // Expected exception.
-    }
-  }
-
-  @Test
-  public void listInstanceConfigOperationsTest2() throws Exception {
-    Operation responsesElement = Operation.newBuilder().build();
-    ListInstanceConfigOperationsResponse expectedResponse =
-        ListInstanceConfigOperationsResponse.newBuilder()
-            .setNextPageToken("")
-            .addAllOperations(Arrays.asList(responsesElement))
-            .build();
-    mockInstanceAdmin.addResponse(expectedResponse);
-
-    String parent = "parent-995424086";
-
-    ListInstanceConfigOperationsPagedResponse pagedListResponse =
-        client.listInstanceConfigOperations(parent);
-
-    List<Operation> resources = Lists.newArrayList(pagedListResponse.iterateAll());
-
-    Assert.assertEquals(1, resources.size());
-    Assert.assertEquals(expectedResponse.getOperationsList().get(0), resources.get(0));
-
-    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
-    Assert.assertEquals(1, actualRequests.size());
-    ListInstanceConfigOperationsRequest actualRequest =
-        ((ListInstanceConfigOperationsRequest) actualRequests.get(0));
-
-    Assert.assertEquals(parent, actualRequest.getParent());
-    Assert.assertTrue(
-        channelProvider.isHeaderSent(
-            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
-            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
-  }
-
-  @Test
-  public void listInstanceConfigOperationsExceptionTest2() throws Exception {
-    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
-    mockInstanceAdmin.addException(exception);
-
-    try {
-      String parent = "parent-995424086";
-      client.listInstanceConfigOperations(parent);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception.
