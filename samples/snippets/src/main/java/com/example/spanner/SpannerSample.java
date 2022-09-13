@@ -282,7 +282,9 @@ public class SpannerSample {
                     + "  SingerId   INT64 NOT NULL,"
                     + "  FirstName  STRING(1024),"
                     + "  LastName   STRING(1024),"
-                    + "  SingerInfo BYTES(MAX)"
+                    + "  SingerInfo BYTES(MAX),"
+                    + "  FullName STRING(2048) AS "
+                    + "  (ARRAY_TO_STRING([FirstName, LastName], \" \")) STORED"
                     + ") PRIMARY KEY (SingerId)",
                 "CREATE TABLE Albums ("
                     + "  SingerId     INT64 NOT NULL,"
@@ -1131,6 +1133,83 @@ public class SpannerSample {
         });
   }
   // [END spanner_dml_getting_started_insert]
+
+  // [START spanner_insert_dml_returning]
+  static void insertUsingDmlReturning(DatabaseClient dbClient) {
+    // Insert records into the SINGERS table and returns the
+    // generated column FullName of the inserted records using
+    // ‘THEN RETU&N FullName’.
+    // It is also possible to return all columns of all the
+    // inserted records by using ‘THEN RETURN *’.
+    dbClient
+        .readWriteTransaction()
+        .run(transaction -> {
+          String sql =
+              "INSERT INTO Singers (SingerId, FirstName, LastName) VALUES "
+                  + "(12, 'Melissa', 'Garcia'), "
+                  + "(13, 'Russell', 'Morales'), "
+                  + "(14, 'Jacqueline', 'Long'), "
+                  + "(15, 'Dylan', 'Shaw') THEN RETURN FullName";
+          try (ResultSet resultSet = transaction.executeQuery(Statement.of(sql))) {
+            while (resultSet.next()) {
+              System.out.println(resultSet.getString(0));
+            }
+            System.out.printf("Inserted row(s) count: %d\n", resultSet.getStats().getRowCountExact());
+          }
+          return null;
+        });
+  }
+  // [END spanner_insert_dml_returning]
+
+  // [START spanner_update_dml_returning]
+  static void updateUsingDmlReturning(DatabaseClient dbClient) {
+    // Update MarketingBudget column for records satisfying
+    // a particular condition and returns the modified
+    // MarketingBudget column of the updated records using
+    // ‘THEN RETU&N MarketingBudget’.
+    // It is also possible to return all columns of all the
+    // updated records by using ‘THEN RETURN *’.
+    dbClient
+        .readWriteTransaction()
+        .run(transaction -> {
+          String sql =
+              "UPDATE Albums "
+                  + "SET MarketingBudget = MarketingBudget * 2 "
+                  + "WHERE SingerId = 1 and AlbumId = 1 "
+                  + "THEN RETURN MarketingBudget";
+          try (ResultSet resultSet = transaction.executeQuery(Statement.of(sql))) {
+            while (resultSet.next()) {
+              System.out.printf("%d\n", resultSet.getLong(0));
+            }
+            System.out.printf("Updated row(s) count: %d\n", resultSet.getStats().getRowCountExact());
+          }
+          return null;
+        });
+  }
+  // [END spanner_update_dml_returning]
+
+  // [START spanner_delete_dml_returning]
+  static void deleteUsingDmlReturning(DatabaseClient dbClient) {
+    // Delete records from SINGERS table satisfying a
+    // particular condition and returns the SingerId
+    // and FullName column of the deleted records using
+    // ‘THEN RETURN SingerId, FullName’.
+    // It is also possible to return all columns of all the
+    // deleted records by using ‘THEN RETURN *’.
+    dbClient
+        .readWriteTransaction()
+        .run(transaction -> {
+          String sql = "DELETE FROM Singers WHERE FirstName = 'Alice' THEN RETURN SingerId, FullName";
+          try (ResultSet resultSet = transaction.executeQuery(Statement.of(sql))) {
+            while (resultSet.next()) {
+              System.out.printf("%d %s\n", resultSet.getLong(0), resultSet.getString(1));
+            }
+            System.out.printf("Deleted row(s) count: %d\n", resultSet.getStats().getRowCountExact());
+          }
+          return null;
+        });
+  }
+  // [END spanner_delete_dml_returning]
 
   // [START spanner_query_with_parameter]
   static void queryWithParameter(DatabaseClient dbClient) {
