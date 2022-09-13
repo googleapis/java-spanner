@@ -36,7 +36,9 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value.KindCase;
 import com.google.spanner.v1.PartialResultSet;
@@ -385,6 +387,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           case JSON:
             builder.set(fieldName).to(Value.json((String) value));
             break;
+          case PROTO:
+            builder.set(fieldName).to(Value.protoMessage((byte[]) value));
           case PG_JSONB:
             builder.set(fieldName).to(Value.pgJsonb((String) value));
             break;
@@ -504,6 +508,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return proto.getStringValue();
         case BYTES:
+        case PROTO:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return ByteArray.fromBase64(proto.getStringValue());
         case TIMESTAMP:
@@ -653,6 +658,17 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     @Override
     public boolean isNull(int columnIndex) {
       return rowData.get(columnIndex) == null;
+    }
+
+    @Override
+    public byte[] getProtoMessageInternal(int columnIndex) {
+      return (byte[]) rowData.get(columnIndex);
+    }
+
+    @Override
+    public void getProtoMessageInternal(int columnIndex, AbstractMessage m)
+        throws InvalidProtocolBufferException {
+      m.toBuilder().mergeFrom(getProtoMessage(columnIndex));
     }
 
     @Override
@@ -1366,6 +1382,17 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @Override
   protected String getStringInternal(int columnIndex) {
     return currRow().getStringInternal(columnIndex);
+  }
+
+  @Override
+  protected byte[] getProtoMessageInternal(int columnIndex) {
+    return currRow().getProtoMessageInternal(columnIndex);
+  }
+
+  @Override
+  protected void getProtoMessageInternal(int columnIndex, AbstractMessage m)
+      throws InvalidProtocolBufferException {
+    currRow().getProtoMessageInternal(columnIndex, m);
   }
 
   @Override

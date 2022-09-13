@@ -28,6 +28,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -215,6 +217,17 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     @Override
     protected Date getDateInternal(int columnIndex) {
       return values.get(columnIndex).getDate();
+    }
+
+    @Override
+    protected byte[] getProtoMessageInternal(int columnIndex) {
+      return values.get(columnIndex).getProtoMessage();
+    }
+
+    @Override
+    protected void getProtoMessageInternal(int columnIndex, AbstractMessage m)
+        throws InvalidProtocolBufferException {
+      values.get(columnIndex).getProtoMessage(m);
     }
 
     @Override

@@ -29,6 +29,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
@@ -291,6 +293,17 @@ public final class ResultSets {
     @Override
     public Date getDate(String columnName) {
       return getCurrentRowAsStruct().getDate(columnName);
+    }
+
+    @Override
+    public byte[] getProtoMessage(int columnIndex) {
+      return getCurrentRowAsStruct().getProtoMessage(columnIndex);
+    }
+
+    @Override
+    public void getProtoMessage(int columnIndex, AbstractMessage m)
+        throws InvalidProtocolBufferException {
+      getCurrentRowAsStruct().getProtoMessage(columnIndex, m);
     }
 
     @Override
