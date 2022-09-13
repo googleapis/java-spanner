@@ -22,6 +22,8 @@ import com.google.cloud.Timestamp;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -380,6 +382,28 @@ public class ForwardingStructReader implements StructReader {
   public List<Struct> getStructList(String columnName) {
     checkValidState();
     return delegate.get().getStructList(columnName);
+  }
+
+  @Override
+  public byte[] getProtoMessage(int columnIndex) {
+    return delegate.get().getProtoMessage(columnIndex);
+  }
+
+  @Override
+  public byte[] getProtoMessage(String columnName) {
+    return delegate.get().getProtoMessage(columnName);
+  }
+
+  @Override
+  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m)
+      throws InvalidProtocolBufferException {
+    return delegate.get().getProtoMessage(columnIndex, m);
+  }
+
+  @Override
+  public <T extends AbstractMessage> T getProtoMessage(String columnName, T m)
+      throws InvalidProtocolBufferException {
+    return delegate.get().getProtoMessage(columnName, m);
   }
 
   @Override

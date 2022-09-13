@@ -27,6 +27,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.common.base.Throwables;
+import com.google.protobuf.AbstractMessage;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -92,6 +93,16 @@ public class AbstractStructReaderTypesTest {
 
     @Override
     protected Date getDateInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected byte[] getProtoMessageInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m) {
       return null;
     }
 

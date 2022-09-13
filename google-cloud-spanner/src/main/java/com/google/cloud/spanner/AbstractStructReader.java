@@ -21,6 +21,8 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -57,6 +59,11 @@ public abstract class AbstractStructReader implements StructReader {
   protected abstract Timestamp getTimestampInternal(int columnIndex);
 
   protected abstract Date getDateInternal(int columnIndex);
+
+  protected abstract byte[] getProtoMessageInternal(int columnIndex);
+
+  protected abstract <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m)
+      throws InvalidProtocolBufferException;
 
   protected Value getValueInternal(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
@@ -247,6 +254,34 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.date(), columnName);
     return getDateInternal(columnIndex);
+  }
+
+  @Override
+  public byte[] getProtoMessage(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.proto(), columnIndex);
+    return getProtoMessageInternal(columnIndex);
+  }
+
+  @Override
+  public byte[] getProtoMessage(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.proto(), columnName);
+    return getProtoMessageInternal(columnIndex);
+  }
+
+  @Override
+  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m)
+      throws InvalidProtocolBufferException {
+    checkNonNullOfType(columnIndex, Type.proto(), columnIndex);
+    return getProtoMessageInternal(columnIndex, m);
+  }
+
+  @Override
+  public <T extends AbstractMessage> T getProtoMessage(String columnName, T m)
+      throws InvalidProtocolBufferException {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.proto(), columnName);
+    return getProtoMessageInternal(columnIndex, m);
   }
 
   @Override

@@ -24,8 +24,12 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.io.BaseEncoding;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
+import com.google.protobuf.ProtocolMessageEnum;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -217,8 +221,16 @@ public abstract class Value implements Serializable {
     return new PgJsonbImpl(v == null, v);
   }
 
+  public static Value protoMessage(@Nullable AbstractMessage v) {
+    return new ProtoMessageImpl(v == null, v);
+  }
+
+  public static Value protoMessage(@Nullable byte[] v) {
+    return new ProtoMessageImpl(v == null, v);
+  }
+
   /**
-   * Returns a {@code BYTES} value.
+   * Returns a {@code BYTES} value. Returns a {@code BYTES} value.
    *
    * @param v the value, which may be null
    */
@@ -541,6 +553,19 @@ public abstract class Value implements Serializable {
     throw new UnsupportedOperationException("Not implemented");
   }
 
+  byte[] getProtoMessage() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  public <T extends AbstractMessage> T getProtoMessage(T m)
+      throws InvalidProtocolBufferException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  public ProtocolMessageEnum getProtoEnum() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
   /**
    * Returns the value of a {@code BYTES}-typed instance.
    *
@@ -849,6 +874,17 @@ public abstract class Value implements Serializable {
     @Override
     public String getPgJsonb() {
       throw defaultGetter(Type.pgJsonb());
+    }
+
+    @Override
+    byte[] getProtoMessage() {
+      throw defaultGetter(Type.proto());
+    }
+
+    @Override
+    public <T extends AbstractMessage> T getProtoMessage(T m)
+        throws InvalidProtocolBufferException {
+      throw defaultGetter(Type.proto());
     }
 
     @Override
@@ -1313,6 +1349,38 @@ public abstract class Value implements Serializable {
     @Override
     com.google.protobuf.Value valueToProto() {
       return com.google.protobuf.Value.newBuilder().setStringValue(value.toBase64()).build();
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value.toString());
+    }
+  }
+
+  private static class ProtoMessageImpl extends AbstractObjectValue<ProtoMessageWrapper> {
+    private ProtoMessageImpl(boolean isNull, AbstractMessage value) {
+      super(isNull, Type.proto(), new ProtoMessageWrapper(value));
+    }
+
+    private ProtoMessageImpl(boolean isNull, byte[] serializedProtoArray) {
+      super(isNull, Type.proto(), new ProtoMessageWrapper(serializedProtoArray));
+    }
+
+    @Override
+    byte[] getProtoMessage() {
+      return value.serializedMessage;
+    }
+
+    @Override
+    public <T extends AbstractMessage> T getProtoMessage(T m)
+        throws InvalidProtocolBufferException {
+      return (T) m.toBuilder().mergeFrom(value.serializedMessage);
+    }
+
+    @Override
+    com.google.protobuf.Value valueToProto() {
+      String base64EncodedString = BaseEncoding.base16().encode(value.serializedMessage);
+      return com.google.protobuf.Value.newBuilder().setStringValue(base64EncodedString).build();
     }
 
     @Override
@@ -1946,6 +2014,8 @@ public abstract class Value implements Serializable {
           return Value.date(value.getDate(fieldIndex));
         case TIMESTAMP:
           return Value.timestamp(value.getTimestamp(fieldIndex));
+        case PROTO:
+          return Value.protoMessage(value.getProtoMessage(fieldIndex));
         case STRUCT:
           return Value.struct(value.getStruct(fieldIndex));
         case ARRAY:

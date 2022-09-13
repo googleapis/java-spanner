@@ -19,6 +19,8 @@ package com.google.cloud.spanner;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -293,6 +295,16 @@ public interface StructReader {
 
   /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.date())}. */
   List<Date> getDateList(String columnName);
+
+  byte[] getProtoMessage(int columnIndex);
+
+  byte[] getProtoMessage(String columnName);
+
+  <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m)
+      throws InvalidProtocolBufferException;
+
+  <T extends AbstractMessage> T getProtoMessage(String columnName, T m)
+      throws InvalidProtocolBufferException;
 
   /**
    * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.struct(...))}.

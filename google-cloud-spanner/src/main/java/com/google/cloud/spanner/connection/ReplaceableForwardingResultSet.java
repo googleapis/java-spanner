@@ -27,6 +27,8 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
 import com.google.common.base.Preconditions;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
@@ -434,5 +436,31 @@ class ReplaceableForwardingResultSet implements ResultSet {
   public List<Struct> getStructList(String columnName) {
     checkClosed();
     return delegate.getStructList(columnName);
+  }
+
+  @Override
+  public byte[] getProtoMessage(int columnIndex) {
+    checkClosed();
+    return delegate.getProtoMessage(columnIndex);
+  }
+
+  @Override
+  public byte[] getProtoMessage(String columnName) {
+    checkClosed();
+    return delegate.getProtoMessage(columnName);
+  }
+
+  @Override
+  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m)
+      throws InvalidProtocolBufferException {
+    checkClosed();
+    return delegate.getProtoMessage(columnIndex, m);
+  }
+
+  @Override
+  public <T extends AbstractMessage> T getProtoMessage(String columnName, T m)
+      throws InvalidProtocolBufferException {
+    checkClosed();
+    return delegate.getProtoMessage(columnName, m);
   }
 }

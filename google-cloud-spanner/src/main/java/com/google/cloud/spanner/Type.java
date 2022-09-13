@@ -56,6 +56,8 @@ public final class Type implements Serializable {
   private static final Type TYPE_BYTES = new Type(Code.BYTES, null, null);
   private static final Type TYPE_TIMESTAMP = new Type(Code.TIMESTAMP, null, null);
   private static final Type TYPE_DATE = new Type(Code.DATE, null, null);
+  private static final Type TYPE_PROTO = new Type(Code.PROTO, null, null);
+  private static final Type TYPE_PROTO_ENUM = new Type(Code.PROTO_ENUM, null, null);
   private static final Type TYPE_ARRAY_BOOL = new Type(Code.ARRAY, TYPE_BOOL, null);
   private static final Type TYPE_ARRAY_INT64 = new Type(Code.ARRAY, TYPE_INT64, null);
   private static final Type TYPE_ARRAY_FLOAT64 = new Type(Code.ARRAY, TYPE_FLOAT64, null);
@@ -64,6 +66,8 @@ public final class Type implements Serializable {
   private static final Type TYPE_ARRAY_STRING = new Type(Code.ARRAY, TYPE_STRING, null);
   private static final Type TYPE_ARRAY_JSON = new Type(Code.ARRAY, TYPE_JSON, null);
   private static final Type TYPE_ARRAY_PG_JSONB = new Type(Code.ARRAY, TYPE_PG_JSONB, null);
+  private static final Type TYPE_ARRAY_PROTO = new Type(Code.ARRAY, TYPE_PROTO, null);
+  private static final Type TYPE_ARRAY_PROTO_ENUM = new Type(Code.ARRAY, TYPE_PROTO_ENUM, null);
   private static final Type TYPE_ARRAY_BYTES = new Type(Code.ARRAY, TYPE_BYTES, null);
   private static final Type TYPE_ARRAY_TIMESTAMP = new Type(Code.ARRAY, TYPE_TIMESTAMP, null);
   private static final Type TYPE_ARRAY_DATE = new Type(Code.ARRAY, TYPE_DATE, null);
@@ -122,6 +126,14 @@ public final class Type implements Serializable {
     return TYPE_PG_JSONB;
   }
 
+  public static Type proto() {
+    return TYPE_PROTO;
+  }
+
+  public static Type protoEnum() {
+    return TYPE_PROTO_ENUM;
+  }
+
   /** Returns the descriptor for the {@code BYTES} type: a variable-length byte string. */
   public static Type bytes() {
     return TYPE_BYTES;
@@ -169,6 +181,10 @@ public final class Type implements Serializable {
         return TYPE_ARRAY_TIMESTAMP;
       case DATE:
         return TYPE_ARRAY_DATE;
+      case PROTO:
+        return TYPE_ARRAY_PROTO;
+      case PROTO_ENUM:
+        return TYPE_ARRAY_PROTO_ENUM;
       default:
         return new Type(Code.ARRAY, elementType, null);
     }
@@ -219,6 +235,8 @@ public final class Type implements Serializable {
     STRING(TypeCode.STRING),
     JSON(TypeCode.JSON),
     PG_JSONB(TypeCode.JSON, TypeAnnotationCode.PG_JSONB),
+    PROTO(TypeCode.PROTO),
+    PROTO_ENUM(TypeCode.ENUM),
     BYTES(TypeCode.BYTES),
     TIMESTAMP(TypeCode.TIMESTAMP),
     DATE(TypeCode.DATE),
@@ -464,6 +482,10 @@ public final class Type implements Serializable {
         return timestamp();
       case DATE:
         return date();
+      case PROTO:
+        return proto();
+      case PROTO_ENUM:
+        return protoEnum();
       case ARRAY:
         checkArgument(
             proto.hasArrayElementType(),
