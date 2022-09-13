@@ -597,7 +597,8 @@ public class PgSpannerSample {
             while (resultSet.next()) {
               System.out.println(resultSet.getString(0));
             }
-            System.out.printf("Inserted row(s) count: %d\n", resultSet.getStats().getRowCountExact());
+            System.out.printf(
+                "Inserted row(s) count: %d\n", resultSet.getStats().getRowCountExact());
           }
           return null;
         });
@@ -624,7 +625,8 @@ public class PgSpannerSample {
             while (resultSet.next()) {
               System.out.printf("%d\n", resultSet.getLong(0));
             }
-            System.out.printf("Updated row(s) count: %d\n", resultSet.getStats().getRowCountExact());
+            System.out.printf(
+                "Updated row(s) count: %d\n", resultSet.getStats().getRowCountExact());
           }
           return null;
         });
@@ -647,7 +649,8 @@ public class PgSpannerSample {
             while (resultSet.next()) {
               System.out.printf("%d %s\n", resultSet.getLong(0), resultSet.getString(1));
             }
-            System.out.printf("Deleted row(s) count: %d\n", resultSet.getStats().getRowCountExact());
+            System.out.printf(
+                "Deleted row(s) count: %d\n", resultSet.getStats().getRowCountExact());
           }
           return null;
         });

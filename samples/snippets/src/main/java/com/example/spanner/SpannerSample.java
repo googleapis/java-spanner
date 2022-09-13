@@ -1154,7 +1154,8 @@ public class SpannerSample {
             while (resultSet.next()) {
               System.out.println(resultSet.getString(0));
             }
-            System.out.printf("Inserted row(s) count: %d\n", resultSet.getStats().getRowCountExact());
+            System.out.printf(
+                "Inserted row(s) count: %d\n", resultSet.getStats().getRowCountExact());
           }
           return null;
         });
@@ -1181,7 +1182,8 @@ public class SpannerSample {
             while (resultSet.next()) {
               System.out.printf("%d\n", resultSet.getLong(0));
             }
-            System.out.printf("Updated row(s) count: %d\n", resultSet.getStats().getRowCountExact());
+            System.out.printf(
+                "Updated row(s) count: %d\n", resultSet.getStats().getRowCountExact());
           }
           return null;
         });
@@ -1199,12 +1201,14 @@ public class SpannerSample {
     dbClient
         .readWriteTransaction()
         .run(transaction -> {
-          String sql = "DELETE FROM Singers WHERE FirstName = 'Alice' THEN RETURN SingerId, FullName";
+          String sql =
+              "DELETE FROM Singers WHERE FirstName = 'Alice' THEN RETURN SingerId, FullName";
           try (ResultSet resultSet = transaction.executeQuery(Statement.of(sql))) {
             while (resultSet.next()) {
               System.out.printf("%d %s\n", resultSet.getLong(0), resultSet.getString(1));
             }
-            System.out.printf("Deleted row(s) count: %d\n", resultSet.getStats().getRowCountExact());
+            System.out.printf(
+                "Deleted row(s) count: %d\n", resultSet.getStats().getRowCountExact());
           }
           return null;
         });
