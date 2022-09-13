@@ -1138,7 +1138,7 @@ public class SpannerSample {
   static void insertUsingDmlReturning(DatabaseClient dbClient) {
     // Insert records into the SINGERS table and returns the
     // generated column FullName of the inserted records using
-    // ‘THEN RETU&N FullName’.
+    // ‘THEN RETURN FullName’.
     // It is also possible to return all columns of all the
     // inserted records by using ‘THEN RETURN *’.
     dbClient
@@ -1167,7 +1167,7 @@ public class SpannerSample {
     // Update MarketingBudget column for records satisfying
     // a particular condition and returns the modified
     // MarketingBudget column of the updated records using
-    // ‘THEN RETU&N MarketingBudget’.
+    // ‘THEN RETURN MarketingBudget’.
     // It is also possible to return all columns of all the
     // updated records by using ‘THEN RETURN *’.
     dbClient
