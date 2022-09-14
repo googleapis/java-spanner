@@ -41,11 +41,9 @@ final class RetriableUpdate implements RetriableStatement {
       AnalyzeMode analyzeMode,
       long updateCount,
       UpdateOption... options) {
-    Preconditions.checkNotNull(transaction);
-    Preconditions.checkNotNull(statement);
-    this.transaction = transaction;
-    this.statement = statement;
-    this.analyzeMode = analyzeMode;
+    this.transaction = Preconditions.checkNotNull(transaction);
+    this.statement = Preconditions.checkNotNull(statement);
+    this.analyzeMode = Preconditions.checkNotNull(analyzeMode);
     this.updateCount = updateCount;
     this.options = options;
   }
@@ -57,7 +55,7 @@ final class RetriableUpdate implements RetriableStatement {
       transaction
           .getStatementExecutor()
           .invokeInterceptors(statement, StatementExecutionStep.RETRY_STATEMENT, transaction);
-      if (analyzeMode == null || analyzeMode == AnalyzeMode.NONE) {
+      if (analyzeMode == AnalyzeMode.NONE) {
         newCount = transaction.getReadContext().executeUpdate(statement.getStatement(), options);
       } else {
         newCount =
