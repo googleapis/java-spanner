@@ -102,7 +102,9 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
-    protected void getProtoMessageInternal(int columnIndex, AbstractMessage m) {}
+    protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m) {
+      return null;
+    }
 
     @Override
     protected Value getValueInternal(int columnIndex) {

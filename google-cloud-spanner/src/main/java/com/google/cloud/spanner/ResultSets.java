@@ -301,9 +301,20 @@ public final class ResultSets {
     }
 
     @Override
-    public void getProtoMessage(int columnIndex, AbstractMessage m)
+    public byte[] getProtoMessage(String columnName) {
+      return getCurrentRowAsStruct().getProtoMessage(columnName);
+    }
+
+    @Override
+    public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m)
         throws InvalidProtocolBufferException {
-      getCurrentRowAsStruct().getProtoMessage(columnIndex, m);
+      return getCurrentRowAsStruct().getProtoMessage(columnIndex, m);
+    }
+
+    @Override
+    public <T extends AbstractMessage> T getProtoMessage(String columnName, T m)
+        throws InvalidProtocolBufferException {
+      return getCurrentRowAsStruct().getProtoMessage(columnName, m);
     }
 
     @Override

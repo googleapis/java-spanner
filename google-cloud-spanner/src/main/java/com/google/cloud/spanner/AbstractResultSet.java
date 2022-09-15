@@ -666,9 +666,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
-    public void getProtoMessageInternal(int columnIndex, AbstractMessage m)
+    public <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m)
         throws InvalidProtocolBufferException {
-      m.toBuilder().mergeFrom(getProtoMessage(columnIndex));
+      return (T) m.toBuilder().mergeFrom(getProtoMessage(columnIndex)).build();
     }
 
     @Override
@@ -1390,9 +1390,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   }
 
   @Override
-  protected void getProtoMessageInternal(int columnIndex, AbstractMessage m)
+  protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m)
       throws InvalidProtocolBufferException {
-    currRow().getProtoMessageInternal(columnIndex, m);
+    return currRow().getProtoMessageInternal(columnIndex, m);
   }
 
   @Override

@@ -225,9 +225,9 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
-    protected void getProtoMessageInternal(int columnIndex, AbstractMessage m)
+    protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m)
         throws InvalidProtocolBufferException {
-      values.get(columnIndex).getProtoMessage(m);
+      return values.get(columnIndex).getProtoMessage(m);
     }
 
     @Override

@@ -557,7 +557,8 @@ public abstract class Value implements Serializable {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  public void getProtoMessage(AbstractMessage message) throws InvalidProtocolBufferException {
+  public <T extends AbstractMessage> T getProtoMessage(T m)
+      throws InvalidProtocolBufferException {
     throw new UnsupportedOperationException("Not implemented");
   }
 
@@ -881,7 +882,8 @@ public abstract class Value implements Serializable {
     }
 
     @Override
-    public void getProtoMessage(AbstractMessage message) throws InvalidProtocolBufferException {
+    public <T extends AbstractMessage> T getProtoMessage(T m)
+        throws InvalidProtocolBufferException {
       throw defaultGetter(Type.proto());
     }
 
@@ -1378,8 +1380,9 @@ public abstract class Value implements Serializable {
     }
 
     @Override
-    public void getProtoMessage(AbstractMessage message) throws InvalidProtocolBufferException {
-      message.toBuilder().mergeFrom(value.serializedMessage);
+    public <T extends AbstractMessage> T getProtoMessage(T m)
+        throws InvalidProtocolBufferException {
+      return (T) m.toBuilder().mergeFrom(value.serializedMessage);
     }
 
     @Override
