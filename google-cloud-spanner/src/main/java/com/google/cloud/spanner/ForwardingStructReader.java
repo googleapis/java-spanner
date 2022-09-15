@@ -390,9 +390,20 @@ public class ForwardingStructReader implements StructReader {
   }
 
   @Override
+  public byte[] getProtoMessage(String columnName) {
+    return delegate.get().getProtoMessage(columnName);
+  }
+
+  @Override
   public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m)
       throws InvalidProtocolBufferException {
     return delegate.get().getProtoMessage(columnIndex, m);
+  }
+
+  @Override
+  public <T extends AbstractMessage> T getProtoMessage(String columnName, T m)
+      throws InvalidProtocolBufferException {
+    return delegate.get().getProtoMessage(columnName, m);
   }
 
   @Override

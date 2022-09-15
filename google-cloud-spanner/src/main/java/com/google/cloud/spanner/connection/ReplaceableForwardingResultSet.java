@@ -445,9 +445,22 @@ class ReplaceableForwardingResultSet implements ResultSet {
   }
 
   @Override
+  public byte[] getProtoMessage(String columnName) {
+    checkClosed();
+    return delegate.getProtoMessage(columnName);
+  }
+
+  @Override
   public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m)
       throws InvalidProtocolBufferException {
     checkClosed();
     return delegate.getProtoMessage(columnIndex, m);
+  }
+
+  @Override
+  public <T extends AbstractMessage> T getProtoMessage(String columnName, T m)
+      throws InvalidProtocolBufferException {
+    checkClosed();
+    return delegate.getProtoMessage(columnName, m);
   }
 }

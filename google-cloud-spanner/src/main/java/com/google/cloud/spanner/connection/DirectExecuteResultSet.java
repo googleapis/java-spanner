@@ -440,10 +440,23 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
+  public byte[] getProtoMessage(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoMessage(columnName);
+  }
+
+  @Override
   public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m)
       throws InvalidProtocolBufferException {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getProtoMessage(columnIndex, m);
+  }
+
+  @Override
+  public <T extends AbstractMessage> T getProtoMessage(String columnName, T m)
+      throws InvalidProtocolBufferException {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoMessage(columnName, m);
   }
 
   @Override

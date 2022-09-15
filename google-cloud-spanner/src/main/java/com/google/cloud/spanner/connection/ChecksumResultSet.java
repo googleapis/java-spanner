@@ -248,6 +248,9 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             case JSON:
               funnelValue(type, row.getJson(i), into);
               break;
+            case PROTO:
+              funnelValue(type, row.getProtoMessage(i), into);
+              break;
             case PG_JSONB:
               funnelValue(type, row.getPgJsonb(i), into);
               break;
