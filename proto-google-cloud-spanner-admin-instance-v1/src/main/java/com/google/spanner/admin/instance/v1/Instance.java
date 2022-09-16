@@ -598,10 +598,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * Output only. The current instance state. For
-   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-   * either omitted or set to `CREATING`. For
-   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-   * either omitted or set to `READY`.
+   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+   * the state must be either omitted or set to `CREATING`. For
+   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+   * the state must be either omitted or set to `READY`.
    * </pre>
    *
    * <code>
@@ -619,10 +619,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * Output only. The current instance state. For
-   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-   * either omitted or set to `CREATING`. For
-   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-   * either omitted or set to `READY`.
+   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+   * the state must be either omitted or set to `CREATING`. For
+   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+   * the state must be either omitted or set to `READY`.
    * </pre>
    *
    * <code>
@@ -2000,10 +2000,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. The current instance state. For
-     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-     * either omitted or set to `CREATING`. For
-     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-     * either omitted or set to `READY`.
+     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+     * the state must be either omitted or set to `CREATING`. For
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+     * the state must be either omitted or set to `READY`.
      * </pre>
      *
      * <code>
@@ -2021,10 +2021,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. The current instance state. For
-     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-     * either omitted or set to `CREATING`. For
-     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-     * either omitted or set to `READY`.
+     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+     * the state must be either omitted or set to `CREATING`. For
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+     * the state must be either omitted or set to `READY`.
      * </pre>
      *
      * <code>
@@ -2045,10 +2045,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. The current instance state. For
-     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-     * either omitted or set to `CREATING`. For
-     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-     * either omitted or set to `READY`.
+     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+     * the state must be either omitted or set to `CREATING`. For
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+     * the state must be either omitted or set to `READY`.
      * </pre>
      *
      * <code>
@@ -2071,10 +2071,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. The current instance state. For
-     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-     * either omitted or set to `CREATING`. For
-     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-     * either omitted or set to `READY`.
+     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+     * the state must be either omitted or set to `CREATING`. For
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+     * the state must be either omitted or set to `READY`.
      * </pre>
      *
      * <code>
@@ -2098,10 +2098,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. The current instance state. For
-     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-     * either omitted or set to `CREATING`. For
-     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-     * either omitted or set to `READY`.
+     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+     * the state must be either omitted or set to `CREATING`. For
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+     * the state must be either omitted or set to `READY`.
      * </pre>
      *
      * <code>

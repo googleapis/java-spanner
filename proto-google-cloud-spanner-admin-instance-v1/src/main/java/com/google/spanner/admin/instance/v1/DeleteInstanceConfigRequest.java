@@ -23,29 +23,30 @@ package com.google.spanner.admin.instance.v1;
  *
  * <pre>
  * The request for
- * [GetInstance][google.spanner.admin.instance.v1.InstanceAdmin.GetInstance].
+ * [DeleteInstanceConfigRequest][InstanceAdmin.DeleteInstanceConfigRequest].
  * </pre>
  *
- * Protobuf type {@code google.spanner.admin.instance.v1.GetInstanceRequest}
+ * Protobuf type {@code google.spanner.admin.instance.v1.DeleteInstanceConfigRequest}
  */
-public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessageV3
+public final class DeleteInstanceConfigRequest extends com.google.protobuf.GeneratedMessageV3
     implements
-    // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.GetInstanceRequest)
-    GetInstanceRequestOrBuilder {
+    // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.DeleteInstanceConfigRequest)
+    DeleteInstanceConfigRequestOrBuilder {
   private static final long serialVersionUID = 0L;
-  // Use GetInstanceRequest.newBuilder() to construct.
-  private GetInstanceRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+  // Use DeleteInstanceConfigRequest.newBuilder() to construct.
+  private DeleteInstanceConfigRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
 
-  private GetInstanceRequest() {
+  private DeleteInstanceConfigRequest() {
     name_ = "";
+    etag_ = "";
   }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
-    return new GetInstanceRequest();
+    return new DeleteInstanceConfigRequest();
   }
 
   @java.lang.Override
@@ -53,7 +54,7 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
     return this.unknownFields;
   }
 
-  private GetInstanceRequest(
+  private DeleteInstanceConfigRequest(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -80,17 +81,14 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
             }
           case 18:
             {
-              com.google.protobuf.FieldMask.Builder subBuilder = null;
-              if (fieldMask_ != null) {
-                subBuilder = fieldMask_.toBuilder();
-              }
-              fieldMask_ =
-                  input.readMessage(com.google.protobuf.FieldMask.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(fieldMask_);
-                fieldMask_ = subBuilder.buildPartial();
-              }
+              java.lang.String s = input.readStringRequireUtf8();
 
+              etag_ = s;
+              break;
+            }
+          case 24:
+            {
+              validateOnly_ = input.readBool();
               break;
             }
           default:
@@ -116,17 +114,17 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-        .internal_static_google_spanner_admin_instance_v1_GetInstanceRequest_descriptor;
+        .internal_static_google_spanner_admin_instance_v1_DeleteInstanceConfigRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
     return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-        .internal_static_google_spanner_admin_instance_v1_GetInstanceRequest_fieldAccessorTable
+        .internal_static_google_spanner_admin_instance_v1_DeleteInstanceConfigRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            com.google.spanner.admin.instance.v1.GetInstanceRequest.class,
-            com.google.spanner.admin.instance.v1.GetInstanceRequest.Builder.class);
+            com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.class,
+            com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.Builder.class);
   }
 
   public static final int NAME_FIELD_NUMBER = 1;
@@ -135,8 +133,9 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
    *
    *
    * <pre>
-   * Required. The name of the requested instance. Values are of the form
-   * `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * Required. The name of the instance configuration to be deleted.
+   * Values are of the form
+   * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
    * </pre>
    *
    * <code>
@@ -161,8 +160,9 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
    *
    *
    * <pre>
-   * Required. The name of the requested instance. Values are of the form
-   * `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * Required. The name of the instance configuration to be deleted.
+   * Values are of the form
+   * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
    * </pre>
    *
    * <code>
@@ -184,59 +184,84 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
     }
   }
 
-  public static final int FIELD_MASK_FIELD_NUMBER = 2;
-  private com.google.protobuf.FieldMask fieldMask_;
+  public static final int ETAG_FIELD_NUMBER = 2;
+  private volatile java.lang.Object etag_;
   /**
    *
    *
    * <pre>
-   * If field_mask is present, specifies the subset of
-   * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
-   * returned. If absent, all
-   * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+   * Used for optimistic concurrency control as a way to help prevent
+   * simultaneous deletes of an instance config from overwriting each
+   * other. If not empty, the API
+   * only deletes the instance config when the etag provided matches the current
+   * status of the requested instance config. Otherwise, deletes the instance
+   * config without checking the current status of the requested instance
+   * config.
    * </pre>
    *
-   * <code>.google.protobuf.FieldMask field_mask = 2;</code>
+   * <code>string etag = 2;</code>
    *
-   * @return Whether the fieldMask field is set.
+   * @return The etag.
    */
   @java.lang.Override
-  public boolean hasFieldMask() {
-    return fieldMask_ != null;
+  public java.lang.String getEtag() {
+    java.lang.Object ref = etag_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      etag_ = s;
+      return s;
+    }
   }
   /**
    *
    *
    * <pre>
-   * If field_mask is present, specifies the subset of
-   * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
-   * returned. If absent, all
-   * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+   * Used for optimistic concurrency control as a way to help prevent
+   * simultaneous deletes of an instance config from overwriting each
+   * other. If not empty, the API
+   * only deletes the instance config when the etag provided matches the current
+   * status of the requested instance config. Otherwise, deletes the instance
+   * config without checking the current status of the requested instance
+   * config.
    * </pre>
    *
-   * <code>.google.protobuf.FieldMask field_mask = 2;</code>
+   * <code>string etag = 2;</code>
    *
-   * @return The fieldMask.
+   * @return The bytes for etag.
    */
   @java.lang.Override
-  public com.google.protobuf.FieldMask getFieldMask() {
-    return fieldMask_ == null ? com.google.protobuf.FieldMask.getDefaultInstance() : fieldMask_;
+  public com.google.protobuf.ByteString getEtagBytes() {
+    java.lang.Object ref = etag_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+      etag_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
   }
+
+  public static final int VALIDATE_ONLY_FIELD_NUMBER = 3;
+  private boolean validateOnly_;
   /**
    *
    *
    * <pre>
-   * If field_mask is present, specifies the subset of
-   * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
-   * returned. If absent, all
-   * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+   * An option to validate, but not actually execute, a request,
+   * and provide the same response.
    * </pre>
    *
-   * <code>.google.protobuf.FieldMask field_mask = 2;</code>
+   * <code>bool validate_only = 3;</code>
+   *
+   * @return The validateOnly.
    */
   @java.lang.Override
-  public com.google.protobuf.FieldMaskOrBuilder getFieldMaskOrBuilder() {
-    return getFieldMask();
+  public boolean getValidateOnly() {
+    return validateOnly_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -256,8 +281,11 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
     }
-    if (fieldMask_ != null) {
-      output.writeMessage(2, getFieldMask());
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(etag_)) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, etag_);
+    }
+    if (validateOnly_ != false) {
+      output.writeBool(3, validateOnly_);
     }
     unknownFields.writeTo(output);
   }
@@ -271,8 +299,11 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
     }
-    if (fieldMask_ != null) {
-      size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getFieldMask());
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(etag_)) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, etag_);
+    }
+    if (validateOnly_ != false) {
+      size += com.google.protobuf.CodedOutputStream.computeBoolSize(3, validateOnly_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -284,17 +315,15 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof com.google.spanner.admin.instance.v1.GetInstanceRequest)) {
+    if (!(obj instanceof com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest)) {
       return super.equals(obj);
     }
-    com.google.spanner.admin.instance.v1.GetInstanceRequest other =
-        (com.google.spanner.admin.instance.v1.GetInstanceRequest) obj;
+    com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest other =
+        (com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest) obj;
 
     if (!getName().equals(other.getName())) return false;
-    if (hasFieldMask() != other.hasFieldMask()) return false;
-    if (hasFieldMask()) {
-      if (!getFieldMask().equals(other.getFieldMask())) return false;
-    }
+    if (!getEtag().equals(other.getEtag())) return false;
+    if (getValidateOnly() != other.getValidateOnly()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -308,80 +337,80 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + NAME_FIELD_NUMBER;
     hash = (53 * hash) + getName().hashCode();
-    if (hasFieldMask()) {
-      hash = (37 * hash) + FIELD_MASK_FIELD_NUMBER;
-      hash = (53 * hash) + getFieldMask().hashCode();
-    }
+    hash = (37 * hash) + ETAG_FIELD_NUMBER;
+    hash = (53 * hash) + getEtag().hashCode();
+    hash = (37 * hash) + VALIDATE_ONLY_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getValidateOnly());
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
   }
 
-  public static com.google.spanner.admin.instance.v1.GetInstanceRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
       java.nio.ByteBuffer data) throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.instance.v1.GetInstanceRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
       java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.GetInstanceRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.instance.v1.GetInstanceRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.GetInstanceRequest parseFrom(byte[] data)
-      throws com.google.protobuf.InvalidProtocolBufferException {
+  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
+      byte[] data) throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.instance.v1.GetInstanceRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
       byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.GetInstanceRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
       java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.instance.v1.GetInstanceRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.GetInstanceRequest parseDelimitedFrom(
+  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseDelimitedFrom(
       java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.instance.v1.GetInstanceRequest parseDelimitedFrom(
+  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseDelimitedFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.GetInstanceRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
       com.google.protobuf.CodedInputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.instance.v1.GetInstanceRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -399,7 +428,7 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
   }
 
   public static Builder newBuilder(
-      com.google.spanner.admin.instance.v1.GetInstanceRequest prototype) {
+      com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
 
@@ -418,31 +447,31 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * The request for
-   * [GetInstance][google.spanner.admin.instance.v1.InstanceAdmin.GetInstance].
+   * [DeleteInstanceConfigRequest][InstanceAdmin.DeleteInstanceConfigRequest].
    * </pre>
    *
-   * Protobuf type {@code google.spanner.admin.instance.v1.GetInstanceRequest}
+   * Protobuf type {@code google.spanner.admin.instance.v1.DeleteInstanceConfigRequest}
    */
   public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
       implements
-      // @@protoc_insertion_point(builder_implements:google.spanner.admin.instance.v1.GetInstanceRequest)
-      com.google.spanner.admin.instance.v1.GetInstanceRequestOrBuilder {
+      // @@protoc_insertion_point(builder_implements:google.spanner.admin.instance.v1.DeleteInstanceConfigRequest)
+      com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
       return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-          .internal_static_google_spanner_admin_instance_v1_GetInstanceRequest_descriptor;
+          .internal_static_google_spanner_admin_instance_v1_DeleteInstanceConfigRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-          .internal_static_google_spanner_admin_instance_v1_GetInstanceRequest_fieldAccessorTable
+          .internal_static_google_spanner_admin_instance_v1_DeleteInstanceConfigRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.google.spanner.admin.instance.v1.GetInstanceRequest.class,
-              com.google.spanner.admin.instance.v1.GetInstanceRequest.Builder.class);
+              com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.class,
+              com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.Builder.class);
     }
 
-    // Construct using com.google.spanner.admin.instance.v1.GetInstanceRequest.newBuilder()
+    // Construct using com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -461,29 +490,28 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
       super.clear();
       name_ = "";
 
-      if (fieldMaskBuilder_ == null) {
-        fieldMask_ = null;
-      } else {
-        fieldMask_ = null;
-        fieldMaskBuilder_ = null;
-      }
+      etag_ = "";
+
+      validateOnly_ = false;
+
       return this;
     }
 
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
       return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-          .internal_static_google_spanner_admin_instance_v1_GetInstanceRequest_descriptor;
+          .internal_static_google_spanner_admin_instance_v1_DeleteInstanceConfigRequest_descriptor;
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.instance.v1.GetInstanceRequest getDefaultInstanceForType() {
-      return com.google.spanner.admin.instance.v1.GetInstanceRequest.getDefaultInstance();
+    public com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+        getDefaultInstanceForType() {
+      return com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.getDefaultInstance();
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.instance.v1.GetInstanceRequest build() {
-      com.google.spanner.admin.instance.v1.GetInstanceRequest result = buildPartial();
+    public com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest build() {
+      com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -491,15 +519,12 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.instance.v1.GetInstanceRequest buildPartial() {
-      com.google.spanner.admin.instance.v1.GetInstanceRequest result =
-          new com.google.spanner.admin.instance.v1.GetInstanceRequest(this);
+    public com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest buildPartial() {
+      com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest result =
+          new com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest(this);
       result.name_ = name_;
-      if (fieldMaskBuilder_ == null) {
-        result.fieldMask_ = fieldMask_;
-      } else {
-        result.fieldMask_ = fieldMaskBuilder_.build();
-      }
+      result.etag_ = etag_;
+      result.validateOnly_ = validateOnly_;
       onBuilt();
       return result;
     }
@@ -539,23 +564,29 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof com.google.spanner.admin.instance.v1.GetInstanceRequest) {
-        return mergeFrom((com.google.spanner.admin.instance.v1.GetInstanceRequest) other);
+      if (other instanceof com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest) {
+        return mergeFrom((com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest) other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(com.google.spanner.admin.instance.v1.GetInstanceRequest other) {
-      if (other == com.google.spanner.admin.instance.v1.GetInstanceRequest.getDefaultInstance())
+    public Builder mergeFrom(
+        com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest other) {
+      if (other
+          == com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.getDefaultInstance())
         return this;
       if (!other.getName().isEmpty()) {
         name_ = other.name_;
         onChanged();
       }
-      if (other.hasFieldMask()) {
-        mergeFieldMask(other.getFieldMask());
+      if (!other.getEtag().isEmpty()) {
+        etag_ = other.etag_;
+        onChanged();
+      }
+      if (other.getValidateOnly() != false) {
+        setValidateOnly(other.getValidateOnly());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -572,12 +603,13 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.admin.instance.v1.GetInstanceRequest parsedMessage = null;
+      com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         parsedMessage =
-            (com.google.spanner.admin.instance.v1.GetInstanceRequest) e.getUnfinishedMessage();
+            (com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest)
+                e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -592,8 +624,9 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
      *
      *
      * <pre>
-     * Required. The name of the requested instance. Values are of the form
-     * `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+     * Required. The name of the instance configuration to be deleted.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
      * </pre>
      *
      * <code>
@@ -617,8 +650,9 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
      *
      *
      * <pre>
-     * Required. The name of the requested instance. Values are of the form
-     * `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+     * Required. The name of the instance configuration to be deleted.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
      * </pre>
      *
      * <code>
@@ -642,8 +676,9 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
      *
      *
      * <pre>
-     * Required. The name of the requested instance. Values are of the form
-     * `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+     * Required. The name of the instance configuration to be deleted.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
      * </pre>
      *
      * <code>
@@ -666,8 +701,9 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
      *
      *
      * <pre>
-     * Required. The name of the requested instance. Values are of the form
-     * `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+     * Required. The name of the instance configuration to be deleted.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
      * </pre>
      *
      * <code>
@@ -686,8 +722,9 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
      *
      *
      * <pre>
-     * Required. The name of the requested instance. Values are of the form
-     * `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+     * Required. The name of the instance configuration to be deleted.
+     * Values are of the form
+     * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
      * </pre>
      *
      * <code>
@@ -708,210 +745,195 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
       return this;
     }
 
-    private com.google.protobuf.FieldMask fieldMask_;
-    private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.protobuf.FieldMask,
-            com.google.protobuf.FieldMask.Builder,
-            com.google.protobuf.FieldMaskOrBuilder>
-        fieldMaskBuilder_;
+    private java.lang.Object etag_ = "";
     /**
      *
      *
      * <pre>
-     * If field_mask is present, specifies the subset of
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
-     * returned. If absent, all
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+     * Used for optimistic concurrency control as a way to help prevent
+     * simultaneous deletes of an instance config from overwriting each
+     * other. If not empty, the API
+     * only deletes the instance config when the etag provided matches the current
+     * status of the requested instance config. Otherwise, deletes the instance
+     * config without checking the current status of the requested instance
+     * config.
      * </pre>
      *
-     * <code>.google.protobuf.FieldMask field_mask = 2;</code>
+     * <code>string etag = 2;</code>
      *
-     * @return Whether the fieldMask field is set.
+     * @return The etag.
      */
-    public boolean hasFieldMask() {
-      return fieldMaskBuilder_ != null || fieldMask_ != null;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * If field_mask is present, specifies the subset of
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
-     * returned. If absent, all
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
-     * </pre>
-     *
-     * <code>.google.protobuf.FieldMask field_mask = 2;</code>
-     *
-     * @return The fieldMask.
-     */
-    public com.google.protobuf.FieldMask getFieldMask() {
-      if (fieldMaskBuilder_ == null) {
-        return fieldMask_ == null ? com.google.protobuf.FieldMask.getDefaultInstance() : fieldMask_;
+    public java.lang.String getEtag() {
+      java.lang.Object ref = etag_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        etag_ = s;
+        return s;
       } else {
-        return fieldMaskBuilder_.getMessage();
+        return (java.lang.String) ref;
       }
     }
     /**
      *
      *
      * <pre>
-     * If field_mask is present, specifies the subset of
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
-     * returned. If absent, all
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+     * Used for optimistic concurrency control as a way to help prevent
+     * simultaneous deletes of an instance config from overwriting each
+     * other. If not empty, the API
+     * only deletes the instance config when the etag provided matches the current
+     * status of the requested instance config. Otherwise, deletes the instance
+     * config without checking the current status of the requested instance
+     * config.
      * </pre>
      *
-     * <code>.google.protobuf.FieldMask field_mask = 2;</code>
+     * <code>string etag = 2;</code>
+     *
+     * @return The bytes for etag.
      */
-    public Builder setFieldMask(com.google.protobuf.FieldMask value) {
-      if (fieldMaskBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        fieldMask_ = value;
-        onChanged();
+    public com.google.protobuf.ByteString getEtagBytes() {
+      java.lang.Object ref = etag_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        etag_ = b;
+        return b;
       } else {
-        fieldMaskBuilder_.setMessage(value);
+        return (com.google.protobuf.ByteString) ref;
       }
-
-      return this;
     }
     /**
      *
      *
      * <pre>
-     * If field_mask is present, specifies the subset of
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
-     * returned. If absent, all
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+     * Used for optimistic concurrency control as a way to help prevent
+     * simultaneous deletes of an instance config from overwriting each
+     * other. If not empty, the API
+     * only deletes the instance config when the etag provided matches the current
+     * status of the requested instance config. Otherwise, deletes the instance
+     * config without checking the current status of the requested instance
+     * config.
      * </pre>
      *
-     * <code>.google.protobuf.FieldMask field_mask = 2;</code>
+     * <code>string etag = 2;</code>
+     *
+     * @param value The etag to set.
+     * @return This builder for chaining.
      */
-    public Builder setFieldMask(com.google.protobuf.FieldMask.Builder builderForValue) {
-      if (fieldMaskBuilder_ == null) {
-        fieldMask_ = builderForValue.build();
-        onChanged();
-      } else {
-        fieldMaskBuilder_.setMessage(builderForValue.build());
+    public Builder setEtag(java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
       }
 
-      return this;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * If field_mask is present, specifies the subset of
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
-     * returned. If absent, all
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
-     * </pre>
-     *
-     * <code>.google.protobuf.FieldMask field_mask = 2;</code>
-     */
-    public Builder mergeFieldMask(com.google.protobuf.FieldMask value) {
-      if (fieldMaskBuilder_ == null) {
-        if (fieldMask_ != null) {
-          fieldMask_ =
-              com.google.protobuf.FieldMask.newBuilder(fieldMask_).mergeFrom(value).buildPartial();
-        } else {
-          fieldMask_ = value;
-        }
-        onChanged();
-      } else {
-        fieldMaskBuilder_.mergeFrom(value);
-      }
-
-      return this;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * If field_mask is present, specifies the subset of
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
-     * returned. If absent, all
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
-     * </pre>
-     *
-     * <code>.google.protobuf.FieldMask field_mask = 2;</code>
-     */
-    public Builder clearFieldMask() {
-      if (fieldMaskBuilder_ == null) {
-        fieldMask_ = null;
-        onChanged();
-      } else {
-        fieldMask_ = null;
-        fieldMaskBuilder_ = null;
-      }
-
-      return this;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * If field_mask is present, specifies the subset of
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
-     * returned. If absent, all
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
-     * </pre>
-     *
-     * <code>.google.protobuf.FieldMask field_mask = 2;</code>
-     */
-    public com.google.protobuf.FieldMask.Builder getFieldMaskBuilder() {
-
+      etag_ = value;
       onChanged();
-      return getFieldMaskFieldBuilder().getBuilder();
+      return this;
     }
     /**
      *
      *
      * <pre>
-     * If field_mask is present, specifies the subset of
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
-     * returned. If absent, all
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+     * Used for optimistic concurrency control as a way to help prevent
+     * simultaneous deletes of an instance config from overwriting each
+     * other. If not empty, the API
+     * only deletes the instance config when the etag provided matches the current
+     * status of the requested instance config. Otherwise, deletes the instance
+     * config without checking the current status of the requested instance
+     * config.
      * </pre>
      *
-     * <code>.google.protobuf.FieldMask field_mask = 2;</code>
+     * <code>string etag = 2;</code>
+     *
+     * @return This builder for chaining.
      */
-    public com.google.protobuf.FieldMaskOrBuilder getFieldMaskOrBuilder() {
-      if (fieldMaskBuilder_ != null) {
-        return fieldMaskBuilder_.getMessageOrBuilder();
-      } else {
-        return fieldMask_ == null ? com.google.protobuf.FieldMask.getDefaultInstance() : fieldMask_;
-      }
+    public Builder clearEtag() {
+
+      etag_ = getDefaultInstance().getEtag();
+      onChanged();
+      return this;
     }
     /**
      *
      *
      * <pre>
-     * If field_mask is present, specifies the subset of
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
-     * returned. If absent, all
-     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+     * Used for optimistic concurrency control as a way to help prevent
+     * simultaneous deletes of an instance config from overwriting each
+     * other. If not empty, the API
+     * only deletes the instance config when the etag provided matches the current
+     * status of the requested instance config. Otherwise, deletes the instance
+     * config without checking the current status of the requested instance
+     * config.
      * </pre>
      *
-     * <code>.google.protobuf.FieldMask field_mask = 2;</code>
+     * <code>string etag = 2;</code>
+     *
+     * @param value The bytes for etag to set.
+     * @return This builder for chaining.
      */
-    private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.protobuf.FieldMask,
-            com.google.protobuf.FieldMask.Builder,
-            com.google.protobuf.FieldMaskOrBuilder>
-        getFieldMaskFieldBuilder() {
-      if (fieldMaskBuilder_ == null) {
-        fieldMaskBuilder_ =
-            new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.FieldMask,
-                com.google.protobuf.FieldMask.Builder,
-                com.google.protobuf.FieldMaskOrBuilder>(
-                getFieldMask(), getParentForChildren(), isClean());
-        fieldMask_ = null;
+    public Builder setEtagBytes(com.google.protobuf.ByteString value) {
+      if (value == null) {
+        throw new NullPointerException();
       }
-      return fieldMaskBuilder_;
+      checkByteStringIsUtf8(value);
+
+      etag_ = value;
+      onChanged();
+      return this;
+    }
+
+    private boolean validateOnly_;
+    /**
+     *
+     *
+     * <pre>
+     * An option to validate, but not actually execute, a request,
+     * and provide the same response.
+     * </pre>
+     *
+     * <code>bool validate_only = 3;</code>
+     *
+     * @return The validateOnly.
+     */
+    @java.lang.Override
+    public boolean getValidateOnly() {
+      return validateOnly_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * An option to validate, but not actually execute, a request,
+     * and provide the same response.
+     * </pre>
+     *
+     * <code>bool validate_only = 3;</code>
+     *
+     * @param value The validateOnly to set.
+     * @return This builder for chaining.
+     */
+    public Builder setValidateOnly(boolean value) {
+
+      validateOnly_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * An option to validate, but not actually execute, a request,
+     * and provide the same response.
+     * </pre>
+     *
+     * <code>bool validate_only = 3;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearValidateOnly() {
+
+      validateOnly_ = false;
+      onChanged();
+      return this;
     }
 
     @java.lang.Override
@@ -925,42 +947,45 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
       return super.mergeUnknownFields(unknownFields);
     }
 
-    // @@protoc_insertion_point(builder_scope:google.spanner.admin.instance.v1.GetInstanceRequest)
+    // @@protoc_insertion_point(builder_scope:google.spanner.admin.instance.v1.DeleteInstanceConfigRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:google.spanner.admin.instance.v1.GetInstanceRequest)
-  private static final com.google.spanner.admin.instance.v1.GetInstanceRequest DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:google.spanner.admin.instance.v1.DeleteInstanceConfigRequest)
+  private static final com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+      DEFAULT_INSTANCE;
 
   static {
-    DEFAULT_INSTANCE = new com.google.spanner.admin.instance.v1.GetInstanceRequest();
+    DEFAULT_INSTANCE = new com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest();
   }
 
-  public static com.google.spanner.admin.instance.v1.GetInstanceRequest getDefaultInstance() {
+  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+      getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<GetInstanceRequest> PARSER =
-      new com.google.protobuf.AbstractParser<GetInstanceRequest>() {
+  private static final com.google.protobuf.Parser<DeleteInstanceConfigRequest> PARSER =
+      new com.google.protobuf.AbstractParser<DeleteInstanceConfigRequest>() {
         @java.lang.Override
-        public GetInstanceRequest parsePartialFrom(
+        public DeleteInstanceConfigRequest parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new GetInstanceRequest(input, extensionRegistry);
+          return new DeleteInstanceConfigRequest(input, extensionRegistry);
         }
       };
 
-  public static com.google.protobuf.Parser<GetInstanceRequest> parser() {
+  public static com.google.protobuf.Parser<DeleteInstanceConfigRequest> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<GetInstanceRequest> getParserForType() {
+  public com.google.protobuf.Parser<DeleteInstanceConfigRequest> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.spanner.admin.instance.v1.GetInstanceRequest getDefaultInstanceForType() {
+  public com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+      getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 }
