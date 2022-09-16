@@ -1,5 +1,26 @@
 # Changelog
 
+## [6.30.0](https://github.com/googleapis/java-spanner/compare/v6.29.1...v6.30.0) (2022-09-16)
+
+
+### Features
+
+* Add custom instance config operations ([#1999](https://github.com/googleapis/java-spanner/issues/1999)) ([74f9c3b](https://github.com/googleapis/java-spanner/commit/74f9c3bc161748e52fed9af8f9fa26a236dc0140))
+* Add gRPC RLS dependency ([#1875](https://github.com/googleapis/java-spanner/issues/1875)) ([31cf06e](https://github.com/googleapis/java-spanner/commit/31cf06e1f145dfaba8c2ed70732b4eb06086e0cc))
+* Default transaction isolation ([#1998](https://github.com/googleapis/java-spanner/issues/1998)) ([33aa21c](https://github.com/googleapis/java-spanner/commit/33aa21c09f01cc40d156035d2b63fca03257ef6c))
+
+
+### Bug Fixes
+
+* Retries of updates in the Connection API ignored analyze mode ([#2010](https://github.com/googleapis/java-spanner/issues/2010)) ([d54f252](https://github.com/googleapis/java-spanner/commit/d54f2521f1629658bc54f67ba549ea199a77c5a8))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.4.3 ([#2003](https://github.com/googleapis/java-spanner/issues/2003)) ([2f04f18](https://github.com/googleapis/java-spanner/commit/2f04f18f131cf656a94d8b1a78d311d2cc46797e))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.0.2 ([#2002](https://github.com/googleapis/java-spanner/issues/2002)) ([342190a](https://github.com/googleapis/java-spanner/commit/342190ab06917d0527316802a6c33da4f20213db))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.0.3 ([#2013](https://github.com/googleapis/java-spanner/issues/2013)) ([16db975](https://github.com/googleapis/java-spanner/commit/16db975fbcbd7ce8aee74b6988bf0d125619675f))
+
 ## [6.29.1](https://github.com/googleapis/java-spanner/compare/v6.29.0...v6.29.1) (2022-09-02)
 
 
