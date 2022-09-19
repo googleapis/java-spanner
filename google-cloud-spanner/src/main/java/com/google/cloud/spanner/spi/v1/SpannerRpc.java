@@ -39,6 +39,7 @@ import com.google.spanner.admin.database.v1.CopyBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
