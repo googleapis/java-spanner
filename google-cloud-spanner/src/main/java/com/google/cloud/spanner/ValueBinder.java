@@ -20,6 +20,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
 import javax.annotation.Nullable;
 
@@ -98,6 +99,10 @@ public abstract class ValueBinder<R> {
 
   public R to(@Nullable GeneratedMessage m) {
     return handle(Value.protoMessage(m));
+  }
+
+  public R to(@Nullable ProtocolMessageEnum en) {
+    return handle(Value.protoEnum(en));
   }
 
   /** Binds to {@code Value.bytes(value)} */

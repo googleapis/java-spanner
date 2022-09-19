@@ -40,6 +40,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.google.protobuf.Value.KindCase;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -54,6 +55,8 @@ import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -389,6 +392,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             break;
           case PROTO:
             builder.set(fieldName).to(Value.protoMessage((byte[]) value));
+          case PROTO_ENUM:
+            builder.set(fieldName).to(Value.protoEnum((long) value));
           case PG_JSONB:
             builder.set(fieldName).to(Value.pgJsonb((String) value));
             break;
@@ -494,6 +499,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           checkType(fieldType, proto, KindCase.BOOL_VALUE);
           return proto.getBoolValue();
         case INT64:
+        case PROTO_ENUM:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return Long.parseLong(proto.getStringValue());
         case FLOAT64:
@@ -668,7 +674,15 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     @Override
     public <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m)
         throws InvalidProtocolBufferException {
-      return (T) m.toBuilder().mergeFrom(getProtoMessage(columnIndex)).build();
+      return (T) m.toBuilder().mergeFrom(getProtoMessageInternal(columnIndex)).build();
+    }
+
+    @Override
+    protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(int columnIndex,
+        Class<T> clazz)
+        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+      Method parseMethod = clazz.getMethod("forNumber", int.class);
+      return clazz.cast(parseMethod.invoke(null, (int) getLongInternal(columnIndex)));
     }
 
     @Override
@@ -1393,6 +1407,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m)
       throws InvalidProtocolBufferException {
     return currRow().getProtoMessageInternal(columnIndex, m);
+  }
+
+  @Override
+  protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(int columnIndex, Class<T> clazz)
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    return currRow().getProtoEnumInternal(columnIndex, clazz);
   }
 
   @Override

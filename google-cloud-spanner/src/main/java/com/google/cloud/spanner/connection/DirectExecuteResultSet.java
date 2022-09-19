@@ -27,7 +27,9 @@ import com.google.cloud.spanner.Value;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.v1.ResultSetStats;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -443,6 +445,20 @@ class DirectExecuteResultSet implements ResultSet {
   public byte[] getProtoMessage(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getProtoMessage(columnName);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> T getProtoEnum(int columnIndex, Class<T> clazz)
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoEnum(columnIndex, clazz);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> T getProtoEnum(String columnName, Class<T> clazz)
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoEnum(columnName, clazz);
   }
 
   @Override

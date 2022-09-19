@@ -31,7 +31,9 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.v1.ResultSetStats;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -315,6 +317,18 @@ public final class ResultSets {
     public <T extends AbstractMessage> T getProtoMessage(String columnName, T m)
         throws InvalidProtocolBufferException {
       return getCurrentRowAsStruct().getProtoMessage(columnName, m);
+    }
+
+    @Override
+    public <T extends ProtocolMessageEnum> T getProtoEnum(int columnIndex, Class<T> clazz)
+        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+      return getCurrentRowAsStruct().getProtoEnum(columnIndex, clazz);
+    }
+
+    @Override
+    public <T extends ProtocolMessageEnum> T getProtoEnum(String columnName, Class<T> clazz)
+        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+      return getCurrentRowAsStruct().getProtoEnum(columnName, clazz);
     }
 
     @Override

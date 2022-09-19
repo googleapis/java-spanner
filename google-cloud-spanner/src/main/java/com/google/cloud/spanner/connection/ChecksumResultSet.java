@@ -240,6 +240,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
               funnelValue(type, row.getString(i), into);
               break;
             case INT64:
+            case PROTO_ENUM:
               funnelValue(type, row.getLong(i), into);
               break;
             case STRING:

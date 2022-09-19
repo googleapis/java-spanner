@@ -29,7 +29,9 @@ import com.google.cloud.spanner.Value;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.v1.ResultSetStats;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -462,5 +464,19 @@ class ReplaceableForwardingResultSet implements ResultSet {
       throws InvalidProtocolBufferException {
     checkClosed();
     return delegate.getProtoMessage(columnName, m);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> T getProtoEnum(int columnIndex, Class<T> clazz)
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    checkClosed();
+    return delegate.getProtoEnum(columnIndex, clazz);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> T getProtoEnum(String columnName, Class<T> clazz)
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    checkClosed();
+    return delegate.getProtoEnum(columnName, clazz);
   }
 }

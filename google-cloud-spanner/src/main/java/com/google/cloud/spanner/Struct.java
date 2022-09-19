@@ -30,7 +30,10 @@ import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.ProtocolMessageEnum;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -231,6 +234,14 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(int columnIndex,
+        Class<T> clazz)
+        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+      Method parseMethod = clazz.getMethod("forNumber", int.class);
+      return clazz.cast(parseMethod.invoke(null, (int) values.get(columnIndex).getInt64()));
+    }
+
+    @Override
     protected Value getValueInternal(int columnIndex) {
       return values.get(columnIndex);
     }
@@ -367,6 +378,7 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
       case BOOL:
         return getBooleanInternal(columnIndex);
       case INT64:
+      case PROTO_ENUM:
         return getLongInternal(columnIndex);
       case FLOAT64:
         return getDoubleInternal(columnIndex);
@@ -378,6 +390,8 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
         return getStringInternal(columnIndex);
       case JSON:
         return getJsonInternal(columnIndex);
+      case PROTO:
+        return getProtoMessageInternal(columnIndex);
       case PG_JSONB:
         return getPgJsonbInternal(columnIndex);
       case BYTES:

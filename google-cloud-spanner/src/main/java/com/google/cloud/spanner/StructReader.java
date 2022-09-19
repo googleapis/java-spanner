@@ -21,6 +21,8 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.ProtocolMessageEnum;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -305,6 +307,13 @@ public interface StructReader {
 
   <T extends AbstractMessage> T getProtoMessage(String columnName, T m)
       throws InvalidProtocolBufferException;
+
+  <T extends ProtocolMessageEnum> T getProtoEnum(int columnIndex, Class<T> clazz)
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException;
+
+  <T extends ProtocolMessageEnum> T getProtoEnum(String columnName, Class<T> clazz)
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException;
+
 
   /**
    * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.struct(...))}.

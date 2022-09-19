@@ -41,6 +41,8 @@ public class UpdateProtoColumnSample {
                 .to(4L)
                 .set("bookProto")
                 .to(Value.protoMessage(bookProto))
+                .set("genre")
+                .to(Value.protoEnum(Genre.ROCK))
                 .build()));
   }
 }
