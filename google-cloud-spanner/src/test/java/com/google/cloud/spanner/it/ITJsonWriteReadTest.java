@@ -22,6 +22,7 @@ import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
@@ -125,17 +126,21 @@ public class ITJsonWriteReadTest {
           Resources.toString(
               Resources.getResource(this.getClass(), INVALID_JSON_DIR + File.separator + resource),
               StandardCharsets.UTF_8);
-      assertThrows(
-          SpannerException.class,
-          () ->
-              databaseClient.write(
-                  Collections.singletonList(
-                      Mutation.newInsertBuilder(TABLE_NAME)
-                          .set("Id")
-                          .to(id.getAndIncrement())
-                          .set("json")
-                          .to(Value.json(jsonStr))
-                          .build())));
+
+      SpannerException exception =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  databaseClient.write(
+                      Collections.singletonList(
+                          Mutation.newInsertBuilder(TABLE_NAME)
+                              .set("Id")
+                              .to(id.getAndIncrement())
+                              .set("json")
+                              .to(Value.json(jsonStr))
+                              .build())));
+
+      assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
     }
   }
 

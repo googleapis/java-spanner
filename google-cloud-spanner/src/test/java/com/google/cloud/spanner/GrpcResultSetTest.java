@@ -717,6 +717,25 @@ public class GrpcResultSetTest {
   }
 
   @Test
+  public void getPgJsonb() {
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(makeMetadata(Type.struct(Type.StructField.of("f", Type.pgJsonb()))))
+            .addValues(Value.pgJsonb("{\"color\":\"red\",\"value\":\"#f00\"}").toProto())
+            .addValues(Value.pgJsonb("{}").toProto())
+            .addValues(Value.pgJsonb("[]").toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertTrue(resultSet.next());
+    assertEquals("{\"color\":\"red\",\"value\":\"#f00\"}", resultSet.getPgJsonb(0));
+    assertTrue(resultSet.next());
+    assertEquals("{}", resultSet.getPgJsonb(0));
+    assertTrue(resultSet.next());
+    assertEquals("[]", resultSet.getPgJsonb(0));
+  }
+
+  @Test
   public void getBooleanArray() {
     boolean[] boolArray = {true, true, false};
     consumer.onPartialResultSet(
@@ -837,5 +856,24 @@ public class GrpcResultSetTest {
 
     assertTrue(resultSet.next());
     assertEquals(jsonList, resultSet.getJsonList(0));
+  }
+
+  @Test
+  public void getPgJsonbList() {
+    List<String> jsonList = new ArrayList<>();
+    jsonList.add("{\"color\":\"red\",\"value\":\"#f00\"}");
+    jsonList.add("{\"special\":\"%😃∮πρότερονแผ่นดินฮั่นเสื่อมሰማይᚻᛖ\"}");
+    jsonList.add("[]");
+
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.pgJsonb())))))
+            .addValues(Value.pgJsonbArray(jsonList).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertTrue(resultSet.next());
+    assertEquals(jsonList, resultSet.getPgJsonbList(0));
   }
 }

@@ -22,7 +22,8 @@ package com.google.spanner.admin.instance.v1;
  *
  *
  * <pre>
- * The request for [GetInstance][google.spanner.admin.instance.v1.InstanceAdmin.GetInstance].
+ * The request for
+ * [GetInstance][google.spanner.admin.instance.v1.InstanceAdmin.GetInstance].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.instance.v1.GetInstanceRequest}
@@ -103,6 +104,8 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
+    } catch (com.google.protobuf.UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
       throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
@@ -187,9 +190,10 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
    *
    *
    * <pre>
-   * If field_mask is present, specifies the subset of [Instance][google.spanner.admin.instance.v1.Instance] fields that
-   * should be returned.
-   * If absent, all [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+   * If field_mask is present, specifies the subset of
+   * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
+   * returned. If absent, all
+   * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
    * </pre>
    *
    * <code>.google.protobuf.FieldMask field_mask = 2;</code>
@@ -204,9 +208,10 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
    *
    *
    * <pre>
-   * If field_mask is present, specifies the subset of [Instance][google.spanner.admin.instance.v1.Instance] fields that
-   * should be returned.
-   * If absent, all [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+   * If field_mask is present, specifies the subset of
+   * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
+   * returned. If absent, all
+   * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
    * </pre>
    *
    * <code>.google.protobuf.FieldMask field_mask = 2;</code>
@@ -221,9 +226,10 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
    *
    *
    * <pre>
-   * If field_mask is present, specifies the subset of [Instance][google.spanner.admin.instance.v1.Instance] fields that
-   * should be returned.
-   * If absent, all [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+   * If field_mask is present, specifies the subset of
+   * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
+   * returned. If absent, all
+   * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
    * </pre>
    *
    * <code>.google.protobuf.FieldMask field_mask = 2;</code>
@@ -411,7 +417,8 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
    *
    *
    * <pre>
-   * The request for [GetInstance][google.spanner.admin.instance.v1.InstanceAdmin.GetInstance].
+   * The request for
+   * [GetInstance][google.spanner.admin.instance.v1.InstanceAdmin.GetInstance].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.instance.v1.GetInstanceRequest}
@@ -711,9 +718,10 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
      *
      *
      * <pre>
-     * If field_mask is present, specifies the subset of [Instance][google.spanner.admin.instance.v1.Instance] fields that
-     * should be returned.
-     * If absent, all [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+     * If field_mask is present, specifies the subset of
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
+     * returned. If absent, all
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
      * </pre>
      *
      * <code>.google.protobuf.FieldMask field_mask = 2;</code>
@@ -727,9 +735,10 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
      *
      *
      * <pre>
-     * If field_mask is present, specifies the subset of [Instance][google.spanner.admin.instance.v1.Instance] fields that
-     * should be returned.
-     * If absent, all [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+     * If field_mask is present, specifies the subset of
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
+     * returned. If absent, all
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
      * </pre>
      *
      * <code>.google.protobuf.FieldMask field_mask = 2;</code>
@@ -747,9 +756,10 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
      *
      *
      * <pre>
-     * If field_mask is present, specifies the subset of [Instance][google.spanner.admin.instance.v1.Instance] fields that
-     * should be returned.
-     * If absent, all [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+     * If field_mask is present, specifies the subset of
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
+     * returned. If absent, all
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
      * </pre>
      *
      * <code>.google.protobuf.FieldMask field_mask = 2;</code>
@@ -771,9 +781,10 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
      *
      *
      * <pre>
-     * If field_mask is present, specifies the subset of [Instance][google.spanner.admin.instance.v1.Instance] fields that
-     * should be returned.
-     * If absent, all [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+     * If field_mask is present, specifies the subset of
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
+     * returned. If absent, all
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
      * </pre>
      *
      * <code>.google.protobuf.FieldMask field_mask = 2;</code>
@@ -792,9 +803,10 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
      *
      *
      * <pre>
-     * If field_mask is present, specifies the subset of [Instance][google.spanner.admin.instance.v1.Instance] fields that
-     * should be returned.
-     * If absent, all [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+     * If field_mask is present, specifies the subset of
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
+     * returned. If absent, all
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
      * </pre>
      *
      * <code>.google.protobuf.FieldMask field_mask = 2;</code>
@@ -818,9 +830,10 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
      *
      *
      * <pre>
-     * If field_mask is present, specifies the subset of [Instance][google.spanner.admin.instance.v1.Instance] fields that
-     * should be returned.
-     * If absent, all [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+     * If field_mask is present, specifies the subset of
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
+     * returned. If absent, all
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
      * </pre>
      *
      * <code>.google.protobuf.FieldMask field_mask = 2;</code>
@@ -840,9 +853,10 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
      *
      *
      * <pre>
-     * If field_mask is present, specifies the subset of [Instance][google.spanner.admin.instance.v1.Instance] fields that
-     * should be returned.
-     * If absent, all [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+     * If field_mask is present, specifies the subset of
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
+     * returned. If absent, all
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
      * </pre>
      *
      * <code>.google.protobuf.FieldMask field_mask = 2;</code>
@@ -856,9 +870,10 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
      *
      *
      * <pre>
-     * If field_mask is present, specifies the subset of [Instance][google.spanner.admin.instance.v1.Instance] fields that
-     * should be returned.
-     * If absent, all [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+     * If field_mask is present, specifies the subset of
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
+     * returned. If absent, all
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
      * </pre>
      *
      * <code>.google.protobuf.FieldMask field_mask = 2;</code>
@@ -874,9 +889,10 @@ public final class GetInstanceRequest extends com.google.protobuf.GeneratedMessa
      *
      *
      * <pre>
-     * If field_mask is present, specifies the subset of [Instance][google.spanner.admin.instance.v1.Instance] fields that
-     * should be returned.
-     * If absent, all [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+     * If field_mask is present, specifies the subset of
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
+     * returned. If absent, all
+     * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
      * </pre>
      *
      * <code>.google.protobuf.FieldMask field_mask = 2;</code>

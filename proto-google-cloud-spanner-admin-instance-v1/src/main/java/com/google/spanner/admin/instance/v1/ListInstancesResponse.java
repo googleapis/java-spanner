@@ -22,7 +22,8 @@ package com.google.spanner.admin.instance.v1;
  *
  *
  * <pre>
- * The response for [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances].
+ * The response for
+ * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.instance.v1.ListInstancesResponse}
@@ -102,6 +103,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
+    } catch (com.google.protobuf.UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
       throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
@@ -204,8 +207,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    * <pre>
    * `next_page_token` can be sent in a subsequent
-   * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances] call to fetch more
-   * of the matching instances.
+   * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances]
+   * call to fetch more of the matching instances.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -229,8 +232,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    * <pre>
    * `next_page_token` can be sent in a subsequent
-   * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances] call to fetch more
-   * of the matching instances.
+   * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances]
+   * call to fetch more of the matching instances.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -425,7 +428,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    *
    * <pre>
-   * The response for [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances].
+   * The response for
+   * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.instance.v1.ListInstancesResponse}
@@ -984,8 +988,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances] call to fetch more
-     * of the matching instances.
+     * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances]
+     * call to fetch more of the matching instances.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1008,8 +1012,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances] call to fetch more
-     * of the matching instances.
+     * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances]
+     * call to fetch more of the matching instances.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1032,8 +1036,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances] call to fetch more
-     * of the matching instances.
+     * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances]
+     * call to fetch more of the matching instances.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1055,8 +1059,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances] call to fetch more
-     * of the matching instances.
+     * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances]
+     * call to fetch more of the matching instances.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1074,8 +1078,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances] call to fetch more
-     * of the matching instances.
+     * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances]
+     * call to fetch more of the matching instances.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>

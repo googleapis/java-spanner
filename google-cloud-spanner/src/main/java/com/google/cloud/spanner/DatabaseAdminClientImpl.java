@@ -29,6 +29,7 @@ import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.iam.v1.GetPolicyOptions;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
@@ -291,6 +292,43 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   }
 
   @Override
+  public final Page<DatabaseRole> listDatabaseRoles(
+      String instanceId, String databaseId, ListOption... options) {
+    final String databaseName = getDatabaseName(instanceId, databaseId);
+    final Options listOptions = Options.fromListOptions(options);
+    final int pageSize = listOptions.hasPageSize() ? listOptions.pageSize() : 0;
+
+    PageFetcher<DatabaseRole, com.google.spanner.admin.database.v1.DatabaseRole> pageFetcher =
+        new PageFetcher<DatabaseRole, com.google.spanner.admin.database.v1.DatabaseRole>() {
+          @Override
+          public Paginated<com.google.spanner.admin.database.v1.DatabaseRole> getNextPage(
+              String nextPageToken) {
+            try {
+              return rpc.listDatabaseRoles(databaseName, pageSize, nextPageToken);
+            } catch (SpannerException e) {
+              throw SpannerExceptionFactory.newSpannerException(
+                  e.getErrorCode(),
+                  String.format(
+                      "Failed to list the databases roles of %s with pageToken %s: %s",
+                      databaseName,
+                      MoreObjects.firstNonNull(nextPageToken, "<null>"),
+                      e.getMessage()),
+                  e);
+            }
+          }
+
+          @Override
+          public DatabaseRole fromProto(com.google.spanner.admin.database.v1.DatabaseRole proto) {
+            return DatabaseRole.fromProto(proto);
+          }
+        };
+    if (listOptions.hasPageToken()) {
+      pageFetcher.setNextPageToken(listOptions.pageToken());
+    }
+    return pageFetcher.getNextPage();
+  }
+
+  @Override
   public Page<Backup> listBackups(String instanceId, ListOption... options) {
     final String instanceName = getInstanceName(instanceId);
     final Options listOptions = Options.fromListOptions(options);
@@ -332,6 +370,26 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
     final Dialect dialect = Preconditions.checkNotNull(database.getDialect());
     final String createStatement =
         dialect.createDatabaseStatementFor(database.getId().getDatabase());
+
+    return createDatabase(createStatement, database, statements);
+  }
+
+  @Override
+  public OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
+      String instanceId,
+      String createDatabaseStatement,
+      Dialect dialect,
+      Iterable<String> statements)
+      throws SpannerException {
+    Database database =
+        newDatabaseBuilder(DatabaseId.of(projectId, instanceId, "")).setDialect(dialect).build();
+
+    return createDatabase(createDatabaseStatement, database, statements);
+  }
+
+  private OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
+      String createStatement, Database database, Iterable<String> statements)
+      throws SpannerException {
     OperationFuture<com.google.spanner.admin.database.v1.Database, CreateDatabaseMetadata>
         rawOperationFuture =
             rpc.createDatabase(
@@ -443,9 +501,13 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   }
 
   @Override
-  public Policy getDatabaseIAMPolicy(String instanceId, String databaseId) {
+  public Policy getDatabaseIAMPolicy(String instanceId, String databaseId, int version) {
     final String databaseName = DatabaseId.of(projectId, instanceId, databaseId).getName();
-    return policyMarshaller.fromPb(rpc.getDatabaseAdminIAMPolicy(databaseName));
+    GetPolicyOptions options = null;
+    if (version > 0) {
+      options = GetPolicyOptions.newBuilder().setRequestedPolicyVersion(version).build();
+    }
+    return policyMarshaller.fromPb(rpc.getDatabaseAdminIAMPolicy(databaseName, options));
   }
 
   @Override
@@ -467,7 +529,7 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   @Override
   public Policy getBackupIAMPolicy(String instanceId, String backupId) {
     final String databaseName = BackupId.of(projectId, instanceId, backupId).getName();
-    return policyMarshaller.fromPb(rpc.getDatabaseAdminIAMPolicy(databaseName));
+    return policyMarshaller.fromPb(rpc.getDatabaseAdminIAMPolicy(databaseName, null));
   }
 
   @Override

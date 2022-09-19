@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.api.core.InternalApi;
+import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
@@ -36,15 +37,20 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 /**
@@ -159,6 +165,7 @@ public class ConnectionOptions {
   private static final String DEFAULT_MAX_SESSIONS = null;
   private static final String DEFAULT_NUM_CHANNELS = null;
   private static final String DEFAULT_CHANNEL_PROVIDER = null;
+  private static final String DEFAULT_DATABASE_ROLE = null;
   private static final String DEFAULT_USER_AGENT = null;
   private static final String DEFAULT_OPTIMIZER_VERSION = "";
   private static final String DEFAULT_OPTIMIZER_STATISTICS_PACKAGE = "";
@@ -182,13 +189,15 @@ public class ConnectionOptions {
   public static final String CREDENTIALS_PROPERTY_NAME = "credentials";
   /** Name of the 'encodedCredentials' connection property. */
   public static final String ENCODED_CREDENTIALS_PROPERTY_NAME = "encodedCredentials";
+  /** Name of the 'credentialsProvider' connection property. */
+  public static final String CREDENTIALS_PROVIDER_PROPERTY_NAME = "credentialsProvider";
   /**
    * OAuth token to use for authentication. Cannot be used in combination with a credentials file.
    */
   public static final String OAUTH_TOKEN_PROPERTY_NAME = "oauthToken";
   /** Name of the 'minSessions' connection property. */
   public static final String MIN_SESSIONS_PROPERTY_NAME = "minSessions";
-  /** Name of the 'numChannels' connection property. */
+  /** Name of the 'maxSessions' connection property. */
   public static final String MAX_SESSIONS_PROPERTY_NAME = "maxSessions";
   /** Name of the 'numChannels' connection property. */
   public static final String NUM_CHANNELS_PROPERTY_NAME = "numChannels";
@@ -207,7 +216,8 @@ public class ConnectionOptions {
   public static final String RPC_PRIORITY_NAME = "rpcPriority";
   /** Dialect to use for a connection. */
   private static final String DIALECT_PROPERTY_NAME = "dialect";
-
+  /** Name of the 'databaseRole' connection property. */
+  public static final String DATABASE_ROLE_PROPERTY_NAME = "databaseRole";
   /** All valid connection properties. */
   public static final Set<ConnectionProperty> VALID_PROPERTIES =
       Collections.unmodifiableSet(
@@ -231,6 +241,9 @@ public class ConnectionOptions {
                   ConnectionProperty.createStringProperty(
                       ENCODED_CREDENTIALS_PROPERTY_NAME,
                       "Base64-encoded credentials to use for this connection. If neither this property or a credentials location are set, the connection will use the default Google Cloud credentials for the runtime environment."),
+                  ConnectionProperty.createStringProperty(
+                      CREDENTIALS_PROVIDER_PROPERTY_NAME,
+                      "The class name of the com.google.api.gax.core.CredentialsProvider implementation that should be used to obtain credentials for connections."),
                   ConnectionProperty.createStringProperty(
                       OAUTH_TOKEN_PROPERTY_NAME,
                       "A valid pre-existing OAuth token to use for authentication for this connection. Setting this property will take precedence over any value set for a credentials file."),
@@ -271,7 +284,10 @@ public class ConnectionOptions {
                       RPC_PRIORITY_NAME,
                       "Sets the priority for all RPC invocations from this connection (HIGH/MEDIUM/LOW). The default is HIGH."),
                   ConnectionProperty.createStringProperty(
-                      DIALECT_PROPERTY_NAME, "Sets the dialect to use for this connection."))));
+                      DIALECT_PROPERTY_NAME, "Sets the dialect to use for this connection."),
+                  ConnectionProperty.createStringProperty(
+                      DATABASE_ROLE_PROPERTY_NAME,
+                      "Sets the database role to use for this connection. The default is privileges assigned to IAM role"))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -386,6 +402,12 @@ public class ConnectionOptions {
      *   <li>encodedCredentials (String): A Base64 encoded string containing the Google credentials
      *       to use. You should only set either this property or the `credentials` (file location)
      *       property, but not both at the same time.
+     *   <li>credentialsProvider (String): Class name of the {@link
+     *       com.google.api.gax.core.CredentialsProvider} that should be used to get credentials for
+     *       a connection that is created by this {@link ConnectionOptions}. The credentials will be
+     *       retrieved from the {@link com.google.api.gax.core.CredentialsProvider} when a new
+     *       connection is created. A connection will use the credentials that were obtained at
+     *       creation during its lifetime.
      *   <li>autocommit (boolean): Sets the initial autocommit mode for the connection. Default is
      *       true.
      *   <li>readonly (boolean): Sets the initial readonly mode for the connection. Default is
@@ -501,6 +523,7 @@ public class ConnectionOptions {
   private final String warnings;
   private final String credentialsUrl;
   private final String encodedCredentials;
+  private final CredentialsProvider credentialsProvider;
   private final String oauthToken;
   private final Credentials fixedCredentials;
 
@@ -515,6 +538,7 @@ public class ConnectionOptions {
   private final String channelProvider;
   private final Integer minSessions;
   private final Integer maxSessions;
+  private final String databaseRole;
   private final String userAgent;
   private final QueryOptions queryOptions;
   private final boolean returnCommitStats;
@@ -537,22 +561,22 @@ public class ConnectionOptions {
     this.credentialsUrl =
         builder.credentialsUrl != null ? builder.credentialsUrl : parseCredentials(builder.uri);
     this.encodedCredentials = parseEncodedCredentials(builder.uri);
-    // Check that not both a credentials location and encoded credentials have been specified in the
-    // connection URI.
-    Preconditions.checkArgument(
-        this.credentialsUrl == null || this.encodedCredentials == null,
-        "Cannot specify both a credentials URL and encoded credentials. Only set one of the properties.");
-
+    this.credentialsProvider = parseCredentialsProvider(builder.uri);
     this.oauthToken =
         builder.oauthToken != null ? builder.oauthToken : parseOAuthToken(builder.uri);
-    this.fixedCredentials = builder.credentials;
-    // Check that not both credentials and an OAuth token have been specified.
+    // Check that at most one of credentials location, encoded credentials, credentials provider and
+    // OUAuth token has been specified in the connection URI.
     Preconditions.checkArgument(
-        (builder.credentials == null
-                && this.credentialsUrl == null
-                && this.encodedCredentials == null)
-            || this.oauthToken == null,
-        "Cannot specify both credentials and an OAuth token.");
+        Stream.of(
+                    this.credentialsUrl,
+                    this.encodedCredentials,
+                    this.credentialsProvider,
+                    this.oauthToken)
+                .filter(Objects::nonNull)
+                .count()
+            <= 1,
+        "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token");
+    this.fixedCredentials = builder.credentials;
 
     this.userAgent = parseUserAgent(this.uri);
     QueryOptions.Builder queryOptionsBuilder = QueryOptions.newBuilder();
@@ -570,14 +594,24 @@ public class ConnectionOptions {
     // Using credentials on a plain text connection is not allowed, so if the user has not specified
     // any credentials and is using a plain text connection, we should not try to get the
     // credentials from the environment, but default to NoCredentials.
-    if (builder.credentials == null
+    if (this.fixedCredentials == null
         && this.credentialsUrl == null
         && this.encodedCredentials == null
+        && this.credentialsProvider == null
         && this.oauthToken == null
         && this.usePlainText) {
       this.credentials = NoCredentials.getInstance();
     } else if (this.oauthToken != null) {
       this.credentials = new GoogleCredentials(new AccessToken(oauthToken, null));
+    } else if (this.credentialsProvider != null) {
+      try {
+        this.credentials = this.credentialsProvider.getCredentials();
+      } catch (IOException exception) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT,
+            "Failed to get credentials from CredentialsProvider: " + exception.getMessage(),
+            exception);
+      }
     } else if (this.fixedCredentials != null) {
       this.credentials = fixedCredentials;
     } else if (this.encodedCredentials != null) {
@@ -592,6 +626,7 @@ public class ConnectionOptions {
     this.numChannels =
         parseIntegerProperty(NUM_CHANNELS_PROPERTY_NAME, parseNumChannels(builder.uri));
     this.channelProvider = parseChannelProvider(builder.uri);
+    this.databaseRole = parseDatabaseRole(this.uri);
 
     String projectId = matcher.group(Builder.PROJECT_GROUP);
     if (Builder.DEFAULT_PROJECT_ID_PLACEHOLDER.equalsIgnoreCase(projectId)) {
@@ -691,18 +726,49 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
-  static String parseCredentials(String uri) {
+  static @Nullable String parseCredentials(String uri) {
     String value = parseUriProperty(uri, CREDENTIALS_PROPERTY_NAME);
     return value != null ? value : DEFAULT_CREDENTIALS;
   }
 
   @VisibleForTesting
-  static String parseEncodedCredentials(String uri) {
+  static @Nullable String parseEncodedCredentials(String uri) {
     return parseUriProperty(uri, ENCODED_CREDENTIALS_PROPERTY_NAME);
   }
 
   @VisibleForTesting
-  static String parseOAuthToken(String uri) {
+  static @Nullable CredentialsProvider parseCredentialsProvider(String uri) {
+    String name = parseUriProperty(uri, CREDENTIALS_PROVIDER_PROPERTY_NAME);
+    if (name != null) {
+      try {
+        Class<? extends CredentialsProvider> clazz =
+            (Class<? extends CredentialsProvider>) Class.forName(name);
+        Constructor<? extends CredentialsProvider> constructor = clazz.getDeclaredConstructor();
+        return constructor.newInstance();
+      } catch (ClassNotFoundException classNotFoundException) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT,
+            "Unknown or invalid CredentialsProvider class name: " + name,
+            classNotFoundException);
+      } catch (NoSuchMethodException noSuchMethodException) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT,
+            "Credentials provider " + name + " does not have a public no-arg constructor.",
+            noSuchMethodException);
+      } catch (InvocationTargetException
+          | InstantiationException
+          | IllegalAccessException exception) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT,
+            "Failed to create an instance of " + name + ": " + exception.getMessage(),
+            exception);
+      }
+    }
+    return null;
+  }
+
+  @VisibleForTesting
+  static @Nullable String parseOAuthToken(String uri) {
     String value = parseUriProperty(uri, OAUTH_TOKEN_PROPERTY_NAME);
     return value != null ? value : DEFAULT_OAUTH_TOKEN;
   }
@@ -729,6 +795,12 @@ public class ConnectionOptions {
   static String parseChannelProvider(String uri) {
     String value = parseUriProperty(uri, CHANNEL_PROVIDER_PROPERTY_NAME);
     return value != null ? value : DEFAULT_CHANNEL_PROVIDER;
+  }
+
+  @VisibleForTesting
+  static String parseDatabaseRole(String uri) {
+    String value = parseUriProperty(uri, DATABASE_ROLE_PROPERTY_NAME);
+    return value != null ? value : DEFAULT_DATABASE_ROLE;
   }
 
   @VisibleForTesting
@@ -849,6 +921,10 @@ public class ConnectionOptions {
     return this.fixedCredentials;
   }
 
+  CredentialsProvider getCredentialsProvider() {
+    return this.credentialsProvider;
+  }
+
   /** The {@link SessionPoolOptions} of this {@link ConnectionOptions}. */
   public SessionPoolOptions getSessionPoolOptions() {
     return sessionPoolOptions;
@@ -894,6 +970,14 @@ public class ConnectionOptions {
               "%s : Failed to create channel with external provider: %s",
               e.toString(), channelProvider));
     }
+  }
+
+  /**
+   * The database role that is used for this connection. Assigning a role to a connection can be
+   * used to for example restrict the access of a connection to a specific set of tables.
+   */
+  public String getDatabaseRole() {
+    return databaseRole;
   }
 
   /** The host and port number that this {@link ConnectionOptions} will connect to */

@@ -71,6 +71,39 @@ public interface DatabaseAdminClient {
       String instanceId, String databaseId, Iterable<String> statements) throws SpannerException;
 
   /**
+   * Creates a new database in a Cloud Spanner instance with the given {@link Dialect}.
+   *
+   * <p>Example to create database.
+   *
+   * <pre>{@code
+   * String instanceId = "my_instance_id";
+   * String createDatabaseStatement = "CREATE DATABASE \"my-database\"";
+   * Operation<Database, CreateDatabaseMetadata> op = dbAdminClient
+   *     .createDatabase(
+   *         instanceId,
+   *         createDatabaseStatement,
+   *         Dialect.POSTGRESQL
+   *         Collections.emptyList());
+   * Database db = op.waitFor().getResult();
+   * }</pre>
+   *
+   * @param instanceId the id of the instance in which to create the database.
+   * @param createDatabaseStatement the CREATE DATABASE statement for the database. This statement
+   *     must use the dialect for the new database.
+   * @param dialect the dialect that the new database should use.
+   * @param statements DDL statements to run while creating the database, for example {@code CREATE
+   *     TABLE MyTable ( ... )}. This should not include {@code CREATE DATABASE} statement.
+   */
+  default OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
+      String instanceId,
+      String createDatabaseStatement,
+      Dialect dialect,
+      Iterable<String> statements)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
    * Creates a database in a Cloud Spanner instance. Any configuration options in the {@link
    * Database} instance will be included in the {@link CreateDatabaseRequest}.
    *
@@ -306,6 +339,9 @@ public interface DatabaseAdminClient {
   /** Lists long-running database operations on the specified instance. */
   Page<Operation> listDatabaseOperations(String instanceId, ListOption... options);
 
+  /** Lists database roles on the specified database. */
+  Page<DatabaseRole> listDatabaseRoles(String instanceId, String databaseId, ListOption... options);
+
   /** Lists long-running backup operations on the specified instance. */
   Page<Operation> listBackupOperations(String instanceId, ListOption... options);
 
@@ -458,8 +494,24 @@ public interface DatabaseAdminClient {
   /** Gets the specified long-running operation. */
   Operation getOperation(String name);
 
-  /** Returns the IAM policy for the given database. */
-  Policy getDatabaseIAMPolicy(String instanceId, String databaseId);
+  /**
+   * Returns the IAM policy for the given database.
+   *
+   * <p>Version specifies the format used to create the policy, valid values are 0, 1, and 3.
+   * Requests specifying an invalid value will be rejected. Requests for policies with any
+   * conditional role bindings must specify version 3. Policies with no conditional role bindings
+   * may specify any valid value or leave the field unset.
+   *
+   * <p>The policy in the response might use the policy version that you specified, or it might use
+   * a lower policy version. For example, if you specify version 3, but the policy has no
+   * conditional role bindings, the response uses version 1.
+   *
+   * <p>To learn which resources support conditions in their IAM policies, see the
+   *
+   * @see <a href="https://cloud.google.com/iam/help/conditions/resource-policies">IAM
+   *     documentation</a>.
+   */
+  Policy getDatabaseIAMPolicy(String instanceId, String databaseId, int version);
 
   /**
    * Updates the IAM policy for the given database and returns the resulting policy. It is highly

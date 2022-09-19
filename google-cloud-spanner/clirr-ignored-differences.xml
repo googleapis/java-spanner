@@ -100,4 +100,96 @@
     <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
     <method>com.google.api.gax.longrunning.OperationFuture copyBackup(com.google.cloud.spanner.BackupId, com.google.cloud.spanner.Backup)</method>
   </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.DatabaseClient getDatabaseClient()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseAdminClient</className>
+    <method>com.google.api.gax.longrunning.OperationFuture createDatabase(java.lang.String, java.lang.String, com.google.cloud.spanner.Dialect, java.lang.Iterable)</method>
+  </difference>
+  <!-- Support analyzeUpdate -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionContext</className>
+    <method>com.google.spanner.v1.ResultSetStats analyzeUpdate(com.google.cloud.spanner.Statement, com.google.cloud.spanner.ReadContext$QueryAnalyzeMode, com.google.cloud.spanner.Options$UpdateOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.spanner.v1.ResultSetStats analyzeUpdate(com.google.cloud.spanner.Statement, com.google.cloud.spanner.ReadContext$QueryAnalyzeMode)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseAdminClient</className>
+    <method>com.google.api.gax.paging.Page listDatabaseRoles(java.lang.String, java.lang.String, com.google.cloud.spanner.Options$ListOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.cloud.spanner.spi.v1.SpannerRpc$Paginated listDatabaseRoles(java.lang.String, int, java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/Database</className>
+    <method>com.google.cloud.Policy getIAMPolicy()</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/DatabaseAdminClient</className>
+    <method>com.google.cloud.Policy getDatabaseIAMPolicy(java.lang.String, java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.spanner.v1.Session createSession(java.lang.String, java.util.Map, java.util.Map)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>java.util.List batchCreateSessions(java.lang.String, int, java.util.Map, java.util.Map)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.iam.v1.Policy getDatabaseAdminIAMPolicy(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>com.google.spanner.v1.Session createSession(java.lang.String, java.util.Map, java.util.Map)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>java.util.List batchCreateSessions(java.lang.String, int, java.util.Map, java.util.Map)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>com.google.iam.v1.Policy getDatabaseAdminIAMPolicy(java.lang.String)</method>
+  </difference>
+  <!-- PG JSONB -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.String getPgJsonb(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.String getPgJsonb(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getPgJsonbList(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getPgJsonbList(java.lang.String)</method>
+  </difference>
 </differences>

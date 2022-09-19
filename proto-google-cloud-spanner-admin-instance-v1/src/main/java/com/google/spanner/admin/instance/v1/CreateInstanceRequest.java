@@ -22,7 +22,8 @@ package com.google.spanner.admin.instance.v1;
  *
  *
  * <pre>
- * The request for [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance].
+ * The request for
+ * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.instance.v1.CreateInstanceRequest}
@@ -112,6 +113,8 @@ public final class CreateInstanceRequest extends com.google.protobuf.GeneratedMe
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
+    } catch (com.google.protobuf.UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
       throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
@@ -487,7 +490,8 @@ public final class CreateInstanceRequest extends com.google.protobuf.GeneratedMe
    *
    *
    * <pre>
-   * The request for [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance].
+   * The request for
+   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.instance.v1.CreateInstanceRequest}

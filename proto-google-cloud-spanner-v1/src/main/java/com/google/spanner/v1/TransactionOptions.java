@@ -28,18 +28,24 @@ package com.google.spanner.v1;
  * towards the one transaction limit). After the active transaction is
  * completed, the session can immediately be re-used for the next transaction.
  * It is not necessary to create a new session for each transaction.
- * Transaction Modes:
+ * Transaction modes:
  * Cloud Spanner supports three transaction modes:
  *   1. Locking read-write. This type of transaction is the only way
  *      to write data into Cloud Spanner. These transactions rely on
  *      pessimistic locking and, if necessary, two-phase commit.
  *      Locking read-write transactions may abort, requiring the
  *      application to retry.
- *   2. Snapshot read-only. This transaction type provides guaranteed
- *      consistency across several reads, but does not allow
- *      writes. Snapshot read-only transactions can be configured to
- *      read at timestamps in the past. Snapshot read-only
- *      transactions do not need to be committed.
+ *   2. Snapshot read-only. Snapshot read-only transactions provide guaranteed
+ *      consistency across several reads, but do not allow
+ *      writes. Snapshot read-only transactions can be configured to read at
+ *      timestamps in the past, or configured to perform a strong read
+ *      (where Spanner will select a timestamp such that the read is
+ *      guaranteed to see the effects of all transactions that have committed
+ *      before the start of the read). Snapshot read-only transactions do not
+ *      need to be committed.
+ *      Queries on change streams must be performed with the snapshot read-only
+ *      transaction mode, specifying a strong read. Please see
+ *      [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong] for more details.
  *   3. Partitioned DML. This type of transaction is used to execute
  *      a single Partitioned DML statement. Partitioned DML partitions
  *      the key space and runs the DML statement over each partition
@@ -51,10 +57,10 @@ package com.google.spanner.v1;
  * particular, read-only transactions do not take locks, so they do
  * not conflict with read-write transactions. As a consequence of not
  * taking locks, they also do not abort, so retry loops are not needed.
- * Transactions may only read/write data in a single database. They
- * may, however, read/write data in different tables within that
+ * Transactions may only read-write data in a single database. They
+ * may, however, read-write data in different tables within that
  * database.
- * Locking Read-Write Transactions:
+ * Locking read-write transactions:
  * Locking transactions may be used to atomically read-modify-write
  * data anywhere in a database. This type of transaction is externally
  * consistent.
@@ -64,7 +70,7 @@ package com.google.spanner.v1;
  * active as long as the transaction continues to do reads, and the
  * transaction has not been terminated by
  * [Commit][google.spanner.v1.Spanner.Commit] or
- * [Rollback][google.spanner.v1.Spanner.Rollback].  Long periods of
+ * [Rollback][google.spanner.v1.Spanner.Rollback]. Long periods of
  * inactivity at the client may cause Cloud Spanner to release a
  * transaction's locks and abort it.
  * Conceptually, a read-write transaction consists of zero or more
@@ -83,7 +89,7 @@ package com.google.spanner.v1;
  * how long the transaction's locks were held for. It is an error to
  * use Cloud Spanner locks for any sort of mutual exclusion other than
  * between Cloud Spanner transactions themselves.
- * Retrying Aborted Transactions:
+ * Retrying aborted transactions:
  * When a transaction aborts, the application can choose to retry the
  * whole transaction again. To maximize the chances of successfully
  * committing the retry, the client should execute the retry in the
@@ -96,7 +102,7 @@ package com.google.spanner.v1;
  * idea to cap the number of retries a transaction can attempt;
  * instead, it is better to limit the total amount of time spent
  * retrying.
- * Idle Transactions:
+ * Idle transactions:
  * A transaction is considered idle if it has no outstanding reads or
  * SQL queries and has not started a read or SQL query within the last 10
  * seconds. Idle transactions can be aborted by Cloud Spanner so that they
@@ -105,7 +111,7 @@ package com.google.spanner.v1;
  * If this behavior is undesirable, periodically executing a simple
  * SQL query in the transaction (for example, `SELECT 1`) prevents the
  * transaction from becoming idle.
- * Snapshot Read-Only Transactions:
+ * Snapshot read-only transactions:
  * Snapshot read-only transactions provides a simpler method than
  * locking read-write transactions for doing several consistent
  * reads. However, this type of transaction does not support writes.
@@ -130,11 +136,10 @@ package com.google.spanner.v1;
  *   - Exact staleness.
  * If the Cloud Spanner database to be read is geographically distributed,
  * stale read-only transactions can execute more quickly than strong
- * or read-write transaction, because they are able to execute far
+ * or read-write transactions, because they are able to execute far
  * from the leader replica.
  * Each type of timestamp bound is discussed in detail below.
- * Strong:
- * Strong reads are guaranteed to see the effects of all transactions
+ * Strong: Strong reads are guaranteed to see the effects of all transactions
  * that have committed before the start of the read. Furthermore, all
  * rows yielded by a single read are consistent with each other -- if
  * any part of the read observes a transaction, all parts of the read
@@ -144,8 +149,10 @@ package com.google.spanner.v1;
  * concurrent writes. If consistency across reads is required, the
  * reads should be executed within a transaction or at an exact read
  * timestamp.
+ * Queries on change streams (see below for more details) must also specify
+ * the strong read timestamp bound.
  * See [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong].
- * Exact Staleness:
+ * Exact staleness:
  * These timestamp bounds execute reads at a user-specified
  * timestamp. Reads at a timestamp are guaranteed to see a consistent
  * prefix of the global transaction history: they observe
@@ -162,7 +169,7 @@ package com.google.spanner.v1;
  * boundedly stale reads usually return fresher results.
  * See [TransactionOptions.ReadOnly.read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.read_timestamp] and
  * [TransactionOptions.ReadOnly.exact_staleness][google.spanner.v1.TransactionOptions.ReadOnly.exact_staleness].
- * Bounded Staleness:
+ * Bounded staleness:
  * Bounded staleness modes allow Cloud Spanner to pick the read timestamp,
  * subject to a user-provided staleness bound. Cloud Spanner chooses the
  * newest timestamp within the staleness bound that allows execution
@@ -185,7 +192,7 @@ package com.google.spanner.v1;
  * read-only transactions.
  * See [TransactionOptions.ReadOnly.max_staleness][google.spanner.v1.TransactionOptions.ReadOnly.max_staleness] and
  * [TransactionOptions.ReadOnly.min_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.min_read_timestamp].
- * Old Read Timestamps and Garbage Collection:
+ * Old read timestamps and garbage collection:
  * Cloud Spanner continuously garbage collects deleted and overwritten data
  * in the background to reclaim storage space. This process is known
  * as "version GC". By default, version GC reclaims versions after they
@@ -194,7 +201,33 @@ package com.google.spanner.v1;
  * restriction also applies to in-progress reads and/or SQL queries whose
  * timestamp become too old while executing. Reads and SQL queries with
  * too-old read timestamps fail with the error `FAILED_PRECONDITION`.
- * Partitioned DML Transactions:
+ * You can configure and extend the `VERSION_RETENTION_PERIOD` of a
+ * database up to a period as long as one week, which allows Cloud Spanner
+ * to perform reads up to one week in the past.
+ * Querying change Streams:
+ * A Change Stream is a schema object that can be configured to watch data
+ * changes on the entire database, a set of tables, or a set of columns
+ * in a database.
+ * When a change stream is created, Spanner automatically defines a
+ * corresponding SQL Table-Valued Function (TVF) that can be used to query
+ * the change records in the associated change stream using the
+ * ExecuteStreamingSql API. The name of the TVF for a change stream is
+ * generated from the name of the change stream: READ_&lt;change_stream_name&gt;.
+ * All queries on change stream TVFs must be executed using the
+ * ExecuteStreamingSql API with a single-use read-only transaction with a
+ * strong read-only timestamp_bound. The change stream TVF allows users to
+ * specify the start_timestamp and end_timestamp for the time range of
+ * interest. All change records within the retention period is accessible
+ * using the strong read-only timestamp_bound. All other TransactionOptions
+ * are invalid for change stream queries.
+ * In addition, if TransactionOptions.read_only.return_read_timestamp is set
+ * to true, a special value of 2^63 - 2 will be returned in the
+ * [Transaction][google.spanner.v1.Transaction] message that describes the
+ * transaction, instead of a valid read timestamp. This special value should be
+ * discarded and not used for any subsequent queries.
+ * Please see https://cloud.google.com/spanner/docs/change-streams
+ * for more details on how to query the change stream TVFs.
+ * Partitioned DML transactions:
  * Partitioned DML transactions are used to execute DML statements with a
  * different execution strategy that provides different, and often better,
  * scalability properties for large, table-wide operations than DML in a
@@ -349,6 +382,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
+    } catch (com.google.protobuf.UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
       throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
@@ -438,6 +473,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
       } finally {
@@ -885,6 +922,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
       } finally {
@@ -1607,8 +1646,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
               break;
             case 8:
               {
-                timestampBoundCase_ = 1;
                 timestampBound_ = input.readBool();
+                timestampBoundCase_ = 1;
                 break;
               }
             case 18:
@@ -1687,6 +1726,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
       } finally {
@@ -2823,8 +2864,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         } else {
           if (timestampBoundCase_ == 2) {
             minReadTimestampBuilder_.mergeFrom(value);
+          } else {
+            minReadTimestampBuilder_.setMessage(value);
           }
-          minReadTimestampBuilder_.setMessage(value);
         }
         timestampBoundCase_ = 2;
         return this;
@@ -3105,8 +3147,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         } else {
           if (timestampBoundCase_ == 3) {
             maxStalenessBuilder_.mergeFrom(value);
+          } else {
+            maxStalenessBuilder_.setMessage(value);
           }
-          maxStalenessBuilder_.setMessage(value);
         }
         timestampBoundCase_ = 3;
         return this;
@@ -3398,8 +3441,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         } else {
           if (timestampBoundCase_ == 4) {
             readTimestampBuilder_.mergeFrom(value);
+          } else {
+            readTimestampBuilder_.setMessage(value);
           }
-          readTimestampBuilder_.setMessage(value);
         }
         timestampBoundCase_ = 4;
         return this;
@@ -3682,8 +3726,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         } else {
           if (timestampBoundCase_ == 5) {
             exactStalenessBuilder_.mergeFrom(value);
+          } else {
+            exactStalenessBuilder_.setMessage(value);
           }
-          exactStalenessBuilder_.setMessage(value);
         }
         timestampBoundCase_ = 5;
         return this;
@@ -4362,18 +4407,24 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    * towards the one transaction limit). After the active transaction is
    * completed, the session can immediately be re-used for the next transaction.
    * It is not necessary to create a new session for each transaction.
-   * Transaction Modes:
+   * Transaction modes:
    * Cloud Spanner supports three transaction modes:
    *   1. Locking read-write. This type of transaction is the only way
    *      to write data into Cloud Spanner. These transactions rely on
    *      pessimistic locking and, if necessary, two-phase commit.
    *      Locking read-write transactions may abort, requiring the
    *      application to retry.
-   *   2. Snapshot read-only. This transaction type provides guaranteed
-   *      consistency across several reads, but does not allow
-   *      writes. Snapshot read-only transactions can be configured to
-   *      read at timestamps in the past. Snapshot read-only
-   *      transactions do not need to be committed.
+   *   2. Snapshot read-only. Snapshot read-only transactions provide guaranteed
+   *      consistency across several reads, but do not allow
+   *      writes. Snapshot read-only transactions can be configured to read at
+   *      timestamps in the past, or configured to perform a strong read
+   *      (where Spanner will select a timestamp such that the read is
+   *      guaranteed to see the effects of all transactions that have committed
+   *      before the start of the read). Snapshot read-only transactions do not
+   *      need to be committed.
+   *      Queries on change streams must be performed with the snapshot read-only
+   *      transaction mode, specifying a strong read. Please see
+   *      [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong] for more details.
    *   3. Partitioned DML. This type of transaction is used to execute
    *      a single Partitioned DML statement. Partitioned DML partitions
    *      the key space and runs the DML statement over each partition
@@ -4385,10 +4436,10 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    * particular, read-only transactions do not take locks, so they do
    * not conflict with read-write transactions. As a consequence of not
    * taking locks, they also do not abort, so retry loops are not needed.
-   * Transactions may only read/write data in a single database. They
-   * may, however, read/write data in different tables within that
+   * Transactions may only read-write data in a single database. They
+   * may, however, read-write data in different tables within that
    * database.
-   * Locking Read-Write Transactions:
+   * Locking read-write transactions:
    * Locking transactions may be used to atomically read-modify-write
    * data anywhere in a database. This type of transaction is externally
    * consistent.
@@ -4398,7 +4449,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    * active as long as the transaction continues to do reads, and the
    * transaction has not been terminated by
    * [Commit][google.spanner.v1.Spanner.Commit] or
-   * [Rollback][google.spanner.v1.Spanner.Rollback].  Long periods of
+   * [Rollback][google.spanner.v1.Spanner.Rollback]. Long periods of
    * inactivity at the client may cause Cloud Spanner to release a
    * transaction's locks and abort it.
    * Conceptually, a read-write transaction consists of zero or more
@@ -4417,7 +4468,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    * how long the transaction's locks were held for. It is an error to
    * use Cloud Spanner locks for any sort of mutual exclusion other than
    * between Cloud Spanner transactions themselves.
-   * Retrying Aborted Transactions:
+   * Retrying aborted transactions:
    * When a transaction aborts, the application can choose to retry the
    * whole transaction again. To maximize the chances of successfully
    * committing the retry, the client should execute the retry in the
@@ -4430,7 +4481,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    * idea to cap the number of retries a transaction can attempt;
    * instead, it is better to limit the total amount of time spent
    * retrying.
-   * Idle Transactions:
+   * Idle transactions:
    * A transaction is considered idle if it has no outstanding reads or
    * SQL queries and has not started a read or SQL query within the last 10
    * seconds. Idle transactions can be aborted by Cloud Spanner so that they
@@ -4439,7 +4490,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    * If this behavior is undesirable, periodically executing a simple
    * SQL query in the transaction (for example, `SELECT 1`) prevents the
    * transaction from becoming idle.
-   * Snapshot Read-Only Transactions:
+   * Snapshot read-only transactions:
    * Snapshot read-only transactions provides a simpler method than
    * locking read-write transactions for doing several consistent
    * reads. However, this type of transaction does not support writes.
@@ -4464,11 +4515,10 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *   - Exact staleness.
    * If the Cloud Spanner database to be read is geographically distributed,
    * stale read-only transactions can execute more quickly than strong
-   * or read-write transaction, because they are able to execute far
+   * or read-write transactions, because they are able to execute far
    * from the leader replica.
    * Each type of timestamp bound is discussed in detail below.
-   * Strong:
-   * Strong reads are guaranteed to see the effects of all transactions
+   * Strong: Strong reads are guaranteed to see the effects of all transactions
    * that have committed before the start of the read. Furthermore, all
    * rows yielded by a single read are consistent with each other -- if
    * any part of the read observes a transaction, all parts of the read
@@ -4478,8 +4528,10 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    * concurrent writes. If consistency across reads is required, the
    * reads should be executed within a transaction or at an exact read
    * timestamp.
+   * Queries on change streams (see below for more details) must also specify
+   * the strong read timestamp bound.
    * See [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong].
-   * Exact Staleness:
+   * Exact staleness:
    * These timestamp bounds execute reads at a user-specified
    * timestamp. Reads at a timestamp are guaranteed to see a consistent
    * prefix of the global transaction history: they observe
@@ -4496,7 +4548,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    * boundedly stale reads usually return fresher results.
    * See [TransactionOptions.ReadOnly.read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.read_timestamp] and
    * [TransactionOptions.ReadOnly.exact_staleness][google.spanner.v1.TransactionOptions.ReadOnly.exact_staleness].
-   * Bounded Staleness:
+   * Bounded staleness:
    * Bounded staleness modes allow Cloud Spanner to pick the read timestamp,
    * subject to a user-provided staleness bound. Cloud Spanner chooses the
    * newest timestamp within the staleness bound that allows execution
@@ -4519,7 +4571,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    * read-only transactions.
    * See [TransactionOptions.ReadOnly.max_staleness][google.spanner.v1.TransactionOptions.ReadOnly.max_staleness] and
    * [TransactionOptions.ReadOnly.min_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.min_read_timestamp].
-   * Old Read Timestamps and Garbage Collection:
+   * Old read timestamps and garbage collection:
    * Cloud Spanner continuously garbage collects deleted and overwritten data
    * in the background to reclaim storage space. This process is known
    * as "version GC". By default, version GC reclaims versions after they
@@ -4528,7 +4580,33 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    * restriction also applies to in-progress reads and/or SQL queries whose
    * timestamp become too old while executing. Reads and SQL queries with
    * too-old read timestamps fail with the error `FAILED_PRECONDITION`.
-   * Partitioned DML Transactions:
+   * You can configure and extend the `VERSION_RETENTION_PERIOD` of a
+   * database up to a period as long as one week, which allows Cloud Spanner
+   * to perform reads up to one week in the past.
+   * Querying change Streams:
+   * A Change Stream is a schema object that can be configured to watch data
+   * changes on the entire database, a set of tables, or a set of columns
+   * in a database.
+   * When a change stream is created, Spanner automatically defines a
+   * corresponding SQL Table-Valued Function (TVF) that can be used to query
+   * the change records in the associated change stream using the
+   * ExecuteStreamingSql API. The name of the TVF for a change stream is
+   * generated from the name of the change stream: READ_&lt;change_stream_name&gt;.
+   * All queries on change stream TVFs must be executed using the
+   * ExecuteStreamingSql API with a single-use read-only transaction with a
+   * strong read-only timestamp_bound. The change stream TVF allows users to
+   * specify the start_timestamp and end_timestamp for the time range of
+   * interest. All change records within the retention period is accessible
+   * using the strong read-only timestamp_bound. All other TransactionOptions
+   * are invalid for change stream queries.
+   * In addition, if TransactionOptions.read_only.return_read_timestamp is set
+   * to true, a special value of 2^63 - 2 will be returned in the
+   * [Transaction][google.spanner.v1.Transaction] message that describes the
+   * transaction, instead of a valid read timestamp. This special value should be
+   * discarded and not used for any subsequent queries.
+   * Please see https://cloud.google.com/spanner/docs/change-streams
+   * for more details on how to query the change stream TVFs.
+   * Partitioned DML transactions:
    * Partitioned DML transactions are used to execute DML statements with a
    * different execution strategy that provides different, and often better,
    * scalability properties for large, table-wide operations than DML in a
@@ -4903,8 +4981,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       } else {
         if (modeCase_ == 1) {
           readWriteBuilder_.mergeFrom(value);
+        } else {
+          readWriteBuilder_.setMessage(value);
         }
-        readWriteBuilder_.setMessage(value);
       }
       modeCase_ = 1;
       return this;
@@ -5142,8 +5221,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       } else {
         if (modeCase_ == 3) {
           partitionedDmlBuilder_.mergeFrom(value);
+        } else {
+          partitionedDmlBuilder_.setMessage(value);
         }
-        partitionedDmlBuilder_.setMessage(value);
       }
       modeCase_ = 3;
       return this;
@@ -5380,8 +5460,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       } else {
         if (modeCase_ == 2) {
           readOnlyBuilder_.mergeFrom(value);
+        } else {
+          readOnlyBuilder_.setMessage(value);
         }
-        readOnlyBuilder_.setMessage(value);
       }
       modeCase_ = 2;
       return this;

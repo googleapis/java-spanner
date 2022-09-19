@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.rpc.ResourceInfo;
 import javax.annotation.Nullable;
@@ -34,6 +35,16 @@ public class DatabaseNotFoundException extends ResourceNotFoundException {
       @Nullable String message,
       ResourceInfo resourceInfo,
       @Nullable Throwable cause) {
-    super(token, message, resourceInfo, cause);
+    this(token, message, resourceInfo, cause, null);
+  }
+
+  /** Private constructor. Use {@link SpannerExceptionFactory} to create instances. */
+  DatabaseNotFoundException(
+      DoNotConstructDirectly token,
+      @Nullable String message,
+      ResourceInfo resourceInfo,
+      @Nullable Throwable cause,
+      @Nullable ApiException apiException) {
+    super(token, message, resourceInfo, cause, apiException);
   }
 }

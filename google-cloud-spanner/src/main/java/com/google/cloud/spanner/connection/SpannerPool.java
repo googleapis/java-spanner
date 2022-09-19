@@ -27,12 +27,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicates;
 import com.google.common.base.Ticker;
-import com.google.common.collect.Iterables;
 import io.grpc.ManagedChannelBuilder;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +41,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import javax.annotation.concurrent.GuardedBy;
 
 /**
@@ -120,15 +119,17 @@ public class SpannerPool {
     static final Object DEFAULT_CREDENTIALS_KEY = new Object();
     final Object key;
 
-    static CredentialsKey create(ConnectionOptions options) {
+    static CredentialsKey create(ConnectionOptions options) throws IOException {
       return new CredentialsKey(
-          Iterables.find(
-              Arrays.asList(
+          Stream.of(
                   options.getOAuthToken(),
+                  options.getCredentialsProvider() == null ? null : options.getCredentials(),
                   options.getFixedCredentials(),
                   options.getCredentialsUrl(),
-                  DEFAULT_CREDENTIALS_KEY),
-              Predicates.notNull()));
+                  DEFAULT_CREDENTIALS_KEY)
+              .filter(Objects::nonNull)
+              .findFirst()
+              .get());
     }
 
     private CredentialsKey(Object key) {
@@ -152,16 +153,25 @@ public class SpannerPool {
     private final Integer numChannels;
     private final boolean usePlainText;
     private final String userAgent;
+    private final String databaseRole;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
-      return new SpannerPoolKey(options);
+      try {
+        return new SpannerPoolKey(options);
+      } catch (IOException ioException) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT,
+            "Failed to get credentials: " + ioException.getMessage(),
+            ioException);
+      }
     }
 
-    private SpannerPoolKey(ConnectionOptions options) {
+    private SpannerPoolKey(ConnectionOptions options) throws IOException {
       this.host = options.getHost();
       this.projectId = options.getProjectId();
       this.credentialsKey = CredentialsKey.create(options);
+      this.databaseRole = options.getDatabaseRole();
       this.sessionPoolOptions =
           options.getSessionPoolOptions() == null
               ? SessionPoolOptions.newBuilder().build()
@@ -182,6 +192,7 @@ public class SpannerPool {
           && Objects.equals(this.credentialsKey, other.credentialsKey)
           && Objects.equals(this.sessionPoolOptions, other.sessionPoolOptions)
           && Objects.equals(this.numChannels, other.numChannels)
+          && Objects.equals(this.databaseRole, other.databaseRole)
           && Objects.equals(this.usePlainText, other.usePlainText)
           && Objects.equals(this.userAgent, other.userAgent);
     }
@@ -195,6 +206,7 @@ public class SpannerPool {
           this.sessionPoolOptions,
           this.numChannels,
           this.usePlainText,
+          this.databaseRole,
           this.userAgent);
     }
   }
@@ -321,6 +333,7 @@ public class SpannerPool {
         .setClientLibToken(MoreObjects.firstNonNull(key.userAgent, CONNECTION_API_CLIENT_LIB_TOKEN))
         .setHost(key.host)
         .setProjectId(key.projectId)
+        .setDatabaseRole(options.getDatabaseRole())
         .setCredentials(options.getCredentials());
     builder.setSessionPoolOption(key.sessionPoolOptions);
     if (key.numChannels != null) {

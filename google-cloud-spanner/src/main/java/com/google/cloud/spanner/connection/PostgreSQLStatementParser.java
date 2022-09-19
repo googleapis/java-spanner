@@ -31,7 +31,6 @@ import javax.annotation.Nullable;
 public class PostgreSQLStatementParser extends AbstractStatementParser {
   PostgreSQLStatementParser() throws CompileException {
     super(
-        Dialect.POSTGRESQL,
         Collections.unmodifiableSet(
             ClientSideStatements.getInstance(Dialect.POSTGRESQL).getCompiledStatements()));
   }
@@ -227,7 +226,6 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
       char startQuote,
       String dollarTag,
       @Nullable StringBuilder result) {
-    boolean lastCharWasEscapeChar = false;
     int currentIndex = startIndex + 1;
     while (currentIndex < sql.length()) {
       char currentChar = sql.charAt(currentIndex);
@@ -239,8 +237,6 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
             appendIfNotNull(result, currentChar, dollarTag, currentChar);
             return currentIndex + tag.length() + 2;
           }
-        } else if (lastCharWasEscapeChar) {
-          lastCharWasEscapeChar = false;
         } else if (sql.length() > currentIndex + 1 && sql.charAt(currentIndex + 1) == startQuote) {
           // This is an escaped quote (e.g. 'foo''bar')
           appendIfNotNull(result, currentChar);
@@ -251,8 +247,6 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
           appendIfNotNull(result, currentChar);
           return currentIndex + 1;
         }
-      } else {
-        lastCharWasEscapeChar = currentChar == '\\';
       }
       currentIndex++;
       appendIfNotNull(result, currentChar);

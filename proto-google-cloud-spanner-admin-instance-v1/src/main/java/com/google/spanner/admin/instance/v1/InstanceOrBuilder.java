@@ -120,11 +120,13 @@ public interface InstanceOrBuilder
    *
    *
    * <pre>
-   * Required. The number of nodes allocated to this instance. This may be zero
-   * in API responses for instances that are not yet in state `READY`.
+   * The number of nodes allocated to this instance. At most one of either
+   * node_count or processing_units should be present in the message. This
+   * may be zero in API responses for instances that are not yet in state
+   * `READY`.
    * See [the
-   * documentation](https://cloud.google.com/spanner/docs/instances#node_count)
-   * for more information about nodes.
+   * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+   * for more information about nodes and processing units.
    * </pre>
    *
    * <code>int32 node_count = 5;</code>
@@ -140,6 +142,9 @@ public interface InstanceOrBuilder
    * The number of processing units allocated to this instance. At most one of
    * processing_units or node_count should be present in the message. This may
    * be zero in API responses for instances that are not yet in state `READY`.
+   * See [the
+   * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+   * for more information about nodes and processing units.
    * </pre>
    *
    * <code>int32 processing_units = 9;</code>
@@ -153,10 +158,10 @@ public interface InstanceOrBuilder
    *
    * <pre>
    * Output only. The current instance state. For
-   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-   * either omitted or set to `CREATING`. For
-   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-   * either omitted or set to `READY`.
+   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+   * the state must be either omitted or set to `CREATING`. For
+   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+   * the state must be either omitted or set to `READY`.
    * </pre>
    *
    * <code>
@@ -171,10 +176,10 @@ public interface InstanceOrBuilder
    *
    * <pre>
    * Output only. The current instance state. For
-   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-   * either omitted or set to `CREATING`. For
-   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-   * either omitted or set to `READY`.
+   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+   * the state must be either omitted or set to `CREATING`. For
+   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+   * the state must be either omitted or set to `READY`.
    * </pre>
    *
    * <code>
@@ -196,9 +201,9 @@ public interface InstanceOrBuilder
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
    *  * Label keys must be between 1 and 63 characters long and must conform to
-   *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+   *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
-   *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+   *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
    * If you plan to use labels in your own code, please note that additional
@@ -223,9 +228,9 @@ public interface InstanceOrBuilder
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
    *  * Label keys must be between 1 and 63 characters long and must conform to
-   *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+   *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
-   *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+   *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
    * If you plan to use labels in your own code, please note that additional
@@ -253,9 +258,9 @@ public interface InstanceOrBuilder
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
    *  * Label keys must be between 1 and 63 characters long and must conform to
-   *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+   *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
-   *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+   *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
    * If you plan to use labels in your own code, please note that additional
@@ -280,9 +285,9 @@ public interface InstanceOrBuilder
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
    *  * Label keys must be between 1 and 63 characters long and must conform to
-   *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+   *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
-   *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+   *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
    * If you plan to use labels in your own code, please note that additional
@@ -295,7 +300,12 @@ public interface InstanceOrBuilder
    *
    * <code>map&lt;string, string&gt; labels = 7;</code>
    */
-  java.lang.String getLabelsOrDefault(java.lang.String key, java.lang.String defaultValue);
+
+  /* nullable */
+  java.lang.String getLabelsOrDefault(
+      java.lang.String key,
+      /* nullable */
+      java.lang.String defaultValue);
   /**
    *
    *
@@ -307,9 +317,9 @@ public interface InstanceOrBuilder
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
    *  * Label keys must be between 1 and 63 characters long and must conform to
-   *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+   *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
-   *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+   *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
    * If you plan to use labels in your own code, please note that additional
@@ -374,4 +384,80 @@ public interface InstanceOrBuilder
    * @return The bytes of the endpointUris at the given index.
    */
   com.google.protobuf.ByteString getEndpointUrisBytes(int index);
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was created.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the createTime field is set.
+   */
+  boolean hasCreateTime();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was created.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The createTime.
+   */
+  com.google.protobuf.Timestamp getCreateTime();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was created.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was most recently updated.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the updateTime field is set.
+   */
+  boolean hasUpdateTime();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was most recently updated.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The updateTime.
+   */
+  com.google.protobuf.Timestamp getUpdateTime();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was most recently updated.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.protobuf.TimestampOrBuilder getUpdateTimeOrBuilder();
 }

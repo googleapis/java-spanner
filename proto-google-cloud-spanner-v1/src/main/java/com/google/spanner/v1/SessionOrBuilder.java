@@ -114,7 +114,12 @@ public interface SessionOrBuilder
    *
    * <code>map&lt;string, string&gt; labels = 2;</code>
    */
-  java.lang.String getLabelsOrDefault(java.lang.String key, java.lang.String defaultValue);
+
+  /* nullable */
+  java.lang.String getLabelsOrDefault(
+      java.lang.String key,
+      /* nullable */
+      java.lang.String defaultValue);
   /**
    *
    *
@@ -213,4 +218,29 @@ public interface SessionOrBuilder
    * </code>
    */
   com.google.protobuf.TimestampOrBuilder getApproximateLastUseTimeOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * The database role which created this session.
+   * </pre>
+   *
+   * <code>string creator_role = 5;</code>
+   *
+   * @return The creatorRole.
+   */
+  java.lang.String getCreatorRole();
+  /**
+   *
+   *
+   * <pre>
+   * The database role which created this session.
+   * </pre>
+   *
+   * <code>string creator_role = 5;</code>
+   *
+   * @return The bytes for creatorRole.
+   */
+  com.google.protobuf.ByteString getCreatorRoleBytes();
 }
