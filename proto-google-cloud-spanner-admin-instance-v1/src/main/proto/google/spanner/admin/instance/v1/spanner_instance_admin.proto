@@ -500,10 +500,6 @@ message InstanceConfig {
 
   // The geographic placement of nodes in this instance configuration and their
   // replication properties.
-  // (-- TODO(b/193081755): To create user managed configurations, input
-  // `replicas` must include all replicas in `replicas` of the `base_config`
-  // and include one or more replicas in the `optional_replicas` of the
-  // `base_config`. --)
   repeated ReplicaInfo replicas = 3;
 
   // Output only. The available optional replicas to choose from for user
