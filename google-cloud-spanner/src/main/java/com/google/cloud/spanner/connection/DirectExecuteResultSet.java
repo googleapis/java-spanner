@@ -27,9 +27,11 @@ import com.google.cloud.spanner.Value;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * {@link ResultSet} implementation used by the Spanner connection API to ensure that the query for
@@ -443,6 +445,20 @@ class DirectExecuteResultSet implements ResultSet {
   public byte[] getProtoMessage(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getProtoMessage(columnName);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoEnum(columnIndex, method);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoEnum(columnName, method);
   }
 
   @Override

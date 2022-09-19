@@ -31,9 +31,11 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Function;
 
 /** Utility methods for working with {@link com.google.cloud.spanner.ResultSet}. */
 public final class ResultSets {
@@ -315,6 +317,18 @@ public final class ResultSets {
     public <T extends AbstractMessage> T getProtoMessage(String columnName, T m)
         throws InvalidProtocolBufferException {
       return getCurrentRowAsStruct().getProtoMessage(columnName, m);
+    }
+
+    @Override
+    public <T extends ProtocolMessageEnum> T getProtoEnum(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+      return getCurrentRowAsStruct().getProtoEnum(columnIndex, method);
+    }
+
+    @Override
+    public <T extends ProtocolMessageEnum> T getProtoEnum(
+        String columnName, Function<Integer, ProtocolMessageEnum> method) {
+      return getCurrentRowAsStruct().getProtoEnum(columnName, method);
     }
 
     @Override

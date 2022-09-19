@@ -21,8 +21,10 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * A base interface for reading the fields of a {@code STRUCT}. The Cloud Spanner yields {@code
@@ -53,6 +55,7 @@ import java.util.List;
  * Struct} is an immutable implementation of {@code StructReader}.
  */
 public interface StructReader {
+
   /**
    * Returns the type of the underlying data. This will always be a {@code STRUCT} type, with fields
    * corresponding to the data's columns. For the result of a read or query, this will always match
@@ -305,6 +308,12 @@ public interface StructReader {
 
   <T extends AbstractMessage> T getProtoMessage(String columnName, T m)
       throws InvalidProtocolBufferException;
+
+  <T extends ProtocolMessageEnum> T getProtoEnum(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method);
+
+  <T extends ProtocolMessageEnum> T getProtoEnum(
+      String columnName, Function<Integer, ProtocolMessageEnum> method);
 
   /**
    * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.struct(...))}.
