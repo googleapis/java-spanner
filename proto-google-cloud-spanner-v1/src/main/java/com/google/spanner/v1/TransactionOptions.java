@@ -1607,8 +1607,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
               break;
             case 8:
               {
-                timestampBoundCase_ = 1;
                 timestampBound_ = input.readBool();
+                timestampBoundCase_ = 1;
                 break;
               }
             case 18:

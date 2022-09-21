@@ -701,10 +701,10 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       if (childIndex_ != 0) {
         output.writeInt32(1, childIndex_);
       }
-      if (!getTypeBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(type_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, type_);
       }
-      if (!getVariableBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(variable_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, variable_);
       }
       unknownFields.writeTo(output);
@@ -719,10 +719,10 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       if (childIndex_ != 0) {
         size += com.google.protobuf.CodedOutputStream.computeInt32Size(1, childIndex_);
       }
-      if (!getTypeBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(type_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, type_);
       }
-      if (!getVariableBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(variable_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, variable_);
       }
       size += unknownFields.getSerializedSize();
@@ -1719,7 +1719,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public boolean containsSubqueries(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       return internalGetSubqueries().getMap().containsKey(key);
     }
@@ -1762,7 +1762,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public int getSubqueriesOrDefault(java.lang.String key, int defaultValue) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       java.util.Map<java.lang.String, java.lang.Integer> map = internalGetSubqueries().getMap();
       return map.containsKey(key) ? map.get(key) : defaultValue;
@@ -1783,7 +1783,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public int getSubqueriesOrThrow(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       java.util.Map<java.lang.String, java.lang.Integer> map = internalGetSubqueries().getMap();
       if (!map.containsKey(key)) {
@@ -1806,7 +1806,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-      if (!getDescriptionBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(description_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, description_);
       }
       com.google.protobuf.GeneratedMessageV3.serializeStringMapTo(
@@ -1820,7 +1820,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       if (size != -1) return size;
 
       size = 0;
-      if (!getDescriptionBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(description_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, description_);
       }
       for (java.util.Map.Entry<java.lang.String, java.lang.Integer> entry :
@@ -2309,7 +2309,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       @java.lang.Override
       public boolean containsSubqueries(java.lang.String key) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         return internalGetSubqueries().getMap().containsKey(key);
       }
@@ -2352,7 +2352,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       @java.lang.Override
       public int getSubqueriesOrDefault(java.lang.String key, int defaultValue) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         java.util.Map<java.lang.String, java.lang.Integer> map = internalGetSubqueries().getMap();
         return map.containsKey(key) ? map.get(key) : defaultValue;
@@ -2373,7 +2373,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       @java.lang.Override
       public int getSubqueriesOrThrow(java.lang.String key) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         java.util.Map<java.lang.String, java.lang.Integer> map = internalGetSubqueries().getMap();
         if (!map.containsKey(key)) {
@@ -2401,7 +2401,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
        */
       public Builder removeSubqueries(java.lang.String key) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         internalGetMutableSubqueries().getMutableMap().remove(key);
         return this;
@@ -2426,7 +2426,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
        */
       public Builder putSubqueries(java.lang.String key, int value) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
 
         internalGetMutableSubqueries().getMutableMap().put(key, value);
@@ -2871,7 +2871,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     if (kind_ != com.google.spanner.v1.PlanNode.Kind.KIND_UNSPECIFIED.getNumber()) {
       output.writeEnum(2, kind_);
     }
-    if (!getDisplayNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(displayName_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, displayName_);
     }
     for (int i = 0; i < childLinks_.size(); i++) {
@@ -2901,7 +2901,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     if (kind_ != com.google.spanner.v1.PlanNode.Kind.KIND_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(2, kind_);
     }
-    if (!getDisplayNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(displayName_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, displayName_);
     }
     for (int i = 0; i < childLinks_.size(); i++) {

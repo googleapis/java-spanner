@@ -81,8 +81,8 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
             }
           case 18:
             {
-              transactionCase_ = 2;
               transaction_ = input.readBytes();
+              transactionCase_ = 2;
               break;
             }
           case 26:
@@ -540,7 +540,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!getSessionBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(session_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, session_);
     }
     if (transactionCase_ == 2) {
@@ -567,7 +567,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     if (size != -1) return size;
 
     size = 0;
-    if (!getSessionBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(session_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, session_);
     }
     if (transactionCase_ == 2) {

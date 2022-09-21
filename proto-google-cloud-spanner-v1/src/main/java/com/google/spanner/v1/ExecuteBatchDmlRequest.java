@@ -636,7 +636,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     @java.lang.Override
     public boolean containsParamTypes(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       return internalGetParamTypes().getMap().containsKey(key);
     }
@@ -684,7 +684,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     public com.google.spanner.v1.Type getParamTypesOrDefault(
         java.lang.String key, com.google.spanner.v1.Type defaultValue) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       java.util.Map<java.lang.String, com.google.spanner.v1.Type> map =
           internalGetParamTypes().getMap();
@@ -708,7 +708,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     @java.lang.Override
     public com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       java.util.Map<java.lang.String, com.google.spanner.v1.Type> map =
           internalGetParamTypes().getMap();
@@ -732,7 +732,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-      if (!getSqlBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(sql_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, sql_);
       }
       if (params_ != null) {
@@ -749,7 +749,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       if (size != -1) return size;
 
       size = 0;
-      if (!getSqlBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(sql_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, sql_);
       }
       if (params_ != null) {
@@ -1508,7 +1508,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       @java.lang.Override
       public boolean containsParamTypes(java.lang.String key) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         return internalGetParamTypes().getMap().containsKey(key);
       }
@@ -1556,7 +1556,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       public com.google.spanner.v1.Type getParamTypesOrDefault(
           java.lang.String key, com.google.spanner.v1.Type defaultValue) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         java.util.Map<java.lang.String, com.google.spanner.v1.Type> map =
             internalGetParamTypes().getMap();
@@ -1580,7 +1580,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       @java.lang.Override
       public com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         java.util.Map<java.lang.String, com.google.spanner.v1.Type> map =
             internalGetParamTypes().getMap();
@@ -1611,7 +1611,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        */
       public Builder removeParamTypes(java.lang.String key) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         internalGetMutableParamTypes().getMutableMap().remove(key);
         return this;
@@ -1638,11 +1638,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        */
       public Builder putParamTypes(java.lang.String key, com.google.spanner.v1.Type value) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         if (value == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map value");
         }
+
         internalGetMutableParamTypes().getMutableMap().put(key, value);
         return this;
       }
@@ -2022,7 +2023,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (!getSessionBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(session_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, session_);
     }
     if (transaction_ != null) {
@@ -2046,7 +2047,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     if (size != -1) return size;
 
     size = 0;
-    if (!getSessionBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(session_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, session_);
     }
     if (transaction_ != null) {
