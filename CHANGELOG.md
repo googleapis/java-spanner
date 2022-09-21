@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.30.2](https://github.com/googleapis/java-spanner/compare/v6.30.1...v6.30.2) (2022-09-21)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.4.5 ([#2022](https://github.com/googleapis/java-spanner/issues/2022)) ([0536962](https://github.com/googleapis/java-spanner/commit/0536962df9af3feed237f758a560c24fafd81d60))
+* Update dependency org.junit.vintage:junit-vintage-engine to v5.9.1 ([#2023](https://github.com/googleapis/java-spanner/issues/2023)) ([3fb4235](https://github.com/googleapis/java-spanner/commit/3fb423571c1128b7cafdc6596d5366268d74f0e4))
+
 ## [6.30.1](https://github.com/googleapis/java-spanner/compare/v6.30.0...v6.30.1) (2022-09-20)
 
 
