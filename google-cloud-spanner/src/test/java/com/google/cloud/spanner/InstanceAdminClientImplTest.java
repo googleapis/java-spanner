@@ -195,14 +195,14 @@ public class InstanceAdminClientImplTest {
     String nextToken = "token";
     Operation operation1 = getInstanceConfigOperation("custom-instance-config-1", 1);
     Operation operation2 = getInstanceConfigOperation("custom-instance-config-2", 2);
-    when(rpc.listInstanceConfigOperations(PROJECT_ID, 1, null, null))
+    when(rpc.listInstanceConfigOperations(1, null, null))
         .thenReturn(new Paginated<>(ImmutableList.of(operation1), nextToken));
-    when(rpc.listInstanceConfigOperations(PROJECT_ID, 1, null, nextToken))
+    when(rpc.listInstanceConfigOperations(1, null, nextToken))
         .thenReturn(new Paginated<>(ImmutableList.of(operation2), ""));
     List<Operation> operations =
         Lists.newArrayList(client.listInstanceConfigOperations(Options.pageSize(1)).iterateAll());
-    assertThat(operations.get(0).getName()).isEqualTo("custom-instance-config-1");
-    assertThat(operations.get(1).getName()).isEqualTo("custom-instance-config-2");
+    assertThat(operations.get(0).getName()).isEqualTo(operation1.getName());
+    assertThat(operations.get(1).getName()).isEqualTo(operation2.getName());
     assertThat(operations.size()).isEqualTo(2);
   }
 

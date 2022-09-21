@@ -960,7 +960,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public Paginated<Operation> listInstanceConfigOperations(
-      String projectName, int pageSize, @Nullable String filter, @Nullable String pageToken) {
+      int pageSize, @Nullable String filter, @Nullable String pageToken) {
     acquireAdministrativeRequestsRateLimiter();
     ListInstanceConfigOperationsRequest.Builder requestBuilder =
         ListInstanceConfigOperationsRequest.newBuilder()
