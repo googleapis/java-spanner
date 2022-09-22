@@ -59,4 +59,11 @@ public interface BatchClient {
    *     successive read/query.
    */
   BatchReadOnlyTransaction batchReadOnlyTransaction(BatchTransactionId batchTransactionId);
+
+  /**
+   * Returns the {@link DatabaseRole} used by the client connection. The database role that is used
+   * determines the access permissions that a connection has. This can for example be used to create
+   * connections that are only permitted to access certain tables.
+   */
+  String getDatabaseRole();
 }

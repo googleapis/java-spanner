@@ -59,6 +59,11 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
+  public String getDatabaseRole() {
+    return pool.getDatabaseRole();
+  }
+
+  @Override
   public Timestamp write(final Iterable<Mutation> mutations) throws SpannerException {
     return writeWithOptions(mutations).getCommitTimestamp();
   }

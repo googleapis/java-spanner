@@ -43,6 +43,11 @@ public class BatchClientImpl implements BatchClient {
   }
 
   @Override
+  public String getDatabaseRole() {
+    return this.sessionClient.getSpanner().getOptions().getDatabaseRole();
+  }
+
+  @Override
   public BatchReadOnlyTransaction batchReadOnlyTransaction(TimestampBound bound) {
     SessionImpl session = sessionClient.createSession();
     return new BatchReadOnlyTransactionImpl(

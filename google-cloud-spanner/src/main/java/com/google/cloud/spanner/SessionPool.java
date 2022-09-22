@@ -1784,6 +1784,8 @@ class SessionPool {
 
   private final SessionPoolOptions options;
   private final SettableFuture<Dialect> dialect = SettableFuture.create();
+
+  private final String databaseRole;
   private final SessionClient sessionClient;
   private final ScheduledExecutorService executor;
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
@@ -1858,6 +1860,7 @@ class SessionPool {
       SpannerOptions spannerOptions, SessionClient sessionClient, List<LabelValue> labelValues) {
     return createPool(
         spannerOptions.getSessionPoolOptions(),
+        spannerOptions.getDatabaseRole(),
         ((GrpcTransportOptions) spannerOptions.getTransportOptions()).getExecutorFactory(),
         sessionClient,
         new Clock(),
@@ -1879,6 +1882,7 @@ class SessionPool {
       Clock clock) {
     return createPool(
         poolOptions,
+        "",
         executorFactory,
         sessionClient,
         clock,
@@ -1888,6 +1892,7 @@ class SessionPool {
 
   static SessionPool createPool(
       SessionPoolOptions poolOptions,
+      String databaseRole,
       ExecutorFactory<ScheduledExecutorService> executorFactory,
       SessionClient sessionClient,
       Clock clock,
@@ -1896,6 +1901,7 @@ class SessionPool {
     SessionPool pool =
         new SessionPool(
             poolOptions,
+            databaseRole,
             executorFactory,
             executorFactory.get(),
             sessionClient,
@@ -1908,6 +1914,7 @@ class SessionPool {
 
   private SessionPool(
       SessionPoolOptions options,
+      String databaseRole,
       ExecutorFactory<ScheduledExecutorService> executorFactory,
       ScheduledExecutorService executor,
       SessionClient sessionClient,
@@ -1915,6 +1922,7 @@ class SessionPool {
       MetricRegistry metricRegistry,
       List<LabelValue> labelValues) {
     this.options = options;
+    this.databaseRole = databaseRole;
     this.executorFactory = executorFactory;
     this.executor = executor;
     this.sessionClient = sessionClient;
@@ -1954,6 +1962,10 @@ class SessionPool {
     } catch (TimeoutException timeoutException) {
       throw SpannerExceptionFactory.propagateTimeout(timeoutException);
     }
+  }
+
+  String getDatabaseRole() {
+    return databaseRole;
   }
 
   @VisibleForTesting

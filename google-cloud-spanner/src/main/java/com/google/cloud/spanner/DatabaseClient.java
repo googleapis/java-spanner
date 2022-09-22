@@ -36,6 +36,10 @@ public interface DatabaseClient {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
+  default String getDatabaseRole() {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
   /**
    * Writes the given mutations atomically to the database.
    *
