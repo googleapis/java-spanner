@@ -16,12 +16,7 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.MetricRegistryConstants.NUM_IN_USE_SESSIONS;
-import static com.google.cloud.spanner.MetricRegistryConstants.NUM_READ_SESSIONS;
-import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_BEING_PREPARED;
-import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSIONS;
-import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
-import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
+import static com.google.cloud.spanner.MetricRegistryConstants.*;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -108,6 +103,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   SessionPool pool;
   SessionPoolOptions options;
   private String sessionName = String.format("%s/sessions/s", db.getName());
+  private String TEST_DATABASE_ROLE = "my-role";
 
   @Parameters(name = "min sessions = {0}")
   public static Collection<Object[]> data() {
@@ -127,7 +123,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       Clock clock, MetricRegistry metricRegistry, List<LabelValue> labelValues) {
     return SessionPool.createPool(
         options,
-        null,
+        TEST_DATABASE_ROLE,
         new TestExecutorFactory(),
         client.getSessionClient(db),
         clock,
@@ -1177,6 +1173,13 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(readSessions.value()).isEqualTo(2L);
     writePreparedSessions = numSessionsInPool.get(3);
     assertThat(writePreparedSessions.value()).isEqualTo(0L);
+  }
+
+  @Test
+  public void testDatabaseRole() throws Exception {
+    setupMockSessionCreation();
+    pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
+    assertEquals(TEST_DATABASE_ROLE, pool.getDatabaseRole());
   }
 
   private void mockKeepAlive(Session session) {

@@ -115,4 +115,9 @@ public final class BatchClientImplTest {
     assertThat(batchTxn.getReadTimestamp())
         .isEqualTo(batchTxn.getBatchTransactionId().getTimestamp());
   }
+
+  @Test
+  public void testGetDatabaseRole() {
+    assertThat(client.getDatabaseRole()).isEqualTo("role");
+  }
 }
