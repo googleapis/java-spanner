@@ -41,7 +41,7 @@ public interface DatabaseClient {
    * determines the access permissions that a connection has. This can for example be used to create
    * connections that are only permitted to access certain tables.
    *
-   * @return the {@link DatabaseRole} that is used by the client connection.
+   * @return the {@link DatabaseRole} used by the client connection.
    */
   default String getDatabaseRole() {
     throw new UnsupportedOperationException("method should be overwritten");
