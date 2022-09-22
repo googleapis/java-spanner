@@ -16,7 +16,13 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.MetricRegistryConstants.*;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_IN_USE_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_READ_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_BEING_PREPARED;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -1176,7 +1182,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   }
 
   @Test
-  public void testDatabaseRole() throws Exception {
+  public void testGetDatabaseRole() throws Exception {
     setupMockSessionCreation();
     pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
     assertEquals(TEST_DATABASE_ROLE, pool.getDatabaseRole());
