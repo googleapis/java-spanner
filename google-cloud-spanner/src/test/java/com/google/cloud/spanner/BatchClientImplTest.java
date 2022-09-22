@@ -118,6 +118,6 @@ public final class BatchClientImplTest {
 
   @Test
   public void testGetDatabaseRole() {
-    assertThat(client.getDatabaseRole()).isEqualTo("role");
+    assertEquals(client.getDatabaseRole(), "role");
   }
 }
