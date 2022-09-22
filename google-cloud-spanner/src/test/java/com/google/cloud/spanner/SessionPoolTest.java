@@ -127,7 +127,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       Clock clock, MetricRegistry metricRegistry, List<LabelValue> labelValues) {
     return SessionPool.createPool(
         options,
-        "",
+        null,
         new TestExecutorFactory(),
         client.getSessionClient(db),
         clock,

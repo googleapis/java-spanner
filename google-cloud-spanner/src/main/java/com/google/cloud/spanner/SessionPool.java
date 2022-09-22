@@ -1784,7 +1784,6 @@ class SessionPool {
 
   private final SessionPoolOptions options;
   private final SettableFuture<Dialect> dialect = SettableFuture.create();
-
   private final String databaseRole;
   private final SessionClient sessionClient;
   private final ScheduledExecutorService executor;
@@ -1882,7 +1881,7 @@ class SessionPool {
       Clock clock) {
     return createPool(
         poolOptions,
-        "",
+        null,
         executorFactory,
         sessionClient,
         clock,
@@ -1964,7 +1963,8 @@ class SessionPool {
     }
   }
 
-  String getDatabaseRole() {
+  @Nullable
+  public String getDatabaseRole() {
     return databaseRole;
   }
 

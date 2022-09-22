@@ -65,5 +65,7 @@ public interface BatchClient {
    * determines the access permissions that a connection has. This can for example be used to create
    * connections that are only permitted to access certain tables.
    */
-  String getDatabaseRole();
+  default String getDatabaseRole() {
+    throw new UnsupportedOperationException("method should be overwritten");
+  };
 }
