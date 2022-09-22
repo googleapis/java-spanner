@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.anyMap;
 import static org.mockito.Mockito.eq;
