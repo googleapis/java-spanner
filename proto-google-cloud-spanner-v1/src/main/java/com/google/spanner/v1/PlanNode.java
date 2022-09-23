@@ -1719,7 +1719,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public boolean containsSubqueries(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       return internalGetSubqueries().getMap().containsKey(key);
     }
@@ -1762,7 +1762,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public int getSubqueriesOrDefault(java.lang.String key, int defaultValue) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       java.util.Map<java.lang.String, java.lang.Integer> map = internalGetSubqueries().getMap();
       return map.containsKey(key) ? map.get(key) : defaultValue;
@@ -1783,7 +1783,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public int getSubqueriesOrThrow(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       java.util.Map<java.lang.String, java.lang.Integer> map = internalGetSubqueries().getMap();
       if (!map.containsKey(key)) {
@@ -2309,7 +2309,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       @java.lang.Override
       public boolean containsSubqueries(java.lang.String key) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         return internalGetSubqueries().getMap().containsKey(key);
       }
@@ -2352,7 +2352,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       @java.lang.Override
       public int getSubqueriesOrDefault(java.lang.String key, int defaultValue) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         java.util.Map<java.lang.String, java.lang.Integer> map = internalGetSubqueries().getMap();
         return map.containsKey(key) ? map.get(key) : defaultValue;
@@ -2373,7 +2373,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
       @java.lang.Override
       public int getSubqueriesOrThrow(java.lang.String key) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         java.util.Map<java.lang.String, java.lang.Integer> map = internalGetSubqueries().getMap();
         if (!map.containsKey(key)) {
@@ -2401,7 +2401,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
        */
       public Builder removeSubqueries(java.lang.String key) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         internalGetMutableSubqueries().getMutableMap().remove(key);
         return this;
@@ -2426,7 +2426,7 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
        */
       public Builder putSubqueries(java.lang.String key, int value) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
 
         internalGetMutableSubqueries().getMutableMap().put(key, value);

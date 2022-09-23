@@ -81,8 +81,8 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
             }
           case 18:
             {
-              transactionCase_ = 2;
               transaction_ = input.readBytes();
+              transactionCase_ = 2;
               break;
             }
           case 26:

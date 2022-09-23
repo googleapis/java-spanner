@@ -100,14 +100,14 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
             }
           case 24:
             {
-              rowCountCase_ = 3;
               rowCount_ = input.readInt64();
+              rowCountCase_ = 3;
               break;
             }
           case 32:
             {
-              rowCountCase_ = 4;
               rowCount_ = input.readInt64();
+              rowCountCase_ = 4;
               break;
             }
           default:

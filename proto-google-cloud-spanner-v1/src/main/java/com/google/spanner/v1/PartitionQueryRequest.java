@@ -475,7 +475,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
   @java.lang.Override
   public boolean containsParamTypes(java.lang.String key) {
     if (key == null) {
-      throw new java.lang.NullPointerException();
+      throw new NullPointerException("map key");
     }
     return internalGetParamTypes().getMap().containsKey(key);
   }
@@ -523,7 +523,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
   public com.google.spanner.v1.Type getParamTypesOrDefault(
       java.lang.String key, com.google.spanner.v1.Type defaultValue) {
     if (key == null) {
-      throw new java.lang.NullPointerException();
+      throw new NullPointerException("map key");
     }
     java.util.Map<java.lang.String, com.google.spanner.v1.Type> map =
         internalGetParamTypes().getMap();
@@ -547,7 +547,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
   @java.lang.Override
   public com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key) {
     if (key == null) {
-      throw new java.lang.NullPointerException();
+      throw new NullPointerException("map key");
     }
     java.util.Map<java.lang.String, com.google.spanner.v1.Type> map =
         internalGetParamTypes().getMap();
@@ -1809,7 +1809,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     @java.lang.Override
     public boolean containsParamTypes(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       return internalGetParamTypes().getMap().containsKey(key);
     }
@@ -1857,7 +1857,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     public com.google.spanner.v1.Type getParamTypesOrDefault(
         java.lang.String key, com.google.spanner.v1.Type defaultValue) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       java.util.Map<java.lang.String, com.google.spanner.v1.Type> map =
           internalGetParamTypes().getMap();
@@ -1881,7 +1881,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     @java.lang.Override
     public com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       java.util.Map<java.lang.String, com.google.spanner.v1.Type> map =
           internalGetParamTypes().getMap();
@@ -1912,7 +1912,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      */
     public Builder removeParamTypes(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       internalGetMutableParamTypes().getMutableMap().remove(key);
       return this;
@@ -1939,11 +1939,12 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      */
     public Builder putParamTypes(java.lang.String key, com.google.spanner.v1.Type value) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       if (value == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map value");
       }
+
       internalGetMutableParamTypes().getMutableMap().put(key, value);
       return this;
     }

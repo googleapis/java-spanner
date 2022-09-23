@@ -89,8 +89,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
             }
           case 18:
             {
-              selectorCase_ = 2;
               selector_ = input.readBytes();
+              selectorCase_ = 2;
               break;
             }
           case 26:
