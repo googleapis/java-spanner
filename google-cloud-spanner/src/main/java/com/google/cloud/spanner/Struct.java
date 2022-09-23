@@ -32,12 +32,11 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -234,11 +233,9 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
-    protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(int columnIndex,
-        Class<T> clazz)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-      Method parseMethod = clazz.getMethod("forNumber", int.class);
-      return clazz.cast(parseMethod.invoke(null, (int) values.get(columnIndex).getInt64()));
+    protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+      return (T) method.apply((int) values.get(columnIndex).getInt64());
     }
 
     @Override

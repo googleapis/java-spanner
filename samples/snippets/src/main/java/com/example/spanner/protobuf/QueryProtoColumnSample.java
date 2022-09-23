@@ -37,15 +37,9 @@ public class QueryProtoColumnSample {
             "bookId: %s, bookProto: %s, genre: %s %n",
             resultSet.getLong("bookId"),
             resultSet.getProtoMessage("bookProto", Book.getDefaultInstance()),
-            resultSet.getProtoEnum("genre", Genre.class));
+            resultSet.getProtoEnum("genre", Genre::forNumber));
       }
     } catch (InvalidProtocolBufferException e) {
-      e.printStackTrace();
-    } catch (InvocationTargetException e) {
-      e.printStackTrace();
-    } catch (NoSuchMethodException e) {
-      e.printStackTrace();
-    } catch (IllegalAccessException e) {
       e.printStackTrace();
     }
   }

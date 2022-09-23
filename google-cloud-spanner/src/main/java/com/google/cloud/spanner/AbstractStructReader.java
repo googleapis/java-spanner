@@ -24,10 +24,10 @@ import com.google.cloud.Timestamp;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Base class for assisting {@link StructReader} implementations.
@@ -67,9 +67,8 @@ public abstract class AbstractStructReader implements StructReader {
   protected abstract <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m)
       throws InvalidProtocolBufferException;
 
-  protected abstract <T extends ProtocolMessageEnum> T getProtoEnumInternal(int columnIndex,
-      Class<T> clazz)
-      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException;
+  protected abstract <T extends ProtocolMessageEnum> T getProtoEnumInternal(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method);
 
   protected Value getValueInternal(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
@@ -276,18 +275,18 @@ public abstract class AbstractStructReader implements StructReader {
   }
 
   @Override
-  public <T extends ProtocolMessageEnum> T getProtoEnum(int columnIndex, Class<T> clazz)
-      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException{
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
     checkNonNullOfType(columnIndex, Type.protoEnum(), columnIndex);
-    return getProtoEnumInternal(columnIndex, clazz);
+    return getProtoEnumInternal(columnIndex, method);
   }
 
   @Override
-  public <T extends ProtocolMessageEnum> T getProtoEnum(String columnName, Class<T> clazz)
-      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException{
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.proto(), columnName);
-    return getProtoEnumInternal(columnIndex, clazz);
+    return getProtoEnumInternal(columnIndex, method);
   }
 
   @Override

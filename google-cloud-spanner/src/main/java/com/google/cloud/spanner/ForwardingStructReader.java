@@ -25,9 +25,9 @@ import com.google.common.base.Suppliers;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Function;
 
 /** Forwarding implements of StructReader */
 public class ForwardingStructReader implements StructReader {
@@ -413,17 +413,17 @@ public class ForwardingStructReader implements StructReader {
   }
 
   @Override
-  public <T extends ProtocolMessageEnum> T getProtoEnum(int columnIndex, Class<T> clazz)
-      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
     checkValidState();
-    return delegate.get().getProtoEnum(columnIndex, clazz);
+    return delegate.get().getProtoEnum(columnIndex, method);
   }
 
   @Override
-  public <T extends ProtocolMessageEnum> T getProtoEnum(String columnName, Class<T> clazz)
-      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
     checkValidState();
-    return delegate.get().getProtoEnum(columnName, clazz);
+    return delegate.get().getProtoEnum(columnName, method);
   }
 
   @Override

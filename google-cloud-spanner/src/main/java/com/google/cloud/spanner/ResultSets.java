@@ -33,9 +33,9 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.v1.ResultSetStats;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Function;
 
 /** Utility methods for working with {@link com.google.cloud.spanner.ResultSet}. */
 public final class ResultSets {
@@ -320,15 +320,15 @@ public final class ResultSets {
     }
 
     @Override
-    public <T extends ProtocolMessageEnum> T getProtoEnum(int columnIndex, Class<T> clazz)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-      return getCurrentRowAsStruct().getProtoEnum(columnIndex, clazz);
+    public <T extends ProtocolMessageEnum> T getProtoEnum(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+      return getCurrentRowAsStruct().getProtoEnum(columnIndex, method);
     }
 
     @Override
-    public <T extends ProtocolMessageEnum> T getProtoEnum(String columnName, Class<T> clazz)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-      return getCurrentRowAsStruct().getProtoEnum(columnName, clazz);
+    public <T extends ProtocolMessageEnum> T getProtoEnum(
+        String columnName, Function<Integer, ProtocolMessageEnum> method) {
+      return getCurrentRowAsStruct().getProtoEnum(columnName, method);
     }
 
     @Override

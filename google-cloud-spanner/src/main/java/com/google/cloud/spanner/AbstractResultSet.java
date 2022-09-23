@@ -55,8 +55,6 @@ import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -70,6 +68,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -678,11 +677,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
-    protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(int columnIndex,
-        Class<T> clazz)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-      Method parseMethod = clazz.getMethod("forNumber", int.class);
-      return clazz.cast(parseMethod.invoke(null, (int) getLongInternal(columnIndex)));
+    protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+      return (T) method.apply((int) getLongInternal(columnIndex));
     }
 
     @Override
@@ -1410,9 +1407,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   }
 
   @Override
-  protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(int columnIndex, Class<T> clazz)
-      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-    return currRow().getProtoEnumInternal(columnIndex, clazz);
+  protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    return currRow().getProtoEnumInternal(columnIndex, method);
   }
 
   @Override

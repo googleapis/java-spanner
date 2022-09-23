@@ -239,8 +239,8 @@ public abstract class Value implements Serializable {
     return new ProtoEnumImpl(false, v);
   }
 
-  /**e
-   * Returns a {@code BYTES} value. Returns a {@code BYTES} value.
+  /**
+   * e Returns a {@code BYTES} value. Returns a {@code BYTES} value.
    *
    * @param v the value, which may be null
    */
@@ -567,8 +567,7 @@ public abstract class Value implements Serializable {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  public <T extends AbstractMessage> T getProtoMessage(T m)
-      throws InvalidProtocolBufferException {
+  public <T extends AbstractMessage> T getProtoMessage(T m) throws InvalidProtocolBufferException {
     throw new UnsupportedOperationException("Not implemented");
   }
 
@@ -1450,7 +1449,8 @@ public abstract class Value implements Serializable {
 
     @Override
     com.google.protobuf.Value valueToProto() {
-      return com.google.protobuf.Value.newBuilder().setStringValue(Long.toString(value.enumValue))
+      return com.google.protobuf.Value.newBuilder()
+          .setStringValue(Long.toString(value.enumValue))
           .build();
     }
   }
@@ -2100,7 +2100,7 @@ public abstract class Value implements Serializable {
         case PROTO:
           return Value.protoMessage(value.getProtoMessage(fieldIndex));
         case PROTO_ENUM:
-            return Value.protoEnum(value.getLong(fieldIndex));
+          return Value.protoEnum(value.getLong(fieldIndex));
         case STRUCT:
           return Value.struct(value.getStruct(fieldIndex));
         case ARRAY:

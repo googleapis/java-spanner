@@ -29,9 +29,9 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.v1.ResultSetStats;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * {@link ResultSet} implementation used by the Spanner connection API to ensure that the query for
@@ -448,17 +448,17 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
-  public <T extends ProtocolMessageEnum> T getProtoEnum(int columnIndex, Class<T> clazz)
-      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
-    return delegate.getProtoEnum(columnIndex, clazz);
+    return delegate.getProtoEnum(columnIndex, method);
   }
 
   @Override
-  public <T extends ProtocolMessageEnum> T getProtoEnum(String columnName, Class<T> clazz)
-      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
-    return delegate.getProtoEnum(columnName, clazz);
+    return delegate.getProtoEnum(columnName, method);
   }
 
   @Override
