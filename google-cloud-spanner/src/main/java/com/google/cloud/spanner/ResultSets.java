@@ -297,15 +297,6 @@ public final class ResultSets {
       return getCurrentRowAsStruct().getDate(columnName);
     }
 
-    @Override
-    public byte[] getProtoMessage(int columnIndex) {
-      return getCurrentRowAsStruct().getProtoMessage(columnIndex);
-    }
-
-    @Override
-    public byte[] getProtoMessage(String columnName) {
-      return getCurrentRowAsStruct().getProtoMessage(columnName);
-    }
 
     @Override
     public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m)

@@ -387,18 +387,6 @@ public class ForwardingStructReader implements StructReader {
   }
 
   @Override
-  public byte[] getProtoMessage(int columnIndex) {
-    checkValidState();
-    return delegate.get().getProtoMessage(columnIndex);
-  }
-
-  @Override
-  public byte[] getProtoMessage(String columnName) {
-    checkValidState();
-    return delegate.get().getProtoMessage(columnName);
-  }
-
-  @Override
   public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m)
       throws InvalidProtocolBufferException {
     checkValidState();

@@ -31,8 +31,6 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +39,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -563,16 +562,12 @@ public abstract class Value implements Serializable {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  byte[] getProtoMessage() {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
   public <T extends AbstractMessage> T getProtoMessage(T m) throws InvalidProtocolBufferException {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  public <T extends ProtocolMessageEnum> T getProtoEnum(Class<T> clazz)
-      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      Function<Integer, ProtocolMessageEnum> method) {
     throw new UnsupportedOperationException("Not implemented");
   }
 
@@ -887,19 +882,14 @@ public abstract class Value implements Serializable {
     }
 
     @Override
-    byte[] getProtoMessage() {
-      throw defaultGetter(Type.proto());
-    }
-
-    @Override
     public <T extends AbstractMessage> T getProtoMessage(T m)
         throws InvalidProtocolBufferException {
       throw defaultGetter(Type.proto());
     }
 
     @Override
-    public <T extends ProtocolMessageEnum> T getProtoEnum(Class<T> clazz)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public <T extends ProtocolMessageEnum> T getProtoEnum(
+        Function<Integer, ProtocolMessageEnum> method) {
       throw defaultGetter(Type.protoEnum());
     }
 
@@ -1391,10 +1381,10 @@ public abstract class Value implements Serializable {
     }
 
     @Override
-    byte[] getProtoMessage() {
+    public ByteArray getBytes() {
       checkType(Type.proto());
       checkNotNull();
-      return value.serializedMessage;
+      return ByteArray.copyFrom(value.serializedMessage);
     }
 
     @Override
@@ -1434,12 +1424,11 @@ public abstract class Value implements Serializable {
     }
 
     @Override
-    public <T extends ProtocolMessageEnum> T getProtoEnum(Class<T> clazz)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public <T extends ProtocolMessageEnum> T getProtoEnum(
+        Function<Integer, ProtocolMessageEnum> method) {
       checkType(Type.protoEnum());
       checkNotNull();
-      Method parseMethod = clazz.getMethod("forNumber", int.class);
-      return clazz.cast(parseMethod.invoke(null, value.enumValue));
+      return (T) method.apply((int) value.enumValue);
     }
 
     @Override
@@ -2098,7 +2087,7 @@ public abstract class Value implements Serializable {
         case TIMESTAMP:
           return Value.timestamp(value.getTimestamp(fieldIndex));
         case PROTO:
-          return Value.protoMessage(value.getProtoMessage(fieldIndex));
+          return Value.protoMessage(value.getBytes(fieldIndex).toByteArray());
         case PROTO_ENUM:
           return Value.protoEnum(value.getLong(fieldIndex));
         case STRUCT:

@@ -436,18 +436,6 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
-  public byte[] getProtoMessage(int columnIndex) {
-    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
-    return delegate.getProtoMessage(columnIndex);
-  }
-
-  @Override
-  public byte[] getProtoMessage(String columnName) {
-    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
-    return delegate.getProtoMessage(columnName);
-  }
-
-  @Override
   public <T extends ProtocolMessageEnum> T getProtoEnum(
       int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);

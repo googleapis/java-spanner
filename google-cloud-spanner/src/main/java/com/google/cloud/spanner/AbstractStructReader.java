@@ -62,8 +62,6 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract Date getDateInternal(int columnIndex);
 
-  protected abstract byte[] getProtoMessageInternal(int columnIndex);
-
   protected abstract <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m)
       throws InvalidProtocolBufferException;
 
@@ -224,14 +222,16 @@ public abstract class AbstractStructReader implements StructReader {
 
   @Override
   public ByteArray getBytes(int columnIndex) {
-    checkNonNullOfType(columnIndex, Type.bytes(), columnIndex);
+    checkNonNullOfTypes(columnIndex, Arrays.asList(Type.bytes(), Type.proto()), columnIndex,
+        "BYTES, PROTO");
     return getBytesInternal(columnIndex);
   }
 
   @Override
   public ByteArray getBytes(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.bytes(), columnName);
+    checkNonNullOfTypes(columnIndex, Arrays.asList(Type.bytes(), Type.proto()), columnName,
+        "BYTES, PROTO");
     return getBytesInternal(columnIndex);
   }
 
@@ -259,19 +259,6 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.date(), columnName);
     return getDateInternal(columnIndex);
-  }
-
-  @Override
-  public byte[] getProtoMessage(int columnIndex) {
-    checkNonNullOfType(columnIndex, Type.proto(), columnIndex);
-    return getProtoMessageInternal(columnIndex);
-  }
-
-  @Override
-  public byte[] getProtoMessage(String columnName) {
-    int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.proto(), columnName);
-    return getProtoMessageInternal(columnIndex);
   }
 
   @Override

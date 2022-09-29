@@ -299,10 +299,6 @@ public interface StructReader {
   /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.date())}. */
   List<Date> getDateList(String columnName);
 
-  byte[] getProtoMessage(int columnIndex);
-
-  byte[] getProtoMessage(String columnName);
-
   <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m)
       throws InvalidProtocolBufferException;
 
