@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.anyMap;
 import static org.mockito.Mockito.eq;
@@ -114,5 +115,10 @@ public final class BatchClientImplTest {
     assertThat(batchTxn.getReadTimestamp()).isEqualTo(t);
     assertThat(batchTxn.getReadTimestamp())
         .isEqualTo(batchTxn.getBatchTransactionId().getTimestamp());
+  }
+
+  @Test
+  public void testGetDatabaseRole() {
+    assertEquals(client.getDatabaseRole(), "role");
   }
 }
