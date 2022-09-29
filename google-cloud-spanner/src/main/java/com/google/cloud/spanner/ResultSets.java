@@ -30,7 +30,6 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.AbstractMessage;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
@@ -298,24 +297,12 @@ public final class ResultSets {
     }
 
     @Override
-    public byte[] getProtoMessage(int columnIndex) {
-      return getCurrentRowAsStruct().getProtoMessage(columnIndex);
-    }
-
-    @Override
-    public byte[] getProtoMessage(String columnName) {
-      return getCurrentRowAsStruct().getProtoMessage(columnName);
-    }
-
-    @Override
-    public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m)
-        throws InvalidProtocolBufferException {
+    public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m) {
       return getCurrentRowAsStruct().getProtoMessage(columnIndex, m);
     }
 
     @Override
-    public <T extends AbstractMessage> T getProtoMessage(String columnName, T m)
-        throws InvalidProtocolBufferException {
+    public <T extends AbstractMessage> T getProtoMessage(String columnName, T m) {
       return getCurrentRowAsStruct().getProtoMessage(columnName, m);
     }
 

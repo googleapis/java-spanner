@@ -225,6 +225,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
               funnelValue(type, row.getBoolean(i), into);
               break;
             case BYTES:
+            case PROTO:
               funnelValue(type, row.getBytes(i), into);
               break;
             case DATE:
@@ -240,7 +241,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
               funnelValue(type, row.getString(i), into);
               break;
             case INT64:
-            case PROTO_ENUM:
+            case ENUM:
               funnelValue(type, row.getLong(i), into);
               break;
             case STRING:
@@ -248,9 +249,6 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
               break;
             case JSON:
               funnelValue(type, row.getJson(i), into);
-              break;
-            case PROTO:
-              funnelValue(type, row.getProtoMessage(i), into);
               break;
             case PG_JSONB:
               funnelValue(type, row.getPgJsonb(i), into);

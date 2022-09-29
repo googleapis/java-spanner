@@ -20,7 +20,6 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.protobuf.AbstractMessage;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
 import java.util.List;
@@ -299,21 +298,23 @@ public interface StructReader {
   /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.date())}. */
   List<Date> getDateList(String columnName);
 
-  byte[] getProtoMessage(int columnIndex);
+  default <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
-  byte[] getProtoMessage(String columnName);
+  default <T extends AbstractMessage> T getProtoMessage(String columnName, T m) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
-  <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m)
-      throws InvalidProtocolBufferException;
+  default <T extends ProtocolMessageEnum> T getProtoEnum(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
-  <T extends AbstractMessage> T getProtoMessage(String columnName, T m)
-      throws InvalidProtocolBufferException;
-
-  <T extends ProtocolMessageEnum> T getProtoEnum(
-      int columnIndex, Function<Integer, ProtocolMessageEnum> method);
-
-  <T extends ProtocolMessageEnum> T getProtoEnum(
-      String columnName, Function<Integer, ProtocolMessageEnum> method);
+  default <T extends ProtocolMessageEnum> T getProtoEnum(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
   /**
    * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.struct(...))}.

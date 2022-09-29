@@ -24,15 +24,12 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.io.BaseEncoding;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +38,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -224,19 +222,26 @@ public abstract class Value implements Serializable {
   }
 
   public static Value protoMessage(@Nullable AbstractMessage v) {
-    return new ProtoMessageImpl(v == null, v);
+    Preconditions.checkNotNull(
+        v, "Use proto(Descriptor, Message) or proto(Class<T>, T) for null values.");
+    return protoMessage(
+        ByteArray.copyFrom(v.toByteArray()), v.getDescriptorForType().getFullName());
   }
 
-  public static Value protoMessage(@Nullable byte[] v) {
-    return new ProtoMessageImpl(v == null, v);
+  public static Value protoMessage(@Nullable ByteArray v, String protoTypFqn) {
+    return new ProtoMessageImpl(v == null, v, protoTypFqn);
   }
 
   public static Value protoEnum(@Nullable ProtocolMessageEnum v) {
-    return new ProtoEnumImpl(v == null, v);
+    Preconditions.checkNotNull(
+        v,
+        "Use enumValue(EnumDescriptor, ProtocolMessageEnum) or "
+            + "enumValue(Class<ProtocolMessageEnum>, ProtocolMessageEnum) for null values.");
+    return protoEnum(v.getNumber(), v.getDescriptorForType().getFullName());
   }
 
-  public static Value protoEnum(@Nullable long v) {
-    return new ProtoEnumImpl(false, v);
+  public static Value protoEnum(@Nullable long v, String protoTypFqn) {
+    return new ProtoEnumImpl(false, v, protoTypFqn);
   }
 
   /**
@@ -563,16 +568,12 @@ public abstract class Value implements Serializable {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  byte[] getProtoMessage() {
+  public <T extends AbstractMessage> T getProtoMessage(T m) {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  public <T extends AbstractMessage> T getProtoMessage(T m) throws InvalidProtocolBufferException {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  public <T extends ProtocolMessageEnum> T getProtoEnum(Class<T> clazz)
-      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      Function<Integer, ProtocolMessageEnum> method) {
     throw new UnsupportedOperationException("Not implemented");
   }
 
@@ -887,20 +888,14 @@ public abstract class Value implements Serializable {
     }
 
     @Override
-    byte[] getProtoMessage() {
-      throw defaultGetter(Type.proto());
+    public <T extends AbstractMessage> T getProtoMessage(T m) {
+      throw defaultGetter(Type.proto(""));
     }
 
     @Override
-    public <T extends AbstractMessage> T getProtoMessage(T m)
-        throws InvalidProtocolBufferException {
-      throw defaultGetter(Type.proto());
-    }
-
-    @Override
-    public <T extends ProtocolMessageEnum> T getProtoEnum(Class<T> clazz)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-      throw defaultGetter(Type.protoEnum());
+    public <T extends ProtocolMessageEnum> T getProtoEnum(
+        Function<Integer, ProtocolMessageEnum> method) {
+      throw defaultGetter(Type.protoEnum(""));
     }
 
     @Override
@@ -1373,33 +1368,31 @@ public abstract class Value implements Serializable {
     }
   }
 
-  private static class ProtoMessageImpl extends AbstractObjectValue<ProtoMessageWrapper> {
-    private ProtoMessageImpl(boolean isNull, AbstractMessage value) {
-      super(isNull, Type.proto(), new ProtoMessageWrapper(value));
-    }
+  private static class ProtoMessageImpl extends AbstractObjectValue<ByteArray> {
 
-    private ProtoMessageImpl(boolean isNull, byte[] serializedProtoArray) {
-      super(isNull, Type.proto(), new ProtoMessageWrapper(serializedProtoArray));
+    private ProtoMessageImpl(boolean isNull, ByteArray serializedProtoArray, String protoTypeFqn) {
+      super(isNull, Type.proto(protoTypeFqn), serializedProtoArray);
     }
 
     @Override
-    byte[] getProtoMessage() {
-      checkType(Type.proto());
+    public ByteArray getBytes() {
       checkNotNull();
-      return value.serializedMessage;
+      return value;
     }
 
     @Override
-    public <T extends AbstractMessage> T getProtoMessage(T m)
-        throws InvalidProtocolBufferException {
-      checkType(Type.proto());
+    public <T extends AbstractMessage> T getProtoMessage(T m) {
       checkNotNull();
-      return (T) m.toBuilder().mergeFrom(value.serializedMessage);
+      try {
+        return (T) m.toBuilder().mergeFrom(value.toByteArray()).build();
+      } catch (InvalidProtocolBufferException e) {
+        throw SpannerExceptionFactory.asSpannerException(e);
+      }
     }
 
     @Override
     com.google.protobuf.Value valueToProto() {
-      String base64EncodedString = BaseEncoding.base16().encode(value.serializedMessage);
+      String base64EncodedString = value.toBase64();
       return com.google.protobuf.Value.newBuilder().setStringValue(base64EncodedString).build();
     }
 
@@ -1409,29 +1402,23 @@ public abstract class Value implements Serializable {
     }
   }
 
-  private static class ProtoEnumImpl extends AbstractObjectValue<ProtoEnumWrapper> {
-    private ProtoEnumImpl(boolean isNull, ProtocolMessageEnum protoEnum) {
-      super(isNull, Type.protoEnum(), new ProtoEnumWrapper(protoEnum));
-    }
+  private static class ProtoEnumImpl extends AbstractObjectValue<Long> {
 
-    private ProtoEnumImpl(boolean isNull, long enumValue) {
-      super(isNull, Type.protoEnum(), new ProtoEnumWrapper(enumValue));
+    private ProtoEnumImpl(boolean isNull, long enumValue, String protoTypeFqn) {
+      super(isNull, Type.protoEnum(protoTypeFqn), enumValue);
     }
 
     @Override
     public long getInt64() {
-      checkType(Type.protoEnum());
       checkNotNull();
-      return value.enumValue;
+      return value;
     }
 
     @Override
-    public <T extends ProtocolMessageEnum> T getProtoEnum(Class<T> clazz)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-      checkType(Type.protoEnum());
+    public <T extends ProtocolMessageEnum> T getProtoEnum(
+        Function<Integer, ProtocolMessageEnum> method) {
       checkNotNull();
-      Method parseMethod = clazz.getMethod("forNumber", int.class);
-      return clazz.cast(parseMethod.invoke(null, value.enumValue));
+      return (T) method.apply((int) value.intValue());
     }
 
     @Override
@@ -1441,9 +1428,7 @@ public abstract class Value implements Serializable {
 
     @Override
     com.google.protobuf.Value valueToProto() {
-      return com.google.protobuf.Value.newBuilder()
-          .setStringValue(Long.toString(value.enumValue))
-          .build();
+      return com.google.protobuf.Value.newBuilder().setStringValue(Long.toString(value)).build();
     }
   }
 
@@ -2073,9 +2058,9 @@ public abstract class Value implements Serializable {
         case TIMESTAMP:
           return Value.timestamp(value.getTimestamp(fieldIndex));
         case PROTO:
-          return Value.protoMessage(value.getProtoMessage(fieldIndex));
-        case PROTO_ENUM:
-          return Value.protoEnum(value.getLong(fieldIndex));
+          return Value.protoMessage(value.getBytes(fieldIndex), fieldType.getProtoTypeFqn());
+        case ENUM:
+          return Value.protoEnum(value.getLong(fieldIndex), fieldType.getProtoTypeFqn());
         case STRUCT:
           return Value.struct(value.getStruct(fieldIndex));
         case ARRAY:

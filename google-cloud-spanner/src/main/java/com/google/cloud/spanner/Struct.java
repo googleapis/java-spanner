@@ -29,7 +29,6 @@ import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
 import com.google.protobuf.AbstractMessage;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -222,20 +221,14 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
-    protected byte[] getProtoMessageInternal(int columnIndex) {
-      return values.get(columnIndex).getProtoMessage();
-    }
-
-    @Override
-    protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m)
-        throws InvalidProtocolBufferException {
+    protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m) {
       return values.get(columnIndex).getProtoMessage(m);
     }
 
     @Override
     protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(
         int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
-      return (T) method.apply((int) values.get(columnIndex).getInt64());
+      return values.get(columnIndex).getProtoEnum(method);
     }
 
     @Override
@@ -375,7 +368,7 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
       case BOOL:
         return getBooleanInternal(columnIndex);
       case INT64:
-      case PROTO_ENUM:
+      case ENUM:
         return getLongInternal(columnIndex);
       case FLOAT64:
         return getDoubleInternal(columnIndex);
@@ -387,11 +380,10 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
         return getStringInternal(columnIndex);
       case JSON:
         return getJsonInternal(columnIndex);
-      case PROTO:
-        return getProtoMessageInternal(columnIndex);
       case PG_JSONB:
         return getPgJsonbInternal(columnIndex);
       case BYTES:
+      case PROTO:
         return getBytesInternal(columnIndex);
       case TIMESTAMP:
         return getTimestampInternal(columnIndex);

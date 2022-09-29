@@ -390,9 +390,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             builder.set(fieldName).to(Value.json((String) value));
             break;
           case PROTO:
-            builder.set(fieldName).to(Value.protoMessage((byte[]) value));
-          case PROTO_ENUM:
-            builder.set(fieldName).to(Value.protoEnum((long) value));
+            builder
+                .set(fieldName)
+                .to(Value.protoMessage((ByteArray) value, fieldType.getProtoTypeFqn()));
+          case ENUM:
+            builder.set(fieldName).to(Value.protoEnum((Long) value, fieldType.getProtoTypeFqn()));
           case PG_JSONB:
             builder.set(fieldName).to(Value.pgJsonb((String) value));
             break;
@@ -498,7 +500,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           checkType(fieldType, proto, KindCase.BOOL_VALUE);
           return proto.getBoolValue();
         case INT64:
-        case PROTO_ENUM:
+        case ENUM:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return Long.parseLong(proto.getStringValue());
         case FLOAT64:
@@ -666,14 +668,13 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
-    public byte[] getProtoMessageInternal(int columnIndex) {
-      return (byte[]) rowData.get(columnIndex);
-    }
-
-    @Override
-    public <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m)
-        throws InvalidProtocolBufferException {
-      return (T) m.toBuilder().mergeFrom(getProtoMessageInternal(columnIndex)).build();
+    public <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m) {
+      try {
+        return (T)
+            m.toBuilder().mergeFrom(((ByteArray) rowData.get(columnIndex)).toByteArray()).build();
+      } catch (InvalidProtocolBufferException e) {
+        throw SpannerExceptionFactory.asSpannerException(e);
+      }
     }
 
     @Override
@@ -689,7 +690,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     @Override
     protected long getLongInternal(int columnIndex) {
-      return (Long) rowData.get(columnIndex);
+      return (long) rowData.get(columnIndex);
     }
 
     @Override
@@ -1396,13 +1397,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   }
 
   @Override
-  protected byte[] getProtoMessageInternal(int columnIndex) {
-    return currRow().getProtoMessageInternal(columnIndex);
-  }
-
-  @Override
-  protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m)
-      throws InvalidProtocolBufferException {
+  protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m) {
     return currRow().getProtoMessageInternal(columnIndex, m);
   }
 

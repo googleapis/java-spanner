@@ -99,11 +99,6 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
-    protected byte[] getProtoMessageInternal(int columnIndex) {
-      return null;
-    }
-
-    @Override
     protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m) {
       return null;
     }

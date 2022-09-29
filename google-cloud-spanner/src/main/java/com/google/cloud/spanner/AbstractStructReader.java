@@ -21,8 +21,8 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Type.Code;
 import com.google.protobuf.AbstractMessage;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -62,13 +62,14 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract Date getDateInternal(int columnIndex);
 
-  protected abstract byte[] getProtoMessageInternal(int columnIndex);
+  protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
-  protected abstract <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m)
-      throws InvalidProtocolBufferException;
-
-  protected abstract <T extends ProtocolMessageEnum> T getProtoEnumInternal(
-      int columnIndex, Function<Integer, ProtocolMessageEnum> method);
+  protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected Value getValueInternal(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
@@ -262,22 +263,10 @@ public abstract class AbstractStructReader implements StructReader {
   }
 
   @Override
-  public byte[] getProtoMessage(int columnIndex) {
-    checkNonNullOfType(columnIndex, Type.proto(), columnIndex);
-    return getProtoMessageInternal(columnIndex);
-  }
-
-  @Override
-  public byte[] getProtoMessage(String columnName) {
-    int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.proto(), columnName);
-    return getProtoMessageInternal(columnIndex);
-  }
-
-  @Override
   public <T extends ProtocolMessageEnum> T getProtoEnum(
       int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
-    checkNonNullOfType(columnIndex, Type.protoEnum(), columnIndex);
+    checkNonNullOfCode(
+        columnIndex, Code.ENUM, columnIndex);
     return getProtoEnumInternal(columnIndex, method);
   }
 
@@ -285,22 +274,23 @@ public abstract class AbstractStructReader implements StructReader {
   public <T extends ProtocolMessageEnum> T getProtoEnum(
       String columnName, Function<Integer, ProtocolMessageEnum> method) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.proto(), columnName);
+    checkNonNullOfCode(
+        columnIndex, Code.ENUM, columnName);
     return getProtoEnumInternal(columnIndex, method);
   }
 
   @Override
-  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m)
-      throws InvalidProtocolBufferException {
-    checkNonNullOfType(columnIndex, Type.proto(), columnIndex);
+  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m) {
+    checkNonNullOfCode(
+        columnIndex, Code.PROTO, columnIndex);
     return getProtoMessageInternal(columnIndex, m);
   }
 
   @Override
-  public <T extends AbstractMessage> T getProtoMessage(String columnName, T m)
-      throws InvalidProtocolBufferException {
+  public <T extends AbstractMessage> T getProtoMessage(String columnName, T m) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.proto(), columnName);
+    checkNonNullOfCode(
+        columnIndex, Code.PROTO, columnName);
     return getProtoMessageInternal(columnIndex, m);
   }
 
@@ -529,6 +519,17 @@ public abstract class AbstractStructReader implements StructReader {
         columnNameForError,
         expectedType,
         actualType);
+    checkNonNull(columnIndex, columnNameForError);
+  }
+
+  private void checkNonNullOfCode(int columnIndex, Code expectedCode, Object columnNameForError) {
+    Code actualCode = getColumnType(columnIndex).getCode();
+    checkState(
+        expectedCode.equals(actualCode),
+        "Column %s is not of correct type: expected %s but was %s",
+        columnNameForError,
+        expectedCode,
+        actualCode);
     checkNonNull(columnIndex, columnNameForError);
   }
 

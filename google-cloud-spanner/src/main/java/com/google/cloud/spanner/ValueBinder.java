@@ -19,7 +19,7 @@ package com.google.cloud.spanner;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
 import javax.annotation.Nullable;
@@ -97,7 +97,7 @@ public abstract class ValueBinder<R> {
     return handle(Value.string(value));
   }
 
-  public R to(@Nullable GeneratedMessage m) {
+  public R to(@Nullable AbstractMessage m) {
     return handle(Value.protoMessage(m));
   }
 
