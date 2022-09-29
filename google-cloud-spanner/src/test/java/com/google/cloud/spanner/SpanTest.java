@@ -115,7 +115,7 @@ public class SpanTest {
       modifiersField = java.lang.reflect.Field.class.getDeclaredField("modifiers");
     } catch (NoSuchFieldException e) {
       // Halt the test and ignore it.
-      Assume.assumeTrue(false);
+      Assume.assumeFalse(true);
     }
     modifiersField.setAccessible(true);
     // Remove the final modifier from the 'traceComponent' field.
