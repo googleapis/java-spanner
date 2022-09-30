@@ -34,10 +34,7 @@ public class ListInstanceConfigOperationsSample {
 
   static void listInstanceConfigOperations(String projectId) {
     try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId(projectId)
-            .build()
-            .getService()) {
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
 
       try {
@@ -45,17 +42,18 @@ public class ListInstanceConfigOperationsSample {
             "Waiting for listing instance config operations on project %s to complete...\n",
             projectId);
         final Iterable<Operation> instanceConfigOperations =
-            instanceAdminClient.listInstanceConfigOperations(
-                Options.filter(
-                    "(metadata.@type=type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)"))
+            instanceAdminClient
+                .listInstanceConfigOperations(
+                    Options.filter(
+                        "(metadata.@type=type.googleapis.com/"
+                        + "google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)"))
                 .iterateAll();
         for (Operation operation : instanceConfigOperations) {
           CreateInstanceConfigMetadata metadata =
               operation.getMetadata().unpack(CreateInstanceConfigMetadata.class);
           System.out.printf(
               "List instance config operation on %s is %d%% completed.\n",
-              metadata.getInstanceConfig().getName(),
-              metadata.getProgress().getProgressPercent());
+              metadata.getInstanceConfig().getName(), metadata.getProgress().getProgressPercent());
         }
       } catch (InvalidProtocolBufferException e) {
         System.out.printf(

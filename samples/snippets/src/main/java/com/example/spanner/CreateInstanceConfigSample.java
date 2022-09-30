@@ -44,23 +44,18 @@ class CreateInstanceConfigSample {
   static void createInstanceConfig(
       String projectId, String baseInstanceConfig, String instanceConfigId) {
     try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId(projectId)
-            .build()
-            .getService()) {
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
       final InstanceConfig baseConfig = instanceAdminClient.getInstanceConfig(baseInstanceConfig);
-      List<ReplicaInfo> readOnlyReplicas = ImmutableList.of(baseConfig.getOptionalReplicas().get(0));
-
+      List<ReplicaInfo> readOnlyReplicas =
+          ImmutableList.of(baseConfig.getOptionalReplicas().get(0));
       InstanceConfigInfo instanceConfigInfo =
           InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId), baseConfig)
               .setDisplayName(instanceConfigId)
               .addReadOnlyReplicas(readOnlyReplicas)
               .build();
-
       final OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> operation =
           instanceAdminClient.createInstanceConfig(instanceConfigInfo);
-
       try {
         System.out.printf("Waiting for create operation on %s to complete...\n", instanceConfigId);
         InstanceConfig instanceConfig = operation.get(5, TimeUnit.MINUTES);

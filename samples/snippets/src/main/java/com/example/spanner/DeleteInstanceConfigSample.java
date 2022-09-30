@@ -32,12 +32,8 @@ class DeleteInstanceConfigSample {
 
   static void deleteInstanceConfig(String projectId, String instanceConfigId) {
     try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId(projectId)
-            .build()
-            .getService()) {
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
-
       try {
         System.out.printf("Waiting for delete operation on %s to complete...\n", instanceConfigId);
         instanceAdminClient.deleteInstanceConfig(instanceConfigId);

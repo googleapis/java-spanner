@@ -41,23 +41,17 @@ class UpdateInstanceConfigSample {
 
   static void updateInstanceConfig(String projectId, String instanceConfigId) {
     try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId(projectId)
-            .build()
-            .getService()) {
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
-
       InstanceConfigInfo instanceConfigInfo =
           InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId))
               .setDisplayName("updated custom instance config")
               .addLabel("updated", "true")
               .build();
-
       final OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> operation =
           instanceAdminClient.updateInstanceConfig(
               instanceConfigInfo,
               ImmutableList.of(InstanceConfigField.DISPLAY_NAME, InstanceConfigField.LABELS));
-
       try {
         System.out.printf("Waiting for update operation on %s to complete...\n", instanceConfigId);
         InstanceConfig instanceConfig = operation.get(5, TimeUnit.MINUTES);
