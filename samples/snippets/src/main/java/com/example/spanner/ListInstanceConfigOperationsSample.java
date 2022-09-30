@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.example.spanner;
 
 // [START spanner_list_instance_config_operations]
