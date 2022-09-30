@@ -49,9 +49,7 @@ class CreateInstanceConfigSample {
             .build()
             .getService()) {
       final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
-
       final InstanceConfig baseConfig = instanceAdminClient.getInstanceConfig(baseInstanceConfig);
-
       List<ReplicaInfo> readOnlyReplicas = ImmutableList.of(baseConfig.getOptionalReplicas().get(0));
 
       InstanceConfigInfo instanceConfigInfo =
@@ -64,12 +62,12 @@ class CreateInstanceConfigSample {
           instanceAdminClient.createInstanceConfig(instanceConfigInfo);
 
       try {
-        System.out.printf("Waiting for operation on %s to complete...\n", instanceConfigId);
+        System.out.printf("Waiting for create operation on %s to complete...\n", instanceConfigId);
         InstanceConfig instanceConfig = operation.get(5, TimeUnit.MINUTES);
-        System.out.printf("Created instance config %s\n", instanceConfig.getId());
+        System.out.printf("Created instance configuration %s\n", instanceConfig.getId());
       } catch (ExecutionException | TimeoutException e) {
         System.out.printf(
-            "Error: Creating instance config %s failed with error message %s\n",
+            "Error: Creating instance configuration %s failed with error message %s\n",
             instanceConfigInfo.getId(), e.getMessage());
       } catch (InterruptedException e) {
         System.out.println(

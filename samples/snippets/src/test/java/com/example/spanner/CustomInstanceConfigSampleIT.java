@@ -32,56 +32,28 @@ public class CustomInstanceConfigSampleIT extends SampleTestBase {
             () ->
                 CreateInstanceConfigSample.createInstanceConfig(
                     projectId, instanceConfigName, customInstanceConfigId));
-    assertTrue(
-        "Expected instance config "
-            + customInstanceConfigId
-            + " to be created."
-            + " Output received was "
-            + out1,
-        out1.contains(customInstanceConfigId));
+    assertTrue(out1.contains("Created instance configuration"));
 
     // List the instance config operations.
     final String out2 =
         SampleRunner.runSample(
             () ->
                 ListInstanceConfigOperationsSample.listInstanceConfigOperations(projectId));
-    assertTrue(
-        "Expected to list instance config for project: "
-            + projectId
-            + ". Output received was "
-            + out2,
-        out2.contains(customInstanceConfigId));
+    assertTrue(out2.contains("List instance config operation"));
 
     // Update display name to a randomly generated instance config id.
-    String newDisplayName = idGenerator.generateInstanceConfigId();
     final String out3 =
         SampleRunner.runSample(
             () ->
                 UpdateInstanceConfigSample.updateInstanceConfig(
-                    projectId, customInstanceConfigId, newDisplayName));
-    assertTrue(
-        "Expected display name to be updated from "
-            + customInstanceConfigId
-            + " to "
-            + newDisplayName
-            + " for instance config "
-            + customInstanceConfigId
-            + "."
-            + " Output received was "
-            + out3,
-        out3.contains(newDisplayName));
+                    projectId, customInstanceConfigId));
+    assertTrue(out3.contains("Updated instance configuration"));
 
     // Delete the created instance config.
     final String out4 =
         SampleRunner.runSample(
             () ->
                 DeleteInstanceConfigSample.deleteInstanceConfig(projectId, customInstanceConfigId));
-    assertTrue(
-        "Expected instance config "
-            + customInstanceConfigId
-            + " to be deleted."
-            + " Output received was "
-            + out4,
-        out4.contains(customInstanceConfigId));
+    assertTrue(out4.contains("Deleted instance configuration"));
   }
 }

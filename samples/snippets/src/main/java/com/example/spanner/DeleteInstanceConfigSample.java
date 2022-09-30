@@ -39,12 +39,13 @@ class DeleteInstanceConfigSample {
       final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
 
       try {
-        System.out.printf("Waiting for operation on %s to complete...\n", instanceConfigId);
+        System.out.printf("Waiting for delete operation on %s to complete...\n", instanceConfigId);
         instanceAdminClient.deleteInstanceConfig(instanceConfigId);
-        System.out.printf("Deleted user instance config with id %s\n", instanceConfigId);
+        System.out.printf("Deleted instance configuration %s\n", instanceConfigId);
       } catch (SpannerException e) {
         System.out.printf(
-            "Could not delete user instance config %s: %s\n", instanceConfigId, e.getMessage());
+            "Error: Deleting instance configuration %s failed with error message: %s\n",
+            instanceConfigId, e.getMessage());
       }
     }
   }

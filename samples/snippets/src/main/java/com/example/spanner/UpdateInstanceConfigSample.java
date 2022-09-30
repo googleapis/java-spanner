@@ -36,11 +36,10 @@ class UpdateInstanceConfigSample {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceConfigId = "custom-instance-config";
-    String displayName = "my-display-name";
-    updateInstanceConfig(projectId, instanceConfigId, displayName);
+    updateInstanceConfig(projectId, instanceConfigId);
   }
 
-  static void updateInstanceConfig(String projectId, String instanceConfigId, String displayName) {
+  static void updateInstanceConfig(String projectId, String instanceConfigId) {
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(projectId)
@@ -50,18 +49,20 @@ class UpdateInstanceConfigSample {
 
       InstanceConfigInfo instanceConfigInfo =
           InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId))
-              .setDisplayName(displayName)
+              .setDisplayName("updated custom instance config")
+              .addLabel("updated", "true")
               .build();
 
       final OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> operation =
           instanceAdminClient.updateInstanceConfig(
-              instanceConfigInfo, ImmutableList.of(InstanceConfigField.DISPLAY_NAME));
+              instanceConfigInfo,
+              ImmutableList.of(InstanceConfigField.DISPLAY_NAME, InstanceConfigField.LABELS));
 
       try {
-        System.out.printf("Waiting for operation on %s to complete...\n", instanceConfigId);
+        System.out.printf("Waiting for update operation on %s to complete...\n", instanceConfigId);
         InstanceConfig instanceConfig = operation.get(5, TimeUnit.MINUTES);
         System.out.printf(
-            "Updated instance config %s with new display name %s\n",
+            "Updated instance configuration %s with new display name %s\n",
             instanceConfig.getId(), instanceConfig.getDisplayName());
       } catch (ExecutionException | TimeoutException e) {
         System.out.printf(
