@@ -192,4 +192,14 @@
     <className>com/google/cloud/spanner/StructReader</className>
     <method>java.util.List getPgJsonbList(java.lang.String)</method>
   </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/BatchClient</className>
+    <method>java.lang.String getDatabaseRole()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>java.lang.String getDatabaseRole()</method>
+  </difference>
 </differences>

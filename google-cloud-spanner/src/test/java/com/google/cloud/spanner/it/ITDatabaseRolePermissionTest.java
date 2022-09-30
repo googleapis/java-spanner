@@ -110,6 +110,7 @@ public class ITDatabaseRolePermissionTest {
     try (ResultSet rs =
         dbClient.singleUse().executeQuery(Statement.of("SELECT COUNT(*) as cnt FROM T"))) {
       assertTrue(rs.next());
+      assertEquals(dbClient.getDatabaseRole(), dbRoleParent);
     } catch (PermissionDeniedException e) {
       // This is not expected
       fail("Got PermissionDeniedException when it should not have occurred.");

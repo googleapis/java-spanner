@@ -37,6 +37,17 @@ public interface DatabaseClient {
   }
 
   /**
+   * Returns the {@link DatabaseRole} used by the client connection. The database role that is used
+   * determines the access permissions that a connection has. This can for example be used to create
+   * connections that are only permitted to access certain tables.
+   *
+   * @return the {@link DatabaseRole} used by the client connection.
+   */
+  default String getDatabaseRole() {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
    * Writes the given mutations atomically to the database.
    *
    * <p>This method uses retries and replay protection internally, which means that the mutations

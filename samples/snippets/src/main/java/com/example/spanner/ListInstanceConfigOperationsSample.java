@@ -50,4 +50,4 @@ public class ListInstanceConfigOperationsSample {
     }
   }
 }
-// [START spanner_list_instance_config_operations]
+// [END spanner_list_instance_config_operations]
