@@ -39,7 +39,7 @@ public class ListInstanceConfigOperationsSample {
 
       try {
         System.out.printf(
-            "Waiting for listing instance config operations on project %s to complete...\n",
+            "Getting list of instance config operations for project %s...\n",
             projectId);
         final Iterable<Operation> instanceConfigOperations =
             instanceAdminClient
@@ -59,7 +59,6 @@ public class ListInstanceConfigOperationsSample {
         System.out.printf(
             "Error: Listing instance config operations failed with error message %s\n",
             e.getMessage());
-        e.printStackTrace();
       }
     }
   }
