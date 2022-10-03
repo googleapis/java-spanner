@@ -35,7 +35,7 @@ class DeleteInstanceConfigSample {
         SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
       try {
-        System.out.printf("Waiting for delete operation on %s to complete...\n", instanceConfigId);
+        System.out.printf("Deleting %s...\n", instanceConfigId);
         instanceAdminClient.deleteInstanceConfig(instanceConfigId);
         System.out.printf("Deleted instance configuration %s\n", instanceConfigId);
       } catch (SpannerException e) {
