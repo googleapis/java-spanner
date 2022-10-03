@@ -57,7 +57,7 @@ class CreateInstanceConfigSample {
       final OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> operation =
           instanceAdminClient.createInstanceConfig(instanceConfigInfo);
       try {
-        System.out.printf("Waiting for create operation on %s to complete...\n", instanceConfigId);
+        System.out.printf("Waiting for create operation for %s to complete...\n", instanceConfigId);
         InstanceConfig instanceConfig = operation.get(5, TimeUnit.MINUTES);
         System.out.printf("Created instance configuration %s\n", instanceConfig.getId());
       } catch (ExecutionException | TimeoutException e) {
