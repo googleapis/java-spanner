@@ -52,7 +52,7 @@ public class ListInstanceConfigOperationsSample {
           CreateInstanceConfigMetadata metadata =
               operation.getMetadata().unpack(CreateInstanceConfigMetadata.class);
           System.out.printf(
-              "List instance config operation on %s is %d%% completed.\n",
+              "Create instance config operation for %s is %d%% completed.\n",
               metadata.getInstanceConfig().getName(), metadata.getProgress().getProgressPercent());
         }
       } catch (InvalidProtocolBufferException e) {
