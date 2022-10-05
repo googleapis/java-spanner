@@ -24,6 +24,7 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -53,6 +54,8 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ListValue;
+import com.google.protobuf.NullValue;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
@@ -61,6 +64,10 @@ import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RequestOptions.Priority;
+import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.StructType;
+import com.google.spanner.v1.StructType.Field;
+import com.google.spanner.v1.Type;
 import io.grpc.Context;
 import io.grpc.Server;
 import io.grpc.Status;
@@ -2326,5 +2333,95 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     assertEquals(TEST_DATABASE_ROLE, client.getDatabaseRole());
+  }
+
+  @Test
+  public void testUnknownType() {
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.of("SELECT * FROM foo"),
+            com.google.spanner.v1.ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(
+                            StructType.newBuilder()
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setName("c")
+                                        .setType(
+                                            Type.newBuilder()
+                                                .setCodeValue(Integer.MAX_VALUE)
+                                                .build())
+                                        .build())
+                                .build())
+                        .build())
+                .addRows(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder().setStringValue("bar").build())
+                        .build())
+                .addRows(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder().setBoolValue(true).build())
+                        .build())
+                .addRows(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder().setNumberValue(3.14d).build())
+                        .build())
+                .addRows(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())
+                        .build())
+                .addRows(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setListValue(
+                                    ListValue.newBuilder()
+                                        .addValues(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setStringValue("baz")
+                                                .build())
+                                        .addValues(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setBoolValue(false)
+                                                .build())
+                                        .addValues(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNumberValue(6.626)
+                                                .build())
+                                        .addValues(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build())
+                                        .build())
+                                .build())
+                        .build())
+                .build()));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet = client.singleUse().executeQuery(Statement.of("SELECT * FROM foo"))) {
+      assertTrue(resultSet.next());
+      assertEquals("bar", resultSet.getValue("c").getAsString());
+
+      assertTrue(resultSet.next());
+      assertEquals("true", resultSet.getValue("c").getAsString());
+
+      assertTrue(resultSet.next());
+      assertEquals("3.14", resultSet.getValue("c").getAsString());
+
+      assertTrue(resultSet.next());
+      assertEquals("null", resultSet.getValue("c").getAsString());
+
+      assertTrue(resultSet.next());
+      assertEquals("[baz,false,6.626,null]", resultSet.getValue("c").getAsString());
+
+      assertFalse(resultSet.next());
+    }
   }
 }

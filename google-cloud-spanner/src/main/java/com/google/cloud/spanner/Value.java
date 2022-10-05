@@ -672,6 +672,14 @@ public abstract class Value implements Serializable {
     return b.toString();
   }
 
+  /**
+   * Returns this value as a raw string representation. This is guaranteed to work for all types,
+   * regardless of the underlying data type.
+   */
+  public String getAsString() {
+    return toString();
+  }
+
   // END OF PUBLIC API.
 
   static com.google.protobuf.Value toProto(Value value) {
@@ -1051,6 +1059,30 @@ public abstract class Value implements Serializable {
       Preconditions.checkState(
           value.hasNumberValue(), "This value does not contain a number value");
       return value.getNumberValue();
+    }
+
+    @Override
+    public String getAsString() {
+      switch (value.getKindCase()) {
+        case NULL_VALUE:
+          return "null";
+        case NUMBER_VALUE:
+          return Double.toString(value.getNumberValue());
+        case STRING_VALUE:
+          return value.getStringValue();
+        case BOOL_VALUE:
+          return Boolean.toString(value.getBoolValue());
+        case LIST_VALUE:
+          return value.getListValue().getValuesList().stream()
+              .map(element -> Value.untyped(element).getAsString())
+              .collect(Collectors.joining(",", "[", "]"));
+        case STRUCT_VALUE:
+          throw new IllegalArgumentException(
+              "Struct value with unrecognized type is not supported");
+        case KIND_NOT_SET:
+        default:
+          throw new IllegalArgumentException("Kind of value is not set or unknown");
+      }
     }
 
     @Override

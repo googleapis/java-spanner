@@ -38,6 +38,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
+import com.google.protobuf.NullValue;
 import com.google.protobuf.Value.KindCase;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -520,6 +521,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           checkType(fieldType, proto, KindCase.LIST_VALUE);
           ListValue structValue = proto.getListValue();
           return decodeStructValue(fieldType, structValue);
+        case UNRECOGNIZED:
+          return proto;
         default:
           throw new AssertionError("Unhandled type code: " + fieldType.getCode());
       }
@@ -736,6 +739,13 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return Value.date(isNull ? null : getDateInternal(columnIndex));
         case STRUCT:
           return Value.struct(isNull ? null : getStructInternal(columnIndex));
+        case UNRECOGNIZED:
+          return Value.untyped(
+              isNull
+                  ? com.google.protobuf.Value.newBuilder()
+                      .setNullValue(NullValue.NULL_VALUE)
+                      .build()
+                  : (com.google.protobuf.Value) rowData.get(columnIndex));
         case ARRAY:
           final Type elementType = columnType.getArrayElementType();
           switch (elementType.getCode()) {

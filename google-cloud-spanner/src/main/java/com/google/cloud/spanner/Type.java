@@ -68,8 +68,14 @@ public final class Type implements Serializable {
   private static final Type TYPE_ARRAY_TIMESTAMP = new Type(Code.ARRAY, TYPE_TIMESTAMP, null);
   private static final Type TYPE_ARRAY_DATE = new Type(Code.ARRAY, TYPE_DATE, null);
 
+  private static final Type TYPE_UNRECOGNIZED = new Type(Code.UNRECOGNIZED, null, null);
+
   private static final int AMBIGUOUS_FIELD = -1;
   private static final long serialVersionUID = -3076152125004114582L;
+
+  static Type unrecognized() {
+    return TYPE_UNRECOGNIZED;
+  }
 
   /** Returns the descriptor for the {@code BOOL type}. */
   public static Type bool() {
@@ -211,6 +217,7 @@ public final class Type implements Serializable {
 
   /** Enumerates the categories of types. */
   public enum Code {
+    UNRECOGNIZED(TypeCode.UNRECOGNIZED),
     BOOL(TypeCode.BOOL),
     INT64(TypeCode.INT64),
     NUMERIC(TypeCode.NUMERIC),
@@ -442,6 +449,8 @@ public final class Type implements Serializable {
   static Type fromProto(com.google.spanner.v1.Type proto) {
     Code type = Code.fromProto(proto.getCode(), proto.getTypeAnnotation());
     switch (type) {
+      case UNRECOGNIZED:
+        return unrecognized();
       case BOOL:
         return bool();
       case INT64:
