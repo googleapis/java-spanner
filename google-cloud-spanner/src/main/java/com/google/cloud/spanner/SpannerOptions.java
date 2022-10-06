@@ -90,6 +90,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
           "https://www.googleapis.com/auth/spanner.data");
   private static final int MAX_CHANNELS = 256;
   private static final int DEFAULT_CHANNELS = 4;
+  // Set the default number of channels to GRPC_GCP_ENABLED_DEFAULT_CHANNELS when gRPC-GCP extension is enabled,
+  // to make sure there are sufficient channels available to move the sessions to a different channel if a network connection in a particular channel fails.
   @VisibleForTesting static final int GRPC_GCP_ENABLED_DEFAULT_CHANNELS = 8;
   private final TransportChannelProvider channelProvider;
 
@@ -1133,8 +1135,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     public Builder enableGrpcGcpExtension(GcpManagedChannelOptions options) {
       this.grpcGcpExtensionEnabled = true;
       this.grpcGcpOptions = options;
-      // By default, set number of channels to GRPC_GCP_ENABLED_DEFAULT_CHANNELS if gRPC-GCP
-      // extension is enabled
       if (this.numChannels == null) {
         this.numChannels = GRPC_GCP_ENABLED_DEFAULT_CHANNELS;
       }
@@ -1171,7 +1171,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
       }
-      // Set the number of channels to DEFAULT_CHANNELS if not set
       if (this.numChannels == null) {
         this.numChannels = DEFAULT_CHANNELS;
       }
