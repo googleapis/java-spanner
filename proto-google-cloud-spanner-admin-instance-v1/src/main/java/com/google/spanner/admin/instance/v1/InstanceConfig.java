@@ -61,151 +61,6 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     return this.unknownFields;
   }
 
-  private InstanceConfig(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              name_ = s;
-              break;
-            }
-          case 18:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              displayName_ = s;
-              break;
-            }
-          case 26:
-            {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                replicas_ =
-                    new java.util.ArrayList<com.google.spanner.admin.instance.v1.ReplicaInfo>();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              replicas_.add(
-                  input.readMessage(
-                      com.google.spanner.admin.instance.v1.ReplicaInfo.parser(),
-                      extensionRegistry));
-              break;
-            }
-          case 34:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-              if (!((mutable_bitField0_ & 0x00000008) != 0)) {
-                leaderOptions_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000008;
-              }
-              leaderOptions_.add(s);
-              break;
-            }
-          case 40:
-            {
-              int rawValue = input.readEnum();
-
-              configType_ = rawValue;
-              break;
-            }
-          case 50:
-            {
-              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                optionalReplicas_ =
-                    new java.util.ArrayList<com.google.spanner.admin.instance.v1.ReplicaInfo>();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              optionalReplicas_.add(
-                  input.readMessage(
-                      com.google.spanner.admin.instance.v1.ReplicaInfo.parser(),
-                      extensionRegistry));
-              break;
-            }
-          case 58:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              baseConfig_ = s;
-              break;
-            }
-          case 66:
-            {
-              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
-                labels_ =
-                    com.google.protobuf.MapField.newMapField(LabelsDefaultEntryHolder.defaultEntry);
-                mutable_bitField0_ |= 0x00000004;
-              }
-              com.google.protobuf.MapEntry<java.lang.String, java.lang.String> labels__ =
-                  input.readMessage(
-                      LabelsDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-              labels_.getMutableMap().put(labels__.getKey(), labels__.getValue());
-              break;
-            }
-          case 74:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              etag_ = s;
-              break;
-            }
-          case 80:
-            {
-              reconciling_ = input.readBool();
-              break;
-            }
-          case 88:
-            {
-              int rawValue = input.readEnum();
-
-              state_ = rawValue;
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (com.google.protobuf.UninitializedMessageException e) {
-      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        replicas_ = java.util.Collections.unmodifiableList(replicas_);
-      }
-      if (((mutable_bitField0_ & 0x00000008) != 0)) {
-        leaderOptions_ = leaderOptions_.getUnmodifiableView();
-      }
-      if (((mutable_bitField0_ & 0x00000002) != 0)) {
-        optionalReplicas_ = java.util.Collections.unmodifiableList(optionalReplicas_);
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
         .internal_static_google_spanner_admin_instance_v1_InstanceConfig_descriptor;
@@ -1321,7 +1176,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
             .getNumber()) {
       output.writeEnum(11, state_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -1378,7 +1233,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
             .getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(11, state_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -1405,7 +1260,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     if (!getLeaderOptionsList().equals(other.getLeaderOptionsList())) return false;
     if (getReconciling() != other.getReconciling()) return false;
     if (state_ != other.state_) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -1446,7 +1301,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getReconciling());
     hash = (37 * hash) + STATE_FIELD_NUMBER;
     hash = (53 * hash) + state_;
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -1596,20 +1451,10 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     }
 
     // Construct using com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
-        getReplicasFieldBuilder();
-        getOptionalReplicasFieldBuilder();
-      }
     }
 
     @java.lang.Override
@@ -1623,16 +1468,18 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
 
       if (replicasBuilder_ == null) {
         replicas_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
       } else {
+        replicas_ = null;
         replicasBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000001);
       if (optionalReplicasBuilder_ == null) {
         optionalReplicas_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
       } else {
+        optionalReplicas_ = null;
         optionalReplicasBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000002);
       baseConfig_ = "";
 
       internalGetMutableLabels().clear();
@@ -1844,7 +1691,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
       if (other.state_ != 0) {
         setStateValue(other.getStateValue());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -1859,18 +1706,119 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.admin.instance.v1.InstanceConfig parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                name_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 10
+            case 18:
+              {
+                displayName_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 18
+            case 26:
+              {
+                com.google.spanner.admin.instance.v1.ReplicaInfo m =
+                    input.readMessage(
+                        com.google.spanner.admin.instance.v1.ReplicaInfo.parser(),
+                        extensionRegistry);
+                if (replicasBuilder_ == null) {
+                  ensureReplicasIsMutable();
+                  replicas_.add(m);
+                } else {
+                  replicasBuilder_.addMessage(m);
+                }
+                break;
+              } // case 26
+            case 34:
+              {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureLeaderOptionsIsMutable();
+                leaderOptions_.add(s);
+                break;
+              } // case 34
+            case 40:
+              {
+                configType_ = input.readEnum();
+
+                break;
+              } // case 40
+            case 50:
+              {
+                com.google.spanner.admin.instance.v1.ReplicaInfo m =
+                    input.readMessage(
+                        com.google.spanner.admin.instance.v1.ReplicaInfo.parser(),
+                        extensionRegistry);
+                if (optionalReplicasBuilder_ == null) {
+                  ensureOptionalReplicasIsMutable();
+                  optionalReplicas_.add(m);
+                } else {
+                  optionalReplicasBuilder_.addMessage(m);
+                }
+                break;
+              } // case 50
+            case 58:
+              {
+                baseConfig_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 58
+            case 66:
+              {
+                com.google.protobuf.MapEntry<java.lang.String, java.lang.String> labels__ =
+                    input.readMessage(
+                        LabelsDefaultEntryHolder.defaultEntry.getParserForType(),
+                        extensionRegistry);
+                internalGetMutableLabels()
+                    .getMutableMap()
+                    .put(labels__.getKey(), labels__.getValue());
+                break;
+              } // case 66
+            case 74:
+              {
+                etag_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 74
+            case 80:
+              {
+                reconciling_ = input.readBool();
+
+                break;
+              } // case 80
+            case 88:
+              {
+                state_ = input.readEnum();
+
+                break;
+              } // case 88
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage =
-            (com.google.spanner.admin.instance.v1.InstanceConfig) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -3907,7 +3855,18 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new InstanceConfig(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
