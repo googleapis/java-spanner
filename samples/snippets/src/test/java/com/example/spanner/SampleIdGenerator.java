@@ -28,38 +28,49 @@ public class SampleIdGenerator {
 
   private static final int DATABASE_NAME_MAX_LENGTH = 30;
   private static final int BACKUP_NAME_MAX_LENGTH = 30;
+  private static final int INSTANCE_CONFIG_ID_MAX_LENGTH = 30;
   private final List<String> databaseIds;
   private final List<String> backupIds;
+  private final List<String> instanceConfigIds;
   private final String baseDatabaseId;
   private final String baseBackupId;
+  private final String baseInstanceConfigId;
 
-  public SampleIdGenerator(String baseDatabaseId, String baseBackupId) {
+  public SampleIdGenerator(
+      String baseDatabaseId, String baseBackupId, String baseInstanceConfigId) {
     this.baseDatabaseId = baseDatabaseId;
     this.baseBackupId = baseBackupId;
+    this.baseInstanceConfigId = baseInstanceConfigId;
     this.databaseIds = new ArrayList<>();
     this.backupIds = new ArrayList<>();
+    this.instanceConfigIds = new ArrayList<>();
   }
 
   public String generateDatabaseId() {
-    final String databaseId = (
-        baseDatabaseId
-            + "-"
-            + UUID.randomUUID().toString().replaceAll("-", "")
-    ).substring(0, DATABASE_NAME_MAX_LENGTH);
+    final String databaseId =
+        (baseDatabaseId + "-" + UUID.randomUUID().toString().replaceAll("-", ""))
+            .substring(0, DATABASE_NAME_MAX_LENGTH);
 
     databaseIds.add(databaseId);
     return databaseId;
   }
 
   public String generateBackupId() {
-    final String databaseId = (
-        baseBackupId
-            + "-"
-            + UUID.randomUUID().toString().replaceAll("-", "")
-    ).substring(0, BACKUP_NAME_MAX_LENGTH);
+    final String databaseId =
+        (baseBackupId + "-" + UUID.randomUUID().toString().replaceAll("-", ""))
+            .substring(0, BACKUP_NAME_MAX_LENGTH);
 
     backupIds.add(databaseId);
     return databaseId;
+  }
+
+  public String generateInstanceConfigId() {
+    final String instanceConfigId =
+        ("custom-" + baseInstanceConfigId + "-" + UUID.randomUUID().toString().replaceAll("-", ""))
+            .substring(0, INSTANCE_CONFIG_ID_MAX_LENGTH);
+
+    instanceConfigIds.add(instanceConfigId);
+    return instanceConfigId;
   }
 
   public List<String> getDatabaseIds() {
@@ -68,5 +79,9 @@ public class SampleIdGenerator {
 
   public List<String> getBackupIds() {
     return backupIds;
+  }
+
+  public List<String> getInstanceConfigIds() {
+    return instanceConfigIds;
   }
 }
