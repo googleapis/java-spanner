@@ -1,5 +1,35 @@
 # Changelog
 
+## [6.31.2](https://github.com/googleapis/java-spanner/compare/v6.31.1...v6.31.2) (2022-10-05)
+
+
+### Bug Fixes
+
+* update protobuf to v3.21.7 ([ac71008](https://github.com/googleapis/java-spanner/commit/ac71008bf8b1244cb3c5cf4317a0d25d4ffc5bbd))
+
+## [6.31.1](https://github.com/googleapis/java-spanner/compare/v6.31.0...v6.31.1) (2022-10-03)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.0.4 ([#2090](https://github.com/googleapis/java-spanner/issues/2090)) ([8f46938](https://github.com/googleapis/java-spanner/commit/8f46938b67e44a7b739dc156dc8a0a89bcb33ef0))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.14 ([#2031](https://github.com/googleapis/java-spanner/issues/2031)) ([c5e9ba1](https://github.com/googleapis/java-spanner/commit/c5e9ba1c1a47faf89c47a9146a97cb6711dce242))
+
+## [6.31.0](https://github.com/googleapis/java-spanner/compare/v6.30.2...v6.31.0) (2022-09-29)
+
+
+### Features
+
+* Support customer managed instance configurations ([#1742](https://github.com/googleapis/java-spanner/issues/1742)) ([c1c805c](https://github.com/googleapis/java-spanner/commit/c1c805cf6e9c00f2d6796627d919338be1a0599a))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-trace to v2.3.4 ([#2027](https://github.com/googleapis/java-spanner/issues/2027)) ([14890ed](https://github.com/googleapis/java-spanner/commit/14890ed8e0df99eba7c2521a196132c78054b6ed))
+* Update dependency com.google.cloud:google-cloud-trace to v2.3.5 ([#2083](https://github.com/googleapis/java-spanner/issues/2083)) ([cef4e0a](https://github.com/googleapis/java-spanner/commit/cef4e0ada98ab65020f32836fc0c8ab1ee0c7eed))
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.14 ([#2030](https://github.com/googleapis/java-spanner/issues/2030)) ([04b59ff](https://github.com/googleapis/java-spanner/commit/04b59ff8a1efaa32082aa4e9567d90b5956810c6))
+* Update dependency org.json:json to v20220924 ([#2035](https://github.com/googleapis/java-spanner/issues/2035)) ([a26a14a](https://github.com/googleapis/java-spanner/commit/a26a14a94ac3ca6cd7eabce6826cce3dde27ea66))
+
 ## [6.30.2](https://github.com/googleapis/java-spanner/compare/v6.30.1...v6.30.2) (2022-09-21)
 
 
