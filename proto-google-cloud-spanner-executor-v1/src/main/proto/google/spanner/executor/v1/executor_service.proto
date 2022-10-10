@@ -1,0 +1,58 @@
+// Copyright 2022 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package google.spanner.executor.v1;
+
+import "google/spanner/executor/v1/executor.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "ExecutorServiceProto";
+option java_package = "com.google.spanner.executor.v1";
+
+// Request to executor service that can either start a new action or cancel a
+// previously started one. Either 'action' or 'cancel' must be set.
+message SpannerAsyncActionRequest {
+  int32 action_id = 1;
+  oneof kind {
+    SpannerAction action = 2;
+    bool cancel = 3;
+  }
+}
+
+// Response from executor service.
+message SpannerAsyncActionResponse {
+  int32 action_id = 1;
+  // If action results are split into multiple responses, only the last response
+  // can and should contain status.
+  SpannerActionOutcome outcome = 2;
+}
+
+// Service that executes SpannerActions asynchronously. It can be used to proxy
+// actions to non-C++ Spanner clients.
+service SpannerExecutorProxy {
+  // ExecuteActionAsync is a streaming call that starts executing a new action
+  // or requests to cancel some current action.
+  //
+  // For each request, the server will reply with one or more responses, but
+  // only the last response will contain status in the outcome.
+  //
+  // Responses can be matched to requests by action_id. It is allowed to have
+  // multiple actions in flight--in that case, actions are be executed in
+  // parallel.
+  rpc ExecuteActionAsync(stream SpannerAsyncActionRequest)
+    returns (stream SpannerAsyncActionResponse) {
+  }
+}
