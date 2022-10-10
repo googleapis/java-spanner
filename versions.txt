@@ -4,7 +4,10 @@
 proto-google-cloud-spanner-admin-instance-v1:6.31.2:6.31.2
 proto-google-cloud-spanner-v1:6.31.2:6.31.2
 proto-google-cloud-spanner-admin-database-v1:6.31.2:6.31.2
+proto-google-cloud-spanner-executor-v1:6.31.2:6.31.2
 grpc-google-cloud-spanner-v1:6.31.2:6.31.2
 grpc-google-cloud-spanner-admin-instance-v1:6.31.2:6.31.2
 grpc-google-cloud-spanner-admin-database-v1:6.31.2:6.31.2
+grpc-google-cloud-spanner-executor-v1:6.31.2:6.31.2
 google-cloud-spanner:6.31.2:6.31.2
+google-cloud-spanner-executor:6.31.2:6.31.2
