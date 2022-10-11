@@ -180,6 +180,78 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
     return getTransaction();
   }
 
+  public static final int UNDECLARED_PARAMETERS_FIELD_NUMBER = 3;
+  private com.google.spanner.v1.StructType undeclaredParameters_;
+  /**
+   *
+   *
+   * <pre>
+   * A SQL query can be parameterized. In PLAN mode, these parameters can be
+   * undeclared. This indicates the field names and types for those undeclared
+   * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
+   * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
+   * `undeclared_parameters` value like:
+   *     "fields": [
+   *       { "name": "UserId", "type": { "code": "INT64" } },
+   *       { "name": "UserName", "type": { "code": "STRING" } },
+   *     ]
+   * </pre>
+   *
+   * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
+   *
+   * @return Whether the undeclaredParameters field is set.
+   */
+  @java.lang.Override
+  public boolean hasUndeclaredParameters() {
+    return undeclaredParameters_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * A SQL query can be parameterized. In PLAN mode, these parameters can be
+   * undeclared. This indicates the field names and types for those undeclared
+   * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
+   * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
+   * `undeclared_parameters` value like:
+   *     "fields": [
+   *       { "name": "UserId", "type": { "code": "INT64" } },
+   *       { "name": "UserName", "type": { "code": "STRING" } },
+   *     ]
+   * </pre>
+   *
+   * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
+   *
+   * @return The undeclaredParameters.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.StructType getUndeclaredParameters() {
+    return undeclaredParameters_ == null
+        ? com.google.spanner.v1.StructType.getDefaultInstance()
+        : undeclaredParameters_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * A SQL query can be parameterized. In PLAN mode, these parameters can be
+   * undeclared. This indicates the field names and types for those undeclared
+   * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
+   * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
+   * `undeclared_parameters` value like:
+   *     "fields": [
+   *       { "name": "UserId", "type": { "code": "INT64" } },
+   *       { "name": "UserName", "type": { "code": "STRING" } },
+   *     ]
+   * </pre>
+   *
+   * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.StructTypeOrBuilder getUndeclaredParametersOrBuilder() {
+    return getUndeclaredParameters();
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -200,6 +272,9 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
     if (transaction_ != null) {
       output.writeMessage(2, getTransaction());
     }
+    if (undeclaredParameters_ != null) {
+      output.writeMessage(3, getUndeclaredParameters());
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -214,6 +289,10 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
     }
     if (transaction_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getTransaction());
+    }
+    if (undeclaredParameters_ != null) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(3, getUndeclaredParameters());
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -238,6 +317,10 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
     if (hasTransaction()) {
       if (!getTransaction().equals(other.getTransaction())) return false;
     }
+    if (hasUndeclaredParameters() != other.hasUndeclaredParameters()) return false;
+    if (hasUndeclaredParameters()) {
+      if (!getUndeclaredParameters().equals(other.getUndeclaredParameters())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -256,6 +339,10 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
     if (hasTransaction()) {
       hash = (37 * hash) + TRANSACTION_FIELD_NUMBER;
       hash = (53 * hash) + getTransaction().hashCode();
+    }
+    if (hasUndeclaredParameters()) {
+      hash = (37 * hash) + UNDECLARED_PARAMETERS_FIELD_NUMBER;
+      hash = (53 * hash) + getUndeclaredParameters().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -407,6 +494,12 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
         transaction_ = null;
         transactionBuilder_ = null;
       }
+      if (undeclaredParametersBuilder_ == null) {
+        undeclaredParameters_ = null;
+      } else {
+        undeclaredParameters_ = null;
+        undeclaredParametersBuilder_ = null;
+      }
       return this;
     }
 
@@ -443,6 +536,11 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
         result.transaction_ = transaction_;
       } else {
         result.transaction_ = transactionBuilder_.build();
+      }
+      if (undeclaredParametersBuilder_ == null) {
+        result.undeclaredParameters_ = undeclaredParameters_;
+      } else {
+        result.undeclaredParameters_ = undeclaredParametersBuilder_.build();
       }
       onBuilt();
       return result;
@@ -499,6 +597,9 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
       if (other.hasTransaction()) {
         mergeTransaction(other.getTransaction());
       }
+      if (other.hasUndeclaredParameters()) {
+        mergeUndeclaredParameters(other.getUndeclaredParameters());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -537,6 +638,13 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
 
                 break;
               } // case 18
+            case 26:
+              {
+                input.readMessage(
+                    getUndeclaredParametersFieldBuilder().getBuilder(), extensionRegistry);
+
+                break;
+              } // case 26
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -979,6 +1087,264 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
         transaction_ = null;
       }
       return transactionBuilder_;
+    }
+
+    private com.google.spanner.v1.StructType undeclaredParameters_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.StructType,
+            com.google.spanner.v1.StructType.Builder,
+            com.google.spanner.v1.StructTypeOrBuilder>
+        undeclaredParametersBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * A SQL query can be parameterized. In PLAN mode, these parameters can be
+     * undeclared. This indicates the field names and types for those undeclared
+     * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
+     * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
+     * `undeclared_parameters` value like:
+     *     "fields": [
+     *       { "name": "UserId", "type": { "code": "INT64" } },
+     *       { "name": "UserName", "type": { "code": "STRING" } },
+     *     ]
+     * </pre>
+     *
+     * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
+     *
+     * @return Whether the undeclaredParameters field is set.
+     */
+    public boolean hasUndeclaredParameters() {
+      return undeclaredParametersBuilder_ != null || undeclaredParameters_ != null;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A SQL query can be parameterized. In PLAN mode, these parameters can be
+     * undeclared. This indicates the field names and types for those undeclared
+     * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
+     * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
+     * `undeclared_parameters` value like:
+     *     "fields": [
+     *       { "name": "UserId", "type": { "code": "INT64" } },
+     *       { "name": "UserName", "type": { "code": "STRING" } },
+     *     ]
+     * </pre>
+     *
+     * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
+     *
+     * @return The undeclaredParameters.
+     */
+    public com.google.spanner.v1.StructType getUndeclaredParameters() {
+      if (undeclaredParametersBuilder_ == null) {
+        return undeclaredParameters_ == null
+            ? com.google.spanner.v1.StructType.getDefaultInstance()
+            : undeclaredParameters_;
+      } else {
+        return undeclaredParametersBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A SQL query can be parameterized. In PLAN mode, these parameters can be
+     * undeclared. This indicates the field names and types for those undeclared
+     * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
+     * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
+     * `undeclared_parameters` value like:
+     *     "fields": [
+     *       { "name": "UserId", "type": { "code": "INT64" } },
+     *       { "name": "UserName", "type": { "code": "STRING" } },
+     *     ]
+     * </pre>
+     *
+     * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
+     */
+    public Builder setUndeclaredParameters(com.google.spanner.v1.StructType value) {
+      if (undeclaredParametersBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        undeclaredParameters_ = value;
+        onChanged();
+      } else {
+        undeclaredParametersBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A SQL query can be parameterized. In PLAN mode, these parameters can be
+     * undeclared. This indicates the field names and types for those undeclared
+     * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
+     * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
+     * `undeclared_parameters` value like:
+     *     "fields": [
+     *       { "name": "UserId", "type": { "code": "INT64" } },
+     *       { "name": "UserName", "type": { "code": "STRING" } },
+     *     ]
+     * </pre>
+     *
+     * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
+     */
+    public Builder setUndeclaredParameters(
+        com.google.spanner.v1.StructType.Builder builderForValue) {
+      if (undeclaredParametersBuilder_ == null) {
+        undeclaredParameters_ = builderForValue.build();
+        onChanged();
+      } else {
+        undeclaredParametersBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A SQL query can be parameterized. In PLAN mode, these parameters can be
+     * undeclared. This indicates the field names and types for those undeclared
+     * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
+     * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
+     * `undeclared_parameters` value like:
+     *     "fields": [
+     *       { "name": "UserId", "type": { "code": "INT64" } },
+     *       { "name": "UserName", "type": { "code": "STRING" } },
+     *     ]
+     * </pre>
+     *
+     * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
+     */
+    public Builder mergeUndeclaredParameters(com.google.spanner.v1.StructType value) {
+      if (undeclaredParametersBuilder_ == null) {
+        if (undeclaredParameters_ != null) {
+          undeclaredParameters_ =
+              com.google.spanner.v1.StructType.newBuilder(undeclaredParameters_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          undeclaredParameters_ = value;
+        }
+        onChanged();
+      } else {
+        undeclaredParametersBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A SQL query can be parameterized. In PLAN mode, these parameters can be
+     * undeclared. This indicates the field names and types for those undeclared
+     * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
+     * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
+     * `undeclared_parameters` value like:
+     *     "fields": [
+     *       { "name": "UserId", "type": { "code": "INT64" } },
+     *       { "name": "UserName", "type": { "code": "STRING" } },
+     *     ]
+     * </pre>
+     *
+     * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
+     */
+    public Builder clearUndeclaredParameters() {
+      if (undeclaredParametersBuilder_ == null) {
+        undeclaredParameters_ = null;
+        onChanged();
+      } else {
+        undeclaredParameters_ = null;
+        undeclaredParametersBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A SQL query can be parameterized. In PLAN mode, these parameters can be
+     * undeclared. This indicates the field names and types for those undeclared
+     * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
+     * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
+     * `undeclared_parameters` value like:
+     *     "fields": [
+     *       { "name": "UserId", "type": { "code": "INT64" } },
+     *       { "name": "UserName", "type": { "code": "STRING" } },
+     *     ]
+     * </pre>
+     *
+     * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
+     */
+    public com.google.spanner.v1.StructType.Builder getUndeclaredParametersBuilder() {
+
+      onChanged();
+      return getUndeclaredParametersFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A SQL query can be parameterized. In PLAN mode, these parameters can be
+     * undeclared. This indicates the field names and types for those undeclared
+     * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
+     * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
+     * `undeclared_parameters` value like:
+     *     "fields": [
+     *       { "name": "UserId", "type": { "code": "INT64" } },
+     *       { "name": "UserName", "type": { "code": "STRING" } },
+     *     ]
+     * </pre>
+     *
+     * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
+     */
+    public com.google.spanner.v1.StructTypeOrBuilder getUndeclaredParametersOrBuilder() {
+      if (undeclaredParametersBuilder_ != null) {
+        return undeclaredParametersBuilder_.getMessageOrBuilder();
+      } else {
+        return undeclaredParameters_ == null
+            ? com.google.spanner.v1.StructType.getDefaultInstance()
+            : undeclaredParameters_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * A SQL query can be parameterized. In PLAN mode, these parameters can be
+     * undeclared. This indicates the field names and types for those undeclared
+     * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
+     * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
+     * `undeclared_parameters` value like:
+     *     "fields": [
+     *       { "name": "UserId", "type": { "code": "INT64" } },
+     *       { "name": "UserName", "type": { "code": "STRING" } },
+     *     ]
+     * </pre>
+     *
+     * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.StructType,
+            com.google.spanner.v1.StructType.Builder,
+            com.google.spanner.v1.StructTypeOrBuilder>
+        getUndeclaredParametersFieldBuilder() {
+      if (undeclaredParametersBuilder_ == null) {
+        undeclaredParametersBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.v1.StructType,
+                com.google.spanner.v1.StructType.Builder,
+                com.google.spanner.v1.StructTypeOrBuilder>(
+                getUndeclaredParameters(), getParentForChildren(), isClean());
+        undeclaredParameters_ = null;
+      }
+      return undeclaredParametersBuilder_;
     }
 
     @java.lang.Override
