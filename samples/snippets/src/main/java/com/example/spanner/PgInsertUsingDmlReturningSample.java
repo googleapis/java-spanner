@@ -58,6 +58,9 @@ public class PgInsertUsingDmlReturningSample {
                         + "(13, 'Russell', 'Morales'), "
                         + "(14, 'Jacqueline', 'Long'), "
                         + "(15, 'Dylan', 'Shaw') RETURNING FullName";
+
+                // readWriteTransaction.executeQuery(..) API should be used for executing
+                // DML statements with RETURNING clause.
                 try (ResultSet resultSet = transaction.executeQuery(Statement.of(sql))) {
                   while (resultSet.next()) {
                     System.out.println(resultSet.getString(0));

@@ -58,6 +58,9 @@ public class UpdateUsingDmlReturningSample {
                         + "SET MarketingBudget = MarketingBudget * 2 "
                         + "WHERE SingerId = 1 and AlbumId = 1 "
                         + "THEN RETURN MarketingBudget";
+
+                // readWriteTransaction.executeQuery(..) API should be used for executing
+                // DML statements with RETURNING clause.
                 try (ResultSet resultSet = transaction.executeQuery(Statement.of(sql))) {
                   while (resultSet.next()) {
                     System.out.printf("%d\n", resultSet.getLong(0));

@@ -56,6 +56,9 @@ public class PgDeleteUsingDmlReturningSample {
               transaction -> {
                 String sql =
                     "DELETE FROM Singers WHERE FirstName = 'Alice' RETURNING SingerId, FullName";
+
+                // readWriteTransaction.executeQuery(..) API should be used for executing
+                // DML statements with RETURNING clause.
                 try (ResultSet resultSet = transaction.executeQuery(Statement.of(sql))) {
                   while (resultSet.next()) {
                     System.out.printf("%d %s\n", resultSet.getLong(0), resultSet.getString(1));
