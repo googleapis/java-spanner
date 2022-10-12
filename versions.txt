@@ -1,10 +1,10 @@
 # Format:
 # module:released-version:current-version
 
-proto-google-cloud-spanner-admin-instance-v1:6.23.4:6.23.4
-proto-google-cloud-spanner-v1:6.23.4:6.23.4
-proto-google-cloud-spanner-admin-database-v1:6.23.4:6.23.4
-grpc-google-cloud-spanner-v1:6.23.4:6.23.4
-grpc-google-cloud-spanner-admin-instance-v1:6.23.4:6.23.4
-grpc-google-cloud-spanner-admin-database-v1:6.23.4:6.23.4
-google-cloud-spanner:6.23.4:6.23.4
+proto-google-cloud-spanner-admin-instance-v1:6.23.4:6.23.5-SNAPSHOT
+proto-google-cloud-spanner-v1:6.23.4:6.23.5-SNAPSHOT
+proto-google-cloud-spanner-admin-database-v1:6.23.4:6.23.5-SNAPSHOT
+grpc-google-cloud-spanner-v1:6.23.4:6.23.5-SNAPSHOT
+grpc-google-cloud-spanner-admin-instance-v1:6.23.4:6.23.5-SNAPSHOT
+grpc-google-cloud-spanner-admin-database-v1:6.23.4:6.23.5-SNAPSHOT
+google-cloud-spanner:6.23.4:6.23.5-SNAPSHOT
