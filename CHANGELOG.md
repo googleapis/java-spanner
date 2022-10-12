@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.23.4](https://github.com/googleapis/java-spanner/compare/v6.23.3...v6.23.4) (2022-10-12)
+
+
+### Dependencies
+
+* Regenerating with new Protobuf (6.23.x) ([#2103](https://github.com/googleapis/java-spanner/issues/2103)) ([22ee992](https://github.com/googleapis/java-spanner/commit/22ee992c00ce88db95972b003ec605c590efc5a7))
+
 ### [6.23.3](https://github.com/googleapis/java-spanner/compare/v6.23.2...v6.23.3) (2022-04-21)
 
 
