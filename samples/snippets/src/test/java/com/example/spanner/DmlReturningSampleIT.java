@@ -17,7 +17,6 @@
 package com.example.spanner;
 
 import static com.example.spanner.SampleRunner.runSample;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.DatabaseClient;
@@ -35,9 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Integration tests for DML Returning samples.
- */
+/** Integration tests for DML Returning samples for GoogleStandardSql dialect. */
 @RunWith(JUnit4.class)
 public class DmlReturningSampleIT extends SampleTestBase {
 
@@ -104,7 +101,11 @@ public class DmlReturningSampleIT extends SampleTestBase {
 
   @Test
   public void testInsertUsingReturningSample() throws Exception {
-    final String out = runSample(() -> InsertUsingDmlReturningSample.insertUsingDmlReturning(projectId, instanceId, databaseId.getDatabase()));
+    final String out =
+        runSample(
+            () ->
+                InsertUsingDmlReturningSample.insertUsingDmlReturning(
+                    projectId, instanceId, databaseId.getDatabase()));
     assertTrue(out.contains("Inserted row(s) count: 4"));
     assertTrue(out.contains("Melissa Garcia"));
     assertTrue(out.contains("Russell Morales"));
@@ -114,14 +115,22 @@ public class DmlReturningSampleIT extends SampleTestBase {
 
   @Test
   public void testUpdateUsingReturningSample() throws Exception {
-    final String out = runSample(() -> UpdateUsingDmlReturningSample.updateUsingDmlReturning(projectId, instanceId, databaseId.getDatabase()));
+    final String out =
+        runSample(
+            () ->
+                UpdateUsingDmlReturningSample.updateUsingDmlReturning(
+                    projectId, instanceId, databaseId.getDatabase()));
     assertTrue(out.contains("Updated row(s) count: 1"));
     assertTrue(out.contains("40000"));
   }
 
   @Test
   public void testDeleteUsingReturningSample() throws Exception {
-    final String out = runSample(() -> DeleteUsingDmlReturningSample.deleteUsingDmlReturningSample(projectId, instanceId, databaseId.getDatabase()));
+    final String out =
+        runSample(
+            () ->
+                DeleteUsingDmlReturningSample.deleteUsingDmlReturningSample(
+                    projectId, instanceId, databaseId.getDatabase()));
     assertTrue(out.contains("Deleted row(s) count: 1"));
     assertTrue(out.contains("Alice Trentor"));
   }

@@ -36,12 +36,13 @@ public class PgInsertUsingDmlReturningSample {
   }
 
   static void insertUsingDmlReturning(String projectId, String instanceId, String databaseId) {
-    try (Spanner spanner = SpannerOptions
-        .newBuilder()
-        .setProjectId(projectId)
-        .build()
-        .getService()) {
-      final DatabaseClient dbClient = spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .build()
+            .getService()) {
+      final DatabaseClient dbClient =
+          spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
       // Insert records into SINGERS table and returns the
       // generated column FullName of the inserted records
       // using ‘RETURNING FullName’.
@@ -49,22 +50,23 @@ public class PgInsertUsingDmlReturningSample {
       // inserted records by using ‘RETURNING *’.
       dbClient
           .readWriteTransaction()
-          .run(transaction -> {
-            String sql =
-                "INSERT INTO Singers (SingerId, FirstName, LastName) VALUES "
-                    + "(12, 'Melissa', 'Garcia'), "
-                    + "(13, 'Russell', 'Morales'), "
-                    + "(14, 'Jacqueline', 'Long'), "
-                    + "(15, 'Dylan', 'Shaw') RETURNING FullName";
-            try (ResultSet resultSet = transaction.executeQuery(Statement.of(sql))) {
-              while (resultSet.next()) {
-                System.out.println(resultSet.getString(0));
-              }
-              System.out.printf(
-                  "Inserted row(s) count: %d\n", resultSet.getStats().getRowCountExact());
-            }
-            return null;
-          });
+          .run(
+              transaction -> {
+                String sql =
+                    "INSERT INTO Singers (SingerId, FirstName, LastName) VALUES "
+                        + "(12, 'Melissa', 'Garcia'), "
+                        + "(13, 'Russell', 'Morales'), "
+                        + "(14, 'Jacqueline', 'Long'), "
+                        + "(15, 'Dylan', 'Shaw') RETURNING FullName";
+                try (ResultSet resultSet = transaction.executeQuery(Statement.of(sql))) {
+                  while (resultSet.next()) {
+                    System.out.println(resultSet.getString(0));
+                  }
+                  System.out.printf(
+                      "Inserted row(s) count: %d\n", resultSet.getStats().getRowCountExact());
+                }
+                return null;
+              });
     }
   }
 }

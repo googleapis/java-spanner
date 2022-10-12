@@ -36,12 +36,13 @@ public class UpdateUsingDmlReturningSample {
   }
 
   static void updateUsingDmlReturning(String projectId, String instanceId, String databaseId) {
-    try (Spanner spanner = SpannerOptions
-        .newBuilder()
-        .setProjectId(projectId)
-        .build()
-        .getService()) {
-      final DatabaseClient dbClient = spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .build()
+            .getService()) {
+      final DatabaseClient dbClient =
+          spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
       // Update MarketingBudget column for records satisfying
       // a particular condition and returns the modified
       // MarketingBudget column of the updated records using
@@ -50,21 +51,22 @@ public class UpdateUsingDmlReturningSample {
       // updated records by using ‘THEN RETURN *’.
       dbClient
           .readWriteTransaction()
-          .run(transaction -> {
-            String sql =
-                "UPDATE Albums "
-                    + "SET MarketingBudget = MarketingBudget * 2 "
-                    + "WHERE SingerId = 1 and AlbumId = 1 "
-                    + "THEN RETURN MarketingBudget";
-            try (ResultSet resultSet = transaction.executeQuery(Statement.of(sql))) {
-              while (resultSet.next()) {
-                System.out.printf("%d\n", resultSet.getLong(0));
-              }
-              System.out.printf(
-                  "Updated row(s) count: %d\n", resultSet.getStats().getRowCountExact());
-            }
-            return null;
-          });
+          .run(
+              transaction -> {
+                String sql =
+                    "UPDATE Albums "
+                        + "SET MarketingBudget = MarketingBudget * 2 "
+                        + "WHERE SingerId = 1 and AlbumId = 1 "
+                        + "THEN RETURN MarketingBudget";
+                try (ResultSet resultSet = transaction.executeQuery(Statement.of(sql))) {
+                  while (resultSet.next()) {
+                    System.out.printf("%d\n", resultSet.getLong(0));
+                  }
+                  System.out.printf(
+                      "Updated row(s) count: %d\n", resultSet.getStats().getRowCountExact());
+                }
+                return null;
+              });
     }
   }
 }

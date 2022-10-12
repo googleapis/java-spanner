@@ -37,9 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Integration tests for DML Returning samples.
- */
+/** Integration tests for DML Returning samples for PostgreSql dialect. */
 @RunWith(JUnit4.class)
 public class PgDmlReturningSampleIT extends SampleTestBase {
 
@@ -116,7 +114,11 @@ public class PgDmlReturningSampleIT extends SampleTestBase {
 
   @Test
   public void testInsertUsingReturningSample() throws Exception {
-    final String out = runSample(() -> PgInsertUsingDmlReturningSample.insertUsingDmlReturning(projectId, instanceId, databaseId.getDatabase()));
+    final String out =
+        runSample(
+            () ->
+                PgInsertUsingDmlReturningSample.insertUsingDmlReturning(
+                    projectId, instanceId, databaseId.getDatabase()));
     assertTrue(out.contains("Inserted row(s) count: 4"));
     assertTrue(out.contains("Melissa Garcia"));
     assertTrue(out.contains("Russell Morales"));
@@ -126,14 +128,22 @@ public class PgDmlReturningSampleIT extends SampleTestBase {
 
   @Test
   public void testUpdateUsingReturningSample() throws Exception {
-    final String out = runSample(() -> PgUpdateUsingDmlReturningSample.updateUsingDmlReturning(projectId, instanceId, databaseId.getDatabase()));
+    final String out =
+        runSample(
+            () ->
+                PgUpdateUsingDmlReturningSample.updateUsingDmlReturning(
+                    projectId, instanceId, databaseId.getDatabase()));
     assertTrue(out.contains("Updated row(s) count: 1"));
     assertTrue(out.contains("40000"));
   }
 
   @Test
   public void testDeleteUsingReturningSample() throws Exception {
-    final String out = runSample(() -> PgDeleteUsingDmlReturningSample.deleteUsingDmlReturningSample(projectId, instanceId, databaseId.getDatabase()));
+    final String out =
+        runSample(
+            () ->
+                PgDeleteUsingDmlReturningSample.deleteUsingDmlReturningSample(
+                    projectId, instanceId, databaseId.getDatabase()));
     assertTrue(out.contains("Deleted row(s) count: 1"));
     assertTrue(out.contains("Alice Trentor"));
   }

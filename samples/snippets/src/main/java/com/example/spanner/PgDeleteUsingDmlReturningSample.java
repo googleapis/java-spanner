@@ -35,13 +35,15 @@ public class PgDeleteUsingDmlReturningSample {
     deleteUsingDmlReturningSample(projectId, instanceId, databaseId);
   }
 
-  static void deleteUsingDmlReturningSample(String projectId, String instanceId, String databaseId) {
-    try (Spanner spanner = SpannerOptions
-        .newBuilder()
-        .setProjectId(projectId)
-        .build()
-        .getService()) {
-      final DatabaseClient dbClient = spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+  static void deleteUsingDmlReturningSample(
+      String projectId, String instanceId, String databaseId) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .build()
+            .getService()) {
+      final DatabaseClient dbClient =
+          spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
       // Delete records from SINGERS table satisfying a
       // particular condition and returns the SingerId
       // and FullName column of the deleted records using
@@ -50,17 +52,19 @@ public class PgDeleteUsingDmlReturningSample {
       // deleted records by using ‘RETURNING *’.
       dbClient
           .readWriteTransaction()
-          .run(transaction -> {
-            String sql = "DELETE FROM Singers WHERE FirstName = 'Alice' RETURNING SingerId, FullName";
-            try (ResultSet resultSet = transaction.executeQuery(Statement.of(sql))) {
-              while (resultSet.next()) {
-                System.out.printf("%d %s\n", resultSet.getLong(0), resultSet.getString(1));
-              }
-              System.out.printf(
-                  "Deleted row(s) count: %d\n", resultSet.getStats().getRowCountExact());
-            }
-            return null;
-          });
+          .run(
+              transaction -> {
+                String sql =
+                    "DELETE FROM Singers WHERE FirstName = 'Alice' RETURNING SingerId, FullName";
+                try (ResultSet resultSet = transaction.executeQuery(Statement.of(sql))) {
+                  while (resultSet.next()) {
+                    System.out.printf("%d %s\n", resultSet.getLong(0), resultSet.getString(1));
+                  }
+                  System.out.printf(
+                      "Deleted row(s) count: %d\n", resultSet.getStats().getRowCountExact());
+                }
+                return null;
+              });
     }
   }
 }
