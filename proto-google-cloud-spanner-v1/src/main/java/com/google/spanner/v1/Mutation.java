@@ -52,123 +52,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     return this.unknownFields;
   }
 
-  private Mutation(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              com.google.spanner.v1.Mutation.Write.Builder subBuilder = null;
-              if (operationCase_ == 1) {
-                subBuilder = ((com.google.spanner.v1.Mutation.Write) operation_).toBuilder();
-              }
-              operation_ =
-                  input.readMessage(
-                      com.google.spanner.v1.Mutation.Write.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.v1.Mutation.Write) operation_);
-                operation_ = subBuilder.buildPartial();
-              }
-              operationCase_ = 1;
-              break;
-            }
-          case 18:
-            {
-              com.google.spanner.v1.Mutation.Write.Builder subBuilder = null;
-              if (operationCase_ == 2) {
-                subBuilder = ((com.google.spanner.v1.Mutation.Write) operation_).toBuilder();
-              }
-              operation_ =
-                  input.readMessage(
-                      com.google.spanner.v1.Mutation.Write.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.v1.Mutation.Write) operation_);
-                operation_ = subBuilder.buildPartial();
-              }
-              operationCase_ = 2;
-              break;
-            }
-          case 26:
-            {
-              com.google.spanner.v1.Mutation.Write.Builder subBuilder = null;
-              if (operationCase_ == 3) {
-                subBuilder = ((com.google.spanner.v1.Mutation.Write) operation_).toBuilder();
-              }
-              operation_ =
-                  input.readMessage(
-                      com.google.spanner.v1.Mutation.Write.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.v1.Mutation.Write) operation_);
-                operation_ = subBuilder.buildPartial();
-              }
-              operationCase_ = 3;
-              break;
-            }
-          case 34:
-            {
-              com.google.spanner.v1.Mutation.Write.Builder subBuilder = null;
-              if (operationCase_ == 4) {
-                subBuilder = ((com.google.spanner.v1.Mutation.Write) operation_).toBuilder();
-              }
-              operation_ =
-                  input.readMessage(
-                      com.google.spanner.v1.Mutation.Write.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.v1.Mutation.Write) operation_);
-                operation_ = subBuilder.buildPartial();
-              }
-              operationCase_ = 4;
-              break;
-            }
-          case 42:
-            {
-              com.google.spanner.v1.Mutation.Delete.Builder subBuilder = null;
-              if (operationCase_ == 5) {
-                subBuilder = ((com.google.spanner.v1.Mutation.Delete) operation_).toBuilder();
-              }
-              operation_ =
-                  input.readMessage(
-                      com.google.spanner.v1.Mutation.Delete.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.v1.Mutation.Delete) operation_);
-                operation_ = subBuilder.buildPartial();
-              }
-              operationCase_ = 5;
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.MutationProto
         .internal_static_google_spanner_v1_Mutation_descriptor;
@@ -397,77 +280,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
       return this.unknownFields;
-    }
-
-    private Write(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10:
-              {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                table_ = s;
-                break;
-              }
-            case 18:
-              {
-                java.lang.String s = input.readStringRequireUtf8();
-                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                  columns_ = new com.google.protobuf.LazyStringArrayList();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                columns_.add(s);
-                break;
-              }
-            case 26:
-              {
-                if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                  values_ = new java.util.ArrayList<com.google.protobuf.ListValue>();
-                  mutable_bitField0_ |= 0x00000002;
-                }
-                values_.add(
-                    input.readMessage(com.google.protobuf.ListValue.parser(), extensionRegistry));
-                break;
-              }
-            default:
-              {
-                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-      } finally {
-        if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          columns_ = columns_.getUnmodifiableView();
-        }
-        if (((mutable_bitField0_ & 0x00000002) != 0)) {
-          values_ = java.util.Collections.unmodifiableList(values_);
-        }
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -734,7 +546,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       for (int i = 0; i < values_.size(); i++) {
         output.writeMessage(3, values_.get(i));
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -757,7 +569,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       for (int i = 0; i < values_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream.computeMessageSize(3, values_.get(i));
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -775,7 +587,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       if (!getTable().equals(other.getTable())) return false;
       if (!getColumnsList().equals(other.getColumnsList())) return false;
       if (!getValuesList().equals(other.getValuesList())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -796,7 +608,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         hash = (37 * hash) + VALUES_FIELD_NUMBER;
         hash = (53 * hash) + getValuesList().hashCode();
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -928,19 +740,10 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
 
       // Construct using com.google.spanner.v1.Mutation.Write.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
+      private Builder() {}
 
       private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
-          getValuesFieldBuilder();
-        }
       }
 
       @java.lang.Override
@@ -952,10 +755,11 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         bitField0_ = (bitField0_ & ~0x00000001);
         if (valuesBuilder_ == null) {
           values_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
         } else {
+          values_ = null;
           valuesBuilder_.clear();
         }
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -1091,7 +895,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
             }
           }
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -1106,17 +910,56 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.google.spanner.v1.Mutation.Write parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10:
+                {
+                  table_ = input.readStringRequireUtf8();
+
+                  break;
+                } // case 10
+              case 18:
+                {
+                  java.lang.String s = input.readStringRequireUtf8();
+                  ensureColumnsIsMutable();
+                  columns_.add(s);
+                  break;
+                } // case 18
+              case 26:
+                {
+                  com.google.protobuf.ListValue m =
+                      input.readMessage(com.google.protobuf.ListValue.parser(), extensionRegistry);
+                  if (valuesBuilder_ == null) {
+                    ensureValuesIsMutable();
+                    values_.add(m);
+                  } else {
+                    valuesBuilder_.addMessage(m);
+                  }
+                  break;
+                } // case 26
+              default:
+                {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.google.spanner.v1.Mutation.Write) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
 
@@ -1928,7 +1771,19 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
               com.google.protobuf.CodedInputStream input,
               com.google.protobuf.ExtensionRegistryLite extensionRegistry)
               throws com.google.protobuf.InvalidProtocolBufferException {
-            return new Write(input, extensionRegistry);
+            Builder builder = newBuilder();
+            try {
+              builder.mergeFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.setUnfinishedMessage(builder.buildPartial());
+            } catch (com.google.protobuf.UninitializedMessageException e) {
+              throw e.asInvalidProtocolBufferException()
+                  .setUnfinishedMessage(builder.buildPartial());
+            } catch (java.io.IOException e) {
+              throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                  .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
           }
         };
 
@@ -2059,65 +1914,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
       return this.unknownFields;
-    }
-
-    private Delete(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10:
-              {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                table_ = s;
-                break;
-              }
-            case 18:
-              {
-                com.google.spanner.v1.KeySet.Builder subBuilder = null;
-                if (keySet_ != null) {
-                  subBuilder = keySet_.toBuilder();
-                }
-                keySet_ =
-                    input.readMessage(com.google.spanner.v1.KeySet.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(keySet_);
-                  keySet_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-            default:
-              {
-                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -2265,7 +2061,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       if (keySet_ != null) {
         output.writeMessage(2, getKeySet());
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -2280,7 +2076,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       if (keySet_ != null) {
         size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getKeySet());
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -2300,7 +2096,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       if (hasKeySet()) {
         if (!getKeySet().equals(other.getKeySet())) return false;
       }
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -2317,7 +2113,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         hash = (37 * hash) + KEY_SET_FIELD_NUMBER;
         hash = (53 * hash) + getKeySet().hashCode();
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -2448,17 +2244,10 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
 
       // Construct using com.google.spanner.v1.Mutation.Delete.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
+      private Builder() {}
 
       private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
       }
 
       @java.lang.Override
@@ -2563,7 +2352,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         if (other.hasKeySet()) {
           mergeKeySet(other.getKeySet());
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -2578,17 +2367,43 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.google.spanner.v1.Mutation.Delete parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10:
+                {
+                  table_ = input.readStringRequireUtf8();
+
+                  break;
+                } // case 10
+              case 18:
+                {
+                  input.readMessage(getKeySetFieldBuilder().getBuilder(), extensionRegistry);
+
+                  break;
+                } // case 18
+              default:
+                {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.google.spanner.v1.Mutation.Delete) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
 
@@ -2964,7 +2779,19 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
               com.google.protobuf.CodedInputStream input,
               com.google.protobuf.ExtensionRegistryLite extensionRegistry)
               throws com.google.protobuf.InvalidProtocolBufferException {
-            return new Delete(input, extensionRegistry);
+            Builder builder = newBuilder();
+            try {
+              builder.mergeFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.setUnfinishedMessage(builder.buildPartial());
+            } catch (com.google.protobuf.UninitializedMessageException e) {
+              throw e.asInvalidProtocolBufferException()
+                  .setUnfinishedMessage(builder.buildPartial());
+            } catch (java.io.IOException e) {
+              throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                  .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
           }
         };
 
@@ -3368,7 +3195,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     if (operationCase_ == 5) {
       output.writeMessage(5, (com.google.spanner.v1.Mutation.Delete) operation_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -3402,7 +3229,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           com.google.protobuf.CodedOutputStream.computeMessageSize(
               5, (com.google.spanner.v1.Mutation.Delete) operation_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -3437,7 +3264,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       case 0:
       default:
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -3472,7 +3299,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       case 0:
       default:
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -3601,22 +3428,30 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
 
     // Construct using com.google.spanner.v1.Mutation.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      if (insertBuilder_ != null) {
+        insertBuilder_.clear();
+      }
+      if (updateBuilder_ != null) {
+        updateBuilder_.clear();
+      }
+      if (insertOrUpdateBuilder_ != null) {
+        insertOrUpdateBuilder_.clear();
+      }
+      if (replaceBuilder_ != null) {
+        replaceBuilder_.clear();
+      }
+      if (deleteBuilder_ != null) {
+        deleteBuilder_.clear();
+      }
       operationCase_ = 0;
       operation_ = null;
       return this;
@@ -3761,7 +3596,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
             break;
           }
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -3776,17 +3611,61 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.Mutation parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                input.readMessage(getInsertFieldBuilder().getBuilder(), extensionRegistry);
+                operationCase_ = 1;
+                break;
+              } // case 10
+            case 18:
+              {
+                input.readMessage(getUpdateFieldBuilder().getBuilder(), extensionRegistry);
+                operationCase_ = 2;
+                break;
+              } // case 18
+            case 26:
+              {
+                input.readMessage(getInsertOrUpdateFieldBuilder().getBuilder(), extensionRegistry);
+                operationCase_ = 3;
+                break;
+              } // case 26
+            case 34:
+              {
+                input.readMessage(getReplaceFieldBuilder().getBuilder(), extensionRegistry);
+                operationCase_ = 4;
+                break;
+              } // case 34
+            case 42:
+              {
+                input.readMessage(getDeleteFieldBuilder().getBuilder(), extensionRegistry);
+                operationCase_ = 5;
+                break;
+              } // case 42
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.Mutation) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -5011,7 +4890,18 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Mutation(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
