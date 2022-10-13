@@ -751,6 +751,4 @@ message ReadResult {
   repeated ValueList row = 4;
   // The type of rows read. It must be set if at least one row was read.
   optional google.spanner.v1.StructType row_type = 5;
-  // The read timestamp if the read is imported into an optimistic transaction..
-  int64 read_timestamp = 6;
 }
