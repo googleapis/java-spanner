@@ -95,8 +95,14 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 50: {
+            java.lang.String s = input.readStringRequireUtf8();
+            valueTypeCase_ = 6;
+            valueType_ = s;
+            break;
+          }
+          case 58: {
             com.google.spanner.executor.v1.ValueList.Builder subBuilder = null;
-            if (valueTypeCase_ == 6) {
+            if (valueTypeCase_ == 7) {
               subBuilder = ((com.google.spanner.executor.v1.ValueList) valueType_).toBuilder();
             }
             valueType_ =
@@ -105,12 +111,12 @@ private static final long serialVersionUID = 0L;
               subBuilder.mergeFrom((com.google.spanner.executor.v1.ValueList) valueType_);
               valueType_ = subBuilder.buildPartial();
             }
-            valueTypeCase_ = 6;
+            valueTypeCase_ = 7;
             break;
           }
-          case 58: {
+          case 66: {
             com.google.protobuf.Timestamp.Builder subBuilder = null;
-            if (valueTypeCase_ == 7) {
+            if (valueTypeCase_ == 8) {
               subBuilder = ((com.google.protobuf.Timestamp) valueType_).toBuilder();
             }
             valueType_ =
@@ -119,7 +125,7 @@ private static final long serialVersionUID = 0L;
               subBuilder.mergeFrom((com.google.protobuf.Timestamp) valueType_);
               valueType_ = subBuilder.buildPartial();
             }
-            valueTypeCase_ = 7;
+            valueTypeCase_ = 8;
             break;
           }
           case 112: {
@@ -190,8 +196,9 @@ private static final long serialVersionUID = 0L;
     BOOL_VALUE(3),
     DOUBLE_VALUE(4),
     BYTES_VALUE(5),
-    STRUCT_VALUE(6),
-    TIMESTAMP_VALUE(7),
+    STRING_VALUE(6),
+    STRUCT_VALUE(7),
+    TIMESTAMP_VALUE(8),
     DATE_VALUE(14),
     COMMIT_TIMESTAMP(15),
     ARRAY_VALUE(16),
@@ -217,8 +224,9 @@ private static final long serialVersionUID = 0L;
         case 3: return BOOL_VALUE;
         case 4: return DOUBLE_VALUE;
         case 5: return BYTES_VALUE;
-        case 6: return STRUCT_VALUE;
-        case 7: return TIMESTAMP_VALUE;
+        case 6: return STRING_VALUE;
+        case 7: return STRUCT_VALUE;
+        case 8: return TIMESTAMP_VALUE;
         case 14: return DATE_VALUE;
         case 15: return COMMIT_TIMESTAMP;
         case 16: return ARRAY_VALUE;
@@ -358,63 +366,115 @@ private static final long serialVersionUID = 0L;
     return com.google.protobuf.ByteString.EMPTY;
   }
 
-  public static final int STRUCT_VALUE_FIELD_NUMBER = 6;
+  public static final int STRING_VALUE_FIELD_NUMBER = 6;
   /**
-   * <code>.google.spanner.executor.v1.ValueList struct_value = 6;</code>
+   * <code>string string_value = 6;</code>
+   * @return Whether the stringValue field is set.
+   */
+  public boolean hasStringValue() {
+    return valueTypeCase_ == 6;
+  }
+  /**
+   * <code>string string_value = 6;</code>
+   * @return The stringValue.
+   */
+  public java.lang.String getStringValue() {
+    java.lang.Object ref = "";
+    if (valueTypeCase_ == 6) {
+      ref = valueType_;
+    }
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      if (valueTypeCase_ == 6) {
+        valueType_ = s;
+      }
+      return s;
+    }
+  }
+  /**
+   * <code>string string_value = 6;</code>
+   * @return The bytes for stringValue.
+   */
+  public com.google.protobuf.ByteString
+      getStringValueBytes() {
+    java.lang.Object ref = "";
+    if (valueTypeCase_ == 6) {
+      ref = valueType_;
+    }
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      if (valueTypeCase_ == 6) {
+        valueType_ = b;
+      }
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int STRUCT_VALUE_FIELD_NUMBER = 7;
+  /**
+   * <code>.google.spanner.executor.v1.ValueList struct_value = 7;</code>
    * @return Whether the structValue field is set.
    */
   @java.lang.Override
   public boolean hasStructValue() {
-    return valueTypeCase_ == 6;
+    return valueTypeCase_ == 7;
   }
   /**
-   * <code>.google.spanner.executor.v1.ValueList struct_value = 6;</code>
+   * <code>.google.spanner.executor.v1.ValueList struct_value = 7;</code>
    * @return The structValue.
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.ValueList getStructValue() {
-    if (valueTypeCase_ == 6) {
+    if (valueTypeCase_ == 7) {
        return (com.google.spanner.executor.v1.ValueList) valueType_;
     }
     return com.google.spanner.executor.v1.ValueList.getDefaultInstance();
   }
   /**
-   * <code>.google.spanner.executor.v1.ValueList struct_value = 6;</code>
+   * <code>.google.spanner.executor.v1.ValueList struct_value = 7;</code>
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.ValueListOrBuilder getStructValueOrBuilder() {
-    if (valueTypeCase_ == 6) {
+    if (valueTypeCase_ == 7) {
        return (com.google.spanner.executor.v1.ValueList) valueType_;
     }
     return com.google.spanner.executor.v1.ValueList.getDefaultInstance();
   }
 
-  public static final int TIMESTAMP_VALUE_FIELD_NUMBER = 7;
+  public static final int TIMESTAMP_VALUE_FIELD_NUMBER = 8;
   /**
-   * <code>.google.protobuf.Timestamp timestamp_value = 7;</code>
+   * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
    * @return Whether the timestampValue field is set.
    */
   @java.lang.Override
   public boolean hasTimestampValue() {
-    return valueTypeCase_ == 7;
+    return valueTypeCase_ == 8;
   }
   /**
-   * <code>.google.protobuf.Timestamp timestamp_value = 7;</code>
+   * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
    * @return The timestampValue.
    */
   @java.lang.Override
   public com.google.protobuf.Timestamp getTimestampValue() {
-    if (valueTypeCase_ == 7) {
+    if (valueTypeCase_ == 8) {
        return (com.google.protobuf.Timestamp) valueType_;
     }
     return com.google.protobuf.Timestamp.getDefaultInstance();
   }
   /**
-   * <code>.google.protobuf.Timestamp timestamp_value = 7;</code>
+   * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getTimestampValueOrBuilder() {
-    if (valueTypeCase_ == 7) {
+    if (valueTypeCase_ == 8) {
        return (com.google.protobuf.Timestamp) valueType_;
     }
     return com.google.protobuf.Timestamp.getDefaultInstance();
@@ -556,10 +616,13 @@ private static final long serialVersionUID = 0L;
           5, (com.google.protobuf.ByteString) valueType_);
     }
     if (valueTypeCase_ == 6) {
-      output.writeMessage(6, (com.google.spanner.executor.v1.ValueList) valueType_);
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 6, valueType_);
     }
     if (valueTypeCase_ == 7) {
-      output.writeMessage(7, (com.google.protobuf.Timestamp) valueType_);
+      output.writeMessage(7, (com.google.spanner.executor.v1.ValueList) valueType_);
+    }
+    if (valueTypeCase_ == 8) {
+      output.writeMessage(8, (com.google.protobuf.Timestamp) valueType_);
     }
     if (valueTypeCase_ == 14) {
       output.writeInt32(
@@ -607,12 +670,15 @@ private static final long serialVersionUID = 0L;
             5, (com.google.protobuf.ByteString) valueType_);
     }
     if (valueTypeCase_ == 6) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(6, (com.google.spanner.executor.v1.ValueList) valueType_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, valueType_);
     }
     if (valueTypeCase_ == 7) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(7, (com.google.protobuf.Timestamp) valueType_);
+        .computeMessageSize(7, (com.google.spanner.executor.v1.ValueList) valueType_);
+    }
+    if (valueTypeCase_ == 8) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(8, (com.google.protobuf.Timestamp) valueType_);
     }
     if (valueTypeCase_ == 14) {
       size += com.google.protobuf.CodedOutputStream
@@ -667,10 +733,14 @@ private static final long serialVersionUID = 0L;
             .equals(other.getBytesValue())) return false;
         break;
       case 6:
+        if (!getStringValue()
+            .equals(other.getStringValue())) return false;
+        break;
+      case 7:
         if (!getStructValue()
             .equals(other.getStructValue())) return false;
         break;
-      case 7:
+      case 8:
         if (!getTimestampValue()
             .equals(other.getTimestampValue())) return false;
         break;
@@ -726,10 +796,14 @@ private static final long serialVersionUID = 0L;
         hash = (53 * hash) + getBytesValue().hashCode();
         break;
       case 6:
+        hash = (37 * hash) + STRING_VALUE_FIELD_NUMBER;
+        hash = (53 * hash) + getStringValue().hashCode();
+        break;
+      case 7:
         hash = (37 * hash) + STRUCT_VALUE_FIELD_NUMBER;
         hash = (53 * hash) + getStructValue().hashCode();
         break;
-      case 7:
+      case 8:
         hash = (37 * hash) + TIMESTAMP_VALUE_FIELD_NUMBER;
         hash = (53 * hash) + getTimestampValue().hashCode();
         break;
@@ -931,13 +1005,16 @@ private static final long serialVersionUID = 0L;
         result.valueType_ = valueType_;
       }
       if (valueTypeCase_ == 6) {
+        result.valueType_ = valueType_;
+      }
+      if (valueTypeCase_ == 7) {
         if (structValueBuilder_ == null) {
           result.valueType_ = valueType_;
         } else {
           result.valueType_ = structValueBuilder_.build();
         }
       }
-      if (valueTypeCase_ == 7) {
+      if (valueTypeCase_ == 8) {
         if (timestampValueBuilder_ == null) {
           result.valueType_ = valueType_;
         } else {
@@ -1025,6 +1102,12 @@ private static final long serialVersionUID = 0L;
         }
         case BYTES_VALUE: {
           setBytesValue(other.getBytesValue());
+          break;
+        }
+        case STRING_VALUE: {
+          valueTypeCase_ = 6;
+          valueType_ = other.valueType_;
+          onChanged();
           break;
         }
         case STRUCT_VALUE: {
@@ -1335,36 +1418,133 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
+    /**
+     * <code>string string_value = 6;</code>
+     * @return Whether the stringValue field is set.
+     */
+    @java.lang.Override
+    public boolean hasStringValue() {
+      return valueTypeCase_ == 6;
+    }
+    /**
+     * <code>string string_value = 6;</code>
+     * @return The stringValue.
+     */
+    @java.lang.Override
+    public java.lang.String getStringValue() {
+      java.lang.Object ref = "";
+      if (valueTypeCase_ == 6) {
+        ref = valueType_;
+      }
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (valueTypeCase_ == 6) {
+          valueType_ = s;
+        }
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>string string_value = 6;</code>
+     * @return The bytes for stringValue.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getStringValueBytes() {
+      java.lang.Object ref = "";
+      if (valueTypeCase_ == 6) {
+        ref = valueType_;
+      }
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        if (valueTypeCase_ == 6) {
+          valueType_ = b;
+        }
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>string string_value = 6;</code>
+     * @param value The stringValue to set.
+     * @return This builder for chaining.
+     */
+    public Builder setStringValue(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  valueTypeCase_ = 6;
+      valueType_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string string_value = 6;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearStringValue() {
+      if (valueTypeCase_ == 6) {
+        valueTypeCase_ = 0;
+        valueType_ = null;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <code>string string_value = 6;</code>
+     * @param value The bytes for stringValue to set.
+     * @return This builder for chaining.
+     */
+    public Builder setStringValueBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      valueTypeCase_ = 6;
+      valueType_ = value;
+      onChanged();
+      return this;
+    }
+
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.spanner.executor.v1.ValueList, com.google.spanner.executor.v1.ValueList.Builder, com.google.spanner.executor.v1.ValueListOrBuilder> structValueBuilder_;
     /**
-     * <code>.google.spanner.executor.v1.ValueList struct_value = 6;</code>
+     * <code>.google.spanner.executor.v1.ValueList struct_value = 7;</code>
      * @return Whether the structValue field is set.
      */
     @java.lang.Override
     public boolean hasStructValue() {
-      return valueTypeCase_ == 6;
+      return valueTypeCase_ == 7;
     }
     /**
-     * <code>.google.spanner.executor.v1.ValueList struct_value = 6;</code>
+     * <code>.google.spanner.executor.v1.ValueList struct_value = 7;</code>
      * @return The structValue.
      */
     @java.lang.Override
     public com.google.spanner.executor.v1.ValueList getStructValue() {
       if (structValueBuilder_ == null) {
-        if (valueTypeCase_ == 6) {
+        if (valueTypeCase_ == 7) {
           return (com.google.spanner.executor.v1.ValueList) valueType_;
         }
         return com.google.spanner.executor.v1.ValueList.getDefaultInstance();
       } else {
-        if (valueTypeCase_ == 6) {
+        if (valueTypeCase_ == 7) {
           return structValueBuilder_.getMessage();
         }
         return com.google.spanner.executor.v1.ValueList.getDefaultInstance();
       }
     }
     /**
-     * <code>.google.spanner.executor.v1.ValueList struct_value = 6;</code>
+     * <code>.google.spanner.executor.v1.ValueList struct_value = 7;</code>
      */
     public Builder setStructValue(com.google.spanner.executor.v1.ValueList value) {
       if (structValueBuilder_ == null) {
@@ -1376,11 +1556,11 @@ private static final long serialVersionUID = 0L;
       } else {
         structValueBuilder_.setMessage(value);
       }
-      valueTypeCase_ = 6;
+      valueTypeCase_ = 7;
       return this;
     }
     /**
-     * <code>.google.spanner.executor.v1.ValueList struct_value = 6;</code>
+     * <code>.google.spanner.executor.v1.ValueList struct_value = 7;</code>
      */
     public Builder setStructValue(
         com.google.spanner.executor.v1.ValueList.Builder builderForValue) {
@@ -1390,15 +1570,15 @@ private static final long serialVersionUID = 0L;
       } else {
         structValueBuilder_.setMessage(builderForValue.build());
       }
-      valueTypeCase_ = 6;
+      valueTypeCase_ = 7;
       return this;
     }
     /**
-     * <code>.google.spanner.executor.v1.ValueList struct_value = 6;</code>
+     * <code>.google.spanner.executor.v1.ValueList struct_value = 7;</code>
      */
     public Builder mergeStructValue(com.google.spanner.executor.v1.ValueList value) {
       if (structValueBuilder_ == null) {
-        if (valueTypeCase_ == 6 &&
+        if (valueTypeCase_ == 7 &&
             valueType_ != com.google.spanner.executor.v1.ValueList.getDefaultInstance()) {
           valueType_ = com.google.spanner.executor.v1.ValueList.newBuilder((com.google.spanner.executor.v1.ValueList) valueType_)
               .mergeFrom(value).buildPartial();
@@ -1407,27 +1587,27 @@ private static final long serialVersionUID = 0L;
         }
         onChanged();
       } else {
-        if (valueTypeCase_ == 6) {
+        if (valueTypeCase_ == 7) {
           structValueBuilder_.mergeFrom(value);
         } else {
           structValueBuilder_.setMessage(value);
         }
       }
-      valueTypeCase_ = 6;
+      valueTypeCase_ = 7;
       return this;
     }
     /**
-     * <code>.google.spanner.executor.v1.ValueList struct_value = 6;</code>
+     * <code>.google.spanner.executor.v1.ValueList struct_value = 7;</code>
      */
     public Builder clearStructValue() {
       if (structValueBuilder_ == null) {
-        if (valueTypeCase_ == 6) {
+        if (valueTypeCase_ == 7) {
           valueTypeCase_ = 0;
           valueType_ = null;
           onChanged();
         }
       } else {
-        if (valueTypeCase_ == 6) {
+        if (valueTypeCase_ == 7) {
           valueTypeCase_ = 0;
           valueType_ = null;
         }
@@ -1436,33 +1616,33 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.google.spanner.executor.v1.ValueList struct_value = 6;</code>
+     * <code>.google.spanner.executor.v1.ValueList struct_value = 7;</code>
      */
     public com.google.spanner.executor.v1.ValueList.Builder getStructValueBuilder() {
       return getStructValueFieldBuilder().getBuilder();
     }
     /**
-     * <code>.google.spanner.executor.v1.ValueList struct_value = 6;</code>
+     * <code>.google.spanner.executor.v1.ValueList struct_value = 7;</code>
      */
     @java.lang.Override
     public com.google.spanner.executor.v1.ValueListOrBuilder getStructValueOrBuilder() {
-      if ((valueTypeCase_ == 6) && (structValueBuilder_ != null)) {
+      if ((valueTypeCase_ == 7) && (structValueBuilder_ != null)) {
         return structValueBuilder_.getMessageOrBuilder();
       } else {
-        if (valueTypeCase_ == 6) {
+        if (valueTypeCase_ == 7) {
           return (com.google.spanner.executor.v1.ValueList) valueType_;
         }
         return com.google.spanner.executor.v1.ValueList.getDefaultInstance();
       }
     }
     /**
-     * <code>.google.spanner.executor.v1.ValueList struct_value = 6;</code>
+     * <code>.google.spanner.executor.v1.ValueList struct_value = 7;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.spanner.executor.v1.ValueList, com.google.spanner.executor.v1.ValueList.Builder, com.google.spanner.executor.v1.ValueListOrBuilder> 
         getStructValueFieldBuilder() {
       if (structValueBuilder_ == null) {
-        if (!(valueTypeCase_ == 6)) {
+        if (!(valueTypeCase_ == 7)) {
           valueType_ = com.google.spanner.executor.v1.ValueList.getDefaultInstance();
         }
         structValueBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -1472,7 +1652,7 @@ private static final long serialVersionUID = 0L;
                 isClean());
         valueType_ = null;
       }
-      valueTypeCase_ = 6;
+      valueTypeCase_ = 7;
       onChanged();;
       return structValueBuilder_;
     }
@@ -1480,33 +1660,33 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> timestampValueBuilder_;
     /**
-     * <code>.google.protobuf.Timestamp timestamp_value = 7;</code>
+     * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
      * @return Whether the timestampValue field is set.
      */
     @java.lang.Override
     public boolean hasTimestampValue() {
-      return valueTypeCase_ == 7;
+      return valueTypeCase_ == 8;
     }
     /**
-     * <code>.google.protobuf.Timestamp timestamp_value = 7;</code>
+     * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
      * @return The timestampValue.
      */
     @java.lang.Override
     public com.google.protobuf.Timestamp getTimestampValue() {
       if (timestampValueBuilder_ == null) {
-        if (valueTypeCase_ == 7) {
+        if (valueTypeCase_ == 8) {
           return (com.google.protobuf.Timestamp) valueType_;
         }
         return com.google.protobuf.Timestamp.getDefaultInstance();
       } else {
-        if (valueTypeCase_ == 7) {
+        if (valueTypeCase_ == 8) {
           return timestampValueBuilder_.getMessage();
         }
         return com.google.protobuf.Timestamp.getDefaultInstance();
       }
     }
     /**
-     * <code>.google.protobuf.Timestamp timestamp_value = 7;</code>
+     * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
      */
     public Builder setTimestampValue(com.google.protobuf.Timestamp value) {
       if (timestampValueBuilder_ == null) {
@@ -1518,11 +1698,11 @@ private static final long serialVersionUID = 0L;
       } else {
         timestampValueBuilder_.setMessage(value);
       }
-      valueTypeCase_ = 7;
+      valueTypeCase_ = 8;
       return this;
     }
     /**
-     * <code>.google.protobuf.Timestamp timestamp_value = 7;</code>
+     * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
      */
     public Builder setTimestampValue(
         com.google.protobuf.Timestamp.Builder builderForValue) {
@@ -1532,15 +1712,15 @@ private static final long serialVersionUID = 0L;
       } else {
         timestampValueBuilder_.setMessage(builderForValue.build());
       }
-      valueTypeCase_ = 7;
+      valueTypeCase_ = 8;
       return this;
     }
     /**
-     * <code>.google.protobuf.Timestamp timestamp_value = 7;</code>
+     * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
      */
     public Builder mergeTimestampValue(com.google.protobuf.Timestamp value) {
       if (timestampValueBuilder_ == null) {
-        if (valueTypeCase_ == 7 &&
+        if (valueTypeCase_ == 8 &&
             valueType_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
           valueType_ = com.google.protobuf.Timestamp.newBuilder((com.google.protobuf.Timestamp) valueType_)
               .mergeFrom(value).buildPartial();
@@ -1549,27 +1729,27 @@ private static final long serialVersionUID = 0L;
         }
         onChanged();
       } else {
-        if (valueTypeCase_ == 7) {
+        if (valueTypeCase_ == 8) {
           timestampValueBuilder_.mergeFrom(value);
         } else {
           timestampValueBuilder_.setMessage(value);
         }
       }
-      valueTypeCase_ = 7;
+      valueTypeCase_ = 8;
       return this;
     }
     /**
-     * <code>.google.protobuf.Timestamp timestamp_value = 7;</code>
+     * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
      */
     public Builder clearTimestampValue() {
       if (timestampValueBuilder_ == null) {
-        if (valueTypeCase_ == 7) {
+        if (valueTypeCase_ == 8) {
           valueTypeCase_ = 0;
           valueType_ = null;
           onChanged();
         }
       } else {
-        if (valueTypeCase_ == 7) {
+        if (valueTypeCase_ == 8) {
           valueTypeCase_ = 0;
           valueType_ = null;
         }
@@ -1578,33 +1758,33 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.google.protobuf.Timestamp timestamp_value = 7;</code>
+     * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
      */
     public com.google.protobuf.Timestamp.Builder getTimestampValueBuilder() {
       return getTimestampValueFieldBuilder().getBuilder();
     }
     /**
-     * <code>.google.protobuf.Timestamp timestamp_value = 7;</code>
+     * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
      */
     @java.lang.Override
     public com.google.protobuf.TimestampOrBuilder getTimestampValueOrBuilder() {
-      if ((valueTypeCase_ == 7) && (timestampValueBuilder_ != null)) {
+      if ((valueTypeCase_ == 8) && (timestampValueBuilder_ != null)) {
         return timestampValueBuilder_.getMessageOrBuilder();
       } else {
-        if (valueTypeCase_ == 7) {
+        if (valueTypeCase_ == 8) {
           return (com.google.protobuf.Timestamp) valueType_;
         }
         return com.google.protobuf.Timestamp.getDefaultInstance();
       }
     }
     /**
-     * <code>.google.protobuf.Timestamp timestamp_value = 7;</code>
+     * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> 
         getTimestampValueFieldBuilder() {
       if (timestampValueBuilder_ == null) {
-        if (!(valueTypeCase_ == 7)) {
+        if (!(valueTypeCase_ == 8)) {
           valueType_ = com.google.protobuf.Timestamp.getDefaultInstance();
         }
         timestampValueBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -1614,7 +1794,7 @@ private static final long serialVersionUID = 0L;
                 isClean());
         valueType_ = null;
       }
-      valueTypeCase_ = 7;
+      valueTypeCase_ = 8;
       onChanged();;
       return timestampValueBuilder_;
     }

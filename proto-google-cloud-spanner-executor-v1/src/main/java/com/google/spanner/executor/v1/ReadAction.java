@@ -111,16 +111,6 @@ private static final long serialVersionUID = 0L;
             limit_ = input.readInt32();
             break;
           }
-          case 56: {
-
-            async_ = input.readBool();
-            break;
-          }
-          case 64: {
-
-            readStalenessMicros_ = input.readInt64();
-            break;
-          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -335,40 +325,6 @@ private static final long serialVersionUID = 0L;
     return limit_;
   }
 
-  public static final int READ_STALENESS_MICROS_FIELD_NUMBER = 8;
-  private long readStalenessMicros_;
-  /**
-   * <pre>
-   * If the read is an augmented read within an optimistic transaction then
-   * this read_staleness_micros is used to generate the read_timestamp for
-   * this augmented read.
-   * </pre>
-   *
-   * <code>int64 read_staleness_micros = 8;</code>
-   * @return The readStalenessMicros.
-   */
-  @java.lang.Override
-  public long getReadStalenessMicros() {
-    return readStalenessMicros_;
-  }
-
-  public static final int ASYNC_FIELD_NUMBER = 7;
-  private boolean async_;
-  /**
-   * <pre>
-   * Instruct executor to use asynchronous API to perform this action. Note: as
-   * not all Spanner clients have async API, some executors will simply ignore
-   * this bit.
-   * </pre>
-   *
-   * <code>bool async = 7;</code>
-   * @return The async.
-   */
-  @java.lang.Override
-  public boolean getAsync() {
-    return async_;
-  }
-
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -397,12 +353,6 @@ private static final long serialVersionUID = 0L;
     }
     if (limit_ != 0) {
       output.writeInt32(5, limit_);
-    }
-    if (async_ != false) {
-      output.writeBool(7, async_);
-    }
-    if (readStalenessMicros_ != 0L) {
-      output.writeInt64(8, readStalenessMicros_);
     }
     unknownFields.writeTo(output);
   }
@@ -435,14 +385,6 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(5, limit_);
     }
-    if (async_ != false) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(7, async_);
-    }
-    if (readStalenessMicros_ != 0L) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeInt64Size(8, readStalenessMicros_);
-    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -474,10 +416,6 @@ private static final long serialVersionUID = 0L;
     }
     if (getLimit()
         != other.getLimit()) return false;
-    if (getReadStalenessMicros()
-        != other.getReadStalenessMicros()) return false;
-    if (getAsync()
-        != other.getAsync()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -505,12 +443,6 @@ private static final long serialVersionUID = 0L;
     }
     hash = (37 * hash) + LIMIT_FIELD_NUMBER;
     hash = (53 * hash) + getLimit();
-    hash = (37 * hash) + READ_STALENESS_MICROS_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-        getReadStalenessMicros());
-    hash = (37 * hash) + ASYNC_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getAsync());
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -662,10 +594,6 @@ private static final long serialVersionUID = 0L;
       }
       limit_ = 0;
 
-      readStalenessMicros_ = 0L;
-
-      async_ = false;
-
       return this;
     }
 
@@ -710,8 +638,6 @@ private static final long serialVersionUID = 0L;
         result.keys_ = keysBuilder_.build();
       }
       result.limit_ = limit_;
-      result.readStalenessMicros_ = readStalenessMicros_;
-      result.async_ = async_;
       result.bitField0_ = to_bitField0_;
       onBuilt();
       return result;
@@ -785,12 +711,6 @@ private static final long serialVersionUID = 0L;
       }
       if (other.getLimit() != 0) {
         setLimit(other.getLimit());
-      }
-      if (other.getReadStalenessMicros() != 0L) {
-        setReadStalenessMicros(other.getReadStalenessMicros());
-      }
-      if (other.getAsync() != false) {
-        setAsync(other.getAsync());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1285,104 +1205,6 @@ private static final long serialVersionUID = 0L;
     public Builder clearLimit() {
       
       limit_ = 0;
-      onChanged();
-      return this;
-    }
-
-    private long readStalenessMicros_ ;
-    /**
-     * <pre>
-     * If the read is an augmented read within an optimistic transaction then
-     * this read_staleness_micros is used to generate the read_timestamp for
-     * this augmented read.
-     * </pre>
-     *
-     * <code>int64 read_staleness_micros = 8;</code>
-     * @return The readStalenessMicros.
-     */
-    @java.lang.Override
-    public long getReadStalenessMicros() {
-      return readStalenessMicros_;
-    }
-    /**
-     * <pre>
-     * If the read is an augmented read within an optimistic transaction then
-     * this read_staleness_micros is used to generate the read_timestamp for
-     * this augmented read.
-     * </pre>
-     *
-     * <code>int64 read_staleness_micros = 8;</code>
-     * @param value The readStalenessMicros to set.
-     * @return This builder for chaining.
-     */
-    public Builder setReadStalenessMicros(long value) {
-      
-      readStalenessMicros_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * If the read is an augmented read within an optimistic transaction then
-     * this read_staleness_micros is used to generate the read_timestamp for
-     * this augmented read.
-     * </pre>
-     *
-     * <code>int64 read_staleness_micros = 8;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearReadStalenessMicros() {
-      
-      readStalenessMicros_ = 0L;
-      onChanged();
-      return this;
-    }
-
-    private boolean async_ ;
-    /**
-     * <pre>
-     * Instruct executor to use asynchronous API to perform this action. Note: as
-     * not all Spanner clients have async API, some executors will simply ignore
-     * this bit.
-     * </pre>
-     *
-     * <code>bool async = 7;</code>
-     * @return The async.
-     */
-    @java.lang.Override
-    public boolean getAsync() {
-      return async_;
-    }
-    /**
-     * <pre>
-     * Instruct executor to use asynchronous API to perform this action. Note: as
-     * not all Spanner clients have async API, some executors will simply ignore
-     * this bit.
-     * </pre>
-     *
-     * <code>bool async = 7;</code>
-     * @param value The async to set.
-     * @return This builder for chaining.
-     */
-    public Builder setAsync(boolean value) {
-      
-      async_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * Instruct executor to use asynchronous API to perform this action. Note: as
-     * not all Spanner clients have async API, some executors will simply ignore
-     * this bit.
-     * </pre>
-     *
-     * <code>bool async = 7;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearAsync() {
-      
-      async_ = false;
       onChanged();
       return this;
     }
