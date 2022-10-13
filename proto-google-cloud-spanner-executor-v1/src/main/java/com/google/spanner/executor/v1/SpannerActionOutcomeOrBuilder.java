@@ -29,7 +29,7 @@ public interface SpannerActionOutcomeOrBuilder extends
    * last part.
    * </pre>
    *
-   * <code>.google.rpc.Status status = 1;</code>
+   * <code>optional .google.rpc.Status status = 1;</code>
    * @return Whether the status field is set.
    */
   boolean hasStatus();
@@ -39,7 +39,7 @@ public interface SpannerActionOutcomeOrBuilder extends
    * last part.
    * </pre>
    *
-   * <code>.google.rpc.Status status = 1;</code>
+   * <code>optional .google.rpc.Status status = 1;</code>
    * @return The status.
    */
   com.google.rpc.Status getStatus();
@@ -49,7 +49,7 @@ public interface SpannerActionOutcomeOrBuilder extends
    * last part.
    * </pre>
    *
-   * <code>.google.rpc.Status status = 1;</code>
+   * <code>optional .google.rpc.Status status = 1;</code>
    */
   com.google.rpc.StatusOrBuilder getStatusOrBuilder();
 
@@ -59,7 +59,17 @@ public interface SpannerActionOutcomeOrBuilder extends
    * committing actions.
    * </pre>
    *
-   * <code>int64 timestamp = 2;</code>
+   * <code>optional int64 timestamp = 2;</code>
+   * @return Whether the timestamp field is set.
+   */
+  boolean hasTimestamp();
+  /**
+   * <pre>
+   * Transaction timestamp in Unix micros. It must be set for successful
+   * committing actions.
+   * </pre>
+   *
+   * <code>optional int64 timestamp = 2;</code>
    * @return The timestamp.
    */
   long getTimestamp();
@@ -70,7 +80,7 @@ public interface SpannerActionOutcomeOrBuilder extends
    * no rows were read.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.ReadResult read_result = 3;</code>
+   * <code>optional .google.spanner.executor.v1.ReadResult read_result = 3;</code>
    * @return Whether the readResult field is set.
    */
   boolean hasReadResult();
@@ -80,7 +90,7 @@ public interface SpannerActionOutcomeOrBuilder extends
    * no rows were read.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.ReadResult read_result = 3;</code>
+   * <code>optional .google.spanner.executor.v1.ReadResult read_result = 3;</code>
    * @return The readResult.
    */
   com.google.spanner.executor.v1.ReadResult getReadResult();
@@ -90,7 +100,7 @@ public interface SpannerActionOutcomeOrBuilder extends
    * no rows were read.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.ReadResult read_result = 3;</code>
+   * <code>optional .google.spanner.executor.v1.ReadResult read_result = 3;</code>
    */
   com.google.spanner.executor.v1.ReadResultOrBuilder getReadResultOrBuilder();
 
@@ -102,7 +112,19 @@ public interface SpannerActionOutcomeOrBuilder extends
    * transaction, as an outcome of a committing FinishTransactionAction.
    * </pre>
    *
-   * <code>bool transaction_restarted = 4;</code>
+   * <code>optional bool transaction_restarted = 4;</code>
+   * @return Whether the transactionRestarted field is set.
+   */
+  boolean hasTransactionRestarted();
+  /**
+   * <pre>
+   * This bit indicates that Spanner has restarted the current transaction. It
+   * means that the client should replay all the reads and writes.
+   * Setting it to true is only valid in the context of a read-write
+   * transaction, as an outcome of a committing FinishTransactionAction.
+   * </pre>
+   *
+   * <code>optional bool transaction_restarted = 4;</code>
    * @return The transactionRestarted.
    */
   boolean getTransactionRestarted();
@@ -112,7 +134,7 @@ public interface SpannerActionOutcomeOrBuilder extends
    * Result of admin related actions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
    * @return Whether the adminResult field is set.
    */
   boolean hasAdminResult();
@@ -121,7 +143,7 @@ public interface SpannerActionOutcomeOrBuilder extends
    * Result of admin related actions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
    * @return The adminResult.
    */
   com.google.spanner.executor.v1.AdminResult getAdminResult();
@@ -130,7 +152,7 @@ public interface SpannerActionOutcomeOrBuilder extends
    * Result of admin related actions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
    */
   com.google.spanner.executor.v1.AdminResultOrBuilder getAdminResultOrBuilder();
 }
