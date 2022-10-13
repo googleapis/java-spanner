@@ -146,7 +146,7 @@ public interface ValueOrBuilder extends
    * Date is specified as a number of days since Unix epoch.
    * </pre>
    *
-   * <code>int32 date_value = 14;</code>
+   * <code>int32 date_value = 9;</code>
    * @return Whether the dateValue field is set.
    */
   boolean hasDateValue();
@@ -155,7 +155,7 @@ public interface ValueOrBuilder extends
    * Date is specified as a number of days since Unix epoch.
    * </pre>
    *
-   * <code>int32 date_value = 14;</code>
+   * <code>int32 date_value = 9;</code>
    * @return The dateValue.
    */
   int getDateValue();
@@ -165,7 +165,7 @@ public interface ValueOrBuilder extends
    * If true, holds the sentinel value for the transaction CommitTimestamp.
    * </pre>
    *
-   * <code>bool commit_timestamp = 15;</code>
+   * <code>bool commit_timestamp = 10;</code>
    * @return Whether the commitTimestamp field is set.
    */
   boolean hasCommitTimestamp();
@@ -174,7 +174,7 @@ public interface ValueOrBuilder extends
    * If true, holds the sentinel value for the transaction CommitTimestamp.
    * </pre>
    *
-   * <code>bool commit_timestamp = 15;</code>
+   * <code>bool commit_timestamp = 10;</code>
    * @return The commitTimestamp.
    */
   boolean getCommitTimestamp();
@@ -184,7 +184,7 @@ public interface ValueOrBuilder extends
    * Values of array type. They should all be the same type.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.ValueList array_value = 16;</code>
+   * <code>.google.spanner.executor.v1.ValueList array_value = 11;</code>
    * @return Whether the arrayValue field is set.
    */
   boolean hasArrayValue();
@@ -193,7 +193,7 @@ public interface ValueOrBuilder extends
    * Values of array type. They should all be the same type.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.ValueList array_value = 16;</code>
+   * <code>.google.spanner.executor.v1.ValueList array_value = 11;</code>
    * @return The arrayValue.
    */
   com.google.spanner.executor.v1.ValueList getArrayValue();
@@ -202,9 +202,36 @@ public interface ValueOrBuilder extends
    * Values of array type. They should all be the same type.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.ValueList array_value = 16;</code>
+   * <code>.google.spanner.executor.v1.ValueList array_value = 11;</code>
    */
   com.google.spanner.executor.v1.ValueListOrBuilder getArrayValueOrBuilder();
+
+  /**
+   * <pre>
+   * Type of array element. Only set if value is an array.
+   * </pre>
+   *
+   * <code>optional .google.spanner.v1.Type array_type = 12;</code>
+   * @return Whether the arrayType field is set.
+   */
+  boolean hasArrayType();
+  /**
+   * <pre>
+   * Type of array element. Only set if value is an array.
+   * </pre>
+   *
+   * <code>optional .google.spanner.v1.Type array_type = 12;</code>
+   * @return The arrayType.
+   */
+  com.google.spanner.v1.Type getArrayType();
+  /**
+   * <pre>
+   * Type of array element. Only set if value is an array.
+   * </pre>
+   *
+   * <code>optional .google.spanner.v1.Type array_type = 12;</code>
+   */
+  com.google.spanner.v1.TypeOrBuilder getArrayTypeOrBuilder();
 
   public com.google.spanner.executor.v1.Value.ValueTypeCase getValueTypeCase();
 }

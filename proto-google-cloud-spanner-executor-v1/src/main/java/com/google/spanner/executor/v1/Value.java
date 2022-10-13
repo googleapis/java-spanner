@@ -59,6 +59,7 @@ private static final long serialVersionUID = 0L;
     if (extensionRegistry == null) {
       throw new java.lang.NullPointerException();
     }
+    int mutable_bitField0_ = 0;
     com.google.protobuf.UnknownFieldSet.Builder unknownFields =
         com.google.protobuf.UnknownFieldSet.newBuilder();
     try {
@@ -128,19 +129,19 @@ private static final long serialVersionUID = 0L;
             valueTypeCase_ = 8;
             break;
           }
-          case 112: {
+          case 72: {
             valueType_ = input.readInt32();
-            valueTypeCase_ = 14;
+            valueTypeCase_ = 9;
             break;
           }
-          case 120: {
+          case 80: {
             valueType_ = input.readBool();
-            valueTypeCase_ = 15;
+            valueTypeCase_ = 10;
             break;
           }
-          case 130: {
+          case 90: {
             com.google.spanner.executor.v1.ValueList.Builder subBuilder = null;
-            if (valueTypeCase_ == 16) {
+            if (valueTypeCase_ == 11) {
               subBuilder = ((com.google.spanner.executor.v1.ValueList) valueType_).toBuilder();
             }
             valueType_ =
@@ -149,7 +150,20 @@ private static final long serialVersionUID = 0L;
               subBuilder.mergeFrom((com.google.spanner.executor.v1.ValueList) valueType_);
               valueType_ = subBuilder.buildPartial();
             }
-            valueTypeCase_ = 16;
+            valueTypeCase_ = 11;
+            break;
+          }
+          case 98: {
+            com.google.spanner.v1.Type.Builder subBuilder = null;
+            if (((bitField0_ & 0x00000001) != 0)) {
+              subBuilder = arrayType_.toBuilder();
+            }
+            arrayType_ = input.readMessage(com.google.spanner.v1.Type.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(arrayType_);
+              arrayType_ = subBuilder.buildPartial();
+            }
+            bitField0_ |= 0x00000001;
             break;
           }
           default: {
@@ -186,6 +200,7 @@ private static final long serialVersionUID = 0L;
             com.google.spanner.executor.v1.Value.class, com.google.spanner.executor.v1.Value.Builder.class);
   }
 
+  private int bitField0_;
   private int valueTypeCase_ = 0;
   private java.lang.Object valueType_;
   public enum ValueTypeCase
@@ -199,9 +214,9 @@ private static final long serialVersionUID = 0L;
     STRING_VALUE(6),
     STRUCT_VALUE(7),
     TIMESTAMP_VALUE(8),
-    DATE_VALUE(14),
-    COMMIT_TIMESTAMP(15),
-    ARRAY_VALUE(16),
+    DATE_VALUE(9),
+    COMMIT_TIMESTAMP(10),
+    ARRAY_VALUE(11),
     VALUETYPE_NOT_SET(0);
     private final int value;
     private ValueTypeCase(int value) {
@@ -227,9 +242,9 @@ private static final long serialVersionUID = 0L;
         case 6: return STRING_VALUE;
         case 7: return STRUCT_VALUE;
         case 8: return TIMESTAMP_VALUE;
-        case 14: return DATE_VALUE;
-        case 15: return COMMIT_TIMESTAMP;
-        case 16: return ARRAY_VALUE;
+        case 9: return DATE_VALUE;
+        case 10: return COMMIT_TIMESTAMP;
+        case 11: return ARRAY_VALUE;
         case 0: return VALUETYPE_NOT_SET;
         default: return null;
       }
@@ -480,88 +495,88 @@ private static final long serialVersionUID = 0L;
     return com.google.protobuf.Timestamp.getDefaultInstance();
   }
 
-  public static final int DATE_VALUE_FIELD_NUMBER = 14;
+  public static final int DATE_VALUE_FIELD_NUMBER = 9;
   /**
    * <pre>
    * Date is specified as a number of days since Unix epoch.
    * </pre>
    *
-   * <code>int32 date_value = 14;</code>
+   * <code>int32 date_value = 9;</code>
    * @return Whether the dateValue field is set.
    */
   @java.lang.Override
   public boolean hasDateValue() {
-    return valueTypeCase_ == 14;
+    return valueTypeCase_ == 9;
   }
   /**
    * <pre>
    * Date is specified as a number of days since Unix epoch.
    * </pre>
    *
-   * <code>int32 date_value = 14;</code>
+   * <code>int32 date_value = 9;</code>
    * @return The dateValue.
    */
   @java.lang.Override
   public int getDateValue() {
-    if (valueTypeCase_ == 14) {
+    if (valueTypeCase_ == 9) {
       return (java.lang.Integer) valueType_;
     }
     return 0;
   }
 
-  public static final int COMMIT_TIMESTAMP_FIELD_NUMBER = 15;
+  public static final int COMMIT_TIMESTAMP_FIELD_NUMBER = 10;
   /**
    * <pre>
    * If true, holds the sentinel value for the transaction CommitTimestamp.
    * </pre>
    *
-   * <code>bool commit_timestamp = 15;</code>
+   * <code>bool commit_timestamp = 10;</code>
    * @return Whether the commitTimestamp field is set.
    */
   @java.lang.Override
   public boolean hasCommitTimestamp() {
-    return valueTypeCase_ == 15;
+    return valueTypeCase_ == 10;
   }
   /**
    * <pre>
    * If true, holds the sentinel value for the transaction CommitTimestamp.
    * </pre>
    *
-   * <code>bool commit_timestamp = 15;</code>
+   * <code>bool commit_timestamp = 10;</code>
    * @return The commitTimestamp.
    */
   @java.lang.Override
   public boolean getCommitTimestamp() {
-    if (valueTypeCase_ == 15) {
+    if (valueTypeCase_ == 10) {
       return (java.lang.Boolean) valueType_;
     }
     return false;
   }
 
-  public static final int ARRAY_VALUE_FIELD_NUMBER = 16;
+  public static final int ARRAY_VALUE_FIELD_NUMBER = 11;
   /**
    * <pre>
    * Values of array type. They should all be the same type.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.ValueList array_value = 16;</code>
+   * <code>.google.spanner.executor.v1.ValueList array_value = 11;</code>
    * @return Whether the arrayValue field is set.
    */
   @java.lang.Override
   public boolean hasArrayValue() {
-    return valueTypeCase_ == 16;
+    return valueTypeCase_ == 11;
   }
   /**
    * <pre>
    * Values of array type. They should all be the same type.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.ValueList array_value = 16;</code>
+   * <code>.google.spanner.executor.v1.ValueList array_value = 11;</code>
    * @return The arrayValue.
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.ValueList getArrayValue() {
-    if (valueTypeCase_ == 16) {
+    if (valueTypeCase_ == 11) {
        return (com.google.spanner.executor.v1.ValueList) valueType_;
     }
     return com.google.spanner.executor.v1.ValueList.getDefaultInstance();
@@ -571,14 +586,52 @@ private static final long serialVersionUID = 0L;
    * Values of array type. They should all be the same type.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.ValueList array_value = 16;</code>
+   * <code>.google.spanner.executor.v1.ValueList array_value = 11;</code>
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.ValueListOrBuilder getArrayValueOrBuilder() {
-    if (valueTypeCase_ == 16) {
+    if (valueTypeCase_ == 11) {
        return (com.google.spanner.executor.v1.ValueList) valueType_;
     }
     return com.google.spanner.executor.v1.ValueList.getDefaultInstance();
+  }
+
+  public static final int ARRAY_TYPE_FIELD_NUMBER = 12;
+  private com.google.spanner.v1.Type arrayType_;
+  /**
+   * <pre>
+   * Type of array element. Only set if value is an array.
+   * </pre>
+   *
+   * <code>optional .google.spanner.v1.Type array_type = 12;</code>
+   * @return Whether the arrayType field is set.
+   */
+  @java.lang.Override
+  public boolean hasArrayType() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+  /**
+   * <pre>
+   * Type of array element. Only set if value is an array.
+   * </pre>
+   *
+   * <code>optional .google.spanner.v1.Type array_type = 12;</code>
+   * @return The arrayType.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.Type getArrayType() {
+    return arrayType_ == null ? com.google.spanner.v1.Type.getDefaultInstance() : arrayType_;
+  }
+  /**
+   * <pre>
+   * Type of array element. Only set if value is an array.
+   * </pre>
+   *
+   * <code>optional .google.spanner.v1.Type array_type = 12;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.TypeOrBuilder getArrayTypeOrBuilder() {
+    return arrayType_ == null ? com.google.spanner.v1.Type.getDefaultInstance() : arrayType_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -624,16 +677,19 @@ private static final long serialVersionUID = 0L;
     if (valueTypeCase_ == 8) {
       output.writeMessage(8, (com.google.protobuf.Timestamp) valueType_);
     }
-    if (valueTypeCase_ == 14) {
+    if (valueTypeCase_ == 9) {
       output.writeInt32(
-          14, (int)((java.lang.Integer) valueType_));
+          9, (int)((java.lang.Integer) valueType_));
     }
-    if (valueTypeCase_ == 15) {
+    if (valueTypeCase_ == 10) {
       output.writeBool(
-          15, (boolean)((java.lang.Boolean) valueType_));
+          10, (boolean)((java.lang.Boolean) valueType_));
     }
-    if (valueTypeCase_ == 16) {
-      output.writeMessage(16, (com.google.spanner.executor.v1.ValueList) valueType_);
+    if (valueTypeCase_ == 11) {
+      output.writeMessage(11, (com.google.spanner.executor.v1.ValueList) valueType_);
+    }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      output.writeMessage(12, getArrayType());
     }
     unknownFields.writeTo(output);
   }
@@ -680,19 +736,23 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(8, (com.google.protobuf.Timestamp) valueType_);
     }
-    if (valueTypeCase_ == 14) {
+    if (valueTypeCase_ == 9) {
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(
-            14, (int)((java.lang.Integer) valueType_));
+            9, (int)((java.lang.Integer) valueType_));
     }
-    if (valueTypeCase_ == 15) {
+    if (valueTypeCase_ == 10) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(
-            15, (boolean)((java.lang.Boolean) valueType_));
+            10, (boolean)((java.lang.Boolean) valueType_));
     }
-    if (valueTypeCase_ == 16) {
+    if (valueTypeCase_ == 11) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(16, (com.google.spanner.executor.v1.ValueList) valueType_);
+        .computeMessageSize(11, (com.google.spanner.executor.v1.ValueList) valueType_);
+    }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(12, getArrayType());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -709,6 +769,11 @@ private static final long serialVersionUID = 0L;
     }
     com.google.spanner.executor.v1.Value other = (com.google.spanner.executor.v1.Value) obj;
 
+    if (hasArrayType() != other.hasArrayType()) return false;
+    if (hasArrayType()) {
+      if (!getArrayType()
+          .equals(other.getArrayType())) return false;
+    }
     if (!getValueTypeCase().equals(other.getValueTypeCase())) return false;
     switch (valueTypeCase_) {
       case 1:
@@ -744,15 +809,15 @@ private static final long serialVersionUID = 0L;
         if (!getTimestampValue()
             .equals(other.getTimestampValue())) return false;
         break;
-      case 14:
+      case 9:
         if (getDateValue()
             != other.getDateValue()) return false;
         break;
-      case 15:
+      case 10:
         if (getCommitTimestamp()
             != other.getCommitTimestamp()) return false;
         break;
-      case 16:
+      case 11:
         if (!getArrayValue()
             .equals(other.getArrayValue())) return false;
         break;
@@ -770,6 +835,10 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
+    if (hasArrayType()) {
+      hash = (37 * hash) + ARRAY_TYPE_FIELD_NUMBER;
+      hash = (53 * hash) + getArrayType().hashCode();
+    }
     switch (valueTypeCase_) {
       case 1:
         hash = (37 * hash) + NULL_FIELD_NUMBER;
@@ -807,16 +876,16 @@ private static final long serialVersionUID = 0L;
         hash = (37 * hash) + TIMESTAMP_VALUE_FIELD_NUMBER;
         hash = (53 * hash) + getTimestampValue().hashCode();
         break;
-      case 14:
+      case 9:
         hash = (37 * hash) + DATE_VALUE_FIELD_NUMBER;
         hash = (53 * hash) + getDateValue();
         break;
-      case 15:
+      case 10:
         hash = (37 * hash) + COMMIT_TIMESTAMP_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
             getCommitTimestamp());
         break;
-      case 16:
+      case 11:
         hash = (37 * hash) + ARRAY_VALUE_FIELD_NUMBER;
         hash = (53 * hash) + getArrayValue().hashCode();
         break;
@@ -956,11 +1025,18 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
+        getArrayTypeFieldBuilder();
       }
     }
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      if (arrayTypeBuilder_ == null) {
+        arrayType_ = null;
+      } else {
+        arrayTypeBuilder_.clear();
+      }
+      bitField0_ = (bitField0_ & ~0x00000001);
       valueTypeCase_ = 0;
       valueType_ = null;
       return this;
@@ -989,6 +1065,8 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.spanner.executor.v1.Value buildPartial() {
       com.google.spanner.executor.v1.Value result = new com.google.spanner.executor.v1.Value(this);
+      int from_bitField0_ = bitField0_;
+      int to_bitField0_ = 0;
       if (valueTypeCase_ == 1) {
         result.valueType_ = valueType_;
       }
@@ -1021,19 +1099,28 @@ private static final long serialVersionUID = 0L;
           result.valueType_ = timestampValueBuilder_.build();
         }
       }
-      if (valueTypeCase_ == 14) {
+      if (valueTypeCase_ == 9) {
         result.valueType_ = valueType_;
       }
-      if (valueTypeCase_ == 15) {
+      if (valueTypeCase_ == 10) {
         result.valueType_ = valueType_;
       }
-      if (valueTypeCase_ == 16) {
+      if (valueTypeCase_ == 11) {
         if (arrayValueBuilder_ == null) {
           result.valueType_ = valueType_;
         } else {
           result.valueType_ = arrayValueBuilder_.build();
         }
       }
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        if (arrayTypeBuilder_ == null) {
+          result.arrayType_ = arrayType_;
+        } else {
+          result.arrayType_ = arrayTypeBuilder_.build();
+        }
+        to_bitField0_ |= 0x00000001;
+      }
+      result.bitField0_ = to_bitField0_;
       result.valueTypeCase_ = valueTypeCase_;
       onBuilt();
       return result;
@@ -1083,6 +1170,9 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(com.google.spanner.executor.v1.Value other) {
       if (other == com.google.spanner.executor.v1.Value.getDefaultInstance()) return this;
+      if (other.hasArrayType()) {
+        mergeArrayType(other.getArrayType());
+      }
       switch (other.getValueTypeCase()) {
         case NULL: {
           setNull(other.getNull());
@@ -1177,6 +1267,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
+    private int bitField0_;
 
     /**
      * <pre>
@@ -1804,22 +1895,22 @@ private static final long serialVersionUID = 0L;
      * Date is specified as a number of days since Unix epoch.
      * </pre>
      *
-     * <code>int32 date_value = 14;</code>
+     * <code>int32 date_value = 9;</code>
      * @return Whether the dateValue field is set.
      */
     public boolean hasDateValue() {
-      return valueTypeCase_ == 14;
+      return valueTypeCase_ == 9;
     }
     /**
      * <pre>
      * Date is specified as a number of days since Unix epoch.
      * </pre>
      *
-     * <code>int32 date_value = 14;</code>
+     * <code>int32 date_value = 9;</code>
      * @return The dateValue.
      */
     public int getDateValue() {
-      if (valueTypeCase_ == 14) {
+      if (valueTypeCase_ == 9) {
         return (java.lang.Integer) valueType_;
       }
       return 0;
@@ -1829,12 +1920,12 @@ private static final long serialVersionUID = 0L;
      * Date is specified as a number of days since Unix epoch.
      * </pre>
      *
-     * <code>int32 date_value = 14;</code>
+     * <code>int32 date_value = 9;</code>
      * @param value The dateValue to set.
      * @return This builder for chaining.
      */
     public Builder setDateValue(int value) {
-      valueTypeCase_ = 14;
+      valueTypeCase_ = 9;
       valueType_ = value;
       onChanged();
       return this;
@@ -1844,11 +1935,11 @@ private static final long serialVersionUID = 0L;
      * Date is specified as a number of days since Unix epoch.
      * </pre>
      *
-     * <code>int32 date_value = 14;</code>
+     * <code>int32 date_value = 9;</code>
      * @return This builder for chaining.
      */
     public Builder clearDateValue() {
-      if (valueTypeCase_ == 14) {
+      if (valueTypeCase_ == 9) {
         valueTypeCase_ = 0;
         valueType_ = null;
         onChanged();
@@ -1861,22 +1952,22 @@ private static final long serialVersionUID = 0L;
      * If true, holds the sentinel value for the transaction CommitTimestamp.
      * </pre>
      *
-     * <code>bool commit_timestamp = 15;</code>
+     * <code>bool commit_timestamp = 10;</code>
      * @return Whether the commitTimestamp field is set.
      */
     public boolean hasCommitTimestamp() {
-      return valueTypeCase_ == 15;
+      return valueTypeCase_ == 10;
     }
     /**
      * <pre>
      * If true, holds the sentinel value for the transaction CommitTimestamp.
      * </pre>
      *
-     * <code>bool commit_timestamp = 15;</code>
+     * <code>bool commit_timestamp = 10;</code>
      * @return The commitTimestamp.
      */
     public boolean getCommitTimestamp() {
-      if (valueTypeCase_ == 15) {
+      if (valueTypeCase_ == 10) {
         return (java.lang.Boolean) valueType_;
       }
       return false;
@@ -1886,12 +1977,12 @@ private static final long serialVersionUID = 0L;
      * If true, holds the sentinel value for the transaction CommitTimestamp.
      * </pre>
      *
-     * <code>bool commit_timestamp = 15;</code>
+     * <code>bool commit_timestamp = 10;</code>
      * @param value The commitTimestamp to set.
      * @return This builder for chaining.
      */
     public Builder setCommitTimestamp(boolean value) {
-      valueTypeCase_ = 15;
+      valueTypeCase_ = 10;
       valueType_ = value;
       onChanged();
       return this;
@@ -1901,11 +1992,11 @@ private static final long serialVersionUID = 0L;
      * If true, holds the sentinel value for the transaction CommitTimestamp.
      * </pre>
      *
-     * <code>bool commit_timestamp = 15;</code>
+     * <code>bool commit_timestamp = 10;</code>
      * @return This builder for chaining.
      */
     public Builder clearCommitTimestamp() {
-      if (valueTypeCase_ == 15) {
+      if (valueTypeCase_ == 10) {
         valueTypeCase_ = 0;
         valueType_ = null;
         onChanged();
@@ -1920,30 +2011,30 @@ private static final long serialVersionUID = 0L;
      * Values of array type. They should all be the same type.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ValueList array_value = 16;</code>
+     * <code>.google.spanner.executor.v1.ValueList array_value = 11;</code>
      * @return Whether the arrayValue field is set.
      */
     @java.lang.Override
     public boolean hasArrayValue() {
-      return valueTypeCase_ == 16;
+      return valueTypeCase_ == 11;
     }
     /**
      * <pre>
      * Values of array type. They should all be the same type.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ValueList array_value = 16;</code>
+     * <code>.google.spanner.executor.v1.ValueList array_value = 11;</code>
      * @return The arrayValue.
      */
     @java.lang.Override
     public com.google.spanner.executor.v1.ValueList getArrayValue() {
       if (arrayValueBuilder_ == null) {
-        if (valueTypeCase_ == 16) {
+        if (valueTypeCase_ == 11) {
           return (com.google.spanner.executor.v1.ValueList) valueType_;
         }
         return com.google.spanner.executor.v1.ValueList.getDefaultInstance();
       } else {
-        if (valueTypeCase_ == 16) {
+        if (valueTypeCase_ == 11) {
           return arrayValueBuilder_.getMessage();
         }
         return com.google.spanner.executor.v1.ValueList.getDefaultInstance();
@@ -1954,7 +2045,7 @@ private static final long serialVersionUID = 0L;
      * Values of array type. They should all be the same type.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ValueList array_value = 16;</code>
+     * <code>.google.spanner.executor.v1.ValueList array_value = 11;</code>
      */
     public Builder setArrayValue(com.google.spanner.executor.v1.ValueList value) {
       if (arrayValueBuilder_ == null) {
@@ -1966,7 +2057,7 @@ private static final long serialVersionUID = 0L;
       } else {
         arrayValueBuilder_.setMessage(value);
       }
-      valueTypeCase_ = 16;
+      valueTypeCase_ = 11;
       return this;
     }
     /**
@@ -1974,7 +2065,7 @@ private static final long serialVersionUID = 0L;
      * Values of array type. They should all be the same type.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ValueList array_value = 16;</code>
+     * <code>.google.spanner.executor.v1.ValueList array_value = 11;</code>
      */
     public Builder setArrayValue(
         com.google.spanner.executor.v1.ValueList.Builder builderForValue) {
@@ -1984,7 +2075,7 @@ private static final long serialVersionUID = 0L;
       } else {
         arrayValueBuilder_.setMessage(builderForValue.build());
       }
-      valueTypeCase_ = 16;
+      valueTypeCase_ = 11;
       return this;
     }
     /**
@@ -1992,11 +2083,11 @@ private static final long serialVersionUID = 0L;
      * Values of array type. They should all be the same type.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ValueList array_value = 16;</code>
+     * <code>.google.spanner.executor.v1.ValueList array_value = 11;</code>
      */
     public Builder mergeArrayValue(com.google.spanner.executor.v1.ValueList value) {
       if (arrayValueBuilder_ == null) {
-        if (valueTypeCase_ == 16 &&
+        if (valueTypeCase_ == 11 &&
             valueType_ != com.google.spanner.executor.v1.ValueList.getDefaultInstance()) {
           valueType_ = com.google.spanner.executor.v1.ValueList.newBuilder((com.google.spanner.executor.v1.ValueList) valueType_)
               .mergeFrom(value).buildPartial();
@@ -2005,13 +2096,13 @@ private static final long serialVersionUID = 0L;
         }
         onChanged();
       } else {
-        if (valueTypeCase_ == 16) {
+        if (valueTypeCase_ == 11) {
           arrayValueBuilder_.mergeFrom(value);
         } else {
           arrayValueBuilder_.setMessage(value);
         }
       }
-      valueTypeCase_ = 16;
+      valueTypeCase_ = 11;
       return this;
     }
     /**
@@ -2019,17 +2110,17 @@ private static final long serialVersionUID = 0L;
      * Values of array type. They should all be the same type.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ValueList array_value = 16;</code>
+     * <code>.google.spanner.executor.v1.ValueList array_value = 11;</code>
      */
     public Builder clearArrayValue() {
       if (arrayValueBuilder_ == null) {
-        if (valueTypeCase_ == 16) {
+        if (valueTypeCase_ == 11) {
           valueTypeCase_ = 0;
           valueType_ = null;
           onChanged();
         }
       } else {
-        if (valueTypeCase_ == 16) {
+        if (valueTypeCase_ == 11) {
           valueTypeCase_ = 0;
           valueType_ = null;
         }
@@ -2042,7 +2133,7 @@ private static final long serialVersionUID = 0L;
      * Values of array type. They should all be the same type.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ValueList array_value = 16;</code>
+     * <code>.google.spanner.executor.v1.ValueList array_value = 11;</code>
      */
     public com.google.spanner.executor.v1.ValueList.Builder getArrayValueBuilder() {
       return getArrayValueFieldBuilder().getBuilder();
@@ -2052,14 +2143,14 @@ private static final long serialVersionUID = 0L;
      * Values of array type. They should all be the same type.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ValueList array_value = 16;</code>
+     * <code>.google.spanner.executor.v1.ValueList array_value = 11;</code>
      */
     @java.lang.Override
     public com.google.spanner.executor.v1.ValueListOrBuilder getArrayValueOrBuilder() {
-      if ((valueTypeCase_ == 16) && (arrayValueBuilder_ != null)) {
+      if ((valueTypeCase_ == 11) && (arrayValueBuilder_ != null)) {
         return arrayValueBuilder_.getMessageOrBuilder();
       } else {
-        if (valueTypeCase_ == 16) {
+        if (valueTypeCase_ == 11) {
           return (com.google.spanner.executor.v1.ValueList) valueType_;
         }
         return com.google.spanner.executor.v1.ValueList.getDefaultInstance();
@@ -2070,13 +2161,13 @@ private static final long serialVersionUID = 0L;
      * Values of array type. They should all be the same type.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ValueList array_value = 16;</code>
+     * <code>.google.spanner.executor.v1.ValueList array_value = 11;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.spanner.executor.v1.ValueList, com.google.spanner.executor.v1.ValueList.Builder, com.google.spanner.executor.v1.ValueListOrBuilder> 
         getArrayValueFieldBuilder() {
       if (arrayValueBuilder_ == null) {
-        if (!(valueTypeCase_ == 16)) {
+        if (!(valueTypeCase_ == 11)) {
           valueType_ = com.google.spanner.executor.v1.ValueList.getDefaultInstance();
         }
         arrayValueBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -2086,9 +2177,165 @@ private static final long serialVersionUID = 0L;
                 isClean());
         valueType_ = null;
       }
-      valueTypeCase_ = 16;
+      valueTypeCase_ = 11;
       onChanged();;
       return arrayValueBuilder_;
+    }
+
+    private com.google.spanner.v1.Type arrayType_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.v1.Type, com.google.spanner.v1.Type.Builder, com.google.spanner.v1.TypeOrBuilder> arrayTypeBuilder_;
+    /**
+     * <pre>
+     * Type of array element. Only set if value is an array.
+     * </pre>
+     *
+     * <code>optional .google.spanner.v1.Type array_type = 12;</code>
+     * @return Whether the arrayType field is set.
+     */
+    public boolean hasArrayType() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <pre>
+     * Type of array element. Only set if value is an array.
+     * </pre>
+     *
+     * <code>optional .google.spanner.v1.Type array_type = 12;</code>
+     * @return The arrayType.
+     */
+    public com.google.spanner.v1.Type getArrayType() {
+      if (arrayTypeBuilder_ == null) {
+        return arrayType_ == null ? com.google.spanner.v1.Type.getDefaultInstance() : arrayType_;
+      } else {
+        return arrayTypeBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     * Type of array element. Only set if value is an array.
+     * </pre>
+     *
+     * <code>optional .google.spanner.v1.Type array_type = 12;</code>
+     */
+    public Builder setArrayType(com.google.spanner.v1.Type value) {
+      if (arrayTypeBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        arrayType_ = value;
+        onChanged();
+      } else {
+        arrayTypeBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000001;
+      return this;
+    }
+    /**
+     * <pre>
+     * Type of array element. Only set if value is an array.
+     * </pre>
+     *
+     * <code>optional .google.spanner.v1.Type array_type = 12;</code>
+     */
+    public Builder setArrayType(
+        com.google.spanner.v1.Type.Builder builderForValue) {
+      if (arrayTypeBuilder_ == null) {
+        arrayType_ = builderForValue.build();
+        onChanged();
+      } else {
+        arrayTypeBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000001;
+      return this;
+    }
+    /**
+     * <pre>
+     * Type of array element. Only set if value is an array.
+     * </pre>
+     *
+     * <code>optional .google.spanner.v1.Type array_type = 12;</code>
+     */
+    public Builder mergeArrayType(com.google.spanner.v1.Type value) {
+      if (arrayTypeBuilder_ == null) {
+        if (((bitField0_ & 0x00000001) != 0) &&
+            arrayType_ != null &&
+            arrayType_ != com.google.spanner.v1.Type.getDefaultInstance()) {
+          arrayType_ =
+            com.google.spanner.v1.Type.newBuilder(arrayType_).mergeFrom(value).buildPartial();
+        } else {
+          arrayType_ = value;
+        }
+        onChanged();
+      } else {
+        arrayTypeBuilder_.mergeFrom(value);
+      }
+      bitField0_ |= 0x00000001;
+      return this;
+    }
+    /**
+     * <pre>
+     * Type of array element. Only set if value is an array.
+     * </pre>
+     *
+     * <code>optional .google.spanner.v1.Type array_type = 12;</code>
+     */
+    public Builder clearArrayType() {
+      if (arrayTypeBuilder_ == null) {
+        arrayType_ = null;
+        onChanged();
+      } else {
+        arrayTypeBuilder_.clear();
+      }
+      bitField0_ = (bitField0_ & ~0x00000001);
+      return this;
+    }
+    /**
+     * <pre>
+     * Type of array element. Only set if value is an array.
+     * </pre>
+     *
+     * <code>optional .google.spanner.v1.Type array_type = 12;</code>
+     */
+    public com.google.spanner.v1.Type.Builder getArrayTypeBuilder() {
+      bitField0_ |= 0x00000001;
+      onChanged();
+      return getArrayTypeFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Type of array element. Only set if value is an array.
+     * </pre>
+     *
+     * <code>optional .google.spanner.v1.Type array_type = 12;</code>
+     */
+    public com.google.spanner.v1.TypeOrBuilder getArrayTypeOrBuilder() {
+      if (arrayTypeBuilder_ != null) {
+        return arrayTypeBuilder_.getMessageOrBuilder();
+      } else {
+        return arrayType_ == null ?
+            com.google.spanner.v1.Type.getDefaultInstance() : arrayType_;
+      }
+    }
+    /**
+     * <pre>
+     * Type of array element. Only set if value is an array.
+     * </pre>
+     *
+     * <code>optional .google.spanner.v1.Type array_type = 12;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.v1.Type, com.google.spanner.v1.Type.Builder, com.google.spanner.v1.TypeOrBuilder> 
+        getArrayTypeFieldBuilder() {
+      if (arrayTypeBuilder_ == null) {
+        arrayTypeBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.Type, com.google.spanner.v1.Type.Builder, com.google.spanner.v1.TypeOrBuilder>(
+                getArrayType(),
+                getParentForChildren(),
+                isClean());
+        arrayType_ = null;
+      }
+      return arrayTypeBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(
