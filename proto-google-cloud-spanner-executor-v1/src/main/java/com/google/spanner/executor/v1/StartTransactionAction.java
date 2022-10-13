@@ -71,7 +71,7 @@ private static final long serialVersionUID = 0L;
           case 0:
             done = true;
             break;
-          case 18: {
+          case 10: {
             com.google.spanner.executor.v1.Concurrency.Builder subBuilder = null;
             if (concurrency_ != null) {
               subBuilder = concurrency_.toBuilder();
@@ -84,7 +84,7 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
-          case 26: {
+          case 18: {
             if (!((mutable_bitField0_ & 0x00000001) != 0)) {
               table_ = new java.util.ArrayList<com.google.spanner.executor.v1.TableMetadata>();
               mutable_bitField0_ |= 0x00000001;
@@ -93,7 +93,7 @@ private static final long serialVersionUID = 0L;
                 input.readMessage(com.google.spanner.executor.v1.TableMetadata.parser(), extensionRegistry));
             break;
           }
-          case 50: {
+          case 26: {
             java.lang.String s = input.readStringRequireUtf8();
 
             transactionSeed_ = s;
@@ -136,7 +136,7 @@ private static final long serialVersionUID = 0L;
             com.google.spanner.executor.v1.StartTransactionAction.class, com.google.spanner.executor.v1.StartTransactionAction.Builder.class);
   }
 
-  public static final int CONCURRENCY_FIELD_NUMBER = 2;
+  public static final int CONCURRENCY_FIELD_NUMBER = 1;
   private com.google.spanner.executor.v1.Concurrency concurrency_;
   /**
    * <pre>
@@ -144,7 +144,7 @@ private static final long serialVersionUID = 0L;
    * read-write transactions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.Concurrency concurrency = 2;</code>
+   * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
    * @return Whether the concurrency field is set.
    */
   @java.lang.Override
@@ -157,7 +157,7 @@ private static final long serialVersionUID = 0L;
    * read-write transactions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.Concurrency concurrency = 2;</code>
+   * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
    * @return The concurrency.
    */
   @java.lang.Override
@@ -170,14 +170,14 @@ private static final long serialVersionUID = 0L;
    * read-write transactions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.Concurrency concurrency = 2;</code>
+   * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.ConcurrencyOrBuilder getConcurrencyOrBuilder() {
     return getConcurrency();
   }
 
-  public static final int TABLE_FIELD_NUMBER = 3;
+  public static final int TABLE_FIELD_NUMBER = 2;
   private java.util.List<com.google.spanner.executor.v1.TableMetadata> table_;
   /**
    * <pre>
@@ -185,7 +185,7 @@ private static final long serialVersionUID = 0L;
    * transaction. It is to convert values of key parts correctly.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   @java.lang.Override
   public java.util.List<com.google.spanner.executor.v1.TableMetadata> getTableList() {
@@ -197,7 +197,7 @@ private static final long serialVersionUID = 0L;
    * transaction. It is to convert values of key parts correctly.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   @java.lang.Override
   public java.util.List<? extends com.google.spanner.executor.v1.TableMetadataOrBuilder> 
@@ -210,7 +210,7 @@ private static final long serialVersionUID = 0L;
    * transaction. It is to convert values of key parts correctly.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   @java.lang.Override
   public int getTableCount() {
@@ -222,7 +222,7 @@ private static final long serialVersionUID = 0L;
    * transaction. It is to convert values of key parts correctly.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.TableMetadata getTable(int index) {
@@ -234,7 +234,7 @@ private static final long serialVersionUID = 0L;
    * transaction. It is to convert values of key parts correctly.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.TableMetadataOrBuilder getTableOrBuilder(
@@ -242,7 +242,7 @@ private static final long serialVersionUID = 0L;
     return table_.get(index);
   }
 
-  public static final int TRANSACTION_SEED_FIELD_NUMBER = 6;
+  public static final int TRANSACTION_SEED_FIELD_NUMBER = 3;
   private volatile java.lang.Object transactionSeed_;
   /**
    * <pre>
@@ -250,7 +250,7 @@ private static final long serialVersionUID = 0L;
    * testing.
    * </pre>
    *
-   * <code>string transaction_seed = 6;</code>
+   * <code>string transaction_seed = 3;</code>
    * @return The transactionSeed.
    */
   @java.lang.Override
@@ -272,7 +272,7 @@ private static final long serialVersionUID = 0L;
    * testing.
    * </pre>
    *
-   * <code>string transaction_seed = 6;</code>
+   * <code>string transaction_seed = 3;</code>
    * @return The bytes for transactionSeed.
    */
   @java.lang.Override
@@ -305,13 +305,13 @@ private static final long serialVersionUID = 0L;
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
     if (concurrency_ != null) {
-      output.writeMessage(2, getConcurrency());
+      output.writeMessage(1, getConcurrency());
     }
     for (int i = 0; i < table_.size(); i++) {
-      output.writeMessage(3, table_.get(i));
+      output.writeMessage(2, table_.get(i));
     }
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(transactionSeed_)) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 6, transactionSeed_);
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 3, transactionSeed_);
     }
     unknownFields.writeTo(output);
   }
@@ -324,14 +324,14 @@ private static final long serialVersionUID = 0L;
     size = 0;
     if (concurrency_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(2, getConcurrency());
+        .computeMessageSize(1, getConcurrency());
     }
     for (int i = 0; i < table_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(3, table_.get(i));
+        .computeMessageSize(2, table_.get(i));
     }
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(transactionSeed_)) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, transactionSeed_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, transactionSeed_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -692,7 +692,7 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 2;</code>
+     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      * @return Whether the concurrency field is set.
      */
     public boolean hasConcurrency() {
@@ -704,7 +704,7 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 2;</code>
+     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      * @return The concurrency.
      */
     public com.google.spanner.executor.v1.Concurrency getConcurrency() {
@@ -720,7 +720,7 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 2;</code>
+     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      */
     public Builder setConcurrency(com.google.spanner.executor.v1.Concurrency value) {
       if (concurrencyBuilder_ == null) {
@@ -741,7 +741,7 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 2;</code>
+     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      */
     public Builder setConcurrency(
         com.google.spanner.executor.v1.Concurrency.Builder builderForValue) {
@@ -760,7 +760,7 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 2;</code>
+     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      */
     public Builder mergeConcurrency(com.google.spanner.executor.v1.Concurrency value) {
       if (concurrencyBuilder_ == null) {
@@ -783,7 +783,7 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 2;</code>
+     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      */
     public Builder clearConcurrency() {
       if (concurrencyBuilder_ == null) {
@@ -802,7 +802,7 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 2;</code>
+     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      */
     public com.google.spanner.executor.v1.Concurrency.Builder getConcurrencyBuilder() {
       
@@ -815,7 +815,7 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 2;</code>
+     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      */
     public com.google.spanner.executor.v1.ConcurrencyOrBuilder getConcurrencyOrBuilder() {
       if (concurrencyBuilder_ != null) {
@@ -831,7 +831,7 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 2;</code>
+     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.spanner.executor.v1.Concurrency, com.google.spanner.executor.v1.Concurrency.Builder, com.google.spanner.executor.v1.ConcurrencyOrBuilder> 
@@ -865,7 +865,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public java.util.List<com.google.spanner.executor.v1.TableMetadata> getTableList() {
       if (tableBuilder_ == null) {
@@ -880,7 +880,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public int getTableCount() {
       if (tableBuilder_ == null) {
@@ -895,7 +895,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public com.google.spanner.executor.v1.TableMetadata getTable(int index) {
       if (tableBuilder_ == null) {
@@ -910,7 +910,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public Builder setTable(
         int index, com.google.spanner.executor.v1.TableMetadata value) {
@@ -932,7 +932,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public Builder setTable(
         int index, com.google.spanner.executor.v1.TableMetadata.Builder builderForValue) {
@@ -951,7 +951,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public Builder addTable(com.google.spanner.executor.v1.TableMetadata value) {
       if (tableBuilder_ == null) {
@@ -972,7 +972,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public Builder addTable(
         int index, com.google.spanner.executor.v1.TableMetadata value) {
@@ -994,7 +994,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public Builder addTable(
         com.google.spanner.executor.v1.TableMetadata.Builder builderForValue) {
@@ -1013,7 +1013,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public Builder addTable(
         int index, com.google.spanner.executor.v1.TableMetadata.Builder builderForValue) {
@@ -1032,7 +1032,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public Builder addAllTable(
         java.lang.Iterable<? extends com.google.spanner.executor.v1.TableMetadata> values) {
@@ -1052,7 +1052,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public Builder clearTable() {
       if (tableBuilder_ == null) {
@@ -1070,7 +1070,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public Builder removeTable(int index) {
       if (tableBuilder_ == null) {
@@ -1088,7 +1088,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public com.google.spanner.executor.v1.TableMetadata.Builder getTableBuilder(
         int index) {
@@ -1100,7 +1100,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public com.google.spanner.executor.v1.TableMetadataOrBuilder getTableOrBuilder(
         int index) {
@@ -1115,7 +1115,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public java.util.List<? extends com.google.spanner.executor.v1.TableMetadataOrBuilder> 
          getTableOrBuilderList() {
@@ -1131,7 +1131,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public com.google.spanner.executor.v1.TableMetadata.Builder addTableBuilder() {
       return getTableFieldBuilder().addBuilder(
@@ -1143,7 +1143,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public com.google.spanner.executor.v1.TableMetadata.Builder addTableBuilder(
         int index) {
@@ -1156,7 +1156,7 @@ private static final long serialVersionUID = 0L;
      * transaction. It is to convert values of key parts correctly.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+     * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
      */
     public java.util.List<com.google.spanner.executor.v1.TableMetadata.Builder> 
          getTableBuilderList() {
@@ -1184,7 +1184,7 @@ private static final long serialVersionUID = 0L;
      * testing.
      * </pre>
      *
-     * <code>string transaction_seed = 6;</code>
+     * <code>string transaction_seed = 3;</code>
      * @return The transactionSeed.
      */
     public java.lang.String getTransactionSeed() {
@@ -1205,7 +1205,7 @@ private static final long serialVersionUID = 0L;
      * testing.
      * </pre>
      *
-     * <code>string transaction_seed = 6;</code>
+     * <code>string transaction_seed = 3;</code>
      * @return The bytes for transactionSeed.
      */
     public com.google.protobuf.ByteString
@@ -1227,7 +1227,7 @@ private static final long serialVersionUID = 0L;
      * testing.
      * </pre>
      *
-     * <code>string transaction_seed = 6;</code>
+     * <code>string transaction_seed = 3;</code>
      * @param value The transactionSeed to set.
      * @return This builder for chaining.
      */
@@ -1247,7 +1247,7 @@ private static final long serialVersionUID = 0L;
      * testing.
      * </pre>
      *
-     * <code>string transaction_seed = 6;</code>
+     * <code>string transaction_seed = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearTransactionSeed() {
@@ -1262,7 +1262,7 @@ private static final long serialVersionUID = 0L;
      * testing.
      * </pre>
      *
-     * <code>string transaction_seed = 6;</code>
+     * <code>string transaction_seed = 3;</code>
      * @param value The bytes for transactionSeed to set.
      * @return This builder for chaining.
      */

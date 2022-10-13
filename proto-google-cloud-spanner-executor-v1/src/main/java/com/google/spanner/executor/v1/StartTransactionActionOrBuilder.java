@@ -29,7 +29,7 @@ public interface StartTransactionActionOrBuilder extends
    * read-write transactions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.Concurrency concurrency = 2;</code>
+   * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
    * @return Whether the concurrency field is set.
    */
   boolean hasConcurrency();
@@ -39,7 +39,7 @@ public interface StartTransactionActionOrBuilder extends
    * read-write transactions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.Concurrency concurrency = 2;</code>
+   * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
    * @return The concurrency.
    */
   com.google.spanner.executor.v1.Concurrency getConcurrency();
@@ -49,7 +49,7 @@ public interface StartTransactionActionOrBuilder extends
    * read-write transactions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.Concurrency concurrency = 2;</code>
+   * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
    */
   com.google.spanner.executor.v1.ConcurrencyOrBuilder getConcurrencyOrBuilder();
 
@@ -59,7 +59,7 @@ public interface StartTransactionActionOrBuilder extends
    * transaction. It is to convert values of key parts correctly.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   java.util.List<com.google.spanner.executor.v1.TableMetadata> 
       getTableList();
@@ -69,7 +69,7 @@ public interface StartTransactionActionOrBuilder extends
    * transaction. It is to convert values of key parts correctly.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   com.google.spanner.executor.v1.TableMetadata getTable(int index);
   /**
@@ -78,7 +78,7 @@ public interface StartTransactionActionOrBuilder extends
    * transaction. It is to convert values of key parts correctly.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   int getTableCount();
   /**
@@ -87,7 +87,7 @@ public interface StartTransactionActionOrBuilder extends
    * transaction. It is to convert values of key parts correctly.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   java.util.List<? extends com.google.spanner.executor.v1.TableMetadataOrBuilder> 
       getTableOrBuilderList();
@@ -97,7 +97,7 @@ public interface StartTransactionActionOrBuilder extends
    * transaction. It is to convert values of key parts correctly.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 3;</code>
+   * <code>repeated .google.spanner.executor.v1.TableMetadata table = 2;</code>
    */
   com.google.spanner.executor.v1.TableMetadataOrBuilder getTableOrBuilder(
       int index);
@@ -108,7 +108,7 @@ public interface StartTransactionActionOrBuilder extends
    * testing.
    * </pre>
    *
-   * <code>string transaction_seed = 6;</code>
+   * <code>string transaction_seed = 3;</code>
    * @return The transactionSeed.
    */
   java.lang.String getTransactionSeed();
@@ -118,7 +118,7 @@ public interface StartTransactionActionOrBuilder extends
    * testing.
    * </pre>
    *
-   * <code>string transaction_seed = 6;</code>
+   * <code>string transaction_seed = 3;</code>
    * @return The bytes for transactionSeed.
    */
   com.google.protobuf.ByteString

@@ -174,14 +174,13 @@ message MutationAction {
 message StartTransactionAction {
   // Concurrency is for read-only transactions and must be omitted for
   // read-write transactions.
-  Concurrency concurrency = 2;
+  Concurrency concurrency = 1;
   // Metadata about tables and columns that will be involved in this
   // transaction. It is to convert values of key parts correctly.
-  repeated TableMetadata table = 3;
-  reserved 4 to 5;
+  repeated TableMetadata table = 2;
   // Transaction_seed contains workid and op pair for this transaction, used for
   // testing.
-  string transaction_seed = 6;
+  string transaction_seed = 3;
 }
 
 // Concurrency for read-only transactions.
@@ -747,17 +746,15 @@ message CloudDatabaseResponse {
 message ReadResult {
   // Table name.
   string table = 1;
-  // Table id, i.e. catalog::Table::TableID()
-  int32 table_id = 2;
   // Index name, if read from an index.
-  string index = 3;
+  optional string index = 2;
   // Request index (multiread only).
-  int32 request_index = 4;
+  optional int32 request_index = 3;
   // Rows read. Each row is a struct with multiple fields, one for each column
   // in read result. All rows have the same type.
-  repeated ValueList row = 5;
+  repeated ValueList row = 4;
   // The type of rows read. It must be set if at least one row was read.
-  google.spanner.v1.StructType row_type = 6;
+  optional google.spanner.v1.StructType row_type = 5;
   // The read timestamp if the read is imported into an optimistic transaction..
-  int64 read_timestamp = 7;
+  int64 read_timestamp = 6;
 }
