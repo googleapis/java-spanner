@@ -112,11 +112,6 @@ private static final long serialVersionUID = 0L;
             bitField0_ |= 0x00000004;
             break;
           }
-          case 48: {
-
-            readTimestamp_ = input.readInt64();
-            break;
-          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -389,21 +384,6 @@ private static final long serialVersionUID = 0L;
     return rowType_ == null ? com.google.spanner.v1.StructType.getDefaultInstance() : rowType_;
   }
 
-  public static final int READ_TIMESTAMP_FIELD_NUMBER = 6;
-  private long readTimestamp_;
-  /**
-   * <pre>
-   * The read timestamp if the read is imported into an optimistic transaction..
-   * </pre>
-   *
-   * <code>int64 read_timestamp = 6;</code>
-   * @return The readTimestamp.
-   */
-  @java.lang.Override
-  public long getReadTimestamp() {
-    return readTimestamp_;
-  }
-
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -433,9 +413,6 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000004) != 0)) {
       output.writeMessage(5, getRowType());
     }
-    if (readTimestamp_ != 0L) {
-      output.writeInt64(6, readTimestamp_);
-    }
     unknownFields.writeTo(output);
   }
 
@@ -462,10 +439,6 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000004) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(5, getRowType());
-    }
-    if (readTimestamp_ != 0L) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeInt64Size(6, readTimestamp_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -501,8 +474,6 @@ private static final long serialVersionUID = 0L;
       if (!getRowType()
           .equals(other.getRowType())) return false;
     }
-    if (getReadTimestamp()
-        != other.getReadTimestamp()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -532,9 +503,6 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + ROW_TYPE_FIELD_NUMBER;
       hash = (53 * hash) + getRowType().hashCode();
     }
-    hash = (37 * hash) + READ_TIMESTAMP_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-        getReadTimestamp());
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -693,8 +661,6 @@ private static final long serialVersionUID = 0L;
         rowTypeBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000008);
-      readTimestamp_ = 0L;
-
       return this;
     }
 
@@ -749,7 +715,6 @@ private static final long serialVersionUID = 0L;
         }
         to_bitField0_ |= 0x00000004;
       }
-      result.readTimestamp_ = readTimestamp_;
       result.bitField0_ = to_bitField0_;
       onBuilt();
       return result;
@@ -839,9 +804,6 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasRowType()) {
         mergeRowType(other.getRowType());
-      }
-      if (other.getReadTimestamp() != 0L) {
-        setReadTimestamp(other.getReadTimestamp());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1615,49 +1577,6 @@ private static final long serialVersionUID = 0L;
         rowType_ = null;
       }
       return rowTypeBuilder_;
-    }
-
-    private long readTimestamp_ ;
-    /**
-     * <pre>
-     * The read timestamp if the read is imported into an optimistic transaction..
-     * </pre>
-     *
-     * <code>int64 read_timestamp = 6;</code>
-     * @return The readTimestamp.
-     */
-    @java.lang.Override
-    public long getReadTimestamp() {
-      return readTimestamp_;
-    }
-    /**
-     * <pre>
-     * The read timestamp if the read is imported into an optimistic transaction..
-     * </pre>
-     *
-     * <code>int64 read_timestamp = 6;</code>
-     * @param value The readTimestamp to set.
-     * @return This builder for chaining.
-     */
-    public Builder setReadTimestamp(long value) {
-      
-      readTimestamp_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * The read timestamp if the read is imported into an optimistic transaction..
-     * </pre>
-     *
-     * <code>int64 read_timestamp = 6;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearReadTimestamp() {
-      
-      readTimestamp_ = 0L;
-      onChanged();
-      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

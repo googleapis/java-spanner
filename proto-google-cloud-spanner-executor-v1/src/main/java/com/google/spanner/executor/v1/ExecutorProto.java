@@ -582,15 +582,14 @@ public final class ExecutorProto {
       "sted_database\030\002 \003(\0132*.google.spanner.adm" +
       "in.database.v1.Database\022@\n\031listed_databa" +
       "se_operation\030\003 \003(\0132\035.google.longrunning." +
-      "Operation\022\027\n\017next_page_token\030\004 \001(\t\"\366\001\n\nR" +
+      "Operation\022\027\n\017next_page_token\030\004 \001(\t\"\336\001\n\nR" +
       "eadResult\022\r\n\005table\030\001 \001(\t\022\022\n\005index\030\002 \001(\tH" +
       "\000\210\001\001\022\032\n\rrequest_index\030\003 \001(\005H\001\210\001\001\0222\n\003row\030" +
       "\004 \003(\0132%.google.spanner.executor.v1.Value" +
       "List\0224\n\010row_type\030\005 \001(\0132\035.google.spanner." +
-      "v1.StructTypeH\002\210\001\001\022\026\n\016read_timestamp\030\006 \001" +
-      "(\003B\010\n\006_indexB\020\n\016_request_indexB\013\n\t_row_t" +
-      "ypeB1\n\036com.google.spanner.executor.v1B\rE" +
-      "xecutorProtoP\001b\006proto3"
+      "v1.StructTypeH\002\210\001\001B\010\n\006_indexB\020\n\016_request" +
+      "_indexB\013\n\t_row_typeB1\n\036com.google.spanne" +
+      "r.executor.v1B\rExecutorProtoP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -927,7 +926,7 @@ public final class ExecutorProto {
     internal_static_google_spanner_executor_v1_ReadResult_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_google_spanner_executor_v1_ReadResult_descriptor,
-        new java.lang.String[] { "Table", "Index", "RequestIndex", "Row", "RowType", "ReadTimestamp", "Index", "RequestIndex", "RowType", });
+        new java.lang.String[] { "Table", "Index", "RequestIndex", "Row", "RowType", "Index", "RequestIndex", "RowType", });
     com.google.longrunning.OperationsProto.getDescriptor();
     com.google.spanner.admin.database.v1.BackupProto.getDescriptor();
     com.google.spanner.admin.database.v1.CommonProto.getDescriptor();

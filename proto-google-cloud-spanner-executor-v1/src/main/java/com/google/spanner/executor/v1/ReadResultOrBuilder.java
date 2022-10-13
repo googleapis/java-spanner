@@ -166,14 +166,4 @@ public interface ReadResultOrBuilder extends
    * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
    */
   com.google.spanner.v1.StructTypeOrBuilder getRowTypeOrBuilder();
-
-  /**
-   * <pre>
-   * The read timestamp if the read is imported into an optimistic transaction..
-   * </pre>
-   *
-   * <code>int64 read_timestamp = 6;</code>
-   * @return The readTimestamp.
-   */
-  long getReadTimestamp();
 }
