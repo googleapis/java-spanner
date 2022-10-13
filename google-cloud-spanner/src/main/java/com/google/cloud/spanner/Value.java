@@ -1084,7 +1084,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public boolean getBool() {
-      checkType(Type.bool());
       checkNotNull();
       return value;
     }
@@ -1120,7 +1119,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public long getInt64() {
-      checkType(Type.int64());
       checkNotNull();
       return value;
     }
@@ -1156,7 +1154,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public double getFloat64() {
-      checkType(Type.float64());
       checkNotNull();
       return value;
     }
@@ -1215,7 +1212,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public Date getDate() {
-      checkType(Type.date());
       checkNotNull();
       return value;
     }
@@ -1234,7 +1230,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public String getString() {
-      checkType(Type.string());
       checkNotNull();
       return value;
     }
@@ -1257,7 +1252,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public String getJson() {
-      checkType(Type.json());
       checkNotNull();
       return value;
     }
@@ -1285,7 +1279,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public String getPgJsonb() {
-      checkType(Type.pgJsonb());
       checkNotNull();
       return value;
     }
@@ -1313,7 +1306,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public ByteArray getBytes() {
-      checkType(Type.bytes());
       checkNotNull();
       return value;
     }
@@ -1341,7 +1333,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public Timestamp getTimestamp() {
-      checkType(Type.timestamp());
       checkNotNull();
       Preconditions.checkState(!isCommitTimestamp, "Commit timestamp value");
       return value;
@@ -1399,7 +1390,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public BigDecimal getNumeric() {
-      checkType(Type.numeric());
       checkNotNull();
       return value;
     }
@@ -1422,14 +1412,12 @@ public abstract class Value implements Serializable {
 
     @Override
     public String getString() {
-      checkType(Type.pgNumeric());
       checkNotNull();
       return value;
     }
 
     @Override
     public BigDecimal getNumeric() {
-      checkType(Type.pgNumeric());
       checkNotNull();
       if (bigDecimalConversionError != null) {
         throw bigDecimalConversionError;
@@ -1447,7 +1435,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public double getFloat64() {
-      checkType(Type.pgNumeric());
       checkNotNull();
       if (doubleConversionError != null) {
         throw doubleConversionError;
@@ -1482,7 +1469,6 @@ public abstract class Value implements Serializable {
     }
 
     List<T> getArray() {
-      checkType(getType());
       checkNotNull();
       List<T> r = new ArrayList<>(size());
       for (int i = 0; i < size(); ++i) {
@@ -1707,7 +1693,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public List<String> getStringArray() {
-      checkType(getType());
       checkNotNull();
       return value;
     }
@@ -1726,7 +1711,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public List<String> getJsonArray() {
-      checkType(getType());
       checkNotNull();
       return value;
     }
@@ -1750,7 +1734,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public List<String> getPgJsonbArray() {
-      checkType(getType());
       checkNotNull();
       return value;
     }
@@ -1773,7 +1756,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public List<ByteArray> getBytesArray() {
-      checkType(getType());
       checkNotNull();
       return value;
     }
@@ -1797,7 +1779,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public List<Timestamp> getTimestampArray() {
-      checkType(getType());
       checkNotNull();
       return value;
     }
@@ -1816,7 +1797,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public List<Date> getDateArray() {
-      checkType(getType());
       checkNotNull();
       return value;
     }
@@ -1835,7 +1815,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public List<BigDecimal> getNumericArray() {
-      checkType(getType());
       checkNotNull();
       return value;
     }
@@ -1859,14 +1838,12 @@ public abstract class Value implements Serializable {
 
     @Override
     public List<String> getStringArray() {
-      checkType(getType());
       checkNotNull();
       return value;
     }
 
     @Override
     public List<BigDecimal> getNumericArray() {
-      checkType(getType());
       checkNotNull();
       if (bigDecimalConversionError != null) {
         throw bigDecimalConversionError;
@@ -1887,7 +1864,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public List<Double> getFloat64Array() {
-      checkType(getType());
       checkNotNull();
       if (doubleConversionError != null) {
         throw doubleConversionError;
@@ -1926,7 +1902,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public Struct getStruct() {
-      checkType(getType());
       checkNotNull();
       return value;
     }
@@ -2039,7 +2014,6 @@ public abstract class Value implements Serializable {
 
     @Override
     public List<Struct> getStructArray() {
-      checkType(getType());
       checkNotNull();
       return value;
     }
