@@ -95,32 +95,49 @@ public interface ValueOrBuilder extends
   com.google.protobuf.ByteString getBytesValue();
 
   /**
-   * <code>.google.spanner.executor.v1.ValueList struct_value = 6;</code>
+   * <code>string string_value = 6;</code>
+   * @return Whether the stringValue field is set.
+   */
+  boolean hasStringValue();
+  /**
+   * <code>string string_value = 6;</code>
+   * @return The stringValue.
+   */
+  java.lang.String getStringValue();
+  /**
+   * <code>string string_value = 6;</code>
+   * @return The bytes for stringValue.
+   */
+  com.google.protobuf.ByteString
+      getStringValueBytes();
+
+  /**
+   * <code>.google.spanner.executor.v1.ValueList struct_value = 7;</code>
    * @return Whether the structValue field is set.
    */
   boolean hasStructValue();
   /**
-   * <code>.google.spanner.executor.v1.ValueList struct_value = 6;</code>
+   * <code>.google.spanner.executor.v1.ValueList struct_value = 7;</code>
    * @return The structValue.
    */
   com.google.spanner.executor.v1.ValueList getStructValue();
   /**
-   * <code>.google.spanner.executor.v1.ValueList struct_value = 6;</code>
+   * <code>.google.spanner.executor.v1.ValueList struct_value = 7;</code>
    */
   com.google.spanner.executor.v1.ValueListOrBuilder getStructValueOrBuilder();
 
   /**
-   * <code>.google.protobuf.Timestamp timestamp_value = 7;</code>
+   * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
    * @return Whether the timestampValue field is set.
    */
   boolean hasTimestampValue();
   /**
-   * <code>.google.protobuf.Timestamp timestamp_value = 7;</code>
+   * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
    * @return The timestampValue.
    */
   com.google.protobuf.Timestamp getTimestampValue();
   /**
-   * <code>.google.protobuf.Timestamp timestamp_value = 7;</code>
+   * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
    */
   com.google.protobuf.TimestampOrBuilder getTimestampValueOrBuilder();
 

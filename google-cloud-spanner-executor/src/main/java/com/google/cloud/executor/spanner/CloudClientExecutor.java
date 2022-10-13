@@ -1897,7 +1897,7 @@ public class CloudClientExecutor extends CloudExecutor {
             value.setIntValue(result.getLong(i));
             break;
           case STRING:
-            value.setBytesValue(toByteString(result.getString(i)));
+            value.setStringValue(result.getString(i));
             break;
           case BYTES:
             value.setBytesValue(toByteString(result.getBytes(i)));
@@ -1913,7 +1913,7 @@ public class CloudClientExecutor extends CloudExecutor {
             value.setBytesValue(NumericTranscoder.encode(ascii));
             break;
           case JSON:
-            value.setBytesValue(toByteString(result.getJson(i)));
+            value.setStringValue(result.getJson(i));
             break;
           case ARRAY:
             switch (result.getColumnType(i).getArrayElementType().getCode()) {
@@ -1979,7 +1979,7 @@ public class CloudClientExecutor extends CloudExecutor {
                     if (stringValue == null) {
                       builder.addValue(valueProto.setNull(true).build());
                     } else {
-                      builder.addValue(valueProto.setBytesValue(toByteString(stringValue)).build());
+                      builder.addValue(valueProto.setStringValue(stringValue)).build();
                     }
                   }
                   value.setArrayValue(builder.build());
@@ -2071,11 +2071,7 @@ public class CloudClientExecutor extends CloudExecutor {
                     if (stringValue == null) {
                       builder.addValue(valueProto.setNull(true).build());
                     } else {
-                      builder.addValue(
-                          valueProto
-                              .setBytesValue(
-                                  ByteString.copyFrom(Strings.nullToEmpty(stringValue).getBytes()))
-                              .build());
+                      builder.addValue(valueProto.setStringValue(stringValue)).build();
                     }
                   }
                   value.setArrayValue(builder.build());
@@ -2189,6 +2185,7 @@ public class CloudClientExecutor extends CloudExecutor {
           case DATE:
           case TIMESTAMP:
           case NUMERIC:
+          case JSON:
             cloudKey.appendObject(null);
             break;
           default:
@@ -2204,9 +2201,6 @@ public class CloudClientExecutor extends CloudExecutor {
         cloudKey.append(part.getDoubleValue());
       } else if (part.hasBytesValue()) {
         switch (type.getCode()) {
-          case STRING:
-            cloudKey.append(part.getBytesValue().toStringUtf8());
-            break;
           case BYTES:
             cloudKey.append(toByteArray(part.getBytesValue()));
             break;
@@ -2219,6 +2213,8 @@ public class CloudClientExecutor extends CloudExecutor {
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INVALID_ARGUMENT, "Unsupported key part type: " + type.getCode().name());
         }
+      } else if (part.hasStringValue()) {
+        cloudKey.append(part.getStringValue());
       } else if (part.hasTimestampValue()) {
         cloudKey.append(Timestamp.parseTimestamp(Timestamps.toString(part.getTimestampValue())));
       } else if (part.hasDateValue()) {
@@ -2246,7 +2242,7 @@ public class CloudClientExecutor extends CloudExecutor {
             value.hasNull() ? null : value.getDoubleValue());
       case STRING:
         return com.google.cloud.spanner.Value.string(
-            value.hasNull() ? null : value.getBytesValue().toStringUtf8());
+            value.hasNull() ? null : value.getStringValue());
       case BYTES:
         return com.google.cloud.spanner.Value.bytes(
             value.hasNull() ? null : ByteArray.copyFrom(value.getBytesValue().toByteArray()));
@@ -2276,8 +2272,7 @@ public class CloudClientExecutor extends CloudExecutor {
           return com.google.cloud.spanner.Value.numeric(new BigDecimal(ascii));
         }
       case JSON:
-        return com.google.cloud.spanner.Value.json(
-            value.hasNull() ? null : value.getBytesValue().toStringUtf8());
+        return com.google.cloud.spanner.Value.json(value.hasNull() ? null : value.getStringValue());
       case STRUCT:
         return com.google.cloud.spanner.Value.struct(
             typeProtoToCloudType(type),
@@ -2320,9 +2315,8 @@ public class CloudClientExecutor extends CloudExecutor {
                           .map(com.google.spanner.executor.v1.Value::getNull)
                           .collect(Collectors.toList()),
                       value.getArrayValue().getValueList().stream()
-                          .map(com.google.spanner.executor.v1.Value::getBytesValue)
-                          .collect(Collectors.toList()),
-                      ByteString::toStringUtf8));
+                          .map(com.google.spanner.executor.v1.Value::getStringValue)
+                          .collect(Collectors.toList())));
             }
           case BYTES:
             if (value.hasNull()) {
@@ -2431,9 +2425,8 @@ public class CloudClientExecutor extends CloudExecutor {
                           .map(com.google.spanner.executor.v1.Value::getNull)
                           .collect(Collectors.toList()),
                       value.getArrayValue().getValueList().stream()
-                          .map(com.google.spanner.executor.v1.Value::getBytesValue)
-                          .collect(Collectors.toList()),
-                      ByteString::toStringUtf8));
+                          .map(com.google.spanner.executor.v1.Value::getStringValue)
+                          .collect(Collectors.toList())));
             }
           default:
             throw SpannerExceptionFactory.newSpannerException(

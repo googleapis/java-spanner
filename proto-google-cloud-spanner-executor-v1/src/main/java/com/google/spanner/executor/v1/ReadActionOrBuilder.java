@@ -117,28 +117,4 @@ public interface ReadActionOrBuilder extends
    * @return The limit.
    */
   int getLimit();
-
-  /**
-   * <pre>
-   * If the read is an augmented read within an optimistic transaction then
-   * this read_staleness_micros is used to generate the read_timestamp for
-   * this augmented read.
-   * </pre>
-   *
-   * <code>int64 read_staleness_micros = 8;</code>
-   * @return The readStalenessMicros.
-   */
-  long getReadStalenessMicros();
-
-  /**
-   * <pre>
-   * Instruct executor to use asynchronous API to perform this action. Note: as
-   * not all Spanner clients have async API, some executors will simply ignore
-   * this bit.
-   * </pre>
-   *
-   * <code>bool async = 7;</code>
-   * @return The async.
-   */
-  boolean getAsync();
 }
