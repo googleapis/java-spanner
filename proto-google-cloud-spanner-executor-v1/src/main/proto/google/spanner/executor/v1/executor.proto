@@ -642,20 +642,20 @@ message CancelOperationAction {
 message SpannerActionOutcome {
   // If an outcome is split into multiple parts, status will be set only in the
   // last part.
-  google.rpc.Status status = 1;
+  optional google.rpc.Status status = 1;
   // Transaction timestamp in Unix micros. It must be set for successful
   // committing actions.
-  int64 timestamp = 2;
+  optional int64 timestamp = 2;
   // Result of a ReadAction. This field must be set for ReadActions even if
   // no rows were read.
-  ReadResult read_result = 3;
+  optional ReadResult read_result = 3;
   // This bit indicates that Spanner has restarted the current transaction. It
   // means that the client should replay all the reads and writes.
   // Setting it to true is only valid in the context of a read-write
   // transaction, as an outcome of a committing FinishTransactionAction.
-  bool transaction_restarted = 4;
+  optional bool transaction_restarted = 4;
   // Result of admin related actions.
-  AdminResult admin_result = 5;
+  optional AdminResult admin_result = 5;
 }
 
 // AdminResult contains admin action results, for database/backup/operation.

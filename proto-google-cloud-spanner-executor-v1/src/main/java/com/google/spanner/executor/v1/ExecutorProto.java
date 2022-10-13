@@ -540,56 +540,59 @@ public final class ExecutorProto {
       "\001(\t\022\016\n\006filter\030\003 \001(\t\022\021\n\tpage_size\030\004 \001(\005\022\022" +
       "\n\npage_token\030\005 \001(\t\",\n\022GetOperationAction" +
       "\022\026\n\016operation_name\030\001 \001(\t\"/\n\025CancelOperat" +
-      "ionAction\022\026\n\016operation_name\030\001 \001(\t\"\350\001\n\024Sp" +
-      "annerActionOutcome\022\"\n\006status\030\001 \001(\0132\022.goo" +
-      "gle.rpc.Status\022\021\n\ttimestamp\030\002 \001(\003\022;\n\013rea" +
-      "d_result\030\003 \001(\0132&.google.spanner.executor" +
-      ".v1.ReadResult\022\035\n\025transaction_restarted\030" +
-      "\004 \001(\010\022=\n\014admin_result\030\005 \001(\0132\'.google.spa" +
-      "nner.executor.v1.AdminResult\"\231\003\n\013AdminRe" +
-      "sult\022H\n\017backup_response\030\001 \001(\0132/.google.s" +
-      "panner.executor.v1.CloudBackupResponse\022I" +
-      "\n\022operation_response\030\002 \001(\0132-.google.span" +
-      "ner.executor.v1.OperationResponse\022L\n\021dat" +
-      "abase_response\030\003 \001(\01321.google.spanner.ex" +
-      "ecutor.v1.CloudDatabaseResponse\022L\n\021insta" +
-      "nce_response\030\004 \001(\01321.google.spanner.exec" +
-      "utor.v1.CloudInstanceResponse\022Y\n\030instanc" +
-      "e_config_response\030\005 \001(\01327.google.spanner" +
-      ".executor.v1.CloudInstanceConfigResponse" +
-      "\"\351\001\n\023CloudBackupResponse\0228\n\006backup\030\001 \001(\013" +
-      "2(.google.spanner.admin.database.v1.Back" +
-      "up\022?\n\rlisted_backup\030\002 \003(\0132(.google.spann" +
-      "er.admin.database.v1.Backup\022>\n\027listed_ba" +
-      "ckup_operation\030\003 \003(\0132\035.google.longrunnin" +
-      "g.Operation\022\027\n\017next_page_token\030\004 \001(\t\"\227\001\n" +
-      "\021OperationResponse\0220\n\toperation\030\001 \001(\0132\035." +
-      "google.longrunning.Operation\0227\n\020listed_o" +
-      "peration\030\002 \003(\0132\035.google.longrunning.Oper" +
-      "ation\022\027\n\017next_page_token\030\003 \001(\t\"\263\001\n\025Cloud" +
-      "InstanceResponse\022<\n\010instance\030\001 \001(\0132*.goo" +
-      "gle.spanner.admin.instance.v1.Instance\022C" +
-      "\n\017listed_instance\030\002 \003(\0132*.google.spanner" +
-      ".admin.instance.v1.Instance\022\027\n\017next_page" +
-      "_token\030\003 \001(\t\"\323\001\n\033CloudInstanceConfigResp" +
-      "onse\022P\n\026listed_instance_config\030\001 \003(\01320.g" +
-      "oogle.spanner.admin.instance.v1.Instance" +
-      "Config\022\027\n\017next_page_token\030\002 \001(\t\022I\n\017insta" +
-      "nce_config\030\003 \001(\01320.google.spanner.admin." +
-      "instance.v1.InstanceConfig\"\365\001\n\025CloudData" +
-      "baseResponse\022<\n\010database\030\001 \001(\0132*.google." +
-      "spanner.admin.database.v1.Database\022C\n\017li" +
-      "sted_database\030\002 \003(\0132*.google.spanner.adm" +
-      "in.database.v1.Database\022@\n\031listed_databa" +
-      "se_operation\030\003 \003(\0132\035.google.longrunning." +
-      "Operation\022\027\n\017next_page_token\030\004 \001(\t\"\336\001\n\nR" +
-      "eadResult\022\r\n\005table\030\001 \001(\t\022\022\n\005index\030\002 \001(\tH" +
-      "\000\210\001\001\022\032\n\rrequest_index\030\003 \001(\005H\001\210\001\001\0222\n\003row\030" +
-      "\004 \003(\0132%.google.spanner.executor.v1.Value" +
-      "List\0224\n\010row_type\030\005 \001(\0132\035.google.spanner." +
-      "v1.StructTypeH\002\210\001\001B\010\n\006_indexB\020\n\016_request" +
-      "_indexB\013\n\t_row_typeB1\n\036com.google.spanne" +
-      "r.executor.v1B\rExecutorProtoP\001b\006proto3"
+      "ionAction\022\026\n\016operation_name\030\001 \001(\t\"\325\002\n\024Sp" +
+      "annerActionOutcome\022\'\n\006status\030\001 \001(\0132\022.goo" +
+      "gle.rpc.StatusH\000\210\001\001\022\026\n\ttimestamp\030\002 \001(\003H\001" +
+      "\210\001\001\022@\n\013read_result\030\003 \001(\0132&.google.spanne" +
+      "r.executor.v1.ReadResultH\002\210\001\001\022\"\n\025transac" +
+      "tion_restarted\030\004 \001(\010H\003\210\001\001\022B\n\014admin_resul" +
+      "t\030\005 \001(\0132\'.google.spanner.executor.v1.Adm" +
+      "inResultH\004\210\001\001B\t\n\007_statusB\014\n\n_timestampB\016" +
+      "\n\014_read_resultB\030\n\026_transaction_restarted" +
+      "B\017\n\r_admin_result\"\231\003\n\013AdminResult\022H\n\017bac" +
+      "kup_response\030\001 \001(\0132/.google.spanner.exec" +
+      "utor.v1.CloudBackupResponse\022I\n\022operation" +
+      "_response\030\002 \001(\0132-.google.spanner.executo" +
+      "r.v1.OperationResponse\022L\n\021database_respo" +
+      "nse\030\003 \001(\01321.google.spanner.executor.v1.C" +
+      "loudDatabaseResponse\022L\n\021instance_respons" +
+      "e\030\004 \001(\01321.google.spanner.executor.v1.Clo" +
+      "udInstanceResponse\022Y\n\030instance_config_re" +
+      "sponse\030\005 \001(\01327.google.spanner.executor.v" +
+      "1.CloudInstanceConfigResponse\"\351\001\n\023CloudB" +
+      "ackupResponse\0228\n\006backup\030\001 \001(\0132(.google.s" +
+      "panner.admin.database.v1.Backup\022?\n\rliste" +
+      "d_backup\030\002 \003(\0132(.google.spanner.admin.da" +
+      "tabase.v1.Backup\022>\n\027listed_backup_operat" +
+      "ion\030\003 \003(\0132\035.google.longrunning.Operation" +
+      "\022\027\n\017next_page_token\030\004 \001(\t\"\227\001\n\021OperationR" +
+      "esponse\0220\n\toperation\030\001 \001(\0132\035.google.long" +
+      "running.Operation\0227\n\020listed_operation\030\002 " +
+      "\003(\0132\035.google.longrunning.Operation\022\027\n\017ne" +
+      "xt_page_token\030\003 \001(\t\"\263\001\n\025CloudInstanceRes" +
+      "ponse\022<\n\010instance\030\001 \001(\0132*.google.spanner" +
+      ".admin.instance.v1.Instance\022C\n\017listed_in" +
+      "stance\030\002 \003(\0132*.google.spanner.admin.inst" +
+      "ance.v1.Instance\022\027\n\017next_page_token\030\003 \001(" +
+      "\t\"\323\001\n\033CloudInstanceConfigResponse\022P\n\026lis" +
+      "ted_instance_config\030\001 \003(\01320.google.spann" +
+      "er.admin.instance.v1.InstanceConfig\022\027\n\017n" +
+      "ext_page_token\030\002 \001(\t\022I\n\017instance_config\030" +
+      "\003 \001(\01320.google.spanner.admin.instance.v1" +
+      ".InstanceConfig\"\365\001\n\025CloudDatabaseRespons" +
+      "e\022<\n\010database\030\001 \001(\0132*.google.spanner.adm" +
+      "in.database.v1.Database\022C\n\017listed_databa" +
+      "se\030\002 \003(\0132*.google.spanner.admin.database" +
+      ".v1.Database\022@\n\031listed_database_operatio" +
+      "n\030\003 \003(\0132\035.google.longrunning.Operation\022\027" +
+      "\n\017next_page_token\030\004 \001(\t\"\336\001\n\nReadResult\022\r" +
+      "\n\005table\030\001 \001(\t\022\022\n\005index\030\002 \001(\tH\000\210\001\001\022\032\n\rreq" +
+      "uest_index\030\003 \001(\005H\001\210\001\001\0222\n\003row\030\004 \003(\0132%.goo" +
+      "gle.spanner.executor.v1.ValueList\0224\n\010row" +
+      "_type\030\005 \001(\0132\035.google.spanner.v1.StructTy" +
+      "peH\002\210\001\001B\010\n\006_indexB\020\n\016_request_indexB\013\n\t_" +
+      "row_typeB1\n\036com.google.spanner.executor." +
+      "v1B\rExecutorProtoP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -884,7 +887,7 @@ public final class ExecutorProto {
     internal_static_google_spanner_executor_v1_SpannerActionOutcome_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_google_spanner_executor_v1_SpannerActionOutcome_descriptor,
-        new java.lang.String[] { "Status", "Timestamp", "ReadResult", "TransactionRestarted", "AdminResult", });
+        new java.lang.String[] { "Status", "Timestamp", "ReadResult", "TransactionRestarted", "AdminResult", "Status", "Timestamp", "ReadResult", "TransactionRestarted", "AdminResult", });
     internal_static_google_spanner_executor_v1_AdminResult_descriptor =
       getDescriptor().getMessageTypes().get(41);
     internal_static_google_spanner_executor_v1_AdminResult_fieldAccessorTable = new

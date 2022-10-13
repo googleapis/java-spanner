@@ -1775,8 +1775,9 @@ public class CloudClientExecutor extends CloudExecutor {
       executionContext.startRead();
       LOGGER.log(
           Level.INFO,
-          "Finish read building, ready to execute %s\n",
-          executionContext.getTransactionSeed());
+          String.format(
+              "Finish read building, ready to execute %s\n",
+              executionContext.getTransactionSeed()));
       ResultSet result;
       if (action.hasIndex()) {
         result =
@@ -1785,7 +1786,9 @@ public class CloudClientExecutor extends CloudExecutor {
       } else {
         result = txn.read(action.getTable(), keySet, action.getColumnList());
       }
-      LOGGER.log(Level.INFO, "Parsing read result %s\n", executionContext.getTransactionSeed());
+      LOGGER.log(
+          Level.INFO,
+          String.format("Parsing read result %s\n", executionContext.getTransactionSeed()));
       return processResults(result, action.getLimit(), sender, executionContext);
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
@@ -2219,6 +2222,9 @@ public class CloudClientExecutor extends CloudExecutor {
         cloudKey.append(part.getDoubleValue());
       } else if (part.hasBytesValue()) {
         switch (type.getCode()) {
+          case STRING:
+            cloudKey.append(part.getBytesValue().toStringUtf8());
+            break;
           case BYTES:
             cloudKey.append(toByteArray(part.getBytesValue()));
             break;

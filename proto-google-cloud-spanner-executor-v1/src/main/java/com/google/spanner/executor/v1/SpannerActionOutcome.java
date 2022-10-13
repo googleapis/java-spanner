@@ -58,6 +58,7 @@ private static final long serialVersionUID = 0L;
     if (extensionRegistry == null) {
       throw new java.lang.NullPointerException();
     }
+    int mutable_bitField0_ = 0;
     com.google.protobuf.UnknownFieldSet.Builder unknownFields =
         com.google.protobuf.UnknownFieldSet.newBuilder();
     try {
@@ -70,7 +71,7 @@ private static final long serialVersionUID = 0L;
             break;
           case 10: {
             com.google.rpc.Status.Builder subBuilder = null;
-            if (status_ != null) {
+            if (((bitField0_ & 0x00000001) != 0)) {
               subBuilder = status_.toBuilder();
             }
             status_ = input.readMessage(com.google.rpc.Status.parser(), extensionRegistry);
@@ -78,17 +79,17 @@ private static final long serialVersionUID = 0L;
               subBuilder.mergeFrom(status_);
               status_ = subBuilder.buildPartial();
             }
-
+            bitField0_ |= 0x00000001;
             break;
           }
           case 16: {
-
+            bitField0_ |= 0x00000002;
             timestamp_ = input.readInt64();
             break;
           }
           case 26: {
             com.google.spanner.executor.v1.ReadResult.Builder subBuilder = null;
-            if (readResult_ != null) {
+            if (((bitField0_ & 0x00000004) != 0)) {
               subBuilder = readResult_.toBuilder();
             }
             readResult_ = input.readMessage(com.google.spanner.executor.v1.ReadResult.parser(), extensionRegistry);
@@ -96,17 +97,17 @@ private static final long serialVersionUID = 0L;
               subBuilder.mergeFrom(readResult_);
               readResult_ = subBuilder.buildPartial();
             }
-
+            bitField0_ |= 0x00000004;
             break;
           }
           case 32: {
-
+            bitField0_ |= 0x00000008;
             transactionRestarted_ = input.readBool();
             break;
           }
           case 42: {
             com.google.spanner.executor.v1.AdminResult.Builder subBuilder = null;
-            if (adminResult_ != null) {
+            if (((bitField0_ & 0x00000010) != 0)) {
               subBuilder = adminResult_.toBuilder();
             }
             adminResult_ = input.readMessage(com.google.spanner.executor.v1.AdminResult.parser(), extensionRegistry);
@@ -114,7 +115,7 @@ private static final long serialVersionUID = 0L;
               subBuilder.mergeFrom(adminResult_);
               adminResult_ = subBuilder.buildPartial();
             }
-
+            bitField0_ |= 0x00000010;
             break;
           }
           default: {
@@ -151,6 +152,7 @@ private static final long serialVersionUID = 0L;
             com.google.spanner.executor.v1.SpannerActionOutcome.class, com.google.spanner.executor.v1.SpannerActionOutcome.Builder.class);
   }
 
+  private int bitField0_;
   public static final int STATUS_FIELD_NUMBER = 1;
   private com.google.rpc.Status status_;
   /**
@@ -159,12 +161,12 @@ private static final long serialVersionUID = 0L;
    * last part.
    * </pre>
    *
-   * <code>.google.rpc.Status status = 1;</code>
+   * <code>optional .google.rpc.Status status = 1;</code>
    * @return Whether the status field is set.
    */
   @java.lang.Override
   public boolean hasStatus() {
-    return status_ != null;
+    return ((bitField0_ & 0x00000001) != 0);
   }
   /**
    * <pre>
@@ -172,7 +174,7 @@ private static final long serialVersionUID = 0L;
    * last part.
    * </pre>
    *
-   * <code>.google.rpc.Status status = 1;</code>
+   * <code>optional .google.rpc.Status status = 1;</code>
    * @return The status.
    */
   @java.lang.Override
@@ -185,11 +187,11 @@ private static final long serialVersionUID = 0L;
    * last part.
    * </pre>
    *
-   * <code>.google.rpc.Status status = 1;</code>
+   * <code>optional .google.rpc.Status status = 1;</code>
    */
   @java.lang.Override
   public com.google.rpc.StatusOrBuilder getStatusOrBuilder() {
-    return getStatus();
+    return status_ == null ? com.google.rpc.Status.getDefaultInstance() : status_;
   }
 
   public static final int TIMESTAMP_FIELD_NUMBER = 2;
@@ -200,7 +202,20 @@ private static final long serialVersionUID = 0L;
    * committing actions.
    * </pre>
    *
-   * <code>int64 timestamp = 2;</code>
+   * <code>optional int64 timestamp = 2;</code>
+   * @return Whether the timestamp field is set.
+   */
+  @java.lang.Override
+  public boolean hasTimestamp() {
+    return ((bitField0_ & 0x00000002) != 0);
+  }
+  /**
+   * <pre>
+   * Transaction timestamp in Unix micros. It must be set for successful
+   * committing actions.
+   * </pre>
+   *
+   * <code>optional int64 timestamp = 2;</code>
    * @return The timestamp.
    */
   @java.lang.Override
@@ -216,12 +231,12 @@ private static final long serialVersionUID = 0L;
    * no rows were read.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.ReadResult read_result = 3;</code>
+   * <code>optional .google.spanner.executor.v1.ReadResult read_result = 3;</code>
    * @return Whether the readResult field is set.
    */
   @java.lang.Override
   public boolean hasReadResult() {
-    return readResult_ != null;
+    return ((bitField0_ & 0x00000004) != 0);
   }
   /**
    * <pre>
@@ -229,7 +244,7 @@ private static final long serialVersionUID = 0L;
    * no rows were read.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.ReadResult read_result = 3;</code>
+   * <code>optional .google.spanner.executor.v1.ReadResult read_result = 3;</code>
    * @return The readResult.
    */
   @java.lang.Override
@@ -242,11 +257,11 @@ private static final long serialVersionUID = 0L;
    * no rows were read.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.ReadResult read_result = 3;</code>
+   * <code>optional .google.spanner.executor.v1.ReadResult read_result = 3;</code>
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.ReadResultOrBuilder getReadResultOrBuilder() {
-    return getReadResult();
+    return readResult_ == null ? com.google.spanner.executor.v1.ReadResult.getDefaultInstance() : readResult_;
   }
 
   public static final int TRANSACTION_RESTARTED_FIELD_NUMBER = 4;
@@ -259,7 +274,22 @@ private static final long serialVersionUID = 0L;
    * transaction, as an outcome of a committing FinishTransactionAction.
    * </pre>
    *
-   * <code>bool transaction_restarted = 4;</code>
+   * <code>optional bool transaction_restarted = 4;</code>
+   * @return Whether the transactionRestarted field is set.
+   */
+  @java.lang.Override
+  public boolean hasTransactionRestarted() {
+    return ((bitField0_ & 0x00000008) != 0);
+  }
+  /**
+   * <pre>
+   * This bit indicates that Spanner has restarted the current transaction. It
+   * means that the client should replay all the reads and writes.
+   * Setting it to true is only valid in the context of a read-write
+   * transaction, as an outcome of a committing FinishTransactionAction.
+   * </pre>
+   *
+   * <code>optional bool transaction_restarted = 4;</code>
    * @return The transactionRestarted.
    */
   @java.lang.Override
@@ -274,19 +304,19 @@ private static final long serialVersionUID = 0L;
    * Result of admin related actions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
    * @return Whether the adminResult field is set.
    */
   @java.lang.Override
   public boolean hasAdminResult() {
-    return adminResult_ != null;
+    return ((bitField0_ & 0x00000010) != 0);
   }
   /**
    * <pre>
    * Result of admin related actions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
    * @return The adminResult.
    */
   @java.lang.Override
@@ -298,11 +328,11 @@ private static final long serialVersionUID = 0L;
    * Result of admin related actions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.AdminResultOrBuilder getAdminResultOrBuilder() {
-    return getAdminResult();
+    return adminResult_ == null ? com.google.spanner.executor.v1.AdminResult.getDefaultInstance() : adminResult_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -319,19 +349,19 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (status_ != null) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       output.writeMessage(1, getStatus());
     }
-    if (timestamp_ != 0L) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       output.writeInt64(2, timestamp_);
     }
-    if (readResult_ != null) {
+    if (((bitField0_ & 0x00000004) != 0)) {
       output.writeMessage(3, getReadResult());
     }
-    if (transactionRestarted_ != false) {
+    if (((bitField0_ & 0x00000008) != 0)) {
       output.writeBool(4, transactionRestarted_);
     }
-    if (adminResult_ != null) {
+    if (((bitField0_ & 0x00000010) != 0)) {
       output.writeMessage(5, getAdminResult());
     }
     unknownFields.writeTo(output);
@@ -343,23 +373,23 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (status_ != null) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(1, getStatus());
     }
-    if (timestamp_ != 0L) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeInt64Size(2, timestamp_);
     }
-    if (readResult_ != null) {
+    if (((bitField0_ & 0x00000004) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(3, getReadResult());
     }
-    if (transactionRestarted_ != false) {
+    if (((bitField0_ & 0x00000008) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(4, transactionRestarted_);
     }
-    if (adminResult_ != null) {
+    if (((bitField0_ & 0x00000010) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(5, getAdminResult());
     }
@@ -383,15 +413,21 @@ private static final long serialVersionUID = 0L;
       if (!getStatus()
           .equals(other.getStatus())) return false;
     }
-    if (getTimestamp()
-        != other.getTimestamp()) return false;
+    if (hasTimestamp() != other.hasTimestamp()) return false;
+    if (hasTimestamp()) {
+      if (getTimestamp()
+          != other.getTimestamp()) return false;
+    }
     if (hasReadResult() != other.hasReadResult()) return false;
     if (hasReadResult()) {
       if (!getReadResult()
           .equals(other.getReadResult())) return false;
     }
-    if (getTransactionRestarted()
-        != other.getTransactionRestarted()) return false;
+    if (hasTransactionRestarted() != other.hasTransactionRestarted()) return false;
+    if (hasTransactionRestarted()) {
+      if (getTransactionRestarted()
+          != other.getTransactionRestarted()) return false;
+    }
     if (hasAdminResult() != other.hasAdminResult()) return false;
     if (hasAdminResult()) {
       if (!getAdminResult()
@@ -412,16 +448,20 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + STATUS_FIELD_NUMBER;
       hash = (53 * hash) + getStatus().hashCode();
     }
-    hash = (37 * hash) + TIMESTAMP_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-        getTimestamp());
+    if (hasTimestamp()) {
+      hash = (37 * hash) + TIMESTAMP_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+          getTimestamp());
+    }
     if (hasReadResult()) {
       hash = (37 * hash) + READ_RESULT_FIELD_NUMBER;
       hash = (53 * hash) + getReadResult().hashCode();
     }
-    hash = (37 * hash) + TRANSACTION_RESTARTED_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getTransactionRestarted());
+    if (hasTransactionRestarted()) {
+      hash = (37 * hash) + TRANSACTION_RESTARTED_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getTransactionRestarted());
+    }
     if (hasAdminResult()) {
       hash = (37 * hash) + ADMIN_RESULT_FIELD_NUMBER;
       hash = (53 * hash) + getAdminResult().hashCode();
@@ -558,6 +598,9 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
+        getStatusFieldBuilder();
+        getReadResultFieldBuilder();
+        getAdminResultFieldBuilder();
       }
     }
     @java.lang.Override
@@ -566,25 +609,25 @@ private static final long serialVersionUID = 0L;
       if (statusBuilder_ == null) {
         status_ = null;
       } else {
-        status_ = null;
-        statusBuilder_ = null;
+        statusBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000001);
       timestamp_ = 0L;
-
+      bitField0_ = (bitField0_ & ~0x00000002);
       if (readResultBuilder_ == null) {
         readResult_ = null;
       } else {
-        readResult_ = null;
-        readResultBuilder_ = null;
+        readResultBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000004);
       transactionRestarted_ = false;
-
+      bitField0_ = (bitField0_ & ~0x00000008);
       if (adminResultBuilder_ == null) {
         adminResult_ = null;
       } else {
-        adminResult_ = null;
-        adminResultBuilder_ = null;
+        adminResultBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000010);
       return this;
     }
 
@@ -611,23 +654,41 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.spanner.executor.v1.SpannerActionOutcome buildPartial() {
       com.google.spanner.executor.v1.SpannerActionOutcome result = new com.google.spanner.executor.v1.SpannerActionOutcome(this);
-      if (statusBuilder_ == null) {
-        result.status_ = status_;
-      } else {
-        result.status_ = statusBuilder_.build();
+      int from_bitField0_ = bitField0_;
+      int to_bitField0_ = 0;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        if (statusBuilder_ == null) {
+          result.status_ = status_;
+        } else {
+          result.status_ = statusBuilder_.build();
+        }
+        to_bitField0_ |= 0x00000001;
       }
-      result.timestamp_ = timestamp_;
-      if (readResultBuilder_ == null) {
-        result.readResult_ = readResult_;
-      } else {
-        result.readResult_ = readResultBuilder_.build();
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.timestamp_ = timestamp_;
+        to_bitField0_ |= 0x00000002;
       }
-      result.transactionRestarted_ = transactionRestarted_;
-      if (adminResultBuilder_ == null) {
-        result.adminResult_ = adminResult_;
-      } else {
-        result.adminResult_ = adminResultBuilder_.build();
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        if (readResultBuilder_ == null) {
+          result.readResult_ = readResult_;
+        } else {
+          result.readResult_ = readResultBuilder_.build();
+        }
+        to_bitField0_ |= 0x00000004;
       }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.transactionRestarted_ = transactionRestarted_;
+        to_bitField0_ |= 0x00000008;
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        if (adminResultBuilder_ == null) {
+          result.adminResult_ = adminResult_;
+        } else {
+          result.adminResult_ = adminResultBuilder_.build();
+        }
+        to_bitField0_ |= 0x00000010;
+      }
+      result.bitField0_ = to_bitField0_;
       onBuilt();
       return result;
     }
@@ -679,13 +740,13 @@ private static final long serialVersionUID = 0L;
       if (other.hasStatus()) {
         mergeStatus(other.getStatus());
       }
-      if (other.getTimestamp() != 0L) {
+      if (other.hasTimestamp()) {
         setTimestamp(other.getTimestamp());
       }
       if (other.hasReadResult()) {
         mergeReadResult(other.getReadResult());
       }
-      if (other.getTransactionRestarted() != false) {
+      if (other.hasTransactionRestarted()) {
         setTransactionRestarted(other.getTransactionRestarted());
       }
       if (other.hasAdminResult()) {
@@ -719,6 +780,7 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
+    private int bitField0_;
 
     private com.google.rpc.Status status_;
     private com.google.protobuf.SingleFieldBuilderV3<
@@ -729,11 +791,11 @@ private static final long serialVersionUID = 0L;
      * last part.
      * </pre>
      *
-     * <code>.google.rpc.Status status = 1;</code>
+     * <code>optional .google.rpc.Status status = 1;</code>
      * @return Whether the status field is set.
      */
     public boolean hasStatus() {
-      return statusBuilder_ != null || status_ != null;
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <pre>
@@ -741,7 +803,7 @@ private static final long serialVersionUID = 0L;
      * last part.
      * </pre>
      *
-     * <code>.google.rpc.Status status = 1;</code>
+     * <code>optional .google.rpc.Status status = 1;</code>
      * @return The status.
      */
     public com.google.rpc.Status getStatus() {
@@ -757,7 +819,7 @@ private static final long serialVersionUID = 0L;
      * last part.
      * </pre>
      *
-     * <code>.google.rpc.Status status = 1;</code>
+     * <code>optional .google.rpc.Status status = 1;</code>
      */
     public Builder setStatus(com.google.rpc.Status value) {
       if (statusBuilder_ == null) {
@@ -769,7 +831,7 @@ private static final long serialVersionUID = 0L;
       } else {
         statusBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000001;
       return this;
     }
     /**
@@ -778,7 +840,7 @@ private static final long serialVersionUID = 0L;
      * last part.
      * </pre>
      *
-     * <code>.google.rpc.Status status = 1;</code>
+     * <code>optional .google.rpc.Status status = 1;</code>
      */
     public Builder setStatus(
         com.google.rpc.Status.Builder builderForValue) {
@@ -788,7 +850,7 @@ private static final long serialVersionUID = 0L;
       } else {
         statusBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000001;
       return this;
     }
     /**
@@ -797,11 +859,13 @@ private static final long serialVersionUID = 0L;
      * last part.
      * </pre>
      *
-     * <code>.google.rpc.Status status = 1;</code>
+     * <code>optional .google.rpc.Status status = 1;</code>
      */
     public Builder mergeStatus(com.google.rpc.Status value) {
       if (statusBuilder_ == null) {
-        if (status_ != null) {
+        if (((bitField0_ & 0x00000001) != 0) &&
+            status_ != null &&
+            status_ != com.google.rpc.Status.getDefaultInstance()) {
           status_ =
             com.google.rpc.Status.newBuilder(status_).mergeFrom(value).buildPartial();
         } else {
@@ -811,7 +875,7 @@ private static final long serialVersionUID = 0L;
       } else {
         statusBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000001;
       return this;
     }
     /**
@@ -820,17 +884,16 @@ private static final long serialVersionUID = 0L;
      * last part.
      * </pre>
      *
-     * <code>.google.rpc.Status status = 1;</code>
+     * <code>optional .google.rpc.Status status = 1;</code>
      */
     public Builder clearStatus() {
       if (statusBuilder_ == null) {
         status_ = null;
         onChanged();
       } else {
-        status_ = null;
-        statusBuilder_ = null;
+        statusBuilder_.clear();
       }
-
+      bitField0_ = (bitField0_ & ~0x00000001);
       return this;
     }
     /**
@@ -839,10 +902,10 @@ private static final long serialVersionUID = 0L;
      * last part.
      * </pre>
      *
-     * <code>.google.rpc.Status status = 1;</code>
+     * <code>optional .google.rpc.Status status = 1;</code>
      */
     public com.google.rpc.Status.Builder getStatusBuilder() {
-      
+      bitField0_ |= 0x00000001;
       onChanged();
       return getStatusFieldBuilder().getBuilder();
     }
@@ -852,7 +915,7 @@ private static final long serialVersionUID = 0L;
      * last part.
      * </pre>
      *
-     * <code>.google.rpc.Status status = 1;</code>
+     * <code>optional .google.rpc.Status status = 1;</code>
      */
     public com.google.rpc.StatusOrBuilder getStatusOrBuilder() {
       if (statusBuilder_ != null) {
@@ -868,7 +931,7 @@ private static final long serialVersionUID = 0L;
      * last part.
      * </pre>
      *
-     * <code>.google.rpc.Status status = 1;</code>
+     * <code>optional .google.rpc.Status status = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.rpc.Status, com.google.rpc.Status.Builder, com.google.rpc.StatusOrBuilder> 
@@ -891,7 +954,20 @@ private static final long serialVersionUID = 0L;
      * committing actions.
      * </pre>
      *
-     * <code>int64 timestamp = 2;</code>
+     * <code>optional int64 timestamp = 2;</code>
+     * @return Whether the timestamp field is set.
+     */
+    @java.lang.Override
+    public boolean hasTimestamp() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <pre>
+     * Transaction timestamp in Unix micros. It must be set for successful
+     * committing actions.
+     * </pre>
+     *
+     * <code>optional int64 timestamp = 2;</code>
      * @return The timestamp.
      */
     @java.lang.Override
@@ -904,12 +980,12 @@ private static final long serialVersionUID = 0L;
      * committing actions.
      * </pre>
      *
-     * <code>int64 timestamp = 2;</code>
+     * <code>optional int64 timestamp = 2;</code>
      * @param value The timestamp to set.
      * @return This builder for chaining.
      */
     public Builder setTimestamp(long value) {
-      
+      bitField0_ |= 0x00000002;
       timestamp_ = value;
       onChanged();
       return this;
@@ -920,11 +996,11 @@ private static final long serialVersionUID = 0L;
      * committing actions.
      * </pre>
      *
-     * <code>int64 timestamp = 2;</code>
+     * <code>optional int64 timestamp = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearTimestamp() {
-      
+      bitField0_ = (bitField0_ & ~0x00000002);
       timestamp_ = 0L;
       onChanged();
       return this;
@@ -939,11 +1015,11 @@ private static final long serialVersionUID = 0L;
      * no rows were read.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ReadResult read_result = 3;</code>
+     * <code>optional .google.spanner.executor.v1.ReadResult read_result = 3;</code>
      * @return Whether the readResult field is set.
      */
     public boolean hasReadResult() {
-      return readResultBuilder_ != null || readResult_ != null;
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <pre>
@@ -951,7 +1027,7 @@ private static final long serialVersionUID = 0L;
      * no rows were read.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ReadResult read_result = 3;</code>
+     * <code>optional .google.spanner.executor.v1.ReadResult read_result = 3;</code>
      * @return The readResult.
      */
     public com.google.spanner.executor.v1.ReadResult getReadResult() {
@@ -967,7 +1043,7 @@ private static final long serialVersionUID = 0L;
      * no rows were read.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ReadResult read_result = 3;</code>
+     * <code>optional .google.spanner.executor.v1.ReadResult read_result = 3;</code>
      */
     public Builder setReadResult(com.google.spanner.executor.v1.ReadResult value) {
       if (readResultBuilder_ == null) {
@@ -979,7 +1055,7 @@ private static final long serialVersionUID = 0L;
       } else {
         readResultBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000004;
       return this;
     }
     /**
@@ -988,7 +1064,7 @@ private static final long serialVersionUID = 0L;
      * no rows were read.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ReadResult read_result = 3;</code>
+     * <code>optional .google.spanner.executor.v1.ReadResult read_result = 3;</code>
      */
     public Builder setReadResult(
         com.google.spanner.executor.v1.ReadResult.Builder builderForValue) {
@@ -998,7 +1074,7 @@ private static final long serialVersionUID = 0L;
       } else {
         readResultBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000004;
       return this;
     }
     /**
@@ -1007,11 +1083,13 @@ private static final long serialVersionUID = 0L;
      * no rows were read.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ReadResult read_result = 3;</code>
+     * <code>optional .google.spanner.executor.v1.ReadResult read_result = 3;</code>
      */
     public Builder mergeReadResult(com.google.spanner.executor.v1.ReadResult value) {
       if (readResultBuilder_ == null) {
-        if (readResult_ != null) {
+        if (((bitField0_ & 0x00000004) != 0) &&
+            readResult_ != null &&
+            readResult_ != com.google.spanner.executor.v1.ReadResult.getDefaultInstance()) {
           readResult_ =
             com.google.spanner.executor.v1.ReadResult.newBuilder(readResult_).mergeFrom(value).buildPartial();
         } else {
@@ -1021,7 +1099,7 @@ private static final long serialVersionUID = 0L;
       } else {
         readResultBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000004;
       return this;
     }
     /**
@@ -1030,17 +1108,16 @@ private static final long serialVersionUID = 0L;
      * no rows were read.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ReadResult read_result = 3;</code>
+     * <code>optional .google.spanner.executor.v1.ReadResult read_result = 3;</code>
      */
     public Builder clearReadResult() {
       if (readResultBuilder_ == null) {
         readResult_ = null;
         onChanged();
       } else {
-        readResult_ = null;
-        readResultBuilder_ = null;
+        readResultBuilder_.clear();
       }
-
+      bitField0_ = (bitField0_ & ~0x00000004);
       return this;
     }
     /**
@@ -1049,10 +1126,10 @@ private static final long serialVersionUID = 0L;
      * no rows were read.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ReadResult read_result = 3;</code>
+     * <code>optional .google.spanner.executor.v1.ReadResult read_result = 3;</code>
      */
     public com.google.spanner.executor.v1.ReadResult.Builder getReadResultBuilder() {
-      
+      bitField0_ |= 0x00000004;
       onChanged();
       return getReadResultFieldBuilder().getBuilder();
     }
@@ -1062,7 +1139,7 @@ private static final long serialVersionUID = 0L;
      * no rows were read.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ReadResult read_result = 3;</code>
+     * <code>optional .google.spanner.executor.v1.ReadResult read_result = 3;</code>
      */
     public com.google.spanner.executor.v1.ReadResultOrBuilder getReadResultOrBuilder() {
       if (readResultBuilder_ != null) {
@@ -1078,7 +1155,7 @@ private static final long serialVersionUID = 0L;
      * no rows were read.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.ReadResult read_result = 3;</code>
+     * <code>optional .google.spanner.executor.v1.ReadResult read_result = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.spanner.executor.v1.ReadResult, com.google.spanner.executor.v1.ReadResult.Builder, com.google.spanner.executor.v1.ReadResultOrBuilder> 
@@ -1103,7 +1180,22 @@ private static final long serialVersionUID = 0L;
      * transaction, as an outcome of a committing FinishTransactionAction.
      * </pre>
      *
-     * <code>bool transaction_restarted = 4;</code>
+     * <code>optional bool transaction_restarted = 4;</code>
+     * @return Whether the transactionRestarted field is set.
+     */
+    @java.lang.Override
+    public boolean hasTransactionRestarted() {
+      return ((bitField0_ & 0x00000008) != 0);
+    }
+    /**
+     * <pre>
+     * This bit indicates that Spanner has restarted the current transaction. It
+     * means that the client should replay all the reads and writes.
+     * Setting it to true is only valid in the context of a read-write
+     * transaction, as an outcome of a committing FinishTransactionAction.
+     * </pre>
+     *
+     * <code>optional bool transaction_restarted = 4;</code>
      * @return The transactionRestarted.
      */
     @java.lang.Override
@@ -1118,12 +1210,12 @@ private static final long serialVersionUID = 0L;
      * transaction, as an outcome of a committing FinishTransactionAction.
      * </pre>
      *
-     * <code>bool transaction_restarted = 4;</code>
+     * <code>optional bool transaction_restarted = 4;</code>
      * @param value The transactionRestarted to set.
      * @return This builder for chaining.
      */
     public Builder setTransactionRestarted(boolean value) {
-      
+      bitField0_ |= 0x00000008;
       transactionRestarted_ = value;
       onChanged();
       return this;
@@ -1136,11 +1228,11 @@ private static final long serialVersionUID = 0L;
      * transaction, as an outcome of a committing FinishTransactionAction.
      * </pre>
      *
-     * <code>bool transaction_restarted = 4;</code>
+     * <code>optional bool transaction_restarted = 4;</code>
      * @return This builder for chaining.
      */
     public Builder clearTransactionRestarted() {
-      
+      bitField0_ = (bitField0_ & ~0x00000008);
       transactionRestarted_ = false;
       onChanged();
       return this;
@@ -1154,18 +1246,18 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
      * @return Whether the adminResult field is set.
      */
     public boolean hasAdminResult() {
-      return adminResultBuilder_ != null || adminResult_ != null;
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <pre>
      * Result of admin related actions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
      * @return The adminResult.
      */
     public com.google.spanner.executor.v1.AdminResult getAdminResult() {
@@ -1180,7 +1272,7 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
      */
     public Builder setAdminResult(com.google.spanner.executor.v1.AdminResult value) {
       if (adminResultBuilder_ == null) {
@@ -1192,7 +1284,7 @@ private static final long serialVersionUID = 0L;
       } else {
         adminResultBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000010;
       return this;
     }
     /**
@@ -1200,7 +1292,7 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
      */
     public Builder setAdminResult(
         com.google.spanner.executor.v1.AdminResult.Builder builderForValue) {
@@ -1210,7 +1302,7 @@ private static final long serialVersionUID = 0L;
       } else {
         adminResultBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000010;
       return this;
     }
     /**
@@ -1218,11 +1310,13 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
      */
     public Builder mergeAdminResult(com.google.spanner.executor.v1.AdminResult value) {
       if (adminResultBuilder_ == null) {
-        if (adminResult_ != null) {
+        if (((bitField0_ & 0x00000010) != 0) &&
+            adminResult_ != null &&
+            adminResult_ != com.google.spanner.executor.v1.AdminResult.getDefaultInstance()) {
           adminResult_ =
             com.google.spanner.executor.v1.AdminResult.newBuilder(adminResult_).mergeFrom(value).buildPartial();
         } else {
@@ -1232,7 +1326,7 @@ private static final long serialVersionUID = 0L;
       } else {
         adminResultBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000010;
       return this;
     }
     /**
@@ -1240,17 +1334,16 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
      */
     public Builder clearAdminResult() {
       if (adminResultBuilder_ == null) {
         adminResult_ = null;
         onChanged();
       } else {
-        adminResult_ = null;
-        adminResultBuilder_ = null;
+        adminResultBuilder_.clear();
       }
-
+      bitField0_ = (bitField0_ & ~0x00000010);
       return this;
     }
     /**
@@ -1258,10 +1351,10 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
      */
     public com.google.spanner.executor.v1.AdminResult.Builder getAdminResultBuilder() {
-      
+      bitField0_ |= 0x00000010;
       onChanged();
       return getAdminResultFieldBuilder().getBuilder();
     }
@@ -1270,7 +1363,7 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
      */
     public com.google.spanner.executor.v1.AdminResultOrBuilder getAdminResultOrBuilder() {
       if (adminResultBuilder_ != null) {
@@ -1285,7 +1378,7 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.spanner.executor.v1.AdminResult, com.google.spanner.executor.v1.AdminResult.Builder, com.google.spanner.executor.v1.AdminResultOrBuilder> 
