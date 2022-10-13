@@ -45,20 +45,19 @@ public interface ReadResultOrBuilder extends
 
   /**
    * <pre>
-   * Table id, i.e. catalog::Table::TableID()
+   * Index name, if read from an index.
    * </pre>
    *
-   * <code>int32 table_id = 2;</code>
-   * @return The tableId.
+   * <code>optional string index = 2;</code>
+   * @return Whether the index field is set.
    */
-  int getTableId();
-
+  boolean hasIndex();
   /**
    * <pre>
    * Index name, if read from an index.
    * </pre>
    *
-   * <code>string index = 3;</code>
+   * <code>optional string index = 2;</code>
    * @return The index.
    */
   java.lang.String getIndex();
@@ -67,7 +66,7 @@ public interface ReadResultOrBuilder extends
    * Index name, if read from an index.
    * </pre>
    *
-   * <code>string index = 3;</code>
+   * <code>optional string index = 2;</code>
    * @return The bytes for index.
    */
   com.google.protobuf.ByteString
@@ -78,7 +77,16 @@ public interface ReadResultOrBuilder extends
    * Request index (multiread only).
    * </pre>
    *
-   * <code>int32 request_index = 4;</code>
+   * <code>optional int32 request_index = 3;</code>
+   * @return Whether the requestIndex field is set.
+   */
+  boolean hasRequestIndex();
+  /**
+   * <pre>
+   * Request index (multiread only).
+   * </pre>
+   *
+   * <code>optional int32 request_index = 3;</code>
    * @return The requestIndex.
    */
   int getRequestIndex();
@@ -89,7 +97,7 @@ public interface ReadResultOrBuilder extends
    * in read result. All rows have the same type.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.ValueList row = 5;</code>
+   * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
    */
   java.util.List<com.google.spanner.executor.v1.ValueList> 
       getRowList();
@@ -99,7 +107,7 @@ public interface ReadResultOrBuilder extends
    * in read result. All rows have the same type.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.ValueList row = 5;</code>
+   * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
    */
   com.google.spanner.executor.v1.ValueList getRow(int index);
   /**
@@ -108,7 +116,7 @@ public interface ReadResultOrBuilder extends
    * in read result. All rows have the same type.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.ValueList row = 5;</code>
+   * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
    */
   int getRowCount();
   /**
@@ -117,7 +125,7 @@ public interface ReadResultOrBuilder extends
    * in read result. All rows have the same type.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.ValueList row = 5;</code>
+   * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
    */
   java.util.List<? extends com.google.spanner.executor.v1.ValueListOrBuilder> 
       getRowOrBuilderList();
@@ -127,7 +135,7 @@ public interface ReadResultOrBuilder extends
    * in read result. All rows have the same type.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.ValueList row = 5;</code>
+   * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
    */
   com.google.spanner.executor.v1.ValueListOrBuilder getRowOrBuilder(
       int index);
@@ -137,7 +145,7 @@ public interface ReadResultOrBuilder extends
    * The type of rows read. It must be set if at least one row was read.
    * </pre>
    *
-   * <code>.google.spanner.v1.StructType row_type = 6;</code>
+   * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
    * @return Whether the rowType field is set.
    */
   boolean hasRowType();
@@ -146,7 +154,7 @@ public interface ReadResultOrBuilder extends
    * The type of rows read. It must be set if at least one row was read.
    * </pre>
    *
-   * <code>.google.spanner.v1.StructType row_type = 6;</code>
+   * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
    * @return The rowType.
    */
   com.google.spanner.v1.StructType getRowType();
@@ -155,7 +163,7 @@ public interface ReadResultOrBuilder extends
    * The type of rows read. It must be set if at least one row was read.
    * </pre>
    *
-   * <code>.google.spanner.v1.StructType row_type = 6;</code>
+   * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
    */
   com.google.spanner.v1.StructTypeOrBuilder getRowTypeOrBuilder();
 
@@ -164,7 +172,7 @@ public interface ReadResultOrBuilder extends
    * The read timestamp if the read is imported into an optimistic transaction..
    * </pre>
    *
-   * <code>int64 read_timestamp = 7;</code>
+   * <code>int64 read_timestamp = 6;</code>
    * @return The readTimestamp.
    */
   long getReadTimestamp();
