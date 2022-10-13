@@ -29,7 +29,7 @@ public interface StartTransactionActionOrBuilder extends
    * read-write transactions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
+   * <code>optional .google.spanner.executor.v1.Concurrency concurrency = 1;</code>
    * @return Whether the concurrency field is set.
    */
   boolean hasConcurrency();
@@ -39,7 +39,7 @@ public interface StartTransactionActionOrBuilder extends
    * read-write transactions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
+   * <code>optional .google.spanner.executor.v1.Concurrency concurrency = 1;</code>
    * @return The concurrency.
    */
   com.google.spanner.executor.v1.Concurrency getConcurrency();
@@ -49,7 +49,7 @@ public interface StartTransactionActionOrBuilder extends
    * read-write transactions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
+   * <code>optional .google.spanner.executor.v1.Concurrency concurrency = 1;</code>
    */
   com.google.spanner.executor.v1.ConcurrencyOrBuilder getConcurrencyOrBuilder();
 
