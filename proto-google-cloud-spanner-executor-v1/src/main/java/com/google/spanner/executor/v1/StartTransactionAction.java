@@ -73,7 +73,7 @@ private static final long serialVersionUID = 0L;
             break;
           case 10: {
             com.google.spanner.executor.v1.Concurrency.Builder subBuilder = null;
-            if (concurrency_ != null) {
+            if (((bitField0_ & 0x00000001) != 0)) {
               subBuilder = concurrency_.toBuilder();
             }
             concurrency_ = input.readMessage(com.google.spanner.executor.v1.Concurrency.parser(), extensionRegistry);
@@ -81,13 +81,13 @@ private static final long serialVersionUID = 0L;
               subBuilder.mergeFrom(concurrency_);
               concurrency_ = subBuilder.buildPartial();
             }
-
+            bitField0_ |= 0x00000001;
             break;
           }
           case 18: {
-            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+            if (!((mutable_bitField0_ & 0x00000002) != 0)) {
               table_ = new java.util.ArrayList<com.google.spanner.executor.v1.TableMetadata>();
-              mutable_bitField0_ |= 0x00000001;
+              mutable_bitField0_ |= 0x00000002;
             }
             table_.add(
                 input.readMessage(com.google.spanner.executor.v1.TableMetadata.parser(), extensionRegistry));
@@ -116,7 +116,7 @@ private static final long serialVersionUID = 0L;
       throw new com.google.protobuf.InvalidProtocolBufferException(
           e).setUnfinishedMessage(this);
     } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
+      if (((mutable_bitField0_ & 0x00000002) != 0)) {
         table_ = java.util.Collections.unmodifiableList(table_);
       }
       this.unknownFields = unknownFields.build();
@@ -136,6 +136,7 @@ private static final long serialVersionUID = 0L;
             com.google.spanner.executor.v1.StartTransactionAction.class, com.google.spanner.executor.v1.StartTransactionAction.Builder.class);
   }
 
+  private int bitField0_;
   public static final int CONCURRENCY_FIELD_NUMBER = 1;
   private com.google.spanner.executor.v1.Concurrency concurrency_;
   /**
@@ -144,12 +145,12 @@ private static final long serialVersionUID = 0L;
    * read-write transactions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
+   * <code>optional .google.spanner.executor.v1.Concurrency concurrency = 1;</code>
    * @return Whether the concurrency field is set.
    */
   @java.lang.Override
   public boolean hasConcurrency() {
-    return concurrency_ != null;
+    return ((bitField0_ & 0x00000001) != 0);
   }
   /**
    * <pre>
@@ -157,7 +158,7 @@ private static final long serialVersionUID = 0L;
    * read-write transactions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
+   * <code>optional .google.spanner.executor.v1.Concurrency concurrency = 1;</code>
    * @return The concurrency.
    */
   @java.lang.Override
@@ -170,11 +171,11 @@ private static final long serialVersionUID = 0L;
    * read-write transactions.
    * </pre>
    *
-   * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
+   * <code>optional .google.spanner.executor.v1.Concurrency concurrency = 1;</code>
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.ConcurrencyOrBuilder getConcurrencyOrBuilder() {
-    return getConcurrency();
+    return concurrency_ == null ? com.google.spanner.executor.v1.Concurrency.getDefaultInstance() : concurrency_;
   }
 
   public static final int TABLE_FIELD_NUMBER = 2;
@@ -304,7 +305,7 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (concurrency_ != null) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       output.writeMessage(1, getConcurrency());
     }
     for (int i = 0; i < table_.size(); i++) {
@@ -322,7 +323,7 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (concurrency_ != null) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(1, getConcurrency());
     }
@@ -510,6 +511,7 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
+        getConcurrencyFieldBuilder();
         getTableFieldBuilder();
       }
     }
@@ -519,12 +521,12 @@ private static final long serialVersionUID = 0L;
       if (concurrencyBuilder_ == null) {
         concurrency_ = null;
       } else {
-        concurrency_ = null;
-        concurrencyBuilder_ = null;
+        concurrencyBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000001);
       if (tableBuilder_ == null) {
         table_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
       } else {
         tableBuilder_.clear();
       }
@@ -557,21 +559,26 @@ private static final long serialVersionUID = 0L;
     public com.google.spanner.executor.v1.StartTransactionAction buildPartial() {
       com.google.spanner.executor.v1.StartTransactionAction result = new com.google.spanner.executor.v1.StartTransactionAction(this);
       int from_bitField0_ = bitField0_;
-      if (concurrencyBuilder_ == null) {
-        result.concurrency_ = concurrency_;
-      } else {
-        result.concurrency_ = concurrencyBuilder_.build();
+      int to_bitField0_ = 0;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        if (concurrencyBuilder_ == null) {
+          result.concurrency_ = concurrency_;
+        } else {
+          result.concurrency_ = concurrencyBuilder_.build();
+        }
+        to_bitField0_ |= 0x00000001;
       }
       if (tableBuilder_ == null) {
-        if (((bitField0_ & 0x00000001) != 0)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           table_ = java.util.Collections.unmodifiableList(table_);
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.table_ = table_;
       } else {
         result.table_ = tableBuilder_.build();
       }
       result.transactionSeed_ = transactionSeed_;
+      result.bitField0_ = to_bitField0_;
       onBuilt();
       return result;
     }
@@ -627,7 +634,7 @@ private static final long serialVersionUID = 0L;
         if (!other.table_.isEmpty()) {
           if (table_.isEmpty()) {
             table_ = other.table_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureTableIsMutable();
             table_.addAll(other.table_);
@@ -640,7 +647,7 @@ private static final long serialVersionUID = 0L;
             tableBuilder_.dispose();
             tableBuilder_ = null;
             table_ = other.table_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
             tableBuilder_ = 
               com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                  getTableFieldBuilder() : null;
@@ -692,11 +699,11 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
+     * <code>optional .google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      * @return Whether the concurrency field is set.
      */
     public boolean hasConcurrency() {
-      return concurrencyBuilder_ != null || concurrency_ != null;
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <pre>
@@ -704,7 +711,7 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
+     * <code>optional .google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      * @return The concurrency.
      */
     public com.google.spanner.executor.v1.Concurrency getConcurrency() {
@@ -720,7 +727,7 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
+     * <code>optional .google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      */
     public Builder setConcurrency(com.google.spanner.executor.v1.Concurrency value) {
       if (concurrencyBuilder_ == null) {
@@ -732,7 +739,7 @@ private static final long serialVersionUID = 0L;
       } else {
         concurrencyBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000001;
       return this;
     }
     /**
@@ -741,7 +748,7 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
+     * <code>optional .google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      */
     public Builder setConcurrency(
         com.google.spanner.executor.v1.Concurrency.Builder builderForValue) {
@@ -751,7 +758,7 @@ private static final long serialVersionUID = 0L;
       } else {
         concurrencyBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000001;
       return this;
     }
     /**
@@ -760,11 +767,13 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
+     * <code>optional .google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      */
     public Builder mergeConcurrency(com.google.spanner.executor.v1.Concurrency value) {
       if (concurrencyBuilder_ == null) {
-        if (concurrency_ != null) {
+        if (((bitField0_ & 0x00000001) != 0) &&
+            concurrency_ != null &&
+            concurrency_ != com.google.spanner.executor.v1.Concurrency.getDefaultInstance()) {
           concurrency_ =
             com.google.spanner.executor.v1.Concurrency.newBuilder(concurrency_).mergeFrom(value).buildPartial();
         } else {
@@ -774,7 +783,7 @@ private static final long serialVersionUID = 0L;
       } else {
         concurrencyBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000001;
       return this;
     }
     /**
@@ -783,17 +792,16 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
+     * <code>optional .google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      */
     public Builder clearConcurrency() {
       if (concurrencyBuilder_ == null) {
         concurrency_ = null;
         onChanged();
       } else {
-        concurrency_ = null;
-        concurrencyBuilder_ = null;
+        concurrencyBuilder_.clear();
       }
-
+      bitField0_ = (bitField0_ & ~0x00000001);
       return this;
     }
     /**
@@ -802,10 +810,10 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
+     * <code>optional .google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      */
     public com.google.spanner.executor.v1.Concurrency.Builder getConcurrencyBuilder() {
-      
+      bitField0_ |= 0x00000001;
       onChanged();
       return getConcurrencyFieldBuilder().getBuilder();
     }
@@ -815,7 +823,7 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
+     * <code>optional .google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      */
     public com.google.spanner.executor.v1.ConcurrencyOrBuilder getConcurrencyOrBuilder() {
       if (concurrencyBuilder_ != null) {
@@ -831,7 +839,7 @@ private static final long serialVersionUID = 0L;
      * read-write transactions.
      * </pre>
      *
-     * <code>.google.spanner.executor.v1.Concurrency concurrency = 1;</code>
+     * <code>optional .google.spanner.executor.v1.Concurrency concurrency = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.spanner.executor.v1.Concurrency, com.google.spanner.executor.v1.Concurrency.Builder, com.google.spanner.executor.v1.ConcurrencyOrBuilder> 
@@ -850,9 +858,9 @@ private static final long serialVersionUID = 0L;
     private java.util.List<com.google.spanner.executor.v1.TableMetadata> table_ =
       java.util.Collections.emptyList();
     private void ensureTableIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
+      if (!((bitField0_ & 0x00000002) != 0)) {
         table_ = new java.util.ArrayList<com.google.spanner.executor.v1.TableMetadata>(table_);
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000002;
        }
     }
 
@@ -1057,7 +1065,7 @@ private static final long serialVersionUID = 0L;
     public Builder clearTable() {
       if (tableBuilder_ == null) {
         table_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
       } else {
         tableBuilder_.clear();
@@ -1169,7 +1177,7 @@ private static final long serialVersionUID = 0L;
         tableBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
             com.google.spanner.executor.v1.TableMetadata, com.google.spanner.executor.v1.TableMetadata.Builder, com.google.spanner.executor.v1.TableMetadataOrBuilder>(
                 table_,
-                ((bitField0_ & 0x00000001) != 0),
+                ((bitField0_ & 0x00000002) != 0),
                 getParentForChildren(),
                 isClean());
         table_ = null;

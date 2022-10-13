@@ -170,7 +170,7 @@ message MutationAction {
 message StartTransactionAction {
   // Concurrency is for read-only transactions and must be omitted for
   // read-write transactions.
-  Concurrency concurrency = 1;
+  optional Concurrency concurrency = 1;
   // Metadata about tables and columns that will be involved in this
   // transaction. It is to convert values of key parts correctly.
   repeated TableMetadata table = 2;
