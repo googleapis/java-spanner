@@ -81,16 +81,18 @@ message Value {
     ValueList struct_value = 7;
     google.protobuf.Timestamp timestamp_value = 8;
 
-
     // Date is specified as a number of days since Unix epoch.
-    int32 date_value = 14;
+    int32 date_value = 9;
 
     // If true, holds the sentinel value for the transaction CommitTimestamp.
-    bool commit_timestamp = 15;
+    bool commit_timestamp = 10;
 
     // Values of array type. They should all be the same type.
-    ValueList array_value = 16;
+    ValueList array_value = 11;
   }
+
+  // Type of array element. Only set if value is an array.
+  optional google.spanner.v1.Type array_type = 12;
 }
 
 message KeyRange {

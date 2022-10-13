@@ -1932,6 +1932,8 @@ public class CloudClientExecutor extends CloudExecutor {
                     }
                   }
                   value.setArrayValue(builder.build());
+                  value.setArrayType(
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.BOOL).build());
                 }
                 break;
               case FLOAT64:
@@ -1949,6 +1951,8 @@ public class CloudClientExecutor extends CloudExecutor {
                     }
                   }
                   value.setArrayValue(builder.build());
+                  value.setArrayType(
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.FLOAT64).build());
                 }
                 break;
               case INT64:
@@ -1966,6 +1970,8 @@ public class CloudClientExecutor extends CloudExecutor {
                     }
                   }
                   value.setArrayValue(builder.build());
+                  value.setArrayType(
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.INT64).build());
                 }
                 break;
               case STRING:
@@ -1983,6 +1989,8 @@ public class CloudClientExecutor extends CloudExecutor {
                     }
                   }
                   value.setArrayValue(builder.build());
+                  value.setArrayType(
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.STRING).build());
                 }
                 break;
               case BYTES:
@@ -2003,6 +2011,8 @@ public class CloudClientExecutor extends CloudExecutor {
                     }
                   }
                   value.setArrayValue(builder.build());
+                  value.setArrayType(
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.BYTES).build());
                 }
                 break;
               case DATE:
@@ -2020,6 +2030,8 @@ public class CloudClientExecutor extends CloudExecutor {
                     }
                   }
                   value.setArrayValue(builder.build());
+                  value.setArrayType(
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.DATE).build());
                 }
                 break;
               case TIMESTAMP:
@@ -2038,6 +2050,8 @@ public class CloudClientExecutor extends CloudExecutor {
                     }
                   }
                   value.setArrayValue(builder.build());
+                  value.setArrayType(
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.TIMESTAMP).build());
                 }
                 break;
               case NUMERIC:
@@ -2058,6 +2072,8 @@ public class CloudClientExecutor extends CloudExecutor {
                     }
                   }
                   value.setArrayValue(builder.build());
+                  value.setArrayType(
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.NUMERIC).build());
                 }
                 break;
               case JSON:
@@ -2075,6 +2091,8 @@ public class CloudClientExecutor extends CloudExecutor {
                     }
                   }
                   value.setArrayValue(builder.build());
+                  value.setArrayType(
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.JSON).build());
                 }
                 break;
               default:
