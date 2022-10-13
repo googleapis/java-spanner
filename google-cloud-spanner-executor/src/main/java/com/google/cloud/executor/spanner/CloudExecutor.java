@@ -43,9 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-/**
- * Superclass of cloud Java Client implementations for cloud requests.
- */
+/** Superclass of cloud Java Client implementations for cloud requests. */
 public abstract class CloudExecutor {
 
   private static final Logger LOGGER = Logger.getLogger(CloudExecutor.class.getName());
@@ -170,8 +168,7 @@ public abstract class CloudExecutor {
     private static final int MAX_ROWS_PER_BATCH = 100;
 
     public OutcomeSender(
-        int actionId,
-        StreamObserver<SpannerAsyncActionResponse> responseObserver) {
+        int actionId, StreamObserver<SpannerAsyncActionResponse> responseObserver) {
       this.actionId = actionId;
       this.responseObserver = responseObserver;
       this.index = null;
@@ -297,9 +294,7 @@ public abstract class CloudExecutor {
                 .build();
 
         responseObserver.onNext(result);
-        LOGGER.log(
-            Level.INFO,
-            String.format("Sent result %s actionId %s", outcome, actionId));
+        LOGGER.log(Level.INFO, String.format("Sent result %s actionId %s", outcome, actionId));
       } catch (SpannerException e) {
         LOGGER.log(Level.SEVERE, "Failed to send outcome with error: " + e.getMessage(), e);
         return toStatus(e);
@@ -315,7 +310,38 @@ public abstract class CloudExecutor {
 
   /** Map Cloud ErrorCode to Status. */
   protected Status toStatus(SpannerException e) {
-    return Status.fromThrowable(e);
+    switch (e.getErrorCode()) {
+      case INVALID_ARGUMENT:
+        return Status.fromCode(Status.INVALID_ARGUMENT.getCode()).withDescription(e.getMessage());
+      case ABORTED:
+        return Status.fromCode(Status.ABORTED.getCode()).withDescription(e.getMessage());
+      case ALREADY_EXISTS:
+        return Status.fromCode(Status.ALREADY_EXISTS.getCode()).withDescription(e.getMessage());
+      case CANCELLED:
+        return Status.fromCode(Status.CANCELLED.getCode()).withDescription(e.getMessage());
+      case INTERNAL:
+        return Status.fromCode(Status.INTERNAL.getCode()).withDescription(e.getMessage());
+      case FAILED_PRECONDITION:
+        return Status.fromCode(Status.FAILED_PRECONDITION.getCode())
+            .withDescription(e.getMessage());
+      case NOT_FOUND:
+        return Status.fromCode(Status.NOT_FOUND.getCode()).withDescription(e.getMessage());
+      case DEADLINE_EXCEEDED:
+        return Status.fromCode(Status.DEADLINE_EXCEEDED.getCode()).withDescription(e.getMessage());
+      case RESOURCE_EXHAUSTED:
+        return Status.fromCode(Status.RESOURCE_EXHAUSTED.getCode()).withDescription(e.getMessage());
+      case OUT_OF_RANGE:
+        return Status.fromCode(Status.OUT_OF_RANGE.getCode()).withDescription(e.getMessage());
+      case UNAUTHENTICATED:
+        return Status.fromCode(Status.UNAUTHENTICATED.getCode()).withDescription(e.getMessage());
+      case UNIMPLEMENTED:
+        return Status.fromCode(Status.UNIMPLEMENTED.getCode()).withDescription(e.getMessage());
+      case UNKNOWN:
+        return Status.fromCode(Status.UNKNOWN.getCode()).withDescription(e.getMessage());
+      default:
+        return Status.fromCode(Status.UNKNOWN.getCode())
+            .withDescription("Unsupported Spanner error code: " + e.getErrorCode());
+    }
   }
 
   /** Convert a Status to a Status Proto. */
