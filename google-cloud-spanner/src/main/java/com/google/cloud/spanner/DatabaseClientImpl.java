@@ -28,6 +28,7 @@ import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
+import javax.annotation.Nullable;
 
 class DatabaseClientImpl implements DatabaseClient {
   private static final String READ_WRITE_TRANSACTION = "CloudSpanner.ReadWriteTransaction";
@@ -56,6 +57,12 @@ class DatabaseClientImpl implements DatabaseClient {
   @Override
   public Dialect getDialect() {
     return pool.getDialect();
+  }
+
+  @Override
+  @Nullable
+  public String getDatabaseRole() {
+    return pool.getDatabaseRole();
   }
 
   @Override

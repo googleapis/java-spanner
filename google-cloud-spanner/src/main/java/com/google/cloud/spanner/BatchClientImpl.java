@@ -33,6 +33,7 @@ import com.google.spanner.v1.TransactionSelector;
 import io.opencensus.trace.Tracing;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 /** Default implementation for Batch Client interface. */
 public class BatchClientImpl implements BatchClient {
@@ -40,6 +41,12 @@ public class BatchClientImpl implements BatchClient {
 
   BatchClientImpl(SessionClient sessionClient) {
     this.sessionClient = checkNotNull(sessionClient);
+  }
+
+  @Override
+  @Nullable
+  public String getDatabaseRole() {
+    return this.sessionClient.getSpanner().getOptions().getDatabaseRole();
   }
 
   @Override

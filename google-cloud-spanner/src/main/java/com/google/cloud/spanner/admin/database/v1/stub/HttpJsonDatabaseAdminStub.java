@@ -165,7 +165,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearParent().build()))
+                                  .toBody("*", request.toBuilder().clearParent().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()
@@ -237,7 +237,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearDatabase().build()))
+                                  .toBody("*", request.toBuilder().clearDatabase().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()
@@ -344,7 +344,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearResource().build()))
+                                  .toBody("*", request.toBuilder().clearResource().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Policy>newBuilder()
@@ -382,7 +382,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearResource().build()))
+                                  .toBody("*", request.toBuilder().clearResource().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Policy>newBuilder()
@@ -422,7 +422,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearResource().build()))
+                                  .toBody("*", request.toBuilder().clearResource().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<TestIamPermissionsResponse>newBuilder()
@@ -460,7 +460,8 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                           })
                       .setRequestBodyExtractor(
                           request ->
-                              ProtoRestSerializer.create().toBody("backup", request.getBackup()))
+                              ProtoRestSerializer.create()
+                                  .toBody("backup", request.getBackup(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()
@@ -499,7 +500,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearParent().build()))
+                                  .toBody("*", request.toBuilder().clearParent().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()
@@ -571,7 +572,8 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                           })
                       .setRequestBodyExtractor(
                           request ->
-                              ProtoRestSerializer.create().toBody("backup", request.getBackup()))
+                              ProtoRestSerializer.create()
+                                  .toBody("backup", request.getBackup(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Backup>newBuilder()
@@ -676,7 +678,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearParent().build()))
+                                  .toBody("*", request.toBuilder().clearParent().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()

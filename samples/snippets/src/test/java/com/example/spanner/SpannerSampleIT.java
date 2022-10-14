@@ -126,7 +126,7 @@ public class SpannerSampleIT {
             .iterateAll()) {
       if ((now.getSeconds() - instance.getCreateTime().getSeconds())
           > STALE_INSTANCE_THRESHOLD_SECS) {
-        deleteAllBackups(instanceId);
+        deleteAllBackups(instance.getId().getInstance());
         instance.delete();
       }
     }

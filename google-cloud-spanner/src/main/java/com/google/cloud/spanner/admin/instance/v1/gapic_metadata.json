@@ -13,8 +13,14 @@
             "CreateInstance": {
               "methods": ["createInstanceAsync", "createInstanceAsync", "createInstanceAsync", "createInstanceOperationCallable", "createInstanceCallable"]
             },
+            "CreateInstanceConfig": {
+              "methods": ["createInstanceConfigAsync", "createInstanceConfigAsync", "createInstanceConfigAsync", "createInstanceConfigOperationCallable", "createInstanceConfigCallable"]
+            },
             "DeleteInstance": {
               "methods": ["deleteInstance", "deleteInstance", "deleteInstance", "deleteInstanceCallable"]
+            },
+            "DeleteInstanceConfig": {
+              "methods": ["deleteInstanceConfig", "deleteInstanceConfig", "deleteInstanceConfig", "deleteInstanceConfigCallable"]
             },
             "GetIamPolicy": {
               "methods": ["getIamPolicy", "getIamPolicy", "getIamPolicy", "getIamPolicyCallable"]
@@ -24,6 +30,9 @@
             },
             "GetInstanceConfig": {
               "methods": ["getInstanceConfig", "getInstanceConfig", "getInstanceConfig", "getInstanceConfigCallable"]
+            },
+            "ListInstanceConfigOperations": {
+              "methods": ["listInstanceConfigOperations", "listInstanceConfigOperations", "listInstanceConfigOperations", "listInstanceConfigOperationsPagedCallable", "listInstanceConfigOperationsCallable"]
             },
             "ListInstanceConfigs": {
               "methods": ["listInstanceConfigs", "listInstanceConfigs", "listInstanceConfigs", "listInstanceConfigsPagedCallable", "listInstanceConfigsCallable"]
@@ -39,6 +48,9 @@
             },
             "UpdateInstance": {
               "methods": ["updateInstanceAsync", "updateInstanceAsync", "updateInstanceOperationCallable", "updateInstanceCallable"]
+            },
+            "UpdateInstanceConfig": {
+              "methods": ["updateInstanceConfigAsync", "updateInstanceConfigAsync", "updateInstanceConfigOperationCallable", "updateInstanceConfigCallable"]
             }
           }
         }

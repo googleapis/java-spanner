@@ -101,7 +101,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearDatabase().build()))
+                                  .toBody("*", request.toBuilder().clearDatabase().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Session>newBuilder()
@@ -137,7 +137,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearDatabase().build()))
+                                  .toBody("*", request.toBuilder().clearDatabase().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<BatchCreateSessionsResponse>newBuilder()
@@ -274,7 +274,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearSession().build()))
+                                  .toBody("*", request.toBuilder().clearSession().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<ResultSet>newBuilder()
@@ -310,7 +310,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearSession().build()))
+                                  .toBody("*", request.toBuilder().clearSession().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<PartialResultSet>newBuilder()
@@ -346,7 +346,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearSession().build()))
+                                  .toBody("*", request.toBuilder().clearSession().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<ExecuteBatchDmlResponse>newBuilder()
@@ -379,7 +379,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
                   .setRequestBodyExtractor(
                       request ->
                           ProtoRestSerializer.create()
-                              .toBody("*", request.toBuilder().clearSession().build()))
+                              .toBody("*", request.toBuilder().clearSession().build(), false))
                   .build())
           .setResponseParser(
               ProtoMessageResponseParser.<ResultSet>newBuilder()
@@ -415,7 +415,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearSession().build()))
+                                  .toBody("*", request.toBuilder().clearSession().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<PartialResultSet>newBuilder()
@@ -451,7 +451,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearSession().build()))
+                                  .toBody("*", request.toBuilder().clearSession().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Transaction>newBuilder()
@@ -486,7 +486,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
                   .setRequestBodyExtractor(
                       request ->
                           ProtoRestSerializer.create()
-                              .toBody("*", request.toBuilder().clearSession().build()))
+                              .toBody("*", request.toBuilder().clearSession().build(), false))
                   .build())
           .setResponseParser(
               ProtoMessageResponseParser.<CommitResponse>newBuilder()
@@ -521,7 +521,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
                   .setRequestBodyExtractor(
                       request ->
                           ProtoRestSerializer.create()
-                              .toBody("*", request.toBuilder().clearSession().build()))
+                              .toBody("*", request.toBuilder().clearSession().build(), false))
                   .build())
           .setResponseParser(
               ProtoMessageResponseParser.<Empty>newBuilder()
@@ -557,7 +557,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearSession().build()))
+                                  .toBody("*", request.toBuilder().clearSession().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<PartitionResponse>newBuilder()
@@ -593,7 +593,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearSession().build()))
+                                  .toBody("*", request.toBuilder().clearSession().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<PartitionResponse>newBuilder()

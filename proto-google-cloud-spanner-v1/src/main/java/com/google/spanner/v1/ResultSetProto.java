@@ -66,19 +66,21 @@ public final class ResultSetProto {
           + "\003(\0132\026.google.protobuf.Value\022\025\n\rchunked_v"
           + "alue\030\003 \001(\010\022\024\n\014resume_token\030\004 \001(\014\0220\n\005stat"
           + "s\030\005 \001(\0132!.google.spanner.v1.ResultSetSta"
-          + "ts\"y\n\021ResultSetMetadata\022/\n\010row_type\030\001 \001("
-          + "\0132\035.google.spanner.v1.StructType\0223\n\013tran"
-          + "saction\030\002 \001(\0132\036.google.spanner.v1.Transa"
-          + "ction\"\271\001\n\016ResultSetStats\0220\n\nquery_plan\030\001"
-          + " \001(\0132\034.google.spanner.v1.QueryPlan\022,\n\013qu"
-          + "ery_stats\030\002 \001(\0132\027.google.protobuf.Struct"
-          + "\022\031\n\017row_count_exact\030\003 \001(\003H\000\022\037\n\025row_count"
-          + "_lower_bound\030\004 \001(\003H\000B\013\n\trow_countB\267\001\n\025co"
-          + "m.google.spanner.v1B\016ResultSetProtoP\001Z8g"
-          + "oogle.golang.org/genproto/googleapis/spa"
-          + "nner/v1;spanner\370\001\001\252\002\027Google.Cloud.Spanne"
-          + "r.V1\312\002\027Google\\Cloud\\Spanner\\V1\352\002\032Google:"
-          + ":Cloud::Spanner::V1b\006proto3"
+          + "ts\"\267\001\n\021ResultSetMetadata\022/\n\010row_type\030\001 \001"
+          + "(\0132\035.google.spanner.v1.StructType\0223\n\013tra"
+          + "nsaction\030\002 \001(\0132\036.google.spanner.v1.Trans"
+          + "action\022<\n\025undeclared_parameters\030\003 \001(\0132\035."
+          + "google.spanner.v1.StructType\"\271\001\n\016ResultS"
+          + "etStats\0220\n\nquery_plan\030\001 \001(\0132\034.google.spa"
+          + "nner.v1.QueryPlan\022,\n\013query_stats\030\002 \001(\0132\027"
+          + ".google.protobuf.Struct\022\031\n\017row_count_exa"
+          + "ct\030\003 \001(\003H\000\022\037\n\025row_count_lower_bound\030\004 \001("
+          + "\003H\000B\013\n\trow_countB\267\001\n\025com.google.spanner."
+          + "v1B\016ResultSetProtoP\001Z8google.golang.org/"
+          + "genproto/googleapis/spanner/v1;spanner\370\001"
+          + "\001\252\002\027Google.Cloud.Spanner.V1\312\002\027Google\\Clo"
+          + "ud\\Spanner\\V1\352\002\032Google::Cloud::Spanner::"
+          + "V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
@@ -111,7 +113,7 @@ public final class ResultSetProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_ResultSetMetadata_descriptor,
             new java.lang.String[] {
-              "RowType", "Transaction",
+              "RowType", "Transaction", "UndeclaredParameters",
             });
     internal_static_google_spanner_v1_ResultSetStats_descriptor =
         getDescriptor().getMessageTypes().get(3);
