@@ -97,12 +97,14 @@ public abstract class ValueBinder<R> {
     return handle(Value.string(value));
   }
 
+  /** Binds to {@code Value.protoMessage(value)} */
   public R to(@Nullable AbstractMessage m) {
     return handle(Value.protoMessage(m));
   }
 
-  public R to(@Nullable ProtocolMessageEnum en) {
-    return handle(Value.protoEnum(en));
+  /** Binds to {@code Value.protoEnum(value)} */
+  public R to(@Nullable ProtocolMessageEnum value) {
+    return handle(Value.protoEnum(value));
   }
 
   /** Binds to {@code Value.bytes(value)} */

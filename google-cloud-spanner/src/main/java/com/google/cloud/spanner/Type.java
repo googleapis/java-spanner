@@ -23,7 +23,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import java.io.Serializable;
@@ -34,7 +33,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.TreeMap;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -124,10 +122,20 @@ public final class Type implements Serializable {
     return TYPE_PG_JSONB;
   }
 
+  /**
+   * To get the descriptor for the {@code PROTO} type.
+   *
+   * @param protoTypeFqn Proto full name
+   */
   public static Type proto(String protoTypeFqn) {
     return new Type(Code.PROTO, null, null, protoTypeFqn);
   }
 
+  /**
+   * To get the descriptor for the {@code ENUM} type.
+   *
+   * @param protoTypeFqn Proto ENUM full name
+   */
   public static Type protoEnum(String protoTypeFqn) {
     return new Type(Code.ENUM, null, null, protoTypeFqn);
   }
@@ -365,7 +373,7 @@ public final class Type implements Serializable {
   /**
    * Returns the full package name for elements of this {@code Proto or @code Enum} type.
    *
-   * @throws IllegalStateException if {@code code() != Code.ARRAY}
+   * @throws IllegalStateException if {@code code() != Code.PROTO or code() != Code.ENUM}
    */
   public String getProtoTypeFqn() {
     Preconditions.checkState(
