@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -958,5 +959,32 @@ public class SpannerOptionsTest {
             .build();
 
     assertEquals(numChannels, options2.getNumChannels());
+  }
+
+  @Test
+  public void checkCreatedInstanceWhenGrpcGcpExtensionDisabled() {
+    SpannerOptions options = SpannerOptions.newBuilder().setProjectId("test-project").build();
+    SpannerOptions options1 = options.toBuilder().build();
+    assertEquals(false, options.isGrpcGcpExtensionEnabled());
+    assertEquals(options.isGrpcGcpExtensionEnabled(), options1.isGrpcGcpExtensionEnabled());
+
+    Spanner spanner1 = options.getService();
+    Spanner spanner2 = options1.getService();
+
+    assertNotSame(spanner1, spanner2);
+  }
+
+  @Test
+  public void checkCreatedInstanceWhenGrpcGcpExtensionEnabled() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setProjectId("test-project").enableGrpcGcpExtension().build();
+    SpannerOptions options1 = options.toBuilder().build();
+    assertEquals(true, options.isGrpcGcpExtensionEnabled());
+    assertEquals(options.isGrpcGcpExtensionEnabled(), options1.isGrpcGcpExtensionEnabled());
+
+    Spanner spanner1 = options.getService();
+    Spanner spanner2 = options1.getService();
+
+    assertNotSame(spanner1, spanner2);
   }
 }
