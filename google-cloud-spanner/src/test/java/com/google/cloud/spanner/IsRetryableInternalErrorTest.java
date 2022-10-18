@@ -115,6 +115,18 @@ public class IsRetryableInternalErrorTest {
   }
 
   @Test
+  public void rstStreamInternalExceptionIsRetryable() {
+    final InternalException e =
+        new InternalException(
+            "INTERNAL: stream terminated by RST_STREAM.",
+            null,
+            GrpcStatusCode.of(Code.INTERNAL),
+            false);
+
+    assertThat(predicate.apply(e)).isTrue();
+  }
+
+  @Test
   public void genericInternalExceptionIsNotRetryable() {
     final InternalException e =
         new InternalException("INTERNAL: Generic.", null, GrpcStatusCode.of(Code.INTERNAL), false);
