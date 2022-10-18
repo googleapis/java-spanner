@@ -96,7 +96,6 @@ public class DmlReturningSampleIT extends SampleTestBase {
   public void removeTestData() {
     final DatabaseClient client = spanner.getDatabaseClient(databaseId);
     client.write(Collections.singletonList(Mutation.delete("Singers", KeySet.all())));
-    client.write(Collections.singleton(Mutation.delete("Albums", KeySet.all())));
   }
 
   @Test
