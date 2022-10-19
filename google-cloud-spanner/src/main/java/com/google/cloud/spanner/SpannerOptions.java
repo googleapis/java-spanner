@@ -1136,9 +1136,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     public Builder enableGrpcGcpExtension(GcpManagedChannelOptions options) {
       this.grpcGcpExtensionEnabled = true;
       this.grpcGcpOptions = options;
-      if (this.numChannels == null) {
-        this.numChannels = GRPC_GCP_ENABLED_DEFAULT_CHANNELS;
-      }
       return this;
     }
 
@@ -1173,7 +1170,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setCredentials(NoCredentials.getInstance());
       }
       if (this.numChannels == null) {
-        this.numChannels = DEFAULT_CHANNELS;
+        this.numChannels = this.grpcGcpExtensionEnabled ?
+            GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
       }
 
       return new SpannerOptions(this);
