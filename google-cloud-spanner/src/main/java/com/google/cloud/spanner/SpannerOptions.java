@@ -1170,8 +1170,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.setCredentials(NoCredentials.getInstance());
       }
       if (this.numChannels == null) {
-        this.numChannels = this.grpcGcpExtensionEnabled ?
-            GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
+        this.numChannels =
+            this.grpcGcpExtensionEnabled ? GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
       }
 
       return new SpannerOptions(this);
