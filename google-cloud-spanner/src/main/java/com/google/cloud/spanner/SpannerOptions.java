@@ -1060,7 +1060,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /**
      * Sets the compression to use for all gRPC calls. The compressor must be a valid name known in
-     * the {@link CompressorRegistry}.
+     * the {@link CompressorRegistry}. This will enable compression both from the client to the
+     * server and from the server to the client.
      *
      * <p>Supported values are:
      *
