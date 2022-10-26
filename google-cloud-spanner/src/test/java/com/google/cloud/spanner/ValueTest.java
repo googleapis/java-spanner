@@ -32,6 +32,8 @@ import static org.junit.Assert.fail;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.SingerProto.Genre;
+import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.common.base.Strings;
 import com.google.common.collect.ForwardingList;
@@ -626,6 +628,56 @@ public class ValueTest {
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
     IllegalStateException e = assertThrows(IllegalStateException.class, v::getDate);
+    assertThat(e.getMessage()).contains("null value");
+  }
+
+  @Test
+  public void protoMessage() {
+    SingerInfo singerInfo = SingerInfo.newBuilder().setSingerId(111).setGenre(Genre.FOLK).build();
+    Value v = Value.protoMessage(singerInfo);
+    assertThat(v.getType()).isEqualTo(Type.proto(SingerInfo.getDescriptor().getFullName()));
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getProtoMessage(SingerInfo.getDefaultInstance())).isEqualTo(singerInfo);
+    assertThat(v.getBytes().toByteArray()).isEqualTo(singerInfo.toByteArray());
+  }
+
+  @Test
+  public void protoMessageNull() {
+    Value v = Value.protoMessage(null, SingerInfo.getDescriptor().getFullName());
+    assertThat(v.getType()).isEqualTo(Type.proto(SingerInfo.getDescriptor().getFullName()));
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> {
+              v.getProtoMessage(SingerInfo.getDefaultInstance());
+            });
+    assertThat(e.getMessage()).contains("null value");
+  }
+
+  @Test
+  public void protoEnum() {
+    Genre genre = Genre.FOLK;
+    Value v = Value.protoEnum(genre);
+    assertThat(v.getType()).isEqualTo(Type.protoEnum(Genre.getDescriptor().getFullName()));
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getInt64()).isEqualTo(genre.getNumber());
+    assertEquals(genre, v.getProtoEnum(Genre::forNumber));
+  }
+
+  @Test
+  public void protoEnumNull() {
+    Value v = Value.protoEnum(null, Genre.getDescriptor().getFullName());
+    assertThat(v.getType()).isEqualTo(Type.protoEnum(Genre.getDescriptor().getFullName()));
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> {
+              v.getProtoEnum(Genre::forNumber);
+            });
     assertThat(e.getMessage()).contains("null value");
   }
 

@@ -32,6 +32,9 @@ import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -40,7 +43,7 @@ import java.util.Random;
  */
 public class RandomResultSetGenerator {
   private static Type[] generateTypes(Dialect dialect) {
-    return new Type[] {
+    List<Type> types = new ArrayList<Type>(Arrays.asList(
       Type.newBuilder().setCode(TypeCode.BOOL).build(),
       Type.newBuilder().setCode(TypeCode.INT64).build(),
       Type.newBuilder().setCode(TypeCode.FLOAT64).build(),
@@ -105,8 +108,17 @@ public class RandomResultSetGenerator {
       Type.newBuilder()
           .setCode(TypeCode.ARRAY)
           .setArrayElementType(Type.newBuilder().setCode(TypeCode.TIMESTAMP))
-          .build(),
-    };
+          .build()
+        ));
+
+    if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
+      types.add(Type.newBuilder().setCode(TypeCode.PROTO).setProtoTypeFqn("testProto").build());
+      types.add(Type.newBuilder().setCode(TypeCode.ENUM).setProtoTypeFqn("testEnum").build());
+    }
+
+    Type[] typeArray = new Type[types.size()];
+    typeArray = types.toArray(typeArray);
+    return typeArray;
   }
 
   private static ResultSetMetadata generateMetadata(Type[] types) {
@@ -171,6 +183,7 @@ public class RandomResultSetGenerator {
           break;
         case STRING:
         case BYTES:
+        case PROTO:
           byte[] bytes = new byte[random.nextInt(200)];
           random.nextBytes(bytes);
           builder.setStringValue(BaseEncoding.base64().encode(bytes));
@@ -199,6 +212,7 @@ public class RandomResultSetGenerator {
           }
           break;
         case INT64:
+        case ENUM:
           builder.setStringValue(String.valueOf(random.nextLong()));
           break;
         case TIMESTAMP:

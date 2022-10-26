@@ -84,6 +84,17 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
+    public <T extends ProtocolMessageEnum> T getProtoEnum(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+      return null;
+    }
+
+    @Override
+    public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m) {
+      return null;
+    }
+
+    @Override
     protected ByteArray getBytesInternal(int columnIndex) {
       return null;
     }

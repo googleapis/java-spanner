@@ -28,9 +28,12 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
+import com.google.cloud.spanner.SingerProto.Genre;
+import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,6 +55,13 @@ public class ResultSetsTest {
     BigDecimal bigDecimalVal = BigDecimal.valueOf(123, 2);
     String stringVal = "stringVal";
     String jsonVal = "{\"color\":\"red\",\"value\":\"#f00\"}";
+    SingerInfo protoMessageVal =
+        SingerInfo.newBuilder()
+            .setSingerId(111)
+            .setNationality("COUNTRY1")
+            .setGenre(Genre.FOLK)
+            .build();
+    ProtocolMessageEnum protoEnumVal = Genre.ROCK;
     String byteVal = "101";
     long usecs = 32343;
     int year = 2018;
@@ -94,6 +104,10 @@ public class ResultSetsTest {
             Type.StructField.of("byteVal", Type.bytes()),
             Type.StructField.of("timestamp", Type.timestamp()),
             Type.StructField.of("date", Type.date()),
+            Type.StructField.of(
+                "protoMessage", Type.proto(protoMessageVal.getDescriptorForType().getFullName())),
+            Type.StructField.of(
+                "protoEnum", Type.protoEnum(protoEnumVal.getDescriptorForType().getFullName())),
             Type.StructField.of("boolArray", Type.array(Type.bool())),
             Type.StructField.of("longArray", Type.array(Type.int64())),
             Type.StructField.of("doubleArray", Type.array(Type.float64())),
@@ -128,6 +142,10 @@ public class ResultSetsTest {
             .to(Timestamp.ofTimeMicroseconds(usecs))
             .set("date")
             .to(Date.fromYearMonthDay(year, month, day))
+            .set("protoMessage")
+            .to(protoMessageVal)
+            .set("protoEnum")
+            .to(protoEnumVal)
             .set("boolArray")
             .to(Value.boolArray(boolArray))
             .set("longArray")
@@ -173,6 +191,10 @@ public class ResultSetsTest {
             .to(Timestamp.ofTimeMicroseconds(usecs))
             .set("date")
             .to(Date.fromYearMonthDay(year, month, day))
+            .set("protoMessage")
+            .to(protoMessageVal)
+            .set("protoEnum")
+            .to(protoEnumVal)
             .set("boolArray")
             .to(Value.boolArray(boolArray))
             .set("longArray")
@@ -259,6 +281,18 @@ public class ResultSetsTest {
         .isEqualTo(Value.date(Date.fromYearMonthDay(year, month, day)));
     assertThat(rs.getDate("date")).isEqualTo(Date.fromYearMonthDay(year, month, day));
     assertThat(rs.getValue("date")).isEqualTo(Value.date(Date.fromYearMonthDay(year, month, day)));
+
+    assertEquals(protoMessageVal, rs.getProtoMessage(columnIndex, SingerInfo.getDefaultInstance()));
+    assertEquals(Value.protoMessage(protoMessageVal), rs.getValue(columnIndex++));
+    assertEquals(
+        protoMessageVal, rs.getProtoMessage("protoMessage", SingerInfo.getDefaultInstance()));
+    assertEquals(Value.protoMessage(protoMessageVal), rs.getValue("protoMessage"));
+
+    assertEquals(protoEnumVal, rs.getProtoEnum(columnIndex, Genre::forNumber));
+    assertEquals(Value.protoEnum(protoEnumVal), rs.getValue(columnIndex++));
+    assertEquals(protoEnumVal, rs.getProtoEnum("protoEnum", Genre::forNumber));
+    assertEquals(Value.protoEnum(protoEnumVal), rs.getValue("protoEnum"));
+
     assertThat(rs.getBooleanArray(columnIndex)).isEqualTo(boolArray);
     assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.boolArray(boolArray));
     assertThat(rs.getBooleanArray("boolArray")).isEqualTo(boolArray);

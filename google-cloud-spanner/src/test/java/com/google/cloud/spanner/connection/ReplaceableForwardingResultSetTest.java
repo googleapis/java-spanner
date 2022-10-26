@@ -26,16 +26,21 @@ import static org.mockito.Mockito.when;
 
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
+import com.google.cloud.spanner.SingerProto.Genre;
+import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ProtocolMessageEnum;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -161,7 +166,7 @@ public class ReplaceableForwardingResultSetTest {
         boolean exception = false;
         int numberOfParameters = method.getParameterTypes().length;
         Class<?> firstParameterType = null;
-        if (numberOfParameters == 1) {
+        if (numberOfParameters >= 1) {
           firstParameterType = method.getParameterTypes()[0];
         }
         try {
@@ -174,6 +179,31 @@ public class ReplaceableForwardingResultSetTest {
                 method.invoke(subject, "test");
               } else if (firstParameterType == int.class) {
                 method.invoke(subject, 0);
+              } else {
+                fail("unknown parameter type");
+              }
+              break;
+            case 2:
+              Class<?> secondParameterType = method.getParameterTypes()[1];
+              Object firstArgument = null, secondArgument = null;
+
+              if (firstParameterType == String.class) {
+                firstArgument = "test";
+              }
+              else if (firstParameterType == int.class) {
+                firstArgument = 0;
+              }
+
+              if (secondParameterType == Function.class) {
+                Function<Long, ProtocolMessageEnum> lambdaFunction = (val) -> Genre.forNumber(
+                    val.intValue());
+                secondArgument = lambdaFunction;
+              } else if (secondParameterType == AbstractMessage.class) {
+                secondArgument = SingerInfo.getDefaultInstance();
+              }
+
+              if (firstArgument != null && secondArgument!=null) {
+                method.invoke(subject, firstArgument, secondArgument);
               } else {
                 fail("unknown parameter type");
               }
@@ -292,6 +322,17 @@ public class ReplaceableForwardingResultSetTest {
       verify(delegate).getJsonList(2);
       subject.getJsonList("test2");
       verify(delegate).getJsonList("test2");
+
+      subject.getProtoMessage(0, SingerInfo.getDefaultInstance());
+      verify(delegate).getProtoMessage(0, SingerInfo.getDefaultInstance());
+      subject.getProtoMessage("test0", SingerInfo.getDefaultInstance());
+      verify(delegate).getProtoMessage("test0", SingerInfo.getDefaultInstance());
+
+      Function<Integer, ProtocolMessageEnum> lambdaFunction = Genre::forNumber;
+      subject.getProtoEnum(0, lambdaFunction);
+      verify(delegate).getProtoEnum(0, lambdaFunction);
+      subject.getProtoEnum("test0", lambdaFunction);
+      verify(delegate).getProtoEnum("test0", lambdaFunction);
 
       subject.getStructList(0);
       subject.getStructList("test0");

@@ -29,6 +29,8 @@ import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
+import com.google.cloud.spanner.SingerProto.Genre;
+import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Struct.Builder;
@@ -65,6 +67,10 @@ public class ChecksumResultSetTest {
           .to(Value.json("{\"color\":\"red\",\"value\":\"#ff0\"}"))
           .set("pgJsonbVal")
           .to(Value.pgJsonb("{\"color\":\"red\",\"value\":\"#00f\"}"))
+          .set("protoMessageVal")
+          .to(SingerInfo.newBuilder().setSingerId(23).build())
+          .set("protoEnumVal")
+          .to(Genre.JAZZ)
           .set("byteVal")
           .to(Value.bytes(ByteArray.copyFrom("bytes".getBytes(StandardCharsets.UTF_8))))
           .set("timestamp")
@@ -118,6 +124,10 @@ public class ChecksumResultSetTest {
             Type.StructField.of("stringVal", Type.string()),
             Type.StructField.of("jsonVal", Type.json()),
             Type.StructField.of("pgJsonbVal", Type.pgJsonb()),
+            Type.StructField.of(
+                "protoMessageVal", Type.proto(SingerInfo.getDescriptor().getFullName())),
+            Type.StructField.of(
+                "protoEnumVal", Type.protoEnum(Genre.getDescriptor().getFullName())),
             Type.StructField.of("byteVal", Type.bytes()),
             Type.StructField.of("timestamp", Type.timestamp()),
             Type.StructField.of("date", Type.date()),
@@ -150,6 +160,10 @@ public class ChecksumResultSetTest {
             .to(Value.json("{\"color\":\"red\",\"value\":\"#f00\"}"))
             .set("pgJsonbVal")
             .to(Value.pgJsonb("{\"color\":\"red\",\"value\":\"#f00\"}"))
+            .set("protoMessageVal")
+            .to(SingerInfo.newBuilder().setSingerId(98).setNationality("C1").build())
+            .set("protoEnumVal")
+            .to(Genre.POP)
             .set("byteVal")
             .to(Value.bytes(ByteArray.copyFrom("test".getBytes(StandardCharsets.UTF_8))))
             .set("timestamp")
@@ -211,6 +225,10 @@ public class ChecksumResultSetTest {
             .to(Value.json(null))
             .set("pgJsonbVal")
             .to(Value.pgJsonb(null))
+            .set("protoMessageVal")
+            .to(Value.protoMessage(null, SingerInfo.getDescriptor().getFullName()))
+            .set("protoEnumVal")
+            .to(Value.protoEnum(null, Genre.getDescriptor().getFullName()))
             .set("byteVal")
             .to((ByteArray) null)
             .set("timestamp")
