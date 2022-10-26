@@ -142,14 +142,14 @@ public abstract class AbstractStructReader implements StructReader {
 
   @Override
   public long getLong(int columnIndex) {
-    checkNonNullOfType(columnIndex, Type.int64(), columnIndex);
+    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnIndex);
     return getLongInternal(columnIndex);
   }
 
   @Override
   public long getLong(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.int64(), columnName);
+    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnName);
     return getLongInternal(columnIndex);
   }
 
@@ -225,14 +225,14 @@ public abstract class AbstractStructReader implements StructReader {
 
   @Override
   public ByteArray getBytes(int columnIndex) {
-    checkNonNullOfType(columnIndex, Type.bytes(), columnIndex);
+    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnIndex);
     return getBytesInternal(columnIndex);
   }
 
   @Override
   public ByteArray getBytes(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.bytes(), columnName);
+    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnName);
     return getBytesInternal(columnIndex);
   }
 
@@ -265,7 +265,7 @@ public abstract class AbstractStructReader implements StructReader {
   @Override
   public <T extends ProtocolMessageEnum> T getProtoEnum(
       int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
-    checkNonNullOfCode(columnIndex, Code.ENUM, columnIndex);
+    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnIndex);
     return getProtoEnumInternal(columnIndex, method);
   }
 
@@ -273,20 +273,20 @@ public abstract class AbstractStructReader implements StructReader {
   public <T extends ProtocolMessageEnum> T getProtoEnum(
       String columnName, Function<Integer, ProtocolMessageEnum> method) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfCode(columnIndex, Code.ENUM, columnName);
+    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnName);
     return getProtoEnumInternal(columnIndex, method);
   }
 
   @Override
   public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m) {
-    checkNonNullOfCode(columnIndex, Code.PROTO, columnIndex);
+    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnIndex);
     return getProtoMessageInternal(columnIndex, m);
   }
 
   @Override
   public <T extends AbstractMessage> T getProtoMessage(String columnName, T m) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfCode(columnIndex, Code.PROTO, columnName);
+    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnName);
     return getProtoMessageInternal(columnIndex, m);
   }
 
@@ -518,14 +518,15 @@ public abstract class AbstractStructReader implements StructReader {
     checkNonNull(columnIndex, columnNameForError);
   }
 
-  /** Checks if the value at {@code columnIndex} is of {@code expectedCode} */
-  private void checkNonNullOfCode(int columnIndex, Code expectedCode, Object columnNameForError) {
+  /** Checks if the value at {@code columnIndex} is one of {@code expectedCode} */
+  private void checkNonNullOfCodes(
+      int columnIndex, List<Code> expectedCodes, Object columnNameForError) {
     Code actualCode = getColumnType(columnIndex).getCode();
     checkState(
-        expectedCode.equals(actualCode),
-        "Column %s is not of correct type: expected %s but was %s",
+        expectedCodes.contains(actualCode),
+        "Column %s is not of correct type code: expected one of [%s] but was %s",
         columnNameForError,
-        expectedCode,
+        expectedCodes,
         actualCode);
     checkNonNull(columnIndex, columnNameForError);
   }
