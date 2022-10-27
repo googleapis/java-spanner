@@ -749,6 +749,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return Value.bool(isNull ? null : getBooleanInternal(columnIndex));
         case INT64:
           return Value.int64(isNull ? null : getLongInternal(columnIndex));
+        case ENUM:
+          return Value.protoEnum(getLongInternal(columnIndex), columnType.getProtoTypeFqn());
         case NUMERIC:
           return Value.numeric(isNull ? null : getBigDecimalInternal(columnIndex));
         case PG_NUMERIC:
@@ -763,6 +765,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return Value.pgJsonb(isNull ? null : getPgJsonbInternal(columnIndex));
         case BYTES:
           return Value.bytes(isNull ? null : getBytesInternal(columnIndex));
+        case PROTO:
+          return Value.protoMessage(getBytesInternal(columnIndex), columnType.getProtoTypeFqn());
         case TIMESTAMP:
           return Value.timestamp(isNull ? null : getTimestampInternal(columnIndex));
         case DATE:

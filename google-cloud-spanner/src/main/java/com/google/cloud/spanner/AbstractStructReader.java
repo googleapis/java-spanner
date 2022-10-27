@@ -521,13 +521,13 @@ public abstract class AbstractStructReader implements StructReader {
   /** Checks if the value at {@code columnIndex} is one of {@code expectedCode} */
   private void checkNonNullOfCodes(
       int columnIndex, List<Code> expectedCodes, Object columnNameForError) {
-    Code actualCode = getColumnType(columnIndex).getCode();
+    Type actualType = getColumnType(columnIndex);
     checkState(
-        expectedCodes.contains(actualCode),
+        expectedCodes.contains(actualType.getCode()),
         "Column %s is not of correct type code: expected one of [%s] but was %s",
         columnNameForError,
         expectedCodes,
-        actualCode);
+        actualType);
     checkNonNull(columnIndex, columnNameForError);
   }
 
