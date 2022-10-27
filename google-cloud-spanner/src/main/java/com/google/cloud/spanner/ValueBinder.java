@@ -98,13 +98,28 @@ public abstract class ValueBinder<R> {
   }
 
   /** Binds to {@code Value.protoMessage(value)} */
-  public R to(@Nullable AbstractMessage m) {
+  public R to(AbstractMessage m) {
     return handle(Value.protoMessage(m));
   }
 
+  /** Binds to {@code Value.protoMessage(value, protoType)} */
+  public R to(@Nullable ByteArray v, String protoTypFqn) {
+    return handle(Value.protoMessage(v, protoTypFqn));
+  }
+
   /** Binds to {@code Value.protoEnum(value)} */
-  public R to(@Nullable ProtocolMessageEnum value) {
+  public R to(ProtocolMessageEnum value) {
     return handle(Value.protoEnum(value));
+  }
+
+  /** Binds to {@code Value.protoEnum(value, protoType)} */
+  public R to(@Nullable Long v, String protoTypFqn) {
+    return handle(Value.protoEnum(v, protoTypFqn));
+  }
+
+  /** Binds to {@code Value.protoEnum(value, protoType)} */
+  public R to(long v, String protoTypFqn) {
+    return handle(Value.protoEnum(v, protoTypFqn));
   }
 
   /** Binds to {@code Value.bytes(value)} */

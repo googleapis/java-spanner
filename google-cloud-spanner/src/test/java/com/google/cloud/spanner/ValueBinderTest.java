@@ -24,6 +24,10 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.SingerProto.Genre;
+import com.google.cloud.spanner.SingerProto.SingerInfo;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ProtocolMessageEnum;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -40,7 +44,10 @@ public class ValueBinderTest {
   private static final String JSON_METHOD_NAME = "json";
   private static final String PG_JSONB_METHOD_NAME = "pgJsonb";
   private static final String PG_NUMERIC_METHOD_NAME = "pgNumeric";
+  private static final String PROTO_MESSAGE_METHOD_NAME = "protoMessage";
+  private static final String PROTO_ENUM_METHOD_NAME = "protoEnum";
   public static final String DEFAULT_PG_NUMERIC = "1.23";
+
 
   private Value lastValue;
   private int lastReturnValue;
@@ -121,7 +128,9 @@ public class ValueBinderTest {
         }
       } else if (binderMethod.getParameterTypes().length == 1) {
         // Test unary null.
-        if (!binderMethod.getParameterTypes()[0].isPrimitive()) {
+        if (!binderMethod.getParameterTypes()[0].isPrimitive()
+            && (!method.getName().equalsIgnoreCase(PROTO_MESSAGE_METHOD_NAME)
+            && !method.getName().equalsIgnoreCase(PROTO_ENUM_METHOD_NAME))) {
           if (method.getName().equalsIgnoreCase(JSON_METHOD_NAME)) {
             // Special case for json to change the method from ValueBinder.to(String) to
             // ValueBinder.to(Value)
@@ -139,7 +148,6 @@ public class ValueBinderTest {
           }
           Value expected = (Value) method.invoke(Value.class, (Object) null);
           assertThat(lastValue).isEqualTo(expected);
-
           assertThat(binder.to(expected)).isEqualTo(lastReturnValue);
           assertThat(lastValue).isEqualTo(expected);
         }
@@ -169,7 +177,21 @@ public class ValueBinderTest {
 
         assertThat(binder.to(expected)).isEqualTo(lastReturnValue);
         assertThat(lastValue).isEqualTo(expected);
-      } else {
+      } else if (binderMethod.getParameterTypes().length == 2
+          && (method.getName().equalsIgnoreCase(PROTO_MESSAGE_METHOD_NAME)
+          || method.getName().equalsIgnoreCase(PROTO_ENUM_METHOD_NAME))) {
+        // Test unary null.
+        Object firstArgument = null;
+        if (binderMethod.getParameterTypes()[0].isPrimitive()) {
+          firstArgument = 0;
+        }
+        assertThat(binderMethod.invoke(binder, firstArgument, "com.proto.example")).isEqualTo(lastReturnValue);
+        Value expected = (Value) method.invoke(Value.class, firstArgument, "com.proto.example");
+        assertThat(lastValue).isEqualTo(expected);
+        assertThat(binder.to(expected)).isEqualTo(lastReturnValue);
+        assertThat(lastValue).isEqualTo(expected);
+      }
+      else {
         // Array slice method: depends on DefaultValues returning arrays of length 2.
         assertThat(binderMethod.getParameterTypes().length).isEqualTo(3);
         assertThat(binderMethod.getParameterTypes()[1]).isEqualTo(int.class);
@@ -232,6 +254,14 @@ public class ValueBinderTest {
 
     public static BigDecimal defaultBigDecimal() {
       return BigDecimal.valueOf(123, 2);
+    }
+
+    public static AbstractMessage defaultAbstractMessage() {
+      return SingerInfo.newBuilder().setSingerId(323).build();
+    }
+
+    public static ProtocolMessageEnum defaultProtocolMessageEnum() {
+      return Genre.FOLK;
     }
 
     public static String defaultString() {
