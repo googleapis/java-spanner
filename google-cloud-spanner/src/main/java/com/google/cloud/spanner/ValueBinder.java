@@ -20,6 +20,8 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
 import javax.annotation.Nullable;
@@ -107,6 +109,11 @@ public abstract class ValueBinder<R> {
     return handle(Value.protoMessage(v, protoTypFqn));
   }
 
+  /** Binds to {@code Value.protoMessage(value, descriptor)} */
+  public R to(@Nullable ByteArray v, Descriptor descriptor) {
+    return handle(Value.protoMessage(v, descriptor));
+  }
+
   /** Binds to {@code Value.protoEnum(value)} */
   public R to(ProtocolMessageEnum value) {
     return handle(Value.protoEnum(value));
@@ -115,6 +122,11 @@ public abstract class ValueBinder<R> {
   /** Binds to {@code Value.protoEnum(value, protoType)} */
   public R to(@Nullable Long v, String protoTypFqn) {
     return handle(Value.protoEnum(v, protoTypFqn));
+  }
+
+  /** Binds to {@code Value.protoEnum(value, enumDescriptor)} */
+  public R to(@Nullable Long v, EnumDescriptor enumDescriptor) {
+    return handle(Value.protoEnum(v, enumDescriptor));
   }
 
   /** Binds to {@code Value.protoEnum(value, protoType)} */

@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package com.singer;
+package spanner.examples.music;
 
 option java_package = "com.google.cloud.spanner";
 option java_outer_classname = "SingerProto";

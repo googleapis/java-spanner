@@ -148,20 +148,19 @@ public class DirectExecuteResultSetTest {
 
               if (firstParameterType == String.class) {
                 firstArgument = "test";
-              }
-              else if (firstParameterType == int.class) {
+              } else if (firstParameterType == int.class) {
                 firstArgument = 0;
               }
 
               if (secondParameterType == Function.class) {
-                Function<Long, ProtocolMessageEnum> lambdaFunction = (val) -> Genre.forNumber(
-                    val.intValue());
+                Function<Long, ProtocolMessageEnum> lambdaFunction =
+                    (val) -> Genre.forNumber(val.intValue());
                 secondArgument = lambdaFunction;
               } else if (secondParameterType == AbstractMessage.class) {
                 secondArgument = SingerInfo.getDefaultInstance();
               }
 
-              if (firstArgument != null && secondArgument!=null) {
+              if (firstArgument != null && secondArgument != null) {
                 method.invoke(subject, firstArgument, secondArgument);
               } else {
                 fail("unknown parameter type");

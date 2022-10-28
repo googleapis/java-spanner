@@ -27,6 +27,8 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.SingerProto.Genre;
 import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -47,7 +49,6 @@ public class ValueBinderTest {
   private static final String PROTO_MESSAGE_METHOD_NAME = "protoMessage";
   private static final String PROTO_ENUM_METHOD_NAME = "protoEnum";
   public static final String DEFAULT_PG_NUMERIC = "1.23";
-
 
   private Value lastValue;
   private int lastReturnValue;
@@ -130,7 +131,7 @@ public class ValueBinderTest {
         // Test unary null.
         if (!binderMethod.getParameterTypes()[0].isPrimitive()
             && (!method.getName().equalsIgnoreCase(PROTO_MESSAGE_METHOD_NAME)
-            && !method.getName().equalsIgnoreCase(PROTO_ENUM_METHOD_NAME))) {
+                && !method.getName().equalsIgnoreCase(PROTO_ENUM_METHOD_NAME))) {
           if (method.getName().equalsIgnoreCase(JSON_METHOD_NAME)) {
             // Special case for json to change the method from ValueBinder.to(String) to
             // ValueBinder.to(Value)
@@ -179,19 +180,26 @@ public class ValueBinderTest {
         assertThat(lastValue).isEqualTo(expected);
       } else if (binderMethod.getParameterTypes().length == 2
           && (method.getName().equalsIgnoreCase(PROTO_MESSAGE_METHOD_NAME)
-          || method.getName().equalsIgnoreCase(PROTO_ENUM_METHOD_NAME))) {
+              || method.getName().equalsIgnoreCase(PROTO_ENUM_METHOD_NAME))) {
         // Test unary null.
         Object firstArgument = null;
         if (binderMethod.getParameterTypes()[0].isPrimitive()) {
           firstArgument = 0;
         }
-        assertThat(binderMethod.invoke(binder, firstArgument, "com.proto.example")).isEqualTo(lastReturnValue);
-        Value expected = (Value) method.invoke(Value.class, firstArgument, "com.proto.example");
+
+        Object secondArgument = "com.proto.example";
+        if (binderMethod.getParameterTypes()[1] == Descriptor.class) {
+          secondArgument = SingerInfo.getDescriptor();
+        } else if (binderMethod.getParameterTypes()[1] == EnumDescriptor.class) {
+          secondArgument = Genre.getDescriptor();
+        }
+        assertThat(binderMethod.invoke(binder, firstArgument, secondArgument))
+            .isEqualTo(lastReturnValue);
+        Value expected = (Value) method.invoke(Value.class, firstArgument, secondArgument);
         assertThat(lastValue).isEqualTo(expected);
         assertThat(binder.to(expected)).isEqualTo(lastReturnValue);
         assertThat(lastValue).isEqualTo(expected);
-      }
-      else {
+      } else {
         // Array slice method: depends on DefaultValues returning arrays of length 2.
         assertThat(binderMethod.getParameterTypes().length).isEqualTo(3);
         assertThat(binderMethod.getParameterTypes()[1]).isEqualTo(int.class);

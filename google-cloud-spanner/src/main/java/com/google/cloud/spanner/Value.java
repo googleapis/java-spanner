@@ -25,6 +25,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
@@ -243,6 +245,18 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Return a {@code PROTO} value
+   *
+   * @param v Serialized Proto Array, which may be null.
+   * @param descriptor Proto Type Descriptor, use static method {@code
+   *     MESSAGE.getDescriptorForType()}.
+   */
+  public static Value protoMessage(@Nullable ByteArray v, Descriptor descriptor) {
+    Preconditions.checkNotNull(descriptor, "descriptor can't be null.");
+    return new ProtoMessageImpl(v == null, v, descriptor.getFullName());
+  }
+
+  /**
    * Return a {@code ENUM} value.
    *
    * @param v Proto Enum, which may be null.
@@ -258,8 +272,20 @@ public abstract class Value implements Serializable {
    * @param v Enum non-primitive Integer constant.
    * @param protoTypFqn Fully qualified name of proto representing the enum definition.
    */
-  public static Value protoEnum(Long v, String protoTypFqn) {
+  public static Value protoEnum(@Nullable Long v, String protoTypFqn) {
     return new ProtoEnumImpl(v == null, v, protoTypFqn);
+  }
+
+  /**
+   * Return a {@code ENUM} value.
+   *
+   * @param v Enum non-primitive Integer constant.
+   * @param enumDescriptor Enum Type Descriptor, use static method {@code
+   *     ENUM.getDescriptorForType()}.
+   */
+  public static Value protoEnum(@Nullable Long v, EnumDescriptor enumDescriptor) {
+    Preconditions.checkNotNull(enumDescriptor, "descriptor can't be null.");
+    return new ProtoEnumImpl(v == null, v, enumDescriptor.getFullName());
   }
 
   /**
