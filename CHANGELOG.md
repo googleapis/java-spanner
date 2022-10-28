@@ -1,5 +1,31 @@
 # Changelog
 
+## [6.32.0](https://github.com/googleapis/java-spanner/compare/v6.31.2...v6.32.0) (2022-10-27)
+
+
+### Features
+
+* Enable client to server compression ([#2117](https://github.com/googleapis/java-spanner/issues/2117)) ([50f8425](https://github.com/googleapis/java-spanner/commit/50f8425fe9e1db16ed060337d26feccc9a9813e2))
+* Increase default number of channels when gRPC-GCP channel pool is enabled ([#1997](https://github.com/googleapis/java-spanner/issues/1997)) ([44f27fc](https://github.com/googleapis/java-spanner/commit/44f27fc90fa3f9f4914574fb0476e971da4c02ff))
+* Update result_set.proto to return undeclared parameters in ExecuteSql API ([#2101](https://github.com/googleapis/java-spanner/issues/2101)) ([826eb93](https://github.com/googleapis/java-spanner/commit/826eb9305095db064f52a15dc502bc0e0df9a984))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.4.6 ([#2093](https://github.com/googleapis/java-spanner/issues/2093)) ([b08db44](https://github.com/googleapis/java-spanner/commit/b08db443229afdc1d49ef9f5e459cade5e2abe90))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.5.0 ([#2113](https://github.com/googleapis/java-spanner/issues/2113)) ([99d825b](https://github.com/googleapis/java-spanner/commit/99d825b18397ff9e8633b89effa05e61159d956f))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.6.0 ([#2125](https://github.com/googleapis/java-spanner/issues/2125)) ([7d86fe4](https://github.com/googleapis/java-spanner/commit/7d86fe40de29311ad65bd382e55f75326d16c4e3))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.0.5 ([#2122](https://github.com/googleapis/java-spanner/issues/2122)) ([308a65c](https://github.com/googleapis/java-spanner/commit/308a65c3e07e33f82b7ce474e0e95099192bb593))
+* Update dependency com.google.cloud:google-cloud-trace to v2.3.7 ([#2094](https://github.com/googleapis/java-spanner/issues/2094)) ([6ec3f3f](https://github.com/googleapis/java-spanner/commit/6ec3f3f585ed5eaecdb09d5fd1eb6c9af3b22555))
+* Update dependency com.google.cloud:google-cloud-trace to v2.4.0 ([#2114](https://github.com/googleapis/java-spanner/issues/2114)) ([84347f1](https://github.com/googleapis/java-spanner/commit/84347f1c6a52f3dfe569649f061cb16e2e466f6a))
+* Update dependency com.google.cloud:google-cloud-trace to v2.5.0 ([#2126](https://github.com/googleapis/java-spanner/issues/2126)) ([5167928](https://github.com/googleapis/java-spanner/commit/516792809cf976aeab10709ca62503b7f03bb333))
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.15 ([#2109](https://github.com/googleapis/java-spanner/issues/2109)) ([bf092ad](https://github.com/googleapis/java-spanner/commit/bf092ad7ac86c500e8a445397e192cb8fb0594ae))
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.16 ([#2119](https://github.com/googleapis/java-spanner/issues/2119)) ([b2d27e8](https://github.com/googleapis/java-spanner/commit/b2d27e8f841cab096d5ccad64a250c7f0b35f670))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.15 ([#2110](https://github.com/googleapis/java-spanner/issues/2110)) ([d28b202](https://github.com/googleapis/java-spanner/commit/d28b202cfc29e8fbbfdf3612b94bab5c2f319419))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.16 ([#2120](https://github.com/googleapis/java-spanner/issues/2120)) ([151cf77](https://github.com/googleapis/java-spanner/commit/151cf778ff76edaee9e849181f72119ffa6cb897))
+* Update dependency org.graalvm.sdk:graal-sdk to v22.2.0.1 ([#2102](https://github.com/googleapis/java-spanner/issues/2102)) ([68c2089](https://github.com/googleapis/java-spanner/commit/68c2089101124b9887af57b2697c35a64eb1a51f))
+* Update dependency org.graalvm.sdk:graal-sdk to v22.3.0 ([#2116](https://github.com/googleapis/java-spanner/issues/2116)) ([9d6930b](https://github.com/googleapis/java-spanner/commit/9d6930b77ec479e5f517236852244476c23dc5c8))
+
 ## [6.31.2](https://github.com/googleapis/java-spanner/compare/v6.31.1...v6.31.2) (2022-10-05)
 
 
