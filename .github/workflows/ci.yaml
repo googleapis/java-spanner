@@ -99,6 +99,6 @@ jobs:
         with:
           java-version: ${{matrix.java}}
       - run: java -version
-      - run: mvn package
+      - run: mvn package -Denforcer.skip=true
         env:
           JOB_TYPE: test

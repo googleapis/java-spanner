@@ -56,99 +56,6 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     return this.unknownFields;
   }
 
-  private UpdateDatabaseDdlMetadata(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              database_ = s;
-              break;
-            }
-          case 18:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                statements_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              statements_.add(s);
-              break;
-            }
-          case 26:
-            {
-              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                commitTimestamps_ = new java.util.ArrayList<com.google.protobuf.Timestamp>();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              commitTimestamps_.add(
-                  input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry));
-              break;
-            }
-          case 32:
-            {
-              throttled_ = input.readBool();
-              break;
-            }
-          case 42:
-            {
-              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
-                progress_ =
-                    new java.util.ArrayList<
-                        com.google.spanner.admin.database.v1.OperationProgress>();
-                mutable_bitField0_ |= 0x00000004;
-              }
-              progress_.add(
-                  input.readMessage(
-                      com.google.spanner.admin.database.v1.OperationProgress.parser(),
-                      extensionRegistry));
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        statements_ = statements_.getUnmodifiableView();
-      }
-      if (((mutable_bitField0_ & 0x00000002) != 0)) {
-        commitTimestamps_ = java.util.Collections.unmodifiableList(commitTimestamps_);
-      }
-      if (((mutable_bitField0_ & 0x00000004) != 0)) {
-        progress_ = java.util.Collections.unmodifiableList(progress_);
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.database.v1.SpannerDatabaseAdminProto
         .internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlMetadata_descriptor;
@@ -511,7 +418,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     for (int i = 0; i < progress_.size(); i++) {
       output.writeMessage(5, progress_.get(i));
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -540,7 +447,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     for (int i = 0; i < progress_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(5, progress_.get(i));
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -561,7 +468,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     if (!getCommitTimestampsList().equals(other.getCommitTimestampsList())) return false;
     if (getThrottled() != other.getThrottled()) return false;
     if (!getProgressList().equals(other.getProgressList())) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -588,7 +495,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       hash = (37 * hash) + PROGRESS_FIELD_NUMBER;
       hash = (53 * hash) + getProgressList().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -719,20 +626,10 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     }
 
     // Construct using com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
-        getCommitTimestampsFieldBuilder();
-        getProgressFieldBuilder();
-      }
     }
 
     @java.lang.Override
@@ -744,18 +641,20 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       bitField0_ = (bitField0_ & ~0x00000001);
       if (commitTimestampsBuilder_ == null) {
         commitTimestamps_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
       } else {
+        commitTimestamps_ = null;
         commitTimestampsBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000002);
       throttled_ = false;
 
       if (progressBuilder_ == null) {
         progress_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
       } else {
+        progress_ = null;
         progressBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000004);
       return this;
     }
 
@@ -932,7 +831,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
           }
         }
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -947,19 +846,76 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                database_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 10
+            case 18:
+              {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureStatementsIsMutable();
+                statements_.add(s);
+                break;
+              } // case 18
+            case 26:
+              {
+                com.google.protobuf.Timestamp m =
+                    input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
+                if (commitTimestampsBuilder_ == null) {
+                  ensureCommitTimestampsIsMutable();
+                  commitTimestamps_.add(m);
+                } else {
+                  commitTimestampsBuilder_.addMessage(m);
+                }
+                break;
+              } // case 26
+            case 32:
+              {
+                throttled_ = input.readBool();
+
+                break;
+              } // case 32
+            case 42:
+              {
+                com.google.spanner.admin.database.v1.OperationProgress m =
+                    input.readMessage(
+                        com.google.spanner.admin.database.v1.OperationProgress.parser(),
+                        extensionRegistry);
+                if (progressBuilder_ == null) {
+                  ensureProgressIsMutable();
+                  progress_.add(m);
+                } else {
+                  progressBuilder_.addMessage(m);
+                }
+                break;
+              } // case 42
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage =
-            (com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata)
-                e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -2214,7 +2170,18 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new UpdateDatabaseDdlMetadata(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
