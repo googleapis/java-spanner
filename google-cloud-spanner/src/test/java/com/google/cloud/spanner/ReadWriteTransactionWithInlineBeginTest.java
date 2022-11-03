@@ -23,12 +23,18 @@ import static org.junit.Assert.assertThrows;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterables;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
+import com.google.spanner.v1.TransactionOptions;
+import com.google.spanner.v1.TransactionOptions.ReadWrite;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Server;
 import io.grpc.Status;
@@ -36,6 +42,8 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -85,6 +93,10 @@ public class ReadWriteTransactionWithInlineBeginTest {
                   .build())
           .setMetadata(SELECT1_METADATA)
           .build();
+  private static final TransactionOptions OPTIMISTIC_LOCK_OPTIONS =
+      TransactionOptions.newBuilder()
+          .setReadWrite(ReadWrite.newBuilder().setReadLockMode(ReadWrite.ReadLockMode.OPTIMISTIC))
+          .build();
   private Spanner spanner;
   private DatabaseClient client;
 
@@ -102,6 +114,9 @@ public class ReadWriteTransactionWithInlineBeginTest {
         StatementResult.exception(
             INVALID_SELECT_STATEMENT,
             Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
+    mockSpanner.putStatementResult(
+        StatementResult.read(
+            "FOO", KeySet.all(), Collections.singletonList("ID"), SELECT1_RESULTSET));
 
     String uniqueName = InProcessServerBuilder.generateName();
     server =
@@ -387,6 +402,73 @@ public class ReadWriteTransactionWithInlineBeginTest {
     assertThat(updateCount).isEqualTo(1L);
     assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
     assertThat(countTransactionsStarted()).isEqualTo(2);
+  }
+
+  @Test
+  public void executeSqlWithOptimisticConcurrencyControl() {
+    client
+        .readWriteTransaction(Options.optimisticLock())
+        .run(
+            transaction -> {
+              try (ResultSet rs = transaction.executeQuery(SELECT1)) {
+                while (rs.next()) {
+                  assertEquals(rs.getLong(0), 1);
+                }
+              }
+              return null;
+            });
+    Collection<AbstractMessage> requests =
+        Collections2.filter(
+            mockSpanner.getRequests(), msg -> msg.getClass().equals(ExecuteSqlRequest.class));
+    assertEquals(requests.size(), 1);
+    ExecuteSqlRequest request = (ExecuteSqlRequest) Iterables.getOnlyElement(requests);
+    assertEquals(request.getTransaction().getBegin(), OPTIMISTIC_LOCK_OPTIONS);
+  }
+
+  @Test
+  public void readWithOptimisticConcurrencyControl() {
+    client
+        .readWriteTransaction(Options.optimisticLock())
+        .run(
+            transaction -> {
+              try (ResultSet rs =
+                  transaction.read("FOO", KeySet.all(), Collections.singletonList("ID"))) {
+                while (rs.next()) {
+                  assertEquals(rs.getLong(0), 1);
+                }
+              }
+              return null;
+            });
+    Collection<AbstractMessage> requests =
+        Collections2.filter(
+            mockSpanner.getRequests(), msg -> msg.getClass().equals(ReadRequest.class));
+    assertEquals(requests.size(), 1);
+    ReadRequest request = (ReadRequest) Iterables.getOnlyElement(requests);
+    assertThat(request.getTransaction().getBegin()).isEqualTo(OPTIMISTIC_LOCK_OPTIONS);
+  }
+
+  @Test
+  public void beginTransactionWithOptimisticConcurrencyControl() {
+    client
+        .readWriteTransaction(Options.optimisticLock())
+        .run(
+            transaction -> {
+              // Instead of adding the BeginTransaction option to the next statement, the client
+              // library will force a complete retry of the entire transaction, and use an explicit
+              // BeginTransaction RPC invocation for that transaction in order to include the failed
+              // statement in the transaction as well.
+              try (ResultSet rs = transaction.executeQuery(INVALID_SELECT_STATEMENT)) {
+                SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+                assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+              }
+              return transaction.executeUpdate(UPDATE_STATEMENT);
+            });
+    Collection<AbstractMessage> requests =
+        Collections2.filter(
+            mockSpanner.getRequests(), msg -> msg.getClass().equals(BeginTransactionRequest.class));
+    assertEquals(requests.size(), 1);
+    BeginTransactionRequest request = (BeginTransactionRequest) Iterables.getOnlyElement(requests);
+    assertEquals(request.getOptions(), OPTIMISTIC_LOCK_OPTIONS);
   }
 
   @Test
