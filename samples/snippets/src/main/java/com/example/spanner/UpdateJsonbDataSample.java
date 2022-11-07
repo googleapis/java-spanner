@@ -42,6 +42,9 @@ class UpdateJsonbDataSample {
   }
 
   static void updateJsonbData(DatabaseClient client) {
+    // PG JSONB takes the last value in the case of duplicate keys.
+    // PG JSONB sorts first by key length and then lexicographically with
+    // equivalent key length.
     client.write(
         ImmutableList.of(
             Mutation.newInsertOrUpdateBuilder("Venues")
@@ -50,7 +53,7 @@ class UpdateJsonbDataSample {
                 .set("VenueDetails")
                 .to(
                     Value.pgJsonb(
-                        "[{\"name\":\"room 1\",\"open\":true},"
+                        "[{\"name\":\"room 1\",\"open\":true,},\"name\":\"room 3\""
                             + "{\"name\":\"room 2\",\"open\":false}]"))
                 .build(),
             Mutation.newInsertOrUpdateBuilder("Venues")
