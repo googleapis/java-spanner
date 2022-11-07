@@ -186,8 +186,13 @@ interface UnitOfWork {
    * @return an {@link ApiFuture} containing the {@link ResultSetStats} that were returned by this
    *     statement.
    */
-  ApiFuture<ResultSetStats> analyzeUpdateAsync(
+  ApiFuture<com.google.spanner.v1.ResultSet> analyzeUpdateAsync(
       ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options);
+
+  /**
+   * Analyze a statement in PLAN mode on Spanner. The statement may be either a query or a DML statement.
+   */
+  ApiFuture<ResultSet> analyzeStatementAsync(ParsedStatement statement, UpdateOption... options);
 
   /**
    * Execute a batch of DML statements on Spanner.

@@ -311,7 +311,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         res =
             ApiFutures.transform(
                 executeTransactionalUpdateAsync(update, AnalyzeMode.NONE, options),
-                ResultSetStats::getRowCountExact,
+                resultSet -> resultSet.getStats().getRowCountExact(),
                 MoreExecutors.directExecutor());
         break;
       case PARTITIONED_NON_ATOMIC:
@@ -325,7 +325,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<ResultSetStats> analyzeUpdateAsync(
+  public ApiFuture<com.google.spanner.v1.ResultSet> analyzeUpdateAsync(
       ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "Statement is not an update statement");
@@ -337,6 +337,18 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     checkAndMarkUsed();
 
     return executeTransactionalUpdateAsync(update, analyzeMode, options);
+  }
+
+  @Override
+  public ApiFuture<com.google.spanner.v1.ResultSet> analyzeStatementAsync(ParsedStatement statement, UpdateOption... options) {
+    Preconditions.checkNotNull(statement);
+    Preconditions.checkArgument(statement.isQuery() || statement.isUpdate(), "Statement is not a query or an update statement");
+    ConnectionPreconditions.checkState(
+        !(isReadOnly() && statement.isUpdate()), "Update statements are not allowed in read-only mode");
+    checkAndMarkUsed();
+
+    executeQueryAsync()
+    return executeTransactionalUpdateAsync(statement, AnalyzeMode.PLAN, options);
   }
 
   @Override
@@ -386,23 +398,26 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     return dbClient.readWriteTransaction(options);
   }
 
-  private ApiFuture<ResultSetStats> executeTransactionalUpdateAsync(
+  private ApiFuture<com.google.spanner.v1.ResultSet> executeTransactionalUpdateAsync(
       final ParsedStatement update, AnalyzeMode analyzeMode, final UpdateOption... options) {
-    Callable<ResultSetStats> callable =
+    Callable<com.google.spanner.v1.ResultSet> callable =
         () -> {
           try {
             writeTransaction = createWriteTransaction();
-            ResultSetStats res =
+            com.google.spanner.v1.ResultSet res =
                 writeTransaction.run(
                     transaction -> {
                       if (analyzeMode == AnalyzeMode.NONE) {
-                        return ResultSetStats.newBuilder()
+                        return com.google.spanner.v1.ResultSet.newBuilder().setStats(ResultSetStats.newBuilder()
                             .setRowCountExact(
                                 transaction.executeUpdate(update.getStatement(), options))
-                            .build();
+                            .build()).build();
+                      } else if (analyzeMode == AnalyzeMode.PLAN) {
+                        return transaction.analyzeStatement(
+                            update.getStatement(), options);
                       }
-                      return transaction.analyzeUpdate(
-                          update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options);
+                      return com.google.spanner.v1.ResultSet.newBuilder().setStats(transaction.analyzeUpdate(
+                          update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options)).build();
                     });
             state = UnitOfWorkState.COMMITTED;
             return res;

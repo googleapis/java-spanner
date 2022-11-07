@@ -392,7 +392,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<ResultSetStats> analyzeUpdateAsync(
+  public ApiFuture<com.google.spanner.v1.ResultSet> analyzeUpdateAsync(
       ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     return internalExecuteUpdateAsync(update, analyzeMode, options);
   }
@@ -402,16 +402,16 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       final ParsedStatement update, final UpdateOption... options) {
     return ApiFutures.transform(
         internalExecuteUpdateAsync(update, AnalyzeMode.NONE, options),
-        ResultSetStats::getRowCountExact,
+        resultSet -> resultSet.getStats().getRowCountExact(),
         MoreExecutors.directExecutor());
   }
 
-  private ApiFuture<ResultSetStats> internalExecuteUpdateAsync(
+  private ApiFuture<com.google.spanner.v1.ResultSet> internalExecuteUpdateAsync(
       ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "The statement is not an update statement");
     checkValidTransaction();
-    ApiFuture<ResultSetStats> res;
+    ApiFuture<com.google.spanner.v1.ResultSet> res;
     if (retryAbortsInternally) {
       res =
           executeStatementAsync(
@@ -427,24 +427,26 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                                 StatementExecutionStep.EXECUTE_STATEMENT,
                                 ReadWriteTransaction.this);
 
-                        ResultSetStats updateCount;
+                        com.google.spanner.v1.ResultSet updateCount;
                         if (analyzeMode == AnalyzeMode.NONE) {
-                          updateCount =
+                          updateCount = com.google.spanner.v1.ResultSet.newBuilder().setStats(
                               ResultSetStats.newBuilder()
                                   .setRowCountExact(
                                       get(txContextFuture)
                                           .executeUpdate(update.getStatement(), options))
-                                  .build();
+                                  .build()).build();
+                        } else if (analyzeMode == AnalyzeMode.PLAN) {
+                          updateCount = get(txContextFuture)
+                                .analyzeStatement(
+                                    update.getStatement(), options);
                         } else {
-                          updateCount =
-                              get(txContextFuture)
-                                  .analyzeUpdate(
-                                      update.getStatement(),
-                                      analyzeMode.getQueryAnalyzeMode(),
-                                      options);
+                          updateCount = com.google.spanner.v1.ResultSet.newBuilder().setStats(get(txContextFuture)
+                              .analyzeUpdate(
+                                  update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options))
+                              .build();
                         }
                         createAndAddRetriableUpdate(
-                            update, analyzeMode, updateCount.getRowCountExact(), options);
+                            update, analyzeMode, updateCount.getStats().getRowCountExact(), options);
                         return updateCount;
                       } catch (AbortedException e) {
                         throw e;
@@ -465,20 +467,24 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 checkTimedOut();
                 checkAborted();
                 if (analyzeMode == AnalyzeMode.NONE) {
-                  return ResultSetStats.newBuilder()
+                  return com.google.spanner.v1.ResultSet.newBuilder().setStats(ResultSetStats.newBuilder()
                       .setRowCountExact(
                           get(txContextFuture).executeUpdate(update.getStatement(), options))
-                      .build();
+                      .build()).build();
+                } else if (analyzeMode == AnalyzeMode.PLAN) {
+                  return get(txContextFuture)
+                      .analyzeStatement(
+                          update.getStatement(), options);
                 }
-                return get(txContextFuture)
+                return com.google.spanner.v1.ResultSet.newBuilder().setStats(get(txContextFuture)
                     .analyzeUpdate(
-                        update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options);
+                        update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options)).build();
               },
               SpannerGrpc.getExecuteSqlMethod());
     }
     ApiFutures.addCallback(
         res,
-        new ApiFutureCallback<ResultSetStats>() {
+        new ApiFutureCallback<com.google.spanner.v1.ResultSet>() {
           @Override
           public void onFailure(Throwable t) {
             if (t instanceof SpannerException) {
@@ -487,7 +493,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           }
 
           @Override
-          public void onSuccess(ResultSetStats result) {}
+          public void onSuccess(com.google.spanner.v1.ResultSet result) {}
         },
         MoreExecutors.directExecutor());
     return res;

@@ -29,6 +29,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
@@ -968,6 +969,11 @@ public interface Connection extends AutoCloseable {
    * the DML statement will be visible to subsequent operations in the transaction.
    */
   default ResultSetStats analyzeUpdate(Statement update, QueryAnalyzeMode analyzeMode) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /** Analyzes a SQL statement and returns the query plan, metadata and parameter info. */
+  default com.google.spanner.v1.ResultSet analyzeStatement(Statement statement, UpdateOption... options) {
     throw new UnsupportedOperationException("Not implemented");
   }
 

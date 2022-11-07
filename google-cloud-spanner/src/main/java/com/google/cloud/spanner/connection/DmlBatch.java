@@ -163,7 +163,7 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<ResultSetStats> analyzeUpdateAsync(
+  public ApiFuture<com.google.spanner.v1.ResultSet> analyzeUpdateAsync(
       ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Analyzing updates is not allowed for DML batches.");

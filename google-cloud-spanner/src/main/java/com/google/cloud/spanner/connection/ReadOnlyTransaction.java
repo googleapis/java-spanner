@@ -30,6 +30,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.common.base.Preconditions;
+import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetStats;
 
 /**
@@ -165,7 +166,7 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<ResultSetStats> analyzeUpdateAsync(
+  public ApiFuture<ResultSet> analyzeUpdateAsync(
       ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,

@@ -725,6 +725,16 @@ class SessionPool {
     }
 
     @Override
+    public com.google.spanner.v1.ResultSet analyzeStatement(
+        Statement statement, UpdateOption... options) {
+      try {
+        return delegate.analyzeStatement(statement, options);
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
+      }
+    }
+
+    @Override
     public long executeUpdate(Statement statement, UpdateOption... options) {
       try {
         return delegate.executeUpdate(statement, options);

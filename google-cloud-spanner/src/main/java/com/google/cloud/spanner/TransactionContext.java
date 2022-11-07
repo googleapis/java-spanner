@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetStats;
 
 /**
@@ -137,6 +138,11 @@ public interface TransactionContext extends ReadContext {
    */
   default ResultSetStats analyzeUpdate(
       Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /** Analyzes a SQL statement and returns the execution plan, metadata and the names and types of the parameters in the SQL statement. The statement may be a query or DML statement. */
+  default ResultSet analyzeStatement(Statement statement, UpdateOption... options) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
