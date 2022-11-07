@@ -53,7 +53,7 @@ class UpdateJsonbDataSample {
                 .set("VenueDetails")
                 .to(
                     Value.pgJsonb(
-                        "[{\"name\":\"room 1\",\"open\":true,},\"name\":\"room 3\""
+                        "[{\"name\":\"room 1\",\"open\":true,\"name\":\"room 3\"},"
                             + "{\"name\":\"room 2\",\"open\":false}]"))
                 .build(),
             Mutation.newInsertOrUpdateBuilder("Venues")
