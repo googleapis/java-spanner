@@ -423,6 +423,32 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
+  public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T m) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoMessageList(columnIndex, m);
+  }
+
+  @Override
+  public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T m) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoMessageList(columnName, m);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoEnumList(columnIndex, method);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoEnumList(columnName, method);
+  }
+
+  @Override
   public List<Struct> getStructList(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getStructList(columnIndex);

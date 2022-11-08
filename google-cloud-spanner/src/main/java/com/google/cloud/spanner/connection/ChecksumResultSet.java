@@ -276,6 +276,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
           }
           break;
         case BYTES:
+        case PROTO:
           into.putInt(row.getBytesList(columnIndex).size());
           for (ByteArray value : row.getBytesList(columnIndex)) {
             funnelValue(Code.BYTES, value, into);
@@ -306,6 +307,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
           }
           break;
         case INT64:
+        case ENUM:
           into.putInt(row.getLongList(columnIndex).size());
           for (Long value : row.getLongList(columnIndex)) {
             funnelValue(Code.INT64, value, into);

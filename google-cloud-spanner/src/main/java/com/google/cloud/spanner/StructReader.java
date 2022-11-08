@@ -326,6 +326,60 @@ public interface StructReader {
     throw new UnsupportedOperationException("method should be overwritten");
   };
 
+  /**
+   * To get the proto message of generic type {@code T} from Struct.
+   *
+   * @param columnIndex Index of the column.
+   * @param m Proto message object. @see <a
+   *     href="https://developers.google.com/protocol-buffers/docs/reference/java-generated#message">getDefaultInstance()</a>
+   * @return The value of a non-{@code NULL} column with type {@code
+   *     Type.array(Type.proto(String))}.
+   */
+  default <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T m) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * To get the proto message of type {@code T} from Struct.
+   *
+   * @param columnName Name of the column.
+   * @param m Proto message object. @see <a
+   *     href="https://developers.google.com/protocol-buffers/docs/reference/java-generated#message">getDefaultInstance()</a>
+   * @return The value of a non-{@code NULL} column with type {@code
+   *     Type.array(Type.proto(String))}.
+   */
+  default <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T m) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * To get the proto enum of type {@code T} from Struct.
+   *
+   * @param columnIndex Index of the column.
+   * @param method Lambda method which takes a primitive int and return Enum. @see <a
+   *     href="https://developers.google.com/protocol-buffers/docs/reference/java-generated#enum">forNumber</a>
+   * @return The value of a non-{@code NULL} column with type {@code
+   *     Type.array(Type.protoEnum(String))}.
+   */
+  default <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * To get the proto enum list of type {@code T} from Struct.
+   *
+   * @param columnName Name of the column.
+   * @param method Lambda method which takes a primitive int and return Enum. @see <a
+   *     href="https://developers.google.com/protocol-buffers/docs/reference/java-generated#enum">forNumber</a>
+   * @return The value of a non-{@code NULL} column with type {@code
+   *     Type.array(Type.protoEnum(String))}.
+   */
+  default <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
   /** Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bytes())}. */
   List<ByteArray> getBytesList(int columnIndex);
 

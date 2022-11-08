@@ -302,6 +302,18 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected <T extends AbstractMessage> List<T> getProtoMessageListInternal(
+        int columnIndex, T m) {
+      return values.get(columnIndex).getProtoMessageArray(m);
+    }
+
+    @Override
+    protected <T extends ProtocolMessageEnum> List<T> getProtoEnumListInternal(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+      return values.get(columnIndex).getProtoEnumArray(method);
+    }
+
+    @Override
     protected List<Date> getDateListInternal(int columnIndex) {
       return values.get(columnIndex).getDateArray();
     }
@@ -396,6 +408,7 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
           case BOOL:
             return getBooleanListInternal(columnIndex);
           case INT64:
+          case ENUM:
             return getLongListInternal(columnIndex);
           case FLOAT64:
             return getDoubleListInternal(columnIndex);
@@ -410,6 +423,7 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
           case PG_JSONB:
             return getPgJsonbListInternal(columnIndex);
           case BYTES:
+          case PROTO:
             return getBytesListInternal(columnIndex);
           case TIMESTAMP:
             return getTimestampListInternal(columnIndex);

@@ -428,6 +428,32 @@ class ReplaceableForwardingResultSet implements ResultSet {
   }
 
   @Override
+  public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T m) {
+    checkClosed();
+    return delegate.getProtoMessageList(columnIndex, m);
+  }
+
+  @Override
+  public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T m) {
+    checkClosed();
+    return delegate.getProtoMessageList(columnName, m);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    checkClosed();
+    return delegate.getProtoEnumList(columnIndex, method);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
+    checkClosed();
+    return delegate.getProtoEnumList(columnName, method);
+  }
+
+  @Override
   public List<Struct> getStructList(int columnIndex) {
     checkClosed();
     return delegate.getStructList(columnIndex);

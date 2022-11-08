@@ -242,6 +242,27 @@ public abstract class ValueBinder<R> {
     return handle(Value.timestampArray(values));
   }
 
+  /** Binds to {@code Value.protoMessageArray(values, descriptor)} */
+  public R toProtoMessageArray(@Nullable Iterable<AbstractMessage> values, Descriptor descriptor) {
+    return handle(Value.protoMessageArray(values, descriptor));
+  }
+
+  /** Binds to {@code Value.protoMessageArray(values, protoTypeFq)} */
+  public R toProtoMessageArray(@Nullable Iterable<ByteArray> values, String protoTypeFq) {
+    return handle(Value.protoMessageArray(values, protoTypeFq));
+  }
+
+  /** Binds to {@code Value.protoEnumArray(values, descriptor)} */
+  public R toProtoEnumArray(
+      @Nullable Iterable<ProtocolMessageEnum> values, EnumDescriptor descriptor) {
+    return handle(Value.protoEnumArray(values, descriptor));
+  }
+
+  /** Binds to {@code Value.protoEnumArray(values, protoTypeFq)} */
+  public R toProtoEnumArray(@Nullable Iterable<Long> values, String protoTypeFq) {
+    return handle(Value.protoEnumArray(values, protoTypeFq));
+  }
+
   /** Binds to {@code Value.dateArray(values)} */
   public R toDateArray(@Nullable Iterable<Date> values) {
     return handle(Value.dateArray(values));

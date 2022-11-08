@@ -214,6 +214,26 @@
   </difference>
   <difference>
     <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.protobuf.ProtocolMessageEnum getProtoEnumList(int, java.util.function.Function)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.protobuf.ProtocolMessageEnum getProtoEnumList(java.lang.String, java.util.function.Function)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.protobuf.AbstractMessage getProtoMessageList(int, com.google.protobuf.AbstractMessage)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.protobuf.AbstractMessage getProtoMessageList(java.lang.String, com.google.protobuf.AbstractMessage)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/BatchClient</className>
     <method>java.lang.String getDatabaseRole()</method>
   </difference>

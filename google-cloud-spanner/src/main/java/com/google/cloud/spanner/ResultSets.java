@@ -459,6 +459,28 @@ public final class ResultSets {
     }
 
     @Override
+    public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T m) {
+      return getCurrentRowAsStruct().getProtoMessageList(columnIndex, m);
+    }
+
+    @Override
+    public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T m) {
+      return getCurrentRowAsStruct().getProtoMessageList(columnName, m);
+    }
+
+    @Override
+    public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+      return getCurrentRowAsStruct().getProtoEnumList(columnIndex, method);
+    }
+
+    @Override
+    public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+        String columnName, Function<Integer, ProtocolMessageEnum> method) {
+      return getCurrentRowAsStruct().getProtoEnumList(columnName, method);
+    }
+
+    @Override
     public List<Struct> getStructList(int columnIndex) {
       return getCurrentRowAsStruct().getStructList(columnIndex);
     }

@@ -374,6 +374,32 @@ public class ForwardingStructReader implements StructReader {
   }
 
   @Override
+  public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T m) {
+    checkValidState();
+    return delegate.get().getProtoMessageList(columnIndex, m);
+  }
+
+  @Override
+  public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T m) {
+    checkValidState();
+    return delegate.get().getProtoMessageList(columnName, m);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    checkValidState();
+    return delegate.get().getProtoEnumList(columnIndex, method);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
+    checkValidState();
+    return delegate.get().getProtoEnumList(columnName, method);
+  }
+
+  @Override
   public List<Struct> getStructList(int columnIndex) {
     checkValidState();
     return delegate.get().getStructList(columnIndex);

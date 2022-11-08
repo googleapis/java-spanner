@@ -502,6 +502,53 @@ public abstract class Value implements Serializable {
     return new PgJsonbArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
   }
 
+  public static Value protoMessageArray(
+      @Nullable Iterable<AbstractMessage> v, Descriptor descriptor) {
+    if (v == null) {
+      return new ProtoMessageArrayImpl(true, null, descriptor.getFullName());
+    }
+
+    List<ByteArray> serializedArray = new ArrayList<>();
+    v.forEach(
+        (message) -> {
+          if (message != null) {
+            serializedArray.add(ByteArray.copyFrom(message.toByteArray()));
+          } else {
+            serializedArray.add(null);
+          }
+        });
+
+    return new ProtoMessageArrayImpl(false, serializedArray, descriptor.getFullName());
+  }
+
+  public static Value protoMessageArray(@Nullable Iterable<ByteArray> v, String protoTypeFqn) {
+    return new ProtoMessageArrayImpl(
+        v == null, v != null ? immutableCopyOf(v) : null, protoTypeFqn);
+  }
+
+  public static Value protoEnumArray(
+      @Nullable Iterable<ProtocolMessageEnum> v, EnumDescriptor descriptor) {
+    if (v == null) {
+      return new ProtoEnumArrayImpl(true, null, descriptor.getFullName());
+    }
+
+    List<Long> enumConstValues = new ArrayList<>();
+    v.forEach(
+        (protoEnum) -> {
+          if (protoEnum != null) {
+            enumConstValues.add((long) protoEnum.getNumber());
+          } else {
+            enumConstValues.add(null);
+          }
+        });
+
+    return new ProtoEnumArrayImpl(false, enumConstValues, descriptor.getFullName());
+  }
+
+  public static Value protoEnumArray(@Nullable Iterable<Long> v, String protoTypeFqn) {
+    return new ProtoEnumArrayImpl(v == null, v != null ? immutableCopyOf(v) : null, protoTypeFqn);
+  }
+
   /**
    * Returns an {@code ARRAY<BYTES>} value.
    *
@@ -730,6 +777,27 @@ public abstract class Value implements Serializable {
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
   public List<String> getPgJsonbArray() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Returns the value of an {@code ARRAY<PROTO>}-typed instance. While the returned list itself
+   * will never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public <T extends AbstractMessage> List<T> getProtoMessageArray(T m) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Returns the value of an {@code ARRAY<ENUM>}-typed instance. While the returned list itself will
+   * never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumArray(
+      Function<Integer, ProtocolMessageEnum> method) {
     throw new UnsupportedOperationException("Not implemented");
   }
 
@@ -1763,6 +1831,24 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public <T extends ProtocolMessageEnum> List<T> getProtoEnumArray(
+        Function<Integer, ProtocolMessageEnum> method) {
+      Preconditions.checkNotNull(
+          method, "Lambda method shouldn't be null, use forNumber from generated enum class.");
+      checkNotNull();
+
+      List<T> protoEnumList = new ArrayList<>();
+      for (Long enumIntValue : values) {
+        if (enumIntValue == null) {
+          protoEnumList.add(null);
+        } else {
+          protoEnumList.add((T) method.apply(enumIntValue.intValue()));
+        }
+      }
+      return protoEnumList;
+    }
+
+    @Override
     boolean valueEquals(Value v) {
       Int64ArrayImpl that = (Int64ArrayImpl) v;
       return Arrays.equals(values, that.values);
@@ -1950,6 +2036,27 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public <T extends AbstractMessage> List<T> getProtoMessageArray(T m) {
+      Preconditions.checkNotNull(
+          m, "Proto Message shouldn't be null, default instance from generated class can be used.");
+      checkNotNull();
+      try {
+        List<T> protoMessagesList = new ArrayList<>();
+        for (ByteArray protoMessageBytes : value) {
+          if (protoMessageBytes == null) {
+            protoMessagesList.add(null);
+          } else {
+            protoMessagesList.add(
+                (T) m.toBuilder().mergeFrom(protoMessageBytes.toByteArray()).build());
+          }
+        }
+        return protoMessagesList;
+      } catch (InvalidProtocolBufferException e) {
+        throw SpannerExceptionFactory.asSpannerException(e);
+      }
+    }
+
+    @Override
     String elementToString(ByteArray element) {
       return element.toBase64();
     }
@@ -1974,6 +2081,90 @@ public abstract class Value implements Serializable {
 
     @Override
     void appendElement(StringBuilder b, Timestamp element) {
+      b.append(element);
+    }
+  }
+
+  private static class ProtoMessageArrayImpl extends AbstractArrayValue<ByteArray> {
+
+    private ProtoMessageArrayImpl(
+        boolean isNull, @Nullable List<ByteArray> values, String protoTypeFqn) {
+      super(isNull, Type.proto(protoTypeFqn), values);
+    }
+
+    @Override
+    public List<ByteArray> getBytesArray() {
+      return value;
+    }
+
+    @Override
+    public <T extends AbstractMessage> List<T> getProtoMessageArray(T m) {
+      Preconditions.checkNotNull(
+          m, "Proto Message shouldn't be null, default instance from generated class can be used.");
+      checkNotNull();
+      try {
+        List<T> protoMessagesList = new ArrayList<>();
+        for (ByteArray protoMessageBytes : value) {
+          if (protoMessageBytes == null) {
+            protoMessagesList.add(null);
+          } else {
+            protoMessagesList.add(
+                (T) m.toBuilder().mergeFrom(protoMessageBytes.toByteArray()).build());
+          }
+        }
+        return protoMessagesList;
+      } catch (InvalidProtocolBufferException e) {
+        throw SpannerExceptionFactory.asSpannerException(e);
+      }
+    }
+
+    @Override
+    String elementToString(ByteArray element) {
+      return element.toBase64();
+    }
+
+    @Override
+    void appendElement(StringBuilder b, ByteArray element) {
+      b.append(element.toString());
+    }
+  }
+
+  private static class ProtoEnumArrayImpl extends AbstractArrayValue<Long> {
+
+    private ProtoEnumArrayImpl(boolean isNull, @Nullable List<Long> values, String protoTypeFqn) {
+      super(isNull, Type.protoEnum(protoTypeFqn), values);
+    }
+
+    @Override
+    public List<Long> getInt64Array() {
+      return value;
+    }
+
+    @Override
+    public <T extends ProtocolMessageEnum> List<T> getProtoEnumArray(
+        Function<Integer, ProtocolMessageEnum> method) {
+      Preconditions.checkNotNull(
+          method, "Lambda method shouldn't be null, use forNumber from generated enum class.");
+      checkNotNull();
+
+      List<T> protoEnumList = new ArrayList<>();
+      for (Long enumIntValue : value) {
+        if (enumIntValue == null) {
+          protoEnumList.add(null);
+        } else {
+          protoEnumList.add((T) method.apply(enumIntValue.intValue()));
+        }
+      }
+      return protoEnumList;
+    }
+
+    @Override
+    String elementToString(Long element) {
+      return Long.toString(element);
+    }
+
+    @Override
+    void appendElement(StringBuilder b, Long element) {
       b.append(element);
     }
   }

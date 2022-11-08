@@ -26,6 +26,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -67,6 +68,15 @@ public abstract class AbstractStructReader implements StructReader {
   }
 
   protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  protected <T extends AbstractMessage> List<T> getProtoMessageListInternal(int columnIndex, T m) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  protected <T extends ProtocolMessageEnum> List<T> getProtoEnumListInternal(
       int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
     throw new UnsupportedOperationException("Not implemented");
   }
@@ -343,14 +353,16 @@ public abstract class AbstractStructReader implements StructReader {
 
   @Override
   public List<Long> getLongList(int columnIndex) {
-    checkNonNullOfType(columnIndex, Type.array(Type.int64()), columnIndex);
+    checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
+    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnIndex);
     return getLongListInternal(columnIndex);
   }
 
   @Override
   public List<Long> getLongList(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.array(Type.int64()), columnName);
+    checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
+    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnIndex);
     return getLongListInternal(columnIndex);
   }
 
@@ -442,15 +454,49 @@ public abstract class AbstractStructReader implements StructReader {
 
   @Override
   public List<ByteArray> getBytesList(int columnIndex) {
-    checkNonNullOfType(columnIndex, Type.array(Type.bytes()), columnIndex);
+    checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
+    checkArrayElementType(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnIndex);
     return getBytesListInternal(columnIndex);
   }
 
   @Override
   public List<ByteArray> getBytesList(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.array(Type.bytes()), columnName);
+    checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
+    checkArrayElementType(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnIndex);
     return getBytesListInternal(columnIndex);
+  }
+
+  @Override
+  public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T m) {
+    checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
+    checkArrayElementType(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnIndex);
+    return getProtoMessageListInternal(columnIndex, m);
+  }
+
+  @Override
+  public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T m) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
+    checkArrayElementType(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnName);
+    return getProtoMessageListInternal(columnIndex, m);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
+    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnIndex);
+    return getProtoEnumListInternal(columnIndex, method);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
+    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnName);
+    return getProtoEnumListInternal(columnIndex, method);
   }
 
   @Override
@@ -529,6 +575,17 @@ public abstract class AbstractStructReader implements StructReader {
         expectedCodes,
         actualType);
     checkNonNull(columnIndex, columnNameForError);
+  }
+
+  private void checkArrayElementType(
+      int columnIndex, List<Code> expectedCodes, Object columnNameForError) {
+    Type arrayElementType = getColumnType(columnIndex).getArrayElementType();
+    checkState(
+        expectedCodes.contains(arrayElementType.getCode()),
+        "Array element %s is not of correct type code: expected one of [%s] but was %s",
+        columnNameForError,
+        expectedCodes,
+        arrayElementType);
   }
 
   private void checkNonNullOfTypes(
