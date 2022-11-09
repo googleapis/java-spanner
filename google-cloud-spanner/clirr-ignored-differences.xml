@@ -202,4 +202,9 @@
     <className>com/google/cloud/spanner/DatabaseClient</className>
     <method>java.lang.String getDatabaseRole()</method>
   </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/connection/AbstractStatementParser</className>
+    <method>boolean checkReturningClauseInternal(java.lang.String)</method>
+  </difference>
 </differences>
