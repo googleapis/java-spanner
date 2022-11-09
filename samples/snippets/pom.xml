@@ -126,7 +126,7 @@
               <goal>copy-resources</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/spanner-samples</outputDirectory>
+              <outputDirectory>${project.build.directory}/spanner-snippets</outputDirectory>
               <resources>
                 <resource>
                   <directory>resources</directory>
@@ -148,7 +148,7 @@
               <goal>copy-dependencies</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/spanner-samples/lib</outputDirectory>
+              <outputDirectory>${project.build.directory}/spanner-snippets/lib</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
@@ -160,7 +160,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <finalName>spanner-samples/spanner-google-cloud-samples-jar-with-dependencies</finalName>
+          <finalName>spanner-snippets/spanner-google-cloud-samples</finalName>
           <archive>
             <index>false</index>
             <manifest>
