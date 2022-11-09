@@ -985,8 +985,10 @@ public interface Connection extends AutoCloseable {
    * returns the modified row count and execution statistics, and the effects of the DML statement
    * will be visible to subsequent operations in the transaction.
    */
-  ResultSet analyzeUpdateStatement(
-      Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options);
+  default ResultSet analyzeUpdateStatement(
+      Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   /**
    * Executes the given statement asynchronously as a DML statement. If the statement does not
