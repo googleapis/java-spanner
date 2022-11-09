@@ -229,7 +229,7 @@ public abstract class Value implements Serializable {
    * @param v Not null Proto message.
    */
   public static Value protoMessage(AbstractMessage v) {
-    Preconditions.checkNotNull(v, "Use protoMessage(ByteArray, String) for null values.");
+    Preconditions.checkNotNull(v, "Use protoMessage(ByteArray, Descriptor) for null values.");
     return protoMessage(
         ByteArray.copyFrom(v.toByteArray()), v.getDescriptorForType().getFullName());
   }
@@ -262,7 +262,7 @@ public abstract class Value implements Serializable {
    * @param v Proto Enum, which may be null.
    */
   public static Value protoEnum(ProtocolMessageEnum v) {
-    Preconditions.checkNotNull(v, "Use protoEnum(long, protoTypFqn) for null values.");
+    Preconditions.checkNotNull(v, "Use protoEnum(Long, Descriptor) for null values.");
     return protoEnum(v.getNumber(), v.getDescriptorForType().getFullName());
   }
 

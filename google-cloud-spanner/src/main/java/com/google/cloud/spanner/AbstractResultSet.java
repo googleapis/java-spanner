@@ -695,7 +695,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     @Override
     protected long getLongInternal(int columnIndex) {
-      return (long) rowData.get(columnIndex);
+      return (Long) rowData.get(columnIndex);
     }
 
     @Override
