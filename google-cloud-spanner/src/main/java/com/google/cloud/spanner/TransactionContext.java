@@ -110,9 +110,10 @@ public interface TransactionContext extends ReadContext {
   }
 
   /**
-   * Executes the DML statement(s) and returns the number of rows modified. For non-DML statements,
-   * it will result in an {@code IllegalArgumentException}. The effects of the DML statement will be
-   * visible to subsequent operations in the transaction.
+   * Executes the DML statement (which can be a simple DML statement or DML statement with a
+   * returning clause) and returns the number of rows modified. For non-DML statements, it will
+   * result in an {@code IllegalArgumentException}. The effects of the DML statement will be visible
+   * to subsequent operations in the transaction.
    */
   long executeUpdate(Statement statement, UpdateOption... options);
 
@@ -154,14 +155,17 @@ public interface TransactionContext extends ReadContext {
    * returns the modified row count and execution statistics, and the effects of the DML statement
    * will be visible to subsequent operations in the transaction.
    */
-  ResultSet analyzeUpdateStatement(
-      Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options);
+  default ResultSet analyzeUpdateStatement(
+      Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
   /**
-   * Executes a list of DML statements in a single request. The statements will be executed in order
-   * and the semantics is the same as if each statement is executed by {@code executeUpdate} in a
-   * loop. This method returns an array of long integers, each representing the number of rows
-   * modified by each statement.
+   * Executes a list of DML statements (which can include simple DML statements or DML statements
+   * with returning clause) in a single request. The statements will be executed in order and the
+   * semantics is the same as if each statement is executed by {@code executeUpdate} in a loop. This
+   * method returns an array of long integers, each representing the number of rows modified by each
+   * statement.
    *
    * <p>If an individual statement fails, execution stops and a {@code SpannerBatchUpdateException}
    * is returned, which includes the error and the number of rows affected by the statements that
