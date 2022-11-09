@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.4.4-sp.8](https://github.com/googleapis/java-spanner/compare/v6.4.4-sp.7...v6.4.4-sp.8) (2022-11-08)
+
+
+### Bug Fixes
+
+* skip enforcer check on gRPC dependency (6.4.4-sp branch) ([8370cfe](https://github.com/googleapis/java-spanner/commit/8370cfe88fb7ee47429be3dcd985046988cb5fc8))
+
 ## [6.4.4-sp.7](https://github.com/googleapis/java-spanner/compare/v6.4.4-sp.6...v6.4.4-sp.7) (2022-11-02)
 
 
