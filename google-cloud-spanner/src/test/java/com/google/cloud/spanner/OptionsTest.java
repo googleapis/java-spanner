@@ -561,4 +561,24 @@ public class OptionsTest {
     o3 = Options.fromTransactionOptions(Options.tag("app=spanner,env=stage"));
     assertThat(o2.equals(o3)).isFalse();
   }
+
+  @Test
+  public void optimisticLockEquality() {
+    Options option1 = Options.fromTransactionOptions(Options.optimisticLock());
+    Options option2 = Options.fromTransactionOptions(Options.optimisticLock());
+    Options option3 = Options.fromReadOptions();
+
+    assertEquals(option1, option2);
+    assertNotEquals(option1, option3);
+  }
+
+  @Test
+  public void optimisticLockHashCode() {
+    Options option1 = Options.fromTransactionOptions(Options.optimisticLock());
+    Options option2 = Options.fromTransactionOptions(Options.optimisticLock());
+    Options option3 = Options.fromReadOptions();
+
+    assertEquals(option1.hashCode(), option2.hashCode());
+    assertNotEquals(option1.hashCode(), option3.hashCode());
+  }
 }

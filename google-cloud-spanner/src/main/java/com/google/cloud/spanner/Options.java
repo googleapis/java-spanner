@@ -521,7 +521,9 @@ public final class Options implements Serializable {
     if (validateOnly != null) {
       result = 31 * result + validateOnly.hashCode();
     }
-    result = 31 * result + Boolean.hashCode(withOptimisticLock);
+    if (withOptimisticLock) {
+      result = 31 * result + Boolean.hashCode(withOptimisticLock);
+    }
     return result;
   }
 
