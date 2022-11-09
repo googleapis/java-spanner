@@ -22,6 +22,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
@@ -41,6 +42,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.connection.ConnectionOptions;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -73,6 +75,8 @@ public final class ITDmlReturningTest {
 
   @BeforeClass
   public static void setUpDatabase() {
+    assumeFalse(
+        "DML Returning is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     Database googleStandardSQLDatabase =
         env.getTestHelper()
             .createTestDatabase(
