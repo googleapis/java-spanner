@@ -408,6 +408,7 @@ public final class Options implements Serializable {
   Boolean validateOnly() {
     return validateOnly;
   }
+
   boolean withOptimisticLock() {
     return withOptimisticLock;
   }
