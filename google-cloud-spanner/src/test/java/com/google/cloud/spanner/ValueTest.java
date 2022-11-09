@@ -492,6 +492,56 @@ public class ValueTest {
   }
 
   @Test
+  public void testPgJsonb() {
+    String json = "{\"color\":\"red\",\"value\":\"#f00\"}";
+    Value v = Value.pgJsonb(json);
+    assertEquals(Type.pgJsonb(), v.getType());
+    assertFalse(v.isNull());
+    assertEquals(json, v.getPgJsonb());
+    assertEquals(json, v.getString());
+  }
+
+  @Test
+  public void testPgJsonbNull() {
+    Value v = Value.pgJsonb(null);
+    assertEquals(Type.pgJsonb(), v.getType());
+    assertTrue(v.isNull());
+    assertEquals(NULL_STRING, v.toString());
+    assertThrowsWithMessage(v::getPgJsonb, "null value");
+    assertThrowsWithMessage(v::getString, "null value");
+  }
+
+  @Test
+  public void testPgJsonbEmpty() {
+    String json = "{}";
+    Value v = Value.pgJsonb(json);
+    assertEquals(json, v.getPgJsonb());
+  }
+
+  @Test
+  public void testPgJsonbWithEmptyArray() {
+    String json = "[]";
+    Value v = Value.pgJsonb(json);
+    assertEquals(json, v.getPgJsonb());
+  }
+
+  @Test
+  public void testPgJsonbWithArray() {
+    String json =
+        "[{\"color\":\"red\",\"value\":\"#f00\"},{\"color\":\"green\",\"value\":\"#0f0\"},{\"color\":\"blue\",\"value\":\"#00f\"},{\"color\":\"cyan\",\"value\":\"#0ff\"},{\"color\":\"magenta\",\"value\":\"#f0f\"},{\"color\":\"yellow\",\"value\":\"#ff0\"},{\"color\":\"black\",\"value\":\"#000\"}]";
+    Value v = Value.pgJsonb(json);
+    assertEquals(json, v.getPgJsonb());
+  }
+
+  @Test
+  public void testPgJsonbNested() {
+    String json =
+        "[{\"id\":\"0001\",\"type\":\"donut\",\"name\":\"Cake\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"},{\"id\":\"1003\",\"type\":\"Blueberry\"},{\"id\":\"1004\",\"type\":\"Devil's Food\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5007\",\"type\":\"Powdered Sugar\"},{\"id\":\"5006\",\"type\":\"Chocolate with Sprinkles\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0002\",\"type\":\"donut\",\"name\":\"Raised\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5005\",\"type\":\"Sugar\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]},{\"id\":\"0003\",\"type\":\"donut\",\"name\":\"Old Fashioned\",\"ppu\":0.55,\"batters\":{\"batter\":[{\"id\":\"1001\",\"type\":\"Regular\"},{\"id\":\"1002\",\"type\":\"Chocolate\"}]},\"topping\":[{\"id\":\"5001\",\"type\":\"None\"},{\"id\":\"5002\",\"type\":\"Glazed\"},{\"id\":\"5003\",\"type\":\"Chocolate\"},{\"id\":\"5004\",\"type\":\"Maple\"}]}]";
+    Value v = Value.pgJsonb(json);
+    assertEquals(json, v.getPgJsonb());
+  }
+
+  @Test
   public void bytes() {
     ByteArray bytes = newByteArray("abc");
     Value v = Value.bytes(bytes);
@@ -892,6 +942,41 @@ public class ValueTest {
   public void jsonArrayTryGetFloat64Array() {
     Value value = Value.jsonArray(Collections.singletonList("{}"));
     assertThrowsWithMessage(value::getFloat64Array, "Expected: ARRAY<FLOAT64> actual: ARRAY<JSON>");
+  }
+
+  @Test
+  public void testPgJsonbArray() {
+    String one = "{}";
+    String two = null;
+    String three = "{\"color\":\"red\",\"value\":\"#f00\"}";
+    Value v = Value.pgJsonbArray(Arrays.asList(one, two, three));
+    assertFalse(v.isNull());
+    assertArrayEquals(new String[] {one, two, three}, v.getPgJsonbArray().toArray());
+    assertEquals("[{},NULL,{\"color\":\"red\",\"value\":\"#f00\"}]", v.toString());
+    assertArrayEquals(new String[] {one, two, three}, v.getStringArray().toArray());
+  }
+
+  @Test
+  public void testPgJsonbArrayNull() {
+    Value v = Value.pgJsonbArray(null);
+    assertTrue(v.isNull());
+    assertEquals(NULL_STRING, v.toString());
+    assertThrowsWithMessage(v::getPgJsonbArray, "null value");
+    assertThrowsWithMessage(v::getStringArray, "null value");
+  }
+
+  @Test
+  public void testPgJsonbArrayTryGetBytesArray() {
+    Value value = Value.pgJsonbArray(Collections.singletonList("{}"));
+    assertThrowsWithMessage(
+        value::getBytesArray, "Expected: ARRAY<BYTES> actual: ARRAY<JSON<PG_JSONB>>");
+  }
+
+  @Test
+  public void testPgJsonbArrayTryGetFloat64Array() {
+    Value value = Value.pgJsonbArray(Collections.singletonList("{}"));
+    assertThrowsWithMessage(
+        value::getFloat64Array, "Expected: ARRAY<FLOAT64> actual: ARRAY<JSON<PG_JSONB>>");
   }
 
   @Test

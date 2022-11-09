@@ -63,8 +63,8 @@ public interface CreateInstanceMetadataOrBuilder
    *
    * <pre>
    * The time at which the
-   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance] request was
-   * received.
+   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance]
+   * request was received.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp start_time = 2;</code>
@@ -77,8 +77,8 @@ public interface CreateInstanceMetadataOrBuilder
    *
    * <pre>
    * The time at which the
-   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance] request was
-   * received.
+   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance]
+   * request was received.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp start_time = 2;</code>
@@ -91,8 +91,8 @@ public interface CreateInstanceMetadataOrBuilder
    *
    * <pre>
    * The time at which the
-   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance] request was
-   * received.
+   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance]
+   * request was received.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp start_time = 2;</code>

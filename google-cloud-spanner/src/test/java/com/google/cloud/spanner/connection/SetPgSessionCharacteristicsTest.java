@@ -147,6 +147,10 @@ public class SetPgSessionCharacteristicsTest {
           "set default_transaction_isolation to 'serializable'",
           "set default_transaction_isolation to 'SERIALIZABLE'",
           "set default_transaction_isolation to \"SERIALIZABLE\"",
+          "set default_transaction_isolation to default",
+          "set default_transaction_isolation to DEFAULT",
+          "set default_transaction_isolation = default",
+          "set default_transaction_isolation = DEFAULT"
         }) {
       ParsedStatement statement = parser.parse(Statement.of(sql));
       assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());

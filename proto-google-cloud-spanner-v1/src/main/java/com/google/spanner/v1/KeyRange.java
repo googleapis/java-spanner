@@ -110,105 +110,6 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
     return this.unknownFields;
   }
 
-  private KeyRange(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              com.google.protobuf.ListValue.Builder subBuilder = null;
-              if (startKeyTypeCase_ == 1) {
-                subBuilder = ((com.google.protobuf.ListValue) startKeyType_).toBuilder();
-              }
-              startKeyType_ =
-                  input.readMessage(com.google.protobuf.ListValue.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.protobuf.ListValue) startKeyType_);
-                startKeyType_ = subBuilder.buildPartial();
-              }
-              startKeyTypeCase_ = 1;
-              break;
-            }
-          case 18:
-            {
-              com.google.protobuf.ListValue.Builder subBuilder = null;
-              if (startKeyTypeCase_ == 2) {
-                subBuilder = ((com.google.protobuf.ListValue) startKeyType_).toBuilder();
-              }
-              startKeyType_ =
-                  input.readMessage(com.google.protobuf.ListValue.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.protobuf.ListValue) startKeyType_);
-                startKeyType_ = subBuilder.buildPartial();
-              }
-              startKeyTypeCase_ = 2;
-              break;
-            }
-          case 26:
-            {
-              com.google.protobuf.ListValue.Builder subBuilder = null;
-              if (endKeyTypeCase_ == 3) {
-                subBuilder = ((com.google.protobuf.ListValue) endKeyType_).toBuilder();
-              }
-              endKeyType_ =
-                  input.readMessage(com.google.protobuf.ListValue.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.protobuf.ListValue) endKeyType_);
-                endKeyType_ = subBuilder.buildPartial();
-              }
-              endKeyTypeCase_ = 3;
-              break;
-            }
-          case 34:
-            {
-              com.google.protobuf.ListValue.Builder subBuilder = null;
-              if (endKeyTypeCase_ == 4) {
-                subBuilder = ((com.google.protobuf.ListValue) endKeyType_).toBuilder();
-              }
-              endKeyType_ =
-                  input.readMessage(com.google.protobuf.ListValue.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.protobuf.ListValue) endKeyType_);
-                endKeyType_ = subBuilder.buildPartial();
-              }
-              endKeyTypeCase_ = 4;
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (com.google.protobuf.UninitializedMessageException e) {
-      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.KeysProto.internal_static_google_spanner_v1_KeyRange_descriptor;
   }
@@ -558,7 +459,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
     if (endKeyTypeCase_ == 4) {
       output.writeMessage(4, (com.google.protobuf.ListValue) endKeyType_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -587,7 +488,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
           com.google.protobuf.CodedOutputStream.computeMessageSize(
               4, (com.google.protobuf.ListValue) endKeyType_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -624,7 +525,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       case 0:
       default:
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -659,7 +560,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       case 0:
       default:
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -845,22 +746,27 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
     }
 
     // Construct using com.google.spanner.v1.KeyRange.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      if (startClosedBuilder_ != null) {
+        startClosedBuilder_.clear();
+      }
+      if (startOpenBuilder_ != null) {
+        startOpenBuilder_.clear();
+      }
+      if (endClosedBuilder_ != null) {
+        endClosedBuilder_.clear();
+      }
+      if (endOpenBuilder_ != null) {
+        endOpenBuilder_.clear();
+      }
       startKeyTypeCase_ = 0;
       startKeyType_ = null;
       endKeyTypeCase_ = 0;
@@ -1001,7 +907,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
             break;
           }
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -1016,17 +922,55 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.KeyRange parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                input.readMessage(getStartClosedFieldBuilder().getBuilder(), extensionRegistry);
+                startKeyTypeCase_ = 1;
+                break;
+              } // case 10
+            case 18:
+              {
+                input.readMessage(getStartOpenFieldBuilder().getBuilder(), extensionRegistry);
+                startKeyTypeCase_ = 2;
+                break;
+              } // case 18
+            case 26:
+              {
+                input.readMessage(getEndClosedFieldBuilder().getBuilder(), extensionRegistry);
+                endKeyTypeCase_ = 3;
+                break;
+              } // case 26
+            case 34:
+              {
+                input.readMessage(getEndOpenFieldBuilder().getBuilder(), extensionRegistry);
+                endKeyTypeCase_ = 4;
+                break;
+              } // case 34
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.KeyRange) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -1952,7 +1896,18 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new KeyRange(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

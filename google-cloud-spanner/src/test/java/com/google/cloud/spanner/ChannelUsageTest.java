@@ -130,6 +130,12 @@ public class ChannelUsageTest {
                       ServerCall<ReqT, RespT> call,
                       Metadata headers,
                       ServerCallHandler<ReqT, RespT> next) {
+                    // Verify that the compressor name header is set.
+                    assertEquals(
+                        "gzip",
+                        headers.get(
+                            Metadata.Key.of(
+                                "x-response-encoding", Metadata.ASCII_STRING_MARSHALLER)));
                     Attributes attributes = call.getAttributes();
                     @SuppressWarnings({"unchecked", "deprecation"})
                     Attributes.Key<InetSocketAddress> key =
@@ -179,6 +185,7 @@ public class ChannelUsageTest {
                   return input;
                 })
             .setNumChannels(numChannels)
+            .setCompressorName("gzip")
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
                     .setMinSessions(numChannels * 2)

@@ -133,18 +133,25 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
+import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceAdminGrpc;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
+import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
@@ -382,6 +389,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                           MoreObjects.firstNonNull(
                               options.getInterceptorProvider(),
                               SpannerInterceptorProvider.createDefault()))
+                      // This sets the response compressor (Server -> Client).
                       .withEncoding(compressorName))
               .setHeaderProvider(headerProviderWithUserAgent)
               // Attempts direct access to spanner service over gRPC to improve throughput,
@@ -880,6 +888,48 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
+      String parent,
+      String instanceConfigId,
+      InstanceConfig instanceConfig,
+      @Nullable Boolean validateOnly)
+      throws SpannerException {
+    CreateInstanceConfigRequest.Builder builder =
+        CreateInstanceConfigRequest.newBuilder()
+            .setParent(parent)
+            .setInstanceConfigId(instanceConfigId)
+            .setInstanceConfig(instanceConfig);
+    if (validateOnly != null) {
+      builder.setValidateOnly(validateOnly);
+    }
+    CreateInstanceConfigRequest request = builder.build();
+    GrpcCallContext context =
+        newCallContext(null, parent, request, InstanceAdminGrpc.getCreateInstanceConfigMethod());
+    return instanceAdminStub.createInstanceConfigOperationCallable().futureCall(request, context);
+  }
+
+  @Override
+  public OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
+      InstanceConfig instanceConfig, @Nullable Boolean validateOnly, FieldMask fieldMask)
+      throws SpannerException {
+    UpdateInstanceConfigRequest.Builder builder =
+        UpdateInstanceConfigRequest.newBuilder()
+            .setInstanceConfig(instanceConfig)
+            .setUpdateMask(fieldMask);
+    if (validateOnly != null) {
+      builder.setValidateOnly(validateOnly);
+    }
+    UpdateInstanceConfigRequest request = builder.build();
+    GrpcCallContext context =
+        newCallContext(
+            null,
+            instanceConfig.getName(),
+            request,
+            InstanceAdminGrpc.getUpdateInstanceConfigMethod());
+    return instanceAdminStub.updateInstanceConfigOperationCallable().futureCall(request, context);
+  }
+
+  @Override
   public InstanceConfig getInstanceConfig(String instanceConfigName) throws SpannerException {
     GetInstanceConfigRequest request =
         GetInstanceConfigRequest.newBuilder().setName(instanceConfigName).build();
@@ -887,6 +937,55 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context =
         newCallContext(null, projectName, request, InstanceAdminGrpc.getGetInstanceConfigMethod());
     return get(instanceAdminStub.getInstanceConfigCallable().futureCall(request, context));
+  }
+
+  @Override
+  public void deleteInstanceConfig(
+      String instanceConfigName, @Nullable String etag, @Nullable Boolean validateOnly)
+      throws SpannerException {
+    DeleteInstanceConfigRequest.Builder requestBuilder =
+        DeleteInstanceConfigRequest.newBuilder().setName(instanceConfigName);
+
+    if (etag != null) {
+      requestBuilder.setEtag(etag);
+    }
+    if (validateOnly != null) {
+      requestBuilder.setValidateOnly(validateOnly);
+    }
+    DeleteInstanceConfigRequest request = requestBuilder.build();
+    GrpcCallContext context =
+        newCallContext(
+            null, instanceConfigName, request, InstanceAdminGrpc.getDeleteInstanceConfigMethod());
+    get(instanceAdminStub.deleteInstanceConfigCallable().futureCall(request, context));
+  }
+
+  @Override
+  public Paginated<Operation> listInstanceConfigOperations(
+      int pageSize, @Nullable String filter, @Nullable String pageToken) {
+    acquireAdministrativeRequestsRateLimiter();
+    ListInstanceConfigOperationsRequest.Builder requestBuilder =
+        ListInstanceConfigOperationsRequest.newBuilder()
+            .setParent(projectName)
+            .setPageSize(pageSize);
+    if (filter != null) {
+      requestBuilder.setFilter(filter);
+    }
+    if (pageToken != null) {
+      requestBuilder.setPageToken(pageToken);
+    }
+    final ListInstanceConfigOperationsRequest request = requestBuilder.build();
+
+    final GrpcCallContext context =
+        newCallContext(
+            null, projectName, request, InstanceAdminGrpc.getListInstanceConfigOperationsMethod());
+    ListInstanceConfigOperationsResponse response =
+        runWithRetryOnAdministrativeRequestsExceeded(
+            () ->
+                get(
+                    instanceAdminStub
+                        .listInstanceConfigOperationsCallable()
+                        .futureCall(request, context)));
+    return new Paginated<>(response.getOperationsList(), response.getNextPageToken());
   }
 
   @Override
@@ -1802,6 +1901,10 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context = GrpcCallContext.createDefault();
     if (options != null) {
       context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
+    }
+    if (compressorName != null) {
+      // This sets the compressor for Client -> Server.
+      context = context.withCallOptions(context.getCallOptions().withCompression(compressorName));
     }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
     if (callCredentialsProvider != null) {

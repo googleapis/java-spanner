@@ -28,7 +28,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>libraries-bom</artifactId>
-        <version>26.1.0</version>
+        <version>26.1.4</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -61,7 +61,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.2.2</version>
+        <version>3.3.0</version>
         <configuration>
           <archive>
             <manifest>
@@ -103,13 +103,13 @@
         <dependency>
           <groupId>org.junit.vintage</groupId>
           <artifactId>junit-vintage-engine</artifactId>
-          <version>5.9.0</version>
+          <version>5.9.1</version>
           <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.graalvm.buildtools</groupId>
           <artifactId>junit-platform-native</artifactId>
-          <version>0.9.13</version>
+          <version>0.9.17</version>
           <scope>test</scope>
         </dependency>
       </dependencies>
@@ -130,7 +130,7 @@
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
-            <version>0.9.13</version>
+            <version>0.9.16</version>
             <extensions>true</extensions>
             <configuration>
               <mainClass>com.example.spanner.NativeImageSpannerSample</mainClass>

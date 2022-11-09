@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.admin.instance.v1.stub;
 
+import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancesPagedResponse;
 
@@ -30,17 +31,24 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.longrunning.stub.OperationsStub;
 import com.google.protobuf.Empty;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
+import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
+import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import javax.annotation.Generated;
@@ -74,6 +82,45 @@ public abstract class InstanceAdminStub implements BackgroundResource {
 
   public UnaryCallable<GetInstanceConfigRequest, InstanceConfig> getInstanceConfigCallable() {
     throw new UnsupportedOperationException("Not implemented: getInstanceConfigCallable()");
+  }
+
+  public OperationCallable<
+          CreateInstanceConfigRequest, InstanceConfig, CreateInstanceConfigMetadata>
+      createInstanceConfigOperationCallable() {
+    throw new UnsupportedOperationException(
+        "Not implemented: createInstanceConfigOperationCallable()");
+  }
+
+  public UnaryCallable<CreateInstanceConfigRequest, Operation> createInstanceConfigCallable() {
+    throw new UnsupportedOperationException("Not implemented: createInstanceConfigCallable()");
+  }
+
+  public OperationCallable<
+          UpdateInstanceConfigRequest, InstanceConfig, UpdateInstanceConfigMetadata>
+      updateInstanceConfigOperationCallable() {
+    throw new UnsupportedOperationException(
+        "Not implemented: updateInstanceConfigOperationCallable()");
+  }
+
+  public UnaryCallable<UpdateInstanceConfigRequest, Operation> updateInstanceConfigCallable() {
+    throw new UnsupportedOperationException("Not implemented: updateInstanceConfigCallable()");
+  }
+
+  public UnaryCallable<DeleteInstanceConfigRequest, Empty> deleteInstanceConfigCallable() {
+    throw new UnsupportedOperationException("Not implemented: deleteInstanceConfigCallable()");
+  }
+
+  public UnaryCallable<
+          ListInstanceConfigOperationsRequest, ListInstanceConfigOperationsPagedResponse>
+      listInstanceConfigOperationsPagedCallable() {
+    throw new UnsupportedOperationException(
+        "Not implemented: listInstanceConfigOperationsPagedCallable()");
+  }
+
+  public UnaryCallable<ListInstanceConfigOperationsRequest, ListInstanceConfigOperationsResponse>
+      listInstanceConfigOperationsCallable() {
+    throw new UnsupportedOperationException(
+        "Not implemented: listInstanceConfigOperationsCallable()");
   }
 
   public UnaryCallable<ListInstancesRequest, ListInstancesPagedResponse>

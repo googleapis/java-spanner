@@ -40,8 +40,11 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
+import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
@@ -49,11 +52,15 @@ import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import com.google.spanner.admin.instance.v1.InstanceName;
+import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
+import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
 import com.google.spanner.admin.instance.v1.ProjectName;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import java.io.IOException;
@@ -85,8 +92,11 @@ import javax.annotation.Generated;
  * calls that map to API methods. Sample code to get started:
  *
  * <pre>{@code
- * // This snippet has been automatically generated for illustrative purposes only.
- * // It may require modifications to work in your environment.
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
  *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
  *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name);
@@ -122,8 +132,11 @@ import javax.annotation.Generated;
  * <p>To customize credentials:
  *
  * <pre>{@code
- * // This snippet has been automatically generated for illustrative purposes only.
- * // It may require modifications to work in your environment.
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * InstanceAdminSettings instanceAdminSettings =
  *     InstanceAdminSettings.newBuilder()
  *         .setCredentialsProvider(FixedCredentialsProvider.create(myCredentials))
@@ -134,8 +147,11 @@ import javax.annotation.Generated;
  * <p>To customize the endpoint:
  *
  * <pre>{@code
- * // This snippet has been automatically generated for illustrative purposes only.
- * // It may require modifications to work in your environment.
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * InstanceAdminSettings instanceAdminSettings =
  *     InstanceAdminSettings.newBuilder().setEndpoint(myEndpoint).build();
  * InstanceAdminClient instanceAdminClient = InstanceAdminClient.create(instanceAdminSettings);
@@ -145,8 +161,11 @@ import javax.annotation.Generated;
  * the wire:
  *
  * <pre>{@code
- * // This snippet has been automatically generated for illustrative purposes only.
- * // It may require modifications to work in your environment.
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * InstanceAdminSettings instanceAdminSettings =
  *     InstanceAdminSettings.newBuilder()
  *         .setTransportChannelProvider(
@@ -239,8 +258,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ProjectName parent = ProjectName.of("[PROJECT]");
    *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(parent).iterateAll()) {
@@ -268,8 +290,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String parent = ProjectName.of("[PROJECT]").toString();
    *   for (InstanceConfig element : instanceAdminClient.listInstanceConfigs(parent).iterateAll()) {
@@ -295,8 +320,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ListInstanceConfigsRequest request =
    *       ListInstanceConfigsRequest.newBuilder()
@@ -325,8 +353,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ListInstanceConfigsRequest request =
    *       ListInstanceConfigsRequest.newBuilder()
@@ -355,8 +386,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ListInstanceConfigsRequest request =
    *       ListInstanceConfigsRequest.newBuilder()
@@ -392,8 +426,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
    *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name);
@@ -419,8 +456,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString();
    *   InstanceConfig response = instanceAdminClient.getInstanceConfig(name);
@@ -443,8 +483,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   GetInstanceConfigRequest request =
    *       GetInstanceConfigRequest.newBuilder()
@@ -468,8 +511,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   GetInstanceConfigRequest request =
    *       GetInstanceConfigRequest.newBuilder()
@@ -488,13 +534,999 @@ public class InstanceAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
+   * Creates an instance config and begins preparing it to be used. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
+   * instance config. The instance config name is assigned by the caller. If the named instance
+   * config already exists, `CreateInstanceConfig` returns `ALREADY_EXISTS`.
+   *
+   * <p>Immediately after the request returns:
+   *
+   * <p>&#42; The instance config is readable via the API, with all requested attributes. The
+   * instance config's [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+   * field is set to true. Its state is `CREATING`.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; Cancelling the operation renders the instance config immediately unreadable via the
+   * API. &#42; Except for deleting the creating resource, all other attempts to modify the instance
+   * config are rejected.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Instances can be created using the instance configuration. &#42; The instance config's
+   * [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling] field becomes false.
+   * Its state becomes `READY`.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance config. The [metadata][google.longrunning.Operation.metadata] field
+   * type is
+   * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   *
+   * <p>Authorization requires `spanner.instanceConfigs.create` permission on the resource
+   * [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   InstanceConfig instanceConfig = InstanceConfig.newBuilder().build();
+   *   String instanceConfigId = "instanceConfigId1750947762";
+   *   InstanceConfig response =
+   *       instanceAdminClient
+   *           .createInstanceConfigAsync(parent, instanceConfig, instanceConfigId)
+   *           .get();
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The name of the project in which to create the instance config. Values
+   *     are of the form `projects/&lt;project&gt;`.
+   * @param instanceConfig Required. The InstanceConfig proto of the configuration to create.
+   *     instance_config.name must be `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
+   *     instance_config.base_config must be a Google managed configuration name, e.g.
+   *     &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
+   * @param instanceConfigId Required. The ID of the instance config to create. Valid identifiers
+   *     are of the form `custom-[-a-z0-9]&#42;[a-z0-9]` and must be between 2 and 64 characters in
+   *     length. The `custom-` prefix is required to avoid name conflicts with Google managed
+   *     configurations.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<InstanceConfig, CreateInstanceConfigMetadata>
+      createInstanceConfigAsync(
+          ProjectName parent, InstanceConfig instanceConfig, String instanceConfigId) {
+    CreateInstanceConfigRequest request =
+        CreateInstanceConfigRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .setInstanceConfig(instanceConfig)
+            .setInstanceConfigId(instanceConfigId)
+            .build();
+    return createInstanceConfigAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Creates an instance config and begins preparing it to be used. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
+   * instance config. The instance config name is assigned by the caller. If the named instance
+   * config already exists, `CreateInstanceConfig` returns `ALREADY_EXISTS`.
+   *
+   * <p>Immediately after the request returns:
+   *
+   * <p>&#42; The instance config is readable via the API, with all requested attributes. The
+   * instance config's [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+   * field is set to true. Its state is `CREATING`.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; Cancelling the operation renders the instance config immediately unreadable via the
+   * API. &#42; Except for deleting the creating resource, all other attempts to modify the instance
+   * config are rejected.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Instances can be created using the instance configuration. &#42; The instance config's
+   * [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling] field becomes false.
+   * Its state becomes `READY`.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance config. The [metadata][google.longrunning.Operation.metadata] field
+   * type is
+   * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   *
+   * <p>Authorization requires `spanner.instanceConfigs.create` permission on the resource
+   * [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String parent = ProjectName.of("[PROJECT]").toString();
+   *   InstanceConfig instanceConfig = InstanceConfig.newBuilder().build();
+   *   String instanceConfigId = "instanceConfigId1750947762";
+   *   InstanceConfig response =
+   *       instanceAdminClient
+   *           .createInstanceConfigAsync(parent, instanceConfig, instanceConfigId)
+   *           .get();
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The name of the project in which to create the instance config. Values
+   *     are of the form `projects/&lt;project&gt;`.
+   * @param instanceConfig Required. The InstanceConfig proto of the configuration to create.
+   *     instance_config.name must be `&lt;parent&gt;/instanceConfigs/&lt;instance_config_id&gt;`.
+   *     instance_config.base_config must be a Google managed configuration name, e.g.
+   *     &lt;parent&gt;/instanceConfigs/us-east1, &lt;parent&gt;/instanceConfigs/nam3.
+   * @param instanceConfigId Required. The ID of the instance config to create. Valid identifiers
+   *     are of the form `custom-[-a-z0-9]&#42;[a-z0-9]` and must be between 2 and 64 characters in
+   *     length. The `custom-` prefix is required to avoid name conflicts with Google managed
+   *     configurations.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<InstanceConfig, CreateInstanceConfigMetadata>
+      createInstanceConfigAsync(
+          String parent, InstanceConfig instanceConfig, String instanceConfigId) {
+    CreateInstanceConfigRequest request =
+        CreateInstanceConfigRequest.newBuilder()
+            .setParent(parent)
+            .setInstanceConfig(instanceConfig)
+            .setInstanceConfigId(instanceConfigId)
+            .build();
+    return createInstanceConfigAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Creates an instance config and begins preparing it to be used. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
+   * instance config. The instance config name is assigned by the caller. If the named instance
+   * config already exists, `CreateInstanceConfig` returns `ALREADY_EXISTS`.
+   *
+   * <p>Immediately after the request returns:
+   *
+   * <p>&#42; The instance config is readable via the API, with all requested attributes. The
+   * instance config's [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+   * field is set to true. Its state is `CREATING`.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; Cancelling the operation renders the instance config immediately unreadable via the
+   * API. &#42; Except for deleting the creating resource, all other attempts to modify the instance
+   * config are rejected.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Instances can be created using the instance configuration. &#42; The instance config's
+   * [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling] field becomes false.
+   * Its state becomes `READY`.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance config. The [metadata][google.longrunning.Operation.metadata] field
+   * type is
+   * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   *
+   * <p>Authorization requires `spanner.instanceConfigs.create` permission on the resource
+   * [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   CreateInstanceConfigRequest request =
+   *       CreateInstanceConfigRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setInstanceConfigId("instanceConfigId1750947762")
+   *           .setInstanceConfig(InstanceConfig.newBuilder().build())
+   *           .setValidateOnly(true)
+   *           .build();
+   *   InstanceConfig response = instanceAdminClient.createInstanceConfigAsync(request).get();
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<InstanceConfig, CreateInstanceConfigMetadata>
+      createInstanceConfigAsync(CreateInstanceConfigRequest request) {
+    return createInstanceConfigOperationCallable().futureCall(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Creates an instance config and begins preparing it to be used. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
+   * instance config. The instance config name is assigned by the caller. If the named instance
+   * config already exists, `CreateInstanceConfig` returns `ALREADY_EXISTS`.
+   *
+   * <p>Immediately after the request returns:
+   *
+   * <p>&#42; The instance config is readable via the API, with all requested attributes. The
+   * instance config's [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+   * field is set to true. Its state is `CREATING`.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; Cancelling the operation renders the instance config immediately unreadable via the
+   * API. &#42; Except for deleting the creating resource, all other attempts to modify the instance
+   * config are rejected.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Instances can be created using the instance configuration. &#42; The instance config's
+   * [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling] field becomes false.
+   * Its state becomes `READY`.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance config. The [metadata][google.longrunning.Operation.metadata] field
+   * type is
+   * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   *
+   * <p>Authorization requires `spanner.instanceConfigs.create` permission on the resource
+   * [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   CreateInstanceConfigRequest request =
+   *       CreateInstanceConfigRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setInstanceConfigId("instanceConfigId1750947762")
+   *           .setInstanceConfig(InstanceConfig.newBuilder().build())
+   *           .setValidateOnly(true)
+   *           .build();
+   *   OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> future =
+   *       instanceAdminClient.createInstanceConfigOperationCallable().futureCall(request);
+   *   // Do something.
+   *   InstanceConfig response = future.get();
+   * }
+   * }</pre>
+   */
+  public final OperationCallable<
+          CreateInstanceConfigRequest, InstanceConfig, CreateInstanceConfigMetadata>
+      createInstanceConfigOperationCallable() {
+    return stub.createInstanceConfigOperationCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Creates an instance config and begins preparing it to be used. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
+   * instance config. The instance config name is assigned by the caller. If the named instance
+   * config already exists, `CreateInstanceConfig` returns `ALREADY_EXISTS`.
+   *
+   * <p>Immediately after the request returns:
+   *
+   * <p>&#42; The instance config is readable via the API, with all requested attributes. The
+   * instance config's [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+   * field is set to true. Its state is `CREATING`.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; Cancelling the operation renders the instance config immediately unreadable via the
+   * API. &#42; Except for deleting the creating resource, all other attempts to modify the instance
+   * config are rejected.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Instances can be created using the instance configuration. &#42; The instance config's
+   * [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling] field becomes false.
+   * Its state becomes `READY`.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * creation of the instance config. The [metadata][google.longrunning.Operation.metadata] field
+   * type is
+   * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   *
+   * <p>Authorization requires `spanner.instanceConfigs.create` permission on the resource
+   * [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   CreateInstanceConfigRequest request =
+   *       CreateInstanceConfigRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setInstanceConfigId("instanceConfigId1750947762")
+   *           .setInstanceConfig(InstanceConfig.newBuilder().build())
+   *           .setValidateOnly(true)
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       instanceAdminClient.createInstanceConfigCallable().futureCall(request);
+   *   // Do something.
+   *   Operation response = future.get();
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<CreateInstanceConfigRequest, Operation>
+      createInstanceConfigCallable() {
+    return stub.createInstanceConfigCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates an instance config. The returned [long-running operation][google.longrunning.Operation]
+   * can be used to track the progress of updating the instance. If the named instance config does
+   * not exist, returns `NOT_FOUND`.
+   *
+   * <p>Only user managed configurations can be updated.
+   *
+   * <p>Immediately after the request returns:
+   *
+   * <p>&#42; The instance config's
+   * [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling] field is set to
+   * true.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; Cancelling the operation sets its metadata's
+   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time]. The
+   * operation is guaranteed to succeed at undoing all changes, after which point it terminates with
+   * a `CANCELLED` status. &#42; All other attempts to modify the instance config are rejected.
+   * &#42; Reading the instance config via the API continues to give the pre-request values.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Creating instances using the instance configuration uses the new values. &#42; The
+   * instance config's new values are readable via the API. &#42; The instance config's
+   * [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling] field becomes false.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * the instance config modification. The [metadata][google.longrunning.Operation.metadata] field
+   * type is
+   * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   *
+   * <p>Authorization requires `spanner.instanceConfigs.update` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceConfig instanceConfig = InstanceConfig.newBuilder().build();
+   *   FieldMask updateMask = FieldMask.newBuilder().build();
+   *   InstanceConfig response =
+   *       instanceAdminClient.updateInstanceConfigAsync(instanceConfig, updateMask).get();
+   * }
+   * }</pre>
+   *
+   * @param instanceConfig Required. The user instance config to update, which must always include
+   *     the instance config name. Otherwise, only fields mentioned in
+   *     [update_mask][google.spanner.admin.instance.v1.UpdateInstanceConfigRequest.update_mask]
+   *     need be included. To prevent conflicts of concurrent updates,
+   *     [etag][google.spanner.admin.instance.v1.InstanceConfig.reconciling] can be used.
+   * @param updateMask Required. A mask specifying which fields in
+   *     [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig] should be updated. The
+   *     field mask must always be specified; this prevents any future fields in
+   *     [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig] from being erased
+   *     accidentally by clients that do not know about them. Only display_name and labels can be
+   *     updated.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata>
+      updateInstanceConfigAsync(InstanceConfig instanceConfig, FieldMask updateMask) {
+    UpdateInstanceConfigRequest request =
+        UpdateInstanceConfigRequest.newBuilder()
+            .setInstanceConfig(instanceConfig)
+            .setUpdateMask(updateMask)
+            .build();
+    return updateInstanceConfigAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates an instance config. The returned [long-running operation][google.longrunning.Operation]
+   * can be used to track the progress of updating the instance. If the named instance config does
+   * not exist, returns `NOT_FOUND`.
+   *
+   * <p>Only user managed configurations can be updated.
+   *
+   * <p>Immediately after the request returns:
+   *
+   * <p>&#42; The instance config's
+   * [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling] field is set to
+   * true.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; Cancelling the operation sets its metadata's
+   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time]. The
+   * operation is guaranteed to succeed at undoing all changes, after which point it terminates with
+   * a `CANCELLED` status. &#42; All other attempts to modify the instance config are rejected.
+   * &#42; Reading the instance config via the API continues to give the pre-request values.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Creating instances using the instance configuration uses the new values. &#42; The
+   * instance config's new values are readable via the API. &#42; The instance config's
+   * [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling] field becomes false.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * the instance config modification. The [metadata][google.longrunning.Operation.metadata] field
+   * type is
+   * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   *
+   * <p>Authorization requires `spanner.instanceConfigs.update` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   UpdateInstanceConfigRequest request =
+   *       UpdateInstanceConfigRequest.newBuilder()
+   *           .setInstanceConfig(InstanceConfig.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
+   *           .setValidateOnly(true)
+   *           .build();
+   *   InstanceConfig response = instanceAdminClient.updateInstanceConfigAsync(request).get();
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata>
+      updateInstanceConfigAsync(UpdateInstanceConfigRequest request) {
+    return updateInstanceConfigOperationCallable().futureCall(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates an instance config. The returned [long-running operation][google.longrunning.Operation]
+   * can be used to track the progress of updating the instance. If the named instance config does
+   * not exist, returns `NOT_FOUND`.
+   *
+   * <p>Only user managed configurations can be updated.
+   *
+   * <p>Immediately after the request returns:
+   *
+   * <p>&#42; The instance config's
+   * [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling] field is set to
+   * true.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; Cancelling the operation sets its metadata's
+   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time]. The
+   * operation is guaranteed to succeed at undoing all changes, after which point it terminates with
+   * a `CANCELLED` status. &#42; All other attempts to modify the instance config are rejected.
+   * &#42; Reading the instance config via the API continues to give the pre-request values.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Creating instances using the instance configuration uses the new values. &#42; The
+   * instance config's new values are readable via the API. &#42; The instance config's
+   * [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling] field becomes false.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * the instance config modification. The [metadata][google.longrunning.Operation.metadata] field
+   * type is
+   * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   *
+   * <p>Authorization requires `spanner.instanceConfigs.update` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   UpdateInstanceConfigRequest request =
+   *       UpdateInstanceConfigRequest.newBuilder()
+   *           .setInstanceConfig(InstanceConfig.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
+   *           .setValidateOnly(true)
+   *           .build();
+   *   OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> future =
+   *       instanceAdminClient.updateInstanceConfigOperationCallable().futureCall(request);
+   *   // Do something.
+   *   InstanceConfig response = future.get();
+   * }
+   * }</pre>
+   */
+  public final OperationCallable<
+          UpdateInstanceConfigRequest, InstanceConfig, UpdateInstanceConfigMetadata>
+      updateInstanceConfigOperationCallable() {
+    return stub.updateInstanceConfigOperationCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates an instance config. The returned [long-running operation][google.longrunning.Operation]
+   * can be used to track the progress of updating the instance. If the named instance config does
+   * not exist, returns `NOT_FOUND`.
+   *
+   * <p>Only user managed configurations can be updated.
+   *
+   * <p>Immediately after the request returns:
+   *
+   * <p>&#42; The instance config's
+   * [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling] field is set to
+   * true.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; Cancelling the operation sets its metadata's
+   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time]. The
+   * operation is guaranteed to succeed at undoing all changes, after which point it terminates with
+   * a `CANCELLED` status. &#42; All other attempts to modify the instance config are rejected.
+   * &#42; Reading the instance config via the API continues to give the pre-request values.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Creating instances using the instance configuration uses the new values. &#42; The
+   * instance config's new values are readable via the API. &#42; The instance config's
+   * [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling] field becomes false.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+   * the instance config modification. The [metadata][google.longrunning.Operation.metadata] field
+   * type is
+   * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+   *
+   * <p>Authorization requires `spanner.instanceConfigs.update` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   UpdateInstanceConfigRequest request =
+   *       UpdateInstanceConfigRequest.newBuilder()
+   *           .setInstanceConfig(InstanceConfig.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
+   *           .setValidateOnly(true)
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       instanceAdminClient.updateInstanceConfigCallable().futureCall(request);
+   *   // Do something.
+   *   Operation response = future.get();
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<UpdateInstanceConfigRequest, Operation>
+      updateInstanceConfigCallable() {
+    return stub.updateInstanceConfigCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Deletes the instance config. Deletion is only allowed when no instances are using the
+   * configuration. If any instances are using the config, returns `FAILED_PRECONDITION`.
+   *
+   * <p>Only user managed configurations can be deleted.
+   *
+   * <p>Authorization requires `spanner.instanceConfigs.delete` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceConfigName name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]");
+   *   instanceAdminClient.deleteInstanceConfig(name);
+   * }
+   * }</pre>
+   *
+   * @param name Required. The name of the instance configuration to be deleted. Values are of the
+   *     form `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final void deleteInstanceConfig(InstanceConfigName name) {
+    DeleteInstanceConfigRequest request =
+        DeleteInstanceConfigRequest.newBuilder()
+            .setName(name == null ? null : name.toString())
+            .build();
+    deleteInstanceConfig(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Deletes the instance config. Deletion is only allowed when no instances are using the
+   * configuration. If any instances are using the config, returns `FAILED_PRECONDITION`.
+   *
+   * <p>Only user managed configurations can be deleted.
+   *
+   * <p>Authorization requires `spanner.instanceConfigs.delete` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String name = InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString();
+   *   instanceAdminClient.deleteInstanceConfig(name);
+   * }
+   * }</pre>
+   *
+   * @param name Required. The name of the instance configuration to be deleted. Values are of the
+   *     form `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final void deleteInstanceConfig(String name) {
+    DeleteInstanceConfigRequest request =
+        DeleteInstanceConfigRequest.newBuilder().setName(name).build();
+    deleteInstanceConfig(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Deletes the instance config. Deletion is only allowed when no instances are using the
+   * configuration. If any instances are using the config, returns `FAILED_PRECONDITION`.
+   *
+   * <p>Only user managed configurations can be deleted.
+   *
+   * <p>Authorization requires `spanner.instanceConfigs.delete` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   DeleteInstanceConfigRequest request =
+   *       DeleteInstanceConfigRequest.newBuilder()
+   *           .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
+   *           .setEtag("etag3123477")
+   *           .setValidateOnly(true)
+   *           .build();
+   *   instanceAdminClient.deleteInstanceConfig(request);
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final void deleteInstanceConfig(DeleteInstanceConfigRequest request) {
+    deleteInstanceConfigCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Deletes the instance config. Deletion is only allowed when no instances are using the
+   * configuration. If any instances are using the config, returns `FAILED_PRECONDITION`.
+   *
+   * <p>Only user managed configurations can be deleted.
+   *
+   * <p>Authorization requires `spanner.instanceConfigs.delete` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   DeleteInstanceConfigRequest request =
+   *       DeleteInstanceConfigRequest.newBuilder()
+   *           .setName(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
+   *           .setEtag("etag3123477")
+   *           .setValidateOnly(true)
+   *           .build();
+   *   ApiFuture<Empty> future =
+   *       instanceAdminClient.deleteInstanceConfigCallable().futureCall(request);
+   *   // Do something.
+   *   future.get();
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<DeleteInstanceConfigRequest, Empty> deleteInstanceConfigCallable() {
+    return stub.deleteInstanceConfigCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists the user-managed instance config [long-running operations][google.longrunning.Operation]
+   * in the given project. An instance config operation has a name of the form
+   * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
+   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
+   * the most recently started operation.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ProjectName parent = ProjectName.of("[PROJECT]");
+   *   for (Operation element :
+   *       instanceAdminClient.listInstanceConfigOperations(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The project of the instance config operations. Values are of the form
+   *     `projects/&lt;project&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListInstanceConfigOperationsPagedResponse listInstanceConfigOperations(
+      ProjectName parent) {
+    ListInstanceConfigOperationsRequest request =
+        ListInstanceConfigOperationsRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .build();
+    return listInstanceConfigOperations(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists the user-managed instance config [long-running operations][google.longrunning.Operation]
+   * in the given project. An instance config operation has a name of the form
+   * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
+   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
+   * the most recently started operation.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String parent = ProjectName.of("[PROJECT]").toString();
+   *   for (Operation element :
+   *       instanceAdminClient.listInstanceConfigOperations(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The project of the instance config operations. Values are of the form
+   *     `projects/&lt;project&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListInstanceConfigOperationsPagedResponse listInstanceConfigOperations(
+      String parent) {
+    ListInstanceConfigOperationsRequest request =
+        ListInstanceConfigOperationsRequest.newBuilder().setParent(parent).build();
+    return listInstanceConfigOperations(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists the user-managed instance config [long-running operations][google.longrunning.Operation]
+   * in the given project. An instance config operation has a name of the form
+   * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
+   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
+   * the most recently started operation.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstanceConfigOperationsRequest request =
+   *       ListInstanceConfigOperationsRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setFilter("filter-1274492040")
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   for (Operation element :
+   *       instanceAdminClient.listInstanceConfigOperations(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListInstanceConfigOperationsPagedResponse listInstanceConfigOperations(
+      ListInstanceConfigOperationsRequest request) {
+    return listInstanceConfigOperationsPagedCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists the user-managed instance config [long-running operations][google.longrunning.Operation]
+   * in the given project. An instance config operation has a name of the form
+   * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
+   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
+   * the most recently started operation.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstanceConfigOperationsRequest request =
+   *       ListInstanceConfigOperationsRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setFilter("filter-1274492040")
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       instanceAdminClient.listInstanceConfigOperationsPagedCallable().futureCall(request);
+   *   // Do something.
+   *   for (Operation element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<
+          ListInstanceConfigOperationsRequest, ListInstanceConfigOperationsPagedResponse>
+      listInstanceConfigOperationsPagedCallable() {
+    return stub.listInstanceConfigOperationsPagedCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists the user-managed instance config [long-running operations][google.longrunning.Operation]
+   * in the given project. An instance config operation has a name of the form
+   * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
+   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
+   * the most recently started operation.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstanceConfigOperationsRequest request =
+   *       ListInstanceConfigOperationsRequest.newBuilder()
+   *           .setParent(ProjectName.of("[PROJECT]").toString())
+   *           .setFilter("filter-1274492040")
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   while (true) {
+   *     ListInstanceConfigOperationsResponse response =
+   *         instanceAdminClient.listInstanceConfigOperationsCallable().call(request);
+   *     for (Operation element : response.getOperationsList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<
+          ListInstanceConfigOperationsRequest, ListInstanceConfigOperationsResponse>
+      listInstanceConfigOperationsCallable() {
+    return stub.listInstanceConfigOperationsCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
    * Lists all instances in the given project.
    *
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ProjectName parent = ProjectName.of("[PROJECT]");
    *   for (Instance element : instanceAdminClient.listInstances(parent).iterateAll()) {
@@ -522,8 +1554,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String parent = ProjectName.of("[PROJECT]").toString();
    *   for (Instance element : instanceAdminClient.listInstances(parent).iterateAll()) {
@@ -548,8 +1583,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ListInstancesRequest request =
    *       ListInstancesRequest.newBuilder()
@@ -578,8 +1616,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ListInstancesRequest request =
    *       ListInstancesRequest.newBuilder()
@@ -609,8 +1650,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ListInstancesRequest request =
    *       ListInstancesRequest.newBuilder()
@@ -645,8 +1689,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   Instance response = instanceAdminClient.getInstance(name);
@@ -670,8 +1717,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String name = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   Instance response = instanceAdminClient.getInstance(name);
@@ -694,8 +1744,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   GetInstanceRequest request =
    *       GetInstanceRequest.newBuilder()
@@ -720,8 +1773,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   GetInstanceRequest request =
    *       GetInstanceRequest.newBuilder()
@@ -773,8 +1829,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ProjectName parent = ProjectName.of("[PROJECT]");
    *   String instanceId = "instanceId902024336";
@@ -838,8 +1897,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String parent = ProjectName.of("[PROJECT]").toString();
    *   String instanceId = "instanceId902024336";
@@ -903,8 +1965,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   CreateInstanceRequest request =
    *       CreateInstanceRequest.newBuilder()
@@ -959,8 +2024,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   CreateInstanceRequest request =
    *       CreateInstanceRequest.newBuilder()
@@ -1015,8 +2083,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   CreateInstanceRequest request =
    *       CreateInstanceRequest.newBuilder()
@@ -1074,8 +2145,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   Instance instance = Instance.newBuilder().build();
    *   FieldMask fieldMask = FieldMask.newBuilder().build();
@@ -1140,8 +2214,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   UpdateInstanceRequest request =
    *       UpdateInstanceRequest.newBuilder()
@@ -1199,8 +2276,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   UpdateInstanceRequest request =
    *       UpdateInstanceRequest.newBuilder()
@@ -1258,8 +2338,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   UpdateInstanceRequest request =
    *       UpdateInstanceRequest.newBuilder()
@@ -1293,8 +2376,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   InstanceName name = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   instanceAdminClient.deleteInstance(name);
@@ -1327,8 +2413,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String name = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   instanceAdminClient.deleteInstance(name);
@@ -1360,8 +2449,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   DeleteInstanceRequest request =
    *       DeleteInstanceRequest.newBuilder()
@@ -1394,8 +2486,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   DeleteInstanceRequest request =
    *       DeleteInstanceRequest.newBuilder()
@@ -1421,8 +2516,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   Policy policy = Policy.newBuilder().build();
@@ -1456,8 +2554,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String resource = ProjectName.of("[PROJECT]").toString();
    *   Policy policy = Policy.newBuilder().build();
@@ -1488,8 +2589,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   SetIamPolicyRequest request =
    *       SetIamPolicyRequest.newBuilder()
@@ -1518,8 +2622,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   SetIamPolicyRequest request =
    *       SetIamPolicyRequest.newBuilder()
@@ -1548,8 +2655,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   Policy response = instanceAdminClient.getIamPolicy(resource);
@@ -1579,8 +2689,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String resource = ProjectName.of("[PROJECT]").toString();
    *   Policy response = instanceAdminClient.getIamPolicy(resource);
@@ -1607,8 +2720,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   GetIamPolicyRequest request =
    *       GetIamPolicyRequest.newBuilder()
@@ -1637,8 +2753,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   GetIamPolicyRequest request =
    *       GetIamPolicyRequest.newBuilder()
@@ -1666,8 +2785,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   ResourceName resource = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   List<String> permissions = new ArrayList<>();
@@ -1704,8 +2826,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   String resource = ProjectName.of("[PROJECT]").toString();
    *   List<String> permissions = new ArrayList<>();
@@ -1742,8 +2867,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   TestIamPermissionsRequest request =
    *       TestIamPermissionsRequest.newBuilder()
@@ -1772,8 +2900,11 @@ public class InstanceAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
-   * // This snippet has been automatically generated for illustrative purposes only.
-   * // It may require modifications to work in your environment.
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
    *   TestIamPermissionsRequest request =
    *       TestIamPermissionsRequest.newBuilder()
@@ -1903,6 +3034,103 @@ public class InstanceAdminClient implements BackgroundResource {
     protected ListInstanceConfigsFixedSizeCollection createCollection(
         List<ListInstanceConfigsPage> pages, int collectionSize) {
       return new ListInstanceConfigsFixedSizeCollection(pages, collectionSize);
+    }
+  }
+
+  public static class ListInstanceConfigOperationsPagedResponse
+      extends AbstractPagedListResponse<
+          ListInstanceConfigOperationsRequest,
+          ListInstanceConfigOperationsResponse,
+          Operation,
+          ListInstanceConfigOperationsPage,
+          ListInstanceConfigOperationsFixedSizeCollection> {
+
+    public static ApiFuture<ListInstanceConfigOperationsPagedResponse> createAsync(
+        PageContext<
+                ListInstanceConfigOperationsRequest,
+                ListInstanceConfigOperationsResponse,
+                Operation>
+            context,
+        ApiFuture<ListInstanceConfigOperationsResponse> futureResponse) {
+      ApiFuture<ListInstanceConfigOperationsPage> futurePage =
+          ListInstanceConfigOperationsPage.createEmptyPage()
+              .createPageAsync(context, futureResponse);
+      return ApiFutures.transform(
+          futurePage,
+          input -> new ListInstanceConfigOperationsPagedResponse(input),
+          MoreExecutors.directExecutor());
+    }
+
+    private ListInstanceConfigOperationsPagedResponse(ListInstanceConfigOperationsPage page) {
+      super(page, ListInstanceConfigOperationsFixedSizeCollection.createEmptyCollection());
+    }
+  }
+
+  public static class ListInstanceConfigOperationsPage
+      extends AbstractPage<
+          ListInstanceConfigOperationsRequest,
+          ListInstanceConfigOperationsResponse,
+          Operation,
+          ListInstanceConfigOperationsPage> {
+
+    private ListInstanceConfigOperationsPage(
+        PageContext<
+                ListInstanceConfigOperationsRequest,
+                ListInstanceConfigOperationsResponse,
+                Operation>
+            context,
+        ListInstanceConfigOperationsResponse response) {
+      super(context, response);
+    }
+
+    private static ListInstanceConfigOperationsPage createEmptyPage() {
+      return new ListInstanceConfigOperationsPage(null, null);
+    }
+
+    @Override
+    protected ListInstanceConfigOperationsPage createPage(
+        PageContext<
+                ListInstanceConfigOperationsRequest,
+                ListInstanceConfigOperationsResponse,
+                Operation>
+            context,
+        ListInstanceConfigOperationsResponse response) {
+      return new ListInstanceConfigOperationsPage(context, response);
+    }
+
+    @Override
+    public ApiFuture<ListInstanceConfigOperationsPage> createPageAsync(
+        PageContext<
+                ListInstanceConfigOperationsRequest,
+                ListInstanceConfigOperationsResponse,
+                Operation>
+            context,
+        ApiFuture<ListInstanceConfigOperationsResponse> futureResponse) {
+      return super.createPageAsync(context, futureResponse);
+    }
+  }
+
+  public static class ListInstanceConfigOperationsFixedSizeCollection
+      extends AbstractFixedSizeCollection<
+          ListInstanceConfigOperationsRequest,
+          ListInstanceConfigOperationsResponse,
+          Operation,
+          ListInstanceConfigOperationsPage,
+          ListInstanceConfigOperationsFixedSizeCollection> {
+
+    private ListInstanceConfigOperationsFixedSizeCollection(
+        List<ListInstanceConfigOperationsPage> pages, int collectionSize) {
+      super(pages, collectionSize);
+    }
+
+    private static ListInstanceConfigOperationsFixedSizeCollection createEmptyCollection() {
+      return new ListInstanceConfigOperationsFixedSizeCollection(null, 0);
+    }
+
+    @Override
+    protected ListInstanceConfigOperationsFixedSizeCollection createCollection(
+        List<ListInstanceConfigOperationsPage> pages, int collectionSize) {
+      return new ListInstanceConfigOperationsFixedSizeCollection(pages, collectionSize);
     }
   }
 

@@ -19,13 +19,140 @@ package com.google.cloud.spanner;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
+import com.google.cloud.spanner.Options.CreateAdminApiOption;
+import com.google.cloud.spanner.Options.DeleteAdminApiOption;
 import com.google.cloud.spanner.Options.ListOption;
+import com.google.cloud.spanner.Options.UpdateAdminApiOption;
 import com.google.longrunning.Operation;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 
 /** Client to do admin operations on Cloud Spanner Instance and Instance Configs. */
 public interface InstanceAdminClient {
+
+  /**
+   * Creates an instance config and begins preparing it to be used. The returned {@code Operation}
+   * can be used to track the progress of preparing the new instance config. The instance config
+   * name is assigned by the caller and must start with the string 'custom'. If the named instance
+   * config already exists, a SpannerException is thrown.
+   *
+   * <p>Immediately after the request returns:
+   *
+   * <ul>
+   *   <li>The instance config is readable via the API, with all requested attributes.
+   *   <li>The instance config's {@code reconciling} field is set to true. Its state is {@code
+   *       CREATING}.
+   * </ul>
+   *
+   * While the operation is pending:
+   *
+   * <ul>
+   *   <li>Cancelling the operation renders the instance config immediately unreadable via the API.
+   *   <li>Except for deleting the creating resource, all other attempts to modify the instance
+   *       config are rejected.
+   * </ul>
+   *
+   * Upon completion of the returned operation:
+   *
+   * <ul>
+   *   <li>Instances can be created using the instance configuration.
+   *   <li>The instance config's {@code reconciling} field becomes false.
+   *   <li>Its state becomes {@code READY}.
+   * </ul>
+   *
+   * <!--SNIPPET instance_admin_client_create_instance_config-->
+   *
+   * <pre>{@code
+   * String projectId = "my-project";
+   * String baseInstanceConfig = "my-base-config";
+   * String instanceConfigId = "custom-user-config";
+   *
+   * final InstanceConfig baseConfig = instanceAdminClient.getInstanceConfig(baseInstanceConfig);
+   *
+   * List<ReplicaInfo> readOnlyReplicas = ImmutableList.of(baseConfig.getOptionalReplicas().get(0));
+   *
+   * InstanceConfigInfo instanceConfigInfo =
+   *     InstanceConfigInfo.newBuilder(InstanceConfigId.of(projectId, instanceConfigId), baseConfig)
+   *         .setDisplayName(instanceConfigId)
+   *         .addReadOnlyReplicas(readOnlyReplicas)
+   *         .build();
+   *
+   * final OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> operation =
+   *     instanceAdminClient.createInstanceConfig(instanceConfigInfo);
+   *
+   * InstanceConfig instanceConfig = op.get(5, TimeUnit.MINUTES)
+   * }</pre>
+   *
+   * <!--SNIPPET instance_admin_client_create_instance_config-->
+   */
+  default OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
+      InstanceConfigInfo instanceConfig, CreateAdminApiOption... options) throws SpannerException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Updates a custom instance config. This can not be used to update a Google managed instance
+   * config. The returned {@code Operation} can be used to track the progress of updating the
+   * instance. If the named instance config does not exist, a SpannerException is thrown. The
+   * request must include at least one field to update.
+   *
+   * <p>Only user managed configurations can be updated.
+   *
+   * <p>Immediately after the request returns:
+   *
+   * <ul>
+   *   <li>The instance config's {@code reconciling} field is set to true.
+   * </ul>
+   *
+   * While the operation is pending:
+   *
+   * <ul>
+   *   <li>Cancelling the operation sets its metadata's cancel_time.
+   *   <li>The operation is guaranteed to succeed at undoing all changes, after which point it
+   *       terminates with a `CANCELLED` status.
+   *   <li>All other attempts to modify the instance config are rejected.
+   *   <li>Reading the instance config via the API continues to give the pre-request values.
+   * </ul>
+   *
+   * Upon completion of the returned operation:
+   *
+   * <ul>
+   *   <li>Creating instances using the instance configuration uses the new values.
+   *   <li>The instance config's new values are readable via the API.
+   *   <li>The instance config's {@code reconciling} field becomes false.
+   * </ul>
+   *
+   * <!--SNIPPET instance_admin_client_update_instance_config-->
+   *
+   * <pre>{@code
+   * String projectId = "my-project";
+   * String instanceConfigId = "custom-user-config";
+   * String displayName = "my-display-name";
+   *
+   * InstanceConfigInfo instanceConfigInfo =
+   *     InstanceConfigInfo.newBuilder(InstanceConfigId.of(projectId, instanceConfigId))
+   *         .setDisplayName(displayName)
+   *         .build();
+   *
+   * // Only update display name.
+   * final OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> operation =
+   *     instanceAdminClient.updateInstanceConfig(
+   *         instanceConfigInfo, ImmutableList.of(InstanceConfigField.DISPLAY_NAME));
+   *
+   * InstanceConfig instanceConfig = operation.get(5, TimeUnit.MINUTES);
+   * }</pre>
+   *
+   * <!--SNIPPET instance_admin_client_update_instance_config-->
+   */
+  default OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
+      InstanceConfigInfo instanceConfig,
+      Iterable<InstanceConfigInfo.InstanceConfigField> fieldsToUpdate,
+      UpdateAdminApiOption... options)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   /** Gets an instance config. */
   /* <!--SNIPPET instance_admin_client_get_instance_config-->
@@ -37,6 +164,28 @@ public interface InstanceAdminClient {
    */
   InstanceConfig getInstanceConfig(String configId) throws SpannerException;
 
+  /**
+   * Deletes a custom instance config. Deletion is only allowed for custom instance configs and when
+   * no instances are using the configuration. If any instances are using the config, a
+   * SpannerException is thrown.
+   *
+   * <p>Only user managed configurations can be deleted.
+   * <!--SNIPPET instance_admin_client_delete_instance_config-->
+   *
+   * <pre>{@code
+   * String projectId = "my-project";
+   * String instanceConfigId = "custom-user-config";
+   *
+   * instanceAdminClient.deleteInstanceConfig(instanceConfigId);
+   * }</pre>
+   *
+   * <!--SNIPPET instance_admin_client_delete_instance_config-->
+   */
+  default void deleteInstanceConfig(String instanceConfigId, DeleteAdminApiOption... options)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
   /** Lists the supported instance configs for current project. */
   /* <!--SNIPPET instance_admin_client_list_configs-->
    * <pre>{@code
@@ -46,6 +195,11 @@ public interface InstanceAdminClient {
    * <!--SNIPPET instance_admin_client_list_configs-->
    */
   Page<InstanceConfig> listInstanceConfigs(ListOption... options) throws SpannerException;
+
+  /** Lists long-running instance config operations. */
+  default Page<Operation> listInstanceConfigOperations(ListOption... options) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   /**
    * Creates an instance and begins preparing it to begin serving. The returned {@code Operation}
