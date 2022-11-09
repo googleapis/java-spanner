@@ -674,16 +674,17 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     @Override
     public ResultSetStats analyzeUpdate(
         Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
-      return internalAnalyzeStatement(statement, analyzeMode, true, options).getStats();
+      return internalAnalyzeStatement(statement, analyzeMode, options).getStats();
     }
 
     @Override
-    public ResultSet analyzeStatement(Statement statement, UpdateOption... options) {
-      return internalAnalyzeStatement(statement, QueryAnalyzeMode.PLAN, false, options);
+    public com.google.cloud.spanner.ResultSet analyzeUpdateStatement(
+        Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+      return new NoRowsResultSet(internalAnalyzeStatement(statement, analyzeMode, options));
     }
 
     private ResultSet internalAnalyzeStatement(
-        Statement statement, QueryAnalyzeMode analyzeMode, boolean mustReturnStats, UpdateOption... options) {
+        Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
       Preconditions.checkNotNull(analyzeMode);
       QueryMode queryMode;
       switch (analyzeMode) {
@@ -697,18 +698,18 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INVALID_ARGUMENT, "Unknown analyze mode: " + analyzeMode);
       }
-      return internalExecuteUpdate(statement, queryMode, mustReturnStats, options);
+      return internalExecuteUpdate(statement, queryMode, options);
     }
 
     @Override
     public long executeUpdate(Statement statement, UpdateOption... options) {
-      ResultSet resultSet = internalExecuteUpdate(statement, QueryMode.NORMAL, true, options);
+      ResultSet resultSet = internalExecuteUpdate(statement, QueryMode.NORMAL, options);
       // For standard DML, using the exact row count.
       return resultSet.getStats().getRowCountExact();
     }
 
     private ResultSet internalExecuteUpdate(
-        Statement statement, QueryMode queryMode, boolean mustReturnStats, UpdateOption... options) {
+        Statement statement, QueryMode queryMode, UpdateOption... options) {
       beforeReadOrQuery();
       final ExecuteSqlRequest.Builder builder =
           getExecuteSqlRequestBuilder(
@@ -723,7 +724,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           onTransactionMetadata(
               resultSet.getMetadata().getTransaction(), builder.getTransaction().hasBegin());
         }
-        if (mustReturnStats && !resultSet.hasStats()) {
+        if (!resultSet.hasStats()) {
           throw new IllegalArgumentException(
               "DML response missing stats possibly due to non-DML statement as input");
         }

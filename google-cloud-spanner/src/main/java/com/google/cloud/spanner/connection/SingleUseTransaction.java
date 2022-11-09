@@ -24,6 +24,7 @@ import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.Tuple;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
@@ -46,7 +47,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
-import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.SpannerGrpc;
 import java.util.concurrent.Callable;
 
@@ -311,7 +311,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         res =
             ApiFutures.transform(
                 executeTransactionalUpdateAsync(update, AnalyzeMode.NONE, options),
-                resultSet -> resultSet.getStats().getRowCountExact(),
+                Tuple::x,
                 MoreExecutors.directExecutor());
         break;
       case PARTITIONED_NON_ATOMIC:
@@ -325,7 +325,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<com.google.spanner.v1.ResultSet> analyzeUpdateAsync(
+  public ApiFuture<ResultSet> analyzeUpdateAsync(
       ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "Statement is not an update statement");
@@ -336,19 +336,10 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         "Analyzing update statements is not supported for Partitioned DML");
     checkAndMarkUsed();
 
-    return executeTransactionalUpdateAsync(update, analyzeMode, options);
-  }
-
-  @Override
-  public ApiFuture<com.google.spanner.v1.ResultSet> analyzeStatementAsync(ParsedStatement statement, UpdateOption... options) {
-    Preconditions.checkNotNull(statement);
-    Preconditions.checkArgument(statement.isQuery() || statement.isUpdate(), "Statement is not a query or an update statement");
-    ConnectionPreconditions.checkState(
-        !(isReadOnly() && statement.isUpdate()), "Update statements are not allowed in read-only mode");
-    checkAndMarkUsed();
-
-    executeQueryAsync()
-    return executeTransactionalUpdateAsync(statement, AnalyzeMode.PLAN, options);
+    return ApiFutures.transform(
+        executeTransactionalUpdateAsync(update, analyzeMode, options),
+        Tuple::y,
+        MoreExecutors.directExecutor());
   }
 
   @Override
@@ -398,26 +389,23 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     return dbClient.readWriteTransaction(options);
   }
 
-  private ApiFuture<com.google.spanner.v1.ResultSet> executeTransactionalUpdateAsync(
+  private ApiFuture<Tuple<Long, ResultSet>> executeTransactionalUpdateAsync(
       final ParsedStatement update, AnalyzeMode analyzeMode, final UpdateOption... options) {
-    Callable<com.google.spanner.v1.ResultSet> callable =
+    Callable<Tuple<Long, ResultSet>> callable =
         () -> {
           try {
             writeTransaction = createWriteTransaction();
-            com.google.spanner.v1.ResultSet res =
+            Tuple<Long, ResultSet> res =
                 writeTransaction.run(
                     transaction -> {
                       if (analyzeMode == AnalyzeMode.NONE) {
-                        return com.google.spanner.v1.ResultSet.newBuilder().setStats(ResultSetStats.newBuilder()
-                            .setRowCountExact(
-                                transaction.executeUpdate(update.getStatement(), options))
-                            .build()).build();
-                      } else if (analyzeMode == AnalyzeMode.PLAN) {
-                        return transaction.analyzeStatement(
-                            update.getStatement(), options);
+                        return Tuple.of(
+                            transaction.executeUpdate(update.getStatement(), options), null);
                       }
-                      return com.google.spanner.v1.ResultSet.newBuilder().setStats(transaction.analyzeUpdate(
-                          update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options)).build();
+                      ResultSet resultSet =
+                          transaction.analyzeUpdateStatement(
+                              update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options);
+                      return Tuple.of(null, resultSet);
                     });
             state = UnitOfWorkState.COMMITTED;
             return res;

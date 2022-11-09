@@ -178,21 +178,16 @@ interface UnitOfWork {
   ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options);
 
   /**
-   * Execute a DML statement on Spanner.
+   * Execute and/or analyze a DML statement on Spanner.
    *
-   * @param update The DML statement to execute.
+   * @param update The DML statement to analyze/execute.
    * @param analyzeMode Specifies the query/analyze mode to use for the DML statement.
    * @param options Update options to apply for the statement.
-   * @return an {@link ApiFuture} containing the {@link ResultSetStats} that were returned by this
-   *     statement.
+   * @return an {@link ApiFuture} containing the {@link ResultSet} that were returned by this
+   *     statement. The {@link ResultSet} will not contain any rows.
    */
-  ApiFuture<com.google.spanner.v1.ResultSet> analyzeUpdateAsync(
+  ApiFuture<ResultSet> analyzeUpdateAsync(
       ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options);
-
-  /**
-   * Analyze a statement in PLAN mode on Spanner. The statement may be either a query or a DML statement.
-   */
-  ApiFuture<ResultSet> analyzeStatementAsync(ParsedStatement statement, UpdateOption... options);
 
   /**
    * Execute a batch of DML statements on Spanner.

@@ -28,6 +28,7 @@ import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.Tuple;
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.CommitResponse;
@@ -51,7 +52,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.SpannerGrpc;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -392,9 +392,12 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<com.google.spanner.v1.ResultSet> analyzeUpdateAsync(
+  public ApiFuture<ResultSet> analyzeUpdateAsync(
       ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
-    return internalExecuteUpdateAsync(update, analyzeMode, options);
+    return ApiFutures.transform(
+        internalExecuteUpdateAsync(update, analyzeMode, options),
+        Tuple::y,
+        MoreExecutors.directExecutor());
   }
 
   @Override
@@ -402,16 +405,16 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       final ParsedStatement update, final UpdateOption... options) {
     return ApiFutures.transform(
         internalExecuteUpdateAsync(update, AnalyzeMode.NONE, options),
-        resultSet -> resultSet.getStats().getRowCountExact(),
+        Tuple::x,
         MoreExecutors.directExecutor());
   }
 
-  private ApiFuture<com.google.spanner.v1.ResultSet> internalExecuteUpdateAsync(
+  private ApiFuture<Tuple<Long, ResultSet>> internalExecuteUpdateAsync(
       ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "The statement is not an update statement");
     checkValidTransaction();
-    ApiFuture<com.google.spanner.v1.ResultSet> res;
+    ApiFuture<Tuple<Long, ResultSet>> res;
     if (retryAbortsInternally) {
       res =
           executeStatementAsync(
@@ -427,27 +430,27 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                                 StatementExecutionStep.EXECUTE_STATEMENT,
                                 ReadWriteTransaction.this);
 
-                        com.google.spanner.v1.ResultSet updateCount;
+                        Tuple<Long, ResultSet> result;
+                        long updateCount;
                         if (analyzeMode == AnalyzeMode.NONE) {
-                          updateCount = com.google.spanner.v1.ResultSet.newBuilder().setStats(
-                              ResultSetStats.newBuilder()
-                                  .setRowCountExact(
-                                      get(txContextFuture)
-                                          .executeUpdate(update.getStatement(), options))
-                                  .build()).build();
-                        } else if (analyzeMode == AnalyzeMode.PLAN) {
-                          updateCount = get(txContextFuture)
-                                .analyzeStatement(
-                                    update.getStatement(), options);
+                          updateCount =
+                              get(txContextFuture).executeUpdate(update.getStatement(), options);
+                          result = Tuple.of(updateCount, null);
                         } else {
-                          updateCount = com.google.spanner.v1.ResultSet.newBuilder().setStats(get(txContextFuture)
-                              .analyzeUpdate(
-                                  update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options))
-                              .build();
+                          ResultSet resultSet =
+                              get(txContextFuture)
+                                  .analyzeUpdateStatement(
+                                      update.getStatement(),
+                                      analyzeMode.getQueryAnalyzeMode(),
+                                      options);
+                          updateCount =
+                              resultSet.getStats() == null
+                                  ? 0L
+                                  : resultSet.getStats().getRowCountExact();
+                          result = Tuple.of(null, resultSet);
                         }
-                        createAndAddRetriableUpdate(
-                            update, analyzeMode, updateCount.getStats().getRowCountExact(), options);
-                        return updateCount;
+                        createAndAddRetriableUpdate(update, analyzeMode, updateCount, options);
+                        return result;
                       } catch (AbortedException e) {
                         throw e;
                       } catch (SpannerException e) {
@@ -467,24 +470,20 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 checkTimedOut();
                 checkAborted();
                 if (analyzeMode == AnalyzeMode.NONE) {
-                  return com.google.spanner.v1.ResultSet.newBuilder().setStats(ResultSetStats.newBuilder()
-                      .setRowCountExact(
-                          get(txContextFuture).executeUpdate(update.getStatement(), options))
-                      .build()).build();
-                } else if (analyzeMode == AnalyzeMode.PLAN) {
-                  return get(txContextFuture)
-                      .analyzeStatement(
-                          update.getStatement(), options);
+                  return Tuple.of(
+                      get(txContextFuture).executeUpdate(update.getStatement(), options), null);
                 }
-                return com.google.spanner.v1.ResultSet.newBuilder().setStats(get(txContextFuture)
-                    .analyzeUpdate(
-                        update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options)).build();
+                ResultSet resultSet =
+                    get(txContextFuture)
+                        .analyzeUpdateStatement(
+                            update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options);
+                return Tuple.of(null, resultSet);
               },
               SpannerGrpc.getExecuteSqlMethod());
     }
     ApiFutures.addCallback(
         res,
-        new ApiFutureCallback<com.google.spanner.v1.ResultSet>() {
+        new ApiFutureCallback<Tuple<Long, ResultSet>>() {
           @Override
           public void onFailure(Throwable t) {
             if (t instanceof SpannerException) {
@@ -493,7 +492,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           }
 
           @Override
-          public void onSuccess(com.google.spanner.v1.ResultSet result) {}
+          public void onSuccess(Tuple<Long, ResultSet> result) {}
         },
         MoreExecutors.directExecutor());
     return res;

@@ -717,18 +717,14 @@ class SessionPool {
     @Override
     public ResultSetStats analyzeUpdate(
         Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
-      try {
-        return delegate.analyzeUpdate(statement, analyzeMode, options);
-      } catch (SessionNotFoundException e) {
-        throw handler.handleSessionNotFound(e);
-      }
+      return analyzeUpdateStatement(statement, analyzeMode, options).getStats();
     }
 
     @Override
-    public com.google.spanner.v1.ResultSet analyzeStatement(
-        Statement statement, UpdateOption... options) {
+    public ResultSet analyzeUpdateStatement(
+        Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
       try {
-        return delegate.analyzeStatement(statement, options);
+        return delegate.analyzeUpdateStatement(statement, analyzeMode, options);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
       }

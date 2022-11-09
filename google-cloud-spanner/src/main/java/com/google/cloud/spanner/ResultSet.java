@@ -79,7 +79,5 @@ public interface ResultSet extends AutoCloseable, StructReader {
    * Returns the {@link ResultSetMetadata} for this {@link ResultSet}. This is method may only be
    * called after calling {@link ResultSet#next()} at least once.
    */
-  default ResultSetMetadata getMetadata() {
-    throw new UnsupportedOperationException();
-  }
+  ResultSetMetadata getMetadata();
 }

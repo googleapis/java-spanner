@@ -25,6 +25,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
 import com.google.common.base.Preconditions;
+import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
@@ -92,6 +93,11 @@ class DirectExecuteResultSet implements ResultSet {
       return delegate.getStats();
     }
     return null;
+  }
+
+  @Override
+  public ResultSetMetadata getMetadata() {
+    return delegate.getMetadata();
   }
 
   @Override

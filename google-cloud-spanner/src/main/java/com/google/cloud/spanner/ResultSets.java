@@ -29,6 +29,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
@@ -156,6 +157,11 @@ public final class ResultSets {
     public ResultSetStats getStats() {
       throw new UnsupportedOperationException(
           "ResultSetStats are available only for results returned from analyzeQuery() calls");
+    }
+
+    @Override
+    public ResultSetMetadata getMetadata() {
+      throw new UnsupportedOperationException();
     }
 
     @Override
