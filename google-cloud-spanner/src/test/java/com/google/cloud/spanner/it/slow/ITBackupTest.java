@@ -282,7 +282,6 @@ public class ITBackupTest {
             .setDatabase(database.getId())
             .setExpireTime(expireTime)
             .setVersionTime(versionTime)
-            .setExpireTime(expireTime)
             .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(keyName))
             .build();
     OperationFuture<Backup, CreateBackupMetadata> operation =

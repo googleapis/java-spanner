@@ -448,7 +448,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                                       options);
                         }
                         createAndAddRetriableUpdate(
-                            update, updateCount.getRowCountExact(), options);
+                            update, analyzeMode, updateCount.getRowCountExact(), options);
                         return updateCount;
                       } catch (AbortedException e) {
                         throw e;
@@ -716,9 +716,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   private void createAndAddRetriableUpdate(
-      ParsedStatement update, long updateCount, UpdateOption... options) {
+      ParsedStatement update, AnalyzeMode analyzeMode, long updateCount, UpdateOption... options) {
     if (retryAbortsInternally) {
-      addRetryStatement(new RetriableUpdate(this, update, updateCount, options));
+      addRetryStatement(new RetriableUpdate(this, update, analyzeMode, updateCount, options));
     }
   }
 

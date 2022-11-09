@@ -36,6 +36,46 @@
     <method>com.google.cloud.spanner.Dialect getDialect()</method>
   </difference>
   <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/InstanceAdminClient</className>
+    <method>com.google.api.gax.longrunning.OperationFuture createInstanceConfig(com.google.cloud.spanner.InstanceConfigInfo, com.google.cloud.spanner.Options$CreateAdminApiOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/InstanceAdminClient</className>
+    <method>com.google.api.gax.longrunning.OperationFuture updateInstanceConfig(com.google.cloud.spanner.InstanceConfigInfo, java.lang.Iterable, com.google.cloud.spanner.Options$UpdateAdminApiOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/InstanceAdminClient</className>
+    <method>void deleteInstanceConfig(java.lang.String, com.google.cloud.spanner.Options$DeleteAdminApiOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/InstanceAdminClient</className>
+    <method>com.google.api.gax.paging.Page listInstanceConfigOperations(com.google.cloud.spanner.Options$ListOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.longrunning.OperationFuture createInstanceConfig(java.lang.String, java.lang.String, com.google.spanner.admin.instance.v1.InstanceConfig, java.lang.Boolean)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.longrunning.OperationFuture updateInstanceConfig(com.google.spanner.admin.instance.v1.InstanceConfig, java.lang.Boolean, com.google.protobuf.FieldMask)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>void deleteInstanceConfig(java.lang.String, java.lang.String, java.lang.Boolean)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.cloud.spanner.spi.v1.SpannerRpc$Paginated listInstanceConfigOperations(int, java.lang.String, java.lang.String)</method>
+  </difference>
+  <difference>
     <differenceType>7013</differenceType>
     <className>com/google/cloud/spanner/BackupInfo$Builder</className>
     <method>com.google.cloud.spanner.BackupInfo$Builder setMaxExpireTime(com.google.cloud.Timestamp)</method>
@@ -130,5 +170,36 @@
     <differenceType>7004</differenceType>
     <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
     <method>com.google.iam.v1.Policy getDatabaseAdminIAMPolicy(java.lang.String)</method>
+  </difference>
+  <!-- PG JSONB -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.String getPgJsonb(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.lang.String getPgJsonb(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getPgJsonbList(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getPgJsonbList(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/BatchClient</className>
+    <method>java.lang.String getDatabaseRole()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>java.lang.String getDatabaseRole()</method>
   </difference>
 </differences>

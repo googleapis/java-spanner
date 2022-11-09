@@ -110,8 +110,15 @@ public class SpanTest {
     // This is not possible in Java 12 and later.
     java.lang.reflect.Field field = Tracing.class.getDeclaredField("traceComponent");
     field.setAccessible(true);
-    java.lang.reflect.Field modifiersField =
-        java.lang.reflect.Field.class.getDeclaredField("modifiers");
+    java.lang.reflect.Field modifiersField = null;
+    try {
+      modifiersField = java.lang.reflect.Field.class.getDeclaredField("modifiers");
+    } catch (NoSuchFieldException e) {
+      // Halt the test and ignore it.
+      Assume.assumeTrue(
+          "Skipping test as reflection is not allowed on reflection class in this JDK build",
+          false);
+    }
     modifiersField.setAccessible(true);
     // Remove the final modifier from the 'traceComponent' field.
     modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);

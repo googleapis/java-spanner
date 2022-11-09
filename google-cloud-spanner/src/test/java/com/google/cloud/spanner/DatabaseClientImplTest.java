@@ -94,6 +94,7 @@ public class DatabaseClientImplTest {
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
+  private static final String TEST_DATABASE_ROLE = "my-role";
   private static final String INSTANCE_NAME =
       String.format("projects/%s/instances/%s", TEST_PROJECT, TEST_INSTANCE);
   private static final String DATABASE_NAME =
@@ -149,6 +150,7 @@ public class DatabaseClientImplTest {
     spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
+            .setDatabaseRole(TEST_DATABASE_ROLE)
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(SessionPoolOptions.newBuilder().setFailOnSessionLeak().build())
@@ -2317,5 +2319,12 @@ public class DatabaseClientImplTest {
 
     assertNotNull(updateCount);
     assertEquals(1L, updateCount.longValue());
+  }
+
+  @Test
+  public void testGetDatabaseRole() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    assertEquals(TEST_DATABASE_ROLE, client.getDatabaseRole());
   }
 }

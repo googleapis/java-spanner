@@ -34,10 +34,19 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
-import com.google.spanner.admin.database.v1.*;
+import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
+import com.google.spanner.admin.database.v1.CreateBackupMetadata;
+import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DatabaseRole;
+import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import com.google.spanner.v1.*;
 import java.util.List;
@@ -162,7 +171,34 @@ public interface SpannerRpc extends ServiceRpc {
   Paginated<InstanceConfig> listInstanceConfigs(int pageSize, @Nullable String pageToken)
       throws SpannerException;
 
+  default OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
+      String parent,
+      String instanceConfigId,
+      InstanceConfig instanceConfig,
+      @Nullable Boolean validateOnly)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  default OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
+      InstanceConfig instanceConfig, @Nullable Boolean validateOnly, FieldMask fieldMask)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
   InstanceConfig getInstanceConfig(String instanceConfigName) throws SpannerException;
+
+  default void deleteInstanceConfig(
+      String instanceConfigName, @Nullable String etag, @Nullable Boolean validateOnly)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /** List all long-running instance config operations on the given project. */
+  default Paginated<Operation> listInstanceConfigOperations(
+      int pageSize, @Nullable String filter, @Nullable String pageToken) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   Paginated<Instance> listInstances(
       int pageSize, @Nullable String pageToken, @Nullable String filter) throws SpannerException;

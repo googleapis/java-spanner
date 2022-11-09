@@ -58,9 +58,10 @@ public interface GetInstanceRequestOrBuilder
    *
    *
    * <pre>
-   * If field_mask is present, specifies the subset of [Instance][google.spanner.admin.instance.v1.Instance] fields that
-   * should be returned.
-   * If absent, all [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+   * If field_mask is present, specifies the subset of
+   * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
+   * returned. If absent, all
+   * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
    * </pre>
    *
    * <code>.google.protobuf.FieldMask field_mask = 2;</code>
@@ -72,9 +73,10 @@ public interface GetInstanceRequestOrBuilder
    *
    *
    * <pre>
-   * If field_mask is present, specifies the subset of [Instance][google.spanner.admin.instance.v1.Instance] fields that
-   * should be returned.
-   * If absent, all [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+   * If field_mask is present, specifies the subset of
+   * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
+   * returned. If absent, all
+   * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
    * </pre>
    *
    * <code>.google.protobuf.FieldMask field_mask = 2;</code>
@@ -86,9 +88,10 @@ public interface GetInstanceRequestOrBuilder
    *
    *
    * <pre>
-   * If field_mask is present, specifies the subset of [Instance][google.spanner.admin.instance.v1.Instance] fields that
-   * should be returned.
-   * If absent, all [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
+   * If field_mask is present, specifies the subset of
+   * [Instance][google.spanner.admin.instance.v1.Instance] fields that should be
+   * returned. If absent, all
+   * [Instance][google.spanner.admin.instance.v1.Instance] fields are returned.
    * </pre>
    *
    * <code>.google.protobuf.FieldMask field_mask = 2;</code>

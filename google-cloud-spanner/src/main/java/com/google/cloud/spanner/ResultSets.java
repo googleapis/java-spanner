@@ -254,6 +254,16 @@ public final class ResultSets {
     }
 
     @Override
+    public String getPgJsonb(int columnIndex) {
+      return getCurrentRowAsStruct().getPgJsonb(columnIndex);
+    }
+
+    @Override
+    public String getPgJsonb(String columnName) {
+      return getCurrentRowAsStruct().getPgJsonb(columnName);
+    }
+
+    @Override
     public ByteArray getBytes(int columnIndex) {
       return getCurrentRowAsStruct().getBytes(columnIndex);
     }
@@ -381,6 +391,16 @@ public final class ResultSets {
     @Override
     public List<String> getJsonList(String columnName) {
       return getCurrentRowAsStruct().getJsonList(columnName);
+    }
+
+    @Override
+    public List<String> getPgJsonbList(int columnIndex) {
+      return getCurrentRowAsStruct().getPgJsonbList(columnIndex);
+    }
+
+    @Override
+    public List<String> getPgJsonbList(String columnName) {
+      return getCurrentRowAsStruct().getPgJsonbList(columnName);
     }
 
     @Override

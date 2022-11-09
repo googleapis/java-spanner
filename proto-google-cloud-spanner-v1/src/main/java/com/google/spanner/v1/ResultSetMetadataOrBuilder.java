@@ -113,4 +113,63 @@ public interface ResultSetMetadataOrBuilder
    * <code>.google.spanner.v1.Transaction transaction = 2;</code>
    */
   com.google.spanner.v1.TransactionOrBuilder getTransactionOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * A SQL query can be parameterized. In PLAN mode, these parameters can be
+   * undeclared. This indicates the field names and types for those undeclared
+   * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
+   * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
+   * `undeclared_parameters` value like:
+   *     "fields": [
+   *       { "name": "UserId", "type": { "code": "INT64" } },
+   *       { "name": "UserName", "type": { "code": "STRING" } },
+   *     ]
+   * </pre>
+   *
+   * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
+   *
+   * @return Whether the undeclaredParameters field is set.
+   */
+  boolean hasUndeclaredParameters();
+  /**
+   *
+   *
+   * <pre>
+   * A SQL query can be parameterized. In PLAN mode, these parameters can be
+   * undeclared. This indicates the field names and types for those undeclared
+   * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
+   * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
+   * `undeclared_parameters` value like:
+   *     "fields": [
+   *       { "name": "UserId", "type": { "code": "INT64" } },
+   *       { "name": "UserName", "type": { "code": "STRING" } },
+   *     ]
+   * </pre>
+   *
+   * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
+   *
+   * @return The undeclaredParameters.
+   */
+  com.google.spanner.v1.StructType getUndeclaredParameters();
+  /**
+   *
+   *
+   * <pre>
+   * A SQL query can be parameterized. In PLAN mode, these parameters can be
+   * undeclared. This indicates the field names and types for those undeclared
+   * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
+   * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
+   * `undeclared_parameters` value like:
+   *     "fields": [
+   *       { "name": "UserId", "type": { "code": "INT64" } },
+   *       { "name": "UserName", "type": { "code": "STRING" } },
+   *     ]
+   * </pre>
+   *
+   * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
+   */
+  com.google.spanner.v1.StructTypeOrBuilder getUndeclaredParametersOrBuilder();
 }

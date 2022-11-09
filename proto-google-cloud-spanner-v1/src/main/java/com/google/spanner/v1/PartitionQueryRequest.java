@@ -53,122 +53,6 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     return this.unknownFields;
   }
 
-  private PartitionQueryRequest(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              session_ = s;
-              break;
-            }
-          case 18:
-            {
-              com.google.spanner.v1.TransactionSelector.Builder subBuilder = null;
-              if (transaction_ != null) {
-                subBuilder = transaction_.toBuilder();
-              }
-              transaction_ =
-                  input.readMessage(
-                      com.google.spanner.v1.TransactionSelector.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(transaction_);
-                transaction_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          case 26:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              sql_ = s;
-              break;
-            }
-          case 34:
-            {
-              com.google.protobuf.Struct.Builder subBuilder = null;
-              if (params_ != null) {
-                subBuilder = params_.toBuilder();
-              }
-              params_ = input.readMessage(com.google.protobuf.Struct.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(params_);
-                params_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          case 42:
-            {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                paramTypes_ =
-                    com.google.protobuf.MapField.newMapField(
-                        ParamTypesDefaultEntryHolder.defaultEntry);
-                mutable_bitField0_ |= 0x00000001;
-              }
-              com.google.protobuf.MapEntry<java.lang.String, com.google.spanner.v1.Type>
-                  paramTypes__ =
-                      input.readMessage(
-                          ParamTypesDefaultEntryHolder.defaultEntry.getParserForType(),
-                          extensionRegistry);
-              paramTypes_.getMutableMap().put(paramTypes__.getKey(), paramTypes__.getValue());
-              break;
-            }
-          case 50:
-            {
-              com.google.spanner.v1.PartitionOptions.Builder subBuilder = null;
-              if (partitionOptions_ != null) {
-                subBuilder = partitionOptions_.toBuilder();
-              }
-              partitionOptions_ =
-                  input.readMessage(
-                      com.google.spanner.v1.PartitionOptions.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(partitionOptions_);
-                partitionOptions_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (com.google.protobuf.UninitializedMessageException e) {
-      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_PartitionQueryRequest_descriptor;
@@ -638,7 +522,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     if (partitionOptions_ != null) {
       output.writeMessage(6, getPartitionOptions());
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -672,7 +556,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     if (partitionOptions_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(6, getPartitionOptions());
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -703,7 +587,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     if (hasPartitionOptions()) {
       if (!getPartitionOptions().equals(other.getPartitionOptions())) return false;
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -734,7 +618,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
       hash = (37 * hash) + PARTITION_OPTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getPartitionOptions().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -883,17 +767,10 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     }
 
     // Construct using com.google.spanner.v1.PartitionQueryRequest.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
@@ -1036,7 +913,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
       if (other.hasPartitionOptions()) {
         mergePartitionOptions(other.getPartitionOptions());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -1051,17 +928,74 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.PartitionQueryRequest parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                session_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 10
+            case 18:
+              {
+                input.readMessage(getTransactionFieldBuilder().getBuilder(), extensionRegistry);
+
+                break;
+              } // case 18
+            case 26:
+              {
+                sql_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 26
+            case 34:
+              {
+                input.readMessage(getParamsFieldBuilder().getBuilder(), extensionRegistry);
+
+                break;
+              } // case 34
+            case 42:
+              {
+                com.google.protobuf.MapEntry<java.lang.String, com.google.spanner.v1.Type>
+                    paramTypes__ =
+                        input.readMessage(
+                            ParamTypesDefaultEntryHolder.defaultEntry.getParserForType(),
+                            extensionRegistry);
+                internalGetMutableParamTypes()
+                    .getMutableMap()
+                    .put(paramTypes__.getKey(), paramTypes__.getValue());
+                break;
+              } // case 42
+            case 50:
+              {
+                input.readMessage(
+                    getPartitionOptionsFieldBuilder().getBuilder(), extensionRegistry);
+
+                break;
+              } // case 50
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.PartitionQueryRequest) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -2189,7 +2123,18 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new PartitionQueryRequest(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

@@ -22,3 +22,7 @@ branches:
     bumpMinorPreMajor: true
     handleGHRelease: true
     branch: 6.14.x
+  - releaseType: java-yoshi
+    bumpMinorPreMajor: true
+    handleGHRelease: true
+    branch: 6.23.x

@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
@@ -37,9 +38,11 @@ import com.google.protobuf.ByteString;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.util.Collections;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -492,6 +495,40 @@ public class AbortedTest extends AbstractMockServerTest {
                             .equals("transaction-tag"))
             .count();
     assertEquals(2L, commitRequestCount);
+  }
+
+  public void testRetryUsesAnalyzeModeForUpdate() {
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT_COUNT_STATEMENT, SELECT_COUNT_RESULTSET_BEFORE_INSERT));
+    mockSpanner.putStatementResult(StatementResult.update(INSERT_STATEMENT, 0));
+    try (ITConnection connection = createConnection()) {
+      assertEquals(
+          0L, connection.analyzeUpdate(INSERT_STATEMENT, QueryAnalyzeMode.PLAN).getRowCountExact());
+
+      mockSpanner.abortNextStatement();
+      connection.executeQuery(SELECT_COUNT_STATEMENT);
+
+      mockSpanner.putStatementResult(StatementResult.update(INSERT_STATEMENT, 1));
+      assertEquals(1L, connection.executeUpdate(INSERT_STATEMENT));
+
+      connection.commit();
+    }
+    // 5 requests because:
+    // 1. Analyze INSERT
+    // 2. Execute SELECT COUNT(*) (Aborted)
+    // 3. Analyze INSERT (retry)
+    // 4. Execute SELECT COUNT(*) (retry)
+    // 5. Execute INSERT
+    assertEquals(5, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(QueryMode.PLAN, requests.get(0).getQueryMode());
+    assertEquals(QueryMode.NORMAL, requests.get(1).getQueryMode());
+
+    // This used NORMAL because of https://github.com/googleapis/java-spanner/issues/2009.
+    assertEquals(QueryMode.PLAN, requests.get(2).getQueryMode());
+
+    assertEquals(QueryMode.NORMAL, requests.get(3).getQueryMode());
+    assertEquals(QueryMode.NORMAL, requests.get(4).getQueryMode());
   }
 
   ITConnection createConnection(TransactionRetryListener listener) {

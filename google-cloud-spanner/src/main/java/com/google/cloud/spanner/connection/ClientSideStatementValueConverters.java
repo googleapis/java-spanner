@@ -382,8 +382,9 @@ class ClientSideStatementValueConverters {
     public PgTransactionMode convert(String value) {
       PgTransactionMode mode = new PgTransactionMode();
       // Transaction mode may contain multiple spaces.
+      String valueWithoutDeferrable = value.replaceAll("(?i)(not\\s+deferrable)", " ");
       String valueWithSingleSpaces =
-          value.replaceAll("\\s+", " ").toLowerCase(Locale.ENGLISH).trim();
+          valueWithoutDeferrable.replaceAll("\\s+", " ").toLowerCase(Locale.ENGLISH).trim();
       int currentIndex = 0;
       while (currentIndex < valueWithSingleSpaces.length()) {
         // This will use the last access mode and isolation level that is encountered in the string.

@@ -76,6 +76,11 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
+    protected String getPgJsonbInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
     protected ByteArray getBytesInternal(int columnIndex) {
       return null;
     }
@@ -137,6 +142,11 @@ public class AbstractStructReaderTypesTest {
 
     @Override
     protected List<String> getJsonListInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected List<String> getPgJsonbListInternal(int columnIndex) {
       return null;
     }
 
