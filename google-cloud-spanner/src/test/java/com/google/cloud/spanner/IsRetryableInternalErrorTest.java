@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.api.gax.grpc.GrpcStatusCode;
 import com.google.api.gax.rpc.InternalException;
@@ -123,7 +124,7 @@ public class IsRetryableInternalErrorTest {
             GrpcStatusCode.of(Code.INTERNAL),
             false);
 
-    assertThat(predicate.apply(e)).isTrue();
+    assertTrue(predicate.apply(e));
   }
 
   @Test
