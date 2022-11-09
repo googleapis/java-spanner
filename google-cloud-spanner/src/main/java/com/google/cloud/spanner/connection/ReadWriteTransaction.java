@@ -46,6 +46,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.TransactionRetryListener.RetryResult;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -337,7 +338,10 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
-    Preconditions.checkArgument(statement.isQuery(), "Statement is not a query");
+    Preconditions.checkArgument(
+        (statement.getType() == StatementType.QUERY)
+            || (statement.getType() == StatementType.UPDATE && statement.hasReturningClause()),
+        "Statement must be a query or DML with returning clause");
     checkValidTransaction();
 
     ApiFuture<ResultSet> res;
