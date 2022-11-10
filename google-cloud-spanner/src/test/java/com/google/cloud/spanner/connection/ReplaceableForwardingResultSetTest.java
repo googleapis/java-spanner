@@ -326,12 +326,20 @@ public class ReplaceableForwardingResultSetTest {
       verify(delegate).getProtoMessage(0, SingerInfo.getDefaultInstance());
       subject.getProtoMessage("test0", SingerInfo.getDefaultInstance());
       verify(delegate).getProtoMessage("test0", SingerInfo.getDefaultInstance());
+      subject.getProtoMessageList(0, SingerInfo.getDefaultInstance());
+      verify(delegate).getProtoMessageList(0, SingerInfo.getDefaultInstance());
+      subject.getProtoMessageList("test0", SingerInfo.getDefaultInstance());
+      verify(delegate).getProtoMessageList("test0", SingerInfo.getDefaultInstance());
 
       Function<Integer, ProtocolMessageEnum> lambdaFunction = Genre::forNumber;
       subject.getProtoEnum(0, lambdaFunction);
       verify(delegate).getProtoEnum(0, lambdaFunction);
       subject.getProtoEnum("test0", lambdaFunction);
       verify(delegate).getProtoEnum("test0", lambdaFunction);
+      subject.getProtoEnumList(0, lambdaFunction);
+      verify(delegate).getProtoEnumList(0, lambdaFunction);
+      subject.getProtoEnumList("test0", lambdaFunction);
+      verify(delegate).getProtoEnumList("test0", lambdaFunction);
 
       subject.getStructList(0);
       subject.getStructList("test0");

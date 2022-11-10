@@ -19,6 +19,8 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.SingerProto.Genre;
+import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.common.io.BaseEncoding;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
@@ -115,6 +117,22 @@ public class RandomResultSetGenerator {
     if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
       types.add(Type.newBuilder().setCode(TypeCode.PROTO).setProtoTypeFqn("testProto").build());
       types.add(Type.newBuilder().setCode(TypeCode.ENUM).setProtoTypeFqn("testEnum").build());
+      types.add(
+          Type.newBuilder()
+              .setCode(TypeCode.ARRAY)
+              .setArrayElementType(
+                  Type.newBuilder()
+                      .setCode(TypeCode.PROTO)
+                      .setProtoTypeFqn(SingerInfo.getDescriptor().getFullName()))
+              .build());
+      types.add(
+          Type.newBuilder()
+              .setCode(TypeCode.ARRAY)
+              .setArrayElementType(
+                  Type.newBuilder()
+                      .setCode(TypeCode.ENUM)
+                      .setProtoTypeFqn(Genre.getDescriptor().getFullName()))
+              .build());
     }
 
     Type[] typeArray = new Type[types.size()];

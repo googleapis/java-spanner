@@ -179,8 +179,8 @@ public class ValueBinderTest {
         assertThat(binder.to(expected)).isEqualTo(lastReturnValue);
         assertThat(lastValue).isEqualTo(expected);
       } else if (binderMethod.getParameterTypes().length == 2
-          && (method.getName().equalsIgnoreCase(PROTO_MESSAGE_METHOD_NAME)
-              || method.getName().equalsIgnoreCase(PROTO_ENUM_METHOD_NAME))) {
+          && (method.getName().contains(PROTO_MESSAGE_METHOD_NAME)
+              || method.getName().contains(PROTO_ENUM_METHOD_NAME))) {
         // Test unary null.
         Object firstArgument = null;
         if (binderMethod.getParameterTypes()[0].isPrimitive()) {

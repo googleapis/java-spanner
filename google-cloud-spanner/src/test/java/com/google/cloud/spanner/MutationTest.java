@@ -613,6 +613,24 @@ public class MutationTest {
         .toJsonArray(null)
         .set("jsonArrValue")
         .to(Value.jsonArray(ImmutableList.of("{\"key\": \"value1\"}}", "{\"key\": \"value2\"}")))
+        .set("protoMessageArr")
+        .toProtoMessageArray(
+            ImmutableList.of(SingerInfo.newBuilder().setSingerId(232).setGenre(Genre.POP).build()),
+            SingerInfo.getDescriptor())
+        .set("protoMessageArrNull")
+        .toProtoMessageArray(null, SingerInfo.getDescriptor())
+        .set("protoMessageArrValue")
+        .to(
+            Value.protoMessageArray(
+                ImmutableList.of(
+                    SingerInfo.newBuilder().setSingerId(232).setGenre(Genre.POP).build()),
+                SingerInfo.getDescriptor()))
+        .set("protoEnumArr")
+        .toProtoEnumArray(ImmutableList.of(Genre.JAZZ), Genre.getDescriptor())
+        .set("protoEnumArrNull")
+        .toProtoEnumArray(null, Genre.getDescriptor())
+        .set("protoEnumArrValue")
+        .to(Value.protoEnumArray(ImmutableList.of(Genre.JAZZ), Genre.getDescriptor()))
         .set("pgJsonbArr")
         .toPgJsonbArray(ImmutableList.of("{\"key\": \"value1\"}}", "{\"key\": \"value2\"}"))
         .set("pgJsonbArrNull")

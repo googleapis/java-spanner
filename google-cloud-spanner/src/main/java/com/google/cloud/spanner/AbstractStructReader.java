@@ -361,8 +361,8 @@ public abstract class AbstractStructReader implements StructReader {
   @Override
   public List<Long> getLongList(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnIndex);
+    checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
+    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnName);
     return getLongListInternal(columnIndex);
   }
 
@@ -462,8 +462,8 @@ public abstract class AbstractStructReader implements StructReader {
   @Override
   public List<ByteArray> getBytesList(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnIndex);
+    checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
+    checkArrayElementType(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnName);
     return getBytesListInternal(columnIndex);
   }
 
@@ -582,10 +582,10 @@ public abstract class AbstractStructReader implements StructReader {
     Type arrayElementType = getColumnType(columnIndex).getArrayElementType();
     checkState(
         expectedCodes.contains(arrayElementType.getCode()),
-        "Array element %s is not of correct type code: expected one of [%s] but was %s",
+        "Array element for Column %s is not of correct type code: expected one of [%s] but was %s",
         columnNameForError,
         expectedCodes,
-        arrayElementType);
+        Type.array(arrayElementType));
   }
 
   private void checkNonNullOfTypes(

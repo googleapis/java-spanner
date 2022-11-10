@@ -223,6 +223,7 @@ public class TypeTest {
     private final TypeCode expectedElementTypeCode;
     private final TypeAnnotationCode expectedTypeAnnotationCode;
     private final boolean expectInterned;
+    private String protoTypeFqn = "";
 
     ArrayTypeTester(
         Type.Code expectedElementCode, TypeCode expectedElementTypeCode, boolean expectInterned) {
@@ -231,6 +232,19 @@ public class TypeTest {
           expectedElementTypeCode,
           TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED,
           expectInterned);
+    }
+
+    ArrayTypeTester(
+        Type.Code expectedElementCode,
+        TypeCode expectedElementTypeCode,
+        String protoTypeFqn,
+        boolean expectInterned) {
+      this(
+          expectedElementCode,
+          expectedElementTypeCode,
+          TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED,
+          expectInterned);
+      this.protoTypeFqn = protoTypeFqn;
     }
 
     ArrayTypeTester(
@@ -378,6 +392,26 @@ public class TypeTest {
       @Override
       Type newElementType() {
         return Type.date();
+      }
+    }.test();
+  }
+
+  @Test
+  public void protoArray() {
+    new ArrayTypeTester(Type.Code.PROTO, TypeCode.PROTO, "com.google.temp", false) {
+      @Override
+      Type newElementType() {
+        return Type.proto("com.google.temp");
+      }
+    }.test();
+  }
+
+  @Test
+  public void protoEnumArray() {
+    new ArrayTypeTester(Type.Code.ENUM, TypeCode.ENUM, "com.google.temp.enum", false) {
+      @Override
+      Type newElementType() {
+        return Type.protoEnum("com.google.temp.enum");
       }
     }.test();
   }

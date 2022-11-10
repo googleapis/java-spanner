@@ -110,6 +110,15 @@ public class ChecksumResultSetTest {
           .to(
               Value.pgJsonbArray(
                   Arrays.asList("{\"color\":\"red\",\"value\":\"#f00\"}", null, "[]")))
+          .set("protoMessageArray")
+          .to(
+              Value.protoMessageArray(
+                  Arrays.asList(
+                      SingerInfo.newBuilder().setSingerId(23).build(),
+                      SingerInfo.getDefaultInstance()),
+                  SingerInfo.getDescriptor()))
+          .set("protoEnumArray")
+          .to(Value.protoEnumArray(Arrays.asList(Genre.JAZZ, Genre.ROCK), Genre.getDescriptor()))
           .build();
 
   @Test
@@ -141,7 +150,12 @@ public class ChecksumResultSetTest {
             Type.StructField.of("dateArray", Type.array(Type.date())),
             Type.StructField.of("stringArray", Type.array(Type.string())),
             Type.StructField.of("jsonArray", Type.array(Type.json())),
-            Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())));
+            Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())),
+            Type.StructField.of(
+                "protoMessageArray",
+                Type.array(Type.proto(SingerInfo.getDescriptor().getFullName()))),
+            Type.StructField.of(
+                "protoEnumArray", Type.array(Type.protoEnum(Genre.getDescriptor().getFullName()))));
     Struct rowNonNullValues =
         Struct.newBuilder()
             .set("boolVal")
@@ -206,6 +220,15 @@ public class ChecksumResultSetTest {
             .to(
                 Value.pgJsonbArray(
                     Arrays.asList("{\"color\":\"red\",\"value\":\"#f00\"}", null, "{}")))
+            .set("protoMessageArray")
+            .to(
+                Value.protoMessageArray(
+                    Arrays.asList(
+                        SingerInfo.newBuilder().setSingerId(11).setNationality("C1").build(),
+                        SingerInfo.getDefaultInstance()),
+                    SingerInfo.getDescriptor()))
+            .set("protoEnumArray")
+            .to(Value.protoEnumArray(Arrays.asList(Genre.POP, Genre.ROCK), Genre.getDescriptor()))
             .build();
     Struct rowNullValues =
         Struct.newBuilder()
@@ -257,6 +280,10 @@ public class ChecksumResultSetTest {
             .toJsonArray(null)
             .set("pgJsonbArray")
             .toPgJsonbArray(null)
+            .set("protoMessageArray")
+            .to(Value.protoMessageArray(null, SingerInfo.getDescriptor()))
+            .set("protoEnumArray")
+            .to(Value.protoEnumArray(null, Genre.getDescriptor()))
             .build();
 
     ParsedStatement parsedStatement = mock(ParsedStatement.class);

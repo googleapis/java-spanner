@@ -1103,6 +1103,70 @@ public class ValueTest {
   }
 
   @Test
+  public void protoMessageArray() {
+    SingerInfo singerInfo1 = SingerInfo.newBuilder().setSingerId(111).setGenre(Genre.FOLK).build();
+    SingerInfo singerInfo2 = SingerInfo.newBuilder().setSingerId(222).build();
+    Value v =
+        Value.protoMessageArray(
+            Arrays.asList(singerInfo1, null, singerInfo2), SingerInfo.getDescriptor());
+    assertThat(v.getType())
+        .isEqualTo(Type.array(Type.proto(SingerInfo.getDescriptor().getFullName())));
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getProtoMessageArray(SingerInfo.getDefaultInstance()))
+        .containsExactly(singerInfo1, null, singerInfo2);
+    assertThat(v.getBytesArray())
+        .containsExactly(
+            ByteArray.copyFrom(singerInfo1.toByteArray()),
+            null,
+            ByteArray.copyFrom(singerInfo2.toByteArray()));
+  }
+
+  @Test
+  public void protoMessageNullArray() {
+    Value v = Value.protoMessageArray(null, SingerInfo.getDescriptor());
+    assertThat(v.getType())
+        .isEqualTo(Type.array(Type.proto(SingerInfo.getDescriptor().getFullName())));
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> {
+              v.getProtoMessageArray(SingerInfo.getDefaultInstance());
+            });
+    assertThat(e.getMessage()).contains("null value");
+  }
+
+  @Test
+  public void protoEnumArray() {
+    Genre genre1 = Genre.ROCK;
+    Genre genre2 = Genre.JAZZ;
+    Value v = Value.protoEnumArray(Arrays.asList(genre1, null, genre2), Genre.getDescriptor());
+    assertThat(v.getType())
+        .isEqualTo(Type.array(Type.protoEnum(Genre.getDescriptor().getFullName())));
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getProtoEnumArray(Genre::forNumber)).containsExactly(genre1, null, genre2);
+    assertThat(v.getInt64Array())
+        .containsExactly((long) genre1.getNumber(), null, (long) genre2.getNumber());
+  }
+
+  @Test
+  public void protoEnumNullArray() {
+    Value v = Value.protoEnumArray(null, Genre.getDescriptor());
+    assertThat(v.getType())
+        .isEqualTo(Type.array(Type.protoEnum(Genre.getDescriptor().getFullName())));
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> {
+              v.getProtoEnumArray(Genre::forNumber);
+            });
+    assertThat(e.getMessage()).contains("null value");
+  }
+
+  @Test
   public void struct() {
     Struct struct = Struct.newBuilder().set("f1").to("v1").set("f2").to(30).build();
     Value v1 = Value.struct(struct);
