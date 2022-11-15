@@ -160,7 +160,8 @@ public interface ReadContext extends AutoCloseable {
       String table, String index, Key key, Iterable<String> columns);
 
   /**
-   * Executes a query against the database.
+   * Executes a query against the database. Can also execute a DML statement with returning clause
+   * in a read/write transaction.
    *
    * <p>Implementations may or may not block in the initial {@code executeQuery(...)} call; for
    * those that do not, the remote call will be initiated immediately but blocking on the response

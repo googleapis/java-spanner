@@ -856,8 +856,8 @@ public interface Connection extends AutoCloseable {
    * state. The returned value depends on the type of statement:
    *
    * <ul>
-   *   <li>Queries will return a {@link ResultSet}
-   *   <li>DML statements will return an update count
+   *   <li>Queries and DML statements with returning clause will return a {@link ResultSet}.
+   *   <li>Simple DML statements will return an update count
    *   <li>DDL statements will return a {@link ResultType#NO_RESULT}
    *   <li>Connection and transaction statements (SET AUTOCOMMIT=TRUE|FALSE, SHOW AUTOCOMMIT, SET
    *       TRANSACTION READ ONLY, etc) will return either a {@link ResultSet} or {@link
@@ -874,9 +874,9 @@ public interface Connection extends AutoCloseable {
    * state asynchronously. The returned value depends on the type of statement:
    *
    * <ul>
-   *   <li>Queries will return an {@link AsyncResultSet}
-   *   <li>DML statements will return an {@link ApiFuture} with an update count that is done when
-   *       the DML statement has been applied successfully, or that throws an {@link
+   *   <li>Queries and DML statements with returning clause will return an {@link AsyncResultSet}.
+   *   <li>Simple DML statements will return an {@link ApiFuture} with an update count that is done
+   *       when the DML statement has been applied successfully, or that throws an {@link
    *       ExecutionException} if the DML statement failed.
    *   <li>DDL statements will return an {@link ApiFuture} containing a {@link Void} that is done
    *       when the DDL statement has been applied successfully, or that throws an {@link
@@ -894,31 +894,33 @@ public interface Connection extends AutoCloseable {
   AsyncStatementResult executeAsync(Statement statement);
 
   /**
-   * Executes the given statement as a query and returns the result as a {@link ResultSet}. This
-   * method blocks and waits for a response from Spanner. If the statement does not contain a valid
-   * query, the method will throw a {@link SpannerException}.
+   * Executes the given statement (a query or a DML statement with returning clause) and returns the
+   * result as a {@link ResultSet}. This method blocks and waits for a response from Spanner. If the
+   * statement does not contain a valid query or a DML statement with returning clause, the method
+   * will throw a {@link SpannerException}.
    *
-   * @param query The query statement to execute
+   * @param query The query statement or DML statement with returning clause to execute
    * @param options the options to configure the query
-   * @return a {@link ResultSet} with the results of the query
+   * @return a {@link ResultSet} with the results of the statement
    */
   ResultSet executeQuery(Statement query, QueryOption... options);
 
   /**
-   * Executes the given statement asynchronously as a query and returns the result as an {@link
-   * AsyncResultSet}. This method is guaranteed to be non-blocking. If the statement does not
-   * contain a valid query, the method will throw a {@link SpannerException}.
+   * Executes the given statement (a query or a DML statement with returning clause) asynchronously
+   * and returns the result as an {@link AsyncResultSet}. This method is guaranteed to be
+   * non-blocking. If the statement does not contain a valid query or a DML statement with returning
+   * clause, the method will throw a {@link SpannerException}.
    *
    * <p>See {@link AsyncResultSet#setCallback(java.util.concurrent.Executor,
    * com.google.cloud.spanner.AsyncResultSet.ReadyCallback)} for more information on how to consume
-   * the results of the query asynchronously.
+   * the results of the statement asynchronously.
    *
    * <p>It is also possible to consume the returned {@link AsyncResultSet} in the same way as a
    * normal {@link ResultSet}, i.e. in a while-loop calling {@link AsyncResultSet#next()}.
    *
-   * @param query The query statement to execute
+   * @param query The query statement or DML statement with returning clause to execute
    * @param options the options to configure the query
-   * @return an {@link AsyncResultSet} with the results of the query
+   * @return an {@link AsyncResultSet} with the results of the statement
    */
   AsyncResultSet executeQueryAsync(Statement query, QueryOption... options);
 
@@ -951,8 +953,8 @@ public interface Connection extends AutoCloseable {
   ResultSet analyzeQuery(Statement query, QueryAnalyzeMode queryMode);
 
   /**
-   * Executes the given statement as a DML statement. If the statement does not contain a valid DML
-   * statement, the method will throw a {@link SpannerException}.
+   * Executes the given statement as a simple DML statement. If the statement does not contain a
+   * valid DML statement, the method will throw a {@link SpannerException}.
    *
    * @param update The update statement to execute
    * @return the number of records that were inserted/updated/deleted by this statement
@@ -972,8 +974,9 @@ public interface Connection extends AutoCloseable {
   }
 
   /**
-   * Executes the given statement asynchronously as a DML statement. If the statement does not
-   * contain a valid DML statement, the method will throw a {@link SpannerException}.
+   * Executes the given statement asynchronously as a simple DML statement. If the statement does
+   * not contain a simple DML statement, the method will throw a {@link SpannerException}. A DML
+   * statement with returning clause will throw a {@link SpannerException}.
    *
    * <p>This method is guaranteed to be non-blocking.
    *
@@ -984,8 +987,9 @@ public interface Connection extends AutoCloseable {
   ApiFuture<Long> executeUpdateAsync(Statement update);
 
   /**
-   * Executes a list of DML statements in a single request. The statements will be executed in order
-   * and the semantics is the same as if each statement is executed by {@link
+   * Executes a list of DML statements (can be simple DML statements or DML statements with
+   * returning clause) in a single request. The statements will be executed in order and the
+   * semantics is the same as if each statement is executed by {@link
    * Connection#executeUpdate(Statement)} in a loop. This method returns an array of long integers,
    * each representing the number of rows modified by each statement.
    *
@@ -1006,8 +1010,9 @@ public interface Connection extends AutoCloseable {
   long[] executeBatchUpdate(Iterable<Statement> updates);
 
   /**
-   * Executes a list of DML statements in a single request. The statements will be executed in order
-   * and the semantics is the same as if each statement is executed by {@link
+   * Executes a list of DML statements (can be simple DML statements or DML statements with
+   * returning clause) in a single request. The statements will be executed in order and the
+   * semantics is the same as if each statement is executed by {@link
    * Connection#executeUpdate(Statement)} in a loop. This method returns an {@link ApiFuture} that
    * contains an array of long integers, each representing the number of rows modified by each
    * statement.
