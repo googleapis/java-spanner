@@ -57,6 +57,7 @@ import com.google.spanner.v1.SpannerGrpc;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -413,6 +414,18 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         MoreExecutors.directExecutor());
   }
 
+  /**
+   * Executes the given update statement using the specified query planning mode and with the given
+   * options and returns the result as a {@link Tuple}. The tuple contains either a {@link
+   * ResultSet} with the query plan and execution statistics, or a {@link Long} that contains the
+   * update count that was returned for the update statement. Only one of the elements in the tuple
+   * will be set, and the reason that we are using a {@link Tuple} here is because Java does not
+   * have a standard implementation for an 'Either' class (i.e. a Tuple where only one element is
+   * set). An alternative would be to always return a {@link ResultSet} with the update count
+   * encoded in the execution stats of the result set, but this would mean that we would create
+   * additional {@link ResultSet} instances every time an update statement is executed in normal
+   * mode.
+   */
   private ApiFuture<Tuple<Long, ResultSet>> internalExecuteUpdateAsync(
       ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     Preconditions.checkNotNull(update);
@@ -448,9 +461,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                                       analyzeMode.getQueryAnalyzeMode(),
                                       options);
                           updateCount =
-                              resultSet.getStats() == null
-                                  ? 0L
-                                  : resultSet.getStats().getRowCountExact();
+                              Objects.requireNonNull(resultSet.getStats()).getRowCountExact();
                           result = Tuple.of(null, resultSet);
                         }
                         createAndAddRetriableUpdate(update, analyzeMode, updateCount, options);

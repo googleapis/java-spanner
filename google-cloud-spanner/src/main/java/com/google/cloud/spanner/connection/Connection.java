@@ -971,6 +971,7 @@ public interface Connection extends AutoCloseable {
    * the DML statement will be visible to subsequent operations in the transaction.
    *
    * @deprecated Use {@link #analyzeUpdateStatement(Statement, QueryAnalyzeMode, UpdateOption...)}
+   *     instead
    */
   @Deprecated
   default ResultSetStats analyzeUpdate(Statement update, QueryAnalyzeMode analyzeMode) {

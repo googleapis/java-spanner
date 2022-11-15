@@ -161,7 +161,8 @@ public final class ResultSets {
 
     @Override
     public ResultSetMetadata getMetadata() {
-      throw new UnsupportedOperationException();
+      throw new UnsupportedOperationException(
+          "ResultSetMetadata are available only for results that were returned from Cloud Spanner");
     }
 
     @Override
