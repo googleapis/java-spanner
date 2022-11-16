@@ -1065,13 +1065,35 @@ class ConnectionImpl implements Connection {
     if (parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case UPDATE:
-          return get(internalAnalyzeUpdateAsync(parsedStatement, AnalyzeMode.of(analyzeMode)));
+          return get(internalAnalyzeUpdateAsync(parsedStatement, AnalyzeMode.of(analyzeMode)))
+              .getStats();
         case CLIENT_SIDE:
         case QUERY:
         case DDL:
         case UNKNOWN:
         default:
       }
+    }
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.INVALID_ARGUMENT,
+        "Statement is not an update statement: " + parsedStatement.getSqlWithoutComments());
+  }
+
+  @Override
+  public ResultSet analyzeUpdateStatement(
+      Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+    Preconditions.checkNotNull(statement);
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ParsedStatement parsedStatement = getStatementParser().parse(statement);
+    switch (parsedStatement.getType()) {
+      case UPDATE:
+        return get(
+            internalAnalyzeUpdateAsync(parsedStatement, AnalyzeMode.of(analyzeMode), options));
+      case QUERY:
+      case CLIENT_SIDE:
+      case DDL:
+      case UNKNOWN:
+      default:
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
@@ -1224,7 +1246,7 @@ class ConnectionImpl implements Connection {
         update, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
   }
 
-  private ApiFuture<ResultSetStats> internalAnalyzeUpdateAsync(
+  private ApiFuture<ResultSet> internalAnalyzeUpdateAsync(
       final ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     Preconditions.checkArgument(
         update.getType() == StatementType.UPDATE, "Statement must be an update");
