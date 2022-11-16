@@ -28,6 +28,7 @@ import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.Tuple;
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.CommitResponse;
@@ -45,17 +46,18 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.TransactionRetryListener.RetryResult;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.SpannerGrpc;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -337,7 +339,10 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
-    Preconditions.checkArgument(statement.isQuery(), "Statement is not a query");
+    Preconditions.checkArgument(
+        (statement.getType() == StatementType.QUERY)
+            || (statement.getType() == StatementType.UPDATE && statement.hasReturningClause()),
+        "Statement must be a query or DML with returning clause");
     checkValidTransaction();
 
     ApiFuture<ResultSet> res;
@@ -392,9 +397,12 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<ResultSetStats> analyzeUpdateAsync(
+  public ApiFuture<ResultSet> analyzeUpdateAsync(
       ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
-    return internalExecuteUpdateAsync(update, analyzeMode, options);
+    return ApiFutures.transform(
+        internalExecuteUpdateAsync(update, analyzeMode, options),
+        Tuple::y,
+        MoreExecutors.directExecutor());
   }
 
   @Override
@@ -402,16 +410,28 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       final ParsedStatement update, final UpdateOption... options) {
     return ApiFutures.transform(
         internalExecuteUpdateAsync(update, AnalyzeMode.NONE, options),
-        ResultSetStats::getRowCountExact,
+        Tuple::x,
         MoreExecutors.directExecutor());
   }
 
-  private ApiFuture<ResultSetStats> internalExecuteUpdateAsync(
+  /**
+   * Executes the given update statement using the specified query planning mode and with the given
+   * options and returns the result as a {@link Tuple}. The tuple contains either a {@link
+   * ResultSet} with the query plan and execution statistics, or a {@link Long} that contains the
+   * update count that was returned for the update statement. Only one of the elements in the tuple
+   * will be set, and the reason that we are using a {@link Tuple} here is because Java does not
+   * have a standard implementation for an 'Either' class (i.e. a Tuple where only one element is
+   * set). An alternative would be to always return a {@link ResultSet} with the update count
+   * encoded in the execution stats of the result set, but this would mean that we would create
+   * additional {@link ResultSet} instances every time an update statement is executed in normal
+   * mode.
+   */
+  private ApiFuture<Tuple<Long, ResultSet>> internalExecuteUpdateAsync(
       ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "The statement is not an update statement");
     checkValidTransaction();
-    ApiFuture<ResultSetStats> res;
+    ApiFuture<Tuple<Long, ResultSet>> res;
     if (retryAbortsInternally) {
       res =
           executeStatementAsync(
@@ -427,25 +447,25 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                                 StatementExecutionStep.EXECUTE_STATEMENT,
                                 ReadWriteTransaction.this);
 
-                        ResultSetStats updateCount;
+                        Tuple<Long, ResultSet> result;
+                        long updateCount;
                         if (analyzeMode == AnalyzeMode.NONE) {
                           updateCount =
-                              ResultSetStats.newBuilder()
-                                  .setRowCountExact(
-                                      get(txContextFuture)
-                                          .executeUpdate(update.getStatement(), options))
-                                  .build();
+                              get(txContextFuture).executeUpdate(update.getStatement(), options);
+                          result = Tuple.of(updateCount, null);
                         } else {
-                          updateCount =
+                          ResultSet resultSet =
                               get(txContextFuture)
-                                  .analyzeUpdate(
+                                  .analyzeUpdateStatement(
                                       update.getStatement(),
                                       analyzeMode.getQueryAnalyzeMode(),
                                       options);
+                          updateCount =
+                              Objects.requireNonNull(resultSet.getStats()).getRowCountExact();
+                          result = Tuple.of(null, resultSet);
                         }
-                        createAndAddRetriableUpdate(
-                            update, analyzeMode, updateCount.getRowCountExact(), options);
-                        return updateCount;
+                        createAndAddRetriableUpdate(update, analyzeMode, updateCount, options);
+                        return result;
                       } catch (AbortedException e) {
                         throw e;
                       } catch (SpannerException e) {
@@ -465,20 +485,20 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 checkTimedOut();
                 checkAborted();
                 if (analyzeMode == AnalyzeMode.NONE) {
-                  return ResultSetStats.newBuilder()
-                      .setRowCountExact(
-                          get(txContextFuture).executeUpdate(update.getStatement(), options))
-                      .build();
+                  return Tuple.of(
+                      get(txContextFuture).executeUpdate(update.getStatement(), options), null);
                 }
-                return get(txContextFuture)
-                    .analyzeUpdate(
-                        update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options);
+                ResultSet resultSet =
+                    get(txContextFuture)
+                        .analyzeUpdateStatement(
+                            update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options);
+                return Tuple.of(null, resultSet);
               },
               SpannerGrpc.getExecuteSqlMethod());
     }
     ApiFutures.addCallback(
         res,
-        new ApiFutureCallback<ResultSetStats>() {
+        new ApiFutureCallback<Tuple<Long, ResultSet>>() {
           @Override
           public void onFailure(Throwable t) {
             if (t instanceof SpannerException) {
@@ -487,7 +507,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           }
 
           @Override
-          public void onSuccess(ResultSetStats result) {}
+          public void onSuccess(Tuple<Long, ResultSet> result) {}
         },
         MoreExecutors.directExecutor());
     return res;
