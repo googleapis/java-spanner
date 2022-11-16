@@ -29,6 +29,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
@@ -968,8 +969,27 @@ public interface Connection extends AutoCloseable {
    * the statement. {@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PROFILE} executes
    * the DML statement, returns the modified row count and execution statistics, and the effects of
    * the DML statement will be visible to subsequent operations in the transaction.
+   *
+   * @deprecated Use {@link #analyzeUpdateStatement(Statement, QueryAnalyzeMode, UpdateOption...)}
+   *     instead
    */
+  @Deprecated
   default ResultSetStats analyzeUpdate(Statement update, QueryAnalyzeMode analyzeMode) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Analyzes a DML statement and returns execution plan, undeclared parameters and optionally
+   * execution statistics information.
+   *
+   * <p>{@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PLAN} only returns the plan and
+   * undeclared parameters for the statement. {@link
+   * com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PROFILE} also executes the DML statement,
+   * returns the modified row count and execution statistics, and the effects of the DML statement
+   * will be visible to subsequent operations in the transaction.
+   */
+  default ResultSet analyzeUpdateStatement(
+      Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
     throw new UnsupportedOperationException("Not implemented");
   }
 

@@ -135,8 +135,27 @@ public interface TransactionContext extends ReadContext {
    * the statement. {@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PROFILE} executes
    * the DML statement, returns the modified row count and execution statistics, and the effects of
    * the DML statement will be visible to subsequent operations in the transaction.
+   *
+   * @deprecated Use {@link #analyzeUpdateStatement(Statement, QueryAnalyzeMode, UpdateOption...)}
+   *     instead to get both statement plan and parameter metadata
    */
+  @Deprecated
   default ResultSetStats analyzeUpdate(
+      Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * Analyzes a DML statement and returns query plan and statement parameter metadata and optionally
+   * execution statistics information.
+   *
+   * <p>{@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PLAN} only returns the plan and
+   * parameter metadata for the statement. {@link
+   * com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PROFILE} executes the DML statement,
+   * returns the modified row count and execution statistics, and the effects of the DML statement
+   * will be visible to subsequent operations in the transaction.
+   */
+  default ResultSet analyzeUpdateStatement(
       Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
