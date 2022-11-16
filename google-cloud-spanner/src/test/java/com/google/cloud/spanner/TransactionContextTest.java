@@ -112,6 +112,12 @@ public class TransactionContextTest {
           }
 
           @Override
+          public ResultSet analyzeUpdateStatement(
+              Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+            return null;
+          }
+
+          @Override
           public long executeUpdate(Statement statement, UpdateOption... options) {
             return 0;
           }
