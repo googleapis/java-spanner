@@ -23,14 +23,19 @@ import com.google.api.gax.paging.Page;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.Policy;
 import com.google.cloud.Policy.DefaultMarshaller;
+import com.google.cloud.spanner.Options.CreateAdminApiOption;
+import com.google.cloud.spanner.Options.DeleteAdminApiOption;
 import com.google.cloud.spanner.Options.ListOption;
+import com.google.cloud.spanner.Options.UpdateAdminApiOption;
 import com.google.cloud.spanner.SpannerImpl.PageFetcher;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
 import com.google.common.base.Preconditions;
 import com.google.longrunning.Operation;
 import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 
 /** Default implementation of {@link InstanceAdminClient} */
@@ -61,10 +66,78 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
   }
 
   @Override
+  public OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
+      InstanceConfigInfo instanceConfig, CreateAdminApiOption... options) throws SpannerException {
+    final Options createAdminApiOptions = Options.fromAdminApiOptions(options);
+    String projectName = PROJECT_NAME_TEMPLATE.instantiate("project", projectId);
+    OperationFuture<
+            com.google.spanner.admin.instance.v1.InstanceConfig, CreateInstanceConfigMetadata>
+        rawOperationFuture =
+            rpc.createInstanceConfig(
+                projectName,
+                instanceConfig.getId().getInstanceConfig(),
+                instanceConfig.toProto(),
+                createAdminApiOptions.validateOnly());
+
+    return new OperationFutureImpl<>(
+        rawOperationFuture.getPollingFuture(),
+        rawOperationFuture.getInitialFuture(),
+        snapshot ->
+            InstanceConfig.fromProto(
+                ProtoOperationTransformers.ResponseTransformer.create(
+                        com.google.spanner.admin.instance.v1.InstanceConfig.class)
+                    .apply(snapshot),
+                InstanceAdminClientImpl.this),
+        ProtoOperationTransformers.MetadataTransformer.create(CreateInstanceConfigMetadata.class),
+        e -> {
+          throw SpannerExceptionFactory.newSpannerException(e);
+        });
+  }
+
+  @Override
+  public OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
+      InstanceConfigInfo instanceConfig,
+      Iterable<InstanceConfigInfo.InstanceConfigField> fieldsToUpdate,
+      UpdateAdminApiOption... options)
+      throws SpannerException {
+    final Options deleteAdminApiOptions = Options.fromAdminApiOptions(options);
+    FieldMask fieldMask = InstanceConfigInfo.InstanceConfigField.toFieldMask(fieldsToUpdate);
+
+    OperationFuture<
+            com.google.spanner.admin.instance.v1.InstanceConfig, UpdateInstanceConfigMetadata>
+        rawOperationFuture =
+            rpc.updateInstanceConfig(
+                instanceConfig.toProto(), deleteAdminApiOptions.validateOnly(), fieldMask);
+    return new OperationFutureImpl<>(
+        rawOperationFuture.getPollingFuture(),
+        rawOperationFuture.getInitialFuture(),
+        snapshot ->
+            InstanceConfig.fromProto(
+                ProtoOperationTransformers.ResponseTransformer.create(
+                        com.google.spanner.admin.instance.v1.InstanceConfig.class)
+                    .apply(snapshot),
+                InstanceAdminClientImpl.this),
+        ProtoOperationTransformers.MetadataTransformer.create(UpdateInstanceConfigMetadata.class),
+        e -> {
+          throw SpannerExceptionFactory.newSpannerException(e);
+        });
+  }
+
+  @Override
   public InstanceConfig getInstanceConfig(String configId) throws SpannerException {
     String instanceConfigName = new InstanceConfigId(projectId, configId).getName();
     return InstanceConfig.fromProto(
         rpc.getInstanceConfig(instanceConfigName), InstanceAdminClientImpl.this);
+  }
+
+  @Override
+  public void deleteInstanceConfig(final String instanceConfigId, DeleteAdminApiOption... options)
+      throws SpannerException {
+    final Options deleteAdminApiOptions = Options.fromAdminApiOptions(options);
+    rpc.deleteInstanceConfig(
+        new InstanceConfigId(projectId, instanceConfigId).getName(),
+        deleteAdminApiOptions.etag(),
+        deleteAdminApiOptions.validateOnly());
   }
 
   @Override
@@ -85,6 +158,30 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
           public InstanceConfig fromProto(
               com.google.spanner.admin.instance.v1.InstanceConfig proto) {
             return InstanceConfig.fromProto(proto, InstanceAdminClientImpl.this);
+          }
+        };
+    if (listOptions.hasPageToken()) {
+      pageFetcher.setNextPageToken(listOptions.pageToken());
+    }
+    return pageFetcher.getNextPage();
+  }
+
+  @Override
+  public final Page<Operation> listInstanceConfigOperations(ListOption... options) {
+    final Options listOptions = Options.fromListOptions(options);
+    final int pageSize = listOptions.hasPageSize() ? listOptions.pageSize() : 0;
+    final String filter = listOptions.hasFilter() ? listOptions.filter() : null;
+
+    PageFetcher<Operation, Operation> pageFetcher =
+        new PageFetcher<Operation, Operation>() {
+          @Override
+          public Paginated<Operation> getNextPage(String nextPageToken) {
+            return rpc.listInstanceConfigOperations(pageSize, filter, nextPageToken);
+          }
+
+          @Override
+          public Operation fromProto(Operation proto) {
+            return proto;
           }
         };
     if (listOptions.hasPageToken()) {

@@ -28,15 +28,25 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
 import com.google.common.collect.ImmutableList;
+import com.google.iam.v1.GetPolicyOptions;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
-import com.google.spanner.admin.database.v1.*;
+import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
+import com.google.spanner.admin.database.v1.CreateBackupMetadata;
+import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DatabaseRole;
+import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import com.google.spanner.v1.*;
 import java.util.List;
@@ -161,7 +171,34 @@ public interface SpannerRpc extends ServiceRpc {
   Paginated<InstanceConfig> listInstanceConfigs(int pageSize, @Nullable String pageToken)
       throws SpannerException;
 
+  default OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> createInstanceConfig(
+      String parent,
+      String instanceConfigId,
+      InstanceConfig instanceConfig,
+      @Nullable Boolean validateOnly)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  default OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> updateInstanceConfig(
+      InstanceConfig instanceConfig, @Nullable Boolean validateOnly, FieldMask fieldMask)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
   InstanceConfig getInstanceConfig(String instanceConfigName) throws SpannerException;
+
+  default void deleteInstanceConfig(
+      String instanceConfigName, @Nullable String etag, @Nullable Boolean validateOnly)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /** List all long-running instance config operations on the given project. */
+  default Paginated<Operation> listInstanceConfigOperations(
+      int pageSize, @Nullable String filter, @Nullable String pageToken) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   Paginated<Instance> listInstances(
       int pageSize, @Nullable String pageToken, @Nullable String filter) throws SpannerException;
@@ -253,6 +290,9 @@ public interface SpannerRpc extends ServiceRpc {
   Paginated<Operation> listDatabaseOperations(
       String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken);
 
+  Paginated<DatabaseRole> listDatabaseRoles(
+      String databaseName, int pageSize, @Nullable String pageToken);
+
   /** Retrieves a long running operation. */
   Operation getOperation(String name) throws SpannerException;
 
@@ -262,12 +302,16 @@ public interface SpannerRpc extends ServiceRpc {
   List<Session> batchCreateSessions(
       String databaseName,
       int sessionCount,
+      @Nullable String databaseRole,
       @Nullable Map<String, String> labels,
       @Nullable Map<Option, ?> options)
       throws SpannerException;
 
   Session createSession(
-      String databaseName, @Nullable Map<String, String> labels, @Nullable Map<Option, ?> options)
+      String databaseName,
+      @Nullable String databaseRole,
+      @Nullable Map<String, String> labels,
+      @Nullable Map<Option, ?> options)
       throws SpannerException;
 
   void deleteSession(String sessionName, @Nullable Map<Option, ?> options) throws SpannerException;
@@ -321,7 +365,7 @@ public interface SpannerRpc extends ServiceRpc {
       throws SpannerException;
 
   /** Gets the IAM policy for the given resource using the {@link DatabaseAdminStub}. */
-  Policy getDatabaseAdminIAMPolicy(String resource);
+  Policy getDatabaseAdminIAMPolicy(String resource, @Nullable GetPolicyOptions options);
 
   /**
    * Updates the IAM policy for the given resource using the {@link DatabaseAdminStub}. It is highly

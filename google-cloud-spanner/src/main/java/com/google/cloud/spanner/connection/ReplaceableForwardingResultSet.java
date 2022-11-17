@@ -27,6 +27,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
 import com.google.common.base.Preconditions;
+import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
@@ -92,6 +93,11 @@ class ReplaceableForwardingResultSet implements ResultSet {
   public ResultSetStats getStats() {
     checkClosed();
     return delegate.getStats();
+  }
+
+  @Override
+  public ResultSetMetadata getMetadata() {
+    return delegate.getMetadata();
   }
 
   @Override
@@ -206,6 +212,18 @@ class ReplaceableForwardingResultSet implements ResultSet {
   public String getJson(String columnName) {
     checkClosed();
     return delegate.getJson(columnName);
+  }
+
+  @Override
+  public String getPgJsonb(int columnIndex) {
+    checkClosed();
+    return delegate.getPgJsonb(columnIndex);
+  }
+
+  @Override
+  public String getPgJsonb(String columnName) {
+    checkClosed();
+    return delegate.getPgJsonb(columnName);
   }
 
   @Override
@@ -362,6 +380,18 @@ class ReplaceableForwardingResultSet implements ResultSet {
   public List<String> getJsonList(String columnName) {
     checkClosed();
     return delegate.getJsonList(columnName);
+  }
+
+  @Override
+  public List<String> getPgJsonbList(int columnIndex) {
+    checkClosed();
+    return delegate.getPgJsonbList(columnIndex);
+  }
+
+  @Override
+  public List<String> getPgJsonbList(String columnName) {
+    checkClosed();
+    return delegate.getPgJsonbList(columnName);
   }
 
   @Override

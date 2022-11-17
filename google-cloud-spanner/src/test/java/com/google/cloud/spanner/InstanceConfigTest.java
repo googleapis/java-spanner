@@ -40,6 +40,19 @@ public class InstanceConfigTest {
             com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder()
                 .setDisplayName("Display Name")
                 .setName("projects/my-project/instanceConfigs/my-instance-config")
+                .setBaseConfig("projects/my-project/instanceConfigs/custom-base-config")
+                .addAllOptionalReplicas(
+                    Arrays.asList(
+                        com.google.spanner.admin.instance.v1.ReplicaInfo.newBuilder()
+                            .setLocation("Optional Replica Location 1")
+                            .setType(ReplicaType.READ_ONLY)
+                            .setDefaultLeaderLocation(true)
+                            .build(),
+                        com.google.spanner.admin.instance.v1.ReplicaInfo.newBuilder()
+                            .setLocation("Optional Replica Location 2")
+                            .setType(ReplicaType.READ_ONLY)
+                            .setDefaultLeaderLocation(false)
+                            .build()))
                 .addAllLeaderOptions(Arrays.asList("Leader Option 1", "Leader Option 2"))
                 .addAllReplicas(
                     Arrays.asList(
@@ -63,26 +76,43 @@ public class InstanceConfigTest {
 
     assertEquals(
         new InstanceConfig(
-            InstanceConfigId.of("my-project", "my-instance-config"),
-            "Display Name",
-            Arrays.asList(
-                ReplicaInfo.newBuilder()
-                    .setLocation("Replica Location 1")
-                    .setType(ReplicaInfo.ReplicaType.READ_WRITE)
-                    .setDefaultLeaderLocation(true)
-                    .build(),
-                ReplicaInfo.newBuilder()
-                    .setLocation("Replica Location 2")
-                    .setType(ReplicaInfo.ReplicaType.READ_ONLY)
-                    .setDefaultLeaderLocation(false)
-                    .build(),
-                ReplicaInfo.newBuilder()
-                    .setLocation("Replica Location 3")
-                    .setType(ReplicaInfo.ReplicaType.WITNESS)
-                    .setDefaultLeaderLocation(false)
-                    .build()),
-            Arrays.asList("Leader Option 1", "Leader Option 2"),
-            client),
+            new InstanceConfig.Builder(
+                    client, InstanceConfigId.of("my-project", "my-instance-config"))
+                .setDisplayName("Display Name")
+                .setReplicas(
+                    Arrays.asList(
+                        ReplicaInfo.newBuilder()
+                            .setLocation("Replica Location 1")
+                            .setType(ReplicaInfo.ReplicaType.READ_WRITE)
+                            .setDefaultLeaderLocation(true)
+                            .build(),
+                        ReplicaInfo.newBuilder()
+                            .setLocation("Replica Location 2")
+                            .setType(ReplicaInfo.ReplicaType.READ_ONLY)
+                            .setDefaultLeaderLocation(false)
+                            .build(),
+                        ReplicaInfo.newBuilder()
+                            .setLocation("Replica Location 3")
+                            .setType(ReplicaInfo.ReplicaType.WITNESS)
+                            .setDefaultLeaderLocation(false)
+                            .build()))
+                .setLeaderOptions(Arrays.asList("Leader Option 1", "Leader Option 2"))
+                .setOptionalReplicas(
+                    Arrays.asList(
+                        ReplicaInfo.newBuilder()
+                            .setLocation("Optional Replica Location 1")
+                            .setType(ReplicaInfo.ReplicaType.READ_ONLY)
+                            .setDefaultLeaderLocation(true)
+                            .build(),
+                        ReplicaInfo.newBuilder()
+                            .setLocation("Optional Replica Location 2")
+                            .setType(ReplicaInfo.ReplicaType.READ_ONLY)
+                            .setDefaultLeaderLocation(false)
+                            .build()))
+                .setBaseConfig(
+                    new InstanceConfigInfo.BuilderImpl(
+                            InstanceConfigId.of("my-project", "custom-base-config"))
+                        .build())),
         instanceConfig);
   }
 

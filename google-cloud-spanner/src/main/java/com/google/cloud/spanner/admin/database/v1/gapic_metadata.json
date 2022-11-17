@@ -46,6 +46,9 @@
             "ListDatabaseOperations": {
               "methods": ["listDatabaseOperations", "listDatabaseOperations", "listDatabaseOperations", "listDatabaseOperationsPagedCallable", "listDatabaseOperationsCallable"]
             },
+            "ListDatabaseRoles": {
+              "methods": ["listDatabaseRoles", "listDatabaseRoles", "listDatabaseRoles", "listDatabaseRolesPagedCallable", "listDatabaseRolesCallable"]
+            },
             "ListDatabases": {
               "methods": ["listDatabases", "listDatabases", "listDatabases", "listDatabasesPagedCallable", "listDatabasesCallable"]
             },

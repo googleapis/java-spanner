@@ -89,6 +89,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
           "https://www.googleapis.com/auth/spanner.admin",
           "https://www.googleapis.com/auth/spanner.data");
   private static final int MAX_CHANNELS = 256;
+  @VisibleForTesting static final int DEFAULT_CHANNELS = 4;
+  // Set the default number of channels to GRPC_GCP_ENABLED_DEFAULT_CHANNELS when gRPC-GCP extension
+  // is enabled, to make sure there are sufficient channels available to move the sessions to a
+  // different channel if a network connection in a particular channel fails.
+  @VisibleForTesting static final int GRPC_GCP_ENABLED_DEFAULT_CHANNELS = 8;
   private final TransportChannelProvider channelProvider;
 
   @SuppressWarnings("rawtypes")
@@ -99,6 +104,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final int prefetchChunks;
   private final int numChannels;
   private final String transportChannelExecutorThreadNameFormat;
+  private final String databaseRole;
   private final ImmutableMap<String, String> sessionLabels;
   private final SpannerStubSettings spannerStubSettings;
   private final InstanceAdminStubSettings instanceAdminStubSettings;
@@ -564,6 +570,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
             ? builder.sessionPoolOptions
             : SessionPoolOptions.newBuilder().build();
     prefetchChunks = builder.prefetchChunks;
+    databaseRole = builder.databaseRole;
     sessionLabels = builder.sessionLabels;
     try {
       spannerStubSettings = builder.spannerStubSettingsBuilder.build();
@@ -667,13 +674,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     private GrpcInterceptorProvider interceptorProvider;
 
-    /** By default, we create 4 channels per {@link SpannerOptions} */
-    private int numChannels = 4;
+    private Integer numChannels;
 
     private String transportChannelExecutorThreadNameFormat = "Cloud-Spanner-TransportChannel-%d";
 
     private int prefetchChunks = DEFAULT_PREFETCH_CHUNKS;
     private SessionPoolOptions sessionPoolOptions;
+    private String databaseRole;
     private ImmutableMap<String, String> sessionLabels;
     private SpannerStubSettings.Builder spannerStubSettingsBuilder =
         SpannerStubSettings.newBuilder();
@@ -730,6 +737,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
           options.transportChannelExecutorThreadNameFormat;
       this.sessionPoolOptions = options.sessionPoolOptions;
       this.prefetchChunks = options.prefetchChunks;
+      this.databaseRole = options.databaseRole;
       this.sessionLabels = options.sessionLabels;
       this.spannerStubSettingsBuilder = options.spannerStubSettings.toBuilder();
       this.instanceAdminStubSettingsBuilder = options.instanceAdminStubSettings.toBuilder();
@@ -827,6 +835,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setSessionPoolOption(SessionPoolOptions sessionPoolOptions) {
       this.sessionPoolOptions = sessionPoolOptions;
+      return this;
+    }
+
+    /**
+     * Sets the database role that should be used for connections that are created by this instance.
+     * The database role that is used determines the access permissions that a connection has. This
+     * can for example be used to create connections that are only permitted to access certain
+     * tables.
+     */
+    public Builder setDatabaseRole(String databaseRole) {
+      this.databaseRole = databaseRole;
       return this;
     }
 
@@ -1041,7 +1060,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /**
      * Sets the compression to use for all gRPC calls. The compressor must be a valid name known in
-     * the {@link CompressorRegistry}.
+     * the {@link CompressorRegistry}. This will enable compression both from the client to the
+     * server and from the server to the client.
      *
      * <p>Supported values are:
      *
@@ -1107,8 +1127,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /** Enables gRPC-GCP extension with the default settings. */
     public Builder enableGrpcGcpExtension() {
-      this.grpcGcpExtensionEnabled = true;
-      return this;
+      return this.enableGrpcGcpExtension(null);
     }
 
     /**
@@ -1151,6 +1170,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
       }
+      if (this.numChannels == null) {
+        this.numChannels =
+            this.grpcGcpExtensionEnabled ? GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
+      }
+
       return new SpannerOptions(this);
     }
   }
@@ -1213,6 +1237,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public SessionPoolOptions getSessionPoolOptions() {
     return sessionPoolOptions;
+  }
+
+  public String getDatabaseRole() {
+    return databaseRole;
   }
 
   public Map<String, String> getSessionLabels() {

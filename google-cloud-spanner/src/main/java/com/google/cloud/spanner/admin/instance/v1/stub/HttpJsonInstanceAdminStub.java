@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.admin.instance.v1.stub;
 
+import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancesPagedResponse;
 
@@ -42,17 +43,24 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.TypeRegistry;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
+import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
+import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import java.io.IOException;
@@ -74,9 +82,12 @@ import javax.annotation.Generated;
 public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
   private static final TypeRegistry typeRegistry =
       TypeRegistry.newBuilder()
+          .add(InstanceConfig.getDescriptor())
           .add(Instance.getDescriptor())
+          .add(CreateInstanceConfigMetadata.getDescriptor())
           .add(UpdateInstanceMetadata.getDescriptor())
           .add(CreateInstanceMetadata.getDescriptor())
+          .add(UpdateInstanceConfigMetadata.getDescriptor())
           .build();
 
   private static final ApiMethodDescriptor<ListInstanceConfigsRequest, ListInstanceConfigsResponse>
@@ -144,6 +155,166 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
               .setResponseParser(
                   ProtoMessageResponseParser.<InstanceConfig>newBuilder()
                       .setDefaultInstance(InstanceConfig.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .build();
+
+  private static final ApiMethodDescriptor<CreateInstanceConfigRequest, Operation>
+      createInstanceConfigMethodDescriptor =
+          ApiMethodDescriptor.<CreateInstanceConfigRequest, Operation>newBuilder()
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/CreateInstanceConfig")
+              .setHttpMethod("POST")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<CreateInstanceConfigRequest>newBuilder()
+                      .setPath(
+                          "/v1/{parent=projects/*}/instanceConfigs",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<CreateInstanceConfigRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "parent", request.getParent());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<CreateInstanceConfigRequest> serializer =
+                                ProtoRestSerializer.create();
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(
+                          request ->
+                              ProtoRestSerializer.create()
+                                  .toBody("*", request.toBuilder().clearParent().build(), false))
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<Operation>newBuilder()
+                      .setDefaultInstance(Operation.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .setOperationSnapshotFactory(
+                  (CreateInstanceConfigRequest request, Operation response) ->
+                      HttpJsonOperationSnapshot.create(response))
+              .build();
+
+  private static final ApiMethodDescriptor<UpdateInstanceConfigRequest, Operation>
+      updateInstanceConfigMethodDescriptor =
+          ApiMethodDescriptor.<UpdateInstanceConfigRequest, Operation>newBuilder()
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/UpdateInstanceConfig")
+              .setHttpMethod("PATCH")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<UpdateInstanceConfigRequest>newBuilder()
+                      .setPath(
+                          "/v1/{instanceConfig.name=projects/*/instanceConfigs/*}",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<UpdateInstanceConfigRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(
+                                fields,
+                                "instanceConfig.name",
+                                request.getInstanceConfig().getName());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<UpdateInstanceConfigRequest> serializer =
+                                ProtoRestSerializer.create();
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(
+                          request ->
+                              ProtoRestSerializer.create()
+                                  .toBody("*", request.toBuilder().build(), false))
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<Operation>newBuilder()
+                      .setDefaultInstance(Operation.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .setOperationSnapshotFactory(
+                  (UpdateInstanceConfigRequest request, Operation response) ->
+                      HttpJsonOperationSnapshot.create(response))
+              .build();
+
+  private static final ApiMethodDescriptor<DeleteInstanceConfigRequest, Empty>
+      deleteInstanceConfigMethodDescriptor =
+          ApiMethodDescriptor.<DeleteInstanceConfigRequest, Empty>newBuilder()
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/DeleteInstanceConfig")
+              .setHttpMethod("DELETE")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<DeleteInstanceConfigRequest>newBuilder()
+                      .setPath(
+                          "/v1/{name=projects/*/instanceConfigs/*}",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<DeleteInstanceConfigRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "name", request.getName());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<DeleteInstanceConfigRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "etag", request.getEtag());
+                            serializer.putQueryParam(
+                                fields, "validateOnly", request.getValidateOnly());
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(request -> null)
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<Empty>newBuilder()
+                      .setDefaultInstance(Empty.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .build();
+
+  private static final ApiMethodDescriptor<
+          ListInstanceConfigOperationsRequest, ListInstanceConfigOperationsResponse>
+      listInstanceConfigOperationsMethodDescriptor =
+          ApiMethodDescriptor
+              .<ListInstanceConfigOperationsRequest, ListInstanceConfigOperationsResponse>
+                  newBuilder()
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/ListInstanceConfigOperations")
+              .setHttpMethod("GET")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<ListInstanceConfigOperationsRequest>newBuilder()
+                      .setPath(
+                          "/v1/{parent=projects/*}/instanceConfigOperations",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<ListInstanceConfigOperationsRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "parent", request.getParent());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<ListInstanceConfigOperationsRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "filter", request.getFilter());
+                            serializer.putQueryParam(fields, "pageSize", request.getPageSize());
+                            serializer.putQueryParam(fields, "pageToken", request.getPageToken());
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(request -> null)
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<ListInstanceConfigOperationsResponse>newBuilder()
+                      .setDefaultInstance(ListInstanceConfigOperationsResponse.getDefaultInstance())
                       .setDefaultTypeRegistry(typeRegistry)
                       .build())
               .build();
@@ -245,7 +416,7 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearParent().build()))
+                                  .toBody("*", request.toBuilder().clearParent().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()
@@ -284,7 +455,8 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                           })
                       .setRequestBodyExtractor(
                           request ->
-                              ProtoRestSerializer.create().toBody("*", request.toBuilder().build()))
+                              ProtoRestSerializer.create()
+                                  .toBody("*", request.toBuilder().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()
@@ -356,7 +528,7 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearResource().build()))
+                                  .toBody("*", request.toBuilder().clearResource().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Policy>newBuilder()
@@ -392,7 +564,7 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearResource().build()))
+                                  .toBody("*", request.toBuilder().clearResource().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Policy>newBuilder()
@@ -429,7 +601,7 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearResource().build()))
+                                  .toBody("*", request.toBuilder().clearResource().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<TestIamPermissionsResponse>newBuilder()
@@ -443,6 +615,21 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
   private final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsPagedResponse>
       listInstanceConfigsPagedCallable;
   private final UnaryCallable<GetInstanceConfigRequest, InstanceConfig> getInstanceConfigCallable;
+  private final UnaryCallable<CreateInstanceConfigRequest, Operation> createInstanceConfigCallable;
+  private final OperationCallable<
+          CreateInstanceConfigRequest, InstanceConfig, CreateInstanceConfigMetadata>
+      createInstanceConfigOperationCallable;
+  private final UnaryCallable<UpdateInstanceConfigRequest, Operation> updateInstanceConfigCallable;
+  private final OperationCallable<
+          UpdateInstanceConfigRequest, InstanceConfig, UpdateInstanceConfigMetadata>
+      updateInstanceConfigOperationCallable;
+  private final UnaryCallable<DeleteInstanceConfigRequest, Empty> deleteInstanceConfigCallable;
+  private final UnaryCallable<
+          ListInstanceConfigOperationsRequest, ListInstanceConfigOperationsResponse>
+      listInstanceConfigOperationsCallable;
+  private final UnaryCallable<
+          ListInstanceConfigOperationsRequest, ListInstanceConfigOperationsPagedResponse>
+      listInstanceConfigOperationsPagedCallable;
   private final UnaryCallable<ListInstancesRequest, ListInstancesResponse> listInstancesCallable;
   private final UnaryCallable<ListInstancesRequest, ListInstancesPagedResponse>
       listInstancesPagedCallable;
@@ -517,6 +704,31 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                 .setMethodDescriptor(getInstanceConfigMethodDescriptor)
                 .setTypeRegistry(typeRegistry)
                 .build();
+    HttpJsonCallSettings<CreateInstanceConfigRequest, Operation>
+        createInstanceConfigTransportSettings =
+            HttpJsonCallSettings.<CreateInstanceConfigRequest, Operation>newBuilder()
+                .setMethodDescriptor(createInstanceConfigMethodDescriptor)
+                .setTypeRegistry(typeRegistry)
+                .build();
+    HttpJsonCallSettings<UpdateInstanceConfigRequest, Operation>
+        updateInstanceConfigTransportSettings =
+            HttpJsonCallSettings.<UpdateInstanceConfigRequest, Operation>newBuilder()
+                .setMethodDescriptor(updateInstanceConfigMethodDescriptor)
+                .setTypeRegistry(typeRegistry)
+                .build();
+    HttpJsonCallSettings<DeleteInstanceConfigRequest, Empty> deleteInstanceConfigTransportSettings =
+        HttpJsonCallSettings.<DeleteInstanceConfigRequest, Empty>newBuilder()
+            .setMethodDescriptor(deleteInstanceConfigMethodDescriptor)
+            .setTypeRegistry(typeRegistry)
+            .build();
+    HttpJsonCallSettings<ListInstanceConfigOperationsRequest, ListInstanceConfigOperationsResponse>
+        listInstanceConfigOperationsTransportSettings =
+            HttpJsonCallSettings
+                .<ListInstanceConfigOperationsRequest, ListInstanceConfigOperationsResponse>
+                    newBuilder()
+                .setMethodDescriptor(listInstanceConfigOperationsMethodDescriptor)
+                .setTypeRegistry(typeRegistry)
+                .build();
     HttpJsonCallSettings<ListInstancesRequest, ListInstancesResponse>
         listInstancesTransportSettings =
             HttpJsonCallSettings.<ListInstancesRequest, ListInstancesResponse>newBuilder()
@@ -575,6 +787,43 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
             getInstanceConfigTransportSettings,
             settings.getInstanceConfigSettings(),
             clientContext);
+    this.createInstanceConfigCallable =
+        callableFactory.createUnaryCallable(
+            createInstanceConfigTransportSettings,
+            settings.createInstanceConfigSettings(),
+            clientContext);
+    this.createInstanceConfigOperationCallable =
+        callableFactory.createOperationCallable(
+            createInstanceConfigTransportSettings,
+            settings.createInstanceConfigOperationSettings(),
+            clientContext,
+            httpJsonOperationsStub);
+    this.updateInstanceConfigCallable =
+        callableFactory.createUnaryCallable(
+            updateInstanceConfigTransportSettings,
+            settings.updateInstanceConfigSettings(),
+            clientContext);
+    this.updateInstanceConfigOperationCallable =
+        callableFactory.createOperationCallable(
+            updateInstanceConfigTransportSettings,
+            settings.updateInstanceConfigOperationSettings(),
+            clientContext,
+            httpJsonOperationsStub);
+    this.deleteInstanceConfigCallable =
+        callableFactory.createUnaryCallable(
+            deleteInstanceConfigTransportSettings,
+            settings.deleteInstanceConfigSettings(),
+            clientContext);
+    this.listInstanceConfigOperationsCallable =
+        callableFactory.createUnaryCallable(
+            listInstanceConfigOperationsTransportSettings,
+            settings.listInstanceConfigOperationsSettings(),
+            clientContext);
+    this.listInstanceConfigOperationsPagedCallable =
+        callableFactory.createPagedCallable(
+            listInstanceConfigOperationsTransportSettings,
+            settings.listInstanceConfigOperationsSettings(),
+            clientContext);
     this.listInstancesCallable =
         callableFactory.createUnaryCallable(
             listInstancesTransportSettings, settings.listInstancesSettings(), clientContext);
@@ -626,6 +875,10 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
     List<ApiMethodDescriptor> methodDescriptors = new ArrayList<>();
     methodDescriptors.add(listInstanceConfigsMethodDescriptor);
     methodDescriptors.add(getInstanceConfigMethodDescriptor);
+    methodDescriptors.add(createInstanceConfigMethodDescriptor);
+    methodDescriptors.add(updateInstanceConfigMethodDescriptor);
+    methodDescriptors.add(deleteInstanceConfigMethodDescriptor);
+    methodDescriptors.add(listInstanceConfigOperationsMethodDescriptor);
     methodDescriptors.add(listInstancesMethodDescriptor);
     methodDescriptors.add(getInstanceMethodDescriptor);
     methodDescriptors.add(createInstanceMethodDescriptor);
@@ -656,6 +909,48 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
   @Override
   public UnaryCallable<GetInstanceConfigRequest, InstanceConfig> getInstanceConfigCallable() {
     return getInstanceConfigCallable;
+  }
+
+  @Override
+  public UnaryCallable<CreateInstanceConfigRequest, Operation> createInstanceConfigCallable() {
+    return createInstanceConfigCallable;
+  }
+
+  @Override
+  public OperationCallable<
+          CreateInstanceConfigRequest, InstanceConfig, CreateInstanceConfigMetadata>
+      createInstanceConfigOperationCallable() {
+    return createInstanceConfigOperationCallable;
+  }
+
+  @Override
+  public UnaryCallable<UpdateInstanceConfigRequest, Operation> updateInstanceConfigCallable() {
+    return updateInstanceConfigCallable;
+  }
+
+  @Override
+  public OperationCallable<
+          UpdateInstanceConfigRequest, InstanceConfig, UpdateInstanceConfigMetadata>
+      updateInstanceConfigOperationCallable() {
+    return updateInstanceConfigOperationCallable;
+  }
+
+  @Override
+  public UnaryCallable<DeleteInstanceConfigRequest, Empty> deleteInstanceConfigCallable() {
+    return deleteInstanceConfigCallable;
+  }
+
+  @Override
+  public UnaryCallable<ListInstanceConfigOperationsRequest, ListInstanceConfigOperationsResponse>
+      listInstanceConfigOperationsCallable() {
+    return listInstanceConfigOperationsCallable;
+  }
+
+  @Override
+  public UnaryCallable<
+          ListInstanceConfigOperationsRequest, ListInstanceConfigOperationsPagedResponse>
+      listInstanceConfigOperationsPagedCallable() {
+    return listInstanceConfigOperationsPagedCallable;
   }
 
   @Override

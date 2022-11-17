@@ -19,6 +19,7 @@ package com.google.cloud.spanner.spi.v1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
 
@@ -256,6 +257,58 @@ public class GapicSpannerRpcTest {
                 .getCallOptions()
                 .getCredentials())
         .isNull();
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testClientCompressorGzip() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setProjectId("some-project").setCompressorName("gzip").build();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    assertEquals(
+        "gzip",
+        rpc.newCallContext(
+                optionsMap,
+                "/some/resource",
+                GetSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getGetSessionMethod())
+            .getCallOptions()
+            .getCompressor());
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testClientCompressorIdentity() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .setCompressorName("identity")
+            .build();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    assertEquals(
+        "identity",
+        rpc.newCallContext(
+                optionsMap,
+                "/some/resource",
+                GetSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getGetSessionMethod())
+            .getCallOptions()
+            .getCompressor());
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testClientCompressorDefault() {
+    SpannerOptions options = SpannerOptions.newBuilder().setProjectId("some-project").build();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    assertNull(
+        rpc.newCallContext(
+                optionsMap,
+                "/some/resource",
+                GetSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getGetSessionMethod())
+            .getCallOptions()
+            .getCompressor());
     rpc.shutdown();
   }
 

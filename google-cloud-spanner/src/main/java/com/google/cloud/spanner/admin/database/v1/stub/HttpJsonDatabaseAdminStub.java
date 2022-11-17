@@ -19,6 +19,7 @@ package com.google.cloud.spanner.admin.database.v1.stub;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseRolesPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabasesPagedResponse;
 
 import com.google.api.core.BetaApi;
@@ -64,6 +65,8 @@ import com.google.spanner.admin.database.v1.ListBackupsRequest;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
@@ -162,7 +165,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearParent().build()))
+                                  .toBody("*", request.toBuilder().clearParent().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()
@@ -234,7 +237,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearDatabase().build()))
+                                  .toBody("*", request.toBuilder().clearDatabase().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()
@@ -341,7 +344,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearResource().build()))
+                                  .toBody("*", request.toBuilder().clearResource().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Policy>newBuilder()
@@ -379,7 +382,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearResource().build()))
+                                  .toBody("*", request.toBuilder().clearResource().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Policy>newBuilder()
@@ -407,7 +410,8 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                             return fields;
                           })
                       .setAdditionalPaths(
-                          "/v1/{resource=projects/*/instances/*/backups/*}:testIamPermissions")
+                          "/v1/{resource=projects/*/instances/*/backups/*}:testIamPermissions",
+                          "/v1/{resource=projects/*/instances/*/databases/*/databaseRoles/*}:testIamPermissions")
                       .setQueryParamsExtractor(
                           request -> {
                             Map<String, List<String>> fields = new HashMap<>();
@@ -418,7 +422,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearResource().build()))
+                                  .toBody("*", request.toBuilder().clearResource().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<TestIamPermissionsResponse>newBuilder()
@@ -456,7 +460,8 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                           })
                       .setRequestBodyExtractor(
                           request ->
-                              ProtoRestSerializer.create().toBody("backup", request.getBackup()))
+                              ProtoRestSerializer.create()
+                                  .toBody("backup", request.getBackup(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()
@@ -495,7 +500,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearParent().build()))
+                                  .toBody("*", request.toBuilder().clearParent().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()
@@ -567,7 +572,8 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                           })
                       .setRequestBodyExtractor(
                           request ->
-                              ProtoRestSerializer.create().toBody("backup", request.getBackup()))
+                              ProtoRestSerializer.create()
+                                  .toBody("backup", request.getBackup(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Backup>newBuilder()
@@ -672,7 +678,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearParent().build()))
+                                  .toBody("*", request.toBuilder().clearParent().build(), false))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()
@@ -762,6 +768,41 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .build())
               .build();
 
+  private static final ApiMethodDescriptor<ListDatabaseRolesRequest, ListDatabaseRolesResponse>
+      listDatabaseRolesMethodDescriptor =
+          ApiMethodDescriptor.<ListDatabaseRolesRequest, ListDatabaseRolesResponse>newBuilder()
+              .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/ListDatabaseRoles")
+              .setHttpMethod("GET")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<ListDatabaseRolesRequest>newBuilder()
+                      .setPath(
+                          "/v1/{parent=projects/*/instances/*/databases/*}/databaseRoles",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<ListDatabaseRolesRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "parent", request.getParent());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<ListDatabaseRolesRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "pageSize", request.getPageSize());
+                            serializer.putQueryParam(fields, "pageToken", request.getPageToken());
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(request -> null)
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<ListDatabaseRolesResponse>newBuilder()
+                      .setDefaultInstance(ListDatabaseRolesResponse.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .build();
+
   private final UnaryCallable<ListDatabasesRequest, ListDatabasesResponse> listDatabasesCallable;
   private final UnaryCallable<ListDatabasesRequest, ListDatabasesPagedResponse>
       listDatabasesPagedCallable;
@@ -801,6 +842,10 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
       listBackupOperationsCallable;
   private final UnaryCallable<ListBackupOperationsRequest, ListBackupOperationsPagedResponse>
       listBackupOperationsPagedCallable;
+  private final UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesResponse>
+      listDatabaseRolesCallable;
+  private final UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesPagedResponse>
+      listDatabaseRolesPagedCallable;
 
   private final BackgroundResource backgroundResources;
   private final HttpJsonOperationsStub httpJsonOperationsStub;
@@ -944,6 +989,12 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                 .setMethodDescriptor(listBackupOperationsMethodDescriptor)
                 .setTypeRegistry(typeRegistry)
                 .build();
+    HttpJsonCallSettings<ListDatabaseRolesRequest, ListDatabaseRolesResponse>
+        listDatabaseRolesTransportSettings =
+            HttpJsonCallSettings.<ListDatabaseRolesRequest, ListDatabaseRolesResponse>newBuilder()
+                .setMethodDescriptor(listDatabaseRolesMethodDescriptor)
+                .setTypeRegistry(typeRegistry)
+                .build();
 
     this.listDatabasesCallable =
         callableFactory.createUnaryCallable(
@@ -1053,6 +1104,16 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
             listBackupOperationsTransportSettings,
             settings.listBackupOperationsSettings(),
             clientContext);
+    this.listDatabaseRolesCallable =
+        callableFactory.createUnaryCallable(
+            listDatabaseRolesTransportSettings,
+            settings.listDatabaseRolesSettings(),
+            clientContext);
+    this.listDatabaseRolesPagedCallable =
+        callableFactory.createPagedCallable(
+            listDatabaseRolesTransportSettings,
+            settings.listDatabaseRolesSettings(),
+            clientContext);
 
     this.backgroundResources =
         new BackgroundResourceAggregation(clientContext.getBackgroundResources());
@@ -1079,6 +1140,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
     methodDescriptors.add(restoreDatabaseMethodDescriptor);
     methodDescriptors.add(listDatabaseOperationsMethodDescriptor);
     methodDescriptors.add(listBackupOperationsMethodDescriptor);
+    methodDescriptors.add(listDatabaseRolesMethodDescriptor);
     return methodDescriptors;
   }
 
@@ -1230,6 +1292,18 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
   public UnaryCallable<ListBackupOperationsRequest, ListBackupOperationsPagedResponse>
       listBackupOperationsPagedCallable() {
     return listBackupOperationsPagedCallable;
+  }
+
+  @Override
+  public UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesResponse>
+      listDatabaseRolesCallable() {
+    return listDatabaseRolesCallable;
+  }
+
+  @Override
+  public UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesPagedResponse>
+      listDatabaseRolesPagedCallable() {
+    return listDatabaseRolesPagedCallable;
   }
 
   @Override

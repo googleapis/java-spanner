@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.MetricRegistryConstants.NUM_IN_USE_SESSIO
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_READ_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_BEING_PREPARED;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.common.truth.Truth.assertThat;
@@ -108,6 +109,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   SessionPool pool;
   SessionPoolOptions options;
   private String sessionName = String.format("%s/sessions/s", db.getName());
+  private String TEST_DATABASE_ROLE = "my-role";
 
   @Parameters(name = "min sessions = {0}")
   public static Collection<Object[]> data() {
@@ -127,6 +129,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       Clock clock, MetricRegistry metricRegistry, List<LabelValue> labelValues) {
     return SessionPool.createPool(
         options,
+        TEST_DATABASE_ROLE,
         new TestExecutorFactory(),
         client.getSessionClient(db),
         clock,
@@ -140,6 +143,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     when(client.getOptions()).thenReturn(spannerOptions);
     when(client.getSessionClient(db)).thenReturn(sessionClient);
     when(spannerOptions.getNumChannels()).thenReturn(4);
+    when(spannerOptions.getDatabaseRole()).thenReturn("role");
     options =
         SessionPoolOptions.newBuilder()
             .setMinSessions(minSessions)
@@ -847,6 +851,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       SpannerOptions spannerOptions = mock(SpannerOptions.class);
       when(spannerOptions.getSessionPoolOptions()).thenReturn(options);
       when(spannerOptions.getNumChannels()).thenReturn(4);
+      when(spannerOptions.getDatabaseRole()).thenReturn("role");
       when(spanner.getOptions()).thenReturn(spannerOptions);
       SessionPool pool =
           SessionPool.createPool(options, new TestExecutorFactory(), spanner.getSessionClient(db));
@@ -1174,6 +1179,13 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(readSessions.value()).isEqualTo(2L);
     writePreparedSessions = numSessionsInPool.get(3);
     assertThat(writePreparedSessions.value()).isEqualTo(0L);
+  }
+
+  @Test
+  public void testGetDatabaseRole() throws Exception {
+    setupMockSessionCreation();
+    pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
+    assertEquals(TEST_DATABASE_ROLE, pool.getDatabaseRole());
   }
 
   private void mockKeepAlive(Session session) {

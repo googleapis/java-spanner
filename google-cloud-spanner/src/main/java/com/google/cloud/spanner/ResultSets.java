@@ -29,6 +29,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
@@ -159,6 +160,12 @@ public final class ResultSets {
     }
 
     @Override
+    public ResultSetMetadata getMetadata() {
+      throw new UnsupportedOperationException(
+          "ResultSetMetadata are available only for results that were returned from Cloud Spanner");
+    }
+
+    @Override
     public int getColumnCount() {
       return getType().getStructFields().size();
     }
@@ -251,6 +258,16 @@ public final class ResultSets {
     @Override
     public String getJson(String columnName) {
       return getCurrentRowAsStruct().getJson(columnName);
+    }
+
+    @Override
+    public String getPgJsonb(int columnIndex) {
+      return getCurrentRowAsStruct().getPgJsonb(columnIndex);
+    }
+
+    @Override
+    public String getPgJsonb(String columnName) {
+      return getCurrentRowAsStruct().getPgJsonb(columnName);
     }
 
     @Override
@@ -381,6 +398,16 @@ public final class ResultSets {
     @Override
     public List<String> getJsonList(String columnName) {
       return getCurrentRowAsStruct().getJsonList(columnName);
+    }
+
+    @Override
+    public List<String> getPgJsonbList(int columnIndex) {
+      return getCurrentRowAsStruct().getPgJsonbList(columnIndex);
+    }
+
+    @Override
+    public List<String> getPgJsonbList(String columnName) {
+      return getCurrentRowAsStruct().getPgJsonbList(columnName);
     }
 
     @Override

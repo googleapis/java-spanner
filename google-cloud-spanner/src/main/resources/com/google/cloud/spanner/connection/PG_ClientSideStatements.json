@@ -159,28 +159,50 @@
       "exampleStatements": []
     },
     {
-      "name": "{START | BEGIN} [TRANSACTION | WORK] [{ (READ ONLY|READ WRITE) | (ISOLATION LEVEL (DEFAULT|SERIALIZABLE)) }]",
+      "name": "{START | BEGIN} [TRANSACTION | WORK] [{ (READ ONLY|READ WRITE) [[,] (ISOLATION LEVEL (DEFAULT|SERIALIZABLE))] [[,] NOT DEFERRABLE]}]",
       "executorName": "ClientSideStatementPgBeginExecutor",
       "resultType": "NO_RESULT",
       "statementType": "BEGIN",
-      "regex": "(?is)\\A\\s*(?:begin|start)(?:\\s+transaction|\\s+work)?(\\s+read\\s+only|\\s+read\\s+write|\\s+isolation\\s+level\\s+default|\\s+isolation\\s+level\\s+serializable)?\\s*\\z",
+      "regex": "(?is)\\A\\s*(?:begin|start)(?:\\s+transaction|\\s+work)?((?:(?:\\s+|\\s*,\\s*)read\\s+only|(?:\\s+|\\s*,\\s*)read\\s+write|(?:\\s+|\\s*,\\s*)isolation\\s+level\\s+default|(?:\\s+|\\s*,\\s*)isolation\\s+level\\s+serializable|(?:\\s+|\\s*,\\s*)not\\s+deferrable)*)?\\s*\\z",
       "method": "statementBeginPgTransaction",
       "exampleStatements": [
         "begin", "start", "begin transaction", "start transaction", "begin work", "start work",
         "begin read only", "start read only", "begin transaction read only", "start transaction read only", "begin work read only", "start work read only",
         "begin read write", "start read write", "begin transaction read write", "start transaction read write", "begin work read write", "start work read write",
         "begin isolation level default", "start isolation level default", "begin transaction isolation level default", "start transaction isolation level default", "begin work isolation level default", "start work isolation level default",
-        "begin isolation level serializable", "start isolation level serializable", "begin transaction isolation level serializable", "start transaction isolation level serializable", "begin work isolation level serializable", "start work isolation level serializable"
+        "begin isolation level serializable", "start isolation level serializable", "begin transaction isolation level serializable", "start transaction isolation level serializable", "begin work isolation level serializable", "start work isolation level serializable",
+        "begin isolation level default read write", "start isolation level default read only", "begin transaction isolation level default read only", "start transaction isolation level default read write", "begin work isolation level default read write", "start work isolation level default read only",
+        "begin isolation level serializable read write", "start isolation level serializable read write", "begin transaction isolation level serializable read only", "start transaction isolation level serializable read write", "begin work isolation level serializable read write", "start work isolation level serializable read only",
+        "begin isolation level serializable, read write", "start isolation level serializable, read write", "begin transaction isolation level serializable, read only", "start transaction isolation level serializable, read write", "begin work isolation level serializable, read write", "start work isolation level serializable, read only",
+        "begin not deferrable", "start not deferrable", "begin transaction not deferrable", "start transaction not deferrable", "begin work not deferrable", "start work not deferrable",
+        "begin read only not deferrable", "start read only not deferrable", "begin transaction read only not deferrable", "start transaction read only not deferrable", "begin work read only not deferrable", "start work read only not deferrable",
+        "begin read write not deferrable", "start read write not deferrable", "begin transaction read write not deferrable", "start transaction read write not deferrable", "begin work read write not deferrable", "start work read write not deferrable",
+        "begin isolation level default not deferrable", "start isolation level default not deferrable", "begin transaction isolation level default not deferrable", "start transaction isolation level default not deferrable", "begin work isolation level default not deferrable", "start work isolation level default not deferrable",
+        "begin isolation level serializable not deferrable", "start isolation level serializable not deferrable", "begin transaction isolation level serializable not deferrable", "start transaction isolation level serializable not deferrable", "begin work isolation level serializable not deferrable", "start work isolation level serializable not deferrable",
+        "begin isolation level default read write not deferrable", "start isolation level default read only not deferrable", "begin transaction isolation level default read only not deferrable", "start transaction isolation level default read write not deferrable", "begin work isolation level default read write not deferrable", "start work isolation level default read only not deferrable",
+        "begin isolation level serializable read write not deferrable", "start isolation level serializable read write not deferrable", "begin transaction isolation level serializable read only not deferrable", "start transaction isolation level serializable read write not deferrable", "begin work isolation level serializable read write not deferrable", "start work isolation level serializable read only not deferrable",
+        "begin isolation level serializable, read write, not deferrable", "start isolation level serializable, read write, not deferrable", "begin transaction isolation level serializable, read only, not deferrable", "start transaction isolation level serializable, read write, not deferrable", "begin work isolation level serializable, read write, not deferrable", "start work isolation level serializable, read only",
+        "begin transaction not deferrable", "start transaction not deferrable", "begin work not deferrable", "start work not deferrable",
+        "begin not deferrable read only", "start read only", "begin transaction not deferrable read only", "start transaction read only", "begin work not deferrable read only", "start work read only",
+        "begin not deferrable read write", "start read write", "begin transaction not deferrable read write", "start transaction read write", "begin work not deferrable read write", "start work read write",
+        "begin not deferrable isolation level default", "start isolation level default", "begin transaction not deferrable isolation level default", "start transaction isolation level default", "begin work not deferrable isolation level default", "start work isolation level default",
+        "begin not deferrable isolation level serializable", "start isolation level serializable", "begin transaction not deferrable isolation level serializable", "start transaction isolation level serializable", "begin work not deferrable isolation level serializable", "start work isolation level serializable",
+        "begin not deferrable isolation level default read write", "start isolation level default read only", "begin transaction not deferrable isolation level default read only", "start transaction isolation level default read write", "begin work not deferrable isolation level default read write", "start work isolation level default read only",
+        "begin not deferrable isolation level serializable read write", "start isolation level serializable read write", "begin transaction not deferrable isolation level serializable read only", "start transaction isolation level serializable read write", "begin work not deferrable isolation level serializable read write", "start work isolation level serializable read only",
+        "begin not deferrable isolation level serializable, read write", "start isolation level serializable, read write", "begin transaction not deferrable isolation level serializable, read only", "start transaction isolation level serializable, read write", "begin work not deferrable isolation level serializable, read write", "start work isolation level serializable, read only"
       ]
     },
     {
-      "name": "COMMIT [TRANSACTION | WORK] [AND NO CHAIN]",
+      "name": "{END | COMMIT} [TRANSACTION | WORK] [AND NO CHAIN]",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "NO_RESULT",
       "statementType": "COMMIT",
-      "regex": "(?is)\\A\\s*(?:commit)(?:\\s+transaction|\\s+work)?(?:\\s+and\\s+no\\s+chain)?\\s*\\z",
+      "regex": "(?is)\\A\\s*(?:commit|end)(?:\\s+transaction|\\s+work)?(?:\\s+and\\s+no\\s+chain)?\\s*\\z",
       "method": "statementCommit",
-      "exampleStatements": ["commit", "commit transaction", "commit work", "commit and no chain", "commit transaction and no chain", "commit work and no chain"],
+      "exampleStatements": [
+        "commit", "commit transaction", "commit work", "commit and no chain", "commit transaction and no chain", "commit work and no chain",
+        "end", "end transaction", "end work", "end and no chain", "end transaction and no chain", "end work and no chain"
+      ],
       "examplePrerequisiteStatements": ["begin transaction"]
     },
     {
@@ -326,7 +348,7 @@
       }
     },
     {
-      "name": "SET TRANSACTION { (READ ONLY|READ WRITE) | (ISOLATION LEVEL (DEFAULT|SERIALIZABLE)) }",
+      "name": "SET TRANSACTION { (READ ONLY|READ WRITE) [[,] (ISOLATION LEVEL (DEFAULT|SERIALIZABLE))] }",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
       "statementType": "SET_TRANSACTION_MODE",
@@ -337,12 +359,12 @@
       "setStatement": {
         "propertyName": "TRANSACTION",
         "separator": "\\s+",
-        "allowedValues": "(READ\\s+ONLY|READ\\s+WRITE|ISOLATION\\s+LEVEL\\s+DEFAULT|ISOLATION\\s+LEVEL\\s+SERIALIZABLE)",
+        "allowedValues": "(((?:\\s*|\\s*,\\s*)READ\\s+ONLY|(?:\\s*|\\s*,\\s*)READ\\s+WRITE|(?:\\s*|\\s*,\\s*)ISOLATION\\s+LEVEL\\s+DEFAULT|(?:\\s*|\\s*,\\s*)ISOLATION\\s+LEVEL\\s+SERIALIZABLE)+)",
         "converterName": "ClientSideStatementValueConverters$PgTransactionModeConverter"
       }
     },
     {
-      "name": "SET SESSION CHARACTERISTICS AS TRANSACTION { (READ ONLY|READ WRITE) | (ISOLATION LEVEL (DEFAULT|SERIALIZABLE)) }",
+      "name": "SET SESSION CHARACTERISTICS AS TRANSACTION { (READ ONLY|READ WRITE) [[,] (ISOLATION LEVEL (DEFAULT|SERIALIZABLE))] }",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
       "statementType": "SET_READONLY",
@@ -352,8 +374,61 @@
       "setStatement": {
         "propertyName": "SESSION\\s+CHARACTERISTICS\\s+AS\\s+TRANSACTION",
         "separator": "\\s+",
-        "allowedValues": "(READ\\s+ONLY|READ\\s+WRITE|ISOLATION\\s+LEVEL\\s+DEFAULT|ISOLATION\\s+LEVEL\\s+SERIALIZABLE)",
+        "allowedValues": "(((?:\\s*|\\s*,\\s*)READ\\s+ONLY|(?:\\s*|\\s*,\\s*)READ\\s+WRITE|(?:\\s*|\\s*,\\s*)ISOLATION\\s+LEVEL\\s+DEFAULT|(?:\\s*|\\s*,\\s*)ISOLATION\\s+LEVEL\\s+SERIALIZABLE)+)",
         "converterName": "ClientSideStatementValueConverters$PgTransactionModeConverter"
+      }
+    },
+    {
+      "name": "SET DEFAULT_TRANSACTION_ISOLATION =|TO 'SERIALIZABLE'|SERIALIZABLE|DEFAULT",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_READONLY",
+      "regex": "(?is)\\A\\s*set\\s+default_transaction_isolation(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetPgDefaultTransactionIsolation",
+      "exampleStatements": [
+        "set default_transaction_isolation=serializable",
+        "set default_transaction_isolation to serializable",
+        "set default_transaction_isolation to 'serializable'",
+        "set default_transaction_isolation = 'serializable'",
+        "set default_transaction_isolation = \"SERIALIZABLE\"",
+        "set default_transaction_isolation = DEFAULT",
+        "set default_transaction_isolation to DEFAULT"
+      ],
+      "setStatement": {
+        "propertyName": "default_transaction_isolation",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(SERIALIZABLE|'SERIALIZABLE'|\"SERIALIZABLE\"|DEFAULT)",
+        "converterName": "ClientSideStatementValueConverters$PgTransactionIsolationConverter"
+      }
+    },
+    {
+      "name": "SET DEFAULT_TRANSACTION_READ_ONLY =|TO TRUE|FALSE",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_READONLY",
+      "regex": "(?is)\\A\\s*set\\s+default_transaction_read_only(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetReadOnly",
+      "exampleStatements": [
+        "set default_transaction_read_only = true",
+        "set default_transaction_read_only = false",
+        "set default_transaction_read_only = t",
+        "set default_transaction_read_only = f",
+        "set default_transaction_read_only to 't'",
+        "set default_transaction_read_only to \"f\"",
+        "set default_transaction_read_only = on",
+        "set default_transaction_read_only = off",
+        "set default_transaction_read_only = 1",
+        "set default_transaction_read_only = 0",
+        "set default_transaction_read_only = yes",
+        "set default_transaction_read_only = no",
+        "set default_transaction_read_only = y",
+        "set default_transaction_read_only = n"
+      ],
+      "setStatement": {
+        "propertyName": "DEFAULT_TRANSACTION_READ_ONLY",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(.+)",
+        "converterName": "ClientSideStatementValueConverters$PgBooleanConverter"
       }
     },
     {

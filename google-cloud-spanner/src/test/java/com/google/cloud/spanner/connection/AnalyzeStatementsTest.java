@@ -50,8 +50,9 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class AnalyzeStatementsTest extends AbstractMockServerTest {
   private static final Statement PLAN_QUERY =
-      Statement.of("SELECT * FROM SomeTable ORDER BY Value");
-  private static final Statement PLAN_UPDATE = Statement.of("UPDATE SomeTable SET Value=Value+1");
+      Statement.of("SELECT * FROM SomeTable WHERE Key LIKE @param ORDER BY Value");
+  private static final Statement PLAN_UPDATE =
+      Statement.of("UPDATE SomeTable SET Value=Value+1 WHERE Key LIKE @param");
 
   @BeforeClass
   public static void setupAnalyzeResults() {
@@ -74,6 +75,14 @@ public class AnalyzeStatementsTest extends AbstractMockServerTest {
                                         .setName("Value")
                                         .build())
                                 .build())
+                        .setUndeclaredParameters(
+                            StructType.newBuilder()
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setType(Type.newBuilder().setCode(TypeCode.STRING).build())
+                                        .setName("param")
+                                        .build())
+                                .build())
                         .build())
                 .setStats(
                     ResultSetStats.newBuilder()
@@ -88,7 +97,17 @@ public class AnalyzeStatementsTest extends AbstractMockServerTest {
         MockSpannerServiceImpl.StatementResult.query(
             PLAN_UPDATE,
             com.google.spanner.v1.ResultSet.newBuilder()
-                .setMetadata(ResultSetMetadata.newBuilder().build())
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setUndeclaredParameters(
+                            StructType.newBuilder()
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setType(Type.newBuilder().setCode(TypeCode.STRING).build())
+                                        .setName("param")
+                                        .build())
+                                .build())
+                        .build())
                 .setStats(
                     ResultSetStats.newBuilder()
                         .setQueryPlan(
@@ -121,6 +140,14 @@ public class AnalyzeStatementsTest extends AbstractMockServerTest {
 
             assertNotNull(resultSet.getStats());
             assertNotNull(resultSet.getStats().getQueryPlan());
+
+            assertNotNull(resultSet.getMetadata());
+            assertEquals(1, resultSet.getMetadata().getUndeclaredParameters().getFieldsCount());
+            assertEquals(
+                Type.newBuilder().setCode(TypeCode.STRING).build(),
+                resultSet.getMetadata().getUndeclaredParameters().getFields(0).getType());
+            assertEquals(
+                "param", resultSet.getMetadata().getUndeclaredParameters().getFields(0).getName());
           }
         }
 
@@ -187,6 +214,52 @@ public class AnalyzeStatementsTest extends AbstractMockServerTest {
   }
 
   @Test
+  public void testAnalyzeUpdateStatement() {
+    for (boolean autocommit : new boolean[] {true, false}) {
+      mockSpanner.clearRequests();
+
+      try (Connection connection = createConnection()) {
+        connection.setAutocommit(autocommit);
+
+        try (ResultSet resultSet =
+            connection.analyzeUpdateStatement(PLAN_UPDATE, QueryAnalyzeMode.PLAN)) {
+          assertFalse(resultSet.next());
+
+          ResultSetStats stats = resultSet.getStats();
+          assertNotNull(stats);
+          assertNotNull(stats.getQueryPlan());
+
+          assertNotNull(resultSet.getMetadata());
+          assertEquals(1, resultSet.getMetadata().getUndeclaredParameters().getFieldsCount());
+          assertEquals(
+              Type.newBuilder().setCode(TypeCode.STRING).build(),
+              resultSet.getMetadata().getUndeclaredParameters().getFields(0).getType());
+          assertEquals(
+              "param", resultSet.getMetadata().getUndeclaredParameters().getFields(0).getName());
+        }
+      }
+
+      List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+      assertEquals(1, requests.size());
+      ExecuteSqlRequest request = requests.get(0);
+      assertEquals(PLAN_UPDATE.getSql(), request.getSql());
+      assertEquals(QueryMode.PLAN, request.getQueryMode());
+
+      // As it is a DML statement, we should always start a read/write transaction, even though it
+      // is not executed. This is required by Cloud Spanner.
+      assertTrue(request.getTransaction().hasBegin());
+      assertTrue(request.getTransaction().getBegin().hasReadWrite());
+
+      if (autocommit) {
+        // The read/write transaction should automatically be committed in case of autocommit.
+        assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+      } else {
+        assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
+      }
+    }
+  }
+
+  @Test
   public void testAnalyzeUpdateReadOnly() {
     for (boolean autocommit : new boolean[] {true, false}) {
       mockSpanner.clearRequests();
@@ -199,6 +272,48 @@ public class AnalyzeStatementsTest extends AbstractMockServerTest {
             assertThrows(
                 SpannerException.class,
                 () -> connection.analyzeUpdate(PLAN_UPDATE, QueryAnalyzeMode.PLAN));
+        assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
+      }
+
+      assertEquals(0, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+      assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
+    }
+  }
+
+  @Test
+  public void testAnalyzeUpdateStatementWithQuery() {
+    for (boolean autocommit : new boolean[] {true, false}) {
+      mockSpanner.clearRequests();
+
+      try (Connection connection = createConnection()) {
+        connection.setReadOnly(true);
+        connection.setAutocommit(autocommit);
+
+        SpannerException exception =
+            assertThrows(
+                SpannerException.class,
+                () -> connection.analyzeUpdateStatement(PLAN_QUERY, QueryAnalyzeMode.PLAN));
+        assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
+      }
+
+      assertEquals(0, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+      assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
+    }
+  }
+
+  @Test
+  public void testAnalyzeUpdateStatementReadOnly() {
+    for (boolean autocommit : new boolean[] {true, false}) {
+      mockSpanner.clearRequests();
+
+      try (Connection connection = createConnection()) {
+        connection.setReadOnly(true);
+        connection.setAutocommit(autocommit);
+
+        SpannerException exception =
+            assertThrows(
+                SpannerException.class,
+                () -> connection.analyzeUpdateStatement(PLAN_UPDATE, QueryAnalyzeMode.PLAN));
         assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
       }
 
@@ -224,6 +339,22 @@ public class AnalyzeStatementsTest extends AbstractMockServerTest {
   }
 
   @Test
+  public void testAnalyzeUpdateStatementDdlBatch() {
+    try (Connection connection = createConnection()) {
+      connection.startBatchDdl();
+
+      SpannerException exception =
+          assertThrows(
+              SpannerException.class,
+              () -> connection.analyzeUpdateStatement(PLAN_UPDATE, QueryAnalyzeMode.PLAN));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
+    }
+
+    assertEquals(0, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
+  }
+
+  @Test
   public void testAnalyzeUpdateDmlBatch() {
     try (Connection connection = createConnection()) {
       connection.startBatchDml();
@@ -232,6 +363,22 @@ public class AnalyzeStatementsTest extends AbstractMockServerTest {
           assertThrows(
               SpannerException.class,
               () -> connection.analyzeUpdate(PLAN_UPDATE, QueryAnalyzeMode.PLAN));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
+    }
+
+    assertEquals(0, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
+  }
+
+  @Test
+  public void testAnalyzeUpdateStatementDmlBatch() {
+    try (Connection connection = createConnection()) {
+      connection.startBatchDml();
+
+      SpannerException exception =
+          assertThrows(
+              SpannerException.class,
+              () -> connection.analyzeUpdateStatement(PLAN_UPDATE, QueryAnalyzeMode.PLAN));
       assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
     }
 

@@ -1266,6 +1266,215 @@ public class StatementParserTest {
         parser.getQueryParameters("select '$2' from foo where bar=$1 and baz=$foo"));
   }
 
+  @Test
+  public void testGoogleSQLReturningClause() {
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+
+    SpannerStatementParser parser = (SpannerStatementParser) this.parser;
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2) then return *"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2) then\nreturn *"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2)\nthen\n\n\nreturn\n*"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2)then return *"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2) then return(a)"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2)then return(a)"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2) then/*comment*/return *"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2) then return /*then return*/ *"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2)then/*comment*/return *"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2)then/*comment*/return(a)"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2)then /*comment*/return(a)"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of("insert into x (a,b) values (1,2)/*comment*/then/*comment*/return(a)"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "insert into x (a,b) values (1,2)/*comment*/then/*comment*/return/*comment*/(a)"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "insert into x (a,b) values (1,2)/*comment"
+                        + "*/then"
+                        + "/*comment"
+                        + "*/return/*"
+                        + "comment*/(a)"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("delete from x where y=\"z\"then return *"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x select 'then return' as returning then return *"))
+            .hasReturningClause());
+    assertTrue(
+        parser.parse(Statement.of("delete from x where 10=`z`then return *")).hasReturningClause());
+    assertFalse(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2) returning (a)"))
+            .hasReturningClause());
+    assertFalse(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2) /*then return **/"))
+            .hasReturningClause());
+    assertFalse(
+        parser.parse(Statement.of("insert into x (a,b) values (1,2)")).hasReturningClause());
+    assertFalse(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2)thenreturn*"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into t(a) select \"x\"then return*"))
+            .hasReturningClause());
+  }
+
+  @Test
+  public void testPostgreSQLReturningClause() {
+    assumeTrue(dialect == Dialect.POSTGRESQL);
+
+    PostgreSQLStatementParser parser = (PostgreSQLStatementParser) this.parser;
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2) returning *"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2)returning *"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2) returning(a)"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2)returning(a)"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2)/*comment*/returning(a)"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of("insert into x (a,b) values (1,2)/*comment*/returning/*comment*/(a)"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "insert into x (a,b) values (1,2)/*comment" + "*/returning/*" + "comment*/(a)"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x select 1 as returning returning *"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x select 'returning' as returning returning *"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into x select 'returning'as returning returning *"))
+            .hasReturningClause());
+    assertTrue(
+        parser.parse(Statement.of("delete from x where y=\"z\"returning *")).hasReturningClause());
+    assertTrue(
+        parser.parse(Statement.of("delete from x where y='z'returning *")).hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into t1 select 1/*as /*returning*/ returning*/returning *"))
+            .hasReturningClause());
+    assertFalse(
+        parser
+            .parse(Statement.of("insert into x (a,b) values (1,2) then return (a)"))
+            .hasReturningClause());
+    assertFalse(
+        parser.parse(Statement.of("insert into x (a,b) values (1,2)")).hasReturningClause());
+    assertFalse(
+        parser.parse(Statement.of("insert into t1 select 1 as returning")).hasReturningClause());
+    assertFalse(
+        parser
+            .parse(Statement.of("insert into t1 select 1\nas\n\nreturning"))
+            .hasReturningClause());
+    assertFalse(
+        parser.parse(Statement.of("insert into t1 select 1asreturning")).hasReturningClause());
+    assertTrue(
+        parser
+            .parse(Statement.of("insert into t1 select 1 as/*eomment*/returning returning *"))
+            .hasReturningClause());
+    assertFalse(
+        parser
+            .parse(Statement.of("UPDATE x SET y = $$ RETURNING a, b, c$$ WHERE z = 123"))
+            .hasReturningClause());
+    assertFalse(
+        parser
+            .parse(
+                Statement.of("UPDATE x SET y = $foobar$ RETURNING a, b, c$foobar$ WHERE z = 123"))
+            .hasReturningClause());
+    assertFalse(
+        parser
+            .parse(Statement.of("UPDATE x SET y = $returning$ returning $returning$ WHERE z = 123"))
+            .hasReturningClause());
+    assertTrue(
+        parser
+            .parse(
+                Statement.of(
+                    "UPDATE x SET y = $returning$returning$returning$ WHERE z = 123 ReTuRnInG *"))
+            .hasReturningClause());
+    assertTrue(
+        parser.parse(Statement.of("insert into t1 select 1 returning*")).hasReturningClause());
+    assertTrue(
+        parser.parse(Statement.of("insert into t1 select 2returning*")).hasReturningClause());
+    assertTrue(
+        parser.parse(Statement.of("insert into t1 select 10e2returning*")).hasReturningClause());
+    assertFalse(
+        parser
+            .parse(Statement.of("insert into t1 select 'test''returning *'"))
+            .hasReturningClause());
+    assertTrue(
+        parser.parse(Statement.of("insert into t select 2,3returning*")).hasReturningClause());
+    assertTrue(
+        parser.parse(Statement.of("insert into t1 select 10.returning*")).hasReturningClause());
+  }
+
   private void assertUnclosedLiteral(String sql) {
     try {
       parser.convertPositionalParametersToNamedParameters('?', sql);

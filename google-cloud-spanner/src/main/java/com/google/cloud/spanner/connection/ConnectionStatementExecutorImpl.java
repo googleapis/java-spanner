@@ -24,6 +24,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.RUN_BATCH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DEFAULT_TRANSACTION_ISOLATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READONLY;
@@ -70,6 +71,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
+import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -372,17 +374,17 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementSetPgTransactionMode(PgTransactionMode transactionMode) {
-    switch (transactionMode) {
-      case READ_ONLY_TRANSACTION:
-        getConnection().setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
-        break;
-      case READ_WRITE_TRANSACTION:
-        getConnection().setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
-        break;
-      case ISOLATION_LEVEL_DEFAULT:
-      case ISOLATION_LEVEL_SERIALIZABLE:
-      default:
-        // no-op
+    if (transactionMode.getAccessMode() != null) {
+      switch (transactionMode.getAccessMode()) {
+        case READ_ONLY_TRANSACTION:
+          getConnection().setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
+          break;
+        case READ_WRITE_TRANSACTION:
+          getConnection().setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
+          break;
+        default:
+          // no-op
+      }
     }
     return noResult(SET_TRANSACTION_MODE);
   }
@@ -390,19 +392,25 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementSetPgSessionCharacteristicsTransactionMode(
       PgTransactionMode transactionMode) {
-    switch (transactionMode) {
-      case READ_ONLY_TRANSACTION:
-        getConnection().setReadOnly(true);
-        break;
-      case READ_WRITE_TRANSACTION:
-        getConnection().setReadOnly(false);
-        break;
-      case ISOLATION_LEVEL_DEFAULT:
-      case ISOLATION_LEVEL_SERIALIZABLE:
-      default:
-        // no-op
+    if (transactionMode.getAccessMode() != null) {
+      switch (transactionMode.getAccessMode()) {
+        case READ_ONLY_TRANSACTION:
+          getConnection().setReadOnly(true);
+          break;
+        case READ_WRITE_TRANSACTION:
+          getConnection().setReadOnly(false);
+          break;
+        default:
+          // no-op
+      }
     }
     return noResult(SET_TRANSACTION_MODE);
+  }
+
+  @Override
+  public StatementResult statementSetPgDefaultTransactionIsolation(IsolationLevel isolationLevel) {
+    // no-op
+    return noResult(SET_DEFAULT_TRANSACTION_ISOLATION);
   }
 
   @Override
