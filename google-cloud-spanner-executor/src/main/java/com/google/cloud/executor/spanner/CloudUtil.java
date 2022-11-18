@@ -50,13 +50,12 @@ public class CloudUtil {
   // error message causes the trailing headers to exceed this limit.
   private static final int GRPC_MAX_HEADER_LIST_SIZE_BYTES = 10 * 1024 * 1024;
 
-  private static final String TEST_CERT = "CAcert.pem";
   private static final String TEST_HOST_IN_CERT = "test_cert_2";
 
   public static TransportChannelProvider newChannelProviderHelper(int port) {
     NettyChannelBuilder builder =
         (NettyChannelBuilder)
-            getChannelBuilderForTestGFE("localhost", port, TEST_CERT, TEST_HOST_IN_CERT)
+            getChannelBuilderForTestGFE("localhost", port, WorkerProxy.cert, TEST_HOST_IN_CERT)
                 .maxInboundMessageSize(100 * 1024 * 1024 /* 100 MB */);
     if (WorkerProxy.usePlainTextChannel) {
       builder.usePlaintext();

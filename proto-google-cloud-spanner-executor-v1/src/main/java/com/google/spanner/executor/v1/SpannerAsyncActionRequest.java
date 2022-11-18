@@ -21,8 +21,7 @@ package com.google.spanner.executor.v1;
 
 /**
  * <pre>
- * Request to executor service that can either start a new action or cancel a
- * previously started one. Either 'action' or 'cancel' must be set.
+ * Request to executor service that start a new Spanner action.
  * </pre>
  *
  * Protobuf type {@code google.spanner.executor.v1.SpannerAsyncActionRequest}
@@ -76,21 +75,15 @@ private static final long serialVersionUID = 0L;
           }
           case 18: {
             com.google.spanner.executor.v1.SpannerAction.Builder subBuilder = null;
-            if (kindCase_ == 2) {
-              subBuilder = ((com.google.spanner.executor.v1.SpannerAction) kind_).toBuilder();
+            if (action_ != null) {
+              subBuilder = action_.toBuilder();
             }
-            kind_ =
-                input.readMessage(com.google.spanner.executor.v1.SpannerAction.parser(), extensionRegistry);
+            action_ = input.readMessage(com.google.spanner.executor.v1.SpannerAction.parser(), extensionRegistry);
             if (subBuilder != null) {
-              subBuilder.mergeFrom((com.google.spanner.executor.v1.SpannerAction) kind_);
-              kind_ = subBuilder.buildPartial();
+              subBuilder.mergeFrom(action_);
+              action_ = subBuilder.buildPartial();
             }
-            kindCase_ = 2;
-            break;
-          }
-          case 24: {
-            kind_ = input.readBool();
-            kindCase_ = 3;
+
             break;
           }
           default: {
@@ -127,50 +120,13 @@ private static final long serialVersionUID = 0L;
             com.google.spanner.executor.v1.SpannerAsyncActionRequest.class, com.google.spanner.executor.v1.SpannerAsyncActionRequest.Builder.class);
   }
 
-  private int kindCase_ = 0;
-  private java.lang.Object kind_;
-  public enum KindCase
-      implements com.google.protobuf.Internal.EnumLite,
-          com.google.protobuf.AbstractMessage.InternalOneOfEnum {
-    ACTION(2),
-    CANCEL(3),
-    KIND_NOT_SET(0);
-    private final int value;
-    private KindCase(int value) {
-      this.value = value;
-    }
-    /**
-     * @param value The number of the enum to look for.
-     * @return The enum associated with the given number.
-     * @deprecated Use {@link #forNumber(int)} instead.
-     */
-    @java.lang.Deprecated
-    public static KindCase valueOf(int value) {
-      return forNumber(value);
-    }
-
-    public static KindCase forNumber(int value) {
-      switch (value) {
-        case 2: return ACTION;
-        case 3: return CANCEL;
-        case 0: return KIND_NOT_SET;
-        default: return null;
-      }
-    }
-    public int getNumber() {
-      return this.value;
-    }
-  };
-
-  public KindCase
-  getKindCase() {
-    return KindCase.forNumber(
-        kindCase_);
-  }
-
   public static final int ACTION_ID_FIELD_NUMBER = 1;
   private int actionId_;
   /**
+   * <pre>
+   * Action id to uniquely identify this action request.
+   * </pre>
+   *
    * <code>int32 action_id = 1;</code>
    * @return The actionId.
    */
@@ -180,55 +136,41 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int ACTION_FIELD_NUMBER = 2;
+  private com.google.spanner.executor.v1.SpannerAction action_;
   /**
+   * <pre>
+   * The actual SpannerAction to perform.
+   * </pre>
+   *
    * <code>.google.spanner.executor.v1.SpannerAction action = 2;</code>
    * @return Whether the action field is set.
    */
   @java.lang.Override
   public boolean hasAction() {
-    return kindCase_ == 2;
+    return action_ != null;
   }
   /**
+   * <pre>
+   * The actual SpannerAction to perform.
+   * </pre>
+   *
    * <code>.google.spanner.executor.v1.SpannerAction action = 2;</code>
    * @return The action.
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.SpannerAction getAction() {
-    if (kindCase_ == 2) {
-       return (com.google.spanner.executor.v1.SpannerAction) kind_;
-    }
-    return com.google.spanner.executor.v1.SpannerAction.getDefaultInstance();
+    return action_ == null ? com.google.spanner.executor.v1.SpannerAction.getDefaultInstance() : action_;
   }
   /**
+   * <pre>
+   * The actual SpannerAction to perform.
+   * </pre>
+   *
    * <code>.google.spanner.executor.v1.SpannerAction action = 2;</code>
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.SpannerActionOrBuilder getActionOrBuilder() {
-    if (kindCase_ == 2) {
-       return (com.google.spanner.executor.v1.SpannerAction) kind_;
-    }
-    return com.google.spanner.executor.v1.SpannerAction.getDefaultInstance();
-  }
-
-  public static final int CANCEL_FIELD_NUMBER = 3;
-  /**
-   * <code>bool cancel = 3;</code>
-   * @return Whether the cancel field is set.
-   */
-  @java.lang.Override
-  public boolean hasCancel() {
-    return kindCase_ == 3;
-  }
-  /**
-   * <code>bool cancel = 3;</code>
-   * @return The cancel.
-   */
-  @java.lang.Override
-  public boolean getCancel() {
-    if (kindCase_ == 3) {
-      return (java.lang.Boolean) kind_;
-    }
-    return false;
+    return getAction();
   }
 
   private byte memoizedIsInitialized = -1;
@@ -248,12 +190,8 @@ private static final long serialVersionUID = 0L;
     if (actionId_ != 0) {
       output.writeInt32(1, actionId_);
     }
-    if (kindCase_ == 2) {
-      output.writeMessage(2, (com.google.spanner.executor.v1.SpannerAction) kind_);
-    }
-    if (kindCase_ == 3) {
-      output.writeBool(
-          3, (boolean)((java.lang.Boolean) kind_));
+    if (action_ != null) {
+      output.writeMessage(2, getAction());
     }
     unknownFields.writeTo(output);
   }
@@ -268,14 +206,9 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(1, actionId_);
     }
-    if (kindCase_ == 2) {
+    if (action_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(2, (com.google.spanner.executor.v1.SpannerAction) kind_);
-    }
-    if (kindCase_ == 3) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(
-            3, (boolean)((java.lang.Boolean) kind_));
+        .computeMessageSize(2, getAction());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -294,18 +227,10 @@ private static final long serialVersionUID = 0L;
 
     if (getActionId()
         != other.getActionId()) return false;
-    if (!getKindCase().equals(other.getKindCase())) return false;
-    switch (kindCase_) {
-      case 2:
-        if (!getAction()
-            .equals(other.getAction())) return false;
-        break;
-      case 3:
-        if (getCancel()
-            != other.getCancel()) return false;
-        break;
-      case 0:
-      default:
+    if (hasAction() != other.hasAction()) return false;
+    if (hasAction()) {
+      if (!getAction()
+          .equals(other.getAction())) return false;
     }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
@@ -320,18 +245,9 @@ private static final long serialVersionUID = 0L;
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + ACTION_ID_FIELD_NUMBER;
     hash = (53 * hash) + getActionId();
-    switch (kindCase_) {
-      case 2:
-        hash = (37 * hash) + ACTION_FIELD_NUMBER;
-        hash = (53 * hash) + getAction().hashCode();
-        break;
-      case 3:
-        hash = (37 * hash) + CANCEL_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-            getCancel());
-        break;
-      case 0:
-      default:
+    if (hasAction()) {
+      hash = (37 * hash) + ACTION_FIELD_NUMBER;
+      hash = (53 * hash) + getAction().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -430,8 +346,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Request to executor service that can either start a new action or cancel a
-   * previously started one. Either 'action' or 'cancel' must be set.
+   * Request to executor service that start a new Spanner action.
    * </pre>
    *
    * Protobuf type {@code google.spanner.executor.v1.SpannerAsyncActionRequest}
@@ -473,8 +388,12 @@ private static final long serialVersionUID = 0L;
       super.clear();
       actionId_ = 0;
 
-      kindCase_ = 0;
-      kind_ = null;
+      if (actionBuilder_ == null) {
+        action_ = null;
+      } else {
+        action_ = null;
+        actionBuilder_ = null;
+      }
       return this;
     }
 
@@ -502,17 +421,11 @@ private static final long serialVersionUID = 0L;
     public com.google.spanner.executor.v1.SpannerAsyncActionRequest buildPartial() {
       com.google.spanner.executor.v1.SpannerAsyncActionRequest result = new com.google.spanner.executor.v1.SpannerAsyncActionRequest(this);
       result.actionId_ = actionId_;
-      if (kindCase_ == 2) {
-        if (actionBuilder_ == null) {
-          result.kind_ = kind_;
-        } else {
-          result.kind_ = actionBuilder_.build();
-        }
+      if (actionBuilder_ == null) {
+        result.action_ = action_;
+      } else {
+        result.action_ = actionBuilder_.build();
       }
-      if (kindCase_ == 3) {
-        result.kind_ = kind_;
-      }
-      result.kindCase_ = kindCase_;
       onBuilt();
       return result;
     }
@@ -564,18 +477,8 @@ private static final long serialVersionUID = 0L;
       if (other.getActionId() != 0) {
         setActionId(other.getActionId());
       }
-      switch (other.getKindCase()) {
-        case ACTION: {
-          mergeAction(other.getAction());
-          break;
-        }
-        case CANCEL: {
-          setCancel(other.getCancel());
-          break;
-        }
-        case KIND_NOT_SET: {
-          break;
-        }
+      if (other.hasAction()) {
+        mergeAction(other.getAction());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -605,24 +508,13 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    private int kindCase_ = 0;
-    private java.lang.Object kind_;
-    public KindCase
-        getKindCase() {
-      return KindCase.forNumber(
-          kindCase_);
-    }
-
-    public Builder clearKind() {
-      kindCase_ = 0;
-      kind_ = null;
-      onChanged();
-      return this;
-    }
-
 
     private int actionId_ ;
     /**
+     * <pre>
+     * Action id to uniquely identify this action request.
+     * </pre>
+     *
      * <code>int32 action_id = 1;</code>
      * @return The actionId.
      */
@@ -631,6 +523,10 @@ private static final long serialVersionUID = 0L;
       return actionId_;
     }
     /**
+     * <pre>
+     * Action id to uniquely identify this action request.
+     * </pre>
+     *
      * <code>int32 action_id = 1;</code>
      * @param value The actionId to set.
      * @return This builder for chaining.
@@ -642,6 +538,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Action id to uniquely identify this action request.
+     * </pre>
+     *
      * <code>int32 action_id = 1;</code>
      * @return This builder for chaining.
      */
@@ -652,35 +552,40 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
+    private com.google.spanner.executor.v1.SpannerAction action_;
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.spanner.executor.v1.SpannerAction, com.google.spanner.executor.v1.SpannerAction.Builder, com.google.spanner.executor.v1.SpannerActionOrBuilder> actionBuilder_;
     /**
+     * <pre>
+     * The actual SpannerAction to perform.
+     * </pre>
+     *
      * <code>.google.spanner.executor.v1.SpannerAction action = 2;</code>
      * @return Whether the action field is set.
      */
-    @java.lang.Override
     public boolean hasAction() {
-      return kindCase_ == 2;
+      return actionBuilder_ != null || action_ != null;
     }
     /**
+     * <pre>
+     * The actual SpannerAction to perform.
+     * </pre>
+     *
      * <code>.google.spanner.executor.v1.SpannerAction action = 2;</code>
      * @return The action.
      */
-    @java.lang.Override
     public com.google.spanner.executor.v1.SpannerAction getAction() {
       if (actionBuilder_ == null) {
-        if (kindCase_ == 2) {
-          return (com.google.spanner.executor.v1.SpannerAction) kind_;
-        }
-        return com.google.spanner.executor.v1.SpannerAction.getDefaultInstance();
+        return action_ == null ? com.google.spanner.executor.v1.SpannerAction.getDefaultInstance() : action_;
       } else {
-        if (kindCase_ == 2) {
-          return actionBuilder_.getMessage();
-        }
-        return com.google.spanner.executor.v1.SpannerAction.getDefaultInstance();
+        return actionBuilder_.getMessage();
       }
     }
     /**
+     * <pre>
+     * The actual SpannerAction to perform.
+     * </pre>
+     *
      * <code>.google.spanner.executor.v1.SpannerAction action = 2;</code>
      */
     public Builder setAction(com.google.spanner.executor.v1.SpannerAction value) {
@@ -688,151 +593,118 @@ private static final long serialVersionUID = 0L;
         if (value == null) {
           throw new NullPointerException();
         }
-        kind_ = value;
+        action_ = value;
         onChanged();
       } else {
         actionBuilder_.setMessage(value);
       }
-      kindCase_ = 2;
+
       return this;
     }
     /**
+     * <pre>
+     * The actual SpannerAction to perform.
+     * </pre>
+     *
      * <code>.google.spanner.executor.v1.SpannerAction action = 2;</code>
      */
     public Builder setAction(
         com.google.spanner.executor.v1.SpannerAction.Builder builderForValue) {
       if (actionBuilder_ == null) {
-        kind_ = builderForValue.build();
+        action_ = builderForValue.build();
         onChanged();
       } else {
         actionBuilder_.setMessage(builderForValue.build());
       }
-      kindCase_ = 2;
+
       return this;
     }
     /**
+     * <pre>
+     * The actual SpannerAction to perform.
+     * </pre>
+     *
      * <code>.google.spanner.executor.v1.SpannerAction action = 2;</code>
      */
     public Builder mergeAction(com.google.spanner.executor.v1.SpannerAction value) {
       if (actionBuilder_ == null) {
-        if (kindCase_ == 2 &&
-            kind_ != com.google.spanner.executor.v1.SpannerAction.getDefaultInstance()) {
-          kind_ = com.google.spanner.executor.v1.SpannerAction.newBuilder((com.google.spanner.executor.v1.SpannerAction) kind_)
-              .mergeFrom(value).buildPartial();
+        if (action_ != null) {
+          action_ =
+            com.google.spanner.executor.v1.SpannerAction.newBuilder(action_).mergeFrom(value).buildPartial();
         } else {
-          kind_ = value;
+          action_ = value;
         }
         onChanged();
       } else {
-        if (kindCase_ == 2) {
-          actionBuilder_.mergeFrom(value);
-        } else {
-          actionBuilder_.setMessage(value);
-        }
+        actionBuilder_.mergeFrom(value);
       }
-      kindCase_ = 2;
+
       return this;
     }
     /**
+     * <pre>
+     * The actual SpannerAction to perform.
+     * </pre>
+     *
      * <code>.google.spanner.executor.v1.SpannerAction action = 2;</code>
      */
     public Builder clearAction() {
       if (actionBuilder_ == null) {
-        if (kindCase_ == 2) {
-          kindCase_ = 0;
-          kind_ = null;
-          onChanged();
-        }
+        action_ = null;
+        onChanged();
       } else {
-        if (kindCase_ == 2) {
-          kindCase_ = 0;
-          kind_ = null;
-        }
-        actionBuilder_.clear();
+        action_ = null;
+        actionBuilder_ = null;
       }
+
       return this;
     }
     /**
+     * <pre>
+     * The actual SpannerAction to perform.
+     * </pre>
+     *
      * <code>.google.spanner.executor.v1.SpannerAction action = 2;</code>
      */
     public com.google.spanner.executor.v1.SpannerAction.Builder getActionBuilder() {
+      
+      onChanged();
       return getActionFieldBuilder().getBuilder();
     }
     /**
+     * <pre>
+     * The actual SpannerAction to perform.
+     * </pre>
+     *
      * <code>.google.spanner.executor.v1.SpannerAction action = 2;</code>
      */
-    @java.lang.Override
     public com.google.spanner.executor.v1.SpannerActionOrBuilder getActionOrBuilder() {
-      if ((kindCase_ == 2) && (actionBuilder_ != null)) {
+      if (actionBuilder_ != null) {
         return actionBuilder_.getMessageOrBuilder();
       } else {
-        if (kindCase_ == 2) {
-          return (com.google.spanner.executor.v1.SpannerAction) kind_;
-        }
-        return com.google.spanner.executor.v1.SpannerAction.getDefaultInstance();
+        return action_ == null ?
+            com.google.spanner.executor.v1.SpannerAction.getDefaultInstance() : action_;
       }
     }
     /**
+     * <pre>
+     * The actual SpannerAction to perform.
+     * </pre>
+     *
      * <code>.google.spanner.executor.v1.SpannerAction action = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.spanner.executor.v1.SpannerAction, com.google.spanner.executor.v1.SpannerAction.Builder, com.google.spanner.executor.v1.SpannerActionOrBuilder> 
         getActionFieldBuilder() {
       if (actionBuilder_ == null) {
-        if (!(kindCase_ == 2)) {
-          kind_ = com.google.spanner.executor.v1.SpannerAction.getDefaultInstance();
-        }
         actionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
             com.google.spanner.executor.v1.SpannerAction, com.google.spanner.executor.v1.SpannerAction.Builder, com.google.spanner.executor.v1.SpannerActionOrBuilder>(
-                (com.google.spanner.executor.v1.SpannerAction) kind_,
+                getAction(),
                 getParentForChildren(),
                 isClean());
-        kind_ = null;
+        action_ = null;
       }
-      kindCase_ = 2;
-      onChanged();;
       return actionBuilder_;
-    }
-
-    /**
-     * <code>bool cancel = 3;</code>
-     * @return Whether the cancel field is set.
-     */
-    public boolean hasCancel() {
-      return kindCase_ == 3;
-    }
-    /**
-     * <code>bool cancel = 3;</code>
-     * @return The cancel.
-     */
-    public boolean getCancel() {
-      if (kindCase_ == 3) {
-        return (java.lang.Boolean) kind_;
-      }
-      return false;
-    }
-    /**
-     * <code>bool cancel = 3;</code>
-     * @param value The cancel to set.
-     * @return This builder for chaining.
-     */
-    public Builder setCancel(boolean value) {
-      kindCase_ = 3;
-      kind_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>bool cancel = 3;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearCancel() {
-      if (kindCase_ == 3) {
-        kindCase_ = 0;
-        kind_ = null;
-        onChanged();
-      }
-      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

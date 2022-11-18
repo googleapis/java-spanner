@@ -123,6 +123,10 @@ private static final long serialVersionUID = 0L;
   public static final int ACTION_ID_FIELD_NUMBER = 1;
   private int actionId_;
   /**
+   * <pre>
+   * Action id corresponds to the request.
+   * </pre>
+   *
    * <code>int32 action_id = 1;</code>
    * @return The actionId.
    */
@@ -510,6 +514,10 @@ private static final long serialVersionUID = 0L;
 
     private int actionId_ ;
     /**
+     * <pre>
+     * Action id corresponds to the request.
+     * </pre>
+     *
      * <code>int32 action_id = 1;</code>
      * @return The actionId.
      */
@@ -518,6 +526,10 @@ private static final long serialVersionUID = 0L;
       return actionId_;
     }
     /**
+     * <pre>
+     * Action id corresponds to the request.
+     * </pre>
+     *
      * <code>int32 action_id = 1;</code>
      * @param value The actionId to set.
      * @return This builder for chaining.
@@ -529,6 +541,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Action id corresponds to the request.
+     * </pre>
+     *
      * <code>int32 action_id = 1;</code>
      * @return This builder for chaining.
      */

@@ -20,8 +20,7 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
 
 /**
  * <pre>
- * Service that executes SpannerActions asynchronously. It can be used to proxy
- * actions to non-C++ Spanner clients.
+ * Service that executes SpannerActions asynchronously.
  * </pre>
  */
 @javax.annotation.Generated(
@@ -112,16 +111,15 @@ public final class SpannerExecutorProxyGrpc {
 
   /**
    * <pre>
-   * Service that executes SpannerActions asynchronously. It can be used to proxy
-   * actions to non-C++ Spanner clients.
+   * Service that executes SpannerActions asynchronously.
    * </pre>
    */
   public static abstract class SpannerExecutorProxyImplBase implements io.grpc.BindableService {
 
     /**
      * <pre>
-     * ExecuteActionAsync is a streaming call that starts executing a new action
-     * or requests to cancel some current action.
+     * ExecuteActionAsync is a streaming call that starts executing a new Spanner
+     * action.
      * For each request, the server will reply with one or more responses, but
      * only the last response will contain status in the outcome.
      * Responses can be matched to requests by action_id. It is allowed to have
@@ -149,8 +147,7 @@ public final class SpannerExecutorProxyGrpc {
 
   /**
    * <pre>
-   * Service that executes SpannerActions asynchronously. It can be used to proxy
-   * actions to non-C++ Spanner clients.
+   * Service that executes SpannerActions asynchronously.
    * </pre>
    */
   public static final class SpannerExecutorProxyStub extends io.grpc.stub.AbstractAsyncStub<SpannerExecutorProxyStub> {
@@ -167,8 +164,8 @@ public final class SpannerExecutorProxyGrpc {
 
     /**
      * <pre>
-     * ExecuteActionAsync is a streaming call that starts executing a new action
-     * or requests to cancel some current action.
+     * ExecuteActionAsync is a streaming call that starts executing a new Spanner
+     * action.
      * For each request, the server will reply with one or more responses, but
      * only the last response will contain status in the outcome.
      * Responses can be matched to requests by action_id. It is allowed to have
@@ -185,8 +182,7 @@ public final class SpannerExecutorProxyGrpc {
 
   /**
    * <pre>
-   * Service that executes SpannerActions asynchronously. It can be used to proxy
-   * actions to non-C++ Spanner clients.
+   * Service that executes SpannerActions asynchronously.
    * </pre>
    */
   public static final class SpannerExecutorProxyBlockingStub extends io.grpc.stub.AbstractBlockingStub<SpannerExecutorProxyBlockingStub> {
@@ -204,8 +200,7 @@ public final class SpannerExecutorProxyGrpc {
 
   /**
    * <pre>
-   * Service that executes SpannerActions asynchronously. It can be used to proxy
-   * actions to non-C++ Spanner clients.
+   * Service that executes SpannerActions asynchronously.
    * </pre>
    */
   public static final class SpannerExecutorProxyFutureStub extends io.grpc.stub.AbstractFutureStub<SpannerExecutorProxyFutureStub> {

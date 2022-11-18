@@ -24,36 +24,39 @@ public interface SpannerAsyncActionRequestOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
+   * <pre>
+   * Action id to uniquely identify this action request.
+   * </pre>
+   *
    * <code>int32 action_id = 1;</code>
    * @return The actionId.
    */
   int getActionId();
 
   /**
+   * <pre>
+   * The actual SpannerAction to perform.
+   * </pre>
+   *
    * <code>.google.spanner.executor.v1.SpannerAction action = 2;</code>
    * @return Whether the action field is set.
    */
   boolean hasAction();
   /**
+   * <pre>
+   * The actual SpannerAction to perform.
+   * </pre>
+   *
    * <code>.google.spanner.executor.v1.SpannerAction action = 2;</code>
    * @return The action.
    */
   com.google.spanner.executor.v1.SpannerAction getAction();
   /**
+   * <pre>
+   * The actual SpannerAction to perform.
+   * </pre>
+   *
    * <code>.google.spanner.executor.v1.SpannerAction action = 2;</code>
    */
   com.google.spanner.executor.v1.SpannerActionOrBuilder getActionOrBuilder();
-
-  /**
-   * <code>bool cancel = 3;</code>
-   * @return Whether the cancel field is set.
-   */
-  boolean hasCancel();
-  /**
-   * <code>bool cancel = 3;</code>
-   * @return The cancel.
-   */
-  boolean getCancel();
-
-  public com.google.spanner.executor.v1.SpannerAsyncActionRequest.KindCase getKindCase();
 }
