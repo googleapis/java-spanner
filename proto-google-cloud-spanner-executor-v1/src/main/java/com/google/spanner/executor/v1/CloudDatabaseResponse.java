@@ -38,7 +38,7 @@ private static final long serialVersionUID = 0L;
   }
   private CloudDatabaseResponse() {
     listedDatabases_ = java.util.Collections.emptyList();
-    listedDatabaseOperation_ = java.util.Collections.emptyList();
+    listedDatabaseOperations_ = java.util.Collections.emptyList();
     nextPageToken_ = "";
   }
 
@@ -84,10 +84,10 @@ private static final long serialVersionUID = 0L;
           }
           case 18: {
             if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-              listedDatabaseOperation_ = new java.util.ArrayList<com.google.longrunning.Operation>();
+              listedDatabaseOperations_ = new java.util.ArrayList<com.google.longrunning.Operation>();
               mutable_bitField0_ |= 0x00000002;
             }
-            listedDatabaseOperation_.add(
+            listedDatabaseOperations_.add(
                 input.readMessage(com.google.longrunning.Operation.parser(), extensionRegistry));
             break;
           }
@@ -131,7 +131,7 @@ private static final long serialVersionUID = 0L;
         listedDatabases_ = java.util.Collections.unmodifiableList(listedDatabases_);
       }
       if (((mutable_bitField0_ & 0x00000002) != 0)) {
-        listedDatabaseOperation_ = java.util.Collections.unmodifiableList(listedDatabaseOperation_);
+        listedDatabaseOperations_ = java.util.Collections.unmodifiableList(listedDatabaseOperations_);
       }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
@@ -210,64 +210,64 @@ private static final long serialVersionUID = 0L;
     return listedDatabases_.get(index);
   }
 
-  public static final int LISTED_DATABASE_OPERATION_FIELD_NUMBER = 2;
-  private java.util.List<com.google.longrunning.Operation> listedDatabaseOperation_;
+  public static final int LISTED_DATABASE_OPERATIONS_FIELD_NUMBER = 2;
+  private java.util.List<com.google.longrunning.Operation> listedDatabaseOperations_;
   /**
    * <pre>
    * List of operations returned by ListCloudDatabaseOperationsAction.
    * </pre>
    *
-   * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+   * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
    */
   @java.lang.Override
-  public java.util.List<com.google.longrunning.Operation> getListedDatabaseOperationList() {
-    return listedDatabaseOperation_;
+  public java.util.List<com.google.longrunning.Operation> getListedDatabaseOperationsList() {
+    return listedDatabaseOperations_;
   }
   /**
    * <pre>
    * List of operations returned by ListCloudDatabaseOperationsAction.
    * </pre>
    *
-   * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+   * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
    */
   @java.lang.Override
   public java.util.List<? extends com.google.longrunning.OperationOrBuilder> 
-      getListedDatabaseOperationOrBuilderList() {
-    return listedDatabaseOperation_;
+      getListedDatabaseOperationsOrBuilderList() {
+    return listedDatabaseOperations_;
   }
   /**
    * <pre>
    * List of operations returned by ListCloudDatabaseOperationsAction.
    * </pre>
    *
-   * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+   * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
    */
   @java.lang.Override
-  public int getListedDatabaseOperationCount() {
-    return listedDatabaseOperation_.size();
+  public int getListedDatabaseOperationsCount() {
+    return listedDatabaseOperations_.size();
   }
   /**
    * <pre>
    * List of operations returned by ListCloudDatabaseOperationsAction.
    * </pre>
    *
-   * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+   * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
    */
   @java.lang.Override
-  public com.google.longrunning.Operation getListedDatabaseOperation(int index) {
-    return listedDatabaseOperation_.get(index);
+  public com.google.longrunning.Operation getListedDatabaseOperations(int index) {
+    return listedDatabaseOperations_.get(index);
   }
   /**
    * <pre>
    * List of operations returned by ListCloudDatabaseOperationsAction.
    * </pre>
    *
-   * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+   * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
    */
   @java.lang.Override
-  public com.google.longrunning.OperationOrBuilder getListedDatabaseOperationOrBuilder(
+  public com.google.longrunning.OperationOrBuilder getListedDatabaseOperationsOrBuilder(
       int index) {
-    return listedDatabaseOperation_.get(index);
+    return listedDatabaseOperations_.get(index);
   }
 
   public static final int NEXT_PAGE_TOKEN_FIELD_NUMBER = 3;
@@ -373,8 +373,8 @@ private static final long serialVersionUID = 0L;
     for (int i = 0; i < listedDatabases_.size(); i++) {
       output.writeMessage(1, listedDatabases_.get(i));
     }
-    for (int i = 0; i < listedDatabaseOperation_.size(); i++) {
-      output.writeMessage(2, listedDatabaseOperation_.get(i));
+    for (int i = 0; i < listedDatabaseOperations_.size(); i++) {
+      output.writeMessage(2, listedDatabaseOperations_.get(i));
     }
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(nextPageToken_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, nextPageToken_);
@@ -395,9 +395,9 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(1, listedDatabases_.get(i));
     }
-    for (int i = 0; i < listedDatabaseOperation_.size(); i++) {
+    for (int i = 0; i < listedDatabaseOperations_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(2, listedDatabaseOperation_.get(i));
+        .computeMessageSize(2, listedDatabaseOperations_.get(i));
     }
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(nextPageToken_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, nextPageToken_);
@@ -423,8 +423,8 @@ private static final long serialVersionUID = 0L;
 
     if (!getListedDatabasesList()
         .equals(other.getListedDatabasesList())) return false;
-    if (!getListedDatabaseOperationList()
-        .equals(other.getListedDatabaseOperationList())) return false;
+    if (!getListedDatabaseOperationsList()
+        .equals(other.getListedDatabaseOperationsList())) return false;
     if (!getNextPageToken()
         .equals(other.getNextPageToken())) return false;
     if (hasDatabase() != other.hasDatabase()) return false;
@@ -447,9 +447,9 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + LISTED_DATABASES_FIELD_NUMBER;
       hash = (53 * hash) + getListedDatabasesList().hashCode();
     }
-    if (getListedDatabaseOperationCount() > 0) {
-      hash = (37 * hash) + LISTED_DATABASE_OPERATION_FIELD_NUMBER;
-      hash = (53 * hash) + getListedDatabaseOperationList().hashCode();
+    if (getListedDatabaseOperationsCount() > 0) {
+      hash = (37 * hash) + LISTED_DATABASE_OPERATIONS_FIELD_NUMBER;
+      hash = (53 * hash) + getListedDatabaseOperationsList().hashCode();
     }
     hash = (37 * hash) + NEXT_PAGE_TOKEN_FIELD_NUMBER;
     hash = (53 * hash) + getNextPageToken().hashCode();
@@ -591,7 +591,7 @@ private static final long serialVersionUID = 0L;
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
         getListedDatabasesFieldBuilder();
-        getListedDatabaseOperationFieldBuilder();
+        getListedDatabaseOperationsFieldBuilder();
       }
     }
     @java.lang.Override
@@ -603,11 +603,11 @@ private static final long serialVersionUID = 0L;
       } else {
         listedDatabasesBuilder_.clear();
       }
-      if (listedDatabaseOperationBuilder_ == null) {
-        listedDatabaseOperation_ = java.util.Collections.emptyList();
+      if (listedDatabaseOperationsBuilder_ == null) {
+        listedDatabaseOperations_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000002);
       } else {
-        listedDatabaseOperationBuilder_.clear();
+        listedDatabaseOperationsBuilder_.clear();
       }
       nextPageToken_ = "";
 
@@ -653,14 +653,14 @@ private static final long serialVersionUID = 0L;
       } else {
         result.listedDatabases_ = listedDatabasesBuilder_.build();
       }
-      if (listedDatabaseOperationBuilder_ == null) {
+      if (listedDatabaseOperationsBuilder_ == null) {
         if (((bitField0_ & 0x00000002) != 0)) {
-          listedDatabaseOperation_ = java.util.Collections.unmodifiableList(listedDatabaseOperation_);
+          listedDatabaseOperations_ = java.util.Collections.unmodifiableList(listedDatabaseOperations_);
           bitField0_ = (bitField0_ & ~0x00000002);
         }
-        result.listedDatabaseOperation_ = listedDatabaseOperation_;
+        result.listedDatabaseOperations_ = listedDatabaseOperations_;
       } else {
-        result.listedDatabaseOperation_ = listedDatabaseOperationBuilder_.build();
+        result.listedDatabaseOperations_ = listedDatabaseOperationsBuilder_.build();
       }
       result.nextPageToken_ = nextPageToken_;
       if (databaseBuilder_ == null) {
@@ -742,29 +742,29 @@ private static final long serialVersionUID = 0L;
           }
         }
       }
-      if (listedDatabaseOperationBuilder_ == null) {
-        if (!other.listedDatabaseOperation_.isEmpty()) {
-          if (listedDatabaseOperation_.isEmpty()) {
-            listedDatabaseOperation_ = other.listedDatabaseOperation_;
+      if (listedDatabaseOperationsBuilder_ == null) {
+        if (!other.listedDatabaseOperations_.isEmpty()) {
+          if (listedDatabaseOperations_.isEmpty()) {
+            listedDatabaseOperations_ = other.listedDatabaseOperations_;
             bitField0_ = (bitField0_ & ~0x00000002);
           } else {
-            ensureListedDatabaseOperationIsMutable();
-            listedDatabaseOperation_.addAll(other.listedDatabaseOperation_);
+            ensureListedDatabaseOperationsIsMutable();
+            listedDatabaseOperations_.addAll(other.listedDatabaseOperations_);
           }
           onChanged();
         }
       } else {
-        if (!other.listedDatabaseOperation_.isEmpty()) {
-          if (listedDatabaseOperationBuilder_.isEmpty()) {
-            listedDatabaseOperationBuilder_.dispose();
-            listedDatabaseOperationBuilder_ = null;
-            listedDatabaseOperation_ = other.listedDatabaseOperation_;
+        if (!other.listedDatabaseOperations_.isEmpty()) {
+          if (listedDatabaseOperationsBuilder_.isEmpty()) {
+            listedDatabaseOperationsBuilder_.dispose();
+            listedDatabaseOperationsBuilder_ = null;
+            listedDatabaseOperations_ = other.listedDatabaseOperations_;
             bitField0_ = (bitField0_ & ~0x00000002);
-            listedDatabaseOperationBuilder_ = 
+            listedDatabaseOperationsBuilder_ = 
               com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                 getListedDatabaseOperationFieldBuilder() : null;
+                 getListedDatabaseOperationsFieldBuilder() : null;
           } else {
-            listedDatabaseOperationBuilder_.addAllMessages(other.listedDatabaseOperation_);
+            listedDatabaseOperationsBuilder_.addAllMessages(other.listedDatabaseOperations_);
           }
         }
       }
@@ -1117,30 +1117,30 @@ private static final long serialVersionUID = 0L;
       return listedDatabasesBuilder_;
     }
 
-    private java.util.List<com.google.longrunning.Operation> listedDatabaseOperation_ =
+    private java.util.List<com.google.longrunning.Operation> listedDatabaseOperations_ =
       java.util.Collections.emptyList();
-    private void ensureListedDatabaseOperationIsMutable() {
+    private void ensureListedDatabaseOperationsIsMutable() {
       if (!((bitField0_ & 0x00000002) != 0)) {
-        listedDatabaseOperation_ = new java.util.ArrayList<com.google.longrunning.Operation>(listedDatabaseOperation_);
+        listedDatabaseOperations_ = new java.util.ArrayList<com.google.longrunning.Operation>(listedDatabaseOperations_);
         bitField0_ |= 0x00000002;
        }
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        com.google.longrunning.Operation, com.google.longrunning.Operation.Builder, com.google.longrunning.OperationOrBuilder> listedDatabaseOperationBuilder_;
+        com.google.longrunning.Operation, com.google.longrunning.Operation.Builder, com.google.longrunning.OperationOrBuilder> listedDatabaseOperationsBuilder_;
 
     /**
      * <pre>
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public java.util.List<com.google.longrunning.Operation> getListedDatabaseOperationList() {
-      if (listedDatabaseOperationBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(listedDatabaseOperation_);
+    public java.util.List<com.google.longrunning.Operation> getListedDatabaseOperationsList() {
+      if (listedDatabaseOperationsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(listedDatabaseOperations_);
       } else {
-        return listedDatabaseOperationBuilder_.getMessageList();
+        return listedDatabaseOperationsBuilder_.getMessageList();
       }
     }
     /**
@@ -1148,13 +1148,13 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public int getListedDatabaseOperationCount() {
-      if (listedDatabaseOperationBuilder_ == null) {
-        return listedDatabaseOperation_.size();
+    public int getListedDatabaseOperationsCount() {
+      if (listedDatabaseOperationsBuilder_ == null) {
+        return listedDatabaseOperations_.size();
       } else {
-        return listedDatabaseOperationBuilder_.getCount();
+        return listedDatabaseOperationsBuilder_.getCount();
       }
     }
     /**
@@ -1162,13 +1162,13 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public com.google.longrunning.Operation getListedDatabaseOperation(int index) {
-      if (listedDatabaseOperationBuilder_ == null) {
-        return listedDatabaseOperation_.get(index);
+    public com.google.longrunning.Operation getListedDatabaseOperations(int index) {
+      if (listedDatabaseOperationsBuilder_ == null) {
+        return listedDatabaseOperations_.get(index);
       } else {
-        return listedDatabaseOperationBuilder_.getMessage(index);
+        return listedDatabaseOperationsBuilder_.getMessage(index);
       }
     }
     /**
@@ -1176,19 +1176,19 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public Builder setListedDatabaseOperation(
+    public Builder setListedDatabaseOperations(
         int index, com.google.longrunning.Operation value) {
-      if (listedDatabaseOperationBuilder_ == null) {
+      if (listedDatabaseOperationsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureListedDatabaseOperationIsMutable();
-        listedDatabaseOperation_.set(index, value);
+        ensureListedDatabaseOperationsIsMutable();
+        listedDatabaseOperations_.set(index, value);
         onChanged();
       } else {
-        listedDatabaseOperationBuilder_.setMessage(index, value);
+        listedDatabaseOperationsBuilder_.setMessage(index, value);
       }
       return this;
     }
@@ -1197,16 +1197,16 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public Builder setListedDatabaseOperation(
+    public Builder setListedDatabaseOperations(
         int index, com.google.longrunning.Operation.Builder builderForValue) {
-      if (listedDatabaseOperationBuilder_ == null) {
-        ensureListedDatabaseOperationIsMutable();
-        listedDatabaseOperation_.set(index, builderForValue.build());
+      if (listedDatabaseOperationsBuilder_ == null) {
+        ensureListedDatabaseOperationsIsMutable();
+        listedDatabaseOperations_.set(index, builderForValue.build());
         onChanged();
       } else {
-        listedDatabaseOperationBuilder_.setMessage(index, builderForValue.build());
+        listedDatabaseOperationsBuilder_.setMessage(index, builderForValue.build());
       }
       return this;
     }
@@ -1215,18 +1215,18 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public Builder addListedDatabaseOperation(com.google.longrunning.Operation value) {
-      if (listedDatabaseOperationBuilder_ == null) {
+    public Builder addListedDatabaseOperations(com.google.longrunning.Operation value) {
+      if (listedDatabaseOperationsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureListedDatabaseOperationIsMutable();
-        listedDatabaseOperation_.add(value);
+        ensureListedDatabaseOperationsIsMutable();
+        listedDatabaseOperations_.add(value);
         onChanged();
       } else {
-        listedDatabaseOperationBuilder_.addMessage(value);
+        listedDatabaseOperationsBuilder_.addMessage(value);
       }
       return this;
     }
@@ -1235,19 +1235,19 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public Builder addListedDatabaseOperation(
+    public Builder addListedDatabaseOperations(
         int index, com.google.longrunning.Operation value) {
-      if (listedDatabaseOperationBuilder_ == null) {
+      if (listedDatabaseOperationsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureListedDatabaseOperationIsMutable();
-        listedDatabaseOperation_.add(index, value);
+        ensureListedDatabaseOperationsIsMutable();
+        listedDatabaseOperations_.add(index, value);
         onChanged();
       } else {
-        listedDatabaseOperationBuilder_.addMessage(index, value);
+        listedDatabaseOperationsBuilder_.addMessage(index, value);
       }
       return this;
     }
@@ -1256,16 +1256,16 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public Builder addListedDatabaseOperation(
+    public Builder addListedDatabaseOperations(
         com.google.longrunning.Operation.Builder builderForValue) {
-      if (listedDatabaseOperationBuilder_ == null) {
-        ensureListedDatabaseOperationIsMutable();
-        listedDatabaseOperation_.add(builderForValue.build());
+      if (listedDatabaseOperationsBuilder_ == null) {
+        ensureListedDatabaseOperationsIsMutable();
+        listedDatabaseOperations_.add(builderForValue.build());
         onChanged();
       } else {
-        listedDatabaseOperationBuilder_.addMessage(builderForValue.build());
+        listedDatabaseOperationsBuilder_.addMessage(builderForValue.build());
       }
       return this;
     }
@@ -1274,16 +1274,16 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public Builder addListedDatabaseOperation(
+    public Builder addListedDatabaseOperations(
         int index, com.google.longrunning.Operation.Builder builderForValue) {
-      if (listedDatabaseOperationBuilder_ == null) {
-        ensureListedDatabaseOperationIsMutable();
-        listedDatabaseOperation_.add(index, builderForValue.build());
+      if (listedDatabaseOperationsBuilder_ == null) {
+        ensureListedDatabaseOperationsIsMutable();
+        listedDatabaseOperations_.add(index, builderForValue.build());
         onChanged();
       } else {
-        listedDatabaseOperationBuilder_.addMessage(index, builderForValue.build());
+        listedDatabaseOperationsBuilder_.addMessage(index, builderForValue.build());
       }
       return this;
     }
@@ -1292,17 +1292,17 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public Builder addAllListedDatabaseOperation(
+    public Builder addAllListedDatabaseOperations(
         java.lang.Iterable<? extends com.google.longrunning.Operation> values) {
-      if (listedDatabaseOperationBuilder_ == null) {
-        ensureListedDatabaseOperationIsMutable();
+      if (listedDatabaseOperationsBuilder_ == null) {
+        ensureListedDatabaseOperationsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, listedDatabaseOperation_);
+            values, listedDatabaseOperations_);
         onChanged();
       } else {
-        listedDatabaseOperationBuilder_.addAllMessages(values);
+        listedDatabaseOperationsBuilder_.addAllMessages(values);
       }
       return this;
     }
@@ -1311,15 +1311,15 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public Builder clearListedDatabaseOperation() {
-      if (listedDatabaseOperationBuilder_ == null) {
-        listedDatabaseOperation_ = java.util.Collections.emptyList();
+    public Builder clearListedDatabaseOperations() {
+      if (listedDatabaseOperationsBuilder_ == null) {
+        listedDatabaseOperations_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
       } else {
-        listedDatabaseOperationBuilder_.clear();
+        listedDatabaseOperationsBuilder_.clear();
       }
       return this;
     }
@@ -1328,15 +1328,15 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public Builder removeListedDatabaseOperation(int index) {
-      if (listedDatabaseOperationBuilder_ == null) {
-        ensureListedDatabaseOperationIsMutable();
-        listedDatabaseOperation_.remove(index);
+    public Builder removeListedDatabaseOperations(int index) {
+      if (listedDatabaseOperationsBuilder_ == null) {
+        ensureListedDatabaseOperationsIsMutable();
+        listedDatabaseOperations_.remove(index);
         onChanged();
       } else {
-        listedDatabaseOperationBuilder_.remove(index);
+        listedDatabaseOperationsBuilder_.remove(index);
       }
       return this;
     }
@@ -1345,24 +1345,24 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public com.google.longrunning.Operation.Builder getListedDatabaseOperationBuilder(
+    public com.google.longrunning.Operation.Builder getListedDatabaseOperationsBuilder(
         int index) {
-      return getListedDatabaseOperationFieldBuilder().getBuilder(index);
+      return getListedDatabaseOperationsFieldBuilder().getBuilder(index);
     }
     /**
      * <pre>
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public com.google.longrunning.OperationOrBuilder getListedDatabaseOperationOrBuilder(
+    public com.google.longrunning.OperationOrBuilder getListedDatabaseOperationsOrBuilder(
         int index) {
-      if (listedDatabaseOperationBuilder_ == null) {
-        return listedDatabaseOperation_.get(index);  } else {
-        return listedDatabaseOperationBuilder_.getMessageOrBuilder(index);
+      if (listedDatabaseOperationsBuilder_ == null) {
+        return listedDatabaseOperations_.get(index);  } else {
+        return listedDatabaseOperationsBuilder_.getMessageOrBuilder(index);
       }
     }
     /**
@@ -1370,14 +1370,14 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
     public java.util.List<? extends com.google.longrunning.OperationOrBuilder> 
-         getListedDatabaseOperationOrBuilderList() {
-      if (listedDatabaseOperationBuilder_ != null) {
-        return listedDatabaseOperationBuilder_.getMessageOrBuilderList();
+         getListedDatabaseOperationsOrBuilderList() {
+      if (listedDatabaseOperationsBuilder_ != null) {
+        return listedDatabaseOperationsBuilder_.getMessageOrBuilderList();
       } else {
-        return java.util.Collections.unmodifiableList(listedDatabaseOperation_);
+        return java.util.Collections.unmodifiableList(listedDatabaseOperations_);
       }
     }
     /**
@@ -1385,10 +1385,10 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public com.google.longrunning.Operation.Builder addListedDatabaseOperationBuilder() {
-      return getListedDatabaseOperationFieldBuilder().addBuilder(
+    public com.google.longrunning.Operation.Builder addListedDatabaseOperationsBuilder() {
+      return getListedDatabaseOperationsFieldBuilder().addBuilder(
           com.google.longrunning.Operation.getDefaultInstance());
     }
     /**
@@ -1396,11 +1396,11 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
-    public com.google.longrunning.Operation.Builder addListedDatabaseOperationBuilder(
+    public com.google.longrunning.Operation.Builder addListedDatabaseOperationsBuilder(
         int index) {
-      return getListedDatabaseOperationFieldBuilder().addBuilder(
+      return getListedDatabaseOperationsFieldBuilder().addBuilder(
           index, com.google.longrunning.Operation.getDefaultInstance());
     }
     /**
@@ -1408,25 +1408,25 @@ private static final long serialVersionUID = 0L;
      * List of operations returned by ListCloudDatabaseOperationsAction.
      * </pre>
      *
-     * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+     * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
      */
     public java.util.List<com.google.longrunning.Operation.Builder> 
-         getListedDatabaseOperationBuilderList() {
-      return getListedDatabaseOperationFieldBuilder().getBuilderList();
+         getListedDatabaseOperationsBuilderList() {
+      return getListedDatabaseOperationsFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilderV3<
         com.google.longrunning.Operation, com.google.longrunning.Operation.Builder, com.google.longrunning.OperationOrBuilder> 
-        getListedDatabaseOperationFieldBuilder() {
-      if (listedDatabaseOperationBuilder_ == null) {
-        listedDatabaseOperationBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+        getListedDatabaseOperationsFieldBuilder() {
+      if (listedDatabaseOperationsBuilder_ == null) {
+        listedDatabaseOperationsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
             com.google.longrunning.Operation, com.google.longrunning.Operation.Builder, com.google.longrunning.OperationOrBuilder>(
-                listedDatabaseOperation_,
+                listedDatabaseOperations_,
                 ((bitField0_ & 0x00000002) != 0),
                 getParentForChildren(),
                 isClean());
-        listedDatabaseOperation_ = null;
+        listedDatabaseOperations_ = null;
       }
-      return listedDatabaseOperationBuilder_;
+      return listedDatabaseOperationsBuilder_;
     }
 
     private java.lang.Object nextPageToken_ = "";
