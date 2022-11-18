@@ -72,6 +72,7 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.instance.v1.Instance.State;
 import com.google.spanner.executor.v1.AdminAction;
 import com.google.spanner.executor.v1.AdminResult;
+import com.google.spanner.executor.v1.BatchDmlAction;
 import com.google.spanner.executor.v1.CancelOperationAction;
 import com.google.spanner.executor.v1.CloudBackupResponse;
 import com.google.spanner.executor.v1.CloudDatabaseResponse;
@@ -83,6 +84,7 @@ import com.google.spanner.executor.v1.CreateCloudDatabaseAction;
 import com.google.spanner.executor.v1.CreateCloudInstanceAction;
 import com.google.spanner.executor.v1.DeleteCloudBackupAction;
 import com.google.spanner.executor.v1.DeleteCloudInstanceAction;
+import com.google.spanner.executor.v1.DmlAction;
 import com.google.spanner.executor.v1.DropCloudDatabaseAction;
 import com.google.spanner.executor.v1.GetCloudBackupAction;
 import com.google.spanner.executor.v1.GetCloudDatabaseAction;
@@ -99,6 +101,7 @@ import com.google.spanner.executor.v1.MutationAction.InsertArgs;
 import com.google.spanner.executor.v1.MutationAction.Mod;
 import com.google.spanner.executor.v1.MutationAction.UpdateArgs;
 import com.google.spanner.executor.v1.OperationResponse;
+import com.google.spanner.executor.v1.QueryAction;
 import com.google.spanner.executor.v1.RestoreCloudDatabaseAction;
 import com.google.spanner.executor.v1.UpdateCloudBackupAction;
 import com.google.spanner.executor.v1.UpdateCloudDatabaseDdlAction;
@@ -124,6 +127,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -180,7 +184,7 @@ public class CloudClientExecutor extends CloudExecutor {
    * If the underlying Spanner transaction aborted, the transaction runner will invoke the callable
    * again.
    */
-  private class ReadWriteTransaction {
+  private static class ReadWriteTransaction {
     private final DatabaseClient dbClient;
     private TransactionRunner runner;
     private TransactionContext txnContext;
@@ -245,8 +249,7 @@ public class CloudClientExecutor extends CloudExecutor {
       notifyAll();
     }
 
-    /** Return the commit timestamp.
-     * @return*/
+    /** Return the commit timestamp. */
     public synchronized com.google.protobuf.Timestamp getTimestamp() {
       return timestamp;
     }
@@ -454,11 +457,6 @@ public class CloudClientExecutor extends CloudExecutor {
       return dbPath;
     }
 
-    /** Set the metadata for future use. */
-    public synchronized void setMetadata(Metadata metadata) {
-      this.metadata = metadata;
-    }
-
     /** Start a read-only transaction. */
     public synchronized void startReadOnlyTxn(
         DatabaseClient dbClient, TimestampBound timestampBound, Metadata metadata) {
@@ -521,13 +519,6 @@ public class CloudClientExecutor extends CloudExecutor {
       numPendingReads = 0;
     }
 
-    /** Return a list of column types of the given table. */
-    public List<com.google.spanner.v1.Type> getColumnTypes(String tableName)
-        throws SpannerException {
-      Preconditions.checkNotNull(metadata);
-      return metadata.getColumnTypes(tableName);
-    }
-
     /** Return a list of key column types of the given table. */
     public List<com.google.spanner.v1.Type> getKeyColumnTypes(String tableName)
         throws SpannerException {
@@ -547,10 +538,15 @@ public class CloudClientExecutor extends CloudExecutor {
       getTransactionForWrite().buffer(mutations);
     }
 
-    /** Execute an update in a read-write transaction. */
-    public synchronized Long executeUpdate(Statement stmt) throws SpannerException {
-      LOGGER.log(Level.INFO, "executeUpdate: %s", stmt.toString());
-      return getTransactionForWrite().executeUpdate(stmt);
+    /** Execute a batch of updates in a read-write transaction. */
+    public synchronized long[] executeBatchDml(@NotNull List<Statement> stmts)
+        throws SpannerException {
+      for (int i = 0; i < stmts.size(); i++) {
+        LOGGER.log(
+            Level.INFO, String.format("executeBatchDml [%d]: %s", i + 1, stmts.get(i).toString()));
+      }
+      return getTransactionForWrite()
+          .batchUpdate(stmts, Options.tag("batch-update-transaction-tag"));
     }
 
     /** Finish active transaction in given finishMode, then send outcome back to client. */
@@ -751,6 +747,12 @@ public class CloudClientExecutor extends CloudExecutor {
         return executeMutation(action.getMutation(), outcomeSender, executionContext);
       } else if (action.hasRead()) {
         return executeRead(action.getRead(), outcomeSender, executionContext);
+      } else if (action.hasQuery()) {
+        return executeQuery(action.getQuery(), outcomeSender, executionContext);
+      } else if (action.hasDml()) {
+        return executeCloudDmlUpdate(action.getDml(), outcomeSender, executionContext);
+      } else if (action.hasBatchDml()) {
+        return executeCloudBatchDmlUpdates(action.getBatchDml(), outcomeSender, executionContext);
       } else {
         return Status.fromThrowable(
             SpannerExceptionFactory.newSpannerException(
@@ -1786,6 +1788,108 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
+  /** Execute a query action request, store the results in the OutcomeSender. */
+  private Status executeQuery(
+      QueryAction action, OutcomeSender sender, ExecutionFlowContext executionContext) {
+    try {
+      LOGGER.log(
+          Level.INFO,
+          String.format("Executing query %s\n%s\n", executionContext.getTransactionSeed(), action));
+      ReadContext txn = executionContext.getTransactionForRead();
+      sender.initForQuery();
+
+      Statement.Builder stmt = Statement.newBuilder(action.getSql());
+      for (int i = 0; i < action.getParamsCount(); ++i) {
+        stmt.bind(action.getParams(i).getName())
+            .to(
+                valueProtoToCloudValue(
+                    action.getParams(i).getType(), action.getParams(i).getValue()));
+      }
+
+      executionContext.startRead();
+      LOGGER.log(
+          Level.INFO,
+          String.format(
+              "Finish query building, ready to execute %s\n",
+              executionContext.getTransactionSeed()));
+      ResultSet result = txn.executeQuery(stmt.build(), Options.tag("query-tag"));
+      LOGGER.log(
+          Level.INFO,
+          String.format("Parsing query result %s\n", executionContext.getTransactionSeed()));
+      return processResults(result, 0, sender, executionContext);
+    } catch (SpannerException e) {
+      return sender.finishWithError(toStatus(e));
+    }
+  }
+
+  /** Execute a dml update action request, store the results in the OutcomeSender. */
+  private Status executeCloudDmlUpdate(
+      DmlAction action, OutcomeSender sender, ExecutionFlowContext executionContext) {
+    try {
+      LOGGER.log(
+          Level.INFO,
+          String.format(
+              "Executing Dml update %s\n%s\n", executionContext.getTransactionSeed(), action));
+      QueryAction update = action.getUpdate();
+      Statement.Builder stmt = Statement.newBuilder(update.getSql());
+      for (int i = 0; i < update.getParamsCount(); ++i) {
+        stmt.bind(update.getParams(i).getName())
+            .to(
+                valueProtoToCloudValue(
+                    update.getParams(i).getType(), update.getParams(i).getValue()));
+      }
+      sender.initForQuery();
+      ResultSet result =
+          executionContext
+              .getTransactionForWrite()
+              .executeQuery(stmt.build(), Options.tag("dml-transaction-tag"));
+      LOGGER.log(
+          Level.INFO,
+          String.format("Parsing Dml result %s\n", executionContext.getTransactionSeed()));
+      return processResults(result, 0, sender, executionContext, true);
+    } catch (SpannerException e) {
+      return sender.finishWithError(toStatus(e));
+    }
+  }
+
+  /** Execute a BatchDml update action request, store the results in the OutcomeSender. */
+  private Status executeCloudBatchDmlUpdates(
+      BatchDmlAction action, OutcomeSender sender, ExecutionFlowContext executionContext) {
+    try {
+      List<Statement> queries = new ArrayList<>();
+      for (int i = 0; i < action.getUpdatesCount(); ++i) {
+        LOGGER.log(
+            Level.INFO,
+            String.format(
+                "Executing BatchDml update [%d] %s\n%s\n",
+                i + 1, executionContext.getTransactionSeed(), action));
+        QueryAction update = action.getUpdates(i);
+        Statement.Builder stmt = Statement.newBuilder(update.getSql());
+        for (int j = 0; j < update.getParamsCount(); ++j) {
+          stmt.bind(update.getParams(i).getName())
+              .to(
+                  valueProtoToCloudValue(
+                      update.getParams(i).getType(), update.getParams(i).getValue()));
+        }
+        queries.add(stmt.build());
+      }
+      long[] rowCounts = executionContext.executeBatchDml(queries);
+      sender.initForQuery();
+      for (long rowCount : rowCounts) {
+        sender.appendRowsModifiedInDml(rowCount);
+      }
+      // The batchDml request failed. By design, `rowCounts` contains rows
+      // modified for DML queries that succeeded only. Add 0 as the row count
+      // for the last executed DML in the batch (that failed).
+      if (rowCounts.length != queries.size()) {
+        sender.appendRowsModifiedInDml(0L);
+      }
+      return sender.finishWithOK();
+    } catch (SpannerException e) {
+      return sender.finishWithError(toStatus(e));
+    }
+  }
+
   /** Process a ResultSet from a read/query and store the results in the OutcomeSender. */
   private Status processResults(
       ResultSet results, int limit, OutcomeSender sender, ExecutionFlowContext executionContext) {
@@ -1812,7 +1916,10 @@ public class CloudClientExecutor extends CloudExecutor {
         LOGGER.log(
             Level.INFO,
             String.format("Appending row: %s\n", executionContext.getTransactionSeed()));
-        sender.appendRow(row);
+        Status appendStatus = sender.appendRow(row);
+        if (!appendStatus.isOk()) {
+          return appendStatus;
+        }
         ++rowCount;
         if (limit > 0 && rowCount >= limit) {
           LOGGER.log(Level.INFO, "Stopping at row limit: " + limit);
@@ -1820,7 +1927,8 @@ public class CloudClientExecutor extends CloudExecutor {
         }
       }
       if (isDml) {
-        sender.appendRowsModifiedInDml(results.getStats().getRowCountExact());
+        sender.appendRowsModifiedInDml(
+            Objects.requireNonNull(results.getStats()).getRowCountExact());
       }
 
       LOGGER.log(
@@ -2632,16 +2740,6 @@ public class CloudClientExecutor extends CloudExecutor {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT, "Unsupported cloud type: " + cloudTypeProto);
     }
-  }
-
-  private ByteString toByteString(String str) {
-    return ByteString.copyFrom(str.getBytes());
-  }
-
-  /** Convert Timestamp to micros. */
-  private long timestampToMicros(Timestamp ts) {
-    return TimeUnit.SECONDS.toMicros(ts.getSeconds())
-        + TimeUnit.NANOSECONDS.toMicros(ts.getNanos());
   }
 
   /** Build Timestamp from micros. */

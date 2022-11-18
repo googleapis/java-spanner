@@ -16,22 +16,17 @@
 
 package com.google.cloud.executor.spanner;
 
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.gson.GsonFactory;
-import com.google.auth.http.HttpTransportFactory;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.common.base.Preconditions;
+import com.google.spanner.executor.v1.QueryResult;
 import com.google.spanner.v1.StructType;
 import com.google.protobuf.Timestamp;
-import com.google.protobuf.util.Timestamps;
 import com.google.spanner.executor.v1.ColumnMetadata;
 import com.google.spanner.executor.v1.ReadResult;
 import com.google.spanner.executor.v1.SpannerActionOutcome;
 import com.google.spanner.executor.v1.TableMetadata;
-import com.google.spanner.executor.v1.SpannerAsyncActionRequest;
 import com.google.spanner.executor.v1.SpannerAsyncActionResponse;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -52,11 +47,6 @@ public abstract class CloudExecutor {
   protected static final Pattern DB_NAME =
       Pattern.compile(
           "projects/([A-Za-z0-9-_]+)/instances/([A-Za-z0-9-_]+)/databases/([A-Za-z0-9-_]+)");
-
-  // Pattern for a backup name: projects/<project>/instances/<instance>/backups/<backup>
-  protected static final Pattern BACKUP_NAME =
-      Pattern.compile(
-          "projects/([A-Za-z0-9-_]+)/instances/([A-Za-z0-9-_]+)/backups/([A-Za-z0-9-_]+)");
 
   // Project id.
   protected static final String PROJECT_ID = "spanner-cloud-systest";
@@ -88,21 +78,6 @@ public abstract class CloudExecutor {
           tableColumnsByName.get(tableName).put(column.getName(), column);
         }
       }
-    }
-
-    /** Return a list of column types of the given table. */
-    public List<com.google.spanner.v1.Type> getColumnTypes(String tableName)
-        throws SpannerException {
-      if (!tableColumnsInOrder.containsKey(tableName)) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT, "There is no metadata for table: " + tableName);
-      }
-      List<com.google.spanner.v1.Type> typeList = new ArrayList<>();
-      List<ColumnMetadata> columns = tableColumnsInOrder.get(tableName);
-      for (ColumnMetadata column : columns) {
-        typeList.add(column.getType());
-      }
-      return typeList;
     }
 
     public List<com.google.spanner.v1.Type> getKeyColumnTypes(String tableName)
@@ -152,17 +127,17 @@ public abstract class CloudExecutor {
     private boolean hasQueryResult;
     private String table;
     private String index;
-    private final Integer requestIndex;
     private StructType rowType;
 
     // PartialOutcome accumulates rows and relevant information.
     private SpannerActionOutcome.Builder partialOutcomeBuilder;
     private ReadResult.Builder readResultBuilder;
+    private QueryResult.Builder queryResultBuilder;
 
     // Current row count in Read/Query result.
     private int rowCount;
     // Modified row count in DML result.
-    private final List<Long> rowsModified = new ArrayList<Long>();
+    private final List<Long> rowsModified = new ArrayList<>();
 
     // If row count exceed this value, we should send rows back in batch.
     private static final int MAX_ROWS_PER_BATCH = 100;
@@ -172,7 +147,6 @@ public abstract class CloudExecutor {
       this.actionId = actionId;
       this.responseObserver = responseObserver;
       this.index = null;
-      this.requestIndex = null;
       this.rowType = null;
     }
 
@@ -195,6 +169,12 @@ public abstract class CloudExecutor {
       }
     }
 
+    /** Init the sender for query action. */
+    public void initForQuery() {
+      this.hasQueryResult = true;
+    }
+
+    /** Append number of modified rows in DML to result. */
     public void appendRowsModifiedInDml(Long rowsModified) {
       this.rowsModified.add(rowsModified);
     }
@@ -240,6 +220,9 @@ public abstract class CloudExecutor {
       if (hasReadResult) {
         readResultBuilder.addRow(row);
         ++rowCount;
+      } else if (hasQueryResult) {
+        queryResultBuilder.addRow(row);
+        ++rowCount;
       }
       if (rowCount >= MAX_ROWS_PER_BATCH) {
         return flush();
@@ -260,11 +243,13 @@ public abstract class CloudExecutor {
         if (index != null) {
           readResultBuilder.setIndex(index);
         }
-        if (requestIndex != null) {
-          readResultBuilder.setRequestIndex(requestIndex);
-        }
         if (rowType != null) {
           readResultBuilder.setRowType(rowType);
+        }
+      } else if (hasQueryResult) {
+        queryResultBuilder = QueryResult.newBuilder();
+        if (rowType != null) {
+          queryResultBuilder.setRowType(rowType);
         }
       }
     }
@@ -272,12 +257,18 @@ public abstract class CloudExecutor {
     /** Send partialOutcome to stream and clear the internal state. */
     private Status flush() {
       Preconditions.checkNotNull(partialOutcomeBuilder);
+      for (Long rowCount : rowsModified) {
+        partialOutcomeBuilder.addDmlRowsModified(rowCount);
+      }
       if (hasReadResult) {
         partialOutcomeBuilder.setReadResult(readResultBuilder.build());
+      } else if (hasQueryResult) {
+        partialOutcomeBuilder.setQueryResult(queryResultBuilder.build());
       }
       Status status = sendOutcome(partialOutcomeBuilder.build());
       partialOutcomeBuilder = null;
       readResultBuilder = null;
+      queryResultBuilder = null;
       rowCount = 0;
       rowsModified.clear();
       return status;
@@ -350,17 +341,5 @@ public abstract class CloudExecutor {
         .setCode(status.getCode().value())
         .setMessage(status.getDescription() == null ? "" : status.getDescription())
         .build();
-  }
-
-  /**
-   * Converts timestamp microseconds to query-friendly timestamp string. If useNanosPrecision is set
-   * to true it pads input timestamp with 3 random digits treating it as timestamp nanoseconds.
-   */
-  protected static String timestampToString(boolean useNanosPrecision, long timestampInMicros) {
-    Timestamp timestamp =
-        useNanosPrecision
-            ? Timestamps.fromNanos(timestampInMicros * 1000 + System.nanoTime() % 1000)
-            : Timestamps.fromMicros(timestampInMicros);
-    return String.format("\"%s\"", Timestamps.toString(timestamp));
   }
 }

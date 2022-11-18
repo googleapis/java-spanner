@@ -19,8 +19,6 @@ package com.google.cloud.executor.spanner;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.common.net.HostAndPort;
-import io.grpc.Channel;
-import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.InternalNettyChannelBuilder;
@@ -41,8 +39,6 @@ import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.TransportChannel;
 import com.google.api.gax.rpc.TransportChannelProvider;
-import com.google.cloud.spanner.connection.ConnectionOptions.ExternalChannelProvider;
-import com.google.common.base.Strings;
 
 public class CloudUtil {
 

@@ -21,8 +21,7 @@ package com.google.spanner.executor.v1;
 
 /**
  * <pre>
- * ReadResult contains rows read. If it's a result of a multiread, each
- * ReadResult's rows belong to a single multiread request.
+ * ReadResult contains rows read.
  * </pre>
  *
  * Protobuf type {@code google.spanner.executor.v1.ReadResult}
@@ -85,23 +84,18 @@ private static final long serialVersionUID = 0L;
             index_ = s;
             break;
           }
-          case 24: {
-            bitField0_ |= 0x00000002;
-            requestIndex_ = input.readInt32();
-            break;
-          }
-          case 34: {
-            if (!((mutable_bitField0_ & 0x00000004) != 0)) {
+          case 26: {
+            if (!((mutable_bitField0_ & 0x00000002) != 0)) {
               row_ = new java.util.ArrayList<com.google.spanner.executor.v1.ValueList>();
-              mutable_bitField0_ |= 0x00000004;
+              mutable_bitField0_ |= 0x00000002;
             }
             row_.add(
                 input.readMessage(com.google.spanner.executor.v1.ValueList.parser(), extensionRegistry));
             break;
           }
-          case 42: {
+          case 34: {
             com.google.spanner.v1.StructType.Builder subBuilder = null;
-            if (((bitField0_ & 0x00000004) != 0)) {
+            if (((bitField0_ & 0x00000002) != 0)) {
               subBuilder = rowType_.toBuilder();
             }
             rowType_ = input.readMessage(com.google.spanner.v1.StructType.parser(), extensionRegistry);
@@ -109,7 +103,7 @@ private static final long serialVersionUID = 0L;
               subBuilder.mergeFrom(rowType_);
               rowType_ = subBuilder.buildPartial();
             }
-            bitField0_ |= 0x00000004;
+            bitField0_ |= 0x00000002;
             break;
           }
           default: {
@@ -129,7 +123,7 @@ private static final long serialVersionUID = 0L;
       throw new com.google.protobuf.InvalidProtocolBufferException(
           e).setUnfinishedMessage(this);
     } finally {
-      if (((mutable_bitField0_ & 0x00000004) != 0)) {
+      if (((mutable_bitField0_ & 0x00000002) != 0)) {
         row_ = java.util.Collections.unmodifiableList(row_);
       }
       this.unknownFields = unknownFields.build();
@@ -254,34 +248,7 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int REQUEST_INDEX_FIELD_NUMBER = 3;
-  private int requestIndex_;
-  /**
-   * <pre>
-   * Request index (multiread only).
-   * </pre>
-   *
-   * <code>optional int32 request_index = 3;</code>
-   * @return Whether the requestIndex field is set.
-   */
-  @java.lang.Override
-  public boolean hasRequestIndex() {
-    return ((bitField0_ & 0x00000002) != 0);
-  }
-  /**
-   * <pre>
-   * Request index (multiread only).
-   * </pre>
-   *
-   * <code>optional int32 request_index = 3;</code>
-   * @return The requestIndex.
-   */
-  @java.lang.Override
-  public int getRequestIndex() {
-    return requestIndex_;
-  }
-
-  public static final int ROW_FIELD_NUMBER = 4;
+  public static final int ROW_FIELD_NUMBER = 3;
   private java.util.List<com.google.spanner.executor.v1.ValueList> row_;
   /**
    * <pre>
@@ -289,7 +256,7 @@ private static final long serialVersionUID = 0L;
    * in read result. All rows have the same type.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+   * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
    */
   @java.lang.Override
   public java.util.List<com.google.spanner.executor.v1.ValueList> getRowList() {
@@ -301,7 +268,7 @@ private static final long serialVersionUID = 0L;
    * in read result. All rows have the same type.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+   * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
    */
   @java.lang.Override
   public java.util.List<? extends com.google.spanner.executor.v1.ValueListOrBuilder> 
@@ -314,7 +281,7 @@ private static final long serialVersionUID = 0L;
    * in read result. All rows have the same type.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+   * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
    */
   @java.lang.Override
   public int getRowCount() {
@@ -326,7 +293,7 @@ private static final long serialVersionUID = 0L;
    * in read result. All rows have the same type.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+   * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.ValueList getRow(int index) {
@@ -338,7 +305,7 @@ private static final long serialVersionUID = 0L;
    * in read result. All rows have the same type.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+   * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.ValueListOrBuilder getRowOrBuilder(
@@ -346,26 +313,26 @@ private static final long serialVersionUID = 0L;
     return row_.get(index);
   }
 
-  public static final int ROW_TYPE_FIELD_NUMBER = 5;
+  public static final int ROW_TYPE_FIELD_NUMBER = 4;
   private com.google.spanner.v1.StructType rowType_;
   /**
    * <pre>
    * The type of rows read. It must be set if at least one row was read.
    * </pre>
    *
-   * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
+   * <code>optional .google.spanner.v1.StructType row_type = 4;</code>
    * @return Whether the rowType field is set.
    */
   @java.lang.Override
   public boolean hasRowType() {
-    return ((bitField0_ & 0x00000004) != 0);
+    return ((bitField0_ & 0x00000002) != 0);
   }
   /**
    * <pre>
    * The type of rows read. It must be set if at least one row was read.
    * </pre>
    *
-   * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
+   * <code>optional .google.spanner.v1.StructType row_type = 4;</code>
    * @return The rowType.
    */
   @java.lang.Override
@@ -377,7 +344,7 @@ private static final long serialVersionUID = 0L;
    * The type of rows read. It must be set if at least one row was read.
    * </pre>
    *
-   * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
+   * <code>optional .google.spanner.v1.StructType row_type = 4;</code>
    */
   @java.lang.Override
   public com.google.spanner.v1.StructTypeOrBuilder getRowTypeOrBuilder() {
@@ -404,14 +371,11 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000001) != 0)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, index_);
     }
-    if (((bitField0_ & 0x00000002) != 0)) {
-      output.writeInt32(3, requestIndex_);
-    }
     for (int i = 0; i < row_.size(); i++) {
-      output.writeMessage(4, row_.get(i));
+      output.writeMessage(3, row_.get(i));
     }
-    if (((bitField0_ & 0x00000004) != 0)) {
-      output.writeMessage(5, getRowType());
+    if (((bitField0_ & 0x00000002) != 0)) {
+      output.writeMessage(4, getRowType());
     }
     unknownFields.writeTo(output);
   }
@@ -428,17 +392,13 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, index_);
     }
-    if (((bitField0_ & 0x00000002) != 0)) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(3, requestIndex_);
-    }
     for (int i = 0; i < row_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(4, row_.get(i));
+        .computeMessageSize(3, row_.get(i));
     }
-    if (((bitField0_ & 0x00000004) != 0)) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(5, getRowType());
+        .computeMessageSize(4, getRowType());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -461,11 +421,6 @@ private static final long serialVersionUID = 0L;
     if (hasIndex()) {
       if (!getIndex()
           .equals(other.getIndex())) return false;
-    }
-    if (hasRequestIndex() != other.hasRequestIndex()) return false;
-    if (hasRequestIndex()) {
-      if (getRequestIndex()
-          != other.getRequestIndex()) return false;
     }
     if (!getRowList()
         .equals(other.getRowList())) return false;
@@ -490,10 +445,6 @@ private static final long serialVersionUID = 0L;
     if (hasIndex()) {
       hash = (37 * hash) + INDEX_FIELD_NUMBER;
       hash = (53 * hash) + getIndex().hashCode();
-    }
-    if (hasRequestIndex()) {
-      hash = (37 * hash) + REQUEST_INDEX_FIELD_NUMBER;
-      hash = (53 * hash) + getRequestIndex();
     }
     if (getRowCount() > 0) {
       hash = (37 * hash) + ROW_FIELD_NUMBER;
@@ -600,8 +551,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * ReadResult contains rows read. If it's a result of a multiread, each
-   * ReadResult's rows belong to a single multiread request.
+   * ReadResult contains rows read.
    * </pre>
    *
    * Protobuf type {@code google.spanner.executor.v1.ReadResult}
@@ -647,11 +597,9 @@ private static final long serialVersionUID = 0L;
 
       index_ = "";
       bitField0_ = (bitField0_ & ~0x00000001);
-      requestIndex_ = 0;
-      bitField0_ = (bitField0_ & ~0x00000002);
       if (rowBuilder_ == null) {
         row_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
       } else {
         rowBuilder_.clear();
       }
@@ -660,7 +608,7 @@ private static final long serialVersionUID = 0L;
       } else {
         rowTypeBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00000008);
+      bitField0_ = (bitField0_ & ~0x00000004);
       return this;
     }
 
@@ -694,26 +642,22 @@ private static final long serialVersionUID = 0L;
         to_bitField0_ |= 0x00000001;
       }
       result.index_ = index_;
-      if (((from_bitField0_ & 0x00000002) != 0)) {
-        result.requestIndex_ = requestIndex_;
-        to_bitField0_ |= 0x00000002;
-      }
       if (rowBuilder_ == null) {
-        if (((bitField0_ & 0x00000004) != 0)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           row_ = java.util.Collections.unmodifiableList(row_);
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.row_ = row_;
       } else {
         result.row_ = rowBuilder_.build();
       }
-      if (((from_bitField0_ & 0x00000008) != 0)) {
+      if (((from_bitField0_ & 0x00000004) != 0)) {
         if (rowTypeBuilder_ == null) {
           result.rowType_ = rowType_;
         } else {
           result.rowType_ = rowTypeBuilder_.build();
         }
-        to_bitField0_ |= 0x00000004;
+        to_bitField0_ |= 0x00000002;
       }
       result.bitField0_ = to_bitField0_;
       onBuilt();
@@ -773,14 +717,11 @@ private static final long serialVersionUID = 0L;
         index_ = other.index_;
         onChanged();
       }
-      if (other.hasRequestIndex()) {
-        setRequestIndex(other.getRequestIndex());
-      }
       if (rowBuilder_ == null) {
         if (!other.row_.isEmpty()) {
           if (row_.isEmpty()) {
             row_ = other.row_;
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureRowIsMutable();
             row_.addAll(other.row_);
@@ -793,7 +734,7 @@ private static final long serialVersionUID = 0L;
             rowBuilder_.dispose();
             rowBuilder_ = null;
             row_ = other.row_;
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000002);
             rowBuilder_ = 
               com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                  getRowFieldBuilder() : null;
@@ -1038,67 +979,12 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private int requestIndex_ ;
-    /**
-     * <pre>
-     * Request index (multiread only).
-     * </pre>
-     *
-     * <code>optional int32 request_index = 3;</code>
-     * @return Whether the requestIndex field is set.
-     */
-    @java.lang.Override
-    public boolean hasRequestIndex() {
-      return ((bitField0_ & 0x00000002) != 0);
-    }
-    /**
-     * <pre>
-     * Request index (multiread only).
-     * </pre>
-     *
-     * <code>optional int32 request_index = 3;</code>
-     * @return The requestIndex.
-     */
-    @java.lang.Override
-    public int getRequestIndex() {
-      return requestIndex_;
-    }
-    /**
-     * <pre>
-     * Request index (multiread only).
-     * </pre>
-     *
-     * <code>optional int32 request_index = 3;</code>
-     * @param value The requestIndex to set.
-     * @return This builder for chaining.
-     */
-    public Builder setRequestIndex(int value) {
-      bitField0_ |= 0x00000002;
-      requestIndex_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * Request index (multiread only).
-     * </pre>
-     *
-     * <code>optional int32 request_index = 3;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearRequestIndex() {
-      bitField0_ = (bitField0_ & ~0x00000002);
-      requestIndex_ = 0;
-      onChanged();
-      return this;
-    }
-
     private java.util.List<com.google.spanner.executor.v1.ValueList> row_ =
       java.util.Collections.emptyList();
     private void ensureRowIsMutable() {
-      if (!((bitField0_ & 0x00000004) != 0)) {
+      if (!((bitField0_ & 0x00000002) != 0)) {
         row_ = new java.util.ArrayList<com.google.spanner.executor.v1.ValueList>(row_);
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000002;
        }
     }
 
@@ -1111,7 +997,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public java.util.List<com.google.spanner.executor.v1.ValueList> getRowList() {
       if (rowBuilder_ == null) {
@@ -1126,7 +1012,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public int getRowCount() {
       if (rowBuilder_ == null) {
@@ -1141,7 +1027,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public com.google.spanner.executor.v1.ValueList getRow(int index) {
       if (rowBuilder_ == null) {
@@ -1156,7 +1042,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public Builder setRow(
         int index, com.google.spanner.executor.v1.ValueList value) {
@@ -1178,7 +1064,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public Builder setRow(
         int index, com.google.spanner.executor.v1.ValueList.Builder builderForValue) {
@@ -1197,7 +1083,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public Builder addRow(com.google.spanner.executor.v1.ValueList value) {
       if (rowBuilder_ == null) {
@@ -1218,7 +1104,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public Builder addRow(
         int index, com.google.spanner.executor.v1.ValueList value) {
@@ -1240,7 +1126,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public Builder addRow(
         com.google.spanner.executor.v1.ValueList.Builder builderForValue) {
@@ -1259,7 +1145,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public Builder addRow(
         int index, com.google.spanner.executor.v1.ValueList.Builder builderForValue) {
@@ -1278,7 +1164,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public Builder addAllRow(
         java.lang.Iterable<? extends com.google.spanner.executor.v1.ValueList> values) {
@@ -1298,12 +1184,12 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public Builder clearRow() {
       if (rowBuilder_ == null) {
         row_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
       } else {
         rowBuilder_.clear();
@@ -1316,7 +1202,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public Builder removeRow(int index) {
       if (rowBuilder_ == null) {
@@ -1334,7 +1220,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public com.google.spanner.executor.v1.ValueList.Builder getRowBuilder(
         int index) {
@@ -1346,7 +1232,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public com.google.spanner.executor.v1.ValueListOrBuilder getRowOrBuilder(
         int index) {
@@ -1361,7 +1247,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public java.util.List<? extends com.google.spanner.executor.v1.ValueListOrBuilder> 
          getRowOrBuilderList() {
@@ -1377,7 +1263,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public com.google.spanner.executor.v1.ValueList.Builder addRowBuilder() {
       return getRowFieldBuilder().addBuilder(
@@ -1389,7 +1275,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public com.google.spanner.executor.v1.ValueList.Builder addRowBuilder(
         int index) {
@@ -1402,7 +1288,7 @@ private static final long serialVersionUID = 0L;
      * in read result. All rows have the same type.
      * </pre>
      *
-     * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+     * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
      */
     public java.util.List<com.google.spanner.executor.v1.ValueList.Builder> 
          getRowBuilderList() {
@@ -1415,7 +1301,7 @@ private static final long serialVersionUID = 0L;
         rowBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
             com.google.spanner.executor.v1.ValueList, com.google.spanner.executor.v1.ValueList.Builder, com.google.spanner.executor.v1.ValueListOrBuilder>(
                 row_,
-                ((bitField0_ & 0x00000004) != 0),
+                ((bitField0_ & 0x00000002) != 0),
                 getParentForChildren(),
                 isClean());
         row_ = null;
@@ -1431,18 +1317,18 @@ private static final long serialVersionUID = 0L;
      * The type of rows read. It must be set if at least one row was read.
      * </pre>
      *
-     * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
+     * <code>optional .google.spanner.v1.StructType row_type = 4;</code>
      * @return Whether the rowType field is set.
      */
     public boolean hasRowType() {
-      return ((bitField0_ & 0x00000008) != 0);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <pre>
      * The type of rows read. It must be set if at least one row was read.
      * </pre>
      *
-     * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
+     * <code>optional .google.spanner.v1.StructType row_type = 4;</code>
      * @return The rowType.
      */
     public com.google.spanner.v1.StructType getRowType() {
@@ -1457,7 +1343,7 @@ private static final long serialVersionUID = 0L;
      * The type of rows read. It must be set if at least one row was read.
      * </pre>
      *
-     * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
+     * <code>optional .google.spanner.v1.StructType row_type = 4;</code>
      */
     public Builder setRowType(com.google.spanner.v1.StructType value) {
       if (rowTypeBuilder_ == null) {
@@ -1469,7 +1355,7 @@ private static final long serialVersionUID = 0L;
       } else {
         rowTypeBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000008;
+      bitField0_ |= 0x00000004;
       return this;
     }
     /**
@@ -1477,7 +1363,7 @@ private static final long serialVersionUID = 0L;
      * The type of rows read. It must be set if at least one row was read.
      * </pre>
      *
-     * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
+     * <code>optional .google.spanner.v1.StructType row_type = 4;</code>
      */
     public Builder setRowType(
         com.google.spanner.v1.StructType.Builder builderForValue) {
@@ -1487,7 +1373,7 @@ private static final long serialVersionUID = 0L;
       } else {
         rowTypeBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000008;
+      bitField0_ |= 0x00000004;
       return this;
     }
     /**
@@ -1495,11 +1381,11 @@ private static final long serialVersionUID = 0L;
      * The type of rows read. It must be set if at least one row was read.
      * </pre>
      *
-     * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
+     * <code>optional .google.spanner.v1.StructType row_type = 4;</code>
      */
     public Builder mergeRowType(com.google.spanner.v1.StructType value) {
       if (rowTypeBuilder_ == null) {
-        if (((bitField0_ & 0x00000008) != 0) &&
+        if (((bitField0_ & 0x00000004) != 0) &&
             rowType_ != null &&
             rowType_ != com.google.spanner.v1.StructType.getDefaultInstance()) {
           rowType_ =
@@ -1511,7 +1397,7 @@ private static final long serialVersionUID = 0L;
       } else {
         rowTypeBuilder_.mergeFrom(value);
       }
-      bitField0_ |= 0x00000008;
+      bitField0_ |= 0x00000004;
       return this;
     }
     /**
@@ -1519,7 +1405,7 @@ private static final long serialVersionUID = 0L;
      * The type of rows read. It must be set if at least one row was read.
      * </pre>
      *
-     * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
+     * <code>optional .google.spanner.v1.StructType row_type = 4;</code>
      */
     public Builder clearRowType() {
       if (rowTypeBuilder_ == null) {
@@ -1528,7 +1414,7 @@ private static final long serialVersionUID = 0L;
       } else {
         rowTypeBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00000008);
+      bitField0_ = (bitField0_ & ~0x00000004);
       return this;
     }
     /**
@@ -1536,10 +1422,10 @@ private static final long serialVersionUID = 0L;
      * The type of rows read. It must be set if at least one row was read.
      * </pre>
      *
-     * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
+     * <code>optional .google.spanner.v1.StructType row_type = 4;</code>
      */
     public com.google.spanner.v1.StructType.Builder getRowTypeBuilder() {
-      bitField0_ |= 0x00000008;
+      bitField0_ |= 0x00000004;
       onChanged();
       return getRowTypeFieldBuilder().getBuilder();
     }
@@ -1548,7 +1434,7 @@ private static final long serialVersionUID = 0L;
      * The type of rows read. It must be set if at least one row was read.
      * </pre>
      *
-     * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
+     * <code>optional .google.spanner.v1.StructType row_type = 4;</code>
      */
     public com.google.spanner.v1.StructTypeOrBuilder getRowTypeOrBuilder() {
       if (rowTypeBuilder_ != null) {
@@ -1563,7 +1449,7 @@ private static final long serialVersionUID = 0L;
      * The type of rows read. It must be set if at least one row was read.
      * </pre>
      *
-     * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
+     * <code>optional .google.spanner.v1.StructType row_type = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.spanner.v1.StructType, com.google.spanner.v1.StructType.Builder, com.google.spanner.v1.StructTypeOrBuilder> 
