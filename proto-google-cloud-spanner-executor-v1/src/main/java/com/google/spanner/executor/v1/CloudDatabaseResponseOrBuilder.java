@@ -72,43 +72,43 @@ public interface CloudDatabaseResponseOrBuilder extends
    * List of operations returned by ListCloudDatabaseOperationsAction.
    * </pre>
    *
-   * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+   * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
    */
   java.util.List<com.google.longrunning.Operation> 
-      getListedDatabaseOperationList();
+      getListedDatabaseOperationsList();
   /**
    * <pre>
    * List of operations returned by ListCloudDatabaseOperationsAction.
    * </pre>
    *
-   * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+   * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
    */
-  com.google.longrunning.Operation getListedDatabaseOperation(int index);
+  com.google.longrunning.Operation getListedDatabaseOperations(int index);
   /**
    * <pre>
    * List of operations returned by ListCloudDatabaseOperationsAction.
    * </pre>
    *
-   * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+   * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
    */
-  int getListedDatabaseOperationCount();
+  int getListedDatabaseOperationsCount();
   /**
    * <pre>
    * List of operations returned by ListCloudDatabaseOperationsAction.
    * </pre>
    *
-   * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+   * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
    */
   java.util.List<? extends com.google.longrunning.OperationOrBuilder> 
-      getListedDatabaseOperationOrBuilderList();
+      getListedDatabaseOperationsOrBuilderList();
   /**
    * <pre>
    * List of operations returned by ListCloudDatabaseOperationsAction.
    * </pre>
    *
-   * <code>repeated .google.longrunning.Operation listed_database_operation = 2;</code>
+   * <code>repeated .google.longrunning.Operation listed_database_operations = 2;</code>
    */
-  com.google.longrunning.OperationOrBuilder getListedDatabaseOperationOrBuilder(
+  com.google.longrunning.OperationOrBuilder getListedDatabaseOperationsOrBuilder(
       int index);
 
   /**

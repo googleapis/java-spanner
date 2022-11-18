@@ -368,6 +368,8 @@ public class CloudClientExecutor extends CloudExecutor {
     private ReadOnlyTransaction roTxn;
     // Current batch read-only transaction
     private BatchReadOnlyTransaction batchTxn;
+    // Current database client
+    private DatabaseClient dbClient;
     // Metadata info about table columns
     private Metadata metadata;
     // Number of pending read/query actions.
@@ -422,6 +424,11 @@ public class CloudClientExecutor extends CloudExecutor {
     /** Return current workid and op pair for logging. */
     public synchronized String getTransactionSeed() {
       return transactionSeed;
+    }
+
+    /** Return current database client. */
+    public DatabaseClient getDbClient() {
+      return dbClient;
     }
 
     /** Clear the transaction related variables. */
@@ -517,6 +524,11 @@ public class CloudClientExecutor extends CloudExecutor {
     public synchronized void initReadState() {
       readAborted = false;
       numPendingReads = 0;
+    }
+
+    /** Store the reference to the database client for future action use. */
+    public void setDatabaseClient(DatabaseClient client) {
+      dbClient = client;
     }
 
     /** Return a list of key column types of the given table. */
@@ -744,7 +756,8 @@ public class CloudClientExecutor extends CloudExecutor {
       } else if (action.hasFinish()) {
         return executeFinishTxn(action.getFinish(), outcomeSender, executionContext);
       } else if (action.hasMutation()) {
-        return executeMutation(action.getMutation(), outcomeSender, executionContext);
+        return executeMutation(
+            action.getMutation(), outcomeSender, executionContext, /*isWrite=*/ false);
       } else if (action.hasRead()) {
         return executeRead(action.getRead(), outcomeSender, executionContext);
       } else if (action.hasQuery()) {
@@ -753,6 +766,9 @@ public class CloudClientExecutor extends CloudExecutor {
         return executeCloudDmlUpdate(action.getDml(), outcomeSender, executionContext);
       } else if (action.hasBatchDml()) {
         return executeCloudBatchDmlUpdates(action.getBatchDml(), outcomeSender, executionContext);
+      } else if (action.hasWrite()) {
+        return executeMutation(
+            action.getWrite().getMutation(), outcomeSender, executionContext, /*isWrite=*/ true);
       } else {
         return Status.fromThrowable(
             SpannerExceptionFactory.newSpannerException(
@@ -1414,7 +1430,7 @@ public class CloudClientExecutor extends CloudExecutor {
                   AdminResult.newBuilder()
                       .setBackupResponse(
                           CloudBackupResponse.newBuilder()
-                              .addAllListedBackupOperation(response.getValues())
+                              .addAllListedBackupOperations(response.getValues())
                               .setNextPageToken(response.getNextPageToken())
                               .build()))
               .build();
@@ -1489,7 +1505,7 @@ public class CloudClientExecutor extends CloudExecutor {
                   AdminResult.newBuilder()
                       .setDatabaseResponse(
                           CloudDatabaseResponse.newBuilder()
-                              .addAllListedDatabaseOperation(response.getValues())
+                              .addAllListedDatabaseOperations(response.getValues())
                               .setNextPageToken(response.getNextPageToken())
                               .build()))
               .build();
@@ -1640,6 +1656,7 @@ public class CloudClientExecutor extends CloudExecutor {
             executionContext.getTransactionSeed());
         executionContext.startReadWriteTxn(dbClient, metadata);
       }
+      executionContext.setDatabaseClient(dbClient);
       executionContext.initReadState();
       return sender.finishWithOK();
     } catch (SpannerException e) {
@@ -1662,7 +1679,10 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute mutation action request and buffer the mutations. */
   private Status executeMutation(
-      MutationAction action, OutcomeSender sender, ExecutionFlowContext executionContext) {
+      MutationAction action,
+      OutcomeSender sender,
+      ExecutionFlowContext executionContext,
+      boolean isWrite) {
     String prevTable = "";
     try {
       for (int i = 0; i < action.getModCount(); ++i) {
@@ -1725,7 +1745,11 @@ public class CloudClientExecutor extends CloudExecutor {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INVALID_ARGUMENT, "Unsupported mod: " + mod);
         }
-        executionContext.bufferMutations(mutations);
+        if (!isWrite) {
+          executionContext.bufferMutations(mutations);
+        } else {
+          executionContext.getDbClient().write(mutations);
+        }
       }
       return sender.finishWithOK();
     } catch (SpannerException e) {

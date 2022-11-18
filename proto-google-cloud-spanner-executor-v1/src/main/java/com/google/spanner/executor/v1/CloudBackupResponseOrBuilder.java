@@ -72,43 +72,43 @@ public interface CloudBackupResponseOrBuilder extends
    * List of operations returned by ListCloudBackupOperationsAction.
    * </pre>
    *
-   * <code>repeated .google.longrunning.Operation listed_backup_operation = 2;</code>
+   * <code>repeated .google.longrunning.Operation listed_backup_operations = 2;</code>
    */
   java.util.List<com.google.longrunning.Operation> 
-      getListedBackupOperationList();
+      getListedBackupOperationsList();
   /**
    * <pre>
    * List of operations returned by ListCloudBackupOperationsAction.
    * </pre>
    *
-   * <code>repeated .google.longrunning.Operation listed_backup_operation = 2;</code>
+   * <code>repeated .google.longrunning.Operation listed_backup_operations = 2;</code>
    */
-  com.google.longrunning.Operation getListedBackupOperation(int index);
+  com.google.longrunning.Operation getListedBackupOperations(int index);
   /**
    * <pre>
    * List of operations returned by ListCloudBackupOperationsAction.
    * </pre>
    *
-   * <code>repeated .google.longrunning.Operation listed_backup_operation = 2;</code>
+   * <code>repeated .google.longrunning.Operation listed_backup_operations = 2;</code>
    */
-  int getListedBackupOperationCount();
+  int getListedBackupOperationsCount();
   /**
    * <pre>
    * List of operations returned by ListCloudBackupOperationsAction.
    * </pre>
    *
-   * <code>repeated .google.longrunning.Operation listed_backup_operation = 2;</code>
+   * <code>repeated .google.longrunning.Operation listed_backup_operations = 2;</code>
    */
   java.util.List<? extends com.google.longrunning.OperationOrBuilder> 
-      getListedBackupOperationOrBuilderList();
+      getListedBackupOperationsOrBuilderList();
   /**
    * <pre>
    * List of operations returned by ListCloudBackupOperationsAction.
    * </pre>
    *
-   * <code>repeated .google.longrunning.Operation listed_backup_operation = 2;</code>
+   * <code>repeated .google.longrunning.Operation listed_backup_operations = 2;</code>
    */
-  com.google.longrunning.OperationOrBuilder getListedBackupOperationOrBuilder(
+  com.google.longrunning.OperationOrBuilder getListedBackupOperationsOrBuilder(
       int index);
 
   /**
