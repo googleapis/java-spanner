@@ -20,6 +20,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.protobuf.services.HealthStatusManager;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -40,12 +41,13 @@ public class WorkerProxy {
 
   private static final String OPTION_SPANNER_PORT = "spanner_port";
   private static final String OPTION_PORT = "port";
+  private static final String OPTION_CERTIFICATE = "cert";
   private static final String OPTION_USE_PLAIN_TEXT_CHANNEL = "use_plain_text_channel";
   private static final String OPTION_ENABLE_GRPC_FAULT_INJECTOR = "enable_grpc_fault_injector";
 
-  public static String spannerHost = "";
   public static int spannerPort = 0;
   public static int port = 0;
+  public static String cert = "";
   public static boolean usePlainTextChannel = false;
   public static boolean enableGrpcFaultInjector = false;
 
@@ -76,6 +78,13 @@ public class WorkerProxy {
       throw new IllegalArgumentException("Port must be between " + MIN_PORT + " and " + MAX_PORT);
     }
 
+    if (!commandLine.hasOption(OPTION_CERTIFICATE)) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          "Certificate need to be assigned in order to start worker proxy.");
+    }
+    cert = commandLine.getOptionValue(OPTION_CERTIFICATE);
+
     usePlainTextChannel = commandLine.hasOption(OPTION_USE_PLAIN_TEXT_CHANNEL);
     enableGrpcFaultInjector = commandLine.hasOption(OPTION_ENABLE_GRPC_FAULT_INJECTOR);
 
@@ -83,11 +92,13 @@ public class WorkerProxy {
     while (true) {
       try {
         CloudExecutorImpl cloudExecutorImpl = new CloudExecutorImpl(enableGrpcFaultInjector);
+        HealthStatusManager healthStatusManager = new HealthStatusManager();
         // Set up Cloud server.
         server =
             ServerBuilder.forPort(port)
                 .addService(cloudExecutorImpl)
                 .addService(ProtoReflectionService.newInstance())
+                .addService(healthStatusManager.getHealthService())
                 .build();
         server.start();
         LOGGER.log(Level.INFO, String.format("Server started on port: %d", port));
@@ -106,6 +117,8 @@ public class WorkerProxy {
     options.addOption(
         null, OPTION_SPANNER_PORT, true, "Port of Spanner Frontend to which to send requests.");
     options.addOption(null, OPTION_PORT, true, "Port to start worker proxy on.");
+    options.addOption(
+        null, OPTION_CERTIFICATE, true, "Certificate used to connect to Spanner GFE.");
     options.addOption(
         null,
         OPTION_USE_PLAIN_TEXT_CHANNEL,

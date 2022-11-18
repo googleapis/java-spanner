@@ -147,7 +147,7 @@ public abstract class CloudExecutor {
 
     // All the relevant variables below should be set before first outcome is sent back, and unused
     // variables should leave null.
-    private long timestamp;
+    private Timestamp timestamp;
     private boolean hasReadResult;
     private boolean hasQueryResult;
     private String table;
@@ -177,7 +177,7 @@ public abstract class CloudExecutor {
     }
 
     /** Set the timestamp for commit. */
-    public void setTimestamp(long timestamp) {
+    public void setTimestamp(Timestamp timestamp) {
       this.timestamp = timestamp;
     }
 
@@ -253,7 +253,7 @@ public abstract class CloudExecutor {
         return;
       }
       partialOutcomeBuilder = SpannerActionOutcome.newBuilder();
-      partialOutcomeBuilder.setTimestamp(timestamp);
+      partialOutcomeBuilder.setCommitTime(timestamp);
       if (hasReadResult) {
         readResultBuilder = ReadResult.newBuilder();
         readResultBuilder.setTable(table);

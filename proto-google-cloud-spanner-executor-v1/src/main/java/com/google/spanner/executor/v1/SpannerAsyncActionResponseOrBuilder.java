@@ -24,6 +24,10 @@ public interface SpannerAsyncActionResponseOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
+   * <pre>
+   * Action id corresponds to the request.
+   * </pre>
+   *
    * <code>int32 action_id = 1;</code>
    * @return The actionId.
    */

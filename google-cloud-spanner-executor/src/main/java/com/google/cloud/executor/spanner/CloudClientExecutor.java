@@ -65,7 +65,6 @@ import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.longrunning.Operation;
@@ -185,7 +184,7 @@ public class CloudClientExecutor extends CloudExecutor {
     private final DatabaseClient dbClient;
     private TransactionRunner runner;
     private TransactionContext txnContext;
-    private long timestamp;
+    private com.google.protobuf.Timestamp timestamp;
     private Mode finishMode;
     private SpannerException error;
     private final String transactionSeed;
@@ -227,7 +226,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
 
     /** Transaction successfully committed with a timestamp. */
-    private synchronized void transactionSucceeded(long timestamp) {
+    private synchronized void transactionSucceeded(com.google.protobuf.Timestamp timestamp) {
       this.timestamp = timestamp;
       this.runnerCompleted = true;
       notifyAll();
@@ -246,8 +245,9 @@ public class CloudClientExecutor extends CloudExecutor {
       notifyAll();
     }
 
-    /** Return the commit timestamp. */
-    public synchronized long getTimestamp() {
+    /** Return the commit timestamp.
+     * @return*/
+    public synchronized com.google.protobuf.Timestamp getTimestamp() {
       return timestamp;
     }
 
@@ -283,7 +283,7 @@ public class CloudClientExecutor extends CloudExecutor {
               runner = dbClient.readWriteTransaction();
               LOGGER.log(Level.INFO, String.format("Ready to run callable %s\n", transactionSeed));
               runner.run(callable);
-              transactionSucceeded(timestampToMicros(runner.getCommitTimestamp()));
+              transactionSucceeded(runner.getCommitTimestamp().toProto());
             } catch (SpannerException e) {
               LOGGER.log(
                   Level.WARNING,
@@ -568,7 +568,7 @@ public class CloudClientExecutor extends CloudExecutor {
           if (roTxn != null) {
             // read-only transaction
             Timestamp ts = roTxn.getReadTimestamp();
-            outcomeBuilder.setTimestamp(timestampToMicros(ts));
+            outcomeBuilder.setCommitTime(ts.toProto());
             roTxn.close();
             clear();
           } else {
@@ -578,7 +578,7 @@ public class CloudClientExecutor extends CloudExecutor {
               outcomeBuilder.setTransactionRestarted(true);
             } else {
               LOGGER.log(Level.FINE, "Transaction finish successfully");
-              outcomeBuilder.setTimestamp(rwTxn.getTimestamp());
+              outcomeBuilder.setCommitTime(rwTxn.getTimestamp());
               clear();
             }
           }
@@ -703,13 +703,6 @@ public class CloudClientExecutor extends CloudExecutor {
       StreamObserver<SpannerAsyncActionResponse> responseObserver,
       ExecutionFlowContext executionContext) {
     OutcomeSender outcomeSender = new OutcomeSender(req.getActionId(), responseObserver);
-
-    if (req.hasCancel()) {
-      return outcomeSender.finishWithError(
-          Status.fromThrowable(
-              SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Cancellation not supported")));
-    }
 
     if (!req.hasAction()) {
       return outcomeSender.finishWithError(
@@ -976,7 +969,7 @@ public class CloudClientExecutor extends CloudExecutor {
                   AdminResult.newBuilder()
                       .setInstanceResponse(
                           CloudInstanceResponse.newBuilder()
-                              .addAllListedInstance(instanceList)
+                              .addAllListedInstances(instanceList)
                               .setNextPageToken(response.getNextPageToken())
                               .build()))
               .build();
@@ -1019,7 +1012,7 @@ public class CloudClientExecutor extends CloudExecutor {
                   AdminResult.newBuilder()
                       .setInstanceConfigResponse(
                           CloudInstanceConfigResponse.newBuilder()
-                              .addAllListedInstanceConfig(instanceConfigList)
+                              .addAllListedInstanceConfigs(instanceConfigList)
                               .setNextPageToken(response.getNextPageToken())
                               .build()))
               .build();
@@ -1100,7 +1093,7 @@ public class CloudClientExecutor extends CloudExecutor {
               .getDatabaseAdminClient()
               .newDatabaseBuilder(
                   DatabaseId.of(
-                      action.getProjectId(), action.getInstanceId(), action.getDatabaseName()))
+                      action.getProjectId(), action.getInstanceId(), action.getDatabaseId()))
               .setEncryptionConfig(
                   CustomerManagedEncryption.fromProtoOrNull(action.getEncryptionConfig()))
               .build();
@@ -1126,7 +1119,7 @@ public class CloudClientExecutor extends CloudExecutor {
     try {
       LOGGER.log(Level.INFO, String.format("Creating database: \n%s", action));
       final String instanceId = action.getInstanceId();
-      final String databaseId = action.getDatabaseName();
+      final String databaseId = action.getDatabaseId();
       getClient()
           .getDatabaseAdminClient()
           .createDatabase(instanceId, databaseId, action.getSdlStatementList())
@@ -1159,7 +1152,7 @@ public class CloudClientExecutor extends CloudExecutor {
       LOGGER.log(Level.INFO, String.format("Updating database: \n%s", action));
       DatabaseAdminClient dbAdminClient = getClient().getDatabaseAdminClient();
       final String instanceId = action.getInstanceId();
-      final String databaseId = action.getDatabaseName();
+      final String databaseId = action.getDatabaseId();
       UpdateDatabaseDdlMetadata metadata;
       OperationFuture<Void, UpdateDatabaseDdlMetadata> updateOp =
           dbAdminClient.updateDatabaseDdl(
@@ -1168,7 +1161,7 @@ public class CloudClientExecutor extends CloudExecutor {
       metadata = updateOp.getMetadata().get();
       int tsCount = metadata.getCommitTimestampsCount();
       // Fetch the last timestamp
-      sender.setTimestamp(Timestamps.toMicros(metadata.getCommitTimestamps(tsCount - 1)));
+      sender.setTimestamp(metadata.getCommitTimestamps(tsCount - 1));
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
     } catch (Exception e) {
@@ -1192,7 +1185,7 @@ public class CloudClientExecutor extends CloudExecutor {
       LOGGER.log(Level.INFO, String.format("Dropping database: \n%s", action));
       DatabaseAdminClient dbAdminClient = getClient().getDatabaseAdminClient();
       final String instanceId = action.getInstanceId();
-      final String databaseId = action.getDatabaseName();
+      final String databaseId = action.getDatabaseId();
       dbAdminClient.dropDatabase(instanceId, databaseId);
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
@@ -1216,8 +1209,8 @@ public class CloudClientExecutor extends CloudExecutor {
               .createBackup(
                   action.getInstanceId(),
                   action.getBackupId(),
-                  action.getDatabaseName(),
-                  Timestamp.fromProto(Timestamps.fromMicros(action.getVersionTime())))
+                  action.getDatabaseId(),
+                  Timestamp.fromProto(action.getVersionTime()))
               .get();
       SpannerActionOutcome outcome =
           SpannerActionOutcome.newBuilder()
@@ -1253,10 +1246,7 @@ public class CloudClientExecutor extends CloudExecutor {
           getClient()
               .getDatabaseAdminClient()
               .copyBackup(
-                  instancePath,
-                  backupId,
-                  sourceBackup,
-                  Timestamp.fromProto(Timestamps.fromMicros(action.getExpireTime())))
+                  instancePath, backupId, sourceBackup, Timestamp.fromProto(action.getExpireTime()))
               .get();
       SpannerActionOutcome outcome =
           SpannerActionOutcome.newBuilder()
@@ -1320,7 +1310,7 @@ public class CloudClientExecutor extends CloudExecutor {
               .updateBackup(
                   action.getInstanceId(),
                   action.getBackupId(),
-                  Timestamp.fromProto(Timestamps.fromMicros(action.getExpireTime())));
+                  Timestamp.fromProto(action.getExpireTime()));
       SpannerActionOutcome outcome =
           SpannerActionOutcome.newBuilder()
               .setStatus(toProto(Status.OK))
@@ -1385,7 +1375,7 @@ public class CloudClientExecutor extends CloudExecutor {
                   AdminResult.newBuilder()
                       .setBackupResponse(
                           CloudBackupResponse.newBuilder()
-                              .addAllListedBackup(backupList)
+                              .addAllListedBackups(backupList)
                               .setNextPageToken(response.getNextPageToken())
                               .build()))
               .build();
@@ -1460,7 +1450,7 @@ public class CloudClientExecutor extends CloudExecutor {
                   AdminResult.newBuilder()
                       .setDatabaseResponse(
                           CloudDatabaseResponse.newBuilder()
-                              .addAllListedDatabase(databaseList)
+                              .addAllListedDatabases(databaseList)
                               .setNextPageToken(response.getNextPageToken())
                               .build()))
               .build();
@@ -1525,7 +1515,7 @@ public class CloudClientExecutor extends CloudExecutor {
                   action.getBackupInstanceId(),
                   action.getBackupId(),
                   action.getDatabaseInstanceId(),
-                  action.getDatabaseName())
+                  action.getDatabaseId())
               .get();
       SpannerActionOutcome outcome =
           SpannerActionOutcome.newBuilder()
@@ -1554,7 +1544,7 @@ public class CloudClientExecutor extends CloudExecutor {
       Database databaseResult =
           getClient()
               .getDatabaseAdminClient()
-              .getDatabase(action.getInstanceId(), action.getDatabaseName());
+              .getDatabase(action.getInstanceId(), action.getDatabaseId());
       SpannerActionOutcome outcome =
           SpannerActionOutcome.newBuilder()
               .setStatus(toProto(Status.OK))
@@ -1581,7 +1571,7 @@ public class CloudClientExecutor extends CloudExecutor {
   private Status executeGetOperation(GetOperationAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Getting operation: \n%s", action));
-      final String operationName = action.getOperationName();
+      final String operationName = action.getOperation();
       Operation operationResult = getClient().getDatabaseAdminClient().getOperation(operationName);
       SpannerActionOutcome outcome =
           SpannerActionOutcome.newBuilder()
@@ -1607,7 +1597,7 @@ public class CloudClientExecutor extends CloudExecutor {
   private Status executeCancelOperation(CancelOperationAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Cancelling operation: \n%s", action));
-      final String operationName = action.getOperationName();
+      final String operationName = action.getOperation();
       getClient().getDatabaseAdminClient().cancelOperation(operationName);
       return sender.finishWithOK();
     } catch (SpannerException e) {
@@ -1724,9 +1714,10 @@ public class CloudClientExecutor extends CloudExecutor {
                     cloudValuesFromValueList(insertArgs.getValues(j), insertArgs.getTypeList()),
                     Mutation.newReplaceBuilder(table)));
           }
-        } else if (mod.hasDelete()) {
+        } else if (mod.hasDeleteKeys()) {
           KeySet keySet =
-              keySetProtoToCloudKeySet(mod.getDelete(), executionContext.getKeyColumnTypes(table));
+              keySetProtoToCloudKeySet(
+                  mod.getDeleteKeys(), executionContext.getKeyColumnTypes(table));
           mutations.add(Mutation.delete(table, keySet));
         } else {
           throw SpannerExceptionFactory.newSpannerException(
@@ -1887,7 +1878,7 @@ public class CloudClientExecutor extends CloudExecutor {
       com.google.spanner.executor.v1.Value.Builder value =
           com.google.spanner.executor.v1.Value.newBuilder();
       if (result.isNull(i)) {
-        value.setNull(true);
+        value.setIsNull(true);
       } else {
         switch (columnType.getCode()) {
           case BOOL:
@@ -1909,7 +1900,7 @@ public class CloudClientExecutor extends CloudExecutor {
             value.setTimestampValue(timestampToProto(result.getTimestamp(i)));
             break;
           case DATE:
-            value.setDateValue(daysFromDate(result.getDate(i)));
+            value.setDateDaysValue(daysFromDate(result.getDate(i)));
             break;
           case NUMERIC:
             String ascii = result.getBigDecimal(i).toPlainString();
@@ -1929,7 +1920,7 @@ public class CloudClientExecutor extends CloudExecutor {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
                     if (booleanValue == null) {
-                      builder.addValue(valueProto.setNull(true).build());
+                      builder.addValue(valueProto.setIsNull(true).build());
                     } else {
                       builder.addValue(valueProto.setBoolValue(booleanValue).build());
                     }
@@ -1948,7 +1939,7 @@ public class CloudClientExecutor extends CloudExecutor {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
                     if (doubleValue == null) {
-                      builder.addValue(valueProto.setNull(true).build());
+                      builder.addValue(valueProto.setIsNull(true).build());
                     } else {
                       builder.addValue(valueProto.setDoubleValue(doubleValue).build());
                     }
@@ -1967,7 +1958,7 @@ public class CloudClientExecutor extends CloudExecutor {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
                     if (longValue == null) {
-                      builder.addValue(valueProto.setNull(true).build());
+                      builder.addValue(valueProto.setIsNull(true).build());
                     } else {
                       builder.addValue(valueProto.setIntValue(longValue).build());
                     }
@@ -1986,7 +1977,7 @@ public class CloudClientExecutor extends CloudExecutor {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
                     if (stringValue == null) {
-                      builder.addValue(valueProto.setNull(true).build());
+                      builder.addValue(valueProto.setIsNull(true).build());
                     } else {
                       builder.addValue(valueProto.setStringValue(stringValue)).build();
                     }
@@ -2005,7 +1996,7 @@ public class CloudClientExecutor extends CloudExecutor {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
                     if (byteArrayValue == null) {
-                      builder.addValue(valueProto.setNull(true).build());
+                      builder.addValue(valueProto.setIsNull(true).build());
                     } else {
                       builder.addValue(
                           valueProto
@@ -2027,9 +2018,10 @@ public class CloudClientExecutor extends CloudExecutor {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
                     if (dateValue == null) {
-                      builder.addValue(valueProto.setNull(true).build());
+                      builder.addValue(valueProto.setIsNull(true).build());
                     } else {
-                      builder.addValue(valueProto.setDateValue(daysFromDate(dateValue)).build());
+                      builder.addValue(
+                          valueProto.setDateDaysValue(daysFromDate(dateValue)).build());
                     }
                   }
                   value.setArrayValue(builder.build());
@@ -2046,7 +2038,7 @@ public class CloudClientExecutor extends CloudExecutor {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
                     if (timestampValue == null) {
-                      builder.addValue(valueProto.setNull(true).build());
+                      builder.addValue(valueProto.setIsNull(true).build());
                     } else {
                       builder.addValue(
                           valueProto.setTimestampValue(timestampToProto(timestampValue)).build());
@@ -2066,7 +2058,7 @@ public class CloudClientExecutor extends CloudExecutor {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
                     if (bigDec == null) {
-                      builder.addValue(valueProto.setNull(true).build());
+                      builder.addValue(valueProto.setIsNull(true).build());
                     } else {
                       builder.addValue(
                           valueProto
@@ -2088,7 +2080,7 @@ public class CloudClientExecutor extends CloudExecutor {
                     com.google.spanner.executor.v1.Value.Builder valueProto =
                         com.google.spanner.executor.v1.Value.newBuilder();
                     if (stringValue == null) {
-                      builder.addValue(valueProto.setNull(true).build());
+                      builder.addValue(valueProto.setIsNull(true).build());
                     } else {
                       builder.addValue(valueProto.setStringValue(stringValue)).build();
                     }
@@ -2196,7 +2188,7 @@ public class CloudClientExecutor extends CloudExecutor {
     for (int i = 0; i < keyProto.getValueCount(); ++i) {
       com.google.spanner.v1.Type type = typeList.get(i);
       com.google.spanner.executor.v1.Value part = keyProto.getValue(i);
-      if (part.hasNull()) {
+      if (part.hasIsNull()) {
         switch (type.getCode()) {
           case BOOL:
           case INT64:
@@ -2241,8 +2233,8 @@ public class CloudClientExecutor extends CloudExecutor {
         cloudKey.append(part.getStringValue());
       } else if (part.hasTimestampValue()) {
         cloudKey.append(Timestamp.parseTimestamp(Timestamps.toString(part.getTimestampValue())));
-      } else if (part.hasDateValue()) {
-        cloudKey.append(dateFromDays(part.getDateValue()));
+      } else if (part.hasDateDaysValue()) {
+        cloudKey.append(dateFromDays(part.getDateDaysValue()));
       } else {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT, "Unsupported key part: " + part);
@@ -2255,25 +2247,25 @@ public class CloudClientExecutor extends CloudExecutor {
   @SuppressWarnings("NullTernary")
   private static com.google.cloud.spanner.Value valueProtoToCloudValue(
       com.google.spanner.v1.Type type, com.google.spanner.executor.v1.Value value) {
-    if (value.hasCommitTimestamp() && value.getCommitTimestamp()) {
+    if (value.hasIsCommitTimestamp() && value.getIsCommitTimestamp()) {
       return Value.timestamp(com.google.cloud.spanner.Value.COMMIT_TIMESTAMP);
     }
     switch (type.getCode()) {
       case INT64:
-        return com.google.cloud.spanner.Value.int64(value.hasNull() ? null : value.getIntValue());
+        return com.google.cloud.spanner.Value.int64(value.hasIsNull() ? null : value.getIntValue());
       case FLOAT64:
         return com.google.cloud.spanner.Value.float64(
-            value.hasNull() ? null : value.getDoubleValue());
+            value.hasIsNull() ? null : value.getDoubleValue());
       case STRING:
         return com.google.cloud.spanner.Value.string(
-            value.hasNull() ? null : value.getStringValue());
+            value.hasIsNull() ? null : value.getStringValue());
       case BYTES:
         return com.google.cloud.spanner.Value.bytes(
-            value.hasNull() ? null : ByteArray.copyFrom(value.getBytesValue().toByteArray()));
+            value.hasIsNull() ? null : ByteArray.copyFrom(value.getBytesValue().toByteArray()));
       case BOOL:
-        return com.google.cloud.spanner.Value.bool(value.hasNull() ? null : value.getBoolValue());
+        return com.google.cloud.spanner.Value.bool(value.hasIsNull() ? null : value.getBoolValue());
       case TIMESTAMP:
-        if (value.hasNull()) {
+        if (value.hasIsNull()) {
           return com.google.cloud.spanner.Value.timestamp(null);
         } else {
           if (!value.hasBytesValue()) {
@@ -2286,70 +2278,71 @@ public class CloudClientExecutor extends CloudExecutor {
         }
       case DATE:
         return com.google.cloud.spanner.Value.date(
-            value.hasNull() ? null : dateFromDays(value.getDateValue()));
+            value.hasIsNull() ? null : dateFromDays(value.getDateDaysValue()));
       case NUMERIC:
         {
-          if (value.hasNull()) {
+          if (value.hasIsNull()) {
             return com.google.cloud.spanner.Value.numeric(null);
           }
           String ascii = NumericTranscoder.decode(value.getBytesValue().toByteArray());
           return com.google.cloud.spanner.Value.numeric(new BigDecimal(ascii));
         }
       case JSON:
-        return com.google.cloud.spanner.Value.json(value.hasNull() ? null : value.getStringValue());
+        return com.google.cloud.spanner.Value.json(
+            value.hasIsNull() ? null : value.getStringValue());
       case STRUCT:
         return com.google.cloud.spanner.Value.struct(
             typeProtoToCloudType(type),
-            value.hasNull() ? null : structProtoToCloudStruct(type, value.getStructValue()));
+            value.hasIsNull() ? null : structProtoToCloudStruct(type, value.getStructValue()));
       case ARRAY:
         switch (type.getArrayElementType().getCode()) {
           case INT64:
-            if (value.hasNull()) {
+            if (value.hasIsNull()) {
               return com.google.cloud.spanner.Value.int64Array((Iterable<Long>) null);
             } else {
               return com.google.cloud.spanner.Value.int64Array(
                   unmarshallValueList(
                       value.getArrayValue().getValueList().stream()
-                          .map(com.google.spanner.executor.v1.Value::getNull)
+                          .map(com.google.spanner.executor.v1.Value::getIsNull)
                           .collect(Collectors.toList()),
                       value.getArrayValue().getValueList().stream()
                           .map(com.google.spanner.executor.v1.Value::getIntValue)
                           .collect(Collectors.toList())));
             }
           case FLOAT64:
-            if (value.hasNull()) {
+            if (value.hasIsNull()) {
               return com.google.cloud.spanner.Value.float64Array((Iterable<Double>) null);
             } else {
               return com.google.cloud.spanner.Value.float64Array(
                   unmarshallValueList(
                       value.getArrayValue().getValueList().stream()
-                          .map(com.google.spanner.executor.v1.Value::getNull)
+                          .map(com.google.spanner.executor.v1.Value::getIsNull)
                           .collect(Collectors.toList()),
                       value.getArrayValue().getValueList().stream()
                           .map(com.google.spanner.executor.v1.Value::getDoubleValue)
                           .collect(Collectors.toList())));
             }
           case STRING:
-            if (value.hasNull()) {
+            if (value.hasIsNull()) {
               return com.google.cloud.spanner.Value.stringArray(null);
             } else {
               return com.google.cloud.spanner.Value.stringArray(
                   unmarshallValueList(
                       value.getArrayValue().getValueList().stream()
-                          .map(com.google.spanner.executor.v1.Value::getNull)
+                          .map(com.google.spanner.executor.v1.Value::getIsNull)
                           .collect(Collectors.toList()),
                       value.getArrayValue().getValueList().stream()
                           .map(com.google.spanner.executor.v1.Value::getStringValue)
                           .collect(Collectors.toList())));
             }
           case BYTES:
-            if (value.hasNull()) {
+            if (value.hasIsNull()) {
               return com.google.cloud.spanner.Value.bytesArray(null);
             } else {
               return com.google.cloud.spanner.Value.bytesArray(
                   unmarshallValueList(
                       value.getArrayValue().getValueList().stream()
-                          .map(com.google.spanner.executor.v1.Value::getNull)
+                          .map(com.google.spanner.executor.v1.Value::getIsNull)
                           .collect(Collectors.toList()),
                       value.getArrayValue().getValueList().stream()
                           .map(com.google.spanner.executor.v1.Value::getBytesValue)
@@ -2357,26 +2350,26 @@ public class CloudClientExecutor extends CloudExecutor {
                       element -> ByteArray.copyFrom(element.toByteArray())));
             }
           case BOOL:
-            if (value.hasNull()) {
+            if (value.hasIsNull()) {
               return com.google.cloud.spanner.Value.boolArray((Iterable<Boolean>) null);
             } else {
               return com.google.cloud.spanner.Value.boolArray(
                   unmarshallValueList(
                       value.getArrayValue().getValueList().stream()
-                          .map(com.google.spanner.executor.v1.Value::getNull)
+                          .map(com.google.spanner.executor.v1.Value::getIsNull)
                           .collect(Collectors.toList()),
                       value.getArrayValue().getValueList().stream()
                           .map(com.google.spanner.executor.v1.Value::getBoolValue)
                           .collect(Collectors.toList())));
             }
           case TIMESTAMP:
-            if (value.hasNull()) {
+            if (value.hasIsNull()) {
               return com.google.cloud.spanner.Value.timestampArray(null);
             } else {
               return com.google.cloud.spanner.Value.timestampArray(
                   unmarshallValueList(
                       value.getArrayValue().getValueList().stream()
-                          .map(com.google.spanner.executor.v1.Value::getNull)
+                          .map(com.google.spanner.executor.v1.Value::getIsNull)
                           .collect(Collectors.toList()),
                       value.getArrayValue().getValueList().stream()
                           .map(com.google.spanner.executor.v1.Value::getTimestampValue)
@@ -2384,27 +2377,27 @@ public class CloudClientExecutor extends CloudExecutor {
                       element -> Timestamp.parseTimestamp(Timestamps.toString(element))));
             }
           case DATE:
-            if (value.hasNull()) {
+            if (value.hasIsNull()) {
               return com.google.cloud.spanner.Value.dateArray(null);
             } else {
               return com.google.cloud.spanner.Value.dateArray(
                   unmarshallValueList(
                       value.getArrayValue().getValueList().stream()
-                          .map(com.google.spanner.executor.v1.Value::getNull)
+                          .map(com.google.spanner.executor.v1.Value::getIsNull)
                           .collect(Collectors.toList()),
                       value.getArrayValue().getValueList().stream()
-                          .map(com.google.spanner.executor.v1.Value::getDateValue)
+                          .map(com.google.spanner.executor.v1.Value::getDateDaysValue)
                           .collect(Collectors.toList()),
                       CloudClientExecutor::dateFromDays));
             }
           case NUMERIC:
             {
-              if (value.hasNull()) {
+              if (value.hasIsNull()) {
                 return com.google.cloud.spanner.Value.numericArray(null);
               }
               List<Boolean> nullList =
                   value.getArrayValue().getValueList().stream()
-                      .map(com.google.spanner.executor.v1.Value::getNull)
+                      .map(com.google.spanner.executor.v1.Value::getIsNull)
                       .collect(Collectors.toList());
               List<ByteString> valueList =
                   value.getArrayValue().getValueList().stream()
@@ -2425,14 +2418,14 @@ public class CloudClientExecutor extends CloudExecutor {
           case STRUCT:
             com.google.cloud.spanner.Type elementType =
                 typeProtoToCloudType(type.getArrayElementType());
-            if (value.hasNull()) {
+            if (value.hasIsNull()) {
               return com.google.cloud.spanner.Value.structArray(elementType, null);
             } else {
               return com.google.cloud.spanner.Value.structArray(
                   elementType,
                   unmarshallValueList(
                       value.getArrayValue().getValueList().stream()
-                          .map(com.google.spanner.executor.v1.Value::getNull)
+                          .map(com.google.spanner.executor.v1.Value::getIsNull)
                           .collect(Collectors.toList()),
                       value.getArrayValue().getValueList().stream()
                           .map(com.google.spanner.executor.v1.Value::getStructValue)
@@ -2440,13 +2433,13 @@ public class CloudClientExecutor extends CloudExecutor {
                       element -> structProtoToCloudStruct(type.getArrayElementType(), element)));
             }
           case JSON:
-            if (value.hasNull()) {
+            if (value.hasIsNull()) {
               return com.google.cloud.spanner.Value.jsonArray(null);
             } else {
               return com.google.cloud.spanner.Value.jsonArray(
                   unmarshallValueList(
                       value.getArrayValue().getValueList().stream()
-                          .map(com.google.spanner.executor.v1.Value::getNull)
+                          .map(com.google.spanner.executor.v1.Value::getIsNull)
                           .collect(Collectors.toList()),
                       value.getArrayValue().getValueList().stream()
                           .map(com.google.spanner.executor.v1.Value::getStringValue)

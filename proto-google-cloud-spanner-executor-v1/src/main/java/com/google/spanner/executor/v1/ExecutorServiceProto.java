@@ -51,39 +51,38 @@ public final class ExecutorServiceProto {
     java.lang.String[] descriptorData = {
       "\n1google/spanner/executor/v1/executor_se" +
       "rvice.proto\022\032google.spanner.executor.v1\032" +
-      ")google/spanner/executor/v1/executor.pro" +
-      "to\"\205\001\n\031SpannerAsyncActionRequest\022\021\n\tacti" +
-      "on_id\030\001 \001(\005\022;\n\006action\030\002 \001(\0132).google.spa" +
-      "nner.executor.v1.SpannerActionH\000\022\020\n\006canc" +
-      "el\030\003 \001(\010H\000B\006\n\004kind\"r\n\032SpannerAsyncAction" +
-      "Response\022\021\n\taction_id\030\001 \001(\005\022A\n\007outcome\030\002" +
-      " \001(\01320.google.spanner.executor.v1.Spanne" +
-      "rActionOutcome2\242\001\n\024SpannerExecutorProxy\022" +
-      "\211\001\n\022ExecuteActionAsync\0225.google.spanner." +
-      "executor.v1.SpannerAsyncActionRequest\0326." +
-      "google.spanner.executor.v1.SpannerAsyncA" +
-      "ctionResponse\"\000(\0010\001B8\n\036com.google.spanne" +
-      "r.executor.v1B\024ExecutorServiceProtoP\001b\006p" +
-      "roto3"
+      "/google/spanner/executor/v1/cloud_execut" +
+      "or.proto\"i\n\031SpannerAsyncActionRequest\022\021\n" +
+      "\taction_id\030\001 \001(\005\0229\n\006action\030\002 \001(\0132).googl" +
+      "e.spanner.executor.v1.SpannerAction\"r\n\032S" +
+      "pannerAsyncActionResponse\022\021\n\taction_id\030\001" +
+      " \001(\005\022A\n\007outcome\030\002 \001(\01320.google.spanner.e" +
+      "xecutor.v1.SpannerActionOutcome2\242\001\n\024Span" +
+      "nerExecutorProxy\022\211\001\n\022ExecuteActionAsync\022" +
+      "5.google.spanner.executor.v1.SpannerAsyn" +
+      "cActionRequest\0326.google.spanner.executor" +
+      ".v1.SpannerAsyncActionResponse\"\000(\0010\001B8\n\036" +
+      "com.google.spanner.executor.v1B\024Executor" +
+      "ServiceProtoP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          com.google.spanner.executor.v1.ExecutorProto.getDescriptor(),
+          com.google.spanner.executor.v1.CloudExecutorProto.getDescriptor(),
         });
     internal_static_google_spanner_executor_v1_SpannerAsyncActionRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_google_spanner_executor_v1_SpannerAsyncActionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_google_spanner_executor_v1_SpannerAsyncActionRequest_descriptor,
-        new java.lang.String[] { "ActionId", "Action", "Cancel", "Kind", });
+        new java.lang.String[] { "ActionId", "Action", });
     internal_static_google_spanner_executor_v1_SpannerAsyncActionResponse_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_google_spanner_executor_v1_SpannerAsyncActionResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_google_spanner_executor_v1_SpannerAsyncActionResponse_descriptor,
         new java.lang.String[] { "ActionId", "Outcome", });
-    com.google.spanner.executor.v1.ExecutorProto.getDescriptor();
+    com.google.spanner.executor.v1.CloudExecutorProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)
