@@ -769,13 +769,19 @@ message SpannerActionOutcome {
   // Result of a ReadAction. This field must be set for ReadActions even if
   // no rows were read.
   optional ReadResult read_result = 3;
+  // Result of a Query. This field must be set for Queries even if no rows were
+  // read.
+  optional QueryResult query_result = 4;
   // This bit indicates that Spanner has restarted the current transaction. It
   // means that the client should replay all the reads and writes.
   // Setting it to true is only valid in the context of a read-write
   // transaction, as an outcome of a committing FinishTransactionAction.
-  optional bool transaction_restarted = 4;
+  optional bool transaction_restarted = 5;
   // Result of admin related actions.
-  optional AdminResult admin_result = 5;
+  optional AdminResult admin_result = 6;
+  // Stores rows modified by query in single DML or batch DML action.
+  // In case of batch DML action, stores 0 as row count of errored DML query.
+  repeated int64 dml_rows_modified = 7;
 }
 
 // AdminResult contains admin action results, for database/backup/operation.
@@ -856,18 +862,24 @@ message CloudDatabaseResponse {
   google.spanner.admin.database.v1.Database database = 4;
 }
 
-// ReadResult contains rows read. If it's a result of a multiread, each
-// ReadResult's rows belong to a single multiread request.
+// ReadResult contains rows read.
 message ReadResult {
   // Table name.
   string table = 1;
   // Index name, if read from an index.
   optional string index = 2;
-  // Request index (multiread only).
-  optional int32 request_index = 3;
   // Rows read. Each row is a struct with multiple fields, one for each column
   // in read result. All rows have the same type.
-  repeated ValueList row = 4;
+  repeated ValueList row = 3;
   // The type of rows read. It must be set if at least one row was read.
-  optional google.spanner.v1.StructType row_type = 5;
+  optional google.spanner.v1.StructType row_type = 4;
+}
+
+// QueryResult contains result of a Query.
+message QueryResult {
+  // Rows read. Each row is a struct with multiple fields, one for each column
+  // in read result. All rows have the same type.
+  repeated ValueList row = 1;
+  // The type of rows read. It must be set if at least one row was read.
+  optional google.spanner.v1.StructType row_type = 2;
 }

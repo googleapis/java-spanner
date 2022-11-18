@@ -74,30 +74,11 @@ public interface ReadResultOrBuilder extends
 
   /**
    * <pre>
-   * Request index (multiread only).
-   * </pre>
-   *
-   * <code>optional int32 request_index = 3;</code>
-   * @return Whether the requestIndex field is set.
-   */
-  boolean hasRequestIndex();
-  /**
-   * <pre>
-   * Request index (multiread only).
-   * </pre>
-   *
-   * <code>optional int32 request_index = 3;</code>
-   * @return The requestIndex.
-   */
-  int getRequestIndex();
-
-  /**
-   * <pre>
    * Rows read. Each row is a struct with multiple fields, one for each column
    * in read result. All rows have the same type.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+   * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
    */
   java.util.List<com.google.spanner.executor.v1.ValueList> 
       getRowList();
@@ -107,7 +88,7 @@ public interface ReadResultOrBuilder extends
    * in read result. All rows have the same type.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+   * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
    */
   com.google.spanner.executor.v1.ValueList getRow(int index);
   /**
@@ -116,7 +97,7 @@ public interface ReadResultOrBuilder extends
    * in read result. All rows have the same type.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+   * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
    */
   int getRowCount();
   /**
@@ -125,7 +106,7 @@ public interface ReadResultOrBuilder extends
    * in read result. All rows have the same type.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+   * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
    */
   java.util.List<? extends com.google.spanner.executor.v1.ValueListOrBuilder> 
       getRowOrBuilderList();
@@ -135,7 +116,7 @@ public interface ReadResultOrBuilder extends
    * in read result. All rows have the same type.
    * </pre>
    *
-   * <code>repeated .google.spanner.executor.v1.ValueList row = 4;</code>
+   * <code>repeated .google.spanner.executor.v1.ValueList row = 3;</code>
    */
   com.google.spanner.executor.v1.ValueListOrBuilder getRowOrBuilder(
       int index);
@@ -145,7 +126,7 @@ public interface ReadResultOrBuilder extends
    * The type of rows read. It must be set if at least one row was read.
    * </pre>
    *
-   * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
+   * <code>optional .google.spanner.v1.StructType row_type = 4;</code>
    * @return Whether the rowType field is set.
    */
   boolean hasRowType();
@@ -154,7 +135,7 @@ public interface ReadResultOrBuilder extends
    * The type of rows read. It must be set if at least one row was read.
    * </pre>
    *
-   * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
+   * <code>optional .google.spanner.v1.StructType row_type = 4;</code>
    * @return The rowType.
    */
   com.google.spanner.v1.StructType getRowType();
@@ -163,7 +144,7 @@ public interface ReadResultOrBuilder extends
    * The type of rows read. It must be set if at least one row was read.
    * </pre>
    *
-   * <code>optional .google.spanner.v1.StructType row_type = 5;</code>
+   * <code>optional .google.spanner.v1.StructType row_type = 4;</code>
    */
   com.google.spanner.v1.StructTypeOrBuilder getRowTypeOrBuilder();
 }

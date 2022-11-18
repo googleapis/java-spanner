@@ -36,6 +36,7 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private SpannerActionOutcome() {
+    dmlRowsModified_ = emptyLongList();
   }
 
   @java.lang.Override
@@ -108,14 +109,27 @@ private static final long serialVersionUID = 0L;
             bitField0_ |= 0x00000004;
             break;
           }
-          case 32: {
+          case 34: {
+            com.google.spanner.executor.v1.QueryResult.Builder subBuilder = null;
+            if (((bitField0_ & 0x00000008) != 0)) {
+              subBuilder = queryResult_.toBuilder();
+            }
+            queryResult_ = input.readMessage(com.google.spanner.executor.v1.QueryResult.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(queryResult_);
+              queryResult_ = subBuilder.buildPartial();
+            }
             bitField0_ |= 0x00000008;
+            break;
+          }
+          case 40: {
+            bitField0_ |= 0x00000010;
             transactionRestarted_ = input.readBool();
             break;
           }
-          case 42: {
+          case 50: {
             com.google.spanner.executor.v1.AdminResult.Builder subBuilder = null;
-            if (((bitField0_ & 0x00000010) != 0)) {
+            if (((bitField0_ & 0x00000020) != 0)) {
               subBuilder = adminResult_.toBuilder();
             }
             adminResult_ = input.readMessage(com.google.spanner.executor.v1.AdminResult.parser(), extensionRegistry);
@@ -123,7 +137,28 @@ private static final long serialVersionUID = 0L;
               subBuilder.mergeFrom(adminResult_);
               adminResult_ = subBuilder.buildPartial();
             }
-            bitField0_ |= 0x00000010;
+            bitField0_ |= 0x00000020;
+            break;
+          }
+          case 56: {
+            if (!((mutable_bitField0_ & 0x00000040) != 0)) {
+              dmlRowsModified_ = newLongList();
+              mutable_bitField0_ |= 0x00000040;
+            }
+            dmlRowsModified_.addLong(input.readInt64());
+            break;
+          }
+          case 58: {
+            int length = input.readRawVarint32();
+            int limit = input.pushLimit(length);
+            if (!((mutable_bitField0_ & 0x00000040) != 0) && input.getBytesUntilLimit() > 0) {
+              dmlRowsModified_ = newLongList();
+              mutable_bitField0_ |= 0x00000040;
+            }
+            while (input.getBytesUntilLimit() > 0) {
+              dmlRowsModified_.addLong(input.readInt64());
+            }
+            input.popLimit(limit);
             break;
           }
           default: {
@@ -143,6 +178,9 @@ private static final long serialVersionUID = 0L;
       throw new com.google.protobuf.InvalidProtocolBufferException(
           e).setUnfinishedMessage(this);
     } finally {
+      if (((mutable_bitField0_ & 0x00000040) != 0)) {
+        dmlRowsModified_.makeImmutable(); // C
+      }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
     }
@@ -281,7 +319,48 @@ private static final long serialVersionUID = 0L;
     return readResult_ == null ? com.google.spanner.executor.v1.ReadResult.getDefaultInstance() : readResult_;
   }
 
-  public static final int TRANSACTION_RESTARTED_FIELD_NUMBER = 4;
+  public static final int QUERY_RESULT_FIELD_NUMBER = 4;
+  private com.google.spanner.executor.v1.QueryResult queryResult_;
+  /**
+   * <pre>
+   * Result of a Query. This field must be set for Queries even if no rows were
+   * read.
+   * </pre>
+   *
+   * <code>optional .google.spanner.executor.v1.QueryResult query_result = 4;</code>
+   * @return Whether the queryResult field is set.
+   */
+  @java.lang.Override
+  public boolean hasQueryResult() {
+    return ((bitField0_ & 0x00000008) != 0);
+  }
+  /**
+   * <pre>
+   * Result of a Query. This field must be set for Queries even if no rows were
+   * read.
+   * </pre>
+   *
+   * <code>optional .google.spanner.executor.v1.QueryResult query_result = 4;</code>
+   * @return The queryResult.
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.QueryResult getQueryResult() {
+    return queryResult_ == null ? com.google.spanner.executor.v1.QueryResult.getDefaultInstance() : queryResult_;
+  }
+  /**
+   * <pre>
+   * Result of a Query. This field must be set for Queries even if no rows were
+   * read.
+   * </pre>
+   *
+   * <code>optional .google.spanner.executor.v1.QueryResult query_result = 4;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.QueryResultOrBuilder getQueryResultOrBuilder() {
+    return queryResult_ == null ? com.google.spanner.executor.v1.QueryResult.getDefaultInstance() : queryResult_;
+  }
+
+  public static final int TRANSACTION_RESTARTED_FIELD_NUMBER = 5;
   private boolean transactionRestarted_;
   /**
    * <pre>
@@ -291,12 +370,12 @@ private static final long serialVersionUID = 0L;
    * transaction, as an outcome of a committing FinishTransactionAction.
    * </pre>
    *
-   * <code>optional bool transaction_restarted = 4;</code>
+   * <code>optional bool transaction_restarted = 5;</code>
    * @return Whether the transactionRestarted field is set.
    */
   @java.lang.Override
   public boolean hasTransactionRestarted() {
-    return ((bitField0_ & 0x00000008) != 0);
+    return ((bitField0_ & 0x00000010) != 0);
   }
   /**
    * <pre>
@@ -306,7 +385,7 @@ private static final long serialVersionUID = 0L;
    * transaction, as an outcome of a committing FinishTransactionAction.
    * </pre>
    *
-   * <code>optional bool transaction_restarted = 4;</code>
+   * <code>optional bool transaction_restarted = 5;</code>
    * @return The transactionRestarted.
    */
   @java.lang.Override
@@ -314,26 +393,26 @@ private static final long serialVersionUID = 0L;
     return transactionRestarted_;
   }
 
-  public static final int ADMIN_RESULT_FIELD_NUMBER = 5;
+  public static final int ADMIN_RESULT_FIELD_NUMBER = 6;
   private com.google.spanner.executor.v1.AdminResult adminResult_;
   /**
    * <pre>
    * Result of admin related actions.
    * </pre>
    *
-   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
    * @return Whether the adminResult field is set.
    */
   @java.lang.Override
   public boolean hasAdminResult() {
-    return ((bitField0_ & 0x00000010) != 0);
+    return ((bitField0_ & 0x00000020) != 0);
   }
   /**
    * <pre>
    * Result of admin related actions.
    * </pre>
    *
-   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
    * @return The adminResult.
    */
   @java.lang.Override
@@ -345,12 +424,55 @@ private static final long serialVersionUID = 0L;
    * Result of admin related actions.
    * </pre>
    *
-   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.AdminResultOrBuilder getAdminResultOrBuilder() {
     return adminResult_ == null ? com.google.spanner.executor.v1.AdminResult.getDefaultInstance() : adminResult_;
   }
+
+  public static final int DML_ROWS_MODIFIED_FIELD_NUMBER = 7;
+  private com.google.protobuf.Internal.LongList dmlRowsModified_;
+  /**
+   * <pre>
+   * Stores rows modified by query in single DML or batch DML action.
+   * In case of batch DML action, stores 0 as row count of errored DML query.
+   * </pre>
+   *
+   * <code>repeated int64 dml_rows_modified = 7;</code>
+   * @return A list containing the dmlRowsModified.
+   */
+  @java.lang.Override
+  public java.util.List<java.lang.Long>
+      getDmlRowsModifiedList() {
+    return dmlRowsModified_;
+  }
+  /**
+   * <pre>
+   * Stores rows modified by query in single DML or batch DML action.
+   * In case of batch DML action, stores 0 as row count of errored DML query.
+   * </pre>
+   *
+   * <code>repeated int64 dml_rows_modified = 7;</code>
+   * @return The count of dmlRowsModified.
+   */
+  public int getDmlRowsModifiedCount() {
+    return dmlRowsModified_.size();
+  }
+  /**
+   * <pre>
+   * Stores rows modified by query in single DML or batch DML action.
+   * In case of batch DML action, stores 0 as row count of errored DML query.
+   * </pre>
+   *
+   * <code>repeated int64 dml_rows_modified = 7;</code>
+   * @param index The index of the element to return.
+   * @return The dmlRowsModified at the given index.
+   */
+  public long getDmlRowsModified(int index) {
+    return dmlRowsModified_.getLong(index);
+  }
+  private int dmlRowsModifiedMemoizedSerializedSize = -1;
 
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
@@ -366,6 +488,7 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
+    getSerializedSize();
     if (((bitField0_ & 0x00000001) != 0)) {
       output.writeMessage(1, getStatus());
     }
@@ -376,10 +499,20 @@ private static final long serialVersionUID = 0L;
       output.writeMessage(3, getReadResult());
     }
     if (((bitField0_ & 0x00000008) != 0)) {
-      output.writeBool(4, transactionRestarted_);
+      output.writeMessage(4, getQueryResult());
     }
     if (((bitField0_ & 0x00000010) != 0)) {
-      output.writeMessage(5, getAdminResult());
+      output.writeBool(5, transactionRestarted_);
+    }
+    if (((bitField0_ & 0x00000020) != 0)) {
+      output.writeMessage(6, getAdminResult());
+    }
+    if (getDmlRowsModifiedList().size() > 0) {
+      output.writeUInt32NoTag(58);
+      output.writeUInt32NoTag(dmlRowsModifiedMemoizedSerializedSize);
+    }
+    for (int i = 0; i < dmlRowsModified_.size(); i++) {
+      output.writeInt64NoTag(dmlRowsModified_.getLong(i));
     }
     unknownFields.writeTo(output);
   }
@@ -404,11 +537,29 @@ private static final long serialVersionUID = 0L;
     }
     if (((bitField0_ & 0x00000008) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(4, transactionRestarted_);
+        .computeMessageSize(4, getQueryResult());
     }
     if (((bitField0_ & 0x00000010) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(5, getAdminResult());
+        .computeBoolSize(5, transactionRestarted_);
+    }
+    if (((bitField0_ & 0x00000020) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(6, getAdminResult());
+    }
+    {
+      int dataSize = 0;
+      for (int i = 0; i < dmlRowsModified_.size(); i++) {
+        dataSize += com.google.protobuf.CodedOutputStream
+          .computeInt64SizeNoTag(dmlRowsModified_.getLong(i));
+      }
+      size += dataSize;
+      if (!getDmlRowsModifiedList().isEmpty()) {
+        size += 1;
+        size += com.google.protobuf.CodedOutputStream
+            .computeInt32SizeNoTag(dataSize);
+      }
+      dmlRowsModifiedMemoizedSerializedSize = dataSize;
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -440,6 +591,11 @@ private static final long serialVersionUID = 0L;
       if (!getReadResult()
           .equals(other.getReadResult())) return false;
     }
+    if (hasQueryResult() != other.hasQueryResult()) return false;
+    if (hasQueryResult()) {
+      if (!getQueryResult()
+          .equals(other.getQueryResult())) return false;
+    }
     if (hasTransactionRestarted() != other.hasTransactionRestarted()) return false;
     if (hasTransactionRestarted()) {
       if (getTransactionRestarted()
@@ -450,6 +606,8 @@ private static final long serialVersionUID = 0L;
       if (!getAdminResult()
           .equals(other.getAdminResult())) return false;
     }
+    if (!getDmlRowsModifiedList()
+        .equals(other.getDmlRowsModifiedList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -473,6 +631,10 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + READ_RESULT_FIELD_NUMBER;
       hash = (53 * hash) + getReadResult().hashCode();
     }
+    if (hasQueryResult()) {
+      hash = (37 * hash) + QUERY_RESULT_FIELD_NUMBER;
+      hash = (53 * hash) + getQueryResult().hashCode();
+    }
     if (hasTransactionRestarted()) {
       hash = (37 * hash) + TRANSACTION_RESTARTED_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
@@ -481,6 +643,10 @@ private static final long serialVersionUID = 0L;
     if (hasAdminResult()) {
       hash = (37 * hash) + ADMIN_RESULT_FIELD_NUMBER;
       hash = (53 * hash) + getAdminResult().hashCode();
+    }
+    if (getDmlRowsModifiedCount() > 0) {
+      hash = (37 * hash) + DML_ROWS_MODIFIED_FIELD_NUMBER;
+      hash = (53 * hash) + getDmlRowsModifiedList().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -617,6 +783,7 @@ private static final long serialVersionUID = 0L;
         getStatusFieldBuilder();
         getCommitTimeFieldBuilder();
         getReadResultFieldBuilder();
+        getQueryResultFieldBuilder();
         getAdminResultFieldBuilder();
       }
     }
@@ -641,14 +808,22 @@ private static final long serialVersionUID = 0L;
         readResultBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000004);
-      transactionRestarted_ = false;
+      if (queryResultBuilder_ == null) {
+        queryResult_ = null;
+      } else {
+        queryResultBuilder_.clear();
+      }
       bitField0_ = (bitField0_ & ~0x00000008);
+      transactionRestarted_ = false;
+      bitField0_ = (bitField0_ & ~0x00000010);
       if (adminResultBuilder_ == null) {
         adminResult_ = null;
       } else {
         adminResultBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00000010);
+      bitField0_ = (bitField0_ & ~0x00000020);
+      dmlRowsModified_ = emptyLongList();
+      bitField0_ = (bitField0_ & ~0x00000040);
       return this;
     }
 
@@ -702,17 +877,30 @@ private static final long serialVersionUID = 0L;
         to_bitField0_ |= 0x00000004;
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
-        result.transactionRestarted_ = transactionRestarted_;
+        if (queryResultBuilder_ == null) {
+          result.queryResult_ = queryResult_;
+        } else {
+          result.queryResult_ = queryResultBuilder_.build();
+        }
         to_bitField0_ |= 0x00000008;
       }
       if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.transactionRestarted_ = transactionRestarted_;
+        to_bitField0_ |= 0x00000010;
+      }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
         if (adminResultBuilder_ == null) {
           result.adminResult_ = adminResult_;
         } else {
           result.adminResult_ = adminResultBuilder_.build();
         }
-        to_bitField0_ |= 0x00000010;
+        to_bitField0_ |= 0x00000020;
       }
+      if (((bitField0_ & 0x00000040) != 0)) {
+        dmlRowsModified_.makeImmutable();
+        bitField0_ = (bitField0_ & ~0x00000040);
+      }
+      result.dmlRowsModified_ = dmlRowsModified_;
       result.bitField0_ = to_bitField0_;
       onBuilt();
       return result;
@@ -771,11 +959,24 @@ private static final long serialVersionUID = 0L;
       if (other.hasReadResult()) {
         mergeReadResult(other.getReadResult());
       }
+      if (other.hasQueryResult()) {
+        mergeQueryResult(other.getQueryResult());
+      }
       if (other.hasTransactionRestarted()) {
         setTransactionRestarted(other.getTransactionRestarted());
       }
       if (other.hasAdminResult()) {
         mergeAdminResult(other.getAdminResult());
+      }
+      if (!other.dmlRowsModified_.isEmpty()) {
+        if (dmlRowsModified_.isEmpty()) {
+          dmlRowsModified_ = other.dmlRowsModified_;
+          bitField0_ = (bitField0_ & ~0x00000040);
+        } else {
+          ensureDmlRowsModifiedIsMutable();
+          dmlRowsModified_.addAll(other.dmlRowsModified_);
+        }
+        onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1293,6 +1494,171 @@ private static final long serialVersionUID = 0L;
       return readResultBuilder_;
     }
 
+    private com.google.spanner.executor.v1.QueryResult queryResult_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.executor.v1.QueryResult, com.google.spanner.executor.v1.QueryResult.Builder, com.google.spanner.executor.v1.QueryResultOrBuilder> queryResultBuilder_;
+    /**
+     * <pre>
+     * Result of a Query. This field must be set for Queries even if no rows were
+     * read.
+     * </pre>
+     *
+     * <code>optional .google.spanner.executor.v1.QueryResult query_result = 4;</code>
+     * @return Whether the queryResult field is set.
+     */
+    public boolean hasQueryResult() {
+      return ((bitField0_ & 0x00000008) != 0);
+    }
+    /**
+     * <pre>
+     * Result of a Query. This field must be set for Queries even if no rows were
+     * read.
+     * </pre>
+     *
+     * <code>optional .google.spanner.executor.v1.QueryResult query_result = 4;</code>
+     * @return The queryResult.
+     */
+    public com.google.spanner.executor.v1.QueryResult getQueryResult() {
+      if (queryResultBuilder_ == null) {
+        return queryResult_ == null ? com.google.spanner.executor.v1.QueryResult.getDefaultInstance() : queryResult_;
+      } else {
+        return queryResultBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     * Result of a Query. This field must be set for Queries even if no rows were
+     * read.
+     * </pre>
+     *
+     * <code>optional .google.spanner.executor.v1.QueryResult query_result = 4;</code>
+     */
+    public Builder setQueryResult(com.google.spanner.executor.v1.QueryResult value) {
+      if (queryResultBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        queryResult_ = value;
+        onChanged();
+      } else {
+        queryResultBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000008;
+      return this;
+    }
+    /**
+     * <pre>
+     * Result of a Query. This field must be set for Queries even if no rows were
+     * read.
+     * </pre>
+     *
+     * <code>optional .google.spanner.executor.v1.QueryResult query_result = 4;</code>
+     */
+    public Builder setQueryResult(
+        com.google.spanner.executor.v1.QueryResult.Builder builderForValue) {
+      if (queryResultBuilder_ == null) {
+        queryResult_ = builderForValue.build();
+        onChanged();
+      } else {
+        queryResultBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000008;
+      return this;
+    }
+    /**
+     * <pre>
+     * Result of a Query. This field must be set for Queries even if no rows were
+     * read.
+     * </pre>
+     *
+     * <code>optional .google.spanner.executor.v1.QueryResult query_result = 4;</code>
+     */
+    public Builder mergeQueryResult(com.google.spanner.executor.v1.QueryResult value) {
+      if (queryResultBuilder_ == null) {
+        if (((bitField0_ & 0x00000008) != 0) &&
+            queryResult_ != null &&
+            queryResult_ != com.google.spanner.executor.v1.QueryResult.getDefaultInstance()) {
+          queryResult_ =
+            com.google.spanner.executor.v1.QueryResult.newBuilder(queryResult_).mergeFrom(value).buildPartial();
+        } else {
+          queryResult_ = value;
+        }
+        onChanged();
+      } else {
+        queryResultBuilder_.mergeFrom(value);
+      }
+      bitField0_ |= 0x00000008;
+      return this;
+    }
+    /**
+     * <pre>
+     * Result of a Query. This field must be set for Queries even if no rows were
+     * read.
+     * </pre>
+     *
+     * <code>optional .google.spanner.executor.v1.QueryResult query_result = 4;</code>
+     */
+    public Builder clearQueryResult() {
+      if (queryResultBuilder_ == null) {
+        queryResult_ = null;
+        onChanged();
+      } else {
+        queryResultBuilder_.clear();
+      }
+      bitField0_ = (bitField0_ & ~0x00000008);
+      return this;
+    }
+    /**
+     * <pre>
+     * Result of a Query. This field must be set for Queries even if no rows were
+     * read.
+     * </pre>
+     *
+     * <code>optional .google.spanner.executor.v1.QueryResult query_result = 4;</code>
+     */
+    public com.google.spanner.executor.v1.QueryResult.Builder getQueryResultBuilder() {
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return getQueryResultFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Result of a Query. This field must be set for Queries even if no rows were
+     * read.
+     * </pre>
+     *
+     * <code>optional .google.spanner.executor.v1.QueryResult query_result = 4;</code>
+     */
+    public com.google.spanner.executor.v1.QueryResultOrBuilder getQueryResultOrBuilder() {
+      if (queryResultBuilder_ != null) {
+        return queryResultBuilder_.getMessageOrBuilder();
+      } else {
+        return queryResult_ == null ?
+            com.google.spanner.executor.v1.QueryResult.getDefaultInstance() : queryResult_;
+      }
+    }
+    /**
+     * <pre>
+     * Result of a Query. This field must be set for Queries even if no rows were
+     * read.
+     * </pre>
+     *
+     * <code>optional .google.spanner.executor.v1.QueryResult query_result = 4;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.executor.v1.QueryResult, com.google.spanner.executor.v1.QueryResult.Builder, com.google.spanner.executor.v1.QueryResultOrBuilder> 
+        getQueryResultFieldBuilder() {
+      if (queryResultBuilder_ == null) {
+        queryResultBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.executor.v1.QueryResult, com.google.spanner.executor.v1.QueryResult.Builder, com.google.spanner.executor.v1.QueryResultOrBuilder>(
+                getQueryResult(),
+                getParentForChildren(),
+                isClean());
+        queryResult_ = null;
+      }
+      return queryResultBuilder_;
+    }
+
     private boolean transactionRestarted_ ;
     /**
      * <pre>
@@ -1302,12 +1668,12 @@ private static final long serialVersionUID = 0L;
      * transaction, as an outcome of a committing FinishTransactionAction.
      * </pre>
      *
-     * <code>optional bool transaction_restarted = 4;</code>
+     * <code>optional bool transaction_restarted = 5;</code>
      * @return Whether the transactionRestarted field is set.
      */
     @java.lang.Override
     public boolean hasTransactionRestarted() {
-      return ((bitField0_ & 0x00000008) != 0);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <pre>
@@ -1317,7 +1683,7 @@ private static final long serialVersionUID = 0L;
      * transaction, as an outcome of a committing FinishTransactionAction.
      * </pre>
      *
-     * <code>optional bool transaction_restarted = 4;</code>
+     * <code>optional bool transaction_restarted = 5;</code>
      * @return The transactionRestarted.
      */
     @java.lang.Override
@@ -1332,12 +1698,12 @@ private static final long serialVersionUID = 0L;
      * transaction, as an outcome of a committing FinishTransactionAction.
      * </pre>
      *
-     * <code>optional bool transaction_restarted = 4;</code>
+     * <code>optional bool transaction_restarted = 5;</code>
      * @param value The transactionRestarted to set.
      * @return This builder for chaining.
      */
     public Builder setTransactionRestarted(boolean value) {
-      bitField0_ |= 0x00000008;
+      bitField0_ |= 0x00000010;
       transactionRestarted_ = value;
       onChanged();
       return this;
@@ -1350,11 +1716,11 @@ private static final long serialVersionUID = 0L;
      * transaction, as an outcome of a committing FinishTransactionAction.
      * </pre>
      *
-     * <code>optional bool transaction_restarted = 4;</code>
+     * <code>optional bool transaction_restarted = 5;</code>
      * @return This builder for chaining.
      */
     public Builder clearTransactionRestarted() {
-      bitField0_ = (bitField0_ & ~0x00000008);
+      bitField0_ = (bitField0_ & ~0x00000010);
       transactionRestarted_ = false;
       onChanged();
       return this;
@@ -1368,18 +1734,18 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
      * @return Whether the adminResult field is set.
      */
     public boolean hasAdminResult() {
-      return ((bitField0_ & 0x00000010) != 0);
+      return ((bitField0_ & 0x00000020) != 0);
     }
     /**
      * <pre>
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
      * @return The adminResult.
      */
     public com.google.spanner.executor.v1.AdminResult getAdminResult() {
@@ -1394,7 +1760,7 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
      */
     public Builder setAdminResult(com.google.spanner.executor.v1.AdminResult value) {
       if (adminResultBuilder_ == null) {
@@ -1406,7 +1772,7 @@ private static final long serialVersionUID = 0L;
       } else {
         adminResultBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000020;
       return this;
     }
     /**
@@ -1414,7 +1780,7 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
      */
     public Builder setAdminResult(
         com.google.spanner.executor.v1.AdminResult.Builder builderForValue) {
@@ -1424,7 +1790,7 @@ private static final long serialVersionUID = 0L;
       } else {
         adminResultBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000020;
       return this;
     }
     /**
@@ -1432,11 +1798,11 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
      */
     public Builder mergeAdminResult(com.google.spanner.executor.v1.AdminResult value) {
       if (adminResultBuilder_ == null) {
-        if (((bitField0_ & 0x00000010) != 0) &&
+        if (((bitField0_ & 0x00000020) != 0) &&
             adminResult_ != null &&
             adminResult_ != com.google.spanner.executor.v1.AdminResult.getDefaultInstance()) {
           adminResult_ =
@@ -1448,7 +1814,7 @@ private static final long serialVersionUID = 0L;
       } else {
         adminResultBuilder_.mergeFrom(value);
       }
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000020;
       return this;
     }
     /**
@@ -1456,7 +1822,7 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
      */
     public Builder clearAdminResult() {
       if (adminResultBuilder_ == null) {
@@ -1465,7 +1831,7 @@ private static final long serialVersionUID = 0L;
       } else {
         adminResultBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00000010);
+      bitField0_ = (bitField0_ & ~0x00000020);
       return this;
     }
     /**
@@ -1473,10 +1839,10 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
      */
     public com.google.spanner.executor.v1.AdminResult.Builder getAdminResultBuilder() {
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000020;
       onChanged();
       return getAdminResultFieldBuilder().getBuilder();
     }
@@ -1485,7 +1851,7 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
      */
     public com.google.spanner.executor.v1.AdminResultOrBuilder getAdminResultOrBuilder() {
       if (adminResultBuilder_ != null) {
@@ -1500,7 +1866,7 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.spanner.executor.v1.AdminResult, com.google.spanner.executor.v1.AdminResult.Builder, com.google.spanner.executor.v1.AdminResultOrBuilder> 
@@ -1514,6 +1880,120 @@ private static final long serialVersionUID = 0L;
         adminResult_ = null;
       }
       return adminResultBuilder_;
+    }
+
+    private com.google.protobuf.Internal.LongList dmlRowsModified_ = emptyLongList();
+    private void ensureDmlRowsModifiedIsMutable() {
+      if (!((bitField0_ & 0x00000040) != 0)) {
+        dmlRowsModified_ = mutableCopy(dmlRowsModified_);
+        bitField0_ |= 0x00000040;
+       }
+    }
+    /**
+     * <pre>
+     * Stores rows modified by query in single DML or batch DML action.
+     * In case of batch DML action, stores 0 as row count of errored DML query.
+     * </pre>
+     *
+     * <code>repeated int64 dml_rows_modified = 7;</code>
+     * @return A list containing the dmlRowsModified.
+     */
+    public java.util.List<java.lang.Long>
+        getDmlRowsModifiedList() {
+      return ((bitField0_ & 0x00000040) != 0) ?
+               java.util.Collections.unmodifiableList(dmlRowsModified_) : dmlRowsModified_;
+    }
+    /**
+     * <pre>
+     * Stores rows modified by query in single DML or batch DML action.
+     * In case of batch DML action, stores 0 as row count of errored DML query.
+     * </pre>
+     *
+     * <code>repeated int64 dml_rows_modified = 7;</code>
+     * @return The count of dmlRowsModified.
+     */
+    public int getDmlRowsModifiedCount() {
+      return dmlRowsModified_.size();
+    }
+    /**
+     * <pre>
+     * Stores rows modified by query in single DML or batch DML action.
+     * In case of batch DML action, stores 0 as row count of errored DML query.
+     * </pre>
+     *
+     * <code>repeated int64 dml_rows_modified = 7;</code>
+     * @param index The index of the element to return.
+     * @return The dmlRowsModified at the given index.
+     */
+    public long getDmlRowsModified(int index) {
+      return dmlRowsModified_.getLong(index);
+    }
+    /**
+     * <pre>
+     * Stores rows modified by query in single DML or batch DML action.
+     * In case of batch DML action, stores 0 as row count of errored DML query.
+     * </pre>
+     *
+     * <code>repeated int64 dml_rows_modified = 7;</code>
+     * @param index The index to set the value at.
+     * @param value The dmlRowsModified to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDmlRowsModified(
+        int index, long value) {
+      ensureDmlRowsModifiedIsMutable();
+      dmlRowsModified_.setLong(index, value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Stores rows modified by query in single DML or batch DML action.
+     * In case of batch DML action, stores 0 as row count of errored DML query.
+     * </pre>
+     *
+     * <code>repeated int64 dml_rows_modified = 7;</code>
+     * @param value The dmlRowsModified to add.
+     * @return This builder for chaining.
+     */
+    public Builder addDmlRowsModified(long value) {
+      ensureDmlRowsModifiedIsMutable();
+      dmlRowsModified_.addLong(value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Stores rows modified by query in single DML or batch DML action.
+     * In case of batch DML action, stores 0 as row count of errored DML query.
+     * </pre>
+     *
+     * <code>repeated int64 dml_rows_modified = 7;</code>
+     * @param values The dmlRowsModified to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAllDmlRowsModified(
+        java.lang.Iterable<? extends java.lang.Long> values) {
+      ensureDmlRowsModifiedIsMutable();
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          values, dmlRowsModified_);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Stores rows modified by query in single DML or batch DML action.
+     * In case of batch DML action, stores 0 as row count of errored DML query.
+     * </pre>
+     *
+     * <code>repeated int64 dml_rows_modified = 7;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearDmlRowsModified() {
+      dmlRowsModified_ = emptyLongList();
+      bitField0_ = (bitField0_ & ~0x00000040);
+      onChanged();
+      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

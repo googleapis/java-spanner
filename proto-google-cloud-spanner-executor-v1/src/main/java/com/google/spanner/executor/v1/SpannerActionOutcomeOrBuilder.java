@@ -112,13 +112,43 @@ public interface SpannerActionOutcomeOrBuilder extends
 
   /**
    * <pre>
+   * Result of a Query. This field must be set for Queries even if no rows were
+   * read.
+   * </pre>
+   *
+   * <code>optional .google.spanner.executor.v1.QueryResult query_result = 4;</code>
+   * @return Whether the queryResult field is set.
+   */
+  boolean hasQueryResult();
+  /**
+   * <pre>
+   * Result of a Query. This field must be set for Queries even if no rows were
+   * read.
+   * </pre>
+   *
+   * <code>optional .google.spanner.executor.v1.QueryResult query_result = 4;</code>
+   * @return The queryResult.
+   */
+  com.google.spanner.executor.v1.QueryResult getQueryResult();
+  /**
+   * <pre>
+   * Result of a Query. This field must be set for Queries even if no rows were
+   * read.
+   * </pre>
+   *
+   * <code>optional .google.spanner.executor.v1.QueryResult query_result = 4;</code>
+   */
+  com.google.spanner.executor.v1.QueryResultOrBuilder getQueryResultOrBuilder();
+
+  /**
+   * <pre>
    * This bit indicates that Spanner has restarted the current transaction. It
    * means that the client should replay all the reads and writes.
    * Setting it to true is only valid in the context of a read-write
    * transaction, as an outcome of a committing FinishTransactionAction.
    * </pre>
    *
-   * <code>optional bool transaction_restarted = 4;</code>
+   * <code>optional bool transaction_restarted = 5;</code>
    * @return Whether the transactionRestarted field is set.
    */
   boolean hasTransactionRestarted();
@@ -130,7 +160,7 @@ public interface SpannerActionOutcomeOrBuilder extends
    * transaction, as an outcome of a committing FinishTransactionAction.
    * </pre>
    *
-   * <code>optional bool transaction_restarted = 4;</code>
+   * <code>optional bool transaction_restarted = 5;</code>
    * @return The transactionRestarted.
    */
   boolean getTransactionRestarted();
@@ -140,7 +170,7 @@ public interface SpannerActionOutcomeOrBuilder extends
    * Result of admin related actions.
    * </pre>
    *
-   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
    * @return Whether the adminResult field is set.
    */
   boolean hasAdminResult();
@@ -149,7 +179,7 @@ public interface SpannerActionOutcomeOrBuilder extends
    * Result of admin related actions.
    * </pre>
    *
-   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
    * @return The adminResult.
    */
   com.google.spanner.executor.v1.AdminResult getAdminResult();
@@ -158,7 +188,39 @@ public interface SpannerActionOutcomeOrBuilder extends
    * Result of admin related actions.
    * </pre>
    *
-   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 5;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
    */
   com.google.spanner.executor.v1.AdminResultOrBuilder getAdminResultOrBuilder();
+
+  /**
+   * <pre>
+   * Stores rows modified by query in single DML or batch DML action.
+   * In case of batch DML action, stores 0 as row count of errored DML query.
+   * </pre>
+   *
+   * <code>repeated int64 dml_rows_modified = 7;</code>
+   * @return A list containing the dmlRowsModified.
+   */
+  java.util.List<java.lang.Long> getDmlRowsModifiedList();
+  /**
+   * <pre>
+   * Stores rows modified by query in single DML or batch DML action.
+   * In case of batch DML action, stores 0 as row count of errored DML query.
+   * </pre>
+   *
+   * <code>repeated int64 dml_rows_modified = 7;</code>
+   * @return The count of dmlRowsModified.
+   */
+  int getDmlRowsModifiedCount();
+  /**
+   * <pre>
+   * Stores rows modified by query in single DML or batch DML action.
+   * In case of batch DML action, stores 0 as row count of errored DML query.
+   * </pre>
+   *
+   * <code>repeated int64 dml_rows_modified = 7;</code>
+   * @param index The index of the element to return.
+   * @return The dmlRowsModified at the given index.
+   */
+  long getDmlRowsModified(int index);
 }
