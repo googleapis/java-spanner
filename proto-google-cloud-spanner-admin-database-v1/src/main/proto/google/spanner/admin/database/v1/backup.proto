@@ -117,6 +117,10 @@ message Backup {
   // Output only. The encryption information for the backup.
   EncryptionInfo encryption_info = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
 
+  repeated EncryptionInfo encryption_information = 13 [
+    (google.api.field_behavior) = OUTPUT_ONLY
+  ];
+
   // Output only. The database dialect information for the backup.
   DatabaseDialect database_dialect = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
 
@@ -569,6 +573,13 @@ message CreateBackupEncryptionConfig {
       type: "cloudkms.googleapis.com/CryptoKey"
     }
   ];
+
+  repeated string kms_key_names = 3 [
+    (google.api.field_behavior) = OPTIONAL,
+    (google.api.resource_reference) = {
+      type: "cloudkms.googleapis.com/CryptoKey"
+    }
+  ];
 }
 
 // Encryption configuration for the copied backup.
@@ -601,6 +612,12 @@ message CopyBackupEncryptionConfig {
   // `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
   // `projects/<project>/locations/<location>/keyRings/<key_ring>/cryptoKeys/<kms_key_name>`.
   string kms_key_name = 2 [
+    (google.api.field_behavior) = OPTIONAL,
+    (google.api.resource_reference) = {
+      type: "cloudkms.googleapis.com/CryptoKey"
+    }
+  ];
+  repeated string kms_key_names = 3 [
     (google.api.field_behavior) = OPTIONAL,
     (google.api.resource_reference) = {
       type: "cloudkms.googleapis.com/CryptoKey"

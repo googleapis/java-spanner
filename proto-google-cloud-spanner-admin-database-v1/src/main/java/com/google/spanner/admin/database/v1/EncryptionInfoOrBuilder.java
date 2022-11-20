@@ -102,6 +102,10 @@ public interface EncryptionInfoOrBuilder
    * <pre>
    * Output only. A Cloud KMS key version that is being used to protect the database or
    * backup.
+   * (--
+   * Fully qualified key version id of the form
+   * projects/{project}/locations/{location}/keyRings/{keyring}/cryptoKeys/{key}/cryptoKeyVersions/{keyversion}
+   * --)
    * </pre>
    *
    * <code>
@@ -117,6 +121,10 @@ public interface EncryptionInfoOrBuilder
    * <pre>
    * Output only. A Cloud KMS key version that is being used to protect the database or
    * backup.
+   * (--
+   * Fully qualified key version id of the form
+   * projects/{project}/locations/{location}/keyRings/{keyring}/cryptoKeys/{key}/cryptoKeyVersions/{keyversion}
+   * --)
    * </pre>
    *
    * <code>

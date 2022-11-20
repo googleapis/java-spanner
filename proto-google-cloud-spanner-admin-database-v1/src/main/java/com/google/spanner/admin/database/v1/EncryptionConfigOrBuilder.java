@@ -27,9 +27,25 @@ public interface EncryptionConfigOrBuilder
    *
    *
    * <pre>
+   * (--
+   * TODO(b/240165507) make the following comment visible after cloud spanner
+   * multi-region cmek launch.
+   * --)
+   * (--
+   * This field is maintained for backwards compatibility. For new callers, we
+   * recommend using `kms_key_names` to specify the KMS key.
+   * `kms_key_name` should only be used if the location of the KMS key matches
+   * the database instance’s configuration (location) exactly. E.g. The KMS
+   * location is in us-central1 or nam3 and the database instance is also in
+   * us-central1 or nam3.
+   * --)
    * The Cloud KMS key to be used for encrypting and decrypting
    * the database. Values are of the form
    * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+   * (-- api-linter: core::0122::name-suffix=disabled
+   *     aip.dev/not-precedent: crypto key identifiers like this are listed as a
+   *     canonical example of when field names would be ambiguous without the
+   *     _name suffix and should therefore include it. --)
    * </pre>
    *
    * <code>string kms_key_name = 2 [(.google.api.resource_reference) = { ... }</code>
@@ -41,9 +57,25 @@ public interface EncryptionConfigOrBuilder
    *
    *
    * <pre>
+   * (--
+   * TODO(b/240165507) make the following comment visible after cloud spanner
+   * multi-region cmek launch.
+   * --)
+   * (--
+   * This field is maintained for backwards compatibility. For new callers, we
+   * recommend using `kms_key_names` to specify the KMS key.
+   * `kms_key_name` should only be used if the location of the KMS key matches
+   * the database instance’s configuration (location) exactly. E.g. The KMS
+   * location is in us-central1 or nam3 and the database instance is also in
+   * us-central1 or nam3.
+   * --)
    * The Cloud KMS key to be used for encrypting and decrypting
    * the database. Values are of the form
    * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+   * (-- api-linter: core::0122::name-suffix=disabled
+   *     aip.dev/not-precedent: crypto key identifiers like this are listed as a
+   *     canonical example of when field names would be ambiguous without the
+   *     _name suffix and should therefore include it. --)
    * </pre>
    *
    * <code>string kms_key_name = 2 [(.google.api.resource_reference) = { ... }</code>
@@ -51,4 +83,123 @@ public interface EncryptionConfigOrBuilder
    * @return The bytes for kmsKeyName.
    */
   com.google.protobuf.ByteString getKmsKeyNameBytes();
+
+  /**
+   *
+   *
+   * <pre>
+   * (--
+   * TODO(b/240165507) remove visibility check after cloud spanner multi-region
+   * cmek launch.
+   * --)
+   * Specifies the KMS configuration for the one or more keys used to encrypt
+   * the database. Values are of the form
+   * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+   * The keys referenced by kms_key_names must fully cover all
+   * regions of the database instance configuration. Some examples:
+   * * For single region database instance configs, specify a single regional
+   * location KMS key.
+   * * For multi-regional database instance configs of type GOOGLE_MANAGED,
+   * either specify a multi-regional location KMS key or multiple regional
+   * location KMS keys that cover all regions in the instance config.
+   * * For a database instance config of type USER_MANAGED, please specify only
+   * regional location KMS keys to cover each region in the instance config.
+   * Multi-regional location KMS keys are not supported for USER_MANAGED
+   * instance configs.
+   * </pre>
+   *
+   * <code>repeated string kms_key_names = 3 [(.google.api.resource_reference) = { ... }</code>
+   *
+   * @return A list containing the kmsKeyNames.
+   */
+  java.util.List<java.lang.String> getKmsKeyNamesList();
+  /**
+   *
+   *
+   * <pre>
+   * (--
+   * TODO(b/240165507) remove visibility check after cloud spanner multi-region
+   * cmek launch.
+   * --)
+   * Specifies the KMS configuration for the one or more keys used to encrypt
+   * the database. Values are of the form
+   * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+   * The keys referenced by kms_key_names must fully cover all
+   * regions of the database instance configuration. Some examples:
+   * * For single region database instance configs, specify a single regional
+   * location KMS key.
+   * * For multi-regional database instance configs of type GOOGLE_MANAGED,
+   * either specify a multi-regional location KMS key or multiple regional
+   * location KMS keys that cover all regions in the instance config.
+   * * For a database instance config of type USER_MANAGED, please specify only
+   * regional location KMS keys to cover each region in the instance config.
+   * Multi-regional location KMS keys are not supported for USER_MANAGED
+   * instance configs.
+   * </pre>
+   *
+   * <code>repeated string kms_key_names = 3 [(.google.api.resource_reference) = { ... }</code>
+   *
+   * @return The count of kmsKeyNames.
+   */
+  int getKmsKeyNamesCount();
+  /**
+   *
+   *
+   * <pre>
+   * (--
+   * TODO(b/240165507) remove visibility check after cloud spanner multi-region
+   * cmek launch.
+   * --)
+   * Specifies the KMS configuration for the one or more keys used to encrypt
+   * the database. Values are of the form
+   * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+   * The keys referenced by kms_key_names must fully cover all
+   * regions of the database instance configuration. Some examples:
+   * * For single region database instance configs, specify a single regional
+   * location KMS key.
+   * * For multi-regional database instance configs of type GOOGLE_MANAGED,
+   * either specify a multi-regional location KMS key or multiple regional
+   * location KMS keys that cover all regions in the instance config.
+   * * For a database instance config of type USER_MANAGED, please specify only
+   * regional location KMS keys to cover each region in the instance config.
+   * Multi-regional location KMS keys are not supported for USER_MANAGED
+   * instance configs.
+   * </pre>
+   *
+   * <code>repeated string kms_key_names = 3 [(.google.api.resource_reference) = { ... }</code>
+   *
+   * @param index The index of the element to return.
+   * @return The kmsKeyNames at the given index.
+   */
+  java.lang.String getKmsKeyNames(int index);
+  /**
+   *
+   *
+   * <pre>
+   * (--
+   * TODO(b/240165507) remove visibility check after cloud spanner multi-region
+   * cmek launch.
+   * --)
+   * Specifies the KMS configuration for the one or more keys used to encrypt
+   * the database. Values are of the form
+   * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+   * The keys referenced by kms_key_names must fully cover all
+   * regions of the database instance configuration. Some examples:
+   * * For single region database instance configs, specify a single regional
+   * location KMS key.
+   * * For multi-regional database instance configs of type GOOGLE_MANAGED,
+   * either specify a multi-regional location KMS key or multiple regional
+   * location KMS keys that cover all regions in the instance config.
+   * * For a database instance config of type USER_MANAGED, please specify only
+   * regional location KMS keys to cover each region in the instance config.
+   * Multi-regional location KMS keys are not supported for USER_MANAGED
+   * instance configs.
+   * </pre>
+   *
+   * <code>repeated string kms_key_names = 3 [(.google.api.resource_reference) = { ... }</code>
+   *
+   * @param index The index of the value to return.
+   * @return The bytes of the kmsKeyNames at the given index.
+   */
+  com.google.protobuf.ByteString getKmsKeyNamesBytes(int index);
 }

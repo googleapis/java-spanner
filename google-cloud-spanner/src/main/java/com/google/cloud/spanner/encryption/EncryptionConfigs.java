@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.encryption;
 
 import com.google.api.client.util.Preconditions;
+import java.util.List;
 
 /** Encryption configuration factory. */
 public class EncryptionConfigs {
@@ -26,6 +27,14 @@ public class EncryptionConfigs {
     Preconditions.checkArgument(
         kmsKeyName != null, "Customer managed encryption key name must not be null");
     return new CustomerManagedEncryption(kmsKeyName);
+  }
+
+  public static CustomerManagedEncryption customerManagedEncryptionMultiRegion(List<String> kmsKeyNames) {
+    Preconditions.checkArgument(
+        kmsKeyNames != null, "Customer managed encryption key names must not be null");
+    Preconditions.checkArgument(
+        kmsKeyNames.isEmpty() != true, "Customer managed encryption key names must not be empty");
+    return new CustomerManagedEncryption(kmsKeyNames);
   }
 
   /** Returns google default encryption configuration. */

@@ -806,6 +806,13 @@ message RestoreDatabaseEncryptionConfig {
       type: "cloudkms.googleapis.com/CryptoKey"
     }
   ];
+
+  repeated string kms_key_names = 3 [
+    (google.api.field_behavior) = OPTIONAL,
+    (google.api.resource_reference) = {
+      type: "cloudkms.googleapis.com/CryptoKey"
+    }
+  ];
 }
 
 // Metadata type for the long-running operation returned by

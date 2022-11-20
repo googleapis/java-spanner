@@ -26,7 +26,10 @@ public class EncryptionConfigProtoMapper {
 
   /** Returns an encryption config to be used for a database. */
   public static EncryptionConfig encryptionConfig(CustomerManagedEncryption config) {
-    return EncryptionConfig.newBuilder().setKmsKeyName(config.getKmsKeyName()).build();
+    return EncryptionConfig.newBuilder()
+        .setKmsKeyName(config.getKmsKeyName())
+        .addAllKmsKeyNames(config.getKmsKeyNames())
+        .build();
   }
 
   /** Returns an encryption config to be used for a backup. */
@@ -37,6 +40,7 @@ public class EncryptionConfigProtoMapper {
           .setEncryptionType(
               CreateBackupEncryptionConfig.EncryptionType.CUSTOMER_MANAGED_ENCRYPTION)
           .setKmsKeyName(((CustomerManagedEncryption) config).getKmsKeyName())
+          .addAllKmsKeyNames(((CustomerManagedEncryption) config).getKmsKeyNames())
           .build();
     } else if (config instanceof GoogleDefaultEncryption) {
       return CreateBackupEncryptionConfig.newBuilder()
@@ -58,6 +62,7 @@ public class EncryptionConfigProtoMapper {
       return CopyBackupEncryptionConfig.newBuilder()
           .setEncryptionType(CopyBackupEncryptionConfig.EncryptionType.CUSTOMER_MANAGED_ENCRYPTION)
           .setKmsKeyName(((CustomerManagedEncryption) config).getKmsKeyName())
+          .addAllKmsKeyNames(((CustomerManagedEncryption) config).getKmsKeyNames())
           .build();
     } else if (config instanceof GoogleDefaultEncryption) {
       return CopyBackupEncryptionConfig.newBuilder()
@@ -81,6 +86,7 @@ public class EncryptionConfigProtoMapper {
           .setEncryptionType(
               RestoreDatabaseEncryptionConfig.EncryptionType.CUSTOMER_MANAGED_ENCRYPTION)
           .setKmsKeyName(((CustomerManagedEncryption) config).getKmsKeyName())
+          .addAllKmsKeyNames(((CustomerManagedEncryption) config).getKmsKeyNames())
           .build();
     } else if (config instanceof GoogleDefaultEncryption) {
       return RestoreDatabaseEncryptionConfig.newBuilder()

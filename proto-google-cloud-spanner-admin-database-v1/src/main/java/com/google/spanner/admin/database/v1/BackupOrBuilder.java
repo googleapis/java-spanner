@@ -406,6 +406,40 @@ public interface BackupOrBuilder
   com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder getEncryptionInfoOrBuilder();
 
   /**
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  java.util.List<com.google.spanner.admin.database.v1.EncryptionInfo>
+      getEncryptionInformationList();
+  /**
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.EncryptionInfo getEncryptionInformation(int index);
+  /**
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  int getEncryptionInformationCount();
+  /**
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  java.util.List<? extends com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>
+      getEncryptionInformationOrBuilderList();
+  /**
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder getEncryptionInformationOrBuilder(
+      int index);
+
+  /**
    *
    *
    * <pre>

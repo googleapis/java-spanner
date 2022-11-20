@@ -17,19 +17,34 @@
 package com.google.cloud.spanner.encryption;
 
 import com.google.spanner.admin.database.v1.EncryptionConfig;
+import java.util.List;
 import java.util.Objects;
+import org.checkerframework.checker.units.qual.C;
 
-/** The data is encrypted with a key provided by the customer. */
+/**
+ * The data is encrypted with a key provided by the customer.
+ */
 public class CustomerManagedEncryption implements BackupEncryptionConfig, RestoreEncryptionConfig {
 
   private final String kmsKeyName;
+  private final List<String> kmsKeyNames;
 
   CustomerManagedEncryption(String kmsKeyName) {
     this.kmsKeyName = kmsKeyName;
+    this.kmsKeyNames = null;
+  }
+
+  CustomerManagedEncryption(List<String> kmsKeyNames) {
+    this.kmsKeyNames = kmsKeyNames;
+    this.kmsKeyName = null;
   }
 
   public String getKmsKeyName() {
     return kmsKeyName;
+  }
+
+  public List<String> getKmsKeyNames() {
+    return kmsKeyNames;
   }
 
   /**
@@ -39,7 +54,8 @@ public class CustomerManagedEncryption implements BackupEncryptionConfig, Restor
   public static CustomerManagedEncryption fromProtoOrNull(EncryptionConfig proto) {
     return proto.equals(EncryptionConfig.getDefaultInstance())
         ? null
-        : new CustomerManagedEncryption(proto.getKmsKeyName());
+        : !proto.getKmsKeyName().isEmpty() ? new CustomerManagedEncryption(proto.getKmsKeyName())
+            : new CustomerManagedEncryption(proto.getKmsKeyNamesList());
   }
 
   @Override
@@ -51,7 +67,7 @@ public class CustomerManagedEncryption implements BackupEncryptionConfig, Restor
       return false;
     }
     CustomerManagedEncryption that = (CustomerManagedEncryption) o;
-    return Objects.equals(kmsKeyName, that.kmsKeyName);
+    return Objects.equals(kmsKeyName, that.kmsKeyName) && Objects.equals(kmsKeyNames, that.kmsKeyNames);
   }
 
   @Override

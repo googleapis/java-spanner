@@ -40,6 +40,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
   private CopyBackupEncryptionConfig() {
     encryptionType_ = 0;
     kmsKeyName_ = "";
+    kmsKeyNames_ = com.google.protobuf.LazyStringArrayList.EMPTY;
   }
 
   @java.lang.Override
@@ -364,6 +365,51 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     }
   }
 
+  public static final int KMS_KEY_NAMES_FIELD_NUMBER = 3;
+  private com.google.protobuf.LazyStringList kmsKeyNames_;
+  /**
+   * <code>
+   * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @return A list containing the kmsKeyNames.
+   */
+  public com.google.protobuf.ProtocolStringList getKmsKeyNamesList() {
+    return kmsKeyNames_;
+  }
+  /**
+   * <code>
+   * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @return The count of kmsKeyNames.
+   */
+  public int getKmsKeyNamesCount() {
+    return kmsKeyNames_.size();
+  }
+  /**
+   * <code>
+   * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @param index The index of the element to return.
+   * @return The kmsKeyNames at the given index.
+   */
+  public java.lang.String getKmsKeyNames(int index) {
+    return kmsKeyNames_.get(index);
+  }
+  /**
+   * <code>
+   * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @param index The index of the value to return.
+   * @return The bytes of the kmsKeyNames at the given index.
+   */
+  public com.google.protobuf.ByteString getKmsKeyNamesBytes(int index) {
+    return kmsKeyNames_.getByteString(index);
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -387,6 +433,9 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(kmsKeyName_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, kmsKeyName_);
     }
+    for (int i = 0; i < kmsKeyNames_.size(); i++) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 3, kmsKeyNames_.getRaw(i));
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -404,6 +453,14 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     }
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(kmsKeyName_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, kmsKeyName_);
+    }
+    {
+      int dataSize = 0;
+      for (int i = 0; i < kmsKeyNames_.size(); i++) {
+        dataSize += computeStringSizeNoTag(kmsKeyNames_.getRaw(i));
+      }
+      size += dataSize;
+      size += 1 * getKmsKeyNamesList().size();
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -423,6 +480,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
 
     if (encryptionType_ != other.encryptionType_) return false;
     if (!getKmsKeyName().equals(other.getKmsKeyName())) return false;
+    if (!getKmsKeyNamesList().equals(other.getKmsKeyNamesList())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -438,6 +496,10 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     hash = (53 * hash) + encryptionType_;
     hash = (37 * hash) + KMS_KEY_NAME_FIELD_NUMBER;
     hash = (53 * hash) + getKmsKeyName().hashCode();
+    if (getKmsKeyNamesCount() > 0) {
+      hash = (37 * hash) + KMS_KEY_NAMES_FIELD_NUMBER;
+      hash = (53 * hash) + getKmsKeyNamesList().hashCode();
+    }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -581,6 +643,8 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
 
       kmsKeyName_ = "";
 
+      kmsKeyNames_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000001);
       return this;
     }
 
@@ -609,8 +673,14 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     public com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig buildPartial() {
       com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig result =
           new com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig(this);
+      int from_bitField0_ = bitField0_;
       result.encryptionType_ = encryptionType_;
       result.kmsKeyName_ = kmsKeyName_;
+      if (((bitField0_ & 0x00000001) != 0)) {
+        kmsKeyNames_ = kmsKeyNames_.getUnmodifiableView();
+        bitField0_ = (bitField0_ & ~0x00000001);
+      }
+      result.kmsKeyNames_ = kmsKeyNames_;
       onBuilt();
       return result;
     }
@@ -670,6 +740,16 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
         kmsKeyName_ = other.kmsKeyName_;
         onChanged();
       }
+      if (!other.kmsKeyNames_.isEmpty()) {
+        if (kmsKeyNames_.isEmpty()) {
+          kmsKeyNames_ = other.kmsKeyNames_;
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          ensureKmsKeyNamesIsMutable();
+          kmsKeyNames_.addAll(other.kmsKeyNames_);
+        }
+        onChanged();
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -708,6 +788,13 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
 
                 break;
               } // case 18
+            case 26:
+              {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureKmsKeyNamesIsMutable();
+                kmsKeyNames_.add(s);
+                break;
+              } // case 26
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -724,6 +811,8 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private int encryptionType_ = 0;
     /**
@@ -964,6 +1053,138 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       checkByteStringIsUtf8(value);
 
       kmsKeyName_ = value;
+      onChanged();
+      return this;
+    }
+
+    private com.google.protobuf.LazyStringList kmsKeyNames_ =
+        com.google.protobuf.LazyStringArrayList.EMPTY;
+
+    private void ensureKmsKeyNamesIsMutable() {
+      if (!((bitField0_ & 0x00000001) != 0)) {
+        kmsKeyNames_ = new com.google.protobuf.LazyStringArrayList(kmsKeyNames_);
+        bitField0_ |= 0x00000001;
+      }
+    }
+    /**
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @return A list containing the kmsKeyNames.
+     */
+    public com.google.protobuf.ProtocolStringList getKmsKeyNamesList() {
+      return kmsKeyNames_.getUnmodifiableView();
+    }
+    /**
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @return The count of kmsKeyNames.
+     */
+    public int getKmsKeyNamesCount() {
+      return kmsKeyNames_.size();
+    }
+    /**
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @param index The index of the element to return.
+     * @return The kmsKeyNames at the given index.
+     */
+    public java.lang.String getKmsKeyNames(int index) {
+      return kmsKeyNames_.get(index);
+    }
+    /**
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @param index The index of the value to return.
+     * @return The bytes of the kmsKeyNames at the given index.
+     */
+    public com.google.protobuf.ByteString getKmsKeyNamesBytes(int index) {
+      return kmsKeyNames_.getByteString(index);
+    }
+    /**
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @param index The index to set the value at.
+     * @param value The kmsKeyNames to set.
+     * @return This builder for chaining.
+     */
+    public Builder setKmsKeyNames(int index, java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      ensureKmsKeyNamesIsMutable();
+      kmsKeyNames_.set(index, value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @param value The kmsKeyNames to add.
+     * @return This builder for chaining.
+     */
+    public Builder addKmsKeyNames(java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      ensureKmsKeyNamesIsMutable();
+      kmsKeyNames_.add(value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @param values The kmsKeyNames to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAllKmsKeyNames(java.lang.Iterable<java.lang.String> values) {
+      ensureKmsKeyNamesIsMutable();
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(values, kmsKeyNames_);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearKmsKeyNames() {
+      kmsKeyNames_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000001);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @param value The bytes of the kmsKeyNames to add.
+     * @return This builder for chaining.
+     */
+    public Builder addKmsKeyNamesBytes(com.google.protobuf.ByteString value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+      ensureKmsKeyNamesIsMutable();
+      kmsKeyNames_.add(value);
       onChanged();
       return this;
     }

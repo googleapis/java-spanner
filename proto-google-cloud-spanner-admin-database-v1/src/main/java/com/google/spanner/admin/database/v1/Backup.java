@@ -42,6 +42,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     name_ = "";
     state_ = 0;
     referencingDatabases_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    encryptionInformation_ = java.util.Collections.emptyList();
     databaseDialect_ = 0;
     referencingBackups_ = com.google.protobuf.LazyStringArrayList.EMPTY;
   }
@@ -733,6 +734,58 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     return getEncryptionInfo();
   }
 
+  public static final int ENCRYPTION_INFORMATION_FIELD_NUMBER = 13;
+  private java.util.List<com.google.spanner.admin.database.v1.EncryptionInfo>
+      encryptionInformation_;
+  /**
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public java.util.List<com.google.spanner.admin.database.v1.EncryptionInfo>
+      getEncryptionInformationList() {
+    return encryptionInformation_;
+  }
+  /**
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public java.util.List<? extends com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>
+      getEncryptionInformationOrBuilderList() {
+    return encryptionInformation_;
+  }
+  /**
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public int getEncryptionInformationCount() {
+    return encryptionInformation_.size();
+  }
+  /**
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionInfo getEncryptionInformation(int index) {
+    return encryptionInformation_.get(index);
+  }
+  /**
+   * <code>
+   * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder
+      getEncryptionInformationOrBuilder(int index) {
+    return encryptionInformation_.get(index);
+  }
+
   public static final int DATABASE_DIALECT_FIELD_NUMBER = 10;
   private int databaseDialect_;
   /**
@@ -987,6 +1040,9 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     if (maxExpireTime_ != null) {
       output.writeMessage(12, getMaxExpireTime());
     }
+    for (int i = 0; i < encryptionInformation_.size(); i++) {
+      output.writeMessage(13, encryptionInformation_.get(i));
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -1044,6 +1100,11 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     if (maxExpireTime_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(12, getMaxExpireTime());
     }
+    for (int i = 0; i < encryptionInformation_.size(); i++) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(
+              13, encryptionInformation_.get(i));
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1081,6 +1142,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     if (hasEncryptionInfo()) {
       if (!getEncryptionInfo().equals(other.getEncryptionInfo())) return false;
     }
+    if (!getEncryptionInformationList().equals(other.getEncryptionInformationList())) return false;
     if (databaseDialect_ != other.databaseDialect_) return false;
     if (!getReferencingBackupsList().equals(other.getReferencingBackupsList())) return false;
     if (hasMaxExpireTime() != other.hasMaxExpireTime()) return false;
@@ -1125,6 +1187,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     if (hasEncryptionInfo()) {
       hash = (37 * hash) + ENCRYPTION_INFO_FIELD_NUMBER;
       hash = (53 * hash) + getEncryptionInfo().hashCode();
+    }
+    if (getEncryptionInformationCount() > 0) {
+      hash = (37 * hash) + ENCRYPTION_INFORMATION_FIELD_NUMBER;
+      hash = (53 * hash) + getEncryptionInformationList().hashCode();
     }
     hash = (37 * hash) + DATABASE_DIALECT_FIELD_NUMBER;
     hash = (53 * hash) + databaseDialect_;
@@ -1308,10 +1374,17 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         encryptionInfo_ = null;
         encryptionInfoBuilder_ = null;
       }
+      if (encryptionInformationBuilder_ == null) {
+        encryptionInformation_ = java.util.Collections.emptyList();
+      } else {
+        encryptionInformation_ = null;
+        encryptionInformationBuilder_.clear();
+      }
+      bitField0_ = (bitField0_ & ~0x00000002);
       databaseDialect_ = 0;
 
       referencingBackups_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000002);
+      bitField0_ = (bitField0_ & ~0x00000004);
       if (maxExpireTimeBuilder_ == null) {
         maxExpireTime_ = null;
       } else {
@@ -1375,10 +1448,19 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       } else {
         result.encryptionInfo_ = encryptionInfoBuilder_.build();
       }
+      if (encryptionInformationBuilder_ == null) {
+        if (((bitField0_ & 0x00000002) != 0)) {
+          encryptionInformation_ = java.util.Collections.unmodifiableList(encryptionInformation_);
+          bitField0_ = (bitField0_ & ~0x00000002);
+        }
+        result.encryptionInformation_ = encryptionInformation_;
+      } else {
+        result.encryptionInformation_ = encryptionInformationBuilder_.build();
+      }
       result.databaseDialect_ = databaseDialect_;
-      if (((bitField0_ & 0x00000002) != 0)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         referencingBackups_ = referencingBackups_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
       }
       result.referencingBackups_ = referencingBackups_;
       if (maxExpireTimeBuilder_ == null) {
@@ -1471,13 +1553,40 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (other.hasEncryptionInfo()) {
         mergeEncryptionInfo(other.getEncryptionInfo());
       }
+      if (encryptionInformationBuilder_ == null) {
+        if (!other.encryptionInformation_.isEmpty()) {
+          if (encryptionInformation_.isEmpty()) {
+            encryptionInformation_ = other.encryptionInformation_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            ensureEncryptionInformationIsMutable();
+            encryptionInformation_.addAll(other.encryptionInformation_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.encryptionInformation_.isEmpty()) {
+          if (encryptionInformationBuilder_.isEmpty()) {
+            encryptionInformationBuilder_.dispose();
+            encryptionInformationBuilder_ = null;
+            encryptionInformation_ = other.encryptionInformation_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+            encryptionInformationBuilder_ =
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
+                    ? getEncryptionInformationFieldBuilder()
+                    : null;
+          } else {
+            encryptionInformationBuilder_.addAllMessages(other.encryptionInformation_);
+          }
+        }
+      }
       if (other.databaseDialect_ != 0) {
         setDatabaseDialectValue(other.getDatabaseDialectValue());
       }
       if (!other.referencingBackups_.isEmpty()) {
         if (referencingBackups_.isEmpty()) {
           referencingBackups_ = other.referencingBackups_;
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000004);
         } else {
           ensureReferencingBackupsIsMutable();
           referencingBackups_.addAll(other.referencingBackups_);
@@ -1587,6 +1696,20 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
 
                 break;
               } // case 98
+            case 106:
+              {
+                com.google.spanner.admin.database.v1.EncryptionInfo m =
+                    input.readMessage(
+                        com.google.spanner.admin.database.v1.EncryptionInfo.parser(),
+                        extensionRegistry);
+                if (encryptionInformationBuilder_ == null) {
+                  ensureEncryptionInformationIsMutable();
+                  encryptionInformation_.add(m);
+                } else {
+                  encryptionInformationBuilder_.addMessage(m);
+                }
+                break;
+              } // case 106
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -3147,6 +3270,298 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       return encryptionInfoBuilder_;
     }
 
+    private java.util.List<com.google.spanner.admin.database.v1.EncryptionInfo>
+        encryptionInformation_ = java.util.Collections.emptyList();
+
+    private void ensureEncryptionInformationIsMutable() {
+      if (!((bitField0_ & 0x00000002) != 0)) {
+        encryptionInformation_ =
+            new java.util.ArrayList<com.google.spanner.admin.database.v1.EncryptionInfo>(
+                encryptionInformation_);
+        bitField0_ |= 0x00000002;
+      }
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionInfo,
+            com.google.spanner.admin.database.v1.EncryptionInfo.Builder,
+            com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>
+        encryptionInformationBuilder_;
+
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public java.util.List<com.google.spanner.admin.database.v1.EncryptionInfo>
+        getEncryptionInformationList() {
+      if (encryptionInformationBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(encryptionInformation_);
+      } else {
+        return encryptionInformationBuilder_.getMessageList();
+      }
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public int getEncryptionInformationCount() {
+      if (encryptionInformationBuilder_ == null) {
+        return encryptionInformation_.size();
+      } else {
+        return encryptionInformationBuilder_.getCount();
+      }
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfo getEncryptionInformation(int index) {
+      if (encryptionInformationBuilder_ == null) {
+        return encryptionInformation_.get(index);
+      } else {
+        return encryptionInformationBuilder_.getMessage(index);
+      }
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setEncryptionInformation(
+        int index, com.google.spanner.admin.database.v1.EncryptionInfo value) {
+      if (encryptionInformationBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureEncryptionInformationIsMutable();
+        encryptionInformation_.set(index, value);
+        onChanged();
+      } else {
+        encryptionInformationBuilder_.setMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setEncryptionInformation(
+        int index, com.google.spanner.admin.database.v1.EncryptionInfo.Builder builderForValue) {
+      if (encryptionInformationBuilder_ == null) {
+        ensureEncryptionInformationIsMutable();
+        encryptionInformation_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        encryptionInformationBuilder_.setMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder addEncryptionInformation(
+        com.google.spanner.admin.database.v1.EncryptionInfo value) {
+      if (encryptionInformationBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureEncryptionInformationIsMutable();
+        encryptionInformation_.add(value);
+        onChanged();
+      } else {
+        encryptionInformationBuilder_.addMessage(value);
+      }
+      return this;
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder addEncryptionInformation(
+        int index, com.google.spanner.admin.database.v1.EncryptionInfo value) {
+      if (encryptionInformationBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureEncryptionInformationIsMutable();
+        encryptionInformation_.add(index, value);
+        onChanged();
+      } else {
+        encryptionInformationBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder addEncryptionInformation(
+        com.google.spanner.admin.database.v1.EncryptionInfo.Builder builderForValue) {
+      if (encryptionInformationBuilder_ == null) {
+        ensureEncryptionInformationIsMutable();
+        encryptionInformation_.add(builderForValue.build());
+        onChanged();
+      } else {
+        encryptionInformationBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder addEncryptionInformation(
+        int index, com.google.spanner.admin.database.v1.EncryptionInfo.Builder builderForValue) {
+      if (encryptionInformationBuilder_ == null) {
+        ensureEncryptionInformationIsMutable();
+        encryptionInformation_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        encryptionInformationBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder addAllEncryptionInformation(
+        java.lang.Iterable<? extends com.google.spanner.admin.database.v1.EncryptionInfo> values) {
+      if (encryptionInformationBuilder_ == null) {
+        ensureEncryptionInformationIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(values, encryptionInformation_);
+        onChanged();
+      } else {
+        encryptionInformationBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder clearEncryptionInformation() {
+      if (encryptionInformationBuilder_ == null) {
+        encryptionInformation_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+      } else {
+        encryptionInformationBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder removeEncryptionInformation(int index) {
+      if (encryptionInformationBuilder_ == null) {
+        ensureEncryptionInformationIsMutable();
+        encryptionInformation_.remove(index);
+        onChanged();
+      } else {
+        encryptionInformationBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfo.Builder
+        getEncryptionInformationBuilder(int index) {
+      return getEncryptionInformationFieldBuilder().getBuilder(index);
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder
+        getEncryptionInformationOrBuilder(int index) {
+      if (encryptionInformationBuilder_ == null) {
+        return encryptionInformation_.get(index);
+      } else {
+        return encryptionInformationBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public java.util.List<? extends com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>
+        getEncryptionInformationOrBuilderList() {
+      if (encryptionInformationBuilder_ != null) {
+        return encryptionInformationBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(encryptionInformation_);
+      }
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfo.Builder
+        addEncryptionInformationBuilder() {
+      return getEncryptionInformationFieldBuilder()
+          .addBuilder(com.google.spanner.admin.database.v1.EncryptionInfo.getDefaultInstance());
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.EncryptionInfo.Builder
+        addEncryptionInformationBuilder(int index) {
+      return getEncryptionInformationFieldBuilder()
+          .addBuilder(
+              index, com.google.spanner.admin.database.v1.EncryptionInfo.getDefaultInstance());
+    }
+    /**
+     * <code>
+     * repeated .google.spanner.admin.database.v1.EncryptionInfo encryption_information = 13 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public java.util.List<com.google.spanner.admin.database.v1.EncryptionInfo.Builder>
+        getEncryptionInformationBuilderList() {
+      return getEncryptionInformationFieldBuilder().getBuilderList();
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.admin.database.v1.EncryptionInfo,
+            com.google.spanner.admin.database.v1.EncryptionInfo.Builder,
+            com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>
+        getEncryptionInformationFieldBuilder() {
+      if (encryptionInformationBuilder_ == null) {
+        encryptionInformationBuilder_ =
+            new com.google.protobuf.RepeatedFieldBuilderV3<
+                com.google.spanner.admin.database.v1.EncryptionInfo,
+                com.google.spanner.admin.database.v1.EncryptionInfo.Builder,
+                com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>(
+                encryptionInformation_,
+                ((bitField0_ & 0x00000002) != 0),
+                getParentForChildren(),
+                isClean());
+        encryptionInformation_ = null;
+      }
+      return encryptionInformationBuilder_;
+    }
+
     private int databaseDialect_ = 0;
     /**
      *
@@ -3254,9 +3669,9 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.LazyStringArrayList.EMPTY;
 
     private void ensureReferencingBackupsIsMutable() {
-      if (!((bitField0_ & 0x00000002) != 0)) {
+      if (!((bitField0_ & 0x00000004) != 0)) {
         referencingBackups_ = new com.google.protobuf.LazyStringArrayList(referencingBackups_);
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000004;
       }
     }
     /**
@@ -3455,7 +3870,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder clearReferencingBackups() {
       referencingBackups_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000002);
+      bitField0_ = (bitField0_ & ~0x00000004);
       onChanged();
       return this;
     }

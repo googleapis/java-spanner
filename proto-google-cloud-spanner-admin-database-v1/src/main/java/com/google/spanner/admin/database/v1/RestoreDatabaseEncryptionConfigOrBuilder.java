@@ -89,4 +89,39 @@ public interface RestoreDatabaseEncryptionConfigOrBuilder
    * @return The bytes for kmsKeyName.
    */
   com.google.protobuf.ByteString getKmsKeyNameBytes();
+
+  /**
+   * <code>
+   * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @return A list containing the kmsKeyNames.
+   */
+  java.util.List<java.lang.String> getKmsKeyNamesList();
+  /**
+   * <code>
+   * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @return The count of kmsKeyNames.
+   */
+  int getKmsKeyNamesCount();
+  /**
+   * <code>
+   * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @param index The index of the element to return.
+   * @return The kmsKeyNames at the given index.
+   */
+  java.lang.String getKmsKeyNames(int index);
+  /**
+   * <code>
+   * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @param index The index of the value to return.
+   * @return The bytes of the kmsKeyNames at the given index.
+   */
+  com.google.protobuf.ByteString getKmsKeyNamesBytes(int index);
 }

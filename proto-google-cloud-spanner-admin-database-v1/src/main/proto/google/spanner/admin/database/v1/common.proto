@@ -54,12 +54,57 @@ message OperationProgress {
 
 // Encryption configuration for a Cloud Spanner database.
 message EncryptionConfig {
+  // (--
+  // TODO(b/240165507) make the following comment visible after cloud spanner
+  // multi-region cmek launch.
+  // --)
+  // (--
+  // This field is maintained for backwards compatibility. For new callers, we
+  // recommend using `kms_key_names` to specify the KMS key.
+  // `kms_key_name` should only be used if the location of the KMS key matches
+  // the database instance’s configuration (location) exactly. E.g. The KMS
+  // location is in us-central1 or nam3 and the database instance is also in
+  // us-central1 or nam3.
+  // --)
   // The Cloud KMS key to be used for encrypting and decrypting
   // the database. Values are of the form
   // `projects/<project>/locations/<location>/keyRings/<key_ring>/cryptoKeys/<kms_key_name>`.
-  string kms_key_name = 2 [(google.api.resource_reference) = {
-                             type: "cloudkms.googleapis.com/CryptoKey"
-                           }];
+  // (-- api-linter: core::0122::name-suffix=disabled
+  //     aip.dev/not-precedent: crypto key identifiers like this are listed as a
+  //     canonical example of when field names would be ambiguous without the
+  //     _name suffix and should therefore include it. --)
+  string kms_key_name = 2 [
+    (google.api.resource_reference) = {
+      type: "cloudkms.googleapis.com/CryptoKey"
+    }
+  ];
+
+  // (--
+  // TODO(b/240165507) remove visibility check after cloud spanner multi-region
+  // cmek launch.
+  // --)
+  // Specifies the KMS configuration for the one or more keys used to encrypt
+  // the database. Values are of the form
+  // `projects/<project>/locations/<location>/keyRings/<key_ring>/cryptoKeys/<kms_key_name>`.
+  //
+  // The keys referenced by kms_key_names must fully cover all
+  // regions of the database instance configuration. Some examples:
+  // * For single region database instance configs, specify a single regional
+  // location KMS key.
+  // * For multi-regional database instance configs of type GOOGLE_MANAGED,
+  // either specify a multi-regional location KMS key or multiple regional
+  // location KMS keys that cover all regions in the instance config.
+  // * For a database instance config of type USER_MANAGED, please specify only
+  // regional location KMS keys to cover each region in the instance config.
+  // Multi-regional location KMS keys are not supported for USER_MANAGED
+  // instance configs.
+  repeated string kms_key_names = 3 [
+    (google.api.resource_reference) = {
+      type: "cloudkms.googleapis.com/CryptoKey"
+    }
+  ];
+
+  reserved 1;
 }
 
 // Encryption information for a Cloud Spanner database or backup.
@@ -90,12 +135,19 @@ message EncryptionInfo {
 
   // Output only. A Cloud KMS key version that is being used to protect the database or
   // backup.
+  // (--
+  // Fully qualified key version id of the form
+  // projects/{project}/locations/{location}/keyRings/{keyring}/cryptoKeys/{key}/cryptoKeyVersions/{keyversion}
+  // --)
   string kms_key_version = 2 [
     (google.api.field_behavior) = OUTPUT_ONLY,
     (google.api.resource_reference) = {
       type: "cloudkms.googleapis.com/CryptoKeyVersion"
     }
   ];
+
+  reserved 1;
+  // (-- NEXT TAG: 5 --)
 }
 
 // Indicates the dialect type of a database.

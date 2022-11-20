@@ -342,6 +342,10 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * Output only. A Cloud KMS key version that is being used to protect the database or
    * backup.
+   * (--
+   * Fully qualified key version id of the form
+   * projects/{project}/locations/{location}/keyRings/{keyring}/cryptoKeys/{key}/cryptoKeyVersions/{keyversion}
+   * --)
    * </pre>
    *
    * <code>
@@ -368,6 +372,10 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * Output only. A Cloud KMS key version that is being used to protect the database or
    * backup.
+   * (--
+   * Fully qualified key version id of the form
+   * projects/{project}/locations/{location}/keyRings/{keyring}/cryptoKeys/{key}/cryptoKeyVersions/{keyversion}
+   * --)
    * </pre>
    *
    * <code>
@@ -1094,6 +1102,10 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. A Cloud KMS key version that is being used to protect the database or
      * backup.
+     * (--
+     * Fully qualified key version id of the form
+     * projects/{project}/locations/{location}/keyRings/{keyring}/cryptoKeys/{key}/cryptoKeyVersions/{keyversion}
+     * --)
      * </pre>
      *
      * <code>
@@ -1119,6 +1131,10 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. A Cloud KMS key version that is being used to protect the database or
      * backup.
+     * (--
+     * Fully qualified key version id of the form
+     * projects/{project}/locations/{location}/keyRings/{keyring}/cryptoKeys/{key}/cryptoKeyVersions/{keyversion}
+     * --)
      * </pre>
      *
      * <code>
@@ -1144,6 +1160,10 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. A Cloud KMS key version that is being used to protect the database or
      * backup.
+     * (--
+     * Fully qualified key version id of the form
+     * projects/{project}/locations/{location}/keyRings/{keyring}/cryptoKeys/{key}/cryptoKeyVersions/{keyversion}
+     * --)
      * </pre>
      *
      * <code>
@@ -1168,6 +1188,10 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. A Cloud KMS key version that is being used to protect the database or
      * backup.
+     * (--
+     * Fully qualified key version id of the form
+     * projects/{project}/locations/{location}/keyRings/{keyring}/cryptoKeys/{key}/cryptoKeyVersions/{keyversion}
+     * --)
      * </pre>
      *
      * <code>
@@ -1188,6 +1212,10 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. A Cloud KMS key version that is being used to protect the database or
      * backup.
+     * (--
+     * Fully qualified key version id of the form
+     * projects/{project}/locations/{location}/keyRings/{keyring}/cryptoKeys/{key}/cryptoKeyVersions/{keyversion}
+     * --)
      * </pre>
      *
      * <code>
