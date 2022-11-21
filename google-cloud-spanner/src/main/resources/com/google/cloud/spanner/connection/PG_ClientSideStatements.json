@@ -193,13 +193,16 @@
       ]
     },
     {
-      "name": "COMMIT [TRANSACTION | WORK] [AND NO CHAIN]",
+      "name": "{END | COMMIT} [TRANSACTION | WORK] [AND NO CHAIN]",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "NO_RESULT",
       "statementType": "COMMIT",
-      "regex": "(?is)\\A\\s*(?:commit)(?:\\s+transaction|\\s+work)?(?:\\s+and\\s+no\\s+chain)?\\s*\\z",
+      "regex": "(?is)\\A\\s*(?:commit|end)(?:\\s+transaction|\\s+work)?(?:\\s+and\\s+no\\s+chain)?\\s*\\z",
       "method": "statementCommit",
-      "exampleStatements": ["commit", "commit transaction", "commit work", "commit and no chain", "commit transaction and no chain", "commit work and no chain"],
+      "exampleStatements": [
+        "commit", "commit transaction", "commit work", "commit and no chain", "commit transaction and no chain", "commit work and no chain",
+        "end", "end transaction", "end work", "end and no chain", "end transaction and no chain", "end work and no chain"
+      ],
       "examplePrerequisiteStatements": ["begin transaction"]
     },
     {
