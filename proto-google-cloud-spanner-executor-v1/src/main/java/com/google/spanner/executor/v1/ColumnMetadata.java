@@ -23,7 +23,7 @@ package com.google.spanner.executor.v1;
  * <pre>
  * ColumnMetadata represents metadata of a single column.
  * (-- api-linter: core::0123::resource-annotation=disabled
- *     aip.dev/not-precedent: This is not a resource. --)
+ *     aip.dev/not-precedent: This is not an API resource. --)
  * </pre>
  *
  * Protobuf type {@code google.spanner.executor.v1.ColumnMetadata}
@@ -382,7 +382,7 @@ private static final long serialVersionUID = 0L;
    * <pre>
    * ColumnMetadata represents metadata of a single column.
    * (-- api-linter: core::0123::resource-annotation=disabled
-   *     aip.dev/not-precedent: This is not a resource. --)
+   *     aip.dev/not-precedent: This is not an API resource. --)
    * </pre>
    *
    * Protobuf type {@code google.spanner.executor.v1.ColumnMetadata}

@@ -36,6 +36,8 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private SpannerActionOutcome() {
+    batchTxnId_ = com.google.protobuf.ByteString.EMPTY;
+    dbPartition_ = java.util.Collections.emptyList();
     dmlRowsModified_ = emptyLongList();
   }
 
@@ -128,8 +130,22 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 50: {
+            bitField0_ |= 0x00000020;
+            batchTxnId_ = input.readBytes();
+            break;
+          }
+          case 58: {
+            if (!((mutable_bitField0_ & 0x00000040) != 0)) {
+              dbPartition_ = new java.util.ArrayList<com.google.spanner.executor.v1.BatchPartition>();
+              mutable_bitField0_ |= 0x00000040;
+            }
+            dbPartition_.add(
+                input.readMessage(com.google.spanner.executor.v1.BatchPartition.parser(), extensionRegistry));
+            break;
+          }
+          case 66: {
             com.google.spanner.executor.v1.AdminResult.Builder subBuilder = null;
-            if (((bitField0_ & 0x00000020) != 0)) {
+            if (((bitField0_ & 0x00000040) != 0)) {
               subBuilder = adminResult_.toBuilder();
             }
             adminResult_ = input.readMessage(com.google.spanner.executor.v1.AdminResult.parser(), extensionRegistry);
@@ -137,23 +153,23 @@ private static final long serialVersionUID = 0L;
               subBuilder.mergeFrom(adminResult_);
               adminResult_ = subBuilder.buildPartial();
             }
-            bitField0_ |= 0x00000020;
+            bitField0_ |= 0x00000040;
             break;
           }
-          case 56: {
-            if (!((mutable_bitField0_ & 0x00000040) != 0)) {
+          case 72: {
+            if (!((mutable_bitField0_ & 0x00000100) != 0)) {
               dmlRowsModified_ = newLongList();
-              mutable_bitField0_ |= 0x00000040;
+              mutable_bitField0_ |= 0x00000100;
             }
             dmlRowsModified_.addLong(input.readInt64());
             break;
           }
-          case 58: {
+          case 74: {
             int length = input.readRawVarint32();
             int limit = input.pushLimit(length);
-            if (!((mutable_bitField0_ & 0x00000040) != 0) && input.getBytesUntilLimit() > 0) {
+            if (!((mutable_bitField0_ & 0x00000100) != 0) && input.getBytesUntilLimit() > 0) {
               dmlRowsModified_ = newLongList();
-              mutable_bitField0_ |= 0x00000040;
+              mutable_bitField0_ |= 0x00000100;
             }
             while (input.getBytesUntilLimit() > 0) {
               dmlRowsModified_.addLong(input.readInt64());
@@ -179,6 +195,9 @@ private static final long serialVersionUID = 0L;
           e).setUnfinishedMessage(this);
     } finally {
       if (((mutable_bitField0_ & 0x00000040) != 0)) {
+        dbPartition_ = java.util.Collections.unmodifiableList(dbPartition_);
+      }
+      if (((mutable_bitField0_ & 0x00000100) != 0)) {
         dmlRowsModified_.makeImmutable(); // C
       }
       this.unknownFields = unknownFields.build();
@@ -393,26 +412,120 @@ private static final long serialVersionUID = 0L;
     return transactionRestarted_;
   }
 
-  public static final int ADMIN_RESULT_FIELD_NUMBER = 6;
+  public static final int BATCH_TXN_ID_FIELD_NUMBER = 6;
+  private com.google.protobuf.ByteString batchTxnId_;
+  /**
+   * <pre>
+   * In successful StartBatchTransactionAction outcomes, this contains the ID of
+   * the transaction.
+   * </pre>
+   *
+   * <code>optional bytes batch_txn_id = 6;</code>
+   * @return Whether the batchTxnId field is set.
+   */
+  @java.lang.Override
+  public boolean hasBatchTxnId() {
+    return ((bitField0_ & 0x00000020) != 0);
+  }
+  /**
+   * <pre>
+   * In successful StartBatchTransactionAction outcomes, this contains the ID of
+   * the transaction.
+   * </pre>
+   *
+   * <code>optional bytes batch_txn_id = 6;</code>
+   * @return The batchTxnId.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString getBatchTxnId() {
+    return batchTxnId_;
+  }
+
+  public static final int DB_PARTITION_FIELD_NUMBER = 7;
+  private java.util.List<com.google.spanner.executor.v1.BatchPartition> dbPartition_;
+  /**
+   * <pre>
+   * Generated database partitions (result of a
+   * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+   */
+  @java.lang.Override
+  public java.util.List<com.google.spanner.executor.v1.BatchPartition> getDbPartitionList() {
+    return dbPartition_;
+  }
+  /**
+   * <pre>
+   * Generated database partitions (result of a
+   * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+   */
+  @java.lang.Override
+  public java.util.List<? extends com.google.spanner.executor.v1.BatchPartitionOrBuilder> 
+      getDbPartitionOrBuilderList() {
+    return dbPartition_;
+  }
+  /**
+   * <pre>
+   * Generated database partitions (result of a
+   * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+   */
+  @java.lang.Override
+  public int getDbPartitionCount() {
+    return dbPartition_.size();
+  }
+  /**
+   * <pre>
+   * Generated database partitions (result of a
+   * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.BatchPartition getDbPartition(int index) {
+    return dbPartition_.get(index);
+  }
+  /**
+   * <pre>
+   * Generated database partitions (result of a
+   * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.BatchPartitionOrBuilder getDbPartitionOrBuilder(
+      int index) {
+    return dbPartition_.get(index);
+  }
+
+  public static final int ADMIN_RESULT_FIELD_NUMBER = 8;
   private com.google.spanner.executor.v1.AdminResult adminResult_;
   /**
    * <pre>
    * Result of admin related actions.
    * </pre>
    *
-   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 8;</code>
    * @return Whether the adminResult field is set.
    */
   @java.lang.Override
   public boolean hasAdminResult() {
-    return ((bitField0_ & 0x00000020) != 0);
+    return ((bitField0_ & 0x00000040) != 0);
   }
   /**
    * <pre>
    * Result of admin related actions.
    * </pre>
    *
-   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 8;</code>
    * @return The adminResult.
    */
   @java.lang.Override
@@ -424,22 +537,24 @@ private static final long serialVersionUID = 0L;
    * Result of admin related actions.
    * </pre>
    *
-   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 8;</code>
    */
   @java.lang.Override
   public com.google.spanner.executor.v1.AdminResultOrBuilder getAdminResultOrBuilder() {
     return adminResult_ == null ? com.google.spanner.executor.v1.AdminResult.getDefaultInstance() : adminResult_;
   }
 
-  public static final int DML_ROWS_MODIFIED_FIELD_NUMBER = 7;
+  public static final int DML_ROWS_MODIFIED_FIELD_NUMBER = 9;
   private com.google.protobuf.Internal.LongList dmlRowsModified_;
   /**
    * <pre>
    * Stores rows modified by query in single DML or batch DML action.
    * In case of batch DML action, stores 0 as row count of errored DML query.
+   * (-- api-linter: core::0142::time-field-names=disabled
+   *     aip.dev/not-precedent: Not a timestamp field. --)
    * </pre>
    *
-   * <code>repeated int64 dml_rows_modified = 7;</code>
+   * <code>repeated int64 dml_rows_modified = 9;</code>
    * @return A list containing the dmlRowsModified.
    */
   @java.lang.Override
@@ -451,9 +566,11 @@ private static final long serialVersionUID = 0L;
    * <pre>
    * Stores rows modified by query in single DML or batch DML action.
    * In case of batch DML action, stores 0 as row count of errored DML query.
+   * (-- api-linter: core::0142::time-field-names=disabled
+   *     aip.dev/not-precedent: Not a timestamp field. --)
    * </pre>
    *
-   * <code>repeated int64 dml_rows_modified = 7;</code>
+   * <code>repeated int64 dml_rows_modified = 9;</code>
    * @return The count of dmlRowsModified.
    */
   public int getDmlRowsModifiedCount() {
@@ -463,9 +580,11 @@ private static final long serialVersionUID = 0L;
    * <pre>
    * Stores rows modified by query in single DML or batch DML action.
    * In case of batch DML action, stores 0 as row count of errored DML query.
+   * (-- api-linter: core::0142::time-field-names=disabled
+   *     aip.dev/not-precedent: Not a timestamp field. --)
    * </pre>
    *
-   * <code>repeated int64 dml_rows_modified = 7;</code>
+   * <code>repeated int64 dml_rows_modified = 9;</code>
    * @param index The index of the element to return.
    * @return The dmlRowsModified at the given index.
    */
@@ -505,10 +624,16 @@ private static final long serialVersionUID = 0L;
       output.writeBool(5, transactionRestarted_);
     }
     if (((bitField0_ & 0x00000020) != 0)) {
-      output.writeMessage(6, getAdminResult());
+      output.writeBytes(6, batchTxnId_);
+    }
+    for (int i = 0; i < dbPartition_.size(); i++) {
+      output.writeMessage(7, dbPartition_.get(i));
+    }
+    if (((bitField0_ & 0x00000040) != 0)) {
+      output.writeMessage(8, getAdminResult());
     }
     if (getDmlRowsModifiedList().size() > 0) {
-      output.writeUInt32NoTag(58);
+      output.writeUInt32NoTag(74);
       output.writeUInt32NoTag(dmlRowsModifiedMemoizedSerializedSize);
     }
     for (int i = 0; i < dmlRowsModified_.size(); i++) {
@@ -545,7 +670,15 @@ private static final long serialVersionUID = 0L;
     }
     if (((bitField0_ & 0x00000020) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(6, getAdminResult());
+        .computeBytesSize(6, batchTxnId_);
+    }
+    for (int i = 0; i < dbPartition_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(7, dbPartition_.get(i));
+    }
+    if (((bitField0_ & 0x00000040) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(8, getAdminResult());
     }
     {
       int dataSize = 0;
@@ -601,6 +734,13 @@ private static final long serialVersionUID = 0L;
       if (getTransactionRestarted()
           != other.getTransactionRestarted()) return false;
     }
+    if (hasBatchTxnId() != other.hasBatchTxnId()) return false;
+    if (hasBatchTxnId()) {
+      if (!getBatchTxnId()
+          .equals(other.getBatchTxnId())) return false;
+    }
+    if (!getDbPartitionList()
+        .equals(other.getDbPartitionList())) return false;
     if (hasAdminResult() != other.hasAdminResult()) return false;
     if (hasAdminResult()) {
       if (!getAdminResult()
@@ -639,6 +779,14 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + TRANSACTION_RESTARTED_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getTransactionRestarted());
+    }
+    if (hasBatchTxnId()) {
+      hash = (37 * hash) + BATCH_TXN_ID_FIELD_NUMBER;
+      hash = (53 * hash) + getBatchTxnId().hashCode();
+    }
+    if (getDbPartitionCount() > 0) {
+      hash = (37 * hash) + DB_PARTITION_FIELD_NUMBER;
+      hash = (53 * hash) + getDbPartitionList().hashCode();
     }
     if (hasAdminResult()) {
       hash = (37 * hash) + ADMIN_RESULT_FIELD_NUMBER;
@@ -784,6 +932,7 @@ private static final long serialVersionUID = 0L;
         getCommitTimeFieldBuilder();
         getReadResultFieldBuilder();
         getQueryResultFieldBuilder();
+        getDbPartitionFieldBuilder();
         getAdminResultFieldBuilder();
       }
     }
@@ -816,14 +965,22 @@ private static final long serialVersionUID = 0L;
       bitField0_ = (bitField0_ & ~0x00000008);
       transactionRestarted_ = false;
       bitField0_ = (bitField0_ & ~0x00000010);
+      batchTxnId_ = com.google.protobuf.ByteString.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000020);
+      if (dbPartitionBuilder_ == null) {
+        dbPartition_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000040);
+      } else {
+        dbPartitionBuilder_.clear();
+      }
       if (adminResultBuilder_ == null) {
         adminResult_ = null;
       } else {
         adminResultBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00000020);
+      bitField0_ = (bitField0_ & ~0x00000080);
       dmlRowsModified_ = emptyLongList();
-      bitField0_ = (bitField0_ & ~0x00000040);
+      bitField0_ = (bitField0_ & ~0x00000100);
       return this;
     }
 
@@ -889,16 +1046,29 @@ private static final long serialVersionUID = 0L;
         to_bitField0_ |= 0x00000010;
       }
       if (((from_bitField0_ & 0x00000020) != 0)) {
+        to_bitField0_ |= 0x00000020;
+      }
+      result.batchTxnId_ = batchTxnId_;
+      if (dbPartitionBuilder_ == null) {
+        if (((bitField0_ & 0x00000040) != 0)) {
+          dbPartition_ = java.util.Collections.unmodifiableList(dbPartition_);
+          bitField0_ = (bitField0_ & ~0x00000040);
+        }
+        result.dbPartition_ = dbPartition_;
+      } else {
+        result.dbPartition_ = dbPartitionBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
         if (adminResultBuilder_ == null) {
           result.adminResult_ = adminResult_;
         } else {
           result.adminResult_ = adminResultBuilder_.build();
         }
-        to_bitField0_ |= 0x00000020;
+        to_bitField0_ |= 0x00000040;
       }
-      if (((bitField0_ & 0x00000040) != 0)) {
+      if (((bitField0_ & 0x00000100) != 0)) {
         dmlRowsModified_.makeImmutable();
-        bitField0_ = (bitField0_ & ~0x00000040);
+        bitField0_ = (bitField0_ & ~0x00000100);
       }
       result.dmlRowsModified_ = dmlRowsModified_;
       result.bitField0_ = to_bitField0_;
@@ -965,13 +1135,42 @@ private static final long serialVersionUID = 0L;
       if (other.hasTransactionRestarted()) {
         setTransactionRestarted(other.getTransactionRestarted());
       }
+      if (other.hasBatchTxnId()) {
+        setBatchTxnId(other.getBatchTxnId());
+      }
+      if (dbPartitionBuilder_ == null) {
+        if (!other.dbPartition_.isEmpty()) {
+          if (dbPartition_.isEmpty()) {
+            dbPartition_ = other.dbPartition_;
+            bitField0_ = (bitField0_ & ~0x00000040);
+          } else {
+            ensureDbPartitionIsMutable();
+            dbPartition_.addAll(other.dbPartition_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.dbPartition_.isEmpty()) {
+          if (dbPartitionBuilder_.isEmpty()) {
+            dbPartitionBuilder_.dispose();
+            dbPartitionBuilder_ = null;
+            dbPartition_ = other.dbPartition_;
+            bitField0_ = (bitField0_ & ~0x00000040);
+            dbPartitionBuilder_ = 
+              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                 getDbPartitionFieldBuilder() : null;
+          } else {
+            dbPartitionBuilder_.addAllMessages(other.dbPartition_);
+          }
+        }
+      }
       if (other.hasAdminResult()) {
         mergeAdminResult(other.getAdminResult());
       }
       if (!other.dmlRowsModified_.isEmpty()) {
         if (dmlRowsModified_.isEmpty()) {
           dmlRowsModified_ = other.dmlRowsModified_;
-          bitField0_ = (bitField0_ & ~0x00000040);
+          bitField0_ = (bitField0_ & ~0x00000100);
         } else {
           ensureDmlRowsModifiedIsMutable();
           dmlRowsModified_.addAll(other.dmlRowsModified_);
@@ -1726,6 +1925,398 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
+    private com.google.protobuf.ByteString batchTxnId_ = com.google.protobuf.ByteString.EMPTY;
+    /**
+     * <pre>
+     * In successful StartBatchTransactionAction outcomes, this contains the ID of
+     * the transaction.
+     * </pre>
+     *
+     * <code>optional bytes batch_txn_id = 6;</code>
+     * @return Whether the batchTxnId field is set.
+     */
+    @java.lang.Override
+    public boolean hasBatchTxnId() {
+      return ((bitField0_ & 0x00000020) != 0);
+    }
+    /**
+     * <pre>
+     * In successful StartBatchTransactionAction outcomes, this contains the ID of
+     * the transaction.
+     * </pre>
+     *
+     * <code>optional bytes batch_txn_id = 6;</code>
+     * @return The batchTxnId.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getBatchTxnId() {
+      return batchTxnId_;
+    }
+    /**
+     * <pre>
+     * In successful StartBatchTransactionAction outcomes, this contains the ID of
+     * the transaction.
+     * </pre>
+     *
+     * <code>optional bytes batch_txn_id = 6;</code>
+     * @param value The batchTxnId to set.
+     * @return This builder for chaining.
+     */
+    public Builder setBatchTxnId(com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000020;
+      batchTxnId_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * In successful StartBatchTransactionAction outcomes, this contains the ID of
+     * the transaction.
+     * </pre>
+     *
+     * <code>optional bytes batch_txn_id = 6;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearBatchTxnId() {
+      bitField0_ = (bitField0_ & ~0x00000020);
+      batchTxnId_ = getDefaultInstance().getBatchTxnId();
+      onChanged();
+      return this;
+    }
+
+    private java.util.List<com.google.spanner.executor.v1.BatchPartition> dbPartition_ =
+      java.util.Collections.emptyList();
+    private void ensureDbPartitionIsMutable() {
+      if (!((bitField0_ & 0x00000040) != 0)) {
+        dbPartition_ = new java.util.ArrayList<com.google.spanner.executor.v1.BatchPartition>(dbPartition_);
+        bitField0_ |= 0x00000040;
+       }
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        com.google.spanner.executor.v1.BatchPartition, com.google.spanner.executor.v1.BatchPartition.Builder, com.google.spanner.executor.v1.BatchPartitionOrBuilder> dbPartitionBuilder_;
+
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public java.util.List<com.google.spanner.executor.v1.BatchPartition> getDbPartitionList() {
+      if (dbPartitionBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(dbPartition_);
+      } else {
+        return dbPartitionBuilder_.getMessageList();
+      }
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public int getDbPartitionCount() {
+      if (dbPartitionBuilder_ == null) {
+        return dbPartition_.size();
+      } else {
+        return dbPartitionBuilder_.getCount();
+      }
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public com.google.spanner.executor.v1.BatchPartition getDbPartition(int index) {
+      if (dbPartitionBuilder_ == null) {
+        return dbPartition_.get(index);
+      } else {
+        return dbPartitionBuilder_.getMessage(index);
+      }
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public Builder setDbPartition(
+        int index, com.google.spanner.executor.v1.BatchPartition value) {
+      if (dbPartitionBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureDbPartitionIsMutable();
+        dbPartition_.set(index, value);
+        onChanged();
+      } else {
+        dbPartitionBuilder_.setMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public Builder setDbPartition(
+        int index, com.google.spanner.executor.v1.BatchPartition.Builder builderForValue) {
+      if (dbPartitionBuilder_ == null) {
+        ensureDbPartitionIsMutable();
+        dbPartition_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        dbPartitionBuilder_.setMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public Builder addDbPartition(com.google.spanner.executor.v1.BatchPartition value) {
+      if (dbPartitionBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureDbPartitionIsMutable();
+        dbPartition_.add(value);
+        onChanged();
+      } else {
+        dbPartitionBuilder_.addMessage(value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public Builder addDbPartition(
+        int index, com.google.spanner.executor.v1.BatchPartition value) {
+      if (dbPartitionBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureDbPartitionIsMutable();
+        dbPartition_.add(index, value);
+        onChanged();
+      } else {
+        dbPartitionBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public Builder addDbPartition(
+        com.google.spanner.executor.v1.BatchPartition.Builder builderForValue) {
+      if (dbPartitionBuilder_ == null) {
+        ensureDbPartitionIsMutable();
+        dbPartition_.add(builderForValue.build());
+        onChanged();
+      } else {
+        dbPartitionBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public Builder addDbPartition(
+        int index, com.google.spanner.executor.v1.BatchPartition.Builder builderForValue) {
+      if (dbPartitionBuilder_ == null) {
+        ensureDbPartitionIsMutable();
+        dbPartition_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        dbPartitionBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public Builder addAllDbPartition(
+        java.lang.Iterable<? extends com.google.spanner.executor.v1.BatchPartition> values) {
+      if (dbPartitionBuilder_ == null) {
+        ensureDbPartitionIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, dbPartition_);
+        onChanged();
+      } else {
+        dbPartitionBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public Builder clearDbPartition() {
+      if (dbPartitionBuilder_ == null) {
+        dbPartition_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000040);
+        onChanged();
+      } else {
+        dbPartitionBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public Builder removeDbPartition(int index) {
+      if (dbPartitionBuilder_ == null) {
+        ensureDbPartitionIsMutable();
+        dbPartition_.remove(index);
+        onChanged();
+      } else {
+        dbPartitionBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public com.google.spanner.executor.v1.BatchPartition.Builder getDbPartitionBuilder(
+        int index) {
+      return getDbPartitionFieldBuilder().getBuilder(index);
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public com.google.spanner.executor.v1.BatchPartitionOrBuilder getDbPartitionOrBuilder(
+        int index) {
+      if (dbPartitionBuilder_ == null) {
+        return dbPartition_.get(index);  } else {
+        return dbPartitionBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public java.util.List<? extends com.google.spanner.executor.v1.BatchPartitionOrBuilder> 
+         getDbPartitionOrBuilderList() {
+      if (dbPartitionBuilder_ != null) {
+        return dbPartitionBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(dbPartition_);
+      }
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public com.google.spanner.executor.v1.BatchPartition.Builder addDbPartitionBuilder() {
+      return getDbPartitionFieldBuilder().addBuilder(
+          com.google.spanner.executor.v1.BatchPartition.getDefaultInstance());
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public com.google.spanner.executor.v1.BatchPartition.Builder addDbPartitionBuilder(
+        int index) {
+      return getDbPartitionFieldBuilder().addBuilder(
+          index, com.google.spanner.executor.v1.BatchPartition.getDefaultInstance());
+    }
+    /**
+     * <pre>
+     * Generated database partitions (result of a
+     * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+     */
+    public java.util.List<com.google.spanner.executor.v1.BatchPartition.Builder> 
+         getDbPartitionBuilderList() {
+      return getDbPartitionFieldBuilder().getBuilderList();
+    }
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        com.google.spanner.executor.v1.BatchPartition, com.google.spanner.executor.v1.BatchPartition.Builder, com.google.spanner.executor.v1.BatchPartitionOrBuilder> 
+        getDbPartitionFieldBuilder() {
+      if (dbPartitionBuilder_ == null) {
+        dbPartitionBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.executor.v1.BatchPartition, com.google.spanner.executor.v1.BatchPartition.Builder, com.google.spanner.executor.v1.BatchPartitionOrBuilder>(
+                dbPartition_,
+                ((bitField0_ & 0x00000040) != 0),
+                getParentForChildren(),
+                isClean());
+        dbPartition_ = null;
+      }
+      return dbPartitionBuilder_;
+    }
+
     private com.google.spanner.executor.v1.AdminResult adminResult_;
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.spanner.executor.v1.AdminResult, com.google.spanner.executor.v1.AdminResult.Builder, com.google.spanner.executor.v1.AdminResultOrBuilder> adminResultBuilder_;
@@ -1734,18 +2325,18 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 8;</code>
      * @return Whether the adminResult field is set.
      */
     public boolean hasAdminResult() {
-      return ((bitField0_ & 0x00000020) != 0);
+      return ((bitField0_ & 0x00000080) != 0);
     }
     /**
      * <pre>
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 8;</code>
      * @return The adminResult.
      */
     public com.google.spanner.executor.v1.AdminResult getAdminResult() {
@@ -1760,7 +2351,7 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 8;</code>
      */
     public Builder setAdminResult(com.google.spanner.executor.v1.AdminResult value) {
       if (adminResultBuilder_ == null) {
@@ -1772,7 +2363,7 @@ private static final long serialVersionUID = 0L;
       } else {
         adminResultBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000080;
       return this;
     }
     /**
@@ -1780,7 +2371,7 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 8;</code>
      */
     public Builder setAdminResult(
         com.google.spanner.executor.v1.AdminResult.Builder builderForValue) {
@@ -1790,7 +2381,7 @@ private static final long serialVersionUID = 0L;
       } else {
         adminResultBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000080;
       return this;
     }
     /**
@@ -1798,11 +2389,11 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 8;</code>
      */
     public Builder mergeAdminResult(com.google.spanner.executor.v1.AdminResult value) {
       if (adminResultBuilder_ == null) {
-        if (((bitField0_ & 0x00000020) != 0) &&
+        if (((bitField0_ & 0x00000080) != 0) &&
             adminResult_ != null &&
             adminResult_ != com.google.spanner.executor.v1.AdminResult.getDefaultInstance()) {
           adminResult_ =
@@ -1814,7 +2405,7 @@ private static final long serialVersionUID = 0L;
       } else {
         adminResultBuilder_.mergeFrom(value);
       }
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000080;
       return this;
     }
     /**
@@ -1822,7 +2413,7 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 8;</code>
      */
     public Builder clearAdminResult() {
       if (adminResultBuilder_ == null) {
@@ -1831,7 +2422,7 @@ private static final long serialVersionUID = 0L;
       } else {
         adminResultBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00000020);
+      bitField0_ = (bitField0_ & ~0x00000080);
       return this;
     }
     /**
@@ -1839,10 +2430,10 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 8;</code>
      */
     public com.google.spanner.executor.v1.AdminResult.Builder getAdminResultBuilder() {
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000080;
       onChanged();
       return getAdminResultFieldBuilder().getBuilder();
     }
@@ -1851,7 +2442,7 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 8;</code>
      */
     public com.google.spanner.executor.v1.AdminResultOrBuilder getAdminResultOrBuilder() {
       if (adminResultBuilder_ != null) {
@@ -1866,7 +2457,7 @@ private static final long serialVersionUID = 0L;
      * Result of admin related actions.
      * </pre>
      *
-     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
+     * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 8;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         com.google.spanner.executor.v1.AdminResult, com.google.spanner.executor.v1.AdminResult.Builder, com.google.spanner.executor.v1.AdminResultOrBuilder> 
@@ -1884,32 +2475,36 @@ private static final long serialVersionUID = 0L;
 
     private com.google.protobuf.Internal.LongList dmlRowsModified_ = emptyLongList();
     private void ensureDmlRowsModifiedIsMutable() {
-      if (!((bitField0_ & 0x00000040) != 0)) {
+      if (!((bitField0_ & 0x00000100) != 0)) {
         dmlRowsModified_ = mutableCopy(dmlRowsModified_);
-        bitField0_ |= 0x00000040;
+        bitField0_ |= 0x00000100;
        }
     }
     /**
      * <pre>
      * Stores rows modified by query in single DML or batch DML action.
      * In case of batch DML action, stores 0 as row count of errored DML query.
+     * (-- api-linter: core::0142::time-field-names=disabled
+     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
-     * <code>repeated int64 dml_rows_modified = 7;</code>
+     * <code>repeated int64 dml_rows_modified = 9;</code>
      * @return A list containing the dmlRowsModified.
      */
     public java.util.List<java.lang.Long>
         getDmlRowsModifiedList() {
-      return ((bitField0_ & 0x00000040) != 0) ?
+      return ((bitField0_ & 0x00000100) != 0) ?
                java.util.Collections.unmodifiableList(dmlRowsModified_) : dmlRowsModified_;
     }
     /**
      * <pre>
      * Stores rows modified by query in single DML or batch DML action.
      * In case of batch DML action, stores 0 as row count of errored DML query.
+     * (-- api-linter: core::0142::time-field-names=disabled
+     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
-     * <code>repeated int64 dml_rows_modified = 7;</code>
+     * <code>repeated int64 dml_rows_modified = 9;</code>
      * @return The count of dmlRowsModified.
      */
     public int getDmlRowsModifiedCount() {
@@ -1919,9 +2514,11 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * Stores rows modified by query in single DML or batch DML action.
      * In case of batch DML action, stores 0 as row count of errored DML query.
+     * (-- api-linter: core::0142::time-field-names=disabled
+     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
-     * <code>repeated int64 dml_rows_modified = 7;</code>
+     * <code>repeated int64 dml_rows_modified = 9;</code>
      * @param index The index of the element to return.
      * @return The dmlRowsModified at the given index.
      */
@@ -1932,9 +2529,11 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * Stores rows modified by query in single DML or batch DML action.
      * In case of batch DML action, stores 0 as row count of errored DML query.
+     * (-- api-linter: core::0142::time-field-names=disabled
+     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
-     * <code>repeated int64 dml_rows_modified = 7;</code>
+     * <code>repeated int64 dml_rows_modified = 9;</code>
      * @param index The index to set the value at.
      * @param value The dmlRowsModified to set.
      * @return This builder for chaining.
@@ -1950,9 +2549,11 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * Stores rows modified by query in single DML or batch DML action.
      * In case of batch DML action, stores 0 as row count of errored DML query.
+     * (-- api-linter: core::0142::time-field-names=disabled
+     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
-     * <code>repeated int64 dml_rows_modified = 7;</code>
+     * <code>repeated int64 dml_rows_modified = 9;</code>
      * @param value The dmlRowsModified to add.
      * @return This builder for chaining.
      */
@@ -1966,9 +2567,11 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * Stores rows modified by query in single DML or batch DML action.
      * In case of batch DML action, stores 0 as row count of errored DML query.
+     * (-- api-linter: core::0142::time-field-names=disabled
+     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
-     * <code>repeated int64 dml_rows_modified = 7;</code>
+     * <code>repeated int64 dml_rows_modified = 9;</code>
      * @param values The dmlRowsModified to add.
      * @return This builder for chaining.
      */
@@ -1984,14 +2587,16 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * Stores rows modified by query in single DML or batch DML action.
      * In case of batch DML action, stores 0 as row count of errored DML query.
+     * (-- api-linter: core::0142::time-field-names=disabled
+     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
-     * <code>repeated int64 dml_rows_modified = 7;</code>
+     * <code>repeated int64 dml_rows_modified = 9;</code>
      * @return This builder for chaining.
      */
     public Builder clearDmlRowsModified() {
       dmlRowsModified_ = emptyLongList();
-      bitField0_ = (bitField0_ & ~0x00000040);
+      bitField0_ = (bitField0_ & ~0x00000100);
       onChanged();
       return this;
     }

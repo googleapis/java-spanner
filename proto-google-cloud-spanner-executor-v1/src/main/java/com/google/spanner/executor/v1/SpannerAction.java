@@ -203,6 +203,76 @@ private static final long serialVersionUID = 0L;
             actionCase_ = 30;
             break;
           }
+          case 322: {
+            com.google.spanner.executor.v1.StartBatchTransactionAction.Builder subBuilder = null;
+            if (actionCase_ == 40) {
+              subBuilder = ((com.google.spanner.executor.v1.StartBatchTransactionAction) action_).toBuilder();
+            }
+            action_ =
+                input.readMessage(com.google.spanner.executor.v1.StartBatchTransactionAction.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom((com.google.spanner.executor.v1.StartBatchTransactionAction) action_);
+              action_ = subBuilder.buildPartial();
+            }
+            actionCase_ = 40;
+            break;
+          }
+          case 330: {
+            com.google.spanner.executor.v1.CloseBatchTransactionAction.Builder subBuilder = null;
+            if (actionCase_ == 41) {
+              subBuilder = ((com.google.spanner.executor.v1.CloseBatchTransactionAction) action_).toBuilder();
+            }
+            action_ =
+                input.readMessage(com.google.spanner.executor.v1.CloseBatchTransactionAction.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom((com.google.spanner.executor.v1.CloseBatchTransactionAction) action_);
+              action_ = subBuilder.buildPartial();
+            }
+            actionCase_ = 41;
+            break;
+          }
+          case 338: {
+            com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.Builder subBuilder = null;
+            if (actionCase_ == 42) {
+              subBuilder = ((com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction) action_).toBuilder();
+            }
+            action_ =
+                input.readMessage(com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom((com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction) action_);
+              action_ = subBuilder.buildPartial();
+            }
+            actionCase_ = 42;
+            break;
+          }
+          case 346: {
+            com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.Builder subBuilder = null;
+            if (actionCase_ == 43) {
+              subBuilder = ((com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction) action_).toBuilder();
+            }
+            action_ =
+                input.readMessage(com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom((com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction) action_);
+              action_ = subBuilder.buildPartial();
+            }
+            actionCase_ = 43;
+            break;
+          }
+          case 354: {
+            com.google.spanner.executor.v1.ExecutePartitionAction.Builder subBuilder = null;
+            if (actionCase_ == 44) {
+              subBuilder = ((com.google.spanner.executor.v1.ExecutePartitionAction) action_).toBuilder();
+            }
+            action_ =
+                input.readMessage(com.google.spanner.executor.v1.ExecutePartitionAction.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom((com.google.spanner.executor.v1.ExecutePartitionAction) action_);
+              action_ = subBuilder.buildPartial();
+            }
+            actionCase_ = 44;
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -251,6 +321,11 @@ private static final long serialVersionUID = 0L;
     BATCH_DML(24),
     WRITE(25),
     ADMIN(30),
+    START_BATCH_TXN(40),
+    CLOSE_BATCH_TXN(41),
+    GENERATE_DB_PARTITIONS_READ(42),
+    GENERATE_DB_PARTITIONS_QUERY(43),
+    EXECUTE_PARTITION(44),
     ACTION_NOT_SET(0);
     private final int value;
     private ActionCase(int value) {
@@ -277,6 +352,11 @@ private static final long serialVersionUID = 0L;
         case 24: return BATCH_DML;
         case 25: return WRITE;
         case 30: return ADMIN;
+        case 40: return START_BATCH_TXN;
+        case 41: return CLOSE_BATCH_TXN;
+        case 42: return GENERATE_DB_PARTITIONS_READ;
+        case 43: return GENERATE_DB_PARTITIONS_QUERY;
+        case 44: return EXECUTE_PARTITION;
         case 0: return ACTION_NOT_SET;
         default: return null;
       }
@@ -732,6 +812,221 @@ private static final long serialVersionUID = 0L;
     return com.google.spanner.executor.v1.AdminAction.getDefaultInstance();
   }
 
+  public static final int START_BATCH_TXN_FIELD_NUMBER = 40;
+  /**
+   * <pre>
+   * Action to start a batch transaction.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.StartBatchTransactionAction start_batch_txn = 40;</code>
+   * @return Whether the startBatchTxn field is set.
+   */
+  @java.lang.Override
+  public boolean hasStartBatchTxn() {
+    return actionCase_ == 40;
+  }
+  /**
+   * <pre>
+   * Action to start a batch transaction.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.StartBatchTransactionAction start_batch_txn = 40;</code>
+   * @return The startBatchTxn.
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.StartBatchTransactionAction getStartBatchTxn() {
+    if (actionCase_ == 40) {
+       return (com.google.spanner.executor.v1.StartBatchTransactionAction) action_;
+    }
+    return com.google.spanner.executor.v1.StartBatchTransactionAction.getDefaultInstance();
+  }
+  /**
+   * <pre>
+   * Action to start a batch transaction.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.StartBatchTransactionAction start_batch_txn = 40;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.StartBatchTransactionActionOrBuilder getStartBatchTxnOrBuilder() {
+    if (actionCase_ == 40) {
+       return (com.google.spanner.executor.v1.StartBatchTransactionAction) action_;
+    }
+    return com.google.spanner.executor.v1.StartBatchTransactionAction.getDefaultInstance();
+  }
+
+  public static final int CLOSE_BATCH_TXN_FIELD_NUMBER = 41;
+  /**
+   * <pre>
+   * Action to close a batch transaction.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.CloseBatchTransactionAction close_batch_txn = 41;</code>
+   * @return Whether the closeBatchTxn field is set.
+   */
+  @java.lang.Override
+  public boolean hasCloseBatchTxn() {
+    return actionCase_ == 41;
+  }
+  /**
+   * <pre>
+   * Action to close a batch transaction.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.CloseBatchTransactionAction close_batch_txn = 41;</code>
+   * @return The closeBatchTxn.
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.CloseBatchTransactionAction getCloseBatchTxn() {
+    if (actionCase_ == 41) {
+       return (com.google.spanner.executor.v1.CloseBatchTransactionAction) action_;
+    }
+    return com.google.spanner.executor.v1.CloseBatchTransactionAction.getDefaultInstance();
+  }
+  /**
+   * <pre>
+   * Action to close a batch transaction.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.CloseBatchTransactionAction close_batch_txn = 41;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.CloseBatchTransactionActionOrBuilder getCloseBatchTxnOrBuilder() {
+    if (actionCase_ == 41) {
+       return (com.google.spanner.executor.v1.CloseBatchTransactionAction) action_;
+    }
+    return com.google.spanner.executor.v1.CloseBatchTransactionAction.getDefaultInstance();
+  }
+
+  public static final int GENERATE_DB_PARTITIONS_READ_FIELD_NUMBER = 42;
+  /**
+   * <pre>
+   * Action to generate database partitions for batch read.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;</code>
+   * @return Whether the generateDbPartitionsRead field is set.
+   */
+  @java.lang.Override
+  public boolean hasGenerateDbPartitionsRead() {
+    return actionCase_ == 42;
+  }
+  /**
+   * <pre>
+   * Action to generate database partitions for batch read.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;</code>
+   * @return The generateDbPartitionsRead.
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction getGenerateDbPartitionsRead() {
+    if (actionCase_ == 42) {
+       return (com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction) action_;
+    }
+    return com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.getDefaultInstance();
+  }
+  /**
+   * <pre>
+   * Action to generate database partitions for batch read.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.GenerateDbPartitionsForReadActionOrBuilder getGenerateDbPartitionsReadOrBuilder() {
+    if (actionCase_ == 42) {
+       return (com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction) action_;
+    }
+    return com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.getDefaultInstance();
+  }
+
+  public static final int GENERATE_DB_PARTITIONS_QUERY_FIELD_NUMBER = 43;
+  /**
+   * <pre>
+   * Action to generate database partitions for batch query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;</code>
+   * @return Whether the generateDbPartitionsQuery field is set.
+   */
+  @java.lang.Override
+  public boolean hasGenerateDbPartitionsQuery() {
+    return actionCase_ == 43;
+  }
+  /**
+   * <pre>
+   * Action to generate database partitions for batch query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;</code>
+   * @return The generateDbPartitionsQuery.
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction getGenerateDbPartitionsQuery() {
+    if (actionCase_ == 43) {
+       return (com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction) action_;
+    }
+    return com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.getDefaultInstance();
+  }
+  /**
+   * <pre>
+   * Action to generate database partitions for batch query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.GenerateDbPartitionsForQueryActionOrBuilder getGenerateDbPartitionsQueryOrBuilder() {
+    if (actionCase_ == 43) {
+       return (com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction) action_;
+    }
+    return com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.getDefaultInstance();
+  }
+
+  public static final int EXECUTE_PARTITION_FIELD_NUMBER = 44;
+  /**
+   * <pre>
+   * Action to execute batch actions on generated partitions.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.ExecutePartitionAction execute_partition = 44;</code>
+   * @return Whether the executePartition field is set.
+   */
+  @java.lang.Override
+  public boolean hasExecutePartition() {
+    return actionCase_ == 44;
+  }
+  /**
+   * <pre>
+   * Action to execute batch actions on generated partitions.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.ExecutePartitionAction execute_partition = 44;</code>
+   * @return The executePartition.
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.ExecutePartitionAction getExecutePartition() {
+    if (actionCase_ == 44) {
+       return (com.google.spanner.executor.v1.ExecutePartitionAction) action_;
+    }
+    return com.google.spanner.executor.v1.ExecutePartitionAction.getDefaultInstance();
+  }
+  /**
+   * <pre>
+   * Action to execute batch actions on generated partitions.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.ExecutePartitionAction execute_partition = 44;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.ExecutePartitionActionOrBuilder getExecutePartitionOrBuilder() {
+    if (actionCase_ == 44) {
+       return (com.google.spanner.executor.v1.ExecutePartitionAction) action_;
+    }
+    return com.google.spanner.executor.v1.ExecutePartitionAction.getDefaultInstance();
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -775,6 +1070,21 @@ private static final long serialVersionUID = 0L;
     }
     if (actionCase_ == 30) {
       output.writeMessage(30, (com.google.spanner.executor.v1.AdminAction) action_);
+    }
+    if (actionCase_ == 40) {
+      output.writeMessage(40, (com.google.spanner.executor.v1.StartBatchTransactionAction) action_);
+    }
+    if (actionCase_ == 41) {
+      output.writeMessage(41, (com.google.spanner.executor.v1.CloseBatchTransactionAction) action_);
+    }
+    if (actionCase_ == 42) {
+      output.writeMessage(42, (com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction) action_);
+    }
+    if (actionCase_ == 43) {
+      output.writeMessage(43, (com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction) action_);
+    }
+    if (actionCase_ == 44) {
+      output.writeMessage(44, (com.google.spanner.executor.v1.ExecutePartitionAction) action_);
     }
     unknownFields.writeTo(output);
   }
@@ -823,6 +1133,26 @@ private static final long serialVersionUID = 0L;
     if (actionCase_ == 30) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(30, (com.google.spanner.executor.v1.AdminAction) action_);
+    }
+    if (actionCase_ == 40) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(40, (com.google.spanner.executor.v1.StartBatchTransactionAction) action_);
+    }
+    if (actionCase_ == 41) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(41, (com.google.spanner.executor.v1.CloseBatchTransactionAction) action_);
+    }
+    if (actionCase_ == 42) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(42, (com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction) action_);
+    }
+    if (actionCase_ == 43) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(43, (com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction) action_);
+    }
+    if (actionCase_ == 44) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(44, (com.google.spanner.executor.v1.ExecutePartitionAction) action_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -879,6 +1209,26 @@ private static final long serialVersionUID = 0L;
         if (!getAdmin()
             .equals(other.getAdmin())) return false;
         break;
+      case 40:
+        if (!getStartBatchTxn()
+            .equals(other.getStartBatchTxn())) return false;
+        break;
+      case 41:
+        if (!getCloseBatchTxn()
+            .equals(other.getCloseBatchTxn())) return false;
+        break;
+      case 42:
+        if (!getGenerateDbPartitionsRead()
+            .equals(other.getGenerateDbPartitionsRead())) return false;
+        break;
+      case 43:
+        if (!getGenerateDbPartitionsQuery()
+            .equals(other.getGenerateDbPartitionsQuery())) return false;
+        break;
+      case 44:
+        if (!getExecutePartition()
+            .equals(other.getExecutePartition())) return false;
+        break;
       case 0:
       default:
     }
@@ -931,6 +1281,26 @@ private static final long serialVersionUID = 0L;
       case 30:
         hash = (37 * hash) + ADMIN_FIELD_NUMBER;
         hash = (53 * hash) + getAdmin().hashCode();
+        break;
+      case 40:
+        hash = (37 * hash) + START_BATCH_TXN_FIELD_NUMBER;
+        hash = (53 * hash) + getStartBatchTxn().hashCode();
+        break;
+      case 41:
+        hash = (37 * hash) + CLOSE_BATCH_TXN_FIELD_NUMBER;
+        hash = (53 * hash) + getCloseBatchTxn().hashCode();
+        break;
+      case 42:
+        hash = (37 * hash) + GENERATE_DB_PARTITIONS_READ_FIELD_NUMBER;
+        hash = (53 * hash) + getGenerateDbPartitionsRead().hashCode();
+        break;
+      case 43:
+        hash = (37 * hash) + GENERATE_DB_PARTITIONS_QUERY_FIELD_NUMBER;
+        hash = (53 * hash) + getGenerateDbPartitionsQuery().hashCode();
+        break;
+      case 44:
+        hash = (37 * hash) + EXECUTE_PARTITION_FIELD_NUMBER;
+        hash = (53 * hash) + getExecutePartition().hashCode();
         break;
       case 0:
       default:
@@ -1168,6 +1538,41 @@ private static final long serialVersionUID = 0L;
           result.action_ = adminBuilder_.build();
         }
       }
+      if (actionCase_ == 40) {
+        if (startBatchTxnBuilder_ == null) {
+          result.action_ = action_;
+        } else {
+          result.action_ = startBatchTxnBuilder_.build();
+        }
+      }
+      if (actionCase_ == 41) {
+        if (closeBatchTxnBuilder_ == null) {
+          result.action_ = action_;
+        } else {
+          result.action_ = closeBatchTxnBuilder_.build();
+        }
+      }
+      if (actionCase_ == 42) {
+        if (generateDbPartitionsReadBuilder_ == null) {
+          result.action_ = action_;
+        } else {
+          result.action_ = generateDbPartitionsReadBuilder_.build();
+        }
+      }
+      if (actionCase_ == 43) {
+        if (generateDbPartitionsQueryBuilder_ == null) {
+          result.action_ = action_;
+        } else {
+          result.action_ = generateDbPartitionsQueryBuilder_.build();
+        }
+      }
+      if (actionCase_ == 44) {
+        if (executePartitionBuilder_ == null) {
+          result.action_ = action_;
+        } else {
+          result.action_ = executePartitionBuilder_.build();
+        }
+      }
       result.actionCase_ = actionCase_;
       onBuilt();
       return result;
@@ -1256,6 +1661,26 @@ private static final long serialVersionUID = 0L;
         }
         case ADMIN: {
           mergeAdmin(other.getAdmin());
+          break;
+        }
+        case START_BATCH_TXN: {
+          mergeStartBatchTxn(other.getStartBatchTxn());
+          break;
+        }
+        case CLOSE_BATCH_TXN: {
+          mergeCloseBatchTxn(other.getCloseBatchTxn());
+          break;
+        }
+        case GENERATE_DB_PARTITIONS_READ: {
+          mergeGenerateDbPartitionsRead(other.getGenerateDbPartitionsRead());
+          break;
+        }
+        case GENERATE_DB_PARTITIONS_QUERY: {
+          mergeGenerateDbPartitionsQuery(other.getGenerateDbPartitionsQuery());
+          break;
+        }
+        case EXECUTE_PARTITION: {
+          mergeExecutePartition(other.getExecutePartition());
           break;
         }
         case ACTION_NOT_SET: {
@@ -3021,6 +3446,896 @@ private static final long serialVersionUID = 0L;
       actionCase_ = 30;
       onChanged();;
       return adminBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.executor.v1.StartBatchTransactionAction, com.google.spanner.executor.v1.StartBatchTransactionAction.Builder, com.google.spanner.executor.v1.StartBatchTransactionActionOrBuilder> startBatchTxnBuilder_;
+    /**
+     * <pre>
+     * Action to start a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.StartBatchTransactionAction start_batch_txn = 40;</code>
+     * @return Whether the startBatchTxn field is set.
+     */
+    @java.lang.Override
+    public boolean hasStartBatchTxn() {
+      return actionCase_ == 40;
+    }
+    /**
+     * <pre>
+     * Action to start a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.StartBatchTransactionAction start_batch_txn = 40;</code>
+     * @return The startBatchTxn.
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.StartBatchTransactionAction getStartBatchTxn() {
+      if (startBatchTxnBuilder_ == null) {
+        if (actionCase_ == 40) {
+          return (com.google.spanner.executor.v1.StartBatchTransactionAction) action_;
+        }
+        return com.google.spanner.executor.v1.StartBatchTransactionAction.getDefaultInstance();
+      } else {
+        if (actionCase_ == 40) {
+          return startBatchTxnBuilder_.getMessage();
+        }
+        return com.google.spanner.executor.v1.StartBatchTransactionAction.getDefaultInstance();
+      }
+    }
+    /**
+     * <pre>
+     * Action to start a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.StartBatchTransactionAction start_batch_txn = 40;</code>
+     */
+    public Builder setStartBatchTxn(com.google.spanner.executor.v1.StartBatchTransactionAction value) {
+      if (startBatchTxnBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        action_ = value;
+        onChanged();
+      } else {
+        startBatchTxnBuilder_.setMessage(value);
+      }
+      actionCase_ = 40;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to start a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.StartBatchTransactionAction start_batch_txn = 40;</code>
+     */
+    public Builder setStartBatchTxn(
+        com.google.spanner.executor.v1.StartBatchTransactionAction.Builder builderForValue) {
+      if (startBatchTxnBuilder_ == null) {
+        action_ = builderForValue.build();
+        onChanged();
+      } else {
+        startBatchTxnBuilder_.setMessage(builderForValue.build());
+      }
+      actionCase_ = 40;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to start a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.StartBatchTransactionAction start_batch_txn = 40;</code>
+     */
+    public Builder mergeStartBatchTxn(com.google.spanner.executor.v1.StartBatchTransactionAction value) {
+      if (startBatchTxnBuilder_ == null) {
+        if (actionCase_ == 40 &&
+            action_ != com.google.spanner.executor.v1.StartBatchTransactionAction.getDefaultInstance()) {
+          action_ = com.google.spanner.executor.v1.StartBatchTransactionAction.newBuilder((com.google.spanner.executor.v1.StartBatchTransactionAction) action_)
+              .mergeFrom(value).buildPartial();
+        } else {
+          action_ = value;
+        }
+        onChanged();
+      } else {
+        if (actionCase_ == 40) {
+          startBatchTxnBuilder_.mergeFrom(value);
+        } else {
+          startBatchTxnBuilder_.setMessage(value);
+        }
+      }
+      actionCase_ = 40;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to start a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.StartBatchTransactionAction start_batch_txn = 40;</code>
+     */
+    public Builder clearStartBatchTxn() {
+      if (startBatchTxnBuilder_ == null) {
+        if (actionCase_ == 40) {
+          actionCase_ = 0;
+          action_ = null;
+          onChanged();
+        }
+      } else {
+        if (actionCase_ == 40) {
+          actionCase_ = 0;
+          action_ = null;
+        }
+        startBatchTxnBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to start a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.StartBatchTransactionAction start_batch_txn = 40;</code>
+     */
+    public com.google.spanner.executor.v1.StartBatchTransactionAction.Builder getStartBatchTxnBuilder() {
+      return getStartBatchTxnFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Action to start a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.StartBatchTransactionAction start_batch_txn = 40;</code>
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.StartBatchTransactionActionOrBuilder getStartBatchTxnOrBuilder() {
+      if ((actionCase_ == 40) && (startBatchTxnBuilder_ != null)) {
+        return startBatchTxnBuilder_.getMessageOrBuilder();
+      } else {
+        if (actionCase_ == 40) {
+          return (com.google.spanner.executor.v1.StartBatchTransactionAction) action_;
+        }
+        return com.google.spanner.executor.v1.StartBatchTransactionAction.getDefaultInstance();
+      }
+    }
+    /**
+     * <pre>
+     * Action to start a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.StartBatchTransactionAction start_batch_txn = 40;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.executor.v1.StartBatchTransactionAction, com.google.spanner.executor.v1.StartBatchTransactionAction.Builder, com.google.spanner.executor.v1.StartBatchTransactionActionOrBuilder> 
+        getStartBatchTxnFieldBuilder() {
+      if (startBatchTxnBuilder_ == null) {
+        if (!(actionCase_ == 40)) {
+          action_ = com.google.spanner.executor.v1.StartBatchTransactionAction.getDefaultInstance();
+        }
+        startBatchTxnBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.executor.v1.StartBatchTransactionAction, com.google.spanner.executor.v1.StartBatchTransactionAction.Builder, com.google.spanner.executor.v1.StartBatchTransactionActionOrBuilder>(
+                (com.google.spanner.executor.v1.StartBatchTransactionAction) action_,
+                getParentForChildren(),
+                isClean());
+        action_ = null;
+      }
+      actionCase_ = 40;
+      onChanged();;
+      return startBatchTxnBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.executor.v1.CloseBatchTransactionAction, com.google.spanner.executor.v1.CloseBatchTransactionAction.Builder, com.google.spanner.executor.v1.CloseBatchTransactionActionOrBuilder> closeBatchTxnBuilder_;
+    /**
+     * <pre>
+     * Action to close a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.CloseBatchTransactionAction close_batch_txn = 41;</code>
+     * @return Whether the closeBatchTxn field is set.
+     */
+    @java.lang.Override
+    public boolean hasCloseBatchTxn() {
+      return actionCase_ == 41;
+    }
+    /**
+     * <pre>
+     * Action to close a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.CloseBatchTransactionAction close_batch_txn = 41;</code>
+     * @return The closeBatchTxn.
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.CloseBatchTransactionAction getCloseBatchTxn() {
+      if (closeBatchTxnBuilder_ == null) {
+        if (actionCase_ == 41) {
+          return (com.google.spanner.executor.v1.CloseBatchTransactionAction) action_;
+        }
+        return com.google.spanner.executor.v1.CloseBatchTransactionAction.getDefaultInstance();
+      } else {
+        if (actionCase_ == 41) {
+          return closeBatchTxnBuilder_.getMessage();
+        }
+        return com.google.spanner.executor.v1.CloseBatchTransactionAction.getDefaultInstance();
+      }
+    }
+    /**
+     * <pre>
+     * Action to close a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.CloseBatchTransactionAction close_batch_txn = 41;</code>
+     */
+    public Builder setCloseBatchTxn(com.google.spanner.executor.v1.CloseBatchTransactionAction value) {
+      if (closeBatchTxnBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        action_ = value;
+        onChanged();
+      } else {
+        closeBatchTxnBuilder_.setMessage(value);
+      }
+      actionCase_ = 41;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to close a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.CloseBatchTransactionAction close_batch_txn = 41;</code>
+     */
+    public Builder setCloseBatchTxn(
+        com.google.spanner.executor.v1.CloseBatchTransactionAction.Builder builderForValue) {
+      if (closeBatchTxnBuilder_ == null) {
+        action_ = builderForValue.build();
+        onChanged();
+      } else {
+        closeBatchTxnBuilder_.setMessage(builderForValue.build());
+      }
+      actionCase_ = 41;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to close a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.CloseBatchTransactionAction close_batch_txn = 41;</code>
+     */
+    public Builder mergeCloseBatchTxn(com.google.spanner.executor.v1.CloseBatchTransactionAction value) {
+      if (closeBatchTxnBuilder_ == null) {
+        if (actionCase_ == 41 &&
+            action_ != com.google.spanner.executor.v1.CloseBatchTransactionAction.getDefaultInstance()) {
+          action_ = com.google.spanner.executor.v1.CloseBatchTransactionAction.newBuilder((com.google.spanner.executor.v1.CloseBatchTransactionAction) action_)
+              .mergeFrom(value).buildPartial();
+        } else {
+          action_ = value;
+        }
+        onChanged();
+      } else {
+        if (actionCase_ == 41) {
+          closeBatchTxnBuilder_.mergeFrom(value);
+        } else {
+          closeBatchTxnBuilder_.setMessage(value);
+        }
+      }
+      actionCase_ = 41;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to close a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.CloseBatchTransactionAction close_batch_txn = 41;</code>
+     */
+    public Builder clearCloseBatchTxn() {
+      if (closeBatchTxnBuilder_ == null) {
+        if (actionCase_ == 41) {
+          actionCase_ = 0;
+          action_ = null;
+          onChanged();
+        }
+      } else {
+        if (actionCase_ == 41) {
+          actionCase_ = 0;
+          action_ = null;
+        }
+        closeBatchTxnBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to close a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.CloseBatchTransactionAction close_batch_txn = 41;</code>
+     */
+    public com.google.spanner.executor.v1.CloseBatchTransactionAction.Builder getCloseBatchTxnBuilder() {
+      return getCloseBatchTxnFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Action to close a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.CloseBatchTransactionAction close_batch_txn = 41;</code>
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.CloseBatchTransactionActionOrBuilder getCloseBatchTxnOrBuilder() {
+      if ((actionCase_ == 41) && (closeBatchTxnBuilder_ != null)) {
+        return closeBatchTxnBuilder_.getMessageOrBuilder();
+      } else {
+        if (actionCase_ == 41) {
+          return (com.google.spanner.executor.v1.CloseBatchTransactionAction) action_;
+        }
+        return com.google.spanner.executor.v1.CloseBatchTransactionAction.getDefaultInstance();
+      }
+    }
+    /**
+     * <pre>
+     * Action to close a batch transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.CloseBatchTransactionAction close_batch_txn = 41;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.executor.v1.CloseBatchTransactionAction, com.google.spanner.executor.v1.CloseBatchTransactionAction.Builder, com.google.spanner.executor.v1.CloseBatchTransactionActionOrBuilder> 
+        getCloseBatchTxnFieldBuilder() {
+      if (closeBatchTxnBuilder_ == null) {
+        if (!(actionCase_ == 41)) {
+          action_ = com.google.spanner.executor.v1.CloseBatchTransactionAction.getDefaultInstance();
+        }
+        closeBatchTxnBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.executor.v1.CloseBatchTransactionAction, com.google.spanner.executor.v1.CloseBatchTransactionAction.Builder, com.google.spanner.executor.v1.CloseBatchTransactionActionOrBuilder>(
+                (com.google.spanner.executor.v1.CloseBatchTransactionAction) action_,
+                getParentForChildren(),
+                isClean());
+        action_ = null;
+      }
+      actionCase_ = 41;
+      onChanged();;
+      return closeBatchTxnBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction, com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.Builder, com.google.spanner.executor.v1.GenerateDbPartitionsForReadActionOrBuilder> generateDbPartitionsReadBuilder_;
+    /**
+     * <pre>
+     * Action to generate database partitions for batch read.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;</code>
+     * @return Whether the generateDbPartitionsRead field is set.
+     */
+    @java.lang.Override
+    public boolean hasGenerateDbPartitionsRead() {
+      return actionCase_ == 42;
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch read.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;</code>
+     * @return The generateDbPartitionsRead.
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction getGenerateDbPartitionsRead() {
+      if (generateDbPartitionsReadBuilder_ == null) {
+        if (actionCase_ == 42) {
+          return (com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction) action_;
+        }
+        return com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.getDefaultInstance();
+      } else {
+        if (actionCase_ == 42) {
+          return generateDbPartitionsReadBuilder_.getMessage();
+        }
+        return com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.getDefaultInstance();
+      }
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch read.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;</code>
+     */
+    public Builder setGenerateDbPartitionsRead(com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction value) {
+      if (generateDbPartitionsReadBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        action_ = value;
+        onChanged();
+      } else {
+        generateDbPartitionsReadBuilder_.setMessage(value);
+      }
+      actionCase_ = 42;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch read.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;</code>
+     */
+    public Builder setGenerateDbPartitionsRead(
+        com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.Builder builderForValue) {
+      if (generateDbPartitionsReadBuilder_ == null) {
+        action_ = builderForValue.build();
+        onChanged();
+      } else {
+        generateDbPartitionsReadBuilder_.setMessage(builderForValue.build());
+      }
+      actionCase_ = 42;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch read.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;</code>
+     */
+    public Builder mergeGenerateDbPartitionsRead(com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction value) {
+      if (generateDbPartitionsReadBuilder_ == null) {
+        if (actionCase_ == 42 &&
+            action_ != com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.getDefaultInstance()) {
+          action_ = com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.newBuilder((com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction) action_)
+              .mergeFrom(value).buildPartial();
+        } else {
+          action_ = value;
+        }
+        onChanged();
+      } else {
+        if (actionCase_ == 42) {
+          generateDbPartitionsReadBuilder_.mergeFrom(value);
+        } else {
+          generateDbPartitionsReadBuilder_.setMessage(value);
+        }
+      }
+      actionCase_ = 42;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch read.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;</code>
+     */
+    public Builder clearGenerateDbPartitionsRead() {
+      if (generateDbPartitionsReadBuilder_ == null) {
+        if (actionCase_ == 42) {
+          actionCase_ = 0;
+          action_ = null;
+          onChanged();
+        }
+      } else {
+        if (actionCase_ == 42) {
+          actionCase_ = 0;
+          action_ = null;
+        }
+        generateDbPartitionsReadBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch read.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;</code>
+     */
+    public com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.Builder getGenerateDbPartitionsReadBuilder() {
+      return getGenerateDbPartitionsReadFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch read.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;</code>
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.GenerateDbPartitionsForReadActionOrBuilder getGenerateDbPartitionsReadOrBuilder() {
+      if ((actionCase_ == 42) && (generateDbPartitionsReadBuilder_ != null)) {
+        return generateDbPartitionsReadBuilder_.getMessageOrBuilder();
+      } else {
+        if (actionCase_ == 42) {
+          return (com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction) action_;
+        }
+        return com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.getDefaultInstance();
+      }
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch read.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction, com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.Builder, com.google.spanner.executor.v1.GenerateDbPartitionsForReadActionOrBuilder> 
+        getGenerateDbPartitionsReadFieldBuilder() {
+      if (generateDbPartitionsReadBuilder_ == null) {
+        if (!(actionCase_ == 42)) {
+          action_ = com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.getDefaultInstance();
+        }
+        generateDbPartitionsReadBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction, com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction.Builder, com.google.spanner.executor.v1.GenerateDbPartitionsForReadActionOrBuilder>(
+                (com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction) action_,
+                getParentForChildren(),
+                isClean());
+        action_ = null;
+      }
+      actionCase_ = 42;
+      onChanged();;
+      return generateDbPartitionsReadBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction, com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.Builder, com.google.spanner.executor.v1.GenerateDbPartitionsForQueryActionOrBuilder> generateDbPartitionsQueryBuilder_;
+    /**
+     * <pre>
+     * Action to generate database partitions for batch query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;</code>
+     * @return Whether the generateDbPartitionsQuery field is set.
+     */
+    @java.lang.Override
+    public boolean hasGenerateDbPartitionsQuery() {
+      return actionCase_ == 43;
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;</code>
+     * @return The generateDbPartitionsQuery.
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction getGenerateDbPartitionsQuery() {
+      if (generateDbPartitionsQueryBuilder_ == null) {
+        if (actionCase_ == 43) {
+          return (com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction) action_;
+        }
+        return com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.getDefaultInstance();
+      } else {
+        if (actionCase_ == 43) {
+          return generateDbPartitionsQueryBuilder_.getMessage();
+        }
+        return com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.getDefaultInstance();
+      }
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;</code>
+     */
+    public Builder setGenerateDbPartitionsQuery(com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction value) {
+      if (generateDbPartitionsQueryBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        action_ = value;
+        onChanged();
+      } else {
+        generateDbPartitionsQueryBuilder_.setMessage(value);
+      }
+      actionCase_ = 43;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;</code>
+     */
+    public Builder setGenerateDbPartitionsQuery(
+        com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.Builder builderForValue) {
+      if (generateDbPartitionsQueryBuilder_ == null) {
+        action_ = builderForValue.build();
+        onChanged();
+      } else {
+        generateDbPartitionsQueryBuilder_.setMessage(builderForValue.build());
+      }
+      actionCase_ = 43;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;</code>
+     */
+    public Builder mergeGenerateDbPartitionsQuery(com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction value) {
+      if (generateDbPartitionsQueryBuilder_ == null) {
+        if (actionCase_ == 43 &&
+            action_ != com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.getDefaultInstance()) {
+          action_ = com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.newBuilder((com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction) action_)
+              .mergeFrom(value).buildPartial();
+        } else {
+          action_ = value;
+        }
+        onChanged();
+      } else {
+        if (actionCase_ == 43) {
+          generateDbPartitionsQueryBuilder_.mergeFrom(value);
+        } else {
+          generateDbPartitionsQueryBuilder_.setMessage(value);
+        }
+      }
+      actionCase_ = 43;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;</code>
+     */
+    public Builder clearGenerateDbPartitionsQuery() {
+      if (generateDbPartitionsQueryBuilder_ == null) {
+        if (actionCase_ == 43) {
+          actionCase_ = 0;
+          action_ = null;
+          onChanged();
+        }
+      } else {
+        if (actionCase_ == 43) {
+          actionCase_ = 0;
+          action_ = null;
+        }
+        generateDbPartitionsQueryBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;</code>
+     */
+    public com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.Builder getGenerateDbPartitionsQueryBuilder() {
+      return getGenerateDbPartitionsQueryFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;</code>
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.GenerateDbPartitionsForQueryActionOrBuilder getGenerateDbPartitionsQueryOrBuilder() {
+      if ((actionCase_ == 43) && (generateDbPartitionsQueryBuilder_ != null)) {
+        return generateDbPartitionsQueryBuilder_.getMessageOrBuilder();
+      } else {
+        if (actionCase_ == 43) {
+          return (com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction) action_;
+        }
+        return com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.getDefaultInstance();
+      }
+    }
+    /**
+     * <pre>
+     * Action to generate database partitions for batch query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction, com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.Builder, com.google.spanner.executor.v1.GenerateDbPartitionsForQueryActionOrBuilder> 
+        getGenerateDbPartitionsQueryFieldBuilder() {
+      if (generateDbPartitionsQueryBuilder_ == null) {
+        if (!(actionCase_ == 43)) {
+          action_ = com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.getDefaultInstance();
+        }
+        generateDbPartitionsQueryBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction, com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction.Builder, com.google.spanner.executor.v1.GenerateDbPartitionsForQueryActionOrBuilder>(
+                (com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction) action_,
+                getParentForChildren(),
+                isClean());
+        action_ = null;
+      }
+      actionCase_ = 43;
+      onChanged();;
+      return generateDbPartitionsQueryBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.executor.v1.ExecutePartitionAction, com.google.spanner.executor.v1.ExecutePartitionAction.Builder, com.google.spanner.executor.v1.ExecutePartitionActionOrBuilder> executePartitionBuilder_;
+    /**
+     * <pre>
+     * Action to execute batch actions on generated partitions.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecutePartitionAction execute_partition = 44;</code>
+     * @return Whether the executePartition field is set.
+     */
+    @java.lang.Override
+    public boolean hasExecutePartition() {
+      return actionCase_ == 44;
+    }
+    /**
+     * <pre>
+     * Action to execute batch actions on generated partitions.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecutePartitionAction execute_partition = 44;</code>
+     * @return The executePartition.
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.ExecutePartitionAction getExecutePartition() {
+      if (executePartitionBuilder_ == null) {
+        if (actionCase_ == 44) {
+          return (com.google.spanner.executor.v1.ExecutePartitionAction) action_;
+        }
+        return com.google.spanner.executor.v1.ExecutePartitionAction.getDefaultInstance();
+      } else {
+        if (actionCase_ == 44) {
+          return executePartitionBuilder_.getMessage();
+        }
+        return com.google.spanner.executor.v1.ExecutePartitionAction.getDefaultInstance();
+      }
+    }
+    /**
+     * <pre>
+     * Action to execute batch actions on generated partitions.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecutePartitionAction execute_partition = 44;</code>
+     */
+    public Builder setExecutePartition(com.google.spanner.executor.v1.ExecutePartitionAction value) {
+      if (executePartitionBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        action_ = value;
+        onChanged();
+      } else {
+        executePartitionBuilder_.setMessage(value);
+      }
+      actionCase_ = 44;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to execute batch actions on generated partitions.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecutePartitionAction execute_partition = 44;</code>
+     */
+    public Builder setExecutePartition(
+        com.google.spanner.executor.v1.ExecutePartitionAction.Builder builderForValue) {
+      if (executePartitionBuilder_ == null) {
+        action_ = builderForValue.build();
+        onChanged();
+      } else {
+        executePartitionBuilder_.setMessage(builderForValue.build());
+      }
+      actionCase_ = 44;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to execute batch actions on generated partitions.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecutePartitionAction execute_partition = 44;</code>
+     */
+    public Builder mergeExecutePartition(com.google.spanner.executor.v1.ExecutePartitionAction value) {
+      if (executePartitionBuilder_ == null) {
+        if (actionCase_ == 44 &&
+            action_ != com.google.spanner.executor.v1.ExecutePartitionAction.getDefaultInstance()) {
+          action_ = com.google.spanner.executor.v1.ExecutePartitionAction.newBuilder((com.google.spanner.executor.v1.ExecutePartitionAction) action_)
+              .mergeFrom(value).buildPartial();
+        } else {
+          action_ = value;
+        }
+        onChanged();
+      } else {
+        if (actionCase_ == 44) {
+          executePartitionBuilder_.mergeFrom(value);
+        } else {
+          executePartitionBuilder_.setMessage(value);
+        }
+      }
+      actionCase_ = 44;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to execute batch actions on generated partitions.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecutePartitionAction execute_partition = 44;</code>
+     */
+    public Builder clearExecutePartition() {
+      if (executePartitionBuilder_ == null) {
+        if (actionCase_ == 44) {
+          actionCase_ = 0;
+          action_ = null;
+          onChanged();
+        }
+      } else {
+        if (actionCase_ == 44) {
+          actionCase_ = 0;
+          action_ = null;
+        }
+        executePartitionBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to execute batch actions on generated partitions.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecutePartitionAction execute_partition = 44;</code>
+     */
+    public com.google.spanner.executor.v1.ExecutePartitionAction.Builder getExecutePartitionBuilder() {
+      return getExecutePartitionFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Action to execute batch actions on generated partitions.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecutePartitionAction execute_partition = 44;</code>
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.ExecutePartitionActionOrBuilder getExecutePartitionOrBuilder() {
+      if ((actionCase_ == 44) && (executePartitionBuilder_ != null)) {
+        return executePartitionBuilder_.getMessageOrBuilder();
+      } else {
+        if (actionCase_ == 44) {
+          return (com.google.spanner.executor.v1.ExecutePartitionAction) action_;
+        }
+        return com.google.spanner.executor.v1.ExecutePartitionAction.getDefaultInstance();
+      }
+    }
+    /**
+     * <pre>
+     * Action to execute batch actions on generated partitions.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecutePartitionAction execute_partition = 44;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.executor.v1.ExecutePartitionAction, com.google.spanner.executor.v1.ExecutePartitionAction.Builder, com.google.spanner.executor.v1.ExecutePartitionActionOrBuilder> 
+        getExecutePartitionFieldBuilder() {
+      if (executePartitionBuilder_ == null) {
+        if (!(actionCase_ == 44)) {
+          action_ = com.google.spanner.executor.v1.ExecutePartitionAction.getDefaultInstance();
+        }
+        executePartitionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.executor.v1.ExecutePartitionAction, com.google.spanner.executor.v1.ExecutePartitionAction.Builder, com.google.spanner.executor.v1.ExecutePartitionActionOrBuilder>(
+                (com.google.spanner.executor.v1.ExecutePartitionAction) action_,
+                getParentForChildren(),
+                isClean());
+        action_ = null;
+      }
+      actionCase_ = 44;
+      onChanged();;
+      return executePartitionBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

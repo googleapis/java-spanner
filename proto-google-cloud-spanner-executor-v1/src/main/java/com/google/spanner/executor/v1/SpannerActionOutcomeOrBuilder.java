@@ -167,10 +167,80 @@ public interface SpannerActionOutcomeOrBuilder extends
 
   /**
    * <pre>
+   * In successful StartBatchTransactionAction outcomes, this contains the ID of
+   * the transaction.
+   * </pre>
+   *
+   * <code>optional bytes batch_txn_id = 6;</code>
+   * @return Whether the batchTxnId field is set.
+   */
+  boolean hasBatchTxnId();
+  /**
+   * <pre>
+   * In successful StartBatchTransactionAction outcomes, this contains the ID of
+   * the transaction.
+   * </pre>
+   *
+   * <code>optional bytes batch_txn_id = 6;</code>
+   * @return The batchTxnId.
+   */
+  com.google.protobuf.ByteString getBatchTxnId();
+
+  /**
+   * <pre>
+   * Generated database partitions (result of a
+   * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+   */
+  java.util.List<com.google.spanner.executor.v1.BatchPartition> 
+      getDbPartitionList();
+  /**
+   * <pre>
+   * Generated database partitions (result of a
+   * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+   */
+  com.google.spanner.executor.v1.BatchPartition getDbPartition(int index);
+  /**
+   * <pre>
+   * Generated database partitions (result of a
+   * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+   */
+  int getDbPartitionCount();
+  /**
+   * <pre>
+   * Generated database partitions (result of a
+   * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+   */
+  java.util.List<? extends com.google.spanner.executor.v1.BatchPartitionOrBuilder> 
+      getDbPartitionOrBuilderList();
+  /**
+   * <pre>
+   * Generated database partitions (result of a
+   * GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.BatchPartition db_partition = 7;</code>
+   */
+  com.google.spanner.executor.v1.BatchPartitionOrBuilder getDbPartitionOrBuilder(
+      int index);
+
+  /**
+   * <pre>
    * Result of admin related actions.
    * </pre>
    *
-   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 8;</code>
    * @return Whether the adminResult field is set.
    */
   boolean hasAdminResult();
@@ -179,7 +249,7 @@ public interface SpannerActionOutcomeOrBuilder extends
    * Result of admin related actions.
    * </pre>
    *
-   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 8;</code>
    * @return The adminResult.
    */
   com.google.spanner.executor.v1.AdminResult getAdminResult();
@@ -188,7 +258,7 @@ public interface SpannerActionOutcomeOrBuilder extends
    * Result of admin related actions.
    * </pre>
    *
-   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 6;</code>
+   * <code>optional .google.spanner.executor.v1.AdminResult admin_result = 8;</code>
    */
   com.google.spanner.executor.v1.AdminResultOrBuilder getAdminResultOrBuilder();
 
@@ -196,9 +266,11 @@ public interface SpannerActionOutcomeOrBuilder extends
    * <pre>
    * Stores rows modified by query in single DML or batch DML action.
    * In case of batch DML action, stores 0 as row count of errored DML query.
+   * (-- api-linter: core::0142::time-field-names=disabled
+   *     aip.dev/not-precedent: Not a timestamp field. --)
    * </pre>
    *
-   * <code>repeated int64 dml_rows_modified = 7;</code>
+   * <code>repeated int64 dml_rows_modified = 9;</code>
    * @return A list containing the dmlRowsModified.
    */
   java.util.List<java.lang.Long> getDmlRowsModifiedList();
@@ -206,9 +278,11 @@ public interface SpannerActionOutcomeOrBuilder extends
    * <pre>
    * Stores rows modified by query in single DML or batch DML action.
    * In case of batch DML action, stores 0 as row count of errored DML query.
+   * (-- api-linter: core::0142::time-field-names=disabled
+   *     aip.dev/not-precedent: Not a timestamp field. --)
    * </pre>
    *
-   * <code>repeated int64 dml_rows_modified = 7;</code>
+   * <code>repeated int64 dml_rows_modified = 9;</code>
    * @return The count of dmlRowsModified.
    */
   int getDmlRowsModifiedCount();
@@ -216,9 +290,11 @@ public interface SpannerActionOutcomeOrBuilder extends
    * <pre>
    * Stores rows modified by query in single DML or batch DML action.
    * In case of batch DML action, stores 0 as row count of errored DML query.
+   * (-- api-linter: core::0142::time-field-names=disabled
+   *     aip.dev/not-precedent: Not a timestamp field. --)
    * </pre>
    *
-   * <code>repeated int64 dml_rows_modified = 7;</code>
+   * <code>repeated int64 dml_rows_modified = 9;</code>
    * @param index The index of the element to return.
    * @return The dmlRowsModified at the given index.
    */

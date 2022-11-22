@@ -293,5 +293,140 @@ public interface SpannerActionOrBuilder extends
    */
   com.google.spanner.executor.v1.AdminActionOrBuilder getAdminOrBuilder();
 
+  /**
+   * <pre>
+   * Action to start a batch transaction.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.StartBatchTransactionAction start_batch_txn = 40;</code>
+   * @return Whether the startBatchTxn field is set.
+   */
+  boolean hasStartBatchTxn();
+  /**
+   * <pre>
+   * Action to start a batch transaction.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.StartBatchTransactionAction start_batch_txn = 40;</code>
+   * @return The startBatchTxn.
+   */
+  com.google.spanner.executor.v1.StartBatchTransactionAction getStartBatchTxn();
+  /**
+   * <pre>
+   * Action to start a batch transaction.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.StartBatchTransactionAction start_batch_txn = 40;</code>
+   */
+  com.google.spanner.executor.v1.StartBatchTransactionActionOrBuilder getStartBatchTxnOrBuilder();
+
+  /**
+   * <pre>
+   * Action to close a batch transaction.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.CloseBatchTransactionAction close_batch_txn = 41;</code>
+   * @return Whether the closeBatchTxn field is set.
+   */
+  boolean hasCloseBatchTxn();
+  /**
+   * <pre>
+   * Action to close a batch transaction.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.CloseBatchTransactionAction close_batch_txn = 41;</code>
+   * @return The closeBatchTxn.
+   */
+  com.google.spanner.executor.v1.CloseBatchTransactionAction getCloseBatchTxn();
+  /**
+   * <pre>
+   * Action to close a batch transaction.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.CloseBatchTransactionAction close_batch_txn = 41;</code>
+   */
+  com.google.spanner.executor.v1.CloseBatchTransactionActionOrBuilder getCloseBatchTxnOrBuilder();
+
+  /**
+   * <pre>
+   * Action to generate database partitions for batch read.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;</code>
+   * @return Whether the generateDbPartitionsRead field is set.
+   */
+  boolean hasGenerateDbPartitionsRead();
+  /**
+   * <pre>
+   * Action to generate database partitions for batch read.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;</code>
+   * @return The generateDbPartitionsRead.
+   */
+  com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction getGenerateDbPartitionsRead();
+  /**
+   * <pre>
+   * Action to generate database partitions for batch read.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;</code>
+   */
+  com.google.spanner.executor.v1.GenerateDbPartitionsForReadActionOrBuilder getGenerateDbPartitionsReadOrBuilder();
+
+  /**
+   * <pre>
+   * Action to generate database partitions for batch query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;</code>
+   * @return Whether the generateDbPartitionsQuery field is set.
+   */
+  boolean hasGenerateDbPartitionsQuery();
+  /**
+   * <pre>
+   * Action to generate database partitions for batch query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;</code>
+   * @return The generateDbPartitionsQuery.
+   */
+  com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction getGenerateDbPartitionsQuery();
+  /**
+   * <pre>
+   * Action to generate database partitions for batch query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;</code>
+   */
+  com.google.spanner.executor.v1.GenerateDbPartitionsForQueryActionOrBuilder getGenerateDbPartitionsQueryOrBuilder();
+
+  /**
+   * <pre>
+   * Action to execute batch actions on generated partitions.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.ExecutePartitionAction execute_partition = 44;</code>
+   * @return Whether the executePartition field is set.
+   */
+  boolean hasExecutePartition();
+  /**
+   * <pre>
+   * Action to execute batch actions on generated partitions.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.ExecutePartitionAction execute_partition = 44;</code>
+   * @return The executePartition.
+   */
+  com.google.spanner.executor.v1.ExecutePartitionAction getExecutePartition();
+  /**
+   * <pre>
+   * Action to execute batch actions on generated partitions.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.ExecutePartitionAction execute_partition = 44;</code>
+   */
+  com.google.spanner.executor.v1.ExecutePartitionActionOrBuilder getExecutePartitionOrBuilder();
+
   public com.google.spanner.executor.v1.SpannerAction.ActionCase getActionCase();
 }
