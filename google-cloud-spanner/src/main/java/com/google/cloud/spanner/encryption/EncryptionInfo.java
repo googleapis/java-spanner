@@ -18,6 +18,8 @@ package com.google.cloud.spanner.encryption;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.rpc.Status;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /** Represents the encryption information for a Cloud Spanner backup. */
@@ -50,6 +52,15 @@ public class EncryptionInfo {
     return proto.equals(com.google.spanner.admin.database.v1.EncryptionInfo.getDefaultInstance())
         ? null
         : new EncryptionInfo(proto);
+  }
+
+  public static List<EncryptionInfo> listFromProtoOrNull(
+      List<com.google.spanner.admin.database.v1.EncryptionInfo> protos) {
+    List<EncryptionInfo> encryptionInformation = new ArrayList<>();
+    for(com.google.spanner.admin.database.v1.EncryptionInfo proto: protos){
+      encryptionInformation.add(fromProtoOrNull(proto));
+    }
+    return encryptionInformation;
   }
 
   public String getKmsKeyVersion() {

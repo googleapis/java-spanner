@@ -35,7 +35,7 @@ public class EncryptionConfigsTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testCustomerManagedEncryptionNullKeyName() {
-    EncryptionConfigs.customerManagedEncryption(null);
+    EncryptionConfigs.customerManagedEncryption((String)null);
   }
 
   @Test

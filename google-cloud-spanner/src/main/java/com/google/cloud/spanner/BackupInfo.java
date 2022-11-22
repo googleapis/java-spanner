@@ -40,6 +40,8 @@ public class BackupInfo {
      */
     abstract Builder setEncryptionInfo(EncryptionInfo encryptionInfo);
 
+    abstract Builder addAllEncryptionInformation(List<EncryptionInfo> encryptionInformation);
+
     abstract Builder setProto(com.google.spanner.admin.database.v1.Backup proto);
 
     /**
@@ -114,6 +116,7 @@ public class BackupInfo {
     private long size;
     private BackupEncryptionConfig encryptionConfig;
     private EncryptionInfo encryptionInfo;
+    private List<EncryptionInfo> encryptionInformation;
     private com.google.spanner.admin.database.v1.Backup proto;
     private Timestamp maxExpireTime;
     private List<String> referencingBackups;
@@ -131,6 +134,7 @@ public class BackupInfo {
       this.size = other.size;
       this.encryptionConfig = other.encryptionConfig;
       this.encryptionInfo = other.encryptionInfo;
+      this.encryptionInformation = other.encryptionInformation;
       this.proto = other.proto;
       this.maxExpireTime = other.maxExpireTime;
       this.referencingBackups = other.referencingBackups;
@@ -182,6 +186,12 @@ public class BackupInfo {
     }
 
     @Override
+    Builder addAllEncryptionInformation(List<EncryptionInfo> encryptionInformation) {
+      this.encryptionInformation = encryptionInformation;
+      return this;
+    }
+
+    @Override
     Builder setProto(@Nullable com.google.spanner.admin.database.v1.Backup proto) {
       this.proto = proto;
       return this;
@@ -218,6 +228,7 @@ public class BackupInfo {
   private final long size;
   private final BackupEncryptionConfig encryptionConfig;
   private final EncryptionInfo encryptionInfo;
+  private final List<EncryptionInfo> encryptionInformation;
   private final com.google.spanner.admin.database.v1.Backup proto;
   private final Timestamp maxExpireTime;
   private final List<String> referencingBackups;
@@ -228,6 +239,7 @@ public class BackupInfo {
     this.size = builder.size;
     this.encryptionConfig = builder.encryptionConfig;
     this.encryptionInfo = builder.encryptionInfo;
+    this.encryptionInformation = builder.encryptionInformation;
     this.expireTime = builder.expireTime;
     this.versionTime = builder.versionTime;
     this.database = builder.database;
@@ -270,6 +282,10 @@ public class BackupInfo {
    */
   public EncryptionInfo getEncryptionInfo() {
     return encryptionInfo;
+  }
+
+  public List<EncryptionInfo> getEncryptionInformation(){
+    return encryptionInformation;
   }
 
   /** Returns the expire time of the backup. */
@@ -319,6 +335,7 @@ public class BackupInfo {
         && size == that.size
         && Objects.equals(encryptionConfig, that.encryptionConfig)
         && Objects.equals(encryptionInfo, that.encryptionInfo)
+        && Objects.equals(encryptionInformation, that.encryptionInformation)
         && Objects.equals(expireTime, that.expireTime)
         && Objects.equals(versionTime, that.versionTime)
         && Objects.equals(database, that.database)
@@ -334,6 +351,7 @@ public class BackupInfo {
         size,
         encryptionConfig,
         encryptionInfo,
+        encryptionInformation,
         expireTime,
         versionTime,
         database,
@@ -344,12 +362,13 @@ public class BackupInfo {
   @Override
   public String toString() {
     return String.format(
-        "Backup[%s, %s, %d, %s, %s, %s, %s, %s, %s, %s]",
+        "Backup[%s, %s, %d, %s, %s, %s, %s, %s, %s, %s, %s]",
         id.getName(),
         state,
         size,
         encryptionConfig,
         encryptionInfo,
+        encryptionInformation,
         expireTime,
         versionTime,
         database,

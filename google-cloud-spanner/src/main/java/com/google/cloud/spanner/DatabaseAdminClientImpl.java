@@ -154,6 +154,7 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
                   .setVersionTime(proto.getVersionTime())
                   .setState(proto.getState())
                   .setEncryptionInfo(proto.getEncryptionInfo())
+                  .addAllEncryptionInformation(proto.getEncryptionInformationList())
                   .build(),
               DatabaseAdminClientImpl.this);
         },
@@ -197,6 +198,7 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
                   .setName(proto.getName())
                   .setExpireTime(proto.getExpireTime())
                   .setEncryptionInfo(proto.getEncryptionInfo())
+                  .addAllEncryptionInformation(proto.getEncryptionInformationList())
                   .build(),
               DatabaseAdminClientImpl.this);
         },

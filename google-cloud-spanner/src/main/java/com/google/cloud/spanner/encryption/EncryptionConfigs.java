@@ -29,11 +29,12 @@ public class EncryptionConfigs {
     return new CustomerManagedEncryption(kmsKeyName);
   }
 
-  public static CustomerManagedEncryption customerManagedEncryptionMultiRegion(List<String> kmsKeyNames) {
+  // TODO(harsha): Recheck if renaming it to customerManagedMultiRegionEncryption is meaningful
+  public static CustomerManagedEncryption customerManagedEncryption(List<String> kmsKeyNames) {
     Preconditions.checkArgument(
         kmsKeyNames != null, "Customer managed encryption key names must not be null");
     Preconditions.checkArgument(
-        kmsKeyNames.isEmpty() != true, "Customer managed encryption key names must not be empty");
+        !kmsKeyNames.isEmpty(), "Customer managed encryption key names must not be empty");
     return new CustomerManagedEncryption(kmsKeyNames);
   }
 

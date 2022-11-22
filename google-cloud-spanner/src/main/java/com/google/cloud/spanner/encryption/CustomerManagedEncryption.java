@@ -19,7 +19,6 @@ package com.google.cloud.spanner.encryption;
 import com.google.spanner.admin.database.v1.EncryptionConfig;
 import java.util.List;
 import java.util.Objects;
-import org.checkerframework.checker.units.qual.C;
 
 /**
  * The data is encrypted with a key provided by the customer.
@@ -31,12 +30,14 @@ public class CustomerManagedEncryption implements BackupEncryptionConfig, Restor
 
   CustomerManagedEncryption(String kmsKeyName) {
     this.kmsKeyName = kmsKeyName;
-    this.kmsKeyNames = null;
+    // TODO(harsha): Should this be [] by default?
+    this.kmsKeyNames = com.google.protobuf.LazyStringArrayList.EMPTY;
   }
 
   CustomerManagedEncryption(List<String> kmsKeyNames) {
     this.kmsKeyNames = kmsKeyNames;
-    this.kmsKeyName = null;
+    // TODO(harsha): Should this be "" by default?
+    this.kmsKeyName = "";
   }
 
   public String getKmsKeyName() {
@@ -54,8 +55,8 @@ public class CustomerManagedEncryption implements BackupEncryptionConfig, Restor
   public static CustomerManagedEncryption fromProtoOrNull(EncryptionConfig proto) {
     return proto.equals(EncryptionConfig.getDefaultInstance())
         ? null
-        : !proto.getKmsKeyName().isEmpty() ? new CustomerManagedEncryption(proto.getKmsKeyName())
-            : new CustomerManagedEncryption(proto.getKmsKeyNamesList());
+        : proto.getKmsKeyName().isEmpty() ? new CustomerManagedEncryption(
+            proto.getKmsKeyNamesList()) : new CustomerManagedEncryption(proto.getKmsKeyName());
   }
 
   @Override
@@ -67,16 +68,21 @@ public class CustomerManagedEncryption implements BackupEncryptionConfig, Restor
       return false;
     }
     CustomerManagedEncryption that = (CustomerManagedEncryption) o;
-    return Objects.equals(kmsKeyName, that.kmsKeyName) && Objects.equals(kmsKeyNames, that.kmsKeyNames);
+    return Objects.equals(kmsKeyName, that.kmsKeyName) && Objects.equals(kmsKeyNames,
+        that.kmsKeyNames);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(kmsKeyName);
+    return Objects.hash(kmsKeyName, kmsKeyNames);
   }
 
   @Override
   public String toString() {
-    return "CustomerManagedEncryption{" + "kmsKeyName='" + kmsKeyName + '\'' + '}';
+    /*return "CustomerManagedEncryption{" + "kmsKeyName='" + kmsKeyName + '\'' + "kmsKeyNames='"
+        + kmsKeyNames + '\'' + '}';*/
+    return String.format(
+        "CustomerManagedEncryption{kmsKeyName=%s,kmsKeyNames=%s}",
+        kmsKeyName, kmsKeyNames);
   }
 }
