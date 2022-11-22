@@ -46,18 +46,16 @@ message SpannerAction {
     // Action that contains any administractive operation, like database,
     // instance manipulation.
     AdminAction admin = 30;
-    // // Action to start a batch transaction.
-    // StartBatchTransactionAction start_batch_txn = 40;
-    // // Action to close a batch transaction.
-    // CloseBatchTransactionAction close_batch_txn = 41;
-    // // Action to generate database partitions for batch read.
-    // GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;
-    // // Action to generate database partitions for batch query.
-    // GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;
-    // // Action to execute batch actions on generated partitions.
-    // ExecutePartitionAction execute_partition = 44;
-    // // Action to execute a change stream query.
-    // ExecuteChangeStreamQuery execute_change_stream_query = 51;
+    // Action to start a batch transaction.
+    StartBatchTransactionAction start_batch_txn = 40;
+    // Action to close a batch transaction.
+    CloseBatchTransactionAction close_batch_txn = 41;
+    // Action to generate database partitions for batch read.
+    GenerateDbPartitionsForReadAction generate_db_partitions_read = 42;
+    // Action to generate database partitions for batch query.
+    GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;
+    // Action to execute batch actions on generated partitions.
+    ExecutePartitionAction execute_partition = 44;
   }
 }
 
@@ -80,6 +78,8 @@ message QueryAction {
   // The SQL string.
   string sql = 1;
   // Parameter that bind to placeholders in the SQL string
+  // (-- api-linter: core::0123::resource-annotation=disabled
+  //     aip.dev/not-precedent: This is not an API resource. --)
   message Parameter {
     // Name of the parameter (with no leading @).
     string name = 1;
@@ -306,7 +306,7 @@ message Concurrency {
 
 // TableMetadata contains metadata of a single table.
 // (-- api-linter: core::0123::resource-annotation=disabled
-//     aip.dev/not-precedent: This is not a resource. --)
+//     aip.dev/not-precedent: This is not an API resource. --)
 message TableMetadata {
   // Table name.
   string name = 1;
@@ -318,7 +318,7 @@ message TableMetadata {
 
 // ColumnMetadata represents metadata of a single column.
 // (-- api-linter: core::0123::resource-annotation=disabled
-//     aip.dev/not-precedent: This is not a resource. --)
+//     aip.dev/not-precedent: This is not an API resource. --)
 message ColumnMetadata {
   // Column name.
   string name = 1;
@@ -759,6 +759,115 @@ message CancelOperationAction {
   string operation = 1;
 }
 
+// Starts a batch read-only transaction in executor. Successful outcomes of this
+// action will contain batch_txn_id--the identificator that can be used to start
+// the same transaction in other Executors to parallelize partition processing.
+//
+// Example of a batch read flow:
+// 1. Start batch transaction with a timestamp (StartBatchTransactionAction)
+// 2. Generate database partitions for a read or query
+// (GenerateDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction)
+// 3. Call ExecutePartitionAction for some or all partitions, process rows
+// 4. Clean up the transaction (CloseBatchTransactionAction).
+//
+// More sophisticated example, with parallel processing:
+// 1. Start batch transaction with a timestamp (StartBatchTransactionAction),
+// note the returned BatchTransactionId
+// 2. Generate database partitions for a read or query
+// (GenerateDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction)
+// 3. Distribute the partitions over a pool of workers, along with the
+// transaction ID.
+//
+// In each worker:
+// 4-1. StartBatchTransactionAction with the given transaction ID
+// 4-2. ExecutePartitionAction for each partition it got, process read results
+// 4-3. Close (not cleanup) the transaction (CloseBatchTransactionAction).
+//
+// When all workers are done:
+// 5. Cleanup the transaction (CloseBatchTransactionAction). This can be done
+// either by the last worker to finish the job, or by the main Executor that
+// initialized this transaction in the first place. It is also possible to clean
+// it up with a brand new Executor -- just execute StartBatchTransactionAction
+// with the ID, then clean it up right away.
+//
+// Cleaning up is optional, but recommended.
+message StartBatchTransactionAction {
+  // To start a new transaction, specify an exact timestamp. Alternatively, an
+  // existing batch transaction ID can be used. Either one of two must be
+  // set.
+  oneof param {
+    // The exact timestamp to start the batch transaction.
+    google.protobuf.Timestamp batch_txn_time = 1;
+    // ID of a batch read-only transaction. It can be used to start the same
+    // batch transaction on multiple executors and parallelize partition
+    // processing.
+    bytes tid = 2;
+  }
+  // Database role to assume while performing this action. Setting the
+  // database_role will enforce additional role-based access checks on this
+  // action.
+  string cloud_database_role = 3;
+}
+
+// Closes or cleans up the currently opened batch read-only transaction.
+//
+// Once a transaction is closed, the Executor can be disposed of or used to
+// start start another transaction. Closing a batch transaction in one Executor
+// doesn't affect the transaction's state in other Executors that also read from
+// it.
+//
+// When a transaction is cleaned up, it becomes globally invalid. Cleaning up is
+// optional, but recommended.
+message CloseBatchTransactionAction {
+  // Indicates whether the transaction needs to be cleaned up.
+  bool cleanup = 1;
+}
+
+// Generate database partitions for the given read. Successful outcomes will
+// contain database partitions in the db_partition field.
+message GenerateDbPartitionsForReadAction {
+  // Read to generate partitions for.
+  ReadAction read = 1;
+  // Metadata related to the tables involved in the read.
+  repeated TableMetadata table = 2;
+  // Desired size of data in each partition. Spanner doesn't guarantee to
+  // respect this value.
+  optional int64 desired_bytes_per_partition = 3;
+  // If set, the desired max number of partitions. Spanner doesn't guarantee to
+  // respect this value.
+  optional int64 max_partition_count = 4;
+}
+
+// Generate database partitions for the given query. Successful outcomes will
+// contain database partitions in the db_partition field.
+message GenerateDbPartitionsForQueryAction {
+  // Query to generate partitions for.
+  QueryAction query = 1;
+  // Desired size of data in each partition. Spanner doesn't guarantee to
+  // respect this value.
+  optional int64 desired_bytes_per_partition = 2;
+}
+
+// Identifies a database partition generated for a particular read or query. To
+// read rows from the partition, use ExecutePartitionAction.
+message BatchPartition {
+  // Serialized Partition instance.
+  bytes partition = 1;
+  // Table name is set iff the partition was generated for a read (as opposed to
+  // a query).
+  optional string table = 2;
+  // Index name if the partition was generated for an index read.
+  optional string index = 3;
+}
+
+// Performs a read or query for the given partitions. This action must be
+// executed in the context of the same transaction that was used to generate
+// given partitions.
+message ExecutePartitionAction {
+  // Batch partition to execute on.
+  BatchPartition partition = 1;
+}
+
 // SpannerActionOutcome defines a result of execution of a single SpannerAction.
 message SpannerActionOutcome {
   // If an outcome is split into multiple parts, status will be set only in the
@@ -777,11 +886,19 @@ message SpannerActionOutcome {
   // Setting it to true is only valid in the context of a read-write
   // transaction, as an outcome of a committing FinishTransactionAction.
   optional bool transaction_restarted = 5;
+  // In successful StartBatchTransactionAction outcomes, this contains the ID of
+  // the transaction.
+  optional bytes batch_txn_id = 6;
+  // Generated database partitions (result of a
+  // GenetageDbPartitionsForReadAction/GenerateDbPartitionsForQueryAction).
+  repeated BatchPartition db_partition = 7;
   // Result of admin related actions.
-  optional AdminResult admin_result = 6;
+  optional AdminResult admin_result = 8;
   // Stores rows modified by query in single DML or batch DML action.
   // In case of batch DML action, stores 0 as row count of errored DML query.
-  repeated int64 dml_rows_modified = 7;
+  // (-- api-linter: core::0142::time-field-names=disabled
+  //     aip.dev/not-precedent: Not a timestamp field. --)
+  repeated int64 dml_rows_modified = 9;
 }
 
 // AdminResult contains admin action results, for database/backup/operation.

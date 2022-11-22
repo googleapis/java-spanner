@@ -148,6 +148,7 @@ public abstract class CloudExecutor {
       this.responseObserver = responseObserver;
       this.index = null;
       this.rowType = null;
+      this.timestamp = Timestamp.newBuilder().setSeconds(0).setNanos(0).build();
     }
 
     /** Set the timestamp for commit. */
