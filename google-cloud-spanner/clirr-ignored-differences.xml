@@ -222,4 +222,14 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>com.google.cloud.spanner.ResultSet analyzeUpdateStatement(com.google.cloud.spanner.Statement, com.google.cloud.spanner.ReadContext$QueryAnalyzeMode, com.google.cloud.spanner.Options$UpdateOption[])</method>
   </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.connection.IsolationLevel getIsolationLevel()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setIsolationLevel(com.google.cloud.spanner.connection.IsolationLevel)</method>
+  </difference>
 </differences>

@@ -200,6 +200,12 @@ public interface Connection extends AutoCloseable {
   /** @return <code>true</code> if this connection is in read-only mode */
   boolean isReadOnly();
 
+  /** Sets the default isolation level to use for new read/write transactions. */
+  void setIsolationLevel(IsolationLevel isolationLevel);
+
+  /** Returns the default isolation level that is used for new read/write transactions. */
+  IsolationLevel getIsolationLevel();
+
   /**
    * Sets the duration the connection should wait before automatically aborting the execution of a
    * statement. The default is no timeout. Statement timeouts are applied all types of statements,

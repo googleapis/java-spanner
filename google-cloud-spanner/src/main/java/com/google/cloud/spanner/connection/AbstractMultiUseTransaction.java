@@ -53,7 +53,7 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
    * Check that the current transaction actually has a valid underlying transaction. If not, the
    * method will throw a {@link SpannerException}.
    */
-  abstract void checkValidTransaction();
+  abstract void checkValidTransaction(ParsedStatement statement);
 
   /** Returns the {@link ReadContext} that can be used for queries on this transaction. */
   abstract ReadContext getReadContext();
@@ -63,7 +63,7 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
     Preconditions.checkArgument(statement.isQuery(), "Statement is not a query");
-    checkValidTransaction();
+    checkValidTransaction(statement);
     return executeStatementAsync(
         statement,
         () -> {

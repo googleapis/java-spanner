@@ -403,6 +403,11 @@ class ClientSideStatementValueConverters {
           mode.setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_SERIALIZABLE);
         } else if (valueWithSingleSpaces
             .substring(currentIndex)
+            .startsWith("isolation level read committed")) {
+          currentIndex += "isolation level read committed".length();
+          mode.setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_READ_COMMITTED);
+        } else if (valueWithSingleSpaces
+            .substring(currentIndex)
             .startsWith("isolation level default")) {
           currentIndex += "isolation level default".length();
           mode.setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_DEFAULT);
