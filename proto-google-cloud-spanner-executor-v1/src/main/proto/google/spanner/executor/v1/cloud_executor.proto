@@ -828,14 +828,12 @@ message CloseBatchTransactionAction {
 message GenerateDbPartitionsForReadAction {
   // Read to generate partitions for.
   ReadAction read = 1;
-  // Metadata related to the tables involved in the read.
-  repeated TableMetadata table = 2;
   // Desired size of data in each partition. Spanner doesn't guarantee to
   // respect this value.
-  optional int64 desired_bytes_per_partition = 3;
+  optional int64 desired_bytes_per_partition = 2;
   // If set, the desired max number of partitions. Spanner doesn't guarantee to
   // respect this value.
-  optional int64 max_partition_count = 4;
+  optional int64 max_partition_count = 3;
 }
 
 // Generate database partitions for the given query. Successful outcomes will
