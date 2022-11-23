@@ -28,7 +28,9 @@ import com.google.cloud.Date;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Backup;
+import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.BatchReadOnlyTransaction;
+import com.google.cloud.spanner.BatchTransactionId;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
@@ -45,6 +47,8 @@ import com.google.cloud.spanner.KeyRange;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.Partition;
+import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ReplicaInfo;
@@ -73,7 +77,9 @@ import com.google.spanner.admin.instance.v1.Instance.State;
 import com.google.spanner.executor.v1.AdminAction;
 import com.google.spanner.executor.v1.AdminResult;
 import com.google.spanner.executor.v1.BatchDmlAction;
+import com.google.spanner.executor.v1.BatchPartition;
 import com.google.spanner.executor.v1.CancelOperationAction;
+import com.google.spanner.executor.v1.CloseBatchTransactionAction;
 import com.google.spanner.executor.v1.CloudBackupResponse;
 import com.google.spanner.executor.v1.CloudDatabaseResponse;
 import com.google.spanner.executor.v1.CloudInstanceConfigResponse;
@@ -86,6 +92,9 @@ import com.google.spanner.executor.v1.DeleteCloudBackupAction;
 import com.google.spanner.executor.v1.DeleteCloudInstanceAction;
 import com.google.spanner.executor.v1.DmlAction;
 import com.google.spanner.executor.v1.DropCloudDatabaseAction;
+import com.google.spanner.executor.v1.ExecutePartitionAction;
+import com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction;
+import com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction;
 import com.google.spanner.executor.v1.GetCloudBackupAction;
 import com.google.spanner.executor.v1.GetCloudDatabaseAction;
 import com.google.spanner.executor.v1.GetCloudInstanceAction;
@@ -103,6 +112,7 @@ import com.google.spanner.executor.v1.MutationAction.UpdateArgs;
 import com.google.spanner.executor.v1.OperationResponse;
 import com.google.spanner.executor.v1.QueryAction;
 import com.google.spanner.executor.v1.RestoreCloudDatabaseAction;
+import com.google.spanner.executor.v1.StartBatchTransactionAction;
 import com.google.spanner.executor.v1.UpdateCloudBackupAction;
 import com.google.spanner.executor.v1.UpdateCloudDatabaseDdlAction;
 import com.google.spanner.executor.v1.UpdateCloudInstanceAction;
@@ -122,6 +132,10 @@ import com.google.spanner.executor.v1.StartTransactionAction;
 import com.google.spanner.executor.v1.SpannerAsyncActionRequest;
 import com.google.spanner.executor.v1.SpannerAsyncActionResponse;
 import io.grpc.stub.StreamObserver;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -500,6 +514,43 @@ public class CloudClientExecutor extends CloudExecutor {
       rwTxn.startRWTransaction();
     }
 
+    /** Start a batch transaction. */
+    public synchronized Status startBatchTxn(
+        StartBatchTransactionAction action, BatchClient batchClient, OutcomeSender sender) {
+      try {
+        if ((rwTxn != null) || (roTxn != null) || (batchTxn != null)) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT, "Already in a transaction");
+        }
+
+        if (action.hasBatchTxnTime()) {
+          TimestampBound timestampBound =
+              TimestampBound.ofReadTimestamp(Timestamp.fromProto(action.getBatchTxnTime()));
+          batchTxn = batchClient.batchReadOnlyTransaction(timestampBound);
+        } else if (action.hasTid()) {
+          BatchTransactionId tId = unmarshall(action.getTid());
+          batchTxn = batchClient.batchReadOnlyTransaction(tId);
+        } else {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT, "Either timestamp or tid must be set");
+        }
+        SpannerActionOutcome outcome =
+            SpannerActionOutcome.newBuilder()
+                .setStatus(toProto(Status.OK))
+                .setBatchTxnId(marshall(batchTxn.getBatchTransactionId()))
+                .build();
+        initReadState();
+        return sender.sendOutcome(outcome);
+      } catch (SpannerException e) {
+        return sender.finishWithError(toStatus(e));
+      } catch (Exception e) {
+        return sender.finishWithError(
+            toStatus(
+                SpannerExceptionFactory.newSpannerException(
+                    ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+      }
+    }
+
     /** Increase the read count when a read/query is issued. */
     public synchronized void startRead() {
       ++numPendingReads;
@@ -771,6 +822,25 @@ public class CloudClientExecutor extends CloudExecutor {
       } else if (action.hasWrite()) {
         return executeMutation(
             action.getWrite().getMutation(), outcomeSender, executionContext, /*isWrite=*/ true);
+      } else if (action.hasStartBatchTxn()) {
+        if (dbPath == null) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT, "database path must be set for this action");
+        }
+        BatchClient batchClient = getClient().getBatchClient(getDatabaseId(dbPath));
+        return executeStartBatchTxn(
+            action.getStartBatchTxn(), batchClient, outcomeSender, executionContext);
+      } else if (action.hasGenerateDbPartitionsRead()) {
+        return executeGenerateDbPartitionsRead(
+            action.getGenerateDbPartitionsRead(), outcomeSender, executionContext);
+      } else if (action.hasGenerateDbPartitionsQuery()) {
+        return executeGenerateDbPartitionsQuery(
+            action.getGenerateDbPartitionsQuery(), outcomeSender, executionContext);
+      } else if (action.hasExecutePartition()) {
+        return executeExecutePartition(
+            action.getExecutePartition(), outcomeSender, executionContext);
+      } else if (action.hasCloseBatchTxn()) {
+        return executeCloseBatchTxn(action.getCloseBatchTxn(), outcomeSender, executionContext);
       } else {
         return toStatus(
             SpannerExceptionFactory.newSpannerException(
@@ -1631,6 +1701,168 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
+  /** Execute action that start a batch transaction. */
+  private Status executeStartBatchTxn(
+      StartBatchTransactionAction action,
+      BatchClient batchClient,
+      OutcomeSender sender,
+      ExecutionFlowContext executionContext) {
+    LOGGER.log(Level.INFO, "Starting batch transaction");
+    return executionContext.startBatchTxn(action, batchClient, sender);
+  }
+
+  /** Execute action that finish a batch transaction. */
+  private Status executeCloseBatchTxn(
+      CloseBatchTransactionAction action,
+      OutcomeSender sender,
+      ExecutionFlowContext executionContext) {
+    try {
+      LOGGER.log(Level.INFO, "Closing batch transaction");
+      if (action.getCleanup()) {
+        executionContext.closeBatchTxn();
+      }
+      return sender.finishWithOK();
+    } catch (SpannerException e) {
+      return sender.finishWithError(toStatus(e));
+    }
+  }
+
+  /** Execute action that generate database partitions for the given read. */
+  private Status executeGenerateDbPartitionsRead(
+      GenerateDbPartitionsForReadAction action,
+      OutcomeSender sender,
+      ExecutionFlowContext executionContext) {
+    try {
+      BatchReadOnlyTransaction batchTxn = executionContext.getBatchTxn();
+      ReadAction request = action.getRead();
+
+      List<com.google.spanner.v1.Type> typeList = new ArrayList<>();
+      for (int i = 0; i < request.getColumnCount(); ++i) {
+        typeList.add(executionContext.getColumnType(request.getTable(), request.getColumn(i)));
+      }
+      KeySet keySet = keySetProtoToCloudKeySet(request.getKeys(), typeList);
+      PartitionOptions.Builder partitionOptionsBuilder = PartitionOptions.newBuilder();
+      if (action.hasDesiredBytesPerPartition() && action.getDesiredBytesPerPartition() > 0) {
+        partitionOptionsBuilder.setPartitionSizeBytes(action.getDesiredBytesPerPartition());
+      }
+      if (action.hasMaxPartitionCount()) {
+        partitionOptionsBuilder.setMaxPartitions(action.getMaxPartitionCount());
+      }
+      List<Partition> parts;
+      if (request.hasIndex()) {
+        parts =
+            batchTxn.partitionReadUsingIndex(
+                partitionOptionsBuilder.build(),
+                request.getTable(),
+                request.getIndex(),
+                keySet,
+                request.getColumnList());
+      } else {
+        parts =
+            batchTxn.partitionRead(
+                partitionOptionsBuilder.build(),
+                request.getTable(),
+                keySet,
+                request.getColumnList());
+      }
+      List<BatchPartition> batchPartitions = new ArrayList<>();
+      for (Partition part : parts) {
+        batchPartitions.add(
+            BatchPartition.newBuilder()
+                .setPartition(marshall(part))
+                .setTable(request.getTable())
+                .setIndex(request.getIndex())
+                .build());
+      }
+
+      SpannerActionOutcome outcome =
+          SpannerActionOutcome.newBuilder()
+              .setStatus(toProto(Status.OK))
+              .addAllDbPartition(batchPartitions)
+              .build();
+      return sender.sendOutcome(outcome);
+    } catch (SpannerException e) {
+      LOGGER.log(Level.WARNING, String.format("GenerateDbPartitionsRead failed for %s", action));
+      return sender.finishWithError(toStatus(e));
+    } catch (Exception e) {
+      return sender.finishWithError(
+          toStatus(
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+    }
+  }
+
+  /** Execute action that generate database partitions for the given query. */
+  private Status executeGenerateDbPartitionsQuery(
+      GenerateDbPartitionsForQueryAction action,
+      OutcomeSender sender,
+      ExecutionFlowContext executionContext) {
+    try {
+      BatchReadOnlyTransaction batchTxn = executionContext.getBatchTxn();
+      Statement.Builder stmt = Statement.newBuilder(action.getQuery().getSql());
+      for (int i = 0; i < action.getQuery().getParamsCount(); ++i) {
+        stmt.bind(action.getQuery().getParams(i).getName())
+            .to(
+                valueProtoToCloudValue(
+                    action.getQuery().getParams(i).getType(),
+                    action.getQuery().getParams(i).getValue()));
+      }
+      PartitionOptions partitionOptions =
+          PartitionOptions.newBuilder()
+              .setPartitionSizeBytes(action.getDesiredBytesPerPartition())
+              .build();
+      List<Partition> parts = batchTxn.partitionQuery(partitionOptions, stmt.build());
+      List<BatchPartition> batchPartitions = new ArrayList<>();
+      for (Partition part : parts) {
+        batchPartitions.add(BatchPartition.newBuilder().setPartition(marshall(part)).build());
+      }
+
+      SpannerActionOutcome outcome =
+          SpannerActionOutcome.newBuilder()
+              .setStatus(toProto(Status.OK))
+              .addAllDbPartition(batchPartitions)
+              .build();
+      return sender.sendOutcome(outcome);
+    } catch (SpannerException e) {
+      LOGGER.log(Level.WARNING, String.format("GenerateDbPartitionsQuery failed for %s", action));
+      return sender.finishWithError(toStatus(e));
+    } catch (Exception e) {
+      return sender.finishWithError(
+          toStatus(
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+    }
+  }
+
+  /** Execute a read or query for the given partitions. */
+  private Status executeExecutePartition(
+      ExecutePartitionAction action, OutcomeSender sender, ExecutionFlowContext executionContext) {
+    try {
+      BatchReadOnlyTransaction batchTxn = executionContext.getBatchTxn();
+      ByteString partitionBinary = action.getPartition().getPartition();
+      if (partitionBinary.size() == 0) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, "Invalid batchPartition " + action);
+      }
+      if (action.getPartition().hasTable()) {
+        sender.initForRead(action.getPartition().getTable(), action.getPartition().getIndex());
+      } else {
+        sender.initForQuery();
+      }
+      Partition partition = unmarshall(partitionBinary);
+      executionContext.startRead();
+      ResultSet result = batchTxn.execute(partition);
+      return processResults(result, 0, sender, executionContext);
+    } catch (SpannerException e) {
+      return sender.finishWithError(toStatus(e));
+    } catch (Exception e) {
+      return sender.finishWithError(
+          toStatus(
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+    }
+  }
+
   /**
    * Execute action that start a read-write or read-only transaction. For read-write transaction,
    * see {@link ReadWriteTransaction}.
@@ -1639,8 +1871,7 @@ public class CloudClientExecutor extends CloudExecutor {
       StartTransactionAction action,
       DatabaseClient dbClient,
       OutcomeSender sender,
-      ExecutionFlowContext executionContext)
-      throws Exception {
+      ExecutionFlowContext executionContext) {
     try {
       executionContext.updateTransactionSeed(action.getTransactionSeed());
       Metadata metadata = new Metadata(action.getTableList());
@@ -1663,6 +1894,11 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithOK();
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
+    } catch (Exception e) {
+      return sender.finishWithError(
+          toStatus(
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
     }
   }
 
@@ -2766,6 +3002,23 @@ public class CloudClientExecutor extends CloudExecutor {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT, "Unsupported cloud type: " + cloudTypeProto);
     }
+  }
+
+  /** Unmarshall ByteString to serializable object. */
+  private <T extends Serializable> T unmarshall(ByteString input)
+      throws IOException, ClassNotFoundException {
+    ObjectInputStream objectInputStream = new ObjectInputStream(input.newInput());
+    return (T) objectInputStream.readObject();
+  }
+
+  /** Marshall a serializable object into ByteString. */
+  private <T extends Serializable> ByteString marshall(T object) throws IOException {
+    ByteString.Output output = ByteString.newOutput();
+    ObjectOutputStream objectOutputStream = new ObjectOutputStream(output);
+    objectOutputStream.writeObject(object);
+    objectOutputStream.flush();
+    objectOutputStream.close();
+    return output.toByteString();
   }
 
   /** Build Timestamp from micros. */
