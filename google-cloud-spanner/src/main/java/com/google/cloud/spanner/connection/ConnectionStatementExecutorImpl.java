@@ -367,9 +367,10 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
-  public StatementResult statementSetTransactionMode(TransactionMode mode) {
-    getConnection().setTransactionMode(mode);
-    return noResult(SET_TRANSACTION_MODE);
+  public StatementResult statementSetTransactionMode(PgTransactionMode mode) {
+    return statementSetPgTransactionMode(mode);
+//    getConnection().setTransactionMode(mode);
+//    return noResult(SET_TRANSACTION_MODE);
   }
 
   @Override
@@ -385,6 +386,9 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         default:
           // no-op
       }
+    }
+    if (transactionMode.getIsolationLevel() != null) {
+      getConnection().setTransactionIsolationLevel(transactionMode.getIsolationLevel().getSpannerIsolationLevel());
     }
     return noResult(SET_TRANSACTION_MODE);
   }
@@ -404,12 +408,15 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
           // no-op
       }
     }
+    if (transactionMode.getIsolationLevel() != null) {
+      getConnection().setDefaultIsolationLevel(transactionMode.getIsolationLevel().getSpannerIsolationLevel());
+    }
     return noResult(SET_TRANSACTION_MODE);
   }
 
   @Override
   public StatementResult statementSetPgDefaultTransactionIsolation(IsolationLevel isolationLevel) {
-    // no-op
+    getConnection().setDefaultIsolationLevel(isolationLevel.getSpannerIsolationLevel());
     return noResult(SET_DEFAULT_TRANSACTION_ISOLATION);
   }
 

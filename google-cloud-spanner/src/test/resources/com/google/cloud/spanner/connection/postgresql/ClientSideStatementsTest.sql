@@ -48776,6 +48776,276 @@ set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set transaction isolation level/-serializable;
 NEW_CONNECTION;
+set autocommit = false;
+set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+NEW_CONNECTION;
+set autocommit = false;
+set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+   set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+			set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+
+
+
+set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+set transaction isolation level read committed  ;
+NEW_CONNECTION;
+set autocommit = false;
+set transaction isolation level read committed		;
+NEW_CONNECTION;
+set autocommit = false;
+set transaction isolation level read committed
+
+;
+NEW_CONNECTION;
+set autocommit = false;
+set   transaction   isolation   level   read   committed;
+NEW_CONNECTION;
+set autocommit = false;
+set	transaction	isolation	level	read	committed;
+NEW_CONNECTION;
+set autocommit = false;
+set
+transaction
+isolation
+level
+read
+committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed bar;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed%;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read%committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed_;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read_committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed&;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read&committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed$;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read$committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed@;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read@committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed!;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read!committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed*;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read*committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed(;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read(committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed);
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read)committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed-;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read-committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed+;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read+committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed-#;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read-#committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed/;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read/committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed\;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read\committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed?;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read?committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed-/;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read-/committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed/#;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read/#committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set transaction isolation level read committed;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read committed/-;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction isolation level read/-committed;
+NEW_CONNECTION;
 set session characteristics as transaction read only;
 NEW_CONNECTION;
 SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;
@@ -49589,6 +49859,211 @@ set session characteristics as transaction isolation level serializable/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set session characteristics as transaction isolation level/-serializable;
+NEW_CONNECTION;
+set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED;
+NEW_CONNECTION;
+set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+   set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+			set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+
+
+
+set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+set session characteristics as transaction isolation level read committed  ;
+NEW_CONNECTION;
+set session characteristics as transaction isolation level read committed		;
+NEW_CONNECTION;
+set session characteristics as transaction isolation level read committed
+
+;
+NEW_CONNECTION;
+set   session   characteristics   as   transaction   isolation   level   read   committed;
+NEW_CONNECTION;
+set	session	characteristics	as	transaction	isolation	level	read	committed;
+NEW_CONNECTION;
+set
+session
+characteristics
+as
+transaction
+isolation
+level
+read
+committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read%committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read_committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read&committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read$committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read@committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read!committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read*committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read(committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read)committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read-committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read+committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read-#committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read/committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read\committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read?committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read-/committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read/#committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set session characteristics as transaction isolation level read committed;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read committed/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set session characteristics as transaction isolation level read/-committed;
 NEW_CONNECTION;
 set default_transaction_isolation=serializable;
 NEW_CONNECTION;
@@ -50587,6 +51062,2406 @@ set default_transaction_isolation = "SERIALIZABLE"/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set default_transaction_isolation =/-"SERIALIZABLE";
+NEW_CONNECTION;
+set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_ISOLATION TO SERIALIZABLE;
+NEW_CONNECTION;
+set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+   set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+			set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+
+
+
+set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+set default_transaction_isolation to serializable  ;
+NEW_CONNECTION;
+set default_transaction_isolation to serializable		;
+NEW_CONNECTION;
+set default_transaction_isolation to serializable
+
+;
+NEW_CONNECTION;
+set   default_transaction_isolation   to   serializable;
+NEW_CONNECTION;
+set	default_transaction_isolation	to	serializable;
+NEW_CONNECTION;
+set
+default_transaction_isolation
+to
+serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to%serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to_serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to&serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to$serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to@serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to!serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to*serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to(serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to)serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to-serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to+serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to-#serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to/serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to\serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to?serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to-/serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to/#serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_isolation to serializable;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to serializable/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to/-serializable;
+NEW_CONNECTION;
+set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_ISOLATION TO 'SERIALIZABLE';
+NEW_CONNECTION;
+set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+   set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+			set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+
+
+
+set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+set default_transaction_isolation to 'serializable'  ;
+NEW_CONNECTION;
+set default_transaction_isolation to 'serializable'		;
+NEW_CONNECTION;
+set default_transaction_isolation to 'serializable'
+
+;
+NEW_CONNECTION;
+set   default_transaction_isolation   to   'serializable';
+NEW_CONNECTION;
+set	default_transaction_isolation	to	'serializable';
+NEW_CONNECTION;
+set
+default_transaction_isolation
+to
+'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to%'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to_'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to&'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to$'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to@'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to!'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to*'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to('serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to)'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to-'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to+'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to-#'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to/'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to\'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to?'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to-/'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to/#'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to/-'serializable';
+NEW_CONNECTION;
+set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_ISOLATION = 'SERIALIZABLE';
+NEW_CONNECTION;
+set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+   set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+			set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+
+
+
+set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+set default_transaction_isolation = 'serializable'  ;
+NEW_CONNECTION;
+set default_transaction_isolation = 'serializable'		;
+NEW_CONNECTION;
+set default_transaction_isolation = 'serializable'
+
+;
+NEW_CONNECTION;
+set   default_transaction_isolation   =   'serializable';
+NEW_CONNECTION;
+set	default_transaction_isolation	=	'serializable';
+NEW_CONNECTION;
+set
+default_transaction_isolation
+=
+'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =%'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =_'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =&'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =$'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =@'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =!'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =*'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =('serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =)'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =-'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =+'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =-#'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =/'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =\'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =?'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =-/'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =/#'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_isolation = 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'serializable'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =/-'serializable';
+NEW_CONNECTION;
+set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_ISOLATION = "SERIALIZABLE";
+NEW_CONNECTION;
+set default_transaction_isolation = "serializable";
+NEW_CONNECTION;
+   set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+			set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+
+
+
+set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+set default_transaction_isolation = "SERIALIZABLE"  ;
+NEW_CONNECTION;
+set default_transaction_isolation = "SERIALIZABLE"		;
+NEW_CONNECTION;
+set default_transaction_isolation = "SERIALIZABLE"
+
+;
+NEW_CONNECTION;
+set   default_transaction_isolation   =   "SERIALIZABLE";
+NEW_CONNECTION;
+set	default_transaction_isolation	=	"SERIALIZABLE";
+NEW_CONNECTION;
+set
+default_transaction_isolation
+=
+"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE" bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =%"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =_"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =&"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =$"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =@"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =!"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =*"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =("SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE");
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =)"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =-"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =+"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =-#"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =/"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =\"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =?"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =-/"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =/#"SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_isolation = "SERIALIZABLE";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "SERIALIZABLE"/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation =/-"SERIALIZABLE";
+NEW_CONNECTION;
+set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_ISOLATION='READ COMMITTED';
+NEW_CONNECTION;
+set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+   set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+			set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+
+
+
+set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+set default_transaction_isolation='read committed'  ;
+NEW_CONNECTION;
+set default_transaction_isolation='read committed'		;
+NEW_CONNECTION;
+set default_transaction_isolation='read committed'
+
+;
+NEW_CONNECTION;
+set   default_transaction_isolation='read   committed';
+NEW_CONNECTION;
+set	default_transaction_isolation='read	committed';
+NEW_CONNECTION;
+set
+default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read%committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read_committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read&committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read$committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read@committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read!committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read*committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read(committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read)committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read-committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read+committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read-#committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read/committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read\committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read?committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read-/committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read/#committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_isolation='read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read committed'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation='read/-committed';
+NEW_CONNECTION;
+set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_ISOLATION TO 'READ COMMITTED';
+NEW_CONNECTION;
+set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+   set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+			set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+
+
+
+set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+set default_transaction_isolation to 'read committed'  ;
+NEW_CONNECTION;
+set default_transaction_isolation to 'read committed'		;
+NEW_CONNECTION;
+set default_transaction_isolation to 'read committed'
+
+;
+NEW_CONNECTION;
+set   default_transaction_isolation   to   'read   committed';
+NEW_CONNECTION;
+set	default_transaction_isolation	to	'read	committed';
+NEW_CONNECTION;
+set
+default_transaction_isolation
+to
+'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read%committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read_committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read&committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read$committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read@committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read!committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read*committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read(committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read)committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read-committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read+committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read-#committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read/committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read\committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read?committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read-/committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read/#committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read/-committed';
+NEW_CONNECTION;
+set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_ISOLATION TO 'SERIALIZABLE';
+NEW_CONNECTION;
+set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+   set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+			set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+
+
+
+set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+set default_transaction_isolation to 'serializable'  ;
+NEW_CONNECTION;
+set default_transaction_isolation to 'serializable'		;
+NEW_CONNECTION;
+set default_transaction_isolation to 'serializable'
+
+;
+NEW_CONNECTION;
+set   default_transaction_isolation   to   'serializable';
+NEW_CONNECTION;
+set	default_transaction_isolation	to	'serializable';
+NEW_CONNECTION;
+set
+default_transaction_isolation
+to
+'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to%'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to_'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to&'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to$'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to@'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to!'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to*'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to('serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to)'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to-'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to+'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to-#'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to/'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to\'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to?'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to-/'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to/#'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_isolation to 'serializable';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'serializable'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to/-'serializable';
+NEW_CONNECTION;
+set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_ISOLATION = 'READ COMMITTED';
+NEW_CONNECTION;
+set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+   set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+			set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+
+
+
+set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+set default_transaction_isolation = 'read committed'  ;
+NEW_CONNECTION;
+set default_transaction_isolation = 'read committed'		;
+NEW_CONNECTION;
+set default_transaction_isolation = 'read committed'
+
+;
+NEW_CONNECTION;
+set   default_transaction_isolation   =   'read   committed';
+NEW_CONNECTION;
+set	default_transaction_isolation	=	'read	committed';
+NEW_CONNECTION;
+set
+default_transaction_isolation
+=
+'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read%committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read_committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read&committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read$committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read@committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read!committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read*committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read(committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read)committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read-committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read+committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read-#committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read/committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read\committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read?committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read-/committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read/#committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read/-committed';
+NEW_CONNECTION;
+set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_ISOLATION = "READ COMMITTED";
+NEW_CONNECTION;
+set default_transaction_isolation = "read committed";
+NEW_CONNECTION;
+   set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+			set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+
+
+
+set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+set default_transaction_isolation = "READ COMMITTED"  ;
+NEW_CONNECTION;
+set default_transaction_isolation = "READ COMMITTED"		;
+NEW_CONNECTION;
+set default_transaction_isolation = "READ COMMITTED"
+
+;
+NEW_CONNECTION;
+set   default_transaction_isolation   =   "READ   COMMITTED";
+NEW_CONNECTION;
+set	default_transaction_isolation	=	"READ	COMMITTED";
+NEW_CONNECTION;
+set
+default_transaction_isolation
+=
+"READ
+COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED" bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ%COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ_COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ&COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ$COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ@COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ!COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ*COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ(COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED");
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ)COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ-COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ+COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ-#COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ/COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ\COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ?COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ-/COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ/#COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ/-COMMITTED";
+NEW_CONNECTION;
+set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_ISOLATION TO 'READ COMMITTED';
+NEW_CONNECTION;
+set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+   set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+			set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+
+
+
+set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+set default_transaction_isolation to 'read committed'  ;
+NEW_CONNECTION;
+set default_transaction_isolation to 'read committed'		;
+NEW_CONNECTION;
+set default_transaction_isolation to 'read committed'
+
+;
+NEW_CONNECTION;
+set   default_transaction_isolation   to   'read   committed';
+NEW_CONNECTION;
+set	default_transaction_isolation	to	'read	committed';
+NEW_CONNECTION;
+set
+default_transaction_isolation
+to
+'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read%committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read_committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read&committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read$committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read@committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read!committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read*committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read(committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read)committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read-committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read+committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read-#committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read/committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read\committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read?committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read-/committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read/#committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_isolation to 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read committed'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation to 'read/-committed';
+NEW_CONNECTION;
+set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_ISOLATION = 'READ COMMITTED';
+NEW_CONNECTION;
+set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+   set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+			set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+
+
+
+set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+set default_transaction_isolation = 'read committed'  ;
+NEW_CONNECTION;
+set default_transaction_isolation = 'read committed'		;
+NEW_CONNECTION;
+set default_transaction_isolation = 'read committed'
+
+;
+NEW_CONNECTION;
+set   default_transaction_isolation   =   'read   committed';
+NEW_CONNECTION;
+set	default_transaction_isolation	=	'read	committed';
+NEW_CONNECTION;
+set
+default_transaction_isolation
+=
+'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read%committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read_committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read&committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read$committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read@committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read!committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read*committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read(committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read)committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read-committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read+committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read-#committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read/committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read\committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read?committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read-/committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read/#committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_isolation = 'read committed';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read committed'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = 'read/-committed';
+NEW_CONNECTION;
+set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+SET DEFAULT_TRANSACTION_ISOLATION = "READ COMMITTED";
+NEW_CONNECTION;
+set default_transaction_isolation = "read committed";
+NEW_CONNECTION;
+   set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+			set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+
+
+
+set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+set default_transaction_isolation = "READ COMMITTED"  ;
+NEW_CONNECTION;
+set default_transaction_isolation = "READ COMMITTED"		;
+NEW_CONNECTION;
+set default_transaction_isolation = "READ COMMITTED"
+
+;
+NEW_CONNECTION;
+set   default_transaction_isolation   =   "READ   COMMITTED";
+NEW_CONNECTION;
+set	default_transaction_isolation	=	"READ	COMMITTED";
+NEW_CONNECTION;
+set
+default_transaction_isolation
+=
+"READ
+COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED" bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ%COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ_COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ&COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ$COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ@COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ!COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ*COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ(COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED");
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ)COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ-COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ+COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ-#COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ/COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ\COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ?COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ-/COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ/#COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set default_transaction_isolation = "READ COMMITTED";
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ COMMITTED"/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set default_transaction_isolation = "READ/-COMMITTED";
 NEW_CONNECTION;
 set default_transaction_isolation = DEFAULT;
 NEW_CONNECTION;

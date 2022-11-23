@@ -218,9 +218,13 @@ public class ConnectionStatementExecutorTest {
 
   @Test
   public void testStatementSetTransactionMode() {
-    subject.statementSetTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
+    PgTransactionMode mode = new PgTransactionMode();
+    mode.setAccessMode(AccessMode.READ_ONLY_TRANSACTION);
+    subject.statementSetTransactionMode(mode);
     verify(connection).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
-    subject.statementSetTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
+
+    mode.setAccessMode(AccessMode.READ_WRITE_TRANSACTION);
+    subject.statementSetTransactionMode(mode);
     verify(connection).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
   }
 

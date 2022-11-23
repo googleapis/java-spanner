@@ -22,25 +22,67 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
+import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Statement;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.RollbackRequest;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class IsolationLevelTest extends AbstractMockServerTest {
+  @Parameter public Dialect dialect;
+
+  @Parameters(name = "dialect = {0}")
+  public static Object[] data() {
+    return Dialect.values();
+  }
 
   @BeforeClass
   public static void setupMockResults() {
     mockSpanner.putStatementResult(
         StatementResult.query(SELECT_COUNT_STATEMENT, SELECT_COUNT_RESULTSET_AFTER_INSERT));
+  }
+
+  @Before
+  public void setDialect() {
+    mockSpanner.putStatementResult(StatementResult.detectDialectResult(dialect));
+  }
+
+  @Test
+  public void testTransactionIsolationLevel() {
+    try (Connection connection = createConnection()) {
+      assertEquals(IsolationLevel.SERIALIZABLE, connection.getTransactionIsolationLevel());
+
+      connection.execute(Statement.of("set transaction isolation level read committed"));
+      assertEquals(IsolationLevel.READ_COMMITTED, connection.getTransactionIsolationLevel());
+      connection.execute(Statement.of("set transaction isolation level serializable"));
+      assertEquals(IsolationLevel.SERIALIZABLE, connection.getTransactionIsolationLevel());
+    }
+  }
+
+  @Test
+  public void testDefaultIsolationLevel() {
+    try (Connection connection = createConnection()) {
+      assertEquals(IsolationLevel.SERIALIZABLE, connection.getDefaultIsolationLevel());
+
+      connection.execute(Statement.of("set default_transaction_isolation='read committed'"));
+      assertEquals(IsolationLevel.READ_COMMITTED, connection.getDefaultIsolationLevel());
+      connection.execute(Statement.of("set default_transaction_isolation='serializable'"));
+      assertEquals(IsolationLevel.SERIALIZABLE, connection.getDefaultIsolationLevel());
+    }
   }
 
   @Test
@@ -65,7 +107,7 @@ public class IsolationLevelTest extends AbstractMockServerTest {
   public void testQueryInReadCommitted() {
     try (Connection connection = createConnection()) {
       assertFalse(connection.isAutocommit());
-      connection.setIsolationLevel(IsolationLevel.READ_COMMITTED);
+      connection.setDefaultIsolationLevel(IsolationLevel.READ_COMMITTED);
       try (ResultSet resultSet = connection.execute(SELECT_COUNT_STATEMENT).getResultSet()) {
         assertTrue(resultSet.next());
         assertEquals(COUNT_AFTER_INSERT, resultSet.getLong(0));
@@ -86,7 +128,7 @@ public class IsolationLevelTest extends AbstractMockServerTest {
         new IsolationLevel[] {IsolationLevel.SERIALIZABLE, IsolationLevel.READ_COMMITTED}) {
       try (Connection connection = createConnection()) {
         assertFalse(connection.isAutocommit());
-        connection.setIsolationLevel(isolationLevel);
+        connection.setDefaultIsolationLevel(isolationLevel);
         assertEquals(1L, (long) connection.execute(INSERT_STATEMENT).getUpdateCount());
         connection.commit();
       }
@@ -125,7 +167,7 @@ public class IsolationLevelTest extends AbstractMockServerTest {
   public void testQueryAndDmlInReadCommitted() {
     try (Connection connection = createConnection()) {
       assertFalse(connection.isAutocommit());
-      connection.setIsolationLevel(IsolationLevel.READ_COMMITTED);
+      connection.setDefaultIsolationLevel(IsolationLevel.READ_COMMITTED);
       try (ResultSet resultSet = connection.execute(SELECT_COUNT_STATEMENT).getResultSet()) {
         assertTrue(resultSet.next());
         assertEquals(COUNT_AFTER_INSERT, resultSet.getLong(0));
@@ -150,7 +192,7 @@ public class IsolationLevelTest extends AbstractMockServerTest {
         new IsolationLevel[] {IsolationLevel.SERIALIZABLE, IsolationLevel.READ_COMMITTED}) {
       try (Connection connection = createConnection()) {
         assertFalse(connection.isAutocommit());
-        connection.setIsolationLevel(isolationLevel);
+        connection.setDefaultIsolationLevel(isolationLevel);
         assertEquals(1L, (long) connection.execute(INSERT_STATEMENT).getUpdateCount());
         try (ResultSet resultSet = connection.execute(SELECT_COUNT_STATEMENT).getResultSet()) {
           assertTrue(resultSet.next());
@@ -177,7 +219,7 @@ public class IsolationLevelTest extends AbstractMockServerTest {
   public void testRollbackQueryInReadCommitted() {
     try (Connection connection = createConnection()) {
       assertFalse(connection.isAutocommit());
-      connection.setIsolationLevel(IsolationLevel.READ_COMMITTED);
+      connection.setDefaultIsolationLevel(IsolationLevel.READ_COMMITTED);
       try (ResultSet resultSet = connection.execute(SELECT_COUNT_STATEMENT).getResultSet()) {
         assertTrue(resultSet.next());
         assertEquals(COUNT_AFTER_INSERT, resultSet.getLong(0));
@@ -196,7 +238,7 @@ public class IsolationLevelTest extends AbstractMockServerTest {
   public void testQueryAndMutationsInReadCommitted() {
     try (Connection connection = createConnection()) {
       assertFalse(connection.isAutocommit());
-      connection.setIsolationLevel(IsolationLevel.READ_COMMITTED);
+      connection.setDefaultIsolationLevel(IsolationLevel.READ_COMMITTED);
       try (ResultSet resultSet = connection.execute(SELECT_COUNT_STATEMENT).getResultSet()) {
         assertTrue(resultSet.next());
         assertEquals(COUNT_AFTER_INSERT, resultSet.getLong(0));
@@ -220,7 +262,7 @@ public class IsolationLevelTest extends AbstractMockServerTest {
   public void testQueryDmlAndMutationsInReadCommitted() {
     try (Connection connection = createConnection()) {
       assertFalse(connection.isAutocommit());
-      connection.setIsolationLevel(IsolationLevel.READ_COMMITTED);
+      connection.setDefaultIsolationLevel(IsolationLevel.READ_COMMITTED);
       try (ResultSet resultSet = connection.execute(SELECT_COUNT_STATEMENT).getResultSet()) {
         assertTrue(resultSet.next());
         assertEquals(COUNT_AFTER_INSERT, resultSet.getLong(0));
@@ -249,7 +291,7 @@ public class IsolationLevelTest extends AbstractMockServerTest {
   public void testQueryAndDmlInReadCommitted_DmlAborted() {
     try (Connection connection = createConnection()) {
       assertFalse(connection.isAutocommit());
-      connection.setIsolationLevel(IsolationLevel.READ_COMMITTED);
+      connection.setDefaultIsolationLevel(IsolationLevel.READ_COMMITTED);
       try (ResultSet resultSet = connection.execute(SELECT_COUNT_STATEMENT).getResultSet()) {
         assertTrue(resultSet.next());
         assertEquals(COUNT_AFTER_INSERT, resultSet.getLong(0));
@@ -280,7 +322,7 @@ public class IsolationLevelTest extends AbstractMockServerTest {
   public void testQueryAndDmlInReadCommitted_CommitAborted() {
     try (Connection connection = createConnection()) {
       assertFalse(connection.isAutocommit());
-      connection.setIsolationLevel(IsolationLevel.READ_COMMITTED);
+      connection.setDefaultIsolationLevel(IsolationLevel.READ_COMMITTED);
       try (ResultSet resultSet = connection.execute(SELECT_COUNT_STATEMENT).getResultSet()) {
         assertTrue(resultSet.next());
         assertEquals(COUNT_AFTER_INSERT, resultSet.getLong(0));
@@ -313,7 +355,7 @@ public class IsolationLevelTest extends AbstractMockServerTest {
         new IsolationLevel[] {IsolationLevel.SERIALIZABLE, IsolationLevel.READ_COMMITTED}) {
       try (Connection connection = createConnection()) {
         assertFalse(connection.isAutocommit());
-        connection.setIsolationLevel(isolationLevel);
+        connection.setDefaultIsolationLevel(isolationLevel);
         assertEquals(1L, (long) connection.execute(INSERT_STATEMENT).getUpdateCount());
         try (ResultSet resultSet = connection.execute(SELECT_COUNT_STATEMENT).getResultSet()) {
           assertTrue(resultSet.next());
@@ -352,7 +394,7 @@ public class IsolationLevelTest extends AbstractMockServerTest {
   public void testQueryAndDmlInReadCommitted_DmlAborted_QueryResultsChanged() {
     try (Connection connection = createConnection()) {
       assertFalse(connection.isAutocommit());
-      connection.setIsolationLevel(IsolationLevel.READ_COMMITTED);
+      connection.setDefaultIsolationLevel(IsolationLevel.READ_COMMITTED);
       try (ResultSet resultSet = connection.execute(SELECT_COUNT_STATEMENT).getResultSet()) {
         assertTrue(resultSet.next());
         assertEquals(COUNT_AFTER_INSERT, resultSet.getLong(0));
@@ -389,7 +431,7 @@ public class IsolationLevelTest extends AbstractMockServerTest {
   public void testQueryAndDmlInReadCommitted_CommitAborted_DmlResultChanged() {
     try (Connection connection = createConnection()) {
       assertFalse(connection.isAutocommit());
-      connection.setIsolationLevel(IsolationLevel.READ_COMMITTED);
+      connection.setDefaultIsolationLevel(IsolationLevel.READ_COMMITTED);
       try (ResultSet resultSet = connection.execute(SELECT_COUNT_STATEMENT).getResultSet()) {
         assertTrue(resultSet.next());
         assertEquals(COUNT_AFTER_INSERT, resultSet.getLong(0));

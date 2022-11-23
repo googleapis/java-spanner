@@ -92,7 +92,7 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementRollback();
 
-  StatementResult statementSetTransactionMode(TransactionMode mode);
+  StatementResult statementSetTransactionMode(PgTransactionMode mode);
 
   StatementResult statementSetPgTransactionMode(PgTransactionMode transactionMode);
 

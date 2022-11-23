@@ -19,6 +19,7 @@ package com.google.cloud.spanner.connection;
 import static com.google.cloud.spanner.connection.PgTransactionMode.AccessMode.READ_ONLY_TRANSACTION;
 import static com.google.cloud.spanner.connection.PgTransactionMode.AccessMode.READ_WRITE_TRANSACTION;
 import static com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel.ISOLATION_LEVEL_DEFAULT;
+import static com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel.ISOLATION_LEVEL_READ_COMMITTED;
 import static com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel.ISOLATION_LEVEL_SERIALIZABLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -95,6 +96,20 @@ public class PgTransactionModeConverterTest {
     assertEquals(
         create(ISOLATION_LEVEL_SERIALIZABLE), converter.convert("Isolation\tLevel\tSerializable"));
 
+    assertEquals(
+        create(ISOLATION_LEVEL_READ_COMMITTED), converter.convert("isolation level read committed"));
+    assertEquals(
+        create(ISOLATION_LEVEL_READ_COMMITTED), converter.convert("ISOLATION LEVEL READ COMMITTED"));
+    assertEquals(
+        create(ISOLATION_LEVEL_READ_COMMITTED), converter.convert("Isolation Level Read Committed"));
+    assertEquals(
+        create(ISOLATION_LEVEL_READ_COMMITTED),
+        converter.convert("isolation    level  read    committed"));
+    assertEquals(
+        create(ISOLATION_LEVEL_READ_COMMITTED), converter.convert("ISOLATION\nLEVEL\nREAD\nCOMMITTED"));
+    assertEquals(
+        create(ISOLATION_LEVEL_READ_COMMITTED), converter.convert("Isolation\tLevel\tRead\tCommitted"));
+
     assertEquals(new PgTransactionMode(), converter.convert(""));
     assertEquals(new PgTransactionMode(), converter.convert(" "));
     assertNull(converter.convert("random string"));
@@ -106,7 +121,6 @@ public class PgTransactionModeConverterTest {
 
     assertNull(converter.convert("isolation_level default"));
     assertNull(converter.convert("isolationlevel default"));
-    assertNull(converter.convert("isolation level read committed"));
     assertNull(converter.convert("isolation level "));
     assertNull(converter.convert("isolation level_default"));
 
@@ -143,6 +157,9 @@ public class PgTransactionModeConverterTest {
     assertEquals(
         create(READ_ONLY_TRANSACTION, ISOLATION_LEVEL_SERIALIZABLE),
         converter.convert("read only isolation level serializable"));
+    assertEquals(
+        create(READ_ONLY_TRANSACTION, ISOLATION_LEVEL_READ_COMMITTED),
+        converter.convert("read only isolation level read committed"));
 
     assertNull(converter.convert("isolation level default, read-only"));
     assertNull(converter.convert("isolation level default, read"));
@@ -159,5 +176,9 @@ public class PgTransactionModeConverterTest {
         create(READ_ONLY_TRANSACTION, ISOLATION_LEVEL_SERIALIZABLE),
         converter.convert(
             "read write, isolation level default, read only isolation level serializable"));
+    assertEquals(
+        create(READ_WRITE_TRANSACTION, ISOLATION_LEVEL_READ_COMMITTED),
+        converter.convert(
+            "read write, isolation level default, read only isolation level serializable, read write isolation level read committed"));
   }
 }

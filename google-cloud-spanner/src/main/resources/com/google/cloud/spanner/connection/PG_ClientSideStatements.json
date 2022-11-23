@@ -374,15 +374,15 @@
       "setStatement": {
         "propertyName": "SESSION\\s+CHARACTERISTICS\\s+AS\\s+TRANSACTION",
         "separator": "\\s+",
-        "allowedValues": "(((?:\\s*|\\s*,\\s*)READ\\s+ONLY|(?:\\s*|\\s*,\\s*)READ\\s+WRITE|(?:\\s*|\\s*,\\s*)ISOLATION\\s+LEVEL\\s+DEFAULT|(?:\\s*|\\s*,\\s*)ISOLATION\\s+LEVEL\\s+SERIALIZABLE)|(?:\\s*|\\s*,\\s*)ISOLATION\\s+LEVEL\\s+READ\\s+COMMITTED)+)",
+        "allowedValues": "(((?:\\s*|\\s*,\\s*)READ\\s+ONLY|(?:\\s*|\\s*,\\s*)READ\\s+WRITE|(?:\\s*|\\s*,\\s*)ISOLATION\\s+LEVEL\\s+DEFAULT|(?:\\s*|\\s*,\\s*)ISOLATION\\s+LEVEL\\s+SERIALIZABLE|(?:\\s*|\\s*,\\s*)ISOLATION\\s+LEVEL\\s+READ\\s+COMMITTED)+)",
         "converterName": "ClientSideStatementValueConverters$PgTransactionModeConverter"
       }
     },
     {
-      "name": "SET DEFAULT_TRANSACTION_ISOLATION =|TO 'SERIALIZABLE'|SERIALIZABLE|READ COMMITTED|'READ COMMITTED'|DEFAULT",
+      "name": "SET DEFAULT_TRANSACTION_ISOLATION =|TO 'SERIALIZABLE'|SERIALIZABLE|'READ COMMITTED'|DEFAULT",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
-      "statementType": "SET_READONLY",
+      "statementType": "SET_DEFAULT_TRANSACTION_ISOLATION",
       "regex": "(?is)\\A\\s*set\\s+default_transaction_isolation(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
       "method": "statementSetPgDefaultTransactionIsolation",
       "exampleStatements": [
@@ -391,18 +391,25 @@
         "set default_transaction_isolation to 'serializable'",
         "set default_transaction_isolation = 'serializable'",
         "set default_transaction_isolation = \"SERIALIZABLE\"",
-        "set default_transaction_isolation=read committed",
         "set default_transaction_isolation to serializable",
         "set default_transaction_isolation to 'serializable'",
         "set default_transaction_isolation = 'serializable'",
         "set default_transaction_isolation = \"SERIALIZABLE\"",
+        "set default_transaction_isolation='read committed'",
+        "set default_transaction_isolation to 'read committed'",
+        "set default_transaction_isolation to 'serializable'",
+        "set default_transaction_isolation = 'read committed'",
+        "set default_transaction_isolation = \"READ COMMITTED\"",
+        "set default_transaction_isolation to 'read committed'",
+        "set default_transaction_isolation = 'read committed'",
+        "set default_transaction_isolation = \"READ COMMITTED\"",
         "set default_transaction_isolation = DEFAULT",
         "set default_transaction_isolation to DEFAULT"
       ],
       "setStatement": {
         "propertyName": "default_transaction_isolation",
         "separator": "(?:=|\\s+TO\\s+)",
-        "allowedValues": "(SERIALIZABLE|'SERIALIZABLE'|\"SERIALIZABLE\"|DEFAULT)",
+        "allowedValues": "(SERIALIZABLE|'SERIALIZABLE'|\"SERIALIZABLE\"|'READ\\s+COMMITTED'|\"READ\\s+COMMITTED\"|DEFAULT)",
         "converterName": "ClientSideStatementValueConverters$PgTransactionIsolationConverter"
       }
     },

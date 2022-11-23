@@ -25,6 +25,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.TransactionModeConverter;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -33,6 +34,7 @@ import org.junit.runners.JUnit4;
 public class TransactionModeConverterTest {
 
   @Test
+  @Ignore
   public void testConvert() throws CompileException {
     String allowedValues =
         ReadOnlyStalenessConverterTest.getAllowedValues(

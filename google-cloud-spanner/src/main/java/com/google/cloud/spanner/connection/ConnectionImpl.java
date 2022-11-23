@@ -190,7 +190,8 @@ class ConnectionImpl implements Connection {
   private DatabaseClient dbClient;
   private boolean autocommit;
   private boolean readOnly;
-  private IsolationLevel isolationLevel = IsolationLevel.SERIALIZABLE;
+  private IsolationLevel defaultIsolationLevel = IsolationLevel.SERIALIZABLE;
+  private IsolationLevel transactionIsolationLevel = IsolationLevel.SERIALIZABLE;
   private boolean returnCommitStats;
 
   private UnitOfWork currentUnitOfWork = null;
@@ -411,16 +412,16 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
-  public void setIsolationLevel(IsolationLevel isolationLevel) {
+  public void setDefaultIsolationLevel(IsolationLevel defaultIsolationLevel) {
     checkValidStateForChangingDefaultTransactionOptions("default isolation level");
-    this.isolationLevel = isolationLevel;
+    this.defaultIsolationLevel = defaultIsolationLevel;
     clearLastTransactionAndSetDefaultTransactionOptions();
   }
 
   @Override
-  public IsolationLevel getIsolationLevel() {
+  public IsolationLevel getDefaultIsolationLevel() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return this.isolationLevel;
+    return this.defaultIsolationLevel;
   }
 
   private void checkValidStateForChangingDefaultTransactionOptions(String property) {
@@ -436,6 +437,19 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         !transactionBeginMarked,
         String.format("Cannot set %s when a transaction has begun", property));
+  }
+
+  @Override
+  public void setTransactionIsolationLevel(IsolationLevel isolationLevel) {
+    checkValidStateForSetTransactionOption("isolation level");
+    this.transactionBeginMarked = true;
+    this.transactionIsolationLevel = isolationLevel;
+  }
+
+  @Override
+  public IsolationLevel getTransactionIsolationLevel() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.transactionIsolationLevel;
   }
 
   private void clearLastTransactionAndSetDefaultTransactionOptions() {
@@ -579,13 +593,7 @@ class ConnectionImpl implements Connection {
   @Override
   public void setTransactionMode(TransactionMode transactionMode) {
     Preconditions.checkNotNull(transactionMode);
-    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ConnectionPreconditions.checkState(
-        !isBatchActive(), "Cannot set transaction mode while in a batch");
-    ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
-    ConnectionPreconditions.checkState(
-        !isTransactionStarted(),
-        "The transaction mode cannot be set after the transaction has started");
+    checkValidStateForSetTransactionOption("transaction mode");
     ConnectionPreconditions.checkState(
         !isReadOnly() || transactionMode == TransactionMode.READ_ONLY_TRANSACTION,
         "The transaction mode can only be READ_ONLY when the connection is in read_only mode");
@@ -603,19 +611,23 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void setTransactionTag(String tag) {
-    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ConnectionPreconditions.checkState(
-        !isBatchActive(), "Cannot set transaction tag while in a batch");
-    ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
-    ConnectionPreconditions.checkState(
-        !isTransactionStarted(),
-        "The transaction tag cannot be set after the transaction has started");
+    checkValidStateForSetTransactionOption("transaction tag");
     ConnectionPreconditions.checkState(
         getTransactionMode() == TransactionMode.READ_WRITE_TRANSACTION,
         "Transaction tag can only be set for a read/write transaction");
 
     this.transactionBeginMarked = true;
     this.transactionTag = tag;
+  }
+
+  private void checkValidStateForSetTransactionOption(String property) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), String.format("Cannot set %s while in a batch", property));
+    ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(),
+        String.format("The %s cannot be set after the transaction has started", property));
   }
 
   @Override
@@ -766,6 +778,7 @@ class ConnectionImpl implements Connection {
               ? UnitOfWorkType.READ_ONLY_TRANSACTION
               : UnitOfWorkType.READ_WRITE_TRANSACTION;
       batchMode = BatchMode.NONE;
+      transactionIsolationLevel = defaultIsolationLevel;
       transactionTag = null;
     } else {
       popUnitOfWorkFromTransactionStack();
@@ -1322,7 +1335,7 @@ class ConnectionImpl implements Connection {
         case READ_WRITE_TRANSACTION:
           return ReadWriteTransaction.newBuilder()
               .setDatabaseClient(dbClient)
-              .setIsolationLevel(isolationLevel)
+              .setIsolationLevel(defaultIsolationLevel)
               .setRetryAbortsInternally(retryAbortsInternally)
               .setReturnCommitStats(returnCommitStats)
               .setTransactionRetryListeners(transactionRetryListeners)

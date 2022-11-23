@@ -284,20 +284,38 @@
 	  }
 	},
 	{
-	  "name": "SET TRANSACTION READ ONLY|READ WRITE",
+	  "name": "SET TRANSACTION READ ONLY|READ WRITE|ISOLATION LEVEL SERIALIZABLE|ISOLATION LEVEL READ COMMITTED",
 	  "executorName": "ClientSideStatementSetExecutor",
 	  "resultType": "NO_RESULT",
 	  "statementType": "SET_TRANSACTION_MODE",
 	  "regex": "(?is)\\A\\s*set\\s+transaction\\s*(?:\\s+)\\s*(.*)\\z",
 	  "method": "statementSetTransactionMode",
-	  "exampleStatements": ["set transaction read only", "set transaction read write"],
+	  "exampleStatements": ["set transaction read only", "set transaction read write", "set transaction isolation level serializable", "set transaction isolation level read committed"],
 	  "examplePrerequisiteStatements": ["set autocommit = false"],
 	  "setStatement": {
 	    "propertyName": "TRANSACTION",
 	    "separator": "\\s+",
-	    "allowedValues": "(READ\\s+ONLY|READ\\s+WRITE)",
-	    "converterName": "ClientSideStatementValueConverters$TransactionModeConverter"
+	    "allowedValues": "(READ\\s+ONLY|READ\\s+WRITE|ISOLATION\\s+LEVEL\\s+SERIALIZABLE|ISOLATION\\s+LEVEL\\s+READ\\s+COMMITTED)",
+	    "converterName": "ClientSideStatementValueConverters$PgTransactionModeConverter"
 	  }
+	},
+	{
+		"name": "SET DEFAULT_TRANSACTION_ISOLATION = 'SERIALIZABLE'|'READ COMMITTED'",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_DEFAULT_TRANSACTION_ISOLATION",
+		"regex": "(?is)\\A\\s*set\\s+default_transaction_isolation(?:\\s*=\\s*)(.*)\\z",
+		"method": "statementSetPgDefaultTransactionIsolation",
+		"exampleStatements": [
+			"set default_transaction_isolation='serializable'",
+			"set default_transaction_isolation='read committed'"
+		],
+		"setStatement": {
+			"propertyName": "default_transaction_isolation",
+			"separator": "=",
+			"allowedValues": "('SERIALIZABLE'|'READ\\s+COMMITTED')",
+			"converterName": "ClientSideStatementValueConverters$PgTransactionIsolationConverter"
+		}
 	},
 	{
 	  "name": "SET READ_ONLY_STALENESS = 'STRONG' | 'MIN_READ_TIMESTAMP <timestamp>' | 'READ_TIMESTAMP <timestamp>' | 'MAX_STALENESS <int64>s|ms|us|ns' | 'EXACT_STALENESS (<int64>s|ms|us|ns)'",
