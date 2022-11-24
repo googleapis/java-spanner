@@ -232,6 +232,7 @@ class ConnectionImpl implements Connection {
     this.dbClient = spanner.getDatabaseClient(options.getDatabaseId());
     this.retryAbortsInternally = options.isRetryAbortsInternally();
     this.readOnly = options.isReadOnly();
+    this.defaultIsolationLevel = options.getDefaultIsolationLevel();
     this.autocommit = options.isAutocommit();
     this.queryOptions = this.queryOptions.toBuilder().mergeFrom(options.getQueryOptions()).build();
     this.rpcPriority = options.getRPCPriority();
@@ -258,6 +259,7 @@ class ConnectionImpl implements Connection {
     this.ddlClient = ddlClient;
     this.dbClient = dbClient;
     setReadOnly(options.isReadOnly());
+    setDefaultIsolationLevel(options.getDefaultIsolationLevel());
     setAutocommit(options.isAutocommit());
     setReturnCommitStats(options.isReturnCommitStats());
     setDefaultTransactionOptions();
@@ -414,6 +416,7 @@ class ConnectionImpl implements Connection {
   @Override
   public void setDefaultIsolationLevel(IsolationLevel defaultIsolationLevel) {
     checkValidStateForChangingDefaultTransactionOptions("default isolation level");
+    checkSupportedIsolationLevel(Preconditions.checkNotNull(defaultIsolationLevel));
     this.defaultIsolationLevel = defaultIsolationLevel;
     clearLastTransactionAndSetDefaultTransactionOptions();
   }
@@ -422,6 +425,17 @@ class ConnectionImpl implements Connection {
   public IsolationLevel getDefaultIsolationLevel() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     return this.defaultIsolationLevel;
+  }
+
+  private void checkSupportedIsolationLevel(IsolationLevel isolationLevel) {
+    if (!(isolationLevel == IsolationLevel.READ_COMMITTED
+        || isolationLevel == IsolationLevel.SERIALIZABLE)) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          String.format(
+              "Only isolation levels %s and %s are supported",
+              IsolationLevel.READ_COMMITTED, IsolationLevel.SERIALIZABLE));
+    }
   }
 
   private void checkValidStateForChangingDefaultTransactionOptions(String property) {
@@ -442,6 +456,7 @@ class ConnectionImpl implements Connection {
   @Override
   public void setTransactionIsolationLevel(IsolationLevel isolationLevel) {
     checkValidStateForSetTransactionOption("isolation level");
+    checkSupportedIsolationLevel(Preconditions.checkNotNull(defaultIsolationLevel));
     this.transactionBeginMarked = true;
     this.transactionIsolationLevel = isolationLevel;
   }

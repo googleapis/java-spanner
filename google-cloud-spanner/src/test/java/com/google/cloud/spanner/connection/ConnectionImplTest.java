@@ -1367,6 +1367,7 @@ public class ConnectionImplTest {
   @Test
   public void testMergeQueryOptions() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
+    when(connectionOptions.getDefaultIsolationLevel()).thenReturn(IsolationLevel.SERIALIZABLE);
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
@@ -1471,6 +1472,7 @@ public class ConnectionImplTest {
   public void testStatementTagAlwaysAllowed() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
     when(connectionOptions.isAutocommit()).thenReturn(true);
+    when(connectionOptions.getDefaultIsolationLevel()).thenReturn(IsolationLevel.SERIALIZABLE);
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
@@ -1514,6 +1516,7 @@ public class ConnectionImplTest {
   public void testTransactionTagAllowedInTransaction() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
     when(connectionOptions.isAutocommit()).thenReturn(false);
+    when(connectionOptions.getDefaultIsolationLevel()).thenReturn(IsolationLevel.SERIALIZABLE);
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
@@ -1555,6 +1558,7 @@ public class ConnectionImplTest {
   public void testTransactionTagNotAllowedWithoutTransaction() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
     when(connectionOptions.isAutocommit()).thenReturn(true);
+    when(connectionOptions.getDefaultIsolationLevel()).thenReturn(IsolationLevel.SERIALIZABLE);
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
@@ -1576,6 +1580,7 @@ public class ConnectionImplTest {
   public void testTransactionTagNotAllowedAfterTransactionStarted() {
     ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
     when(connectionOptions.isAutocommit()).thenReturn(false);
+    when(connectionOptions.getDefaultIsolationLevel()).thenReturn(IsolationLevel.SERIALIZABLE);
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);

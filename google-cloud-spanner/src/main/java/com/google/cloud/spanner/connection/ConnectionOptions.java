@@ -555,6 +555,7 @@ public class ConnectionOptions {
 
   private final boolean autocommit;
   private final boolean readOnly;
+  private final IsolationLevel defaultIsolationLevel;
   private final boolean retryAbortsInternally;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
@@ -644,6 +645,7 @@ public class ConnectionOptions {
 
     this.autocommit = parseAutocommit(this.uri);
     this.readOnly = parseReadOnly(this.uri);
+    this.defaultIsolationLevel = parseDefaultIsolationLevel(this.uri);
     this.retryAbortsInternally = parseRetryAbortsInternally(this.uri);
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
@@ -1046,6 +1048,14 @@ public class ConnectionOptions {
   /** The initial readonly value for connections created by this {@link ConnectionOptions} */
   public boolean isReadOnly() {
     return readOnly;
+  }
+
+  /**
+   * The initial default {@link IsolationLevel} for connections created by this {@link
+   * ConnectionOptions}
+   */
+  public IsolationLevel getDefaultIsolationLevel() {
+    return defaultIsolationLevel;
   }
 
   /**
