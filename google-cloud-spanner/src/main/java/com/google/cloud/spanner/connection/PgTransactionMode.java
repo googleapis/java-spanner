@@ -40,15 +40,27 @@ class PgTransactionMode {
   }
 
   enum IsolationLevel {
-    ISOLATION_LEVEL_DEFAULT(com.google.cloud.spanner.connection.IsolationLevel.SERIALIZABLE, "ISOLATION LEVEL DEFAULT", "DEFAULT"),
-    ISOLATION_LEVEL_SERIALIZABLE(com.google.cloud.spanner.connection.IsolationLevel.SERIALIZABLE, "ISOLATION LEVEL SERIALIZABLE", "SERIALIZABLE"),
-    ISOLATION_LEVEL_READ_COMMITTED(com.google.cloud.spanner.connection.IsolationLevel.READ_COMMITTED, "ISOLATION LEVEL READ COMMITTED", "READ COMMITTED");
+    ISOLATION_LEVEL_DEFAULT(
+        com.google.cloud.spanner.connection.IsolationLevel.SERIALIZABLE,
+        "ISOLATION LEVEL DEFAULT",
+        "DEFAULT"),
+    ISOLATION_LEVEL_SERIALIZABLE(
+        com.google.cloud.spanner.connection.IsolationLevel.SERIALIZABLE,
+        "ISOLATION LEVEL SERIALIZABLE",
+        "SERIALIZABLE"),
+    ISOLATION_LEVEL_READ_COMMITTED(
+        com.google.cloud.spanner.connection.IsolationLevel.READ_COMMITTED,
+        "ISOLATION LEVEL READ COMMITTED",
+        "READ COMMITTED");
 
     private final com.google.cloud.spanner.connection.IsolationLevel spannerIsolationLevel;
     private final String statementString;
     private final String shortStatementString;
 
-    IsolationLevel(com.google.cloud.spanner.connection.IsolationLevel spannerIsolationLevel, String statement, String shortStatementString) {
+    IsolationLevel(
+        com.google.cloud.spanner.connection.IsolationLevel spannerIsolationLevel,
+        String statement,
+        String shortStatementString) {
       this.spannerIsolationLevel = spannerIsolationLevel;
       this.statementString = statement;
       this.shortStatementString = shortStatementString;

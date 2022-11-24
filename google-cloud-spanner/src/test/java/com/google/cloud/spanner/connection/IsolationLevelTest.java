@@ -23,7 +23,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.Dialect;
-import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
@@ -36,7 +35,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;

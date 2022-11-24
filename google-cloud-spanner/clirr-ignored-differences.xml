@@ -225,11 +225,21 @@
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/connection/Connection</className>
-    <method>com.google.cloud.spanner.connection.IsolationLevel getIsolationLevel()</method>
+    <method>com.google.cloud.spanner.connection.IsolationLevel getDefaultIsolationLevel()</method>
   </difference>
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/connection/Connection</className>
-    <method>void setIsolationLevel(com.google.cloud.spanner.connection.IsolationLevel)</method>
+    <method>void setDefaultIsolationLevel(com.google.cloud.spanner.connection.IsolationLevel)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.connection.IsolationLevel getTransactionIsolationLevel()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setTransactionIsolationLevel(com.google.cloud.spanner.connection.IsolationLevel)</method>
   </difference>
 </differences>

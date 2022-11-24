@@ -201,22 +201,31 @@ public interface Connection extends AutoCloseable {
   boolean isReadOnly();
 
   /** Sets the default isolation level to use for new read/write transactions. */
-  void setDefaultIsolationLevel(IsolationLevel isolationLevel);
+  default void setDefaultIsolationLevel(IsolationLevel isolationLevel) {
+    throw new UnsupportedOperationException();
+  }
 
   /** Returns the default isolation level that is used for new read/write transactions. */
-  IsolationLevel getDefaultIsolationLevel();
+  default IsolationLevel getDefaultIsolationLevel() {
+    throw new UnsupportedOperationException();
+  }
 
   /**
-   * Sets the isolation level to use for current transaction. This method may only be called when
-   * in a transaction, and before the transaction is actually started, i.e. before any statements
-   * have been executed in the transaction.
+   * Sets the isolation level to use for current transaction. This method may only be called when in
+   * a transaction, and before the transaction is actually started, i.e. before any statements have
+   * been executed in the transaction.
    */
-  void setTransactionIsolationLevel(IsolationLevel isolationLevel);
+  default void setTransactionIsolationLevel(IsolationLevel isolationLevel) {
+    throw new UnsupportedOperationException();
+  }
 
   /**
-   * @return the transaction isolation level of the current transaction. This method may only be called when the connection is in a transaction.
+   * @return the transaction isolation level of the current transaction. This method may only be
+   *     called when the connection is in a transaction.
    */
-  IsolationLevel getTransactionIsolationLevel();
+  default IsolationLevel getTransactionIsolationLevel() {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * Sets the duration the connection should wait before automatically aborting the execution of a

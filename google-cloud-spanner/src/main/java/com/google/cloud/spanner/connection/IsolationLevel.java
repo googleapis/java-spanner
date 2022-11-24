@@ -16,10 +16,17 @@
 
 package com.google.cloud.spanner.connection;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /** The isolation level to use for read/write transactions. */
 public enum IsolationLevel {
   READ_UNCOMMITTED,
   READ_COMMITTED,
   REPEATABLE_READ,
   SERIALIZABLE;
+
+  static String getValidNames() {
+    return Arrays.stream(IsolationLevel.values()).map(Enum::toString).collect(Collectors.joining());
+  }
 }

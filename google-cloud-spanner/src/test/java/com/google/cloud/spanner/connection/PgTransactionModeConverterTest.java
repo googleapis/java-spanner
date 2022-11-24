@@ -97,18 +97,23 @@ public class PgTransactionModeConverterTest {
         create(ISOLATION_LEVEL_SERIALIZABLE), converter.convert("Isolation\tLevel\tSerializable"));
 
     assertEquals(
-        create(ISOLATION_LEVEL_READ_COMMITTED), converter.convert("isolation level read committed"));
+        create(ISOLATION_LEVEL_READ_COMMITTED),
+        converter.convert("isolation level read committed"));
     assertEquals(
-        create(ISOLATION_LEVEL_READ_COMMITTED), converter.convert("ISOLATION LEVEL READ COMMITTED"));
+        create(ISOLATION_LEVEL_READ_COMMITTED),
+        converter.convert("ISOLATION LEVEL READ COMMITTED"));
     assertEquals(
-        create(ISOLATION_LEVEL_READ_COMMITTED), converter.convert("Isolation Level Read Committed"));
+        create(ISOLATION_LEVEL_READ_COMMITTED),
+        converter.convert("Isolation Level Read Committed"));
     assertEquals(
         create(ISOLATION_LEVEL_READ_COMMITTED),
         converter.convert("isolation    level  read    committed"));
     assertEquals(
-        create(ISOLATION_LEVEL_READ_COMMITTED), converter.convert("ISOLATION\nLEVEL\nREAD\nCOMMITTED"));
+        create(ISOLATION_LEVEL_READ_COMMITTED),
+        converter.convert("ISOLATION\nLEVEL\nREAD\nCOMMITTED"));
     assertEquals(
-        create(ISOLATION_LEVEL_READ_COMMITTED), converter.convert("Isolation\tLevel\tRead\tCommitted"));
+        create(ISOLATION_LEVEL_READ_COMMITTED),
+        converter.convert("Isolation\tLevel\tRead\tCommitted"));
 
     assertEquals(new PgTransactionMode(), converter.convert(""));
     assertEquals(new PgTransactionMode(), converter.convert(" "));

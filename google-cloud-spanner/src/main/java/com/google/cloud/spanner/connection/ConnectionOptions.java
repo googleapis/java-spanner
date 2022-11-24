@@ -158,6 +158,7 @@ public class ConnectionOptions {
   private static final boolean DEFAULT_USE_PLAIN_TEXT = false;
   static final boolean DEFAULT_AUTOCOMMIT = true;
   static final boolean DEFAULT_READONLY = false;
+  static final IsolationLevel DEFAULT_ISOLATION_LEVEL = IsolationLevel.SERIALIZABLE;
   static final boolean DEFAULT_RETRY_ABORTS_INTERNALLY = true;
   private static final String DEFAULT_CREDENTIALS = null;
   private static final String DEFAULT_OAUTH_TOKEN = null;
@@ -183,6 +184,8 @@ public class ConnectionOptions {
   public static final String AUTOCOMMIT_PROPERTY_NAME = "autocommit";
   /** Name of the 'readonly' connection property. */
   public static final String READONLY_PROPERTY_NAME = "readonly";
+  /** Name of the 'defaultIsolationLevel' connection property. */
+  public static final String DEFAULT_ISOLATION_LEVEL_PROPERTY_NAME = "defaultIsolationLevel";
   /** Name of the 'retry aborts internally' connection property. */
   public static final String RETRY_ABORTS_INTERNALLY_PROPERTY_NAME = "retryAbortsInternally";
   /** Name of the 'credentials' connection property. */
@@ -231,6 +234,11 @@ public class ConnectionOptions {
                       READONLY_PROPERTY_NAME,
                       "Should the connection start in read-only mode (true/false)",
                       DEFAULT_READONLY),
+                  ConnectionProperty.createStringProperty(
+                      DEFAULT_ISOLATION_LEVEL_PROPERTY_NAME,
+                      String.format(
+                          "The default isolation level to use for new transactions on this connection. Must be one of %s",
+                          IsolationLevel.getValidNames())),
                   ConnectionProperty.createBooleanProperty(
                       RETRY_ABORTS_INTERNALLY_PROPERTY_NAME,
                       "Should the connection automatically retry Aborted errors (true/false)",
@@ -717,6 +725,20 @@ public class ConnectionOptions {
   static boolean parseReadOnly(String uri) {
     String value = parseUriProperty(uri, READONLY_PROPERTY_NAME);
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_READONLY;
+  }
+
+  @VisibleForTesting
+  static @Nullable IsolationLevel parseDefaultIsolationLevel(String uri) {
+    String value = parseUriProperty(uri, DEFAULT_ISOLATION_LEVEL_PROPERTY_NAME);
+    try {
+      return value != null ? IsolationLevel.valueOf(value.toUpperCase()) : DEFAULT_ISOLATION_LEVEL;
+    } catch (IllegalArgumentException exception) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          String.format(
+              "Invalid value for %s: %s\nValue must be one of %s",
+              DEFAULT_ISOLATION_LEVEL_PROPERTY_NAME, value, IsolationLevel.getValidNames()));
+    }
   }
 
   @VisibleForTesting
