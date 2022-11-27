@@ -186,6 +186,11 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
+  public void setConvertDmlToMutations(boolean convert) {
+    // ignore
+  }
+
+  @Override
   public ApiFuture<Void> commitAsync() {
     if (this.transaction != null) {
       this.transaction.close();

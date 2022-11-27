@@ -212,4 +212,6 @@ interface UnitOfWork {
    *     buffered or written to Cloud Spanner.
    */
   ApiFuture<Void> writeAsync(Iterable<Mutation> mutations);
+
+  void setConvertDmlToMutations(boolean convert);
 }

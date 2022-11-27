@@ -249,4 +249,9 @@ class DmlBatch extends AbstractBaseUnitOfWork {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Rollback is not allowed for DML batches.");
   }
+
+  @Override
+  public void setConvertDmlToMutations(boolean convert) {
+    this.transaction.setConvertDmlToMutations(convert);
+  }
 }

@@ -83,6 +83,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final long transactionId;
   private final DatabaseClient dbClient;
   private final IsolationLevel isolationLevel;
+  private boolean convertDmlToMutations;
   private final TransactionManager txManager;
   private final boolean retryAbortsInternally;
   private int transactionRetryAttempts;
@@ -102,6 +103,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   static class Builder extends AbstractMultiUseTransaction.Builder<Builder, ReadWriteTransaction> {
     private DatabaseClient dbClient;
     private IsolationLevel isolationLevel = IsolationLevel.SERIALIZABLE;
+    private boolean convertDmlToMutations;
     private Boolean retryAbortsInternally;
     private boolean returnCommitStats;
     private List<TransactionRetryListener> transactionRetryListeners;
@@ -116,6 +118,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
     Builder setIsolationLevel(IsolationLevel isolationLevel) {
       this.isolationLevel = Preconditions.checkNotNull(isolationLevel);
+      return this;
+    }
+
+    Builder setConvertDmlToMutations(boolean convert) {
+      this.convertDmlToMutations = convert;
       return this;
     }
 
@@ -155,6 +162,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     this.transactionId = ID_GENERATOR.incrementAndGet();
     this.dbClient = builder.dbClient;
     this.isolationLevel = builder.isolationLevel;
+    this.convertDmlToMutations = builder.convertDmlToMutations;
     this.retryAbortsInternally = builder.retryAbortsInternally;
     this.transactionRetryListeners = builder.transactionRetryListeners;
     this.txManager = dbClient.transactionManager(extractOptions(builder));
@@ -192,6 +200,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         .append(transactionId)
         .append("; Isolation level: ")
         .append(isolationLevel)
+        .append("; Convert DML to mutations: ")
+        .append(convertDmlToMutations)
         .append("; Tag: ")
         .append(Strings.nullToEmpty(transactionTag))
         .append("; Status: ")
@@ -623,6 +633,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       this.mutations.add(checkNotNull(mutation));
     }
     return ApiFutures.immediateFuture(null);
+  }
+
+  @Override
+  public void setConvertDmlToMutations(boolean convert) {
+    this.convertDmlToMutations = convert;
   }
 
   private final Callable<Void> commitCallable =

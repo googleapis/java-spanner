@@ -72,6 +72,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   private final DatabaseClient dbClient;
   private final TimestampBound readOnlyStaleness;
   private final AutocommitDmlMode autocommitDmlMode;
+  private boolean convertMutationsToDml;
   private final boolean returnCommitStats;
   private volatile SettableApiFuture<Timestamp> readTimestamp = null;
   private volatile TransactionRunner writeTransaction;
@@ -84,6 +85,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     private boolean readOnly;
     private TimestampBound readOnlyStaleness;
     private AutocommitDmlMode autocommitDmlMode;
+    private boolean convertMutationsToDml;
     private boolean returnCommitStats;
 
     private Builder() {}
@@ -117,6 +119,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       return this;
     }
 
+    Builder setConvertDmlToMutations(boolean convert) {
+      this.convertMutationsToDml = convert;
+      return this;
+    }
+
     Builder setReturnCommitStats(boolean returnCommitStats) {
       this.returnCommitStats = returnCommitStats;
       return this;
@@ -143,6 +150,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     this.readOnly = builder.readOnly;
     this.readOnlyStaleness = builder.readOnlyStaleness;
     this.autocommitDmlMode = builder.autocommitDmlMode;
+    this.convertMutationsToDml = builder.convertMutationsToDml;
     this.returnCommitStats = builder.returnCommitStats;
   }
 
@@ -544,6 +552,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
           }
         };
     return executeStatementAsync(COMMIT_STATEMENT, callable, SpannerGrpc.getCommitMethod());
+  }
+
+  @Override
+  public void setConvertDmlToMutations(boolean convert) {
+    this.convertMutationsToDml = convert;
   }
 
   @Override

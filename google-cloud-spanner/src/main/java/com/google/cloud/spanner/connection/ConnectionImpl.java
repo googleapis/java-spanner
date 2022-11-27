@@ -212,6 +212,7 @@ class ConnectionImpl implements Connection {
   private boolean retryAbortsInternally;
   private final List<TransactionRetryListener> transactionRetryListeners = new ArrayList<>();
   private AutocommitDmlMode autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
+  private boolean convertDmlToMutations;
   private TimestampBound readOnlyStaleness = TimestampBound.strong();
   private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
   private RpcPriority rpcPriority = null;
@@ -1332,6 +1333,7 @@ class ConnectionImpl implements Connection {
           .setReadOnly(isReadOnly())
           .setReadOnlyStaleness(readOnlyStaleness)
           .setAutocommitDmlMode(autocommitDmlMode)
+          .setConvertDmlToMutations(convertDmlToMutations)
           .setReturnCommitStats(returnCommitStats)
           .setStatementTimeout(statementTimeout)
           .withStatementExecutor(statementExecutor)
@@ -1351,6 +1353,7 @@ class ConnectionImpl implements Connection {
           return ReadWriteTransaction.newBuilder()
               .setDatabaseClient(dbClient)
               .setIsolationLevel(defaultIsolationLevel)
+              .setConvertDmlToMutations(convertDmlToMutations)
               .setRetryAbortsInternally(retryAbortsInternally)
               .setReturnCommitStats(returnCommitStats)
               .setTransactionRetryListeners(transactionRetryListeners)
@@ -1436,6 +1439,15 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ConnectionPreconditions.checkState(!isAutocommit(), NOT_ALLOWED_IN_AUTOCOMMIT);
     get(getCurrentUnitOfWorkOrStartNewUnitOfWork().writeAsync(mutations));
+  }
+
+  @Override
+  public void setConvertDmlToMutations(boolean convert) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    this.convertDmlToMutations = convert;
+    if (this.currentUnitOfWork != null && this.currentUnitOfWork.isActive()) {
+      this.currentUnitOfWork.setConvertDmlToMutations(convert);
+    }
   }
 
   @Override

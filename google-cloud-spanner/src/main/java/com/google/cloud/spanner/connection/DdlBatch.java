@@ -222,6 +222,11 @@ class DdlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
+  public void setConvertDmlToMutations(boolean convert) {
+    // ignore
+  }
+
+  @Override
   public ApiFuture<long[]> runBatchAsync() {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED, "The batch is no longer active and cannot be ran");
