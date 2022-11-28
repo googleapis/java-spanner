@@ -16,12 +16,14 @@
 
 package com.google.cloud.spanner.connection;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -329,5 +331,41 @@ public class ConvertDmlToMutationsTest extends AbstractMockServerTest {
     assertEquals("1", mutation.getDelete().getKeySet().getKeys(0).getValues(0).getStringValue());
     assertEquals(
         2.2d, mutation.getDelete().getKeySet().getKeys(0).getValues(1).getNumberValue(), 0.0d);
+  }
+
+  @Test
+  public void testBatchWithParameters() {
+    String sql = "insert into my_table (id, value) values (@id, @value)";
+    Statement statement =
+        Statement.newBuilder(sql).bind("id").to(1L).bind("value").to("value1").build();
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(false);
+      connection.setConvertDmlToMutations(true);
+      assertArrayEquals(
+          new long[] {1L, 1L, 1L},
+          connection.executeBatchUpdate(
+              ImmutableList.of(
+                  Statement.newBuilder(sql).bind("id").to(1L).bind("value").to("value1").build(),
+                  Statement.newBuilder(sql).bind("id").to(2L).bind("value").to("value2").build(),
+                  Statement.newBuilder(sql).bind("id").to(3L).bind("value").to("value3").build())));
+      connection.commit();
+    }
+    assertEquals(0, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+    CommitRequest commit = mockSpanner.getRequestsOfType(CommitRequest.class).get(0);
+    assertEquals(1, commit.getMutationsCount());
+    Mutation mutation = commit.getMutations(0);
+    assertEquals(3, mutation.getInsert().getValuesCount());
+    assertEquals(OperationCase.INSERT, mutation.getOperationCase());
+    assertEquals("my_table", mutation.getInsert().getTable());
+    assertEquals(2, mutation.getInsert().getColumnsCount());
+    assertEquals("id", mutation.getInsert().getColumns(0));
+    assertEquals("value", mutation.getInsert().getColumns(1));
+    int rowNum = 1;
+    for (ListValue listValue : mutation.getInsert().getValuesList()) {
+      assertEquals(String.valueOf(rowNum), listValue.getValues(0).getStringValue());
+      assertEquals("value" + rowNum, listValue.getValues(1).getStringValue());
+      rowNum++;
+    }
   }
 }
