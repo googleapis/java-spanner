@@ -30,8 +30,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+/** Integration tests for FGAC samples for GoogleStandardSql dialect. */
+@RunWith(JUnit4.class)
 public class DatabaseRolesIT extends SampleTestBase {
+
   private static DatabaseId databaseId;
 
   @BeforeClass
