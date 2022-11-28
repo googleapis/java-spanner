@@ -57,6 +57,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.SpannerGrpc;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -472,7 +473,17 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     Preconditions.checkArgument(update.isUpdate(), "The statement is not an update statement");
     checkValidTransaction(update);
     ApiFuture<Tuple<Long, ResultSet>> res;
-    if (retryAbortsInternally) {
+    if (convertDmlToMutations) {
+      SettableApiFuture<Tuple<Long, ResultSet>> mutationResults = SettableApiFuture.create();
+      res = mutationResults;
+      try {
+        List<Mutation> mutations = DmlToMutationsConverter.convert(update.getStatement());
+        this.mutations.addAll(mutations);
+        mutationResults.set(Tuple.of((long) mutations.size(), null));
+      } catch (SpannerException exception) {
+        mutationResults.setException(exception);
+      }
+    } else if (retryAbortsInternally) {
       res =
           executeStatementAsync(
               update,
@@ -567,7 +578,23 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     checkValidTransaction(Iterables.getFirst(updates, null));
 
     ApiFuture<long[]> res;
-    if (retryAbortsInternally) {
+    if (convertDmlToMutations) {
+      SettableApiFuture<long[]> mutationResults = SettableApiFuture.create();
+      res = mutationResults;
+      ImmutableList.Builder<Mutation> mutationsBuilder = ImmutableList.builder();
+      try {
+        for (ParsedStatement statement : updates) {
+          mutationsBuilder.addAll(DmlToMutationsConverter.convert(statement.getStatement()));
+        }
+        ImmutableList<Mutation> mutations = mutationsBuilder.build();
+        this.mutations.addAll(mutations);
+        long[] updateCounts = new long[mutations.size()];
+        Arrays.fill(updateCounts, 1L);
+        mutationResults.set(updateCounts);
+      } catch (SpannerException exception) {
+        mutationResults.setException(exception);
+      }
+    } else if (retryAbortsInternally) {
       res =
           executeStatementAsync(
               RUN_BATCH_STATEMENT,

@@ -19,6 +19,7 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.SpannerException;
@@ -105,6 +106,8 @@ class DmlToMutationsConverter {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INVALID_ARGUMENT, "Missing values list in insert statement");
     }
+    checkForThenReturnClause(parser, statement);
+
     ImmutableList.Builder<Mutation> mutationsBuilder = ImmutableList.builder();
     for (List<String> row : rows) {
       WriteBuilder insertBuilder = Mutation.newInsertBuilder(table.getUnquotedQualifiedName());
@@ -163,7 +166,9 @@ class DmlToMutationsConverter {
     }
     ImmutableMap<String, Value> assignments =
         convertAssignmentList(assignmentsList, statement, alias);
-    ImmutableMap<String, Value> whereClauses = parseWhereClauses(parser, statement, alias);
+    ImmutableMap<String, Value> whereClauses =
+        parseWhereClauses(parser, statement, alias, ImmutableList.builder());
+    checkForThenReturnClause(parser, statement);
 
     WriteBuilder updateBuilder = Mutation.newUpdateBuilder(table.getUnquotedQualifiedName());
     for (Entry<String, Value> entry :
@@ -174,7 +179,41 @@ class DmlToMutationsConverter {
   }
 
   static List<Mutation> convertDelete(Statement statement) {
-    return ImmutableList.of();
+    SimpleParser parser = new SimpleParser(statement.getSql());
+    if (!parser.eatKeyword("delete")) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT, "Statement is not a delete statement: " + statement);
+    }
+    parser.eatKeyword("from");
+    TableOrIndexName table = parser.readTableOrIndexName();
+    if (table == null) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT, "Invalid table name in delete statement: " + statement);
+    }
+    parser.skipTableHintExpression();
+    String alias = table.getUnquotedName();
+    boolean mustHaveAlias = parser.eatKeyword("as");
+    if (mustHaveAlias || !parser.peekKeyword("where")) {
+      alias = parser.readIdentifierPart();
+      if (alias == null) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, "Invalid or missing table alias: " + statement);
+      }
+    }
+    if (!parser.eatKeyword("where")) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          "Delete statements without a WHERE-clause are not supported for mutations: " + statement);
+    }
+    ImmutableList.Builder<Value> keyValuesInOrder = ImmutableList.builder();
+    parseWhereClauses(parser, statement, alias, keyValuesInOrder);
+    checkForThenReturnClause(parser, statement);
+
+    Key.Builder keyBuilder = Key.newBuilder();
+    for (Value value : keyValuesInOrder.build()) {
+      keyBuilder.append(value);
+    }
+    return ImmutableList.of(Mutation.delete(table.getUnquotedQualifiedName(), keyBuilder.build()));
   }
 
   static ImmutableMap<String, Value> convertAssignmentList(
@@ -203,7 +242,10 @@ class DmlToMutationsConverter {
   }
 
   static ImmutableMap<String, Value> parseWhereClauses(
-      SimpleParser parser, Statement statement, String tableNameOrAlias) {
+      SimpleParser parser,
+      Statement statement,
+      String tableNameOrAlias,
+      ImmutableList.Builder<Value> valuesInOrder) {
     ImmutableMap.Builder<String, Value> whereClausesBuilder = ImmutableMap.builder();
     while (true) {
       TableOrIndexName columnName = parser.readTableOrIndexName();
@@ -219,11 +261,22 @@ class DmlToMutationsConverter {
       if (!parser.eatToken("=")) {
         throw createInvalidWhereClauseException(statement);
       }
+      // TODO: Add a method to the parser that only reads the next token.
       String valueExpression =
-          parser.parseExpressionUntilKeyword(ImmutableList.of("and"), true, true);
-      whereClausesBuilder.put(
-          columnName.name, convertExpressionToValue(statement, valueExpression));
+          parser.parseExpressionUntilKeyword(ImmutableList.of("and", "or", "then"), true, true);
+      Value value = convertExpressionToValue(statement, valueExpression);
+      whereClausesBuilder.put(columnName.name, value);
+      valuesInOrder.add(value);
       if (parser.hasMoreTokens()) {
+        if (parser.eatKeyword("or")) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT,
+              "Found OR in WHERE clause. This is not supported for mutations. Only AND is allowed: "
+                  + statement);
+        }
+        if (parser.peekKeyword("then")) {
+          break;
+        }
         parser.eatKeyword("and");
         if (!parser.hasMoreTokens()) {
           throw SpannerExceptionFactory.newSpannerException(
@@ -251,6 +304,15 @@ class DmlToMutationsConverter {
         "Invalid WHERE-clause for mutations. "
             + "Only WHERE-clause in the form 'column_name1 = <literal | parameter> [AND column_name2 = <literal | parameter> [...]]' are supported: "
             + statement);
+  }
+
+  static void checkForThenReturnClause(SimpleParser parser, Statement statement) {
+    if (parser.eatKeyword("then", "return")) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          "'THEN RETURN' clauses are not supported for DML statements that should be converted to mutations: "
+              + statement);
+    }
   }
 
   static Value convertExpressionToValue(Statement statement, String valueExpression) {
@@ -353,19 +415,20 @@ class DmlToMutationsConverter {
     } else if (parser.getSql().equalsIgnoreCase("nan")) {
       value = Value.float64(Double.NaN);
     } else {
-      Double numberValue = null;
+      // Try to parse first as INT64, then FLOAT64 and then just as an untyped string value.
       try {
-        numberValue = Double.valueOf(expression);
+        value = Value.int64(Long.valueOf(expression));
       } catch (NumberFormatException ignore) {
-        // Ignore any errors and just send the value as an untyped string and let the backend
-        // try to infer the value and type.
+        // Ignore any errors and just send the value as either a FLOAT64 or an untyped string and
+        // let the backend try to infer the value and type.
+        try {
+          value = Value.float64(Double.valueOf(expression));
+        } catch (NumberFormatException ignore2) {
+          value =
+              Value.untyped(
+                  com.google.protobuf.Value.newBuilder().setStringValue(expression).build());
+        }
       }
-      com.google.protobuf.Value.Builder valueBuilder =
-          com.google.protobuf.Value.newBuilder().setStringValue(expression);
-      if (numberValue != null) {
-        valueBuilder.setNumberValue(numberValue);
-      }
-      value = Value.untyped(valueBuilder.build());
     }
     return value;
   }

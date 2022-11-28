@@ -19,10 +19,14 @@ package com.google.cloud.spanner.connection;
 import static com.google.cloud.spanner.connection.DmlToMutationsConverter.convert;
 import static com.google.cloud.spanner.connection.DmlToMutationsConverter.parseValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Value;
 import com.google.common.collect.ImmutableList;
@@ -111,12 +115,7 @@ public class DmlToMutationsConverterTest {
                 .set("col1")
                 .to(untyped("value1"))
                 .set("col2")
-                .to(
-                    Value.untyped(
-                        com.google.protobuf.Value.newBuilder()
-                            .setStringValue("100")
-                            .setNumberValue(100d)
-                            .build()))
+                .to(Value.int64(100L))
                 .set("col3")
                 .to(Date.parseDate("2022-11-27"))
                 .set("col4")
@@ -199,12 +198,7 @@ public class DmlToMutationsConverterTest {
         ImmutableList.of(
             Mutation.newUpdateBuilder("my_table")
                 .set("id")
-                .to(
-                    Value.untyped(
-                        com.google.protobuf.Value.newBuilder()
-                            .setStringValue("1")
-                            .setNumberValue(1d)
-                            .build()))
+                .to(Value.int64(1L))
                 .set("col1")
                 .to(untyped("value1"))
                 .build()),
@@ -213,28 +207,13 @@ public class DmlToMutationsConverterTest {
         ImmutableList.of(
             Mutation.newUpdateBuilder("my_table")
                 .set("id1")
-                .to(
-                    Value.untyped(
-                        com.google.protobuf.Value.newBuilder()
-                            .setStringValue("1")
-                            .setNumberValue(1d)
-                            .build()))
+                .to(Value.int64(1L))
                 .set("id2")
-                .to(
-                    Value.untyped(
-                        com.google.protobuf.Value.newBuilder()
-                            .setStringValue("2.2")
-                            .setNumberValue(2.2d)
-                            .build()))
+                .to(Value.float64(2.2d))
                 .set("col1")
                 .to(untyped("value1"))
                 .set("col2")
-                .to(
-                    Value.untyped(
-                        com.google.protobuf.Value.newBuilder()
-                            .setStringValue("100")
-                            .setNumberValue(100d)
-                            .build()))
+                .to(Value.int64(100L))
                 .set("col3")
                 .to(Date.parseDate("2022-11-27"))
                 .set("col4")
@@ -246,6 +225,63 @@ public class DmlToMutationsConverterTest {
             Statement.of(
                 "update my_table set col1='value1', col2=100, col3=date '2022-11-27', col4=timestamp '2022-11-27T14:47:00Z', col5=json '{\"key\": \"value\"}' "
                     + "where id1=1 and id2 = 2.2")));
+  }
+
+  @Test
+  public void testConvertDeleteStatementWithParameters() {
+    assertEquals(
+        ImmutableList.of(Mutation.delete("my_table", Key.of(Value.int64(1L)))),
+        convert(Statement.newBuilder("delete my_table where id=@id").bind("id").to(1L).build()));
+    assertEquals(
+        ImmutableList.of(
+            Mutation.delete("my_table", Key.of(Value.string("parent-key"), Value.int64(1L)))),
+        convert(
+            Statement.newBuilder("delete from my_table " + "where id1=@id1 and id2=@id2")
+                .bind("id1")
+                .to("parent-key")
+                .bind("id2")
+                .to(1L)
+                .build()));
+  }
+
+  @Test
+  public void testConvertDeleteStatementWithLiterals() {
+    assertEquals(
+        ImmutableList.of(Mutation.delete("my_table", Key.of(Value.int64(1L)))),
+        convert(Statement.of("delete from my_table where id=1")));
+    assertEquals(
+        ImmutableList.of(Mutation.delete("my_table", Key.of(Value.int64(1L), Value.float64(2.2d)))),
+        convert(Statement.of("delete my_table " + "where id1=1 and id2 = 2.2")));
+  }
+
+  @Test
+  public void testThenReturn() {
+    assertIsThenReturnUnsupportedException(
+        assertThrows(
+            SpannerException.class,
+            () ->
+                convert(
+                    Statement.of(
+                        "insert into my_table (id, value) values (1, 'one') then return id"))));
+    assertIsThenReturnUnsupportedException(
+        assertThrows(
+            SpannerException.class,
+            () ->
+                convert(
+                    Statement.of("update my_table set value='two' where id=2 then return value"))));
+    assertIsThenReturnUnsupportedException(
+        assertThrows(
+            SpannerException.class,
+            () -> convert(Statement.of("delete my_table where id=3 then return value"))));
+  }
+
+  void assertIsThenReturnUnsupportedException(SpannerException exception) {
+    assertTrue(
+        exception.getMessage(),
+        exception
+            .getMessage()
+            .contains(
+                "'THEN RETURN' clauses are not supported for DML statements that should be converted to mutations"));
   }
 
   static Value untyped(String value) {

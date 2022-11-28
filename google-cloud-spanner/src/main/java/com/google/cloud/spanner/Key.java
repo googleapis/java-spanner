@@ -164,6 +164,12 @@ public final class Key implements Serializable {
       return this;
     }
 
+    /** Appends a {@link com.google.cloud.spanner.Value} to the key. */
+    public Builder append(com.google.cloud.spanner.Value value) {
+      buffer.add(value);
+      return this;
+    }
+
     /**
      * Appends an object following the same conversion rules as {@link Key#of(Object...)}. When
      * using the {@code Builder}, most code should prefer using the strongly typed {@code
@@ -172,6 +178,8 @@ public final class Key implements Serializable {
     public Builder appendObject(@Nullable Object value) {
       if (value == null) {
         append((Boolean) null);
+      } else if (value instanceof com.google.cloud.spanner.Value) {
+        append((com.google.cloud.spanner.Value) value);
       } else if (value instanceof Boolean) {
         append((Boolean) value);
       } else if (value instanceof Integer) {
@@ -284,6 +292,8 @@ public final class Key implements Serializable {
     for (Object part : parts) {
       if (part == null) {
         builder.addValues(NULL_PROTO);
+      } else if (part instanceof com.google.cloud.spanner.Value) {
+        builder.addValues(((com.google.cloud.spanner.Value) part).toProto());
       } else if (part instanceof Boolean) {
         builder.addValuesBuilder().setBoolValue((Boolean) part);
       } else if (part instanceof Long) {
