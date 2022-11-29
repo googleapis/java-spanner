@@ -245,6 +245,11 @@
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>boolean isConvertDmlToMutations()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
     <method>void setConvertDmlToMutations(boolean)</method>
   </difference>
 </differences>

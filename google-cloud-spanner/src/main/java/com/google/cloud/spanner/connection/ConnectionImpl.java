@@ -1442,6 +1442,11 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
+  public boolean isConvertDmlToMutations() {
+    return convertDmlToMutations;
+  }
+
+  @Override
   public void setConvertDmlToMutations(boolean convert) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     this.convertDmlToMutations = convert;

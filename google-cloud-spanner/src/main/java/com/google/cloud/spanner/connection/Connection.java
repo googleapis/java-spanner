@@ -1166,6 +1166,8 @@ public interface Connection extends AutoCloseable {
    */
   void bufferedWrite(Iterable<Mutation> mutations);
 
+  boolean isConvertDmlToMutations();
+
   void setConvertDmlToMutations(boolean convert);
 
   /** The {@link Dialect} that is used by this {@link Connection}. */
