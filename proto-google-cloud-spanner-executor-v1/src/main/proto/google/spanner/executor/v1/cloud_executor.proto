@@ -875,10 +875,10 @@ message ExecutePartitionAction {
 //     aip.dev/not-precedent: This is not an API resource. --)
 message ExecuteChangeStreamQuery {
   // Name for this change stream.
-  optional string name = 1;
+  string name = 1;
   // Specifies that records with commit_timestamp greater than or equal to
   // start_time should be returned.
-  optional google.protobuf.Timestamp start_time = 2;
+  google.protobuf.Timestamp start_time = 2;
   // Specifies that records with commit_timestamp less than or equal to
   // end_time should be returned.
   optional google.protobuf.Timestamp end_time = 3;
@@ -1055,73 +1055,73 @@ message ChangeStreamRecord {
 // ChangeStream data change record.
 message DataChangeRecord {
   // The timestamp in which the change was committed.
-  optional google.protobuf.Timestamp commit_time = 1;
+  google.protobuf.Timestamp commit_time = 1;
   // The sequence number for the record within the transaction.
-  optional string record_sequence = 2;
+  string record_sequence = 2;
   // A globally unique string that represents the transaction in which the
   // change was committed.
-  optional string transaction_id = 3;
+  string transaction_id = 3;
   // Indicates whether this is the last record for a transaction in the current
   // partition.
-  optional bool is_last_record = 4;
+  bool is_last_record = 4;
   // Name of the table affected by the change.
-  optional string table = 5;
+  string table = 5;
   // Column types.
   // (-- api-linter: core::0123::resource-annotation=disabled
   //     aip.dev/not-precedent: This is not an API resource. --)
   message ColumnType {
     // Column name.
-    optional string name = 1;
+    string name = 1;
     // Column type in JSON.
-    optional string type = 2;
+    string type = 2;
     // Whether the column is a primary key column.
-    optional bool is_primary_key = 3;
+    bool is_primary_key = 3;
     // The position of the column as defined in the schema.
-    optional int64 ordinal_position = 4;
+    int64 ordinal_position = 4;
   }
   // Column types defined in the schema.
   repeated ColumnType column_types = 6;
   // Describes the changes that were made.
   message Mod {
     // The primary key values in JSON.
-    optional string keys = 1;
+    string keys = 1;
     // The new values of the changed columns in JSON. Only contain the non-key
     // columns.
-    optional string new_values = 2;
+    string new_values = 2;
     // The old values of the changed columns in JSON. Only contain the non-key
     // columns.
-    optional string old_values = 3;
+    string old_values = 3;
   }
   // Changes made in the transaction.
   repeated Mod mods = 7;
   // Describes the type of change. One of INSERT, UPDATE or DELETE.
-  optional string mod_type = 8;
+  string mod_type = 8;
   // One of value capture type: NEW_VALUES, OLD_VALUES, OLD_AND_NEW_VALUES.
-  optional string value_capture_type = 9;
+  string value_capture_type = 9;
   // Number of records in transactions.
-  optional int64 record_count = 10;
+  int64 record_count = 10;
   // Number of partitions in transactions.
-  optional int64 partition_count = 11;
+  int64 partition_count = 11;
   // Transaction tag info.
-  optional string transaction_tag = 12;
+  string transaction_tag = 12;
   // Whether the transaction is a system transactionn.
-  optional bool is_system_transaction = 13;
+  bool is_system_transaction = 13;
 }
 
 // ChangeStream child partition record.
 message ChildPartitionsRecord {
   // Data change records returned from child partitions in this child partitions
   // record will have a commit timestamp greater than or equal to start_time.
-  optional google.protobuf.Timestamp start_time = 1;
+  google.protobuf.Timestamp start_time = 1;
   // A monotonically increasing sequence number that can be used to define the
   // ordering of the child partitions record when there are multiple child
   // partitions records returned with the same start_time in a particular
   // partition.
-  optional string record_sequence = 2;
+  string record_sequence = 2;
   // A single child partition.
   message ChildPartition {
     // Partition token string used to identify the child partition in queries.
-    optional string token = 1;
+    string token = 1;
     // Parent partition tokens of this child partition.
     repeated string parent_partition_tokens = 2;
   }
