@@ -428,5 +428,32 @@ public interface SpannerActionOrBuilder extends
    */
   com.google.spanner.executor.v1.ExecutePartitionActionOrBuilder getExecutePartitionOrBuilder();
 
+  /**
+   * <pre>
+   * Action to execute change stream query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.ExecuteChangeStreamQuery execute_change_stream_query = 50;</code>
+   * @return Whether the executeChangeStreamQuery field is set.
+   */
+  boolean hasExecuteChangeStreamQuery();
+  /**
+   * <pre>
+   * Action to execute change stream query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.ExecuteChangeStreamQuery execute_change_stream_query = 50;</code>
+   * @return The executeChangeStreamQuery.
+   */
+  com.google.spanner.executor.v1.ExecuteChangeStreamQuery getExecuteChangeStreamQuery();
+  /**
+   * <pre>
+   * Action to execute change stream query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.ExecuteChangeStreamQuery execute_change_stream_query = 50;</code>
+   */
+  com.google.spanner.executor.v1.ExecuteChangeStreamQueryOrBuilder getExecuteChangeStreamQueryOrBuilder();
+
   public com.google.spanner.executor.v1.SpannerAction.ActionCase getActionCase();
 }

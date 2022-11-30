@@ -299,4 +299,48 @@ public interface SpannerActionOutcomeOrBuilder extends
    * @return The dmlRowsModified at the given index.
    */
   long getDmlRowsModified(int index);
+
+  /**
+   * <pre>
+   * Change stream records returned by a change stream query.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+   */
+  java.util.List<com.google.spanner.executor.v1.ChangeStreamRecord> 
+      getChangeStreamRecordsList();
+  /**
+   * <pre>
+   * Change stream records returned by a change stream query.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+   */
+  com.google.spanner.executor.v1.ChangeStreamRecord getChangeStreamRecords(int index);
+  /**
+   * <pre>
+   * Change stream records returned by a change stream query.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+   */
+  int getChangeStreamRecordsCount();
+  /**
+   * <pre>
+   * Change stream records returned by a change stream query.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+   */
+  java.util.List<? extends com.google.spanner.executor.v1.ChangeStreamRecordOrBuilder> 
+      getChangeStreamRecordsOrBuilderList();
+  /**
+   * <pre>
+   * Change stream records returned by a change stream query.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+   */
+  com.google.spanner.executor.v1.ChangeStreamRecordOrBuilder getChangeStreamRecordsOrBuilder(
+      int index);
 }

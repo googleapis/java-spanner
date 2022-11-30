@@ -273,6 +273,20 @@ private static final long serialVersionUID = 0L;
             actionCase_ = 44;
             break;
           }
+          case 402: {
+            com.google.spanner.executor.v1.ExecuteChangeStreamQuery.Builder subBuilder = null;
+            if (actionCase_ == 50) {
+              subBuilder = ((com.google.spanner.executor.v1.ExecuteChangeStreamQuery) action_).toBuilder();
+            }
+            action_ =
+                input.readMessage(com.google.spanner.executor.v1.ExecuteChangeStreamQuery.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom((com.google.spanner.executor.v1.ExecuteChangeStreamQuery) action_);
+              action_ = subBuilder.buildPartial();
+            }
+            actionCase_ = 50;
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -326,6 +340,7 @@ private static final long serialVersionUID = 0L;
     GENERATE_DB_PARTITIONS_READ(42),
     GENERATE_DB_PARTITIONS_QUERY(43),
     EXECUTE_PARTITION(44),
+    EXECUTE_CHANGE_STREAM_QUERY(50),
     ACTION_NOT_SET(0);
     private final int value;
     private ActionCase(int value) {
@@ -357,6 +372,7 @@ private static final long serialVersionUID = 0L;
         case 42: return GENERATE_DB_PARTITIONS_READ;
         case 43: return GENERATE_DB_PARTITIONS_QUERY;
         case 44: return EXECUTE_PARTITION;
+        case 50: return EXECUTE_CHANGE_STREAM_QUERY;
         case 0: return ACTION_NOT_SET;
         default: return null;
       }
@@ -1027,6 +1043,49 @@ private static final long serialVersionUID = 0L;
     return com.google.spanner.executor.v1.ExecutePartitionAction.getDefaultInstance();
   }
 
+  public static final int EXECUTE_CHANGE_STREAM_QUERY_FIELD_NUMBER = 50;
+  /**
+   * <pre>
+   * Action to execute change stream query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.ExecuteChangeStreamQuery execute_change_stream_query = 50;</code>
+   * @return Whether the executeChangeStreamQuery field is set.
+   */
+  @java.lang.Override
+  public boolean hasExecuteChangeStreamQuery() {
+    return actionCase_ == 50;
+  }
+  /**
+   * <pre>
+   * Action to execute change stream query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.ExecuteChangeStreamQuery execute_change_stream_query = 50;</code>
+   * @return The executeChangeStreamQuery.
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.ExecuteChangeStreamQuery getExecuteChangeStreamQuery() {
+    if (actionCase_ == 50) {
+       return (com.google.spanner.executor.v1.ExecuteChangeStreamQuery) action_;
+    }
+    return com.google.spanner.executor.v1.ExecuteChangeStreamQuery.getDefaultInstance();
+  }
+  /**
+   * <pre>
+   * Action to execute change stream query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.ExecuteChangeStreamQuery execute_change_stream_query = 50;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.ExecuteChangeStreamQueryOrBuilder getExecuteChangeStreamQueryOrBuilder() {
+    if (actionCase_ == 50) {
+       return (com.google.spanner.executor.v1.ExecuteChangeStreamQuery) action_;
+    }
+    return com.google.spanner.executor.v1.ExecuteChangeStreamQuery.getDefaultInstance();
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -1085,6 +1144,9 @@ private static final long serialVersionUID = 0L;
     }
     if (actionCase_ == 44) {
       output.writeMessage(44, (com.google.spanner.executor.v1.ExecutePartitionAction) action_);
+    }
+    if (actionCase_ == 50) {
+      output.writeMessage(50, (com.google.spanner.executor.v1.ExecuteChangeStreamQuery) action_);
     }
     unknownFields.writeTo(output);
   }
@@ -1153,6 +1215,10 @@ private static final long serialVersionUID = 0L;
     if (actionCase_ == 44) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(44, (com.google.spanner.executor.v1.ExecutePartitionAction) action_);
+    }
+    if (actionCase_ == 50) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(50, (com.google.spanner.executor.v1.ExecuteChangeStreamQuery) action_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -1229,6 +1295,10 @@ private static final long serialVersionUID = 0L;
         if (!getExecutePartition()
             .equals(other.getExecutePartition())) return false;
         break;
+      case 50:
+        if (!getExecuteChangeStreamQuery()
+            .equals(other.getExecuteChangeStreamQuery())) return false;
+        break;
       case 0:
       default:
     }
@@ -1301,6 +1371,10 @@ private static final long serialVersionUID = 0L;
       case 44:
         hash = (37 * hash) + EXECUTE_PARTITION_FIELD_NUMBER;
         hash = (53 * hash) + getExecutePartition().hashCode();
+        break;
+      case 50:
+        hash = (37 * hash) + EXECUTE_CHANGE_STREAM_QUERY_FIELD_NUMBER;
+        hash = (53 * hash) + getExecuteChangeStreamQuery().hashCode();
         break;
       case 0:
       default:
@@ -1573,6 +1647,13 @@ private static final long serialVersionUID = 0L;
           result.action_ = executePartitionBuilder_.build();
         }
       }
+      if (actionCase_ == 50) {
+        if (executeChangeStreamQueryBuilder_ == null) {
+          result.action_ = action_;
+        } else {
+          result.action_ = executeChangeStreamQueryBuilder_.build();
+        }
+      }
       result.actionCase_ = actionCase_;
       onBuilt();
       return result;
@@ -1681,6 +1762,10 @@ private static final long serialVersionUID = 0L;
         }
         case EXECUTE_PARTITION: {
           mergeExecutePartition(other.getExecutePartition());
+          break;
+        }
+        case EXECUTE_CHANGE_STREAM_QUERY: {
+          mergeExecuteChangeStreamQuery(other.getExecuteChangeStreamQuery());
           break;
         }
         case ACTION_NOT_SET: {
@@ -4336,6 +4421,184 @@ private static final long serialVersionUID = 0L;
       actionCase_ = 44;
       onChanged();;
       return executePartitionBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.executor.v1.ExecuteChangeStreamQuery, com.google.spanner.executor.v1.ExecuteChangeStreamQuery.Builder, com.google.spanner.executor.v1.ExecuteChangeStreamQueryOrBuilder> executeChangeStreamQueryBuilder_;
+    /**
+     * <pre>
+     * Action to execute change stream query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecuteChangeStreamQuery execute_change_stream_query = 50;</code>
+     * @return Whether the executeChangeStreamQuery field is set.
+     */
+    @java.lang.Override
+    public boolean hasExecuteChangeStreamQuery() {
+      return actionCase_ == 50;
+    }
+    /**
+     * <pre>
+     * Action to execute change stream query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecuteChangeStreamQuery execute_change_stream_query = 50;</code>
+     * @return The executeChangeStreamQuery.
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.ExecuteChangeStreamQuery getExecuteChangeStreamQuery() {
+      if (executeChangeStreamQueryBuilder_ == null) {
+        if (actionCase_ == 50) {
+          return (com.google.spanner.executor.v1.ExecuteChangeStreamQuery) action_;
+        }
+        return com.google.spanner.executor.v1.ExecuteChangeStreamQuery.getDefaultInstance();
+      } else {
+        if (actionCase_ == 50) {
+          return executeChangeStreamQueryBuilder_.getMessage();
+        }
+        return com.google.spanner.executor.v1.ExecuteChangeStreamQuery.getDefaultInstance();
+      }
+    }
+    /**
+     * <pre>
+     * Action to execute change stream query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecuteChangeStreamQuery execute_change_stream_query = 50;</code>
+     */
+    public Builder setExecuteChangeStreamQuery(com.google.spanner.executor.v1.ExecuteChangeStreamQuery value) {
+      if (executeChangeStreamQueryBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        action_ = value;
+        onChanged();
+      } else {
+        executeChangeStreamQueryBuilder_.setMessage(value);
+      }
+      actionCase_ = 50;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to execute change stream query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecuteChangeStreamQuery execute_change_stream_query = 50;</code>
+     */
+    public Builder setExecuteChangeStreamQuery(
+        com.google.spanner.executor.v1.ExecuteChangeStreamQuery.Builder builderForValue) {
+      if (executeChangeStreamQueryBuilder_ == null) {
+        action_ = builderForValue.build();
+        onChanged();
+      } else {
+        executeChangeStreamQueryBuilder_.setMessage(builderForValue.build());
+      }
+      actionCase_ = 50;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to execute change stream query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecuteChangeStreamQuery execute_change_stream_query = 50;</code>
+     */
+    public Builder mergeExecuteChangeStreamQuery(com.google.spanner.executor.v1.ExecuteChangeStreamQuery value) {
+      if (executeChangeStreamQueryBuilder_ == null) {
+        if (actionCase_ == 50 &&
+            action_ != com.google.spanner.executor.v1.ExecuteChangeStreamQuery.getDefaultInstance()) {
+          action_ = com.google.spanner.executor.v1.ExecuteChangeStreamQuery.newBuilder((com.google.spanner.executor.v1.ExecuteChangeStreamQuery) action_)
+              .mergeFrom(value).buildPartial();
+        } else {
+          action_ = value;
+        }
+        onChanged();
+      } else {
+        if (actionCase_ == 50) {
+          executeChangeStreamQueryBuilder_.mergeFrom(value);
+        } else {
+          executeChangeStreamQueryBuilder_.setMessage(value);
+        }
+      }
+      actionCase_ = 50;
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to execute change stream query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecuteChangeStreamQuery execute_change_stream_query = 50;</code>
+     */
+    public Builder clearExecuteChangeStreamQuery() {
+      if (executeChangeStreamQueryBuilder_ == null) {
+        if (actionCase_ == 50) {
+          actionCase_ = 0;
+          action_ = null;
+          onChanged();
+        }
+      } else {
+        if (actionCase_ == 50) {
+          actionCase_ = 0;
+          action_ = null;
+        }
+        executeChangeStreamQueryBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Action to execute change stream query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecuteChangeStreamQuery execute_change_stream_query = 50;</code>
+     */
+    public com.google.spanner.executor.v1.ExecuteChangeStreamQuery.Builder getExecuteChangeStreamQueryBuilder() {
+      return getExecuteChangeStreamQueryFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Action to execute change stream query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecuteChangeStreamQuery execute_change_stream_query = 50;</code>
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.ExecuteChangeStreamQueryOrBuilder getExecuteChangeStreamQueryOrBuilder() {
+      if ((actionCase_ == 50) && (executeChangeStreamQueryBuilder_ != null)) {
+        return executeChangeStreamQueryBuilder_.getMessageOrBuilder();
+      } else {
+        if (actionCase_ == 50) {
+          return (com.google.spanner.executor.v1.ExecuteChangeStreamQuery) action_;
+        }
+        return com.google.spanner.executor.v1.ExecuteChangeStreamQuery.getDefaultInstance();
+      }
+    }
+    /**
+     * <pre>
+     * Action to execute change stream query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.ExecuteChangeStreamQuery execute_change_stream_query = 50;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.spanner.executor.v1.ExecuteChangeStreamQuery, com.google.spanner.executor.v1.ExecuteChangeStreamQuery.Builder, com.google.spanner.executor.v1.ExecuteChangeStreamQueryOrBuilder> 
+        getExecuteChangeStreamQueryFieldBuilder() {
+      if (executeChangeStreamQueryBuilder_ == null) {
+        if (!(actionCase_ == 50)) {
+          action_ = com.google.spanner.executor.v1.ExecuteChangeStreamQuery.getDefaultInstance();
+        }
+        executeChangeStreamQueryBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.executor.v1.ExecuteChangeStreamQuery, com.google.spanner.executor.v1.ExecuteChangeStreamQuery.Builder, com.google.spanner.executor.v1.ExecuteChangeStreamQueryOrBuilder>(
+                (com.google.spanner.executor.v1.ExecuteChangeStreamQuery) action_,
+                getParentForChildren(),
+                isClean());
+        action_ = null;
+      }
+      actionCase_ = 50;
+      onChanged();;
+      return executeChangeStreamQueryBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(
