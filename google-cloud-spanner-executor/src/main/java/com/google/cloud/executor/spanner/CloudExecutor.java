@@ -20,6 +20,9 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.common.base.Preconditions;
+import com.google.protobuf.util.Timestamps;
+import com.google.spanner.executor.v1.ChangeStreamRecord;
+import com.google.spanner.executor.v1.ChildPartitionsRecord;
 import com.google.spanner.executor.v1.QueryResult;
 import com.google.spanner.v1.StructType;
 import com.google.protobuf.Timestamp;
@@ -125,6 +128,7 @@ public abstract class CloudExecutor {
     private Timestamp timestamp;
     private boolean hasReadResult;
     private boolean hasQueryResult;
+    private boolean hasChangeStreamRecords;
     private String table;
     private String index;
     private StructType rowType;
@@ -138,9 +142,27 @@ public abstract class CloudExecutor {
     private int rowCount;
     // Modified row count in DML result.
     private final List<Long> rowsModified = new ArrayList<>();
+    // Current ChangeStreamRecord count in Cloud result.
+    private int changeStreamRecordCount;
+    // Change stream records to be returned.
+    private final List<ChangeStreamRecord> changeStreamRecords = new ArrayList<>();
+    // Change stream related variables.
+    private String partitionTokensString = "[";
+    private String dataChangeRecordsString = "[";
+    private String changeStreamForQuery = "";
+    private String partitionTokenForQuery = "";
+
+    // The timestamp in milliseconds of when the last ChangeStreamRecord received.
+    private long changeStreamRecordReceivedTimestamp;
+    // The heartbeat interval for the change stream query in milliseconds.
+    private long changeStreamHeartbeatMilliseconds;
+    // Whether the change stream query is a partitioned change stream query.
+    private boolean isPartitionedChangeStreamQuery;
 
     // If row count exceed this value, we should send rows back in batch.
     private static final int MAX_ROWS_PER_BATCH = 100;
+    // If change stream record count exceed this value, send change stream records back in batch.
+    private static final int MAX_CHANGE_STREAM_RECORDS_PER_BATCH = 2000;
 
     public OutcomeSender(
         int actionId, StreamObserver<SpannerAsyncActionResponse> responseObserver) {
@@ -175,9 +197,40 @@ public abstract class CloudExecutor {
       this.hasQueryResult = true;
     }
 
-    /** Append number of modified rows in DML to result. */
+    /** Init the sender for change stream query action. */
+    public void initForChangeStreamQuery(
+        long changeStreamHeartbeatMilliseconds, String changeStreamName, String partitionToken) {
+      this.hasChangeStreamRecords = true;
+      this.changeStreamRecordReceivedTimestamp = 0;
+      this.changeStreamHeartbeatMilliseconds = changeStreamHeartbeatMilliseconds;
+      this.changeStreamForQuery = changeStreamName;
+      if (!partitionToken.isEmpty()) {
+        this.isPartitionedChangeStreamQuery = true;
+        this.partitionTokenForQuery = partitionToken;
+      }
+    }
+
+    /** Update change stream record timestamp. */
+    public void updateChangeStreamRecordReceivedTimestamp(
+        long changeStreamRecordReceivedTimestamp) {
+      this.changeStreamRecordReceivedTimestamp = changeStreamRecordReceivedTimestamp;
+    }
+
+    /** Add rows modified in DML to result. */
     public void appendRowsModifiedInDml(Long rowsModified) {
       this.rowsModified.add(rowsModified);
+    }
+
+    public long getChangeStreamRecordReceivedTimestamp() {
+      return this.changeStreamRecordReceivedTimestamp;
+    }
+
+    public long getChangeStreamHeartbeatMilliSeconds() {
+      return this.changeStreamHeartbeatMilliseconds;
+    }
+
+    public boolean getIsPartitionedChangeStreamQuery() {
+      return this.isPartitionedChangeStreamQuery;
     }
 
     /** Send the last outcome with OK status. */
@@ -207,13 +260,13 @@ public abstract class CloudExecutor {
      */
     public Status appendRow(com.google.spanner.executor.v1.ValueList row) {
       if (!hasReadResult && !hasQueryResult) {
-        return Status.fromThrowable(
+        return toStatus(
             SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INVALID_ARGUMENT,
                 "Either hasReadResult or hasQueryResult should be true"));
       }
       if (rowType == null) {
-        return Status.fromThrowable(
+        return toStatus(
             SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INVALID_ARGUMENT, "RowType should be set first"));
       }
@@ -226,6 +279,35 @@ public abstract class CloudExecutor {
         ++rowCount;
       }
       if (rowCount >= MAX_ROWS_PER_BATCH) {
+        return flush();
+      }
+      return Status.OK;
+    }
+
+    /** Append change stream record to result. */
+    public Status appendChangeStreamRecord(ChangeStreamRecord record) {
+      if (!hasChangeStreamRecords) {
+        return toStatus(
+            SpannerExceptionFactory.newSpannerException(
+                ErrorCode.INVALID_ARGUMENT, "hasChangeStreamRecords should be true"));
+      }
+      if (record.hasDataChange()) {
+        String appendedString =
+            String.format(
+                "{%s, %s}, ",
+                record.getDataChange().getTransactionId(),
+                record.getDataChange().getRecordSequence());
+        dataChangeRecordsString += appendedString;
+      } else if (record.hasChildPartition()) {
+        for (ChildPartitionsRecord.ChildPartition childPartition :
+            record.getChildPartition().getChildPartitionsList()) {
+          partitionTokensString = partitionTokensString.concat(childPartition.getToken() + ", ");
+        }
+      }
+      buildOutcome();
+      changeStreamRecords.add(record);
+      ++changeStreamRecordCount;
+      if (changeStreamRecordCount >= MAX_CHANGE_STREAM_RECORDS_PER_BATCH) {
         return flush();
       }
       return Status.OK;
@@ -265,6 +347,21 @@ public abstract class CloudExecutor {
         partialOutcomeBuilder.setReadResult(readResultBuilder.build());
       } else if (hasQueryResult) {
         partialOutcomeBuilder.setQueryResult(queryResultBuilder.build());
+      } else if (hasChangeStreamRecords) {
+        partialOutcomeBuilder.addAllChangeStreamRecords(changeStreamRecords);
+        partitionTokensString += "]\n";
+        dataChangeRecordsString += "]\n";
+        LOGGER.log(Level.INFO, String.format(
+            "OutcomeSender with action ID %s for change stream %s and partition token %s is "
+                + "sending data change records with the following transaction id/record sequence "
+                + "combinations: %s and partition tokens: %s",
+            this.changeStreamForQuery,
+            this.partitionTokenForQuery,
+            actionId,
+            dataChangeRecordsString,
+            partitionTokensString));
+        partitionTokensString = "";
+        dataChangeRecordsString = "";
       }
       Status status = sendOutcome(partialOutcomeBuilder.build());
       partialOutcomeBuilder = null;
@@ -272,6 +369,8 @@ public abstract class CloudExecutor {
       queryResultBuilder = null;
       rowCount = 0;
       rowsModified.clear();
+      changeStreamRecordCount = 0;
+      changeStreamRecords.clear();
       return status;
     }
 
@@ -328,6 +427,8 @@ public abstract class CloudExecutor {
         return Status.fromCode(Status.UNAUTHENTICATED.getCode()).withDescription(e.getMessage());
       case UNIMPLEMENTED:
         return Status.fromCode(Status.UNIMPLEMENTED.getCode()).withDescription(e.getMessage());
+      case UNAVAILABLE:
+        return Status.fromCode(Status.UNAVAILABLE.getCode()).withDescription(e.getMessage());
       case UNKNOWN:
         return Status.fromCode(Status.UNKNOWN.getCode()).withDescription(e.getMessage());
       default:
@@ -342,5 +443,17 @@ public abstract class CloudExecutor {
         .setCode(status.getCode().value())
         .setMessage(status.getDescription() == null ? "" : status.getDescription())
         .build();
+  }
+
+  /**
+   * Converts timestamp microseconds to query-friendly timestamp string. If useNanosPrecision is set
+   * to true it pads input timestamp with 3 random digits treating it as timestamp nanoseconds.
+   */
+  protected static String timestampToString(boolean useNanosPrecision, long timestampInMicros) {
+    Timestamp timestamp =
+        useNanosPrecision
+            ? Timestamps.fromNanos(timestampInMicros * 1000 + System.nanoTime() % 1000)
+            : Timestamps.fromMicros(timestampInMicros);
+    return String.format("\"%s\"", Timestamps.toString(timestamp));
   }
 }

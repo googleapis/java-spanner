@@ -21,7 +21,9 @@ import static com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.DeadlineExceededException;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.api.gax.rpc.UnavailableException;
 import com.google.auth.Credentials;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -58,6 +60,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.StructReader;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
@@ -79,6 +82,8 @@ import com.google.spanner.executor.v1.AdminResult;
 import com.google.spanner.executor.v1.BatchDmlAction;
 import com.google.spanner.executor.v1.BatchPartition;
 import com.google.spanner.executor.v1.CancelOperationAction;
+import com.google.spanner.executor.v1.ChangeStreamRecord;
+import com.google.spanner.executor.v1.ChildPartitionsRecord;
 import com.google.spanner.executor.v1.CloseBatchTransactionAction;
 import com.google.spanner.executor.v1.CloudBackupResponse;
 import com.google.spanner.executor.v1.CloudDatabaseResponse;
@@ -88,10 +93,12 @@ import com.google.spanner.executor.v1.CopyCloudBackupAction;
 import com.google.spanner.executor.v1.CreateCloudBackupAction;
 import com.google.spanner.executor.v1.CreateCloudDatabaseAction;
 import com.google.spanner.executor.v1.CreateCloudInstanceAction;
+import com.google.spanner.executor.v1.DataChangeRecord;
 import com.google.spanner.executor.v1.DeleteCloudBackupAction;
 import com.google.spanner.executor.v1.DeleteCloudInstanceAction;
 import com.google.spanner.executor.v1.DmlAction;
 import com.google.spanner.executor.v1.DropCloudDatabaseAction;
+import com.google.spanner.executor.v1.ExecuteChangeStreamQuery;
 import com.google.spanner.executor.v1.ExecutePartitionAction;
 import com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction;
 import com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction;
@@ -100,6 +107,7 @@ import com.google.spanner.executor.v1.GetCloudDatabaseAction;
 import com.google.spanner.executor.v1.GetCloudInstanceAction;
 import com.google.spanner.executor.v1.GetCloudInstanceConfigAction;
 import com.google.spanner.executor.v1.GetOperationAction;
+import com.google.spanner.executor.v1.HeartbeatRecord;
 import com.google.spanner.executor.v1.ListCloudBackupOperationsAction;
 import com.google.spanner.executor.v1.ListCloudBackupsAction;
 import com.google.spanner.executor.v1.ListCloudDatabaseOperationsAction;
@@ -132,7 +140,6 @@ import com.google.spanner.executor.v1.StartTransactionAction;
 import com.google.spanner.executor.v1.SpannerAsyncActionRequest;
 import com.google.spanner.executor.v1.SpannerAsyncActionResponse;
 import io.grpc.stub.StreamObserver;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -847,6 +854,13 @@ public class CloudClientExecutor extends CloudExecutor {
             action.getExecutePartition(), outcomeSender, executionContext);
       } else if (action.hasCloseBatchTxn()) {
         return executeCloseBatchTxn(action.getCloseBatchTxn(), outcomeSender, executionContext);
+      } else if (action.hasExecuteChangeStreamQuery()) {
+        if (dbPath == null) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT, "Database path must be set for this action");
+        }
+        return executeExecuteChangeStreamQuery(
+            dbPath, action.getExecuteChangeStreamQuery(), outcomeSender);
       } else {
         return toStatus(
             SpannerExceptionFactory.newSpannerException(
@@ -1867,6 +1881,218 @@ public class CloudClientExecutor extends CloudExecutor {
           toStatus(
               SpannerExceptionFactory.newSpannerException(
                   ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+    }
+  }
+
+  /** Build a child partition record proto out of childPartitionRecord returned by client. */
+  private ChildPartitionsRecord buildChildPartitionRecord(Struct childPartitionRecord)
+      throws Exception {
+    ChildPartitionsRecord.Builder childPartitionRecordBuilder = ChildPartitionsRecord.newBuilder();
+    childPartitionRecordBuilder.setStartTime(
+        Timestamps.parse(childPartitionRecord.getTimestamp(0).toString()));
+    childPartitionRecordBuilder.setRecordSequence(childPartitionRecord.getString(1));
+    for (Struct childPartition : childPartitionRecord.getStructList(2)) {
+      ChildPartitionsRecord.ChildPartition.Builder childPartitionBuilder =
+          ChildPartitionsRecord.ChildPartition.newBuilder();
+      childPartitionBuilder.setToken(childPartition.getString(0));
+      childPartitionBuilder.addAllParentPartitionTokens(childPartition.getStringList(1));
+      childPartitionRecordBuilder.addChildPartitions(childPartitionBuilder.build());
+    }
+    return childPartitionRecordBuilder.build();
+  }
+
+  /** Build a data change record proto out of dataChangeRecord returned by client. */
+  private DataChangeRecord buildDataChangeRecord(Struct dataChangeRecord) throws Exception {
+    DataChangeRecord.Builder dataChangeRecordBuilder = DataChangeRecord.newBuilder();
+    dataChangeRecordBuilder.setCommitTime(
+        Timestamps.parse(dataChangeRecord.getTimestamp(0).toString()));
+    dataChangeRecordBuilder.setRecordSequence(dataChangeRecord.getString(1));
+    dataChangeRecordBuilder.setTransactionId(dataChangeRecord.getString(2));
+    dataChangeRecordBuilder.setIsLastRecord(dataChangeRecord.getBoolean(3));
+    dataChangeRecordBuilder.setTable(dataChangeRecord.getString(4));
+    for (Struct columnType : dataChangeRecord.getStructList(5)) {
+      DataChangeRecord.ColumnType.Builder columnTypeBuilder =
+          DataChangeRecord.ColumnType.newBuilder();
+      columnTypeBuilder.setName(columnType.getString(0));
+      columnTypeBuilder.setType(getJsonStringForStructColumn(columnType, 1));
+      columnTypeBuilder.setIsPrimaryKey(columnType.getBoolean(2));
+      columnTypeBuilder.setOrdinalPosition(columnType.getLong(3));
+      dataChangeRecordBuilder.addColumnTypes(columnTypeBuilder.build());
+    }
+    for (Struct mod : dataChangeRecord.getStructList(6)) {
+      DataChangeRecord.Mod.Builder modBuilder = DataChangeRecord.Mod.newBuilder();
+      modBuilder.setKeys(getJsonStringForStructColumn(mod, 0));
+      modBuilder.setNewValues(getJsonStringForStructColumn(mod, 1));
+      modBuilder.setOldValues(getJsonStringForStructColumn(mod, 2));
+      dataChangeRecordBuilder.addMods(modBuilder.build());
+    }
+    dataChangeRecordBuilder.setModType(dataChangeRecord.getString(7));
+    dataChangeRecordBuilder.setValueCaptureType(dataChangeRecord.getString(8));
+
+    // Get transaction tag.
+    dataChangeRecordBuilder.setTransactionTag(
+        dataChangeRecord.getString(DataChangeRecord.TRANSACTION_TAG_FIELD_NUMBER - 1));
+
+    // Get is system transaction.
+    dataChangeRecordBuilder.setIsSystemTransaction(
+        dataChangeRecord.getBoolean(DataChangeRecord.IS_SYSTEM_TRANSACTION_FIELD_NUMBER - 1));
+    return dataChangeRecordBuilder.build();
+  }
+
+  /** Returns the json or string value of a struct column with index=columnIndex. */
+  private String getJsonStringForStructColumn(Struct struct, int columnIndex) {
+    Type columnType = struct.getColumnType(columnIndex);
+    switch (columnType.getCode()) {
+      case JSON:
+        return struct.getJson(columnIndex);
+      case STRING:
+        return struct.getString(columnIndex);
+      default:
+        throw new IllegalArgumentException(
+            String.format(
+                "Cannot extract value from column with index = %d and column type = %s for struct:"
+                    + " %s",
+                columnIndex, columnType, struct));
+    }
+  }
+
+  /** Build a heartbeat record proto out of heartbeatRecord returned by client. */
+  private HeartbeatRecord buildHeartbeatRecord(Struct heartbeatRecord) throws Exception {
+    HeartbeatRecord.Builder heartbeatRecordBuilder = HeartbeatRecord.newBuilder();
+    heartbeatRecordBuilder.setHeartbeatTime(
+        Timestamps.parse(heartbeatRecord.getTimestamp(0).toString()));
+    return heartbeatRecordBuilder.build();
+  }
+
+  /** Execute action that executes a change stream query. */
+  private Status executeExecuteChangeStreamQuery(
+      String dbPath, ExecuteChangeStreamQuery action, OutcomeSender sender) {
+    try {
+      LOGGER.log(
+          Level.INFO, String.format("Start executing change change stream query: \n%s", action));
+
+      // Retrieve TVF parameters from the action.
+      String changeStreamName = action.getName();
+      // For initial partition query (no partition token) we simulate precision of the timestamp
+      // in nanoseconds as that's closer inlined with the production client code.
+
+      String startTime =
+          timestampToString(
+              !action.hasPartitionToken(), Timestamps.toMicros(action.getStartTime()));
+      String endTime = "null";
+      if (action.hasEndTime()) {
+        endTime =
+            timestampToString(
+                !action.hasPartitionToken(), Timestamps.toMicros(action.getEndTime()));
+      }
+      String heartbeat = "null";
+      if (action.hasHeartbeatMilliseconds()) {
+        heartbeat = Integer.toString(action.getHeartbeatMilliseconds());
+      }
+      String partitionToken = "null";
+      if (action.hasPartitionToken()) {
+        partitionToken = String.format("\"%s\"", action.getPartitionToken());
+      }
+
+      String tvfQuery =
+          String.format(
+              "SELECT * FROM READ_%s(%s,%s,%s,%s);",
+              changeStreamName, startTime, endTime, partitionToken, heartbeat);
+
+      LOGGER.log(Level.INFO, String.format("Start executing change stream TVF: \n%s", tvfQuery));
+      sender.initForChangeStreamQuery(
+          action.getHeartbeatMilliseconds(), action.getName(), action.getPartitionToken());
+      Spanner spannerClient;
+      if (action.hasDeadlineSeconds()) {
+        spannerClient = getClientWithTimeout(action.getDeadlineSeconds());
+      } else {
+        spannerClient = getClient();
+      }
+      DatabaseClient dbClient = spannerClient.getDatabaseClient(getDatabaseId(dbPath));
+      ResultSet resultSet = dbClient.singleUse().executeQuery(Statement.of(tvfQuery));
+
+      ChangeStreamRecord.Builder changeStreamRecordBuilder = ChangeStreamRecord.newBuilder();
+      while (resultSet.next()) {
+        Struct record = resultSet.getStructList(0).get(0);
+        for (Struct dataChangeRecord : record.getStructList("data_change_record")) {
+          // If the data change record is null, that means the ChangeRecord is either a heartbeat
+          // or a child partitions record.
+          if (dataChangeRecord.isNull(0)) {
+            continue;
+          }
+          DataChangeRecord builtDataChangeRecord = buildDataChangeRecord(dataChangeRecord);
+          changeStreamRecordBuilder.setDataChange(builtDataChangeRecord);
+        }
+        for (Struct heartbeatRecord : record.getStructList("heartbeat_record")) {
+          // If the heartbeat record is null, that means the ChangeRecord is either a data change
+          // record or a child partitions record.
+          if (heartbeatRecord.isNull(0)) {
+            continue;
+          }
+          HeartbeatRecord builtHeartbeatRecord = buildHeartbeatRecord(heartbeatRecord);
+          changeStreamRecordBuilder.setHeartbeat(builtHeartbeatRecord);
+        }
+        for (Struct childPartitionRecord : record.getStructList("child_partitions_record")) {
+          // If the child partitions record is null, that means the ChangeRecord is either a
+          // data change record or a heartbeat record.
+          if (childPartitionRecord.isNull(0)) {
+            continue;
+          }
+          ChildPartitionsRecord builtChildPartitionsRecord =
+              buildChildPartitionRecord(childPartitionRecord);
+          changeStreamRecordBuilder.setChildPartition(builtChildPartitionsRecord);
+        }
+        // For partitioned queries, validate that the time between received change records are
+        // less than 10x the heartbeat interval.
+        // Right now, we are not failing the handler since there are other issues besides change
+        // stream related issues that can cause the heartbeat check to fail (i.e. RPC latency).
+        if (sender.getIsPartitionedChangeStreamQuery()) {
+          long lastReceivedTimestamp = sender.getChangeStreamRecordReceivedTimestamp();
+          long currentChangeRecordReceivedTimestamp = System.currentTimeMillis();
+          long discrepancyMillis = currentChangeRecordReceivedTimestamp - lastReceivedTimestamp;
+          // Only do the heartbeat check after we have already received one record for the query
+          // (i.e. lastReceivedTimestamp > 0).
+          // We should only check the heartbeat interval if heartbeat is greater than 5 seconds,
+          // to prevent flaky failures.
+          if (lastReceivedTimestamp > 0
+              && discrepancyMillis > sender.getChangeStreamHeartbeatMilliSeconds() * 10
+              && sender.getChangeStreamHeartbeatMilliSeconds() > 5000) {
+            // Log.info(
+            throw SpannerExceptionFactory.newSpannerException(
+                ErrorCode.INTERNAL,
+                "Does not pass the heartbeat interval check. The last record was received seconds"
+                    + discrepancyMillis / 1000
+                    + " ago, which is more than ten times the heartbeat interval, which is "
+                    + sender.getChangeStreamHeartbeatMilliSeconds() / 1000
+                    + " seconds. The change record received is: "
+                    + changeStreamRecordBuilder.build());
+          }
+          sender.updateChangeStreamRecordReceivedTimestamp(currentChangeRecordReceivedTimestamp);
+        }
+        Status appendStatus = sender.appendChangeStreamRecord(changeStreamRecordBuilder.build());
+        if (!appendStatus.isOk()) {
+          return appendStatus;
+        }
+      }
+      return sender.finishWithOK();
+    } catch (SpannerException e) {
+      return sender.finishWithError(toStatus(e));
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
+      if (e instanceof DeadlineExceededException) {
+        return sender.finishWithError(
+            toStatus(
+                SpannerExceptionFactory.newSpannerException(
+                    ErrorCode.DEADLINE_EXCEEDED, "Deadline exceeded error: " + e)));
+      } else if (e instanceof UnavailableException) {
+        return toStatus(
+            SpannerExceptionFactory.newSpannerException(
+                ErrorCode.UNAVAILABLE, e.getMessage()));
+      }
+      return sender.finishWithError(
+          toStatus(
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e)));
     }
   }
 
