@@ -36,59 +36,66 @@ public class EnableFineGrainedAccess {
     String iamMember = "user:alice@example.com";
     String role = "new-parent";
     String title = "my condition title";
-
-    try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      DatabaseAdminClient adminClient = spanner.getDatabaseAdminClient();
-      enableFineGrainedAccess(adminClient, instanceId, databaseId, iamMember, title, role);
-    }
+    enableFineGrainedAccess(projectId, instanceId, databaseId, iamMember, title, role);
   }
 
   static void enableFineGrainedAccess(
-      DatabaseAdminClient adminClient,
+      String projectId,
       String instanceId,
       String databaseId,
       String iamMember,
       String title,
       String role) {
-    Policy policy = adminClient.getDatabaseIAMPolicy(instanceId, databaseId, 3);
-    int policyVersion = policy.getVersion();
-    if (policy.getVersion() < 3) {
-      policyVersion = 3;
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
+      final DatabaseAdminClient adminClient = spanner.getDatabaseAdminClient();
+      Policy policy = adminClient.getDatabaseIAMPolicy(instanceId, databaseId, 3);
+      int policyVersion = policy.getVersion();
+      /* getDatabaseIAMPolicy returns the IAM policy for the given database
+       *
+       * The policy in the response might use the policy version that you specified, or it might use
+       * a lower policy version. For example, if you specify version 3, but the policy has no
+       * conditional role bindings, the response uses version 1. Valid values are 0, 1, and 3.
+       *
+       */
+      if (policy.getVersion() < 3) {
+        // conditional role bindings work with policy version 3
+        policyVersion = 3;
+      }
+      List<String> members = new ArrayList<>();
+      members.add(iamMember);
+      List<Binding> bindings = new ArrayList<>(policy.getBindingsList());
+
+      bindings.add(
+          Binding.newBuilder()
+              .setRole("roles/spanner.fineGrainedAccessUser")
+              .setMembers(members)
+              .build());
+
+      bindings.add(
+          Binding.newBuilder()
+              .setRole("roles/spanner.databaseRoleUser")
+              .setCondition(
+                  Condition.newBuilder()
+                      .setDescription(title)
+                      .setExpression(
+                          String.format("resource.name.endsWith(\"/databaseRoles/%s\")", role))
+                      .setTitle(title)
+                      .build())
+              .setMembers(members)
+              .build());
+
+      Policy policyWithConditions =
+          Policy.newBuilder()
+              .setVersion(policyVersion)
+              .setEtag(policy.getEtag())
+              .setBindings(bindings)
+              .build();
+      Policy response =
+          adminClient.setDatabaseIAMPolicy(instanceId, databaseId, policyWithConditions);
+      System.out.printf(
+          "Enabled fine-grained access in IAM with version %d%n", response.getVersion());
     }
-    List<String> members = new ArrayList<>();
-    members.add(iamMember);
-    List<Binding> bindings = new ArrayList<>(policy.getBindingsList());
-
-    bindings.add(
-        Binding.newBuilder()
-            .setRole("roles/spanner.fineGrainedAccessUser")
-            .setMembers(members)
-            .build());
-
-    bindings.add(
-        Binding.newBuilder()
-            .setRole("roles/spanner.databaseRoleUser")
-            .setCondition(
-                Condition.newBuilder()
-                    .setDescription(title)
-                    .setExpression(
-                        String.format("resource.name.endsWith(\"/databaseRoles/%s\")", role))
-                    .setTitle(title)
-                    .build())
-            .setMembers(members)
-            .build());
-
-    Policy policyWithConditions =
-        Policy.newBuilder()
-            .setVersion(policyVersion)
-            .setEtag(policy.getEtag())
-            .setBindings(bindings)
-            .build();
-    Policy response =
-        adminClient.setDatabaseIAMPolicy(instanceId, databaseId, policyWithConditions);
-    System.out.printf(
-        "Enabled fine-grained access in IAM with version %d%n", response.getVersion());
   }
 }
 // [END spanner_enable_fine_grained_access]

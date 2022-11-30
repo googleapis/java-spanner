@@ -103,11 +103,7 @@ public class DatabaseRolesIT extends SampleTestBase {
         SampleRunner.runSample(
             () ->
                 AddAndDropDatabaseRole.addAndDropDatabaseRole(
-                    databaseAdminClient,
-                    instanceId,
-                    databaseId.getDatabase(),
-                    "new-parent",
-                    "new-child"));
+                    projectId, instanceId, databaseId.getDatabase(), "new-parent", "new-child"));
     assertTrue(out.contains("Created roles new_parent and new_child and granted privileges"));
     assertTrue(out.contains("Revoked privileges and dropped role new_child"));
   }
@@ -118,7 +114,7 @@ public class DatabaseRolesIT extends SampleTestBase {
         SampleRunner.runSample(
             () ->
                 ListDatabaseRoles.listDatabaseRoles(
-                    databaseAdminClient, projectId, instanceId, databaseId.getDatabase()));
+                    projectId, instanceId, databaseId.getDatabase()));
     assertTrue(out.contains("new_parent"));
   }
 
