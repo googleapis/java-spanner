@@ -132,6 +132,7 @@ import com.google.spanner.executor.v1.StartTransactionAction;
 import com.google.spanner.executor.v1.SpannerAsyncActionRequest;
 import com.google.spanner.executor.v1.SpannerAsyncActionResponse;
 import io.grpc.stub.StreamObserver;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -476,6 +477,11 @@ public class CloudClientExecutor extends CloudExecutor {
       }
       prevDbPath = dbPath;
       return dbPath;
+    }
+
+    /** Set the metadata for future use. */
+    public synchronized void setMetadata(Metadata metadata) {
+      this.metadata = metadata;
     }
 
     /** Start a read-only transaction. */
@@ -1734,6 +1740,8 @@ public class CloudClientExecutor extends CloudExecutor {
       ExecutionFlowContext executionContext) {
     try {
       BatchReadOnlyTransaction batchTxn = executionContext.getBatchTxn();
+      Metadata metadata = new Metadata(action.getTableList());
+      executionContext.setMetadata(metadata);
       ReadAction request = action.getRead();
 
       List<com.google.spanner.v1.Type> typeList = new ArrayList<>();
@@ -1774,7 +1782,6 @@ public class CloudClientExecutor extends CloudExecutor {
                 .setIndex(request.getIndex())
                 .build());
       }
-
       SpannerActionOutcome outcome =
           SpannerActionOutcome.newBuilder()
               .setStatus(toProto(Status.OK))

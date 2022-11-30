@@ -56,6 +56,8 @@ message SpannerAction {
     GenerateDbPartitionsForQueryAction generate_db_partitions_query = 43;
     // Action to execute batch actions on generated partitions.
     ExecutePartitionAction execute_partition = 44;
+    // Action to execute change stream query.
+    ExecuteChangeStreamQuery execute_change_stream_query = 50;
   }
 }
 
@@ -828,12 +830,14 @@ message CloseBatchTransactionAction {
 message GenerateDbPartitionsForReadAction {
   // Read to generate partitions for.
   ReadAction read = 1;
+  // Metadata related to the tables involved in the read.
+  repeated TableMetadata table = 2;
   // Desired size of data in each partition. Spanner doesn't guarantee to
   // respect this value.
-  optional int64 desired_bytes_per_partition = 2;
+  optional int64 desired_bytes_per_partition = 3;
   // If set, the desired max number of partitions. Spanner doesn't guarantee to
   // respect this value.
-  optional int64 max_partition_count = 3;
+  optional int64 max_partition_count = 4;
 }
 
 // Generate database partitions for the given query. Successful outcomes will
@@ -864,6 +868,38 @@ message BatchPartition {
 message ExecutePartitionAction {
   // Batch partition to execute on.
   BatchPartition partition = 1;
+}
+
+// Execute a change stream TVF query.
+// (-- api-linter: core::0123::resource-annotation=disabled
+//     aip.dev/not-precedent: This is not an API resource. --)
+message ExecuteChangeStreamQuery {
+  // Name for this change stream.
+  optional string name = 1;
+  // Specifies that records with commit_timestamp greater than or equal to
+  // start_time should be returned.
+  optional google.protobuf.Timestamp start_time = 2;
+  // Specifies that records with commit_timestamp less than or equal to
+  // end_time should be returned.
+  optional google.protobuf.Timestamp end_time = 3;
+  // Specifies which change stream partition to query, based on the content of
+  // child partitions records.
+  optional string partition_token = 4;
+  // Read options for this change stream query.
+  repeated string read_options = 5;
+  // Determines how frequently a heartbeat ChangeRecord will be returned in case
+  // there are no transactions committed in this partition, in milliseconds.
+  // (-- api-linter: core::0142::time-field-type=disabled
+  //     aip.dev/not-precedent: Not a timestamp. --)
+  optional int32 heartbeat_milliseconds = 6;
+  // Deadline for this change stream query, in seconds.
+  // (-- api-linter: core::0142::time-field-type=disabled
+  //     aip.dev/not-precedent: Not a timestamp. --)
+  optional int64 deadline_seconds = 7;
+  // Database role to assume while performing this action. This should only be
+  // set for cloud requests. Setting the database role will enforce additional
+  // role-based access checks on this action.
+  optional string cloud_database_role = 8;
 }
 
 // SpannerActionOutcome defines a result of execution of a single SpannerAction.
@@ -897,6 +933,8 @@ message SpannerActionOutcome {
   // (-- api-linter: core::0142::time-field-names=disabled
   //     aip.dev/not-precedent: Not a timestamp field. --)
   repeated int64 dml_rows_modified = 9;
+  // Change stream records returned by a change stream query.
+  repeated ChangeStreamRecord change_stream_records = 10;
 }
 
 // AdminResult contains admin action results, for database/backup/operation.
@@ -997,4 +1035,102 @@ message QueryResult {
   repeated ValueList row = 1;
   // The type of rows read. It must be set if at least one row was read.
   optional google.spanner.v1.StructType row_type = 2;
+}
+
+// Raw ChangeStream records.
+// Encodes one of: DataChangeRecord, HeartbeatRecord, ChildPartitionsRecord
+// returned from the ChangeStream API.
+message ChangeStreamRecord {
+  // Record represents one type of the change stream record.
+  oneof record {
+    // Data change record.
+    DataChangeRecord data_change = 1;
+    // Child partitions record.
+    ChildPartitionsRecord child_partition = 2;
+    // Heartbeat record.
+    HeartbeatRecord heartbeat = 3;
+  }
+}
+
+// ChangeStream data change record.
+message DataChangeRecord {
+  // The timestamp in which the change was committed.
+  optional google.protobuf.Timestamp commit_time = 1;
+  // The sequence number for the record within the transaction.
+  optional string record_sequence = 2;
+  // A globally unique string that represents the transaction in which the
+  // change was committed.
+  optional string transaction_id = 3;
+  // Indicates whether this is the last record for a transaction in the current
+  // partition.
+  optional bool is_last_record = 4;
+  // Name of the table affected by the change.
+  optional string table = 5;
+  // Column types.
+  // (-- api-linter: core::0123::resource-annotation=disabled
+  //     aip.dev/not-precedent: This is not an API resource. --)
+  message ColumnType {
+    // Column name.
+    optional string name = 1;
+    // Column type in JSON.
+    optional string type = 2;
+    // Whether the column is a primary key column.
+    optional bool is_primary_key = 3;
+    // The position of the column as defined in the schema.
+    optional int64 ordinal_position = 4;
+  }
+  // Column types defined in the schema.
+  repeated ColumnType column_types = 6;
+  // Describes the changes that were made.
+  message Mod {
+    // The primary key values in JSON.
+    optional string keys = 1;
+    // The new values of the changed columns in JSON. Only contain the non-key
+    // columns.
+    optional string new_values = 2;
+    // The old values of the changed columns in JSON. Only contain the non-key
+    // columns.
+    optional string old_values = 3;
+  }
+  // Changes made in the transaction.
+  repeated Mod mods = 7;
+  // Describes the type of change. One of INSERT, UPDATE or DELETE.
+  optional string mod_type = 8;
+  // One of value capture type: NEW_VALUES, OLD_VALUES, OLD_AND_NEW_VALUES.
+  optional string value_capture_type = 9;
+  // Number of records in transactions.
+  optional int64 record_count = 10;
+  // Number of partitions in transactions.
+  optional int64 partition_count = 11;
+  // Transaction tag info.
+  optional string transaction_tag = 12;
+  // Whether the transaction is a system transactionn.
+  optional bool is_system_transaction = 13;
+}
+
+// ChangeStream child partition record.
+message ChildPartitionsRecord {
+  // Data change records returned from child partitions in this child partitions
+  // record will have a commit timestamp greater than or equal to start_time.
+  optional google.protobuf.Timestamp start_time = 1;
+  // A monotonically increasing sequence number that can be used to define the
+  // ordering of the child partitions record when there are multiple child
+  // partitions records returned with the same start_time in a particular
+  // partition.
+  optional string record_sequence = 2;
+  // A single child partition.
+  message ChildPartition {
+    // Partition token string used to identify the child partition in queries.
+    optional string token = 1;
+    // Parent partition tokens of this child partition.
+    repeated string parent_partition_tokens = 2;
+  }
+  // A set of child partitions and their associated information.
+  repeated ChildPartition child_partitions = 3;
+}
+
+// ChangeStream heartbeat record.
+message HeartbeatRecord {
+  // Timestamp for this heartbeat check.
+  google.protobuf.Timestamp heartbeat_time = 1;
 }

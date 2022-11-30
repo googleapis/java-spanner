@@ -39,6 +39,7 @@ private static final long serialVersionUID = 0L;
     batchTxnId_ = com.google.protobuf.ByteString.EMPTY;
     dbPartition_ = java.util.Collections.emptyList();
     dmlRowsModified_ = emptyLongList();
+    changeStreamRecords_ = java.util.Collections.emptyList();
   }
 
   @java.lang.Override
@@ -177,6 +178,15 @@ private static final long serialVersionUID = 0L;
             input.popLimit(limit);
             break;
           }
+          case 82: {
+            if (!((mutable_bitField0_ & 0x00000200) != 0)) {
+              changeStreamRecords_ = new java.util.ArrayList<com.google.spanner.executor.v1.ChangeStreamRecord>();
+              mutable_bitField0_ |= 0x00000200;
+            }
+            changeStreamRecords_.add(
+                input.readMessage(com.google.spanner.executor.v1.ChangeStreamRecord.parser(), extensionRegistry));
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -199,6 +209,9 @@ private static final long serialVersionUID = 0L;
       }
       if (((mutable_bitField0_ & 0x00000100) != 0)) {
         dmlRowsModified_.makeImmutable(); // C
+      }
+      if (((mutable_bitField0_ & 0x00000200) != 0)) {
+        changeStreamRecords_ = java.util.Collections.unmodifiableList(changeStreamRecords_);
       }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
@@ -593,6 +606,66 @@ private static final long serialVersionUID = 0L;
   }
   private int dmlRowsModifiedMemoizedSerializedSize = -1;
 
+  public static final int CHANGE_STREAM_RECORDS_FIELD_NUMBER = 10;
+  private java.util.List<com.google.spanner.executor.v1.ChangeStreamRecord> changeStreamRecords_;
+  /**
+   * <pre>
+   * Change stream records returned by a change stream query.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+   */
+  @java.lang.Override
+  public java.util.List<com.google.spanner.executor.v1.ChangeStreamRecord> getChangeStreamRecordsList() {
+    return changeStreamRecords_;
+  }
+  /**
+   * <pre>
+   * Change stream records returned by a change stream query.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+   */
+  @java.lang.Override
+  public java.util.List<? extends com.google.spanner.executor.v1.ChangeStreamRecordOrBuilder> 
+      getChangeStreamRecordsOrBuilderList() {
+    return changeStreamRecords_;
+  }
+  /**
+   * <pre>
+   * Change stream records returned by a change stream query.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+   */
+  @java.lang.Override
+  public int getChangeStreamRecordsCount() {
+    return changeStreamRecords_.size();
+  }
+  /**
+   * <pre>
+   * Change stream records returned by a change stream query.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.ChangeStreamRecord getChangeStreamRecords(int index) {
+    return changeStreamRecords_.get(index);
+  }
+  /**
+   * <pre>
+   * Change stream records returned by a change stream query.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.ChangeStreamRecordOrBuilder getChangeStreamRecordsOrBuilder(
+      int index) {
+    return changeStreamRecords_.get(index);
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -638,6 +711,9 @@ private static final long serialVersionUID = 0L;
     }
     for (int i = 0; i < dmlRowsModified_.size(); i++) {
       output.writeInt64NoTag(dmlRowsModified_.getLong(i));
+    }
+    for (int i = 0; i < changeStreamRecords_.size(); i++) {
+      output.writeMessage(10, changeStreamRecords_.get(i));
     }
     unknownFields.writeTo(output);
   }
@@ -694,6 +770,10 @@ private static final long serialVersionUID = 0L;
       }
       dmlRowsModifiedMemoizedSerializedSize = dataSize;
     }
+    for (int i = 0; i < changeStreamRecords_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(10, changeStreamRecords_.get(i));
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -748,6 +828,8 @@ private static final long serialVersionUID = 0L;
     }
     if (!getDmlRowsModifiedList()
         .equals(other.getDmlRowsModifiedList())) return false;
+    if (!getChangeStreamRecordsList()
+        .equals(other.getChangeStreamRecordsList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -795,6 +877,10 @@ private static final long serialVersionUID = 0L;
     if (getDmlRowsModifiedCount() > 0) {
       hash = (37 * hash) + DML_ROWS_MODIFIED_FIELD_NUMBER;
       hash = (53 * hash) + getDmlRowsModifiedList().hashCode();
+    }
+    if (getChangeStreamRecordsCount() > 0) {
+      hash = (37 * hash) + CHANGE_STREAM_RECORDS_FIELD_NUMBER;
+      hash = (53 * hash) + getChangeStreamRecordsList().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -934,6 +1020,7 @@ private static final long serialVersionUID = 0L;
         getQueryResultFieldBuilder();
         getDbPartitionFieldBuilder();
         getAdminResultFieldBuilder();
+        getChangeStreamRecordsFieldBuilder();
       }
     }
     @java.lang.Override
@@ -981,6 +1068,12 @@ private static final long serialVersionUID = 0L;
       bitField0_ = (bitField0_ & ~0x00000080);
       dmlRowsModified_ = emptyLongList();
       bitField0_ = (bitField0_ & ~0x00000100);
+      if (changeStreamRecordsBuilder_ == null) {
+        changeStreamRecords_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000200);
+      } else {
+        changeStreamRecordsBuilder_.clear();
+      }
       return this;
     }
 
@@ -1071,6 +1164,15 @@ private static final long serialVersionUID = 0L;
         bitField0_ = (bitField0_ & ~0x00000100);
       }
       result.dmlRowsModified_ = dmlRowsModified_;
+      if (changeStreamRecordsBuilder_ == null) {
+        if (((bitField0_ & 0x00000200) != 0)) {
+          changeStreamRecords_ = java.util.Collections.unmodifiableList(changeStreamRecords_);
+          bitField0_ = (bitField0_ & ~0x00000200);
+        }
+        result.changeStreamRecords_ = changeStreamRecords_;
+      } else {
+        result.changeStreamRecords_ = changeStreamRecordsBuilder_.build();
+      }
       result.bitField0_ = to_bitField0_;
       onBuilt();
       return result;
@@ -1176,6 +1278,32 @@ private static final long serialVersionUID = 0L;
           dmlRowsModified_.addAll(other.dmlRowsModified_);
         }
         onChanged();
+      }
+      if (changeStreamRecordsBuilder_ == null) {
+        if (!other.changeStreamRecords_.isEmpty()) {
+          if (changeStreamRecords_.isEmpty()) {
+            changeStreamRecords_ = other.changeStreamRecords_;
+            bitField0_ = (bitField0_ & ~0x00000200);
+          } else {
+            ensureChangeStreamRecordsIsMutable();
+            changeStreamRecords_.addAll(other.changeStreamRecords_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.changeStreamRecords_.isEmpty()) {
+          if (changeStreamRecordsBuilder_.isEmpty()) {
+            changeStreamRecordsBuilder_.dispose();
+            changeStreamRecordsBuilder_ = null;
+            changeStreamRecords_ = other.changeStreamRecords_;
+            bitField0_ = (bitField0_ & ~0x00000200);
+            changeStreamRecordsBuilder_ = 
+              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                 getChangeStreamRecordsFieldBuilder() : null;
+          } else {
+            changeStreamRecordsBuilder_.addAllMessages(other.changeStreamRecords_);
+          }
+        }
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -2599,6 +2727,318 @@ private static final long serialVersionUID = 0L;
       bitField0_ = (bitField0_ & ~0x00000100);
       onChanged();
       return this;
+    }
+
+    private java.util.List<com.google.spanner.executor.v1.ChangeStreamRecord> changeStreamRecords_ =
+      java.util.Collections.emptyList();
+    private void ensureChangeStreamRecordsIsMutable() {
+      if (!((bitField0_ & 0x00000200) != 0)) {
+        changeStreamRecords_ = new java.util.ArrayList<com.google.spanner.executor.v1.ChangeStreamRecord>(changeStreamRecords_);
+        bitField0_ |= 0x00000200;
+       }
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        com.google.spanner.executor.v1.ChangeStreamRecord, com.google.spanner.executor.v1.ChangeStreamRecord.Builder, com.google.spanner.executor.v1.ChangeStreamRecordOrBuilder> changeStreamRecordsBuilder_;
+
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public java.util.List<com.google.spanner.executor.v1.ChangeStreamRecord> getChangeStreamRecordsList() {
+      if (changeStreamRecordsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(changeStreamRecords_);
+      } else {
+        return changeStreamRecordsBuilder_.getMessageList();
+      }
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public int getChangeStreamRecordsCount() {
+      if (changeStreamRecordsBuilder_ == null) {
+        return changeStreamRecords_.size();
+      } else {
+        return changeStreamRecordsBuilder_.getCount();
+      }
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public com.google.spanner.executor.v1.ChangeStreamRecord getChangeStreamRecords(int index) {
+      if (changeStreamRecordsBuilder_ == null) {
+        return changeStreamRecords_.get(index);
+      } else {
+        return changeStreamRecordsBuilder_.getMessage(index);
+      }
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public Builder setChangeStreamRecords(
+        int index, com.google.spanner.executor.v1.ChangeStreamRecord value) {
+      if (changeStreamRecordsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureChangeStreamRecordsIsMutable();
+        changeStreamRecords_.set(index, value);
+        onChanged();
+      } else {
+        changeStreamRecordsBuilder_.setMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public Builder setChangeStreamRecords(
+        int index, com.google.spanner.executor.v1.ChangeStreamRecord.Builder builderForValue) {
+      if (changeStreamRecordsBuilder_ == null) {
+        ensureChangeStreamRecordsIsMutable();
+        changeStreamRecords_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        changeStreamRecordsBuilder_.setMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public Builder addChangeStreamRecords(com.google.spanner.executor.v1.ChangeStreamRecord value) {
+      if (changeStreamRecordsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureChangeStreamRecordsIsMutable();
+        changeStreamRecords_.add(value);
+        onChanged();
+      } else {
+        changeStreamRecordsBuilder_.addMessage(value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public Builder addChangeStreamRecords(
+        int index, com.google.spanner.executor.v1.ChangeStreamRecord value) {
+      if (changeStreamRecordsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureChangeStreamRecordsIsMutable();
+        changeStreamRecords_.add(index, value);
+        onChanged();
+      } else {
+        changeStreamRecordsBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public Builder addChangeStreamRecords(
+        com.google.spanner.executor.v1.ChangeStreamRecord.Builder builderForValue) {
+      if (changeStreamRecordsBuilder_ == null) {
+        ensureChangeStreamRecordsIsMutable();
+        changeStreamRecords_.add(builderForValue.build());
+        onChanged();
+      } else {
+        changeStreamRecordsBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public Builder addChangeStreamRecords(
+        int index, com.google.spanner.executor.v1.ChangeStreamRecord.Builder builderForValue) {
+      if (changeStreamRecordsBuilder_ == null) {
+        ensureChangeStreamRecordsIsMutable();
+        changeStreamRecords_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        changeStreamRecordsBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public Builder addAllChangeStreamRecords(
+        java.lang.Iterable<? extends com.google.spanner.executor.v1.ChangeStreamRecord> values) {
+      if (changeStreamRecordsBuilder_ == null) {
+        ensureChangeStreamRecordsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, changeStreamRecords_);
+        onChanged();
+      } else {
+        changeStreamRecordsBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public Builder clearChangeStreamRecords() {
+      if (changeStreamRecordsBuilder_ == null) {
+        changeStreamRecords_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000200);
+        onChanged();
+      } else {
+        changeStreamRecordsBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public Builder removeChangeStreamRecords(int index) {
+      if (changeStreamRecordsBuilder_ == null) {
+        ensureChangeStreamRecordsIsMutable();
+        changeStreamRecords_.remove(index);
+        onChanged();
+      } else {
+        changeStreamRecordsBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public com.google.spanner.executor.v1.ChangeStreamRecord.Builder getChangeStreamRecordsBuilder(
+        int index) {
+      return getChangeStreamRecordsFieldBuilder().getBuilder(index);
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public com.google.spanner.executor.v1.ChangeStreamRecordOrBuilder getChangeStreamRecordsOrBuilder(
+        int index) {
+      if (changeStreamRecordsBuilder_ == null) {
+        return changeStreamRecords_.get(index);  } else {
+        return changeStreamRecordsBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public java.util.List<? extends com.google.spanner.executor.v1.ChangeStreamRecordOrBuilder> 
+         getChangeStreamRecordsOrBuilderList() {
+      if (changeStreamRecordsBuilder_ != null) {
+        return changeStreamRecordsBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(changeStreamRecords_);
+      }
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public com.google.spanner.executor.v1.ChangeStreamRecord.Builder addChangeStreamRecordsBuilder() {
+      return getChangeStreamRecordsFieldBuilder().addBuilder(
+          com.google.spanner.executor.v1.ChangeStreamRecord.getDefaultInstance());
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public com.google.spanner.executor.v1.ChangeStreamRecord.Builder addChangeStreamRecordsBuilder(
+        int index) {
+      return getChangeStreamRecordsFieldBuilder().addBuilder(
+          index, com.google.spanner.executor.v1.ChangeStreamRecord.getDefaultInstance());
+    }
+    /**
+     * <pre>
+     * Change stream records returned by a change stream query.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.executor.v1.ChangeStreamRecord change_stream_records = 10;</code>
+     */
+    public java.util.List<com.google.spanner.executor.v1.ChangeStreamRecord.Builder> 
+         getChangeStreamRecordsBuilderList() {
+      return getChangeStreamRecordsFieldBuilder().getBuilderList();
+    }
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        com.google.spanner.executor.v1.ChangeStreamRecord, com.google.spanner.executor.v1.ChangeStreamRecord.Builder, com.google.spanner.executor.v1.ChangeStreamRecordOrBuilder> 
+        getChangeStreamRecordsFieldBuilder() {
+      if (changeStreamRecordsBuilder_ == null) {
+        changeStreamRecordsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.executor.v1.ChangeStreamRecord, com.google.spanner.executor.v1.ChangeStreamRecord.Builder, com.google.spanner.executor.v1.ChangeStreamRecordOrBuilder>(
+                changeStreamRecords_,
+                ((bitField0_ & 0x00000200) != 0),
+                getParentForChildren(),
+                isClean());
+        changeStreamRecords_ = null;
+      }
+      return changeStreamRecordsBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(
