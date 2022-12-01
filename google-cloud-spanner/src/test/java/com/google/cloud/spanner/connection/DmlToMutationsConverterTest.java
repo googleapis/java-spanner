@@ -139,12 +139,21 @@ public class DmlToMutationsConverterTest {
   @Test
   public void testConvertUpdateStatementWithParameters() {
     assertEquals(
+        ImmutableList.of(Mutation.newUpdateBuilder("customerid").set("next_val").to(5L).build()),
+        convert(
+            Statement.newBuilder("update customerId set next_val= @p1 where next_val=@p2")
+                .bind("p1")
+                .to(5L)
+                .bind("p2")
+                .to(1L)
+                .build()));
+    assertEquals(
         ImmutableList.of(
             Mutation.newUpdateBuilder("my_table")
-                .set("id")
-                .to(1L)
                 .set("col1")
                 .to("value1")
+                .set("id")
+                .to(1L)
                 .build()),
         convert(
             Statement.newBuilder("update my_table set col1=@param1 where id=@id")
@@ -156,10 +165,6 @@ public class DmlToMutationsConverterTest {
     assertEquals(
         ImmutableList.of(
             Mutation.newUpdateBuilder("my_table")
-                .set("id1")
-                .to("parent-key")
-                .set("id2")
-                .to(1L)
                 .set("col1")
                 .to("value1")
                 .set("col2")
@@ -170,15 +175,15 @@ public class DmlToMutationsConverterTest {
                 .to(Timestamp.parseTimestamp("2022-11-27T14:47:00Z"))
                 .set("col5")
                 .to(Value.json("{\"key\": \"value\"}"))
+                .set("id1")
+                .to("parent-key")
+                .set("id2")
+                .to(1L)
                 .build()),
         convert(
             Statement.newBuilder(
                     "update my_table set col1=@param1, col2=@param2, col3=@param3, col4=@param4, col5=@param5 "
                         + "where id1=@id1 and id2=@id2")
-                .bind("id1")
-                .to("parent-key")
-                .bind("id2")
-                .to(1L)
                 .bind("param1")
                 .to("value1")
                 .bind("param2")
@@ -189,6 +194,10 @@ public class DmlToMutationsConverterTest {
                 .to(Timestamp.parseTimestamp("2022-11-27T14:47:00Z"))
                 .bind("param5")
                 .to(Value.json("{\"key\": \"value\"}"))
+                .bind("id1")
+                .to("parent-key")
+                .bind("id2")
+                .to(1L)
                 .build()));
   }
 
@@ -197,19 +206,15 @@ public class DmlToMutationsConverterTest {
     assertEquals(
         ImmutableList.of(
             Mutation.newUpdateBuilder("my_table")
-                .set("id")
-                .to(Value.int64(1L))
                 .set("col1")
                 .to(untyped("value1"))
+                .set("id")
+                .to(Value.int64(1L))
                 .build()),
         convert(Statement.of("update my_table set col1 = 'value1' where id=1")));
     assertEquals(
         ImmutableList.of(
             Mutation.newUpdateBuilder("my_table")
-                .set("id1")
-                .to(Value.int64(1L))
-                .set("id2")
-                .to(Value.float64(2.2d))
                 .set("col1")
                 .to(untyped("value1"))
                 .set("col2")
@@ -220,6 +225,10 @@ public class DmlToMutationsConverterTest {
                 .to(Timestamp.parseTimestamp("2022-11-27T14:47:00Z"))
                 .set("col5")
                 .to(Value.json("{\"key\": \"value\"}"))
+                .set("id1")
+                .to(Value.int64(1L))
+                .set("id2")
+                .to(Value.float64(2.2d))
                 .build()),
         convert(
             Statement.of(

@@ -338,11 +338,16 @@ class DmlToMutationsConverter {
   }
 
   static String getQueryParameterName(String expression) {
-    if (expression != null && expression.length() > 1 && expression.startsWith("@")) {
-      SimpleParser parser = new SimpleParser(expression.substring(1));
-      String name = parser.readIdentifierPart();
-      if (name != null && !parser.hasMoreTokens()) {
-        return name;
+    if (expression != null) {
+      SimpleParser parser = new SimpleParser(expression);
+      parser.skipWhitespaces();
+      if (parser.getPos() < parser.getSql().length() - 1
+          && parser.getSql().charAt(parser.getPos()) == '@') {
+        parser.setPos(parser.getPos() + 1);
+        String name = parser.readIdentifierPart();
+        if (name != null && !parser.hasMoreTokens()) {
+          return name;
+        }
       }
     }
     return null;

@@ -209,10 +209,10 @@ public class ConvertDmlToMutationsTest extends AbstractMockServerTest {
     assertEquals(1, mutation.getUpdate().getValuesCount());
     assertEquals("my_table", mutation.getUpdate().getTable());
     assertEquals(2, mutation.getUpdate().getColumnsCount());
-    assertEquals("id", mutation.getUpdate().getColumns(0));
-    assertEquals("value", mutation.getUpdate().getColumns(1));
-    assertEquals("1", mutation.getUpdate().getValues(0).getValues(0).getStringValue());
-    assertEquals("value1", mutation.getUpdate().getValues(0).getValues(1).getStringValue());
+    assertEquals("value", mutation.getUpdate().getColumns(0));
+    assertEquals("id", mutation.getUpdate().getColumns(1));
+    assertEquals("value1", mutation.getUpdate().getValues(0).getValues(0).getStringValue());
+    assertEquals("1", mutation.getUpdate().getValues(0).getValues(1).getStringValue());
   }
 
   @Test
@@ -234,10 +234,10 @@ public class ConvertDmlToMutationsTest extends AbstractMockServerTest {
     assertEquals(1, mutation.getUpdate().getValuesCount());
     assertEquals("my_table", mutation.getUpdate().getTable());
     assertEquals(2, mutation.getUpdate().getColumnsCount());
-    assertEquals("id", mutation.getUpdate().getColumns(0));
-    assertEquals("value", mutation.getUpdate().getColumns(1));
-    assertEquals("1", mutation.getUpdate().getValues(0).getValues(0).getStringValue());
-    assertEquals("value1", mutation.getUpdate().getValues(0).getValues(1).getStringValue());
+    assertEquals("value", mutation.getUpdate().getColumns(0));
+    assertEquals("id", mutation.getUpdate().getColumns(1));
+    assertEquals("value1", mutation.getUpdate().getValues(0).getValues(0).getStringValue());
+    assertEquals("1", mutation.getUpdate().getValues(0).getValues(1).getStringValue());
   }
 
   @Test
