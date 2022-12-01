@@ -1449,9 +1449,12 @@ class ConnectionImpl implements Connection {
   @Override
   public void setConvertDmlToMutations(boolean convert) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    this.convertDmlToMutations = convert;
+    // TODO: Split this into two different settings. One for setting it for a transaction and one
+    //       for setting it as the default for the connection.
     if (this.currentUnitOfWork != null && this.currentUnitOfWork.isActive()) {
       this.currentUnitOfWork.setConvertDmlToMutations(convert);
+    } else {
+      this.convertDmlToMutations = convert;
     }
   }
 

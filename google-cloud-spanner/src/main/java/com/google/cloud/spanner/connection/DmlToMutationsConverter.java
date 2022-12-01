@@ -34,8 +34,10 @@ import com.google.common.collect.Iterables;
 import com.google.protobuf.NullValue;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 class DmlToMutationsConverter {
 
@@ -171,9 +173,15 @@ class DmlToMutationsConverter {
     checkForThenReturnClause(parser, statement);
 
     WriteBuilder updateBuilder = Mutation.newUpdateBuilder(table.getUnquotedQualifiedName());
+    Set<String> assignedColumns = new HashSet<>(assignments.size() + whereClauses.size());
     for (Entry<String, Value> entry :
-        Iterables.concat(whereClauses.entrySet(), assignments.entrySet())) {
-      updateBuilder.set(entry.getKey()).to(entry.getValue());
+        Iterables.concat(assignments.entrySet(), whereClauses.entrySet())) {
+      // TODO: This skips columns in the WHERE clause if there is also an assignment for the same
+      //       column.
+      if (!assignedColumns.contains(entry.getKey().toLowerCase())) {
+        assignedColumns.add(entry.getKey().toLowerCase());
+        updateBuilder.set(entry.getKey()).to(entry.getValue());
+      }
     }
     return ImmutableList.of(updateBuilder.build());
   }
