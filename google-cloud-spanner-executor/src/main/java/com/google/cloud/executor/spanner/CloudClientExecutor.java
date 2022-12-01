@@ -1320,7 +1320,7 @@ public class CloudClientExecutor extends CloudExecutor {
                   action.getInstanceId(),
                   action.getBackupId(),
                   action.getDatabaseId(),
-                  Timestamp.fromProto(action.getVersionTime()))
+                  Timestamp.fromProto(action.getExpireTime()))
               .get();
       SpannerActionOutcome outcome =
           SpannerActionOutcome.newBuilder()
