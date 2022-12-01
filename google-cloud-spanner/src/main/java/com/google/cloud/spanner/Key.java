@@ -24,6 +24,7 @@ import com.google.cloud.Timestamp;
 import com.google.common.base.Joiner;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.google.protobuf.Value;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -141,6 +142,11 @@ public final class Key implements Serializable {
       buffer.add(value);
       return this;
     }
+    /** Appends a {@code ENUM} value to the key. */
+    public Builder append(@Nullable ProtocolMessageEnum value) {
+      buffer.add(value);
+      return this;
+    }
     /** Appends a {@code STRING} value to the key. */
     public Builder append(@Nullable String value) {
       buffer.add(value);
@@ -192,6 +198,8 @@ public final class Key implements Serializable {
         append((Timestamp) value);
       } else if (value instanceof Date) {
         append((Date) value);
+      } else if (value instanceof ProtocolMessageEnum) {
+        append((ProtocolMessageEnum) value);
       } else {
         throw new IllegalArgumentException(
             "Unsupported type ["
@@ -300,6 +308,11 @@ public final class Key implements Serializable {
         builder.addValuesBuilder().setStringValue(part.toString());
       } else if (part instanceof Date) {
         builder.addValuesBuilder().setStringValue(part.toString());
+      } else if (part instanceof ProtocolMessageEnum) {
+        builder
+            .addValuesBuilder()
+            .setStringValue(Long.toString(((ProtocolMessageEnum) part).getNumber()))
+            .build();
       } else {
         throw new AssertionError("Illegal key part: " + part.getClass());
       }
