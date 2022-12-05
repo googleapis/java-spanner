@@ -113,10 +113,7 @@ branchProtectionRules:
     requiresCodeOwnerReviews: true
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
-      - dependencies (8)
-      - dependencies (11)
       - lint
-      - clirr
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
@@ -124,7 +121,6 @@ branchProtectionRules:
       - checkstyle
       - compile (8)
       - compile (11)
-      - OwlBot Post Processor
 permissionRules:
   - team: yoshi-admins
     permission: admin
