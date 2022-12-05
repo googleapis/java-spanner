@@ -138,15 +138,16 @@ public class DmlToMutationsConverterTest {
 
   @Test
   public void testConvertUpdateStatementWithParameters() throws DmlConversionException {
-    assertEquals(
-        ImmutableList.of(Mutation.newUpdateBuilder("customerid").set("next_val").to(5L).build()),
-        convert(
-            Statement.newBuilder("update customerId set next_val= @p1 where next_val=@p2")
-                .bind("p1")
-                .to(5L)
-                .bind("p2")
-                .to(1L)
-                .build()));
+    assertThrows(
+        DmlConversionException.class,
+        () ->
+            convert(
+                Statement.newBuilder("update customerId set next_val= @p1 where next_val=@p2")
+                    .bind("p1")
+                    .to(5L)
+                    .bind("p2")
+                    .to(1L)
+                    .build()));
     assertEquals(
         ImmutableList.of(
             Mutation.newUpdateBuilder("my_table")
@@ -241,16 +242,16 @@ public class DmlToMutationsConverterTest {
     assertEquals(
         ImmutableList.of(Mutation.delete("my_table", Key.of(Value.int64(1L)))),
         convert(Statement.newBuilder("delete my_table where id=@id").bind("id").to(1L).build()));
-    assertEquals(
-        ImmutableList.of(
-            Mutation.delete("my_table", Key.of(Value.string("parent-key"), Value.int64(1L)))),
-        convert(
-            Statement.newBuilder("delete from my_table " + "where id1=@id1 and id2=@id2")
-                .bind("id1")
-                .to("parent-key")
-                .bind("id2")
-                .to(1L)
-                .build()));
+    assertThrows(
+        DmlConversionException.class,
+        () ->
+            convert(
+                Statement.newBuilder("delete from my_table " + "where id1=@id1 and id2=@id2")
+                    .bind("id1")
+                    .to("parent-key")
+                    .bind("id2")
+                    .to(1L)
+                    .build()));
   }
 
   @Test
@@ -258,9 +259,9 @@ public class DmlToMutationsConverterTest {
     assertEquals(
         ImmutableList.of(Mutation.delete("my_table", Key.of(Value.int64(1L)))),
         convert(Statement.of("delete from my_table where id=1")));
-    assertEquals(
-        ImmutableList.of(Mutation.delete("my_table", Key.of(Value.int64(1L), Value.float64(2.2d)))),
-        convert(Statement.of("delete my_table " + "where id1=1 and id2 = 2.2")));
+    assertThrows(
+        DmlConversionException.class,
+        () -> convert(Statement.of("delete my_table " + "where id1=1 and id2 = 2.2")));
   }
 
   @Test
