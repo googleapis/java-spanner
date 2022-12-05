@@ -48,6 +48,7 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
+import com.google.cloud.spanner.connection.DmlToMutationsConverter.DmlConversionException;
 import com.google.cloud.spanner.connection.TransactionRetryListener.RetryResult;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -473,17 +474,20 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     Preconditions.checkArgument(update.isUpdate(), "The statement is not an update statement");
     checkValidTransaction(update);
     ApiFuture<Tuple<Long, ResultSet>> res;
-    if (convertDmlToMutations) {
+    if (analyzeMode == AnalyzeMode.NONE && convertDmlToMutations) {
       SettableApiFuture<Tuple<Long, ResultSet>> mutationResults = SettableApiFuture.create();
-      res = mutationResults;
       try {
         List<Mutation> mutations = DmlToMutationsConverter.convert(update.getStatement());
         this.mutations.addAll(mutations);
         mutationResults.set(Tuple.of((long) mutations.size(), null));
-      } catch (SpannerException exception) {
-        mutationResults.setException(exception);
+        return mutationResults;
+      } catch (DmlConversionException ignore) {
+        // ignore and execute as DML.
+      } catch (Throwable t) {
+        mutationResults.setException(t);
       }
-    } else if (retryAbortsInternally) {
+    }
+    if (retryAbortsInternally) {
       res =
           executeStatementAsync(
               update,
@@ -580,7 +584,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     ApiFuture<long[]> res;
     if (convertDmlToMutations) {
       SettableApiFuture<long[]> mutationResults = SettableApiFuture.create();
-      res = mutationResults;
       ImmutableList.Builder<Mutation> mutationsBuilder = ImmutableList.builder();
       try {
         for (ParsedStatement statement : updates) {
@@ -591,10 +594,14 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         long[] updateCounts = new long[mutations.size()];
         Arrays.fill(updateCounts, 1L);
         mutationResults.set(updateCounts);
-      } catch (SpannerException exception) {
-        mutationResults.setException(exception);
+        return mutationResults;
+      } catch (DmlConversionException ignore) {
+        // ignore and execute as DML.
+      } catch (Throwable t) {
+        mutationResults.setException(t);
       }
-    } else if (retryAbortsInternally) {
+    }
+    if (retryAbortsInternally) {
       res =
           executeStatementAsync(
               RUN_BATCH_STATEMENT,

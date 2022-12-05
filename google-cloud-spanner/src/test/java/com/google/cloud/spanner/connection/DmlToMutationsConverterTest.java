@@ -26,9 +26,9 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Value;
+import com.google.cloud.spanner.connection.DmlToMutationsConverter.DmlConversionException;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.NullValue;
 import org.junit.Test;
@@ -39,7 +39,7 @@ import org.junit.runners.JUnit4;
 public class DmlToMutationsConverterTest {
 
   @Test
-  public void testParseValue() {
+  public void testParseValue() throws DmlConversionException {
     assertEquals(Value.bool(true), parseValue("true"));
     assertEquals(Value.bool(false), parseValue("false"));
     assertEquals(
@@ -49,7 +49,7 @@ public class DmlToMutationsConverterTest {
   }
 
   @Test
-  public void testConvertInsertStatementWithParameters() {
+  public void testConvertInsertStatementWithParameters() throws DmlConversionException {
     assertEquals(
         ImmutableList.of(Mutation.newInsertBuilder("my_table").set("col1").to("value1").build()),
         convert(
@@ -104,7 +104,7 @@ public class DmlToMutationsConverterTest {
   }
 
   @Test
-  public void testConvertInsertStatementWithLiterals() {
+  public void testConvertInsertStatementWithLiterals() throws DmlConversionException {
     assertEquals(
         ImmutableList.of(
             Mutation.newInsertBuilder("my_table").set("col1").to(untyped("value1")).build()),
@@ -137,7 +137,7 @@ public class DmlToMutationsConverterTest {
   }
 
   @Test
-  public void testConvertUpdateStatementWithParameters() {
+  public void testConvertUpdateStatementWithParameters() throws DmlConversionException {
     assertEquals(
         ImmutableList.of(Mutation.newUpdateBuilder("customerid").set("next_val").to(5L).build()),
         convert(
@@ -202,7 +202,7 @@ public class DmlToMutationsConverterTest {
   }
 
   @Test
-  public void testConvertUpdateStatementWithLiterals() {
+  public void testConvertUpdateStatementWithLiterals() throws DmlConversionException {
     assertEquals(
         ImmutableList.of(
             Mutation.newUpdateBuilder("my_table")
@@ -237,7 +237,7 @@ public class DmlToMutationsConverterTest {
   }
 
   @Test
-  public void testConvertDeleteStatementWithParameters() {
+  public void testConvertDeleteStatementWithParameters() throws DmlConversionException {
     assertEquals(
         ImmutableList.of(Mutation.delete("my_table", Key.of(Value.int64(1L)))),
         convert(Statement.newBuilder("delete my_table where id=@id").bind("id").to(1L).build()));
@@ -254,7 +254,7 @@ public class DmlToMutationsConverterTest {
   }
 
   @Test
-  public void testConvertDeleteStatementWithLiterals() {
+  public void testConvertDeleteStatementWithLiterals() throws DmlConversionException {
     assertEquals(
         ImmutableList.of(Mutation.delete("my_table", Key.of(Value.int64(1L)))),
         convert(Statement.of("delete from my_table where id=1")));
@@ -267,24 +267,24 @@ public class DmlToMutationsConverterTest {
   public void testThenReturn() {
     assertIsThenReturnUnsupportedException(
         assertThrows(
-            SpannerException.class,
+            DmlConversionException.class,
             () ->
                 convert(
                     Statement.of(
                         "insert into my_table (id, value) values (1, 'one') then return id"))));
     assertIsThenReturnUnsupportedException(
         assertThrows(
-            SpannerException.class,
+            DmlConversionException.class,
             () ->
                 convert(
                     Statement.of("update my_table set value='two' where id=2 then return value"))));
     assertIsThenReturnUnsupportedException(
         assertThrows(
-            SpannerException.class,
+            DmlConversionException.class,
             () -> convert(Statement.of("delete my_table where id=3 then return value"))));
   }
 
-  void assertIsThenReturnUnsupportedException(SpannerException exception) {
+  void assertIsThenReturnUnsupportedException(DmlConversionException exception) {
     assertTrue(
         exception.getMessage(),
         exception
