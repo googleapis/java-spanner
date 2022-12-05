@@ -53,7 +53,7 @@ public class GceTestEnvConfig implements TestEnvConfig {
   public static final String DP_IPV6_PREFIX = "2001:4860:8040";
   public static final String DP_IPV4_PREFIX = "34.126";
 
-  private static final String DIRECT_PATH_ENDPOINT = "aa423245250f2bbf.sandbox.googleapis.com:443";
+  private static final String DIRECT_PATH_ENDPOINT = "staging-wrenchworks.sandbox.googleapis.com:443";
 
   private final SpannerOptions options;
 
