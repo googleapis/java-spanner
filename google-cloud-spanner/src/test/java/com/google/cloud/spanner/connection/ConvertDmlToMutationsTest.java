@@ -29,6 +29,7 @@ import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.Mutation;
 import com.google.spanner.v1.Mutation.OperationCase;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -216,6 +217,41 @@ public class ConvertDmlToMutationsTest extends AbstractMockServerTest {
   }
 
   @Test
+  public void testUpdateChildTableWithParameters() {
+    String sql = "update my_table set value=@value where parent_id=@parent and child_id=@child";
+    Statement statement =
+        Statement.newBuilder(sql)
+            .bind("parent")
+            .to(1L)
+            .bind("child")
+            .to(1L)
+            .bind("value")
+            .to("value1")
+            .build();
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(false);
+      connection.setConvertDmlToMutations(true);
+      assertEquals(1L, connection.executeUpdate(statement));
+      connection.commit();
+    }
+    assertEquals(0, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+    CommitRequest commit = mockSpanner.getRequestsOfType(CommitRequest.class).get(0);
+    assertEquals(1, commit.getMutationsCount());
+    Mutation mutation = commit.getMutations(0);
+    assertEquals(OperationCase.UPDATE, mutation.getOperationCase());
+    assertEquals(1, mutation.getUpdate().getValuesCount());
+    assertEquals("my_table", mutation.getUpdate().getTable());
+    assertEquals(3, mutation.getUpdate().getColumnsCount());
+    assertEquals("value", mutation.getUpdate().getColumns(0));
+    assertEquals("parent_id", mutation.getUpdate().getColumns(1));
+    assertEquals("child_id", mutation.getUpdate().getColumns(2));
+    assertEquals("value1", mutation.getUpdate().getValues(0).getValues(0).getStringValue());
+    assertEquals("1", mutation.getUpdate().getValues(0).getValues(1).getStringValue());
+    assertEquals("1", mutation.getUpdate().getValues(0).getValues(2).getStringValue());
+  }
+
+  @Test
   public void testUpdateWithLiterals() {
     String sql = "update my_table set value='value1' where id=1";
     Statement statement = Statement.of(sql);
@@ -262,6 +298,7 @@ public class ConvertDmlToMutationsTest extends AbstractMockServerTest {
     assertEquals("1", mutation.getDelete().getKeySet().getKeys(0).getValues(0).getStringValue());
   }
 
+  @Ignore("re-enable when we support deletes for composite primary keys")
   @Test
   public void testDeleteWithMultipleParameters() {
     String sql = "delete my_table where id_parent=@parent and id_child=@child";
@@ -309,6 +346,7 @@ public class ConvertDmlToMutationsTest extends AbstractMockServerTest {
     assertEquals("1", mutation.getDelete().getKeySet().getKeys(0).getValues(0).getStringValue());
   }
 
+  @Ignore("re-enable when we support deletes for composite primary keys")
   @Test
   public void testDeleteWithMultipleLiterals() {
     String sql = "delete from my_table where parent=1 and child=2.2";
