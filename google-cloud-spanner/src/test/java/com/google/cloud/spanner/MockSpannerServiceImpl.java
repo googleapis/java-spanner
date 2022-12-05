@@ -1289,7 +1289,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 builder.bind(fieldName).toTimestampArray(null);
                 break;
               case JSON:
-                builder.bind(fieldName).toJsonArray(null);
+                if (elementType.getTypeAnnotation() == TypeAnnotationCode.PG_JSONB) {
+                  builder.bind(fieldName).toPgJsonbArray(null);
+                } else {
+                  builder.bind(fieldName).toJsonArray(null);
+                }
                 break;
               case STRUCT:
               case TYPE_CODE_UNSPECIFIED:
@@ -1331,7 +1335,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             builder.bind(fieldName).to((com.google.cloud.Timestamp) null);
             break;
           case JSON:
-            builder.bind(fieldName).to(Value.json(null));
+            if (fieldType.getTypeAnnotation() == TypeAnnotationCode.PG_JSONB) {
+              builder.bind(fieldName).to(Value.pgJsonb(null));
+            } else {
+              builder.bind(fieldName).to(Value.json(null));
+            }
             break;
           case TYPE_CODE_UNSPECIFIED:
           case UNRECOGNIZED:
@@ -1416,12 +1424,21 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                                 com.google.cloud.spanner.Type.timestamp(), value.getListValue()));
                 break;
               case JSON:
-                builder
-                    .bind(fieldName)
-                    .toJsonArray(
-                        (Iterable<String>)
-                            GrpcStruct.decodeArrayValue(
-                                com.google.cloud.spanner.Type.json(), value.getListValue()));
+                if (elementType.getTypeAnnotation() == TypeAnnotationCode.PG_JSONB) {
+                  builder
+                      .bind(fieldName)
+                      .toPgJsonbArray(
+                          (Iterable<String>)
+                              GrpcStruct.decodeArrayValue(
+                                  com.google.cloud.spanner.Type.pgJsonb(), value.getListValue()));
+                } else {
+                  builder
+                      .bind(fieldName)
+                      .toJsonArray(
+                          (Iterable<String>)
+                              GrpcStruct.decodeArrayValue(
+                                  com.google.cloud.spanner.Type.json(), value.getListValue()));
+                }
                 break;
               case STRUCT:
               case TYPE_CODE_UNSPECIFIED:
@@ -1464,7 +1481,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 .to(com.google.cloud.Timestamp.parseTimestamp(value.getStringValue()));
             break;
           case JSON:
-            builder.bind(fieldName).to(Value.json(value.getStringValue()));
+            if (fieldType.getTypeAnnotation() == TypeAnnotationCode.PG_JSONB) {
+              builder.bind(fieldName).to(Value.pgJsonb(value.getStringValue()));
+            } else {
+              builder.bind(fieldName).to(Value.json(value.getStringValue()));
+            }
             break;
           case TYPE_CODE_UNSPECIFIED:
           case UNRECOGNIZED:
