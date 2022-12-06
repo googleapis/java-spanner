@@ -51,6 +51,7 @@ import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Partition;
 import com.google.cloud.spanner.PartitionOptions;
+import com.google.cloud.spanner.PartitionTestUtil;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ReplicaInfo;
@@ -125,6 +126,7 @@ import com.google.spanner.executor.v1.UpdateCloudBackupAction;
 import com.google.spanner.executor.v1.UpdateCloudDatabaseDdlAction;
 import com.google.spanner.executor.v1.UpdateCloudInstanceAction;
 import com.google.spanner.v1.StructType;
+import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Status;
 import com.google.protobuf.ByteString;
@@ -1778,20 +1780,21 @@ public class CloudClientExecutor extends CloudExecutor {
                 request.getTable(),
                 request.getIndex(),
                 keySet,
-                request.getColumnList());
+                new ArrayList<>(request.getColumnList()));
       } else {
         parts =
             batchTxn.partitionRead(
                 partitionOptionsBuilder.build(),
                 request.getTable(),
                 keySet,
-                request.getColumnList());
+                new ArrayList<>(request.getColumnList()));
       }
       List<BatchPartition> batchPartitions = new ArrayList<>();
       for (Partition part : parts) {
         batchPartitions.add(
             BatchPartition.newBuilder()
                 .setPartition(marshall(part))
+                .setPartitionToken(PartitionTestUtil.extractPartitionToken(part))
                 .setTable(request.getTable())
                 .setIndex(request.getIndex())
                 .build());
@@ -1835,7 +1838,11 @@ public class CloudClientExecutor extends CloudExecutor {
       List<Partition> parts = batchTxn.partitionQuery(partitionOptions, stmt.build());
       List<BatchPartition> batchPartitions = new ArrayList<>();
       for (Partition part : parts) {
-        batchPartitions.add(BatchPartition.newBuilder().setPartition(marshall(part)).build());
+        batchPartitions.add(
+            BatchPartition.newBuilder()
+                .setPartition(marshall(part))
+                .setPartitionToken(PartitionTestUtil.extractPartitionToken(part))
+                .build());
       }
 
       SpannerActionOutcome outcome =
@@ -1866,7 +1873,7 @@ public class CloudClientExecutor extends CloudExecutor {
             ErrorCode.INVALID_ARGUMENT, "Invalid batchPartition " + action);
       }
       if (action.getPartition().hasTable()) {
-        sender.initForRead(action.getPartition().getTable(), action.getPartition().getIndex());
+        sender.initForBatchRead(action.getPartition().getTable(), action.getPartition().getIndex());
       } else {
         sender.initForQuery();
       }
@@ -2086,8 +2093,7 @@ public class CloudClientExecutor extends CloudExecutor {
                     ErrorCode.DEADLINE_EXCEEDED, "Deadline exceeded error: " + e)));
       } else if (e instanceof UnavailableException) {
         return toStatus(
-            SpannerExceptionFactory.newSpannerException(
-                ErrorCode.UNAVAILABLE, e.getMessage()));
+            SpannerExceptionFactory.newSpannerException(ErrorCode.UNAVAILABLE, e.getMessage()));
       }
       return sender.finishWithError(
           toStatus(
@@ -2404,13 +2410,8 @@ public class CloudClientExecutor extends CloudExecutor {
           Level.INFO,
           String.format("Iterating result set: %s\n", executionContext.getTransactionSeed()));
       while (results.next()) {
-        LOGGER.log(
-            Level.INFO, String.format("Building row: %s\n", executionContext.getTransactionSeed()));
         com.google.spanner.executor.v1.ValueList row =
             buildRow(results.getCurrentRowAsStruct(), sender);
-        LOGGER.log(
-            Level.INFO,
-            String.format("Appending row: %s\n", executionContext.getTransactionSeed()));
         Status appendStatus = sender.appendRow(row);
         if (!appendStatus.isOk()) {
           return appendStatus;
@@ -2507,7 +2508,7 @@ public class CloudClientExecutor extends CloudExecutor {
             break;
           case NUMERIC:
             String ascii = result.getBigDecimal(i).toPlainString();
-            value.setBytesValue(NumericTranscoder.encode(ascii));
+            value.setStringValue(ascii);
             break;
           case JSON:
             value.setStringValue(result.getJson(i));
@@ -2663,10 +2664,7 @@ public class CloudClientExecutor extends CloudExecutor {
                     if (bigDec == null) {
                       builder.addValue(valueProto.setIsNull(true).build());
                     } else {
-                      builder.addValue(
-                          valueProto
-                              .setBytesValue(NumericTranscoder.encode(bigDec.toPlainString()))
-                              .build());
+                      builder.addValue(valueProto.setStringValue(bigDec.toPlainString()).build());
                     }
                   }
                   value.setArrayValue(builder.build());
@@ -2824,7 +2822,7 @@ public class CloudClientExecutor extends CloudExecutor {
             cloudKey.append(toByteArray(part.getBytesValue()));
             break;
           case NUMERIC:
-            String ascii = NumericTranscoder.decode(part.getBytesValue().toByteArray());
+            String ascii = part.getStringValue();
             cloudKey.append(new BigDecimal(ascii));
             break;
             // Unreachable
@@ -2887,7 +2885,7 @@ public class CloudClientExecutor extends CloudExecutor {
           if (value.hasIsNull()) {
             return com.google.cloud.spanner.Value.numeric(null);
           }
-          String ascii = NumericTranscoder.decode(value.getBytesValue().toByteArray());
+          String ascii = value.getStringValue();
           return com.google.cloud.spanner.Value.numeric(new BigDecimal(ascii));
         }
       case JSON:
@@ -3002,9 +3000,9 @@ public class CloudClientExecutor extends CloudExecutor {
                   value.getArrayValue().getValueList().stream()
                       .map(com.google.spanner.executor.v1.Value::getIsNull)
                       .collect(Collectors.toList());
-              List<ByteString> valueList =
+              List<String> valueList =
                   value.getArrayValue().getValueList().stream()
-                      .map(com.google.spanner.executor.v1.Value::getBytesValue)
+                      .map(com.google.spanner.executor.v1.Value::getStringValue)
                       .collect(Collectors.toList());
               List<BigDecimal> newValueList = new ArrayList<>(valueList.size());
 
@@ -3013,7 +3011,7 @@ public class CloudClientExecutor extends CloudExecutor {
                   newValueList.add(null);
                   continue;
                 }
-                String ascii = NumericTranscoder.decode(valueList.get(i).toByteArray());
+                String ascii = valueList.get(i);
                 newValueList.add(new BigDecimal(ascii));
               }
               return com.google.cloud.spanner.Value.numericArray(newValueList);
@@ -3159,7 +3157,11 @@ public class CloudClientExecutor extends CloudExecutor {
       case TIMESTAMP:
         return com.google.cloud.spanner.Type.timestamp();
       case NUMERIC:
-        return com.google.cloud.spanner.Type.numeric();
+        if (typeProto.getTypeAnnotation().equals(TypeAnnotationCode.PG_NUMERIC)) {
+          return com.google.cloud.spanner.Type.pgNumeric();
+        } else {
+          return com.google.cloud.spanner.Type.numeric();
+        }
       case STRUCT:
         List<StructType.Field> fields = typeProto.getStructType().getFieldsList();
         List<com.google.cloud.spanner.Type.StructField> cloudFields = new ArrayList<>();
@@ -3178,7 +3180,11 @@ public class CloudClientExecutor extends CloudExecutor {
           return com.google.cloud.spanner.Type.array(cloudElementType);
         }
       case JSON:
-        return com.google.cloud.spanner.Type.json();
+        if (typeProto.getTypeAnnotation().equals(TypeAnnotationCode.PG_JSONB)) {
+          return com.google.cloud.spanner.Type.pgJsonb();
+        } else {
+          return com.google.cloud.spanner.Type.json();
+        }
       default:
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT, "Unsupported proto type: " + typeProto);
@@ -3204,6 +3210,11 @@ public class CloudClientExecutor extends CloudExecutor {
         return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.DATE).build();
       case NUMERIC:
         return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.NUMERIC).build();
+      case PG_NUMERIC:
+        return com.google.spanner.v1.Type.newBuilder()
+            .setCode(TypeCode.NUMERIC)
+            .setTypeAnnotation(TypeAnnotationCode.PG_NUMERIC)
+            .build();
       case STRUCT:
         com.google.spanner.v1.StructType.Builder StructDescriptorBuilder =
             com.google.spanner.v1.StructType.newBuilder();
@@ -3231,6 +3242,11 @@ public class CloudClientExecutor extends CloudExecutor {
         }
       case JSON:
         return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.JSON).build();
+      case PG_JSONB:
+        return com.google.spanner.v1.Type.newBuilder()
+            .setCode(TypeCode.JSON)
+            .setTypeAnnotation(TypeAnnotationCode.PG_JSONB)
+            .build();
       default:
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT, "Unsupported cloud type: " + cloudTypeProto);
