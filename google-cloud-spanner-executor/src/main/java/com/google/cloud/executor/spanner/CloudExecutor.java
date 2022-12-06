@@ -16,6 +16,7 @@
 
 package com.google.cloud.executor.spanner;
 
+import com.google.cloud.executor.spanner.CloudClientExecutor.ExecutionFlowContext;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -32,7 +33,6 @@ import com.google.spanner.executor.v1.SpannerActionOutcome;
 import com.google.spanner.executor.v1.TableMetadata;
 import com.google.spanner.executor.v1.SpannerAsyncActionResponse;
 import io.grpc.Status;
-import io.grpc.stub.StreamObserver;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.ArrayList;
@@ -121,7 +121,7 @@ public abstract class CloudExecutor {
   public class OutcomeSender {
 
     private final int actionId;
-    private final StreamObserver<SpannerAsyncActionResponse> responseObserver;
+    private final ExecutionFlowContext context;
 
     // All the relevant variables below should be set before first outcome is sent back, and unused
     // variables should leave null.
@@ -166,9 +166,9 @@ public abstract class CloudExecutor {
     private static final int MAX_CHANGE_STREAM_RECORDS_PER_BATCH = 2000;
 
     public OutcomeSender(
-        int actionId, StreamObserver<SpannerAsyncActionResponse> responseObserver) {
+        int actionId, ExecutionFlowContext context) {
       this.actionId = actionId;
-      this.responseObserver = responseObserver;
+      this.context = context;
       this.index = null;
       this.rowType = null;
       this.requestIndex = null;
@@ -397,7 +397,7 @@ public abstract class CloudExecutor {
                 .setOutcome(outcome)
                 .build();
 
-        responseObserver.onNext(result);
+        context.onNext(result);
         LOGGER.log(Level.INFO, String.format("Sent result %s actionId %s", outcome, actionId));
       } catch (SpannerException e) {
         LOGGER.log(Level.SEVERE, "Failed to send outcome with error: " + e.getMessage(), e);

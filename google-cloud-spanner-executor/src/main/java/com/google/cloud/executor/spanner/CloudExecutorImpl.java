@@ -43,13 +43,13 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
   public StreamObserver<SpannerAsyncActionRequest> executeActionAsync(
       StreamObserver<SpannerAsyncActionResponse> responseObserver) {
     CloudClientExecutor.ExecutionFlowContext executionContext =
-        clientExecutor.new ExecutionFlowContext();
+        clientExecutor.new ExecutionFlowContext(responseObserver);
     return new StreamObserver<SpannerAsyncActionRequest>() {
       @Override
       public void onNext(SpannerAsyncActionRequest request) {
         LOGGER.log(Level.INFO, String.format("Receiving request: \n%s", request));
         Status status =
-            clientExecutor.startHandlingRequest(request, responseObserver, executionContext);
+            clientExecutor.startHandlingRequest(request, executionContext);
         if (!status.isOk()) {
           LOGGER.log(
               Level.WARNING,

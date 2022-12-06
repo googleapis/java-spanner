@@ -403,6 +403,22 @@ public class CloudClientExecutor extends CloudExecutor {
     private boolean readAborted;
     // Log the workid and op pair for tracing the thread.
     private String transactionSeed;
+    // Outgoing stream.
+    StreamObserver<SpannerAsyncActionResponse> responseObserver;
+
+    public ExecutionFlowContext(StreamObserver<SpannerAsyncActionResponse> responseObserver) {
+      this.responseObserver = responseObserver;
+    }
+
+    /** Call the underlying stream to send response. */
+    public synchronized void onNext(SpannerAsyncActionResponse response) {
+      responseObserver.onNext(response);
+    }
+
+    /** Call the underlying stream to send error. */
+    public synchronized void onError(Throwable t) {
+      responseObserver.onError(t);
+    }
 
     /** Return current transaction that can used for performing read/query actions. */
     public synchronized ReadContext getTransactionForRead() throws SpannerException {
@@ -776,9 +792,8 @@ public class CloudClientExecutor extends CloudExecutor {
   /** Handle actions. */
   public Status startHandlingRequest(
       SpannerAsyncActionRequest req,
-      StreamObserver<SpannerAsyncActionResponse> responseObserver,
       ExecutionFlowContext executionContext) {
-    OutcomeSender outcomeSender = new OutcomeSender(req.getActionId(), responseObserver);
+    OutcomeSender outcomeSender = new OutcomeSender(req.getActionId(), executionContext);
 
     if (!req.hasAction()) {
       return outcomeSender.finishWithError(
@@ -798,7 +813,7 @@ public class CloudClientExecutor extends CloudExecutor {
             LOGGER.log(
                 Level.WARNING,
                 String.format("Failed to execute action with error: %s\n%s", status, action));
-            responseObserver.onError(status.getCause());
+            executionContext.onError(status.getCause());
           }
         });
     return Status.OK;
