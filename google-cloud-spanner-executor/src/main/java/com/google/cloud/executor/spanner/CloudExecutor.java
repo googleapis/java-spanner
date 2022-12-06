@@ -131,6 +131,7 @@ public abstract class CloudExecutor {
     private boolean hasChangeStreamRecords;
     private String table;
     private String index;
+    private Integer requestIndex;
     private StructType rowType;
 
     // PartialOutcome accumulates rows and relevant information.
@@ -170,6 +171,7 @@ public abstract class CloudExecutor {
       this.responseObserver = responseObserver;
       this.index = null;
       this.rowType = null;
+      this.requestIndex = null;
       this.timestamp = Timestamp.newBuilder().setSeconds(0).setNanos(0).build();
     }
 
@@ -195,6 +197,14 @@ public abstract class CloudExecutor {
     /** Init the sender for query action. */
     public void initForQuery() {
       this.hasQueryResult = true;
+    }
+
+    /** Init the sender for batch read action, then set the table and index if there exists. */
+    public void initForBatchRead(String table, String index) {
+      initForRead(table, index);
+      // Cloud API supports only simple batch reads (not multireads), so request index
+      // is always 0
+      this.requestIndex = 0;
     }
 
     /** Init the sender for change stream query action. */
@@ -328,6 +338,9 @@ public abstract class CloudExecutor {
         }
         if (rowType != null) {
           readResultBuilder.setRowType(rowType);
+        }
+        if (requestIndex != null) {
+          readResultBuilder.setRequestIndex(requestIndex);
         }
       } else if (hasQueryResult) {
         queryResultBuilder = QueryResult.newBuilder();
