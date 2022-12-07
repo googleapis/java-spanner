@@ -92,6 +92,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   static class GrpcResultSet extends AbstractResultSet<List<Object>> {
     private final GrpcValueIterator iterator;
     private final Listener listener;
+    private ResultSetMetadata metadata;
     private GrpcStruct currRow;
     private SpannerException error;
     private ResultSetStats statistics;
@@ -116,7 +117,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       }
       try {
         if (currRow == null) {
-          ResultSetMetadata metadata = iterator.getMetadata();
+          metadata = iterator.getMetadata();
           if (metadata.hasTransaction()) {
             listener.onTransactionMetadata(
                 metadata.getTransaction(), iterator.isWithBeginTransaction());
@@ -143,6 +144,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     @Nullable
     public ResultSetStats getStats() {
       return statistics;
+    }
+
+    @Override
+    public ResultSetMetadata getMetadata() {
+      checkState(metadata != null, "next() call required");
+      return metadata;
     }
 
     @Override
