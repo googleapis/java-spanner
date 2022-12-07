@@ -34,6 +34,7 @@ import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
@@ -66,7 +67,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /** Implementation of {@link ResultSet}. */
@@ -562,9 +562,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case TIMESTAMP:
         case DATE:
         case STRUCT:
-          return listValue.getValuesList().stream()
-              .map(input -> decodeValue(elementType, input))
-              .collect(Collectors.toList());
+          return Lists.transform(
+              listValue.getValuesList(), input -> decodeValue(elementType, input));
         default:
           throw new AssertionError("Unhandled type code: " + elementType.getCode());
       }
