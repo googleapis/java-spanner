@@ -873,7 +873,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         long delay = aborted.getRetryDelayInMillis();
         try {
           if (delay > 0L) {
-            Thread.sleep(delay);
+            // Never sleep for more than 500 milliseconds after an aborted transaction.
+            Thread.sleep(Math.max(500L, delay));
           }
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();

@@ -1326,6 +1326,8 @@ class ConnectionImpl implements Connection {
 
   @VisibleForTesting
   UnitOfWork createNewUnitOfWork() {
+    boolean convertDmlToMutations = this.convertDmlToMutations;
+    this.convertDmlToMutations = false;
     if (isAutocommit() && !isInTransaction() && !isInBatch()) {
       return SingleUseTransaction.newBuilder()
           .setDdlClient(ddlClient)
