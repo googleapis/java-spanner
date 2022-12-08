@@ -229,7 +229,8 @@ public abstract class Value implements Serializable {
    * @param v Not null Proto message.
    */
   public static Value protoMessage(AbstractMessage v) {
-    Preconditions.checkNotNull(v, "Use protoMessage(ByteArray, Descriptor) for null values.");
+    Preconditions.checkNotNull(
+        v, "Use protoMessage((ByteArray) null, MyProtoClass.getDescriptor()) for null values.");
     return protoMessage(
         ByteArray.copyFrom(v.toByteArray()), v.getDescriptorForType().getFullName());
   }
@@ -238,7 +239,8 @@ public abstract class Value implements Serializable {
    * Return a {@code PROTO} value
    *
    * @param v Serialized Proto Array, which may be null.
-   * @param protoTypFqn Fully qualified name of proto representing the proto definition.
+   * @param protoTypFqn Fully qualified name of proto representing the proto definition. Use static
+   *     method from proto class {@code MyProtoClass.getDescriptor().getFullName()}
    */
   public static Value protoMessage(@Nullable ByteArray v, String protoTypFqn) {
     return new ProtoMessageImpl(v == null, v, protoTypFqn);
@@ -248,8 +250,8 @@ public abstract class Value implements Serializable {
    * Return a {@code PROTO} value
    *
    * @param v Serialized Proto Array, which may be null.
-   * @param descriptor Proto Type Descriptor, use static method {@code
-   *     MESSAGE.getDescriptorForType()}.
+   * @param descriptor Proto Type Descriptor, use static method from proto class {@code
+   *     MyProtoClass.getDescriptor()}.
    */
   public static Value protoMessage(@Nullable ByteArray v, Descriptor descriptor) {
     Preconditions.checkNotNull(descriptor, "descriptor can't be null.");
@@ -262,7 +264,8 @@ public abstract class Value implements Serializable {
    * @param v Proto Enum, which may be null.
    */
   public static Value protoEnum(ProtocolMessageEnum v) {
-    Preconditions.checkNotNull(v, "Use protoEnum(Long, Descriptor) for null values.");
+    Preconditions.checkNotNull(
+        v, "Use protoEnum((Long) null, MyProtoEnum.getDescriptor()) for null values.");
     return protoEnum(v.getNumber(), v.getDescriptorForType().getFullName());
   }
 
@@ -270,7 +273,8 @@ public abstract class Value implements Serializable {
    * Return a {@code ENUM} value.
    *
    * @param v Enum non-primitive Integer constant.
-   * @param protoTypFqn Fully qualified name of proto representing the enum definition.
+   * @param protoTypFqn Fully qualified name of proto representing the enum definition. Use static
+   *     method from proto class {@code MyProtoEnum.getDescriptor().getFullName()}
    */
   public static Value protoEnum(@Nullable Long v, String protoTypFqn) {
     return new ProtoEnumImpl(v == null, v, protoTypFqn);
@@ -280,8 +284,8 @@ public abstract class Value implements Serializable {
    * Return a {@code ENUM} value.
    *
    * @param v Enum non-primitive Integer constant.
-   * @param enumDescriptor Enum Type Descriptor, use static method {@code
-   *     ENUM.getDescriptorForType()}.
+   * @param enumDescriptor Enum Type Descriptor. Use static method from proto class {@code *
+   *     MyProtoEnum.getDescriptor()}.
    */
   public static Value protoEnum(@Nullable Long v, EnumDescriptor enumDescriptor) {
     Preconditions.checkNotNull(enumDescriptor, "descriptor can't be null.");
@@ -292,7 +296,8 @@ public abstract class Value implements Serializable {
    * Return a {@code ENUM} value.
    *
    * @param v Enum integer primitive constant.
-   * @param protoTypFqn Fully qualified name of proto representing the enum definition.
+   * @param protoTypFqn Fully qualified name of proto representing the enum definition. Use static
+   *     method from proto class {@code MyProtoEnum.getDescriptor().getFullName()}
    */
   public static Value protoEnum(long v, String protoTypFqn) {
     return new ProtoEnumImpl(false, v, protoTypFqn);
@@ -1295,7 +1300,7 @@ public abstract class Value implements Serializable {
     public <T extends ProtocolMessageEnum> T getProtoEnum(
         Function<Integer, ProtocolMessageEnum> method) {
       Preconditions.checkNotNull(
-          method, "Lambda method shouldn't be null, use forNumber from generated enum class.");
+          method, "Method may not be null. Use 'MyProtoEnum::forNumber' as a parameter value.");
       checkNotNull();
       return (T) method.apply((int) value);
     }
@@ -1490,7 +1495,8 @@ public abstract class Value implements Serializable {
     @Override
     public <T extends AbstractMessage> T getProtoMessage(T m) {
       Preconditions.checkNotNull(
-          m, "Proto Message shouldn't be null, default instance from generated class can be used.");
+          m,
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
       checkNotNull();
       try {
         return (T) m.toBuilder().mergeFrom(value.toByteArray()).build();
@@ -1525,7 +1531,8 @@ public abstract class Value implements Serializable {
     @Override
     public <T extends AbstractMessage> T getProtoMessage(T m) {
       Preconditions.checkNotNull(
-          m, "Proto Message shouldn't be null, default instance from generated class can be used.");
+          m,
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
       checkNotNull();
       try {
         return (T) m.toBuilder().mergeFrom(value.toByteArray()).build();
@@ -1562,7 +1569,7 @@ public abstract class Value implements Serializable {
     public <T extends ProtocolMessageEnum> T getProtoEnum(
         Function<Integer, ProtocolMessageEnum> method) {
       Preconditions.checkNotNull(
-          method, "Lambda method shouldn't be null, use forNumber from generated enum class.");
+          method, "Method may not be null. Use 'MyProtoEnum::forNumber' as a parameter value.");
       checkNotNull();
       return (T) method.apply(value.intValue());
     }
@@ -1834,7 +1841,7 @@ public abstract class Value implements Serializable {
     public <T extends ProtocolMessageEnum> List<T> getProtoEnumArray(
         Function<Integer, ProtocolMessageEnum> method) {
       Preconditions.checkNotNull(
-          method, "Lambda method shouldn't be null, use forNumber from generated enum class.");
+          method, "Method may not be null. Use 'MyProtoEnum::forNumber' as a parameter value.");
       checkNotNull();
 
       List<T> protoEnumList = new ArrayList<>();
@@ -2038,10 +2045,11 @@ public abstract class Value implements Serializable {
     @Override
     public <T extends AbstractMessage> List<T> getProtoMessageArray(T m) {
       Preconditions.checkNotNull(
-          m, "Proto Message shouldn't be null, default instance from generated class can be used.");
+          m,
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
       checkNotNull();
       try {
-        List<T> protoMessagesList = new ArrayList<>();
+        List<T> protoMessagesList = new ArrayList<>(value.size());
         for (ByteArray protoMessageBytes : value) {
           if (protoMessageBytes == null) {
             protoMessagesList.add(null);
@@ -2100,10 +2108,11 @@ public abstract class Value implements Serializable {
     @Override
     public <T extends AbstractMessage> List<T> getProtoMessageArray(T m) {
       Preconditions.checkNotNull(
-          m, "Proto Message shouldn't be null, default instance from generated class can be used.");
+          m,
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
       checkNotNull();
       try {
-        List<T> protoMessagesList = new ArrayList<>();
+        List<T> protoMessagesList = new ArrayList<>(value.size());
         for (ByteArray protoMessageBytes : value) {
           if (protoMessageBytes == null) {
             protoMessagesList.add(null);
@@ -2144,7 +2153,7 @@ public abstract class Value implements Serializable {
     public <T extends ProtocolMessageEnum> List<T> getProtoEnumArray(
         Function<Integer, ProtocolMessageEnum> method) {
       Preconditions.checkNotNull(
-          method, "Lambda method shouldn't be null, use forNumber from generated enum class.");
+          method, "Method may not be null. Use 'MyProtoEnum::forNumber' as a parameter value.");
       checkNotNull();
 
       List<T> protoEnumList = new ArrayList<>();

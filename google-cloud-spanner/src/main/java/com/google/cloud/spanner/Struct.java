@@ -221,8 +221,8 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
-    protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m) {
-      return values.get(columnIndex).getProtoMessage(m);
+    protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
+      return values.get(columnIndex).getProtoMessage(message);
     }
 
     @Override
@@ -303,8 +303,8 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
 
     @Override
     protected <T extends AbstractMessage> List<T> getProtoMessageListInternal(
-        int columnIndex, T m) {
-      return values.get(columnIndex).getProtoMessageArray(m);
+        int columnIndex, T message) {
+      return values.get(columnIndex).getProtoMessageArray(message);
     }
 
     @Override

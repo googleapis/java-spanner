@@ -211,7 +211,7 @@ public class ReplaceableForwardingResultSetTest {
               }
               break;
             default:
-              fail("method with more than 1 parameter is unknown");
+              fail("method with more than 2 parameter is unknown");
           }
         } catch (InvocationTargetException e) {
           if (e.getCause().getClass().equals(expectedException)) {

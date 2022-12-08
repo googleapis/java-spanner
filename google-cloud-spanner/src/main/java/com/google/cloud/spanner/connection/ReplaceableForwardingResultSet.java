@@ -434,15 +434,15 @@ class ReplaceableForwardingResultSet implements ResultSet {
   }
 
   @Override
-  public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T m) {
+  public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T message) {
     checkClosed();
-    return delegate.getProtoMessageList(columnIndex, m);
+    return delegate.getProtoMessageList(columnIndex, message);
   }
 
   @Override
-  public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T m) {
+  public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T message) {
     checkClosed();
-    return delegate.getProtoMessageList(columnName, m);
+    return delegate.getProtoMessageList(columnName, message);
   }
 
   @Override
@@ -472,15 +472,15 @@ class ReplaceableForwardingResultSet implements ResultSet {
   }
 
   @Override
-  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m) {
+  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T message) {
     checkClosed();
-    return delegate.getProtoMessage(columnIndex, m);
+    return delegate.getProtoMessage(columnIndex, message);
   }
 
   @Override
-  public <T extends AbstractMessage> T getProtoMessage(String columnName, T m) {
+  public <T extends AbstractMessage> T getProtoMessage(String columnName, T message) {
     checkClosed();
-    return delegate.getProtoMessage(columnName, m);
+    return delegate.getProtoMessage(columnName, message);
   }
 
   @Override

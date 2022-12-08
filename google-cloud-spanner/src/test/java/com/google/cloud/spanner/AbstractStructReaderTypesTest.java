@@ -99,7 +99,7 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
-    protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m) {
+    protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
       return null;
     }
 
@@ -176,7 +176,7 @@ public class AbstractStructReaderTypesTest {
 
     @Override
     protected <T extends AbstractMessage> List<T> getProtoMessageListInternal(
-        int columnIndex, T m) {
+        int columnIndex, T message) {
       return null;
     }
 

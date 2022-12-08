@@ -63,7 +63,7 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract Date getDateInternal(int columnIndex);
 
-  protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T m) {
+  protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
     throw new UnsupportedOperationException("Not implemented");
   }
 
@@ -72,7 +72,8 @@ public abstract class AbstractStructReader implements StructReader {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  protected <T extends AbstractMessage> List<T> getProtoMessageListInternal(int columnIndex, T m) {
+  protected <T extends AbstractMessage> List<T> getProtoMessageListInternal(
+      int columnIndex, T message) {
     throw new UnsupportedOperationException("Not implemented");
   }
 
@@ -288,16 +289,16 @@ public abstract class AbstractStructReader implements StructReader {
   }
 
   @Override
-  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m) {
+  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T message) {
     checkNonNullOfCodes(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnIndex);
-    return getProtoMessageInternal(columnIndex, m);
+    return getProtoMessageInternal(columnIndex, message);
   }
 
   @Override
-  public <T extends AbstractMessage> T getProtoMessage(String columnName, T m) {
+  public <T extends AbstractMessage> T getProtoMessage(String columnName, T message) {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfCodes(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnName);
-    return getProtoMessageInternal(columnIndex, m);
+    return getProtoMessageInternal(columnIndex, message);
   }
 
   @Override
@@ -468,18 +469,18 @@ public abstract class AbstractStructReader implements StructReader {
   }
 
   @Override
-  public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T m) {
+  public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T message) {
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
     checkArrayElementType(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnIndex);
-    return getProtoMessageListInternal(columnIndex, m);
+    return getProtoMessageListInternal(columnIndex, message);
   }
 
   @Override
-  public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T m) {
+  public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T message) {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
     checkArrayElementType(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnName);
-    return getProtoMessageListInternal(columnIndex, m);
+    return getProtoMessageListInternal(columnIndex, message);
   }
 
   @Override

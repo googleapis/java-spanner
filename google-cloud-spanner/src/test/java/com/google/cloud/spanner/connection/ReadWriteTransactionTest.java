@@ -692,7 +692,7 @@ public class ReadWriteTransactionTest {
                     .set("JSON")
                     .to(Value.json(emptyArrayJson))
                     .set("PROTO")
-                    .to(protoMessageVal)
+                    .to(null, SingerInfo.getDescriptor())
                     .set("PROTOENUM")
                     .to(Genre.POP)
                     .build()));

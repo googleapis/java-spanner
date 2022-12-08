@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -232,7 +233,7 @@ public final class Type implements Serializable {
       Code code,
       @Nullable Type arrayElementType,
       @Nullable ImmutableList<StructField> structFields,
-      @Nullable String protoTypeFqn) {
+      @Nonnull String protoTypeFqn) {
     this(code, arrayElementType, structFields);
     this.protoTypeFqn = protoTypeFqn;
   }

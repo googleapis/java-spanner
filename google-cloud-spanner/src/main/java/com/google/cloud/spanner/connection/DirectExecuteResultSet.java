@@ -429,15 +429,15 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
-  public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T m) {
+  public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T message) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
-    return delegate.getProtoMessageList(columnIndex, m);
+    return delegate.getProtoMessageList(columnIndex, message);
   }
 
   @Override
-  public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T m) {
+  public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T message) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
-    return delegate.getProtoMessageList(columnName, m);
+    return delegate.getProtoMessageList(columnName, message);
   }
 
   @Override
@@ -481,15 +481,15 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
-  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m) {
+  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T message) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
-    return delegate.getProtoMessage(columnIndex, m);
+    return delegate.getProtoMessage(columnIndex, message);
   }
 
   @Override
-  public <T extends AbstractMessage> T getProtoMessage(String columnName, T m) {
+  public <T extends AbstractMessage> T getProtoMessage(String columnName, T message) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
-    return delegate.getProtoMessage(columnName, m);
+    return delegate.getProtoMessage(columnName, message);
   }
 
   @Override

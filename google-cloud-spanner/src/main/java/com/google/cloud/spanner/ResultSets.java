@@ -304,13 +304,13 @@ public final class ResultSets {
     }
 
     @Override
-    public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m) {
-      return getCurrentRowAsStruct().getProtoMessage(columnIndex, m);
+    public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T message) {
+      return getCurrentRowAsStruct().getProtoMessage(columnIndex, message);
     }
 
     @Override
-    public <T extends AbstractMessage> T getProtoMessage(String columnName, T m) {
-      return getCurrentRowAsStruct().getProtoMessage(columnName, m);
+    public <T extends AbstractMessage> T getProtoMessage(String columnName, T message) {
+      return getCurrentRowAsStruct().getProtoMessage(columnName, message);
     }
 
     @Override
@@ -466,13 +466,13 @@ public final class ResultSets {
     }
 
     @Override
-    public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T m) {
-      return getCurrentRowAsStruct().getProtoMessageList(columnIndex, m);
+    public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T message) {
+      return getCurrentRowAsStruct().getProtoMessageList(columnIndex, message);
     }
 
     @Override
-    public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T m) {
-      return getCurrentRowAsStruct().getProtoMessageList(columnName, m);
+    public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T message) {
+      return getCurrentRowAsStruct().getProtoMessageList(columnName, message);
     }
 
     @Override

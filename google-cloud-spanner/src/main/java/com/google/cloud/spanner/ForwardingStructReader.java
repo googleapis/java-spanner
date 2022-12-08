@@ -374,15 +374,15 @@ public class ForwardingStructReader implements StructReader {
   }
 
   @Override
-  public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T m) {
+  public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T message) {
     checkValidState();
-    return delegate.get().getProtoMessageList(columnIndex, m);
+    return delegate.get().getProtoMessageList(columnIndex, message);
   }
 
   @Override
-  public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T m) {
+  public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T message) {
     checkValidState();
-    return delegate.get().getProtoMessageList(columnName, m);
+    return delegate.get().getProtoMessageList(columnName, message);
   }
 
   @Override
@@ -412,15 +412,15 @@ public class ForwardingStructReader implements StructReader {
   }
 
   @Override
-  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T m) {
+  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T message) {
     checkValidState();
-    return delegate.get().getProtoMessage(columnIndex, m);
+    return delegate.get().getProtoMessage(columnIndex, message);
   }
 
   @Override
-  public <T extends AbstractMessage> T getProtoMessage(String columnName, T m) {
+  public <T extends AbstractMessage> T getProtoMessage(String columnName, T message) {
     checkValidState();
-    return delegate.get().getProtoMessage(columnName, m);
+    return delegate.get().getProtoMessage(columnName, message);
   }
 
   @Override
