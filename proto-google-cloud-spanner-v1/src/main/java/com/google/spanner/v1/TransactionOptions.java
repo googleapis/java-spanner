@@ -45,7 +45,8 @@ package com.google.spanner.v1;
  *      need to be committed.
  *      Queries on change streams must be performed with the snapshot read-only
  *      transaction mode, specifying a strong read. Please see
- *      [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong] for more details.
+ *      [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong]
+ *      for more details.
  *   3. Partitioned DML. This type of transaction is used to execute
  *      a single Partitioned DML statement. Partitioned DML partitions
  *      the key space and runs the DML statement over each partition
@@ -151,7 +152,8 @@ package com.google.spanner.v1;
  * timestamp.
  * Queries on change streams (see below for more details) must also specify
  * the strong read timestamp bound.
- * See [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong].
+ * See
+ * [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong].
  * Exact staleness:
  * These timestamp bounds execute reads at a user-specified
  * timestamp. Reads at a timestamp are guaranteed to see a consistent
@@ -167,7 +169,9 @@ package com.google.spanner.v1;
  * timestamp. As a result, they execute slightly faster than the
  * equivalent boundedly stale concurrency modes. On the other hand,
  * boundedly stale reads usually return fresher results.
- * See [TransactionOptions.ReadOnly.read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.read_timestamp] and
+ * See
+ * [TransactionOptions.ReadOnly.read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.read_timestamp]
+ * and
  * [TransactionOptions.ReadOnly.exact_staleness][google.spanner.v1.TransactionOptions.ReadOnly.exact_staleness].
  * Bounded staleness:
  * Bounded staleness modes allow Cloud Spanner to pick the read timestamp,
@@ -190,7 +194,9 @@ package com.google.spanner.v1;
  * Because the timestamp negotiation requires up-front knowledge of
  * which rows will be read, it can only be used with single-use
  * read-only transactions.
- * See [TransactionOptions.ReadOnly.max_staleness][google.spanner.v1.TransactionOptions.ReadOnly.max_staleness] and
+ * See
+ * [TransactionOptions.ReadOnly.max_staleness][google.spanner.v1.TransactionOptions.ReadOnly.max_staleness]
+ * and
  * [TransactionOptions.ReadOnly.min_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.min_read_timestamp].
  * Old read timestamps and garbage collection:
  * Cloud Spanner continuously garbage collects deleted and overwritten data
@@ -316,7 +322,33 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
   public interface ReadWriteOrBuilder
       extends
       // @@protoc_insertion_point(interface_extends:google.spanner.v1.TransactionOptions.ReadWrite)
-      com.google.protobuf.MessageOrBuilder {}
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     *
+     *
+     * <pre>
+     * Read lock mode for the transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;</code>
+     *
+     * @return The enum numeric value on the wire for readLockMode.
+     */
+    int getReadLockModeValue();
+    /**
+     *
+     *
+     * <pre>
+     * Read lock mode for the transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;</code>
+     *
+     * @return The readLockMode.
+     */
+    com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode getReadLockMode();
+  }
   /**
    *
    *
@@ -337,7 +369,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       super(builder);
     }
 
-    private ReadWrite() {}
+    private ReadWrite() {
+      readLockMode_ = 0;
+    }
 
     @java.lang.Override
     @SuppressWarnings({"unused"})
@@ -365,6 +399,214 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
               com.google.spanner.v1.TransactionOptions.ReadWrite.Builder.class);
     }
 
+    /**
+     *
+     *
+     * <pre>
+     * `ReadLockMode` is used to set the read lock mode for read-write
+     * transactions.
+     * </pre>
+     *
+     * Protobuf enum {@code google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode}
+     */
+    public enum ReadLockMode implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       *
+       *
+       * <pre>
+       * Default value.
+       * If the value is not specified, the pessimistic read lock is used.
+       * </pre>
+       *
+       * <code>READ_LOCK_MODE_UNSPECIFIED = 0;</code>
+       */
+      READ_LOCK_MODE_UNSPECIFIED(0),
+      /**
+       *
+       *
+       * <pre>
+       * Pessimistic lock mode.
+       * Read locks are acquired immediately on read.
+       * </pre>
+       *
+       * <code>PESSIMISTIC = 1;</code>
+       */
+      PESSIMISTIC(1),
+      /**
+       *
+       *
+       * <pre>
+       * Optimistic lock mode.
+       * Locks for reads within the transaction are not acquired on read.
+       * Instead the locks are acquired on a commit to validate that
+       * read/queried data has not changed since the transaction started.
+       * </pre>
+       *
+       * <code>OPTIMISTIC = 2;</code>
+       */
+      OPTIMISTIC(2),
+      UNRECOGNIZED(-1),
+      ;
+
+      /**
+       *
+       *
+       * <pre>
+       * Default value.
+       * If the value is not specified, the pessimistic read lock is used.
+       * </pre>
+       *
+       * <code>READ_LOCK_MODE_UNSPECIFIED = 0;</code>
+       */
+      public static final int READ_LOCK_MODE_UNSPECIFIED_VALUE = 0;
+      /**
+       *
+       *
+       * <pre>
+       * Pessimistic lock mode.
+       * Read locks are acquired immediately on read.
+       * </pre>
+       *
+       * <code>PESSIMISTIC = 1;</code>
+       */
+      public static final int PESSIMISTIC_VALUE = 1;
+      /**
+       *
+       *
+       * <pre>
+       * Optimistic lock mode.
+       * Locks for reads within the transaction are not acquired on read.
+       * Instead the locks are acquired on a commit to validate that
+       * read/queried data has not changed since the transaction started.
+       * </pre>
+       *
+       * <code>OPTIMISTIC = 2;</code>
+       */
+      public static final int OPTIMISTIC_VALUE = 2;
+
+      public final int getNumber() {
+        if (this == UNRECOGNIZED) {
+          throw new java.lang.IllegalArgumentException(
+              "Can't get the number of an unknown enum value.");
+        }
+        return value;
+      }
+
+      /**
+       * @param value The numeric wire value of the corresponding enum entry.
+       * @return The enum associated with the given numeric wire value.
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static ReadLockMode valueOf(int value) {
+        return forNumber(value);
+      }
+
+      /**
+       * @param value The numeric wire value of the corresponding enum entry.
+       * @return The enum associated with the given numeric wire value.
+       */
+      public static ReadLockMode forNumber(int value) {
+        switch (value) {
+          case 0:
+            return READ_LOCK_MODE_UNSPECIFIED;
+          case 1:
+            return PESSIMISTIC;
+          case 2:
+            return OPTIMISTIC;
+          default:
+            return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<ReadLockMode> internalGetValueMap() {
+        return internalValueMap;
+      }
+
+      private static final com.google.protobuf.Internal.EnumLiteMap<ReadLockMode> internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<ReadLockMode>() {
+            public ReadLockMode findValueByNumber(int number) {
+              return ReadLockMode.forNumber(number);
+            }
+          };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+        if (this == UNRECOGNIZED) {
+          throw new java.lang.IllegalStateException(
+              "Can't get the descriptor of an unrecognized enum value.");
+        }
+        return getDescriptor().getValues().get(ordinal());
+      }
+
+      public final com.google.protobuf.Descriptors.EnumDescriptor getDescriptorForType() {
+        return getDescriptor();
+      }
+
+      public static final com.google.protobuf.Descriptors.EnumDescriptor getDescriptor() {
+        return com.google.spanner.v1.TransactionOptions.ReadWrite.getDescriptor()
+            .getEnumTypes()
+            .get(0);
+      }
+
+      private static final ReadLockMode[] VALUES = values();
+
+      public static ReadLockMode valueOf(com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException("EnumValueDescriptor is not for this type.");
+        }
+        if (desc.getIndex() == -1) {
+          return UNRECOGNIZED;
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private ReadLockMode(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode)
+    }
+
+    public static final int READ_LOCK_MODE_FIELD_NUMBER = 1;
+    private int readLockMode_;
+    /**
+     *
+     *
+     * <pre>
+     * Read lock mode for the transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;</code>
+     *
+     * @return The enum numeric value on the wire for readLockMode.
+     */
+    @java.lang.Override
+    public int getReadLockModeValue() {
+      return readLockMode_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Read lock mode for the transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;</code>
+     *
+     * @return The readLockMode.
+     */
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode getReadLockMode() {
+      @SuppressWarnings("deprecation")
+      com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode result =
+          com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.valueOf(readLockMode_);
+      return result == null
+          ? com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.UNRECOGNIZED
+          : result;
+    }
+
     private byte memoizedIsInitialized = -1;
 
     @java.lang.Override
@@ -379,6 +621,12 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
+      if (readLockMode_
+          != com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
+              .READ_LOCK_MODE_UNSPECIFIED
+              .getNumber()) {
+        output.writeEnum(1, readLockMode_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -388,6 +636,12 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       if (size != -1) return size;
 
       size = 0;
+      if (readLockMode_
+          != com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
+              .READ_LOCK_MODE_UNSPECIFIED
+              .getNumber()) {
+        size += com.google.protobuf.CodedOutputStream.computeEnumSize(1, readLockMode_);
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -404,6 +658,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       com.google.spanner.v1.TransactionOptions.ReadWrite other =
           (com.google.spanner.v1.TransactionOptions.ReadWrite) obj;
 
+      if (readLockMode_ != other.readLockMode_) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -415,6 +670,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + READ_LOCK_MODE_FIELD_NUMBER;
+      hash = (53 * hash) + readLockMode_;
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -556,6 +813,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        readLockMode_ = 0;
+
         return this;
       }
 
@@ -583,6 +842,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       public com.google.spanner.v1.TransactionOptions.ReadWrite buildPartial() {
         com.google.spanner.v1.TransactionOptions.ReadWrite result =
             new com.google.spanner.v1.TransactionOptions.ReadWrite(this);
+        result.readLockMode_ = readLockMode_;
         onBuilt();
         return result;
       }
@@ -635,6 +895,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       public Builder mergeFrom(com.google.spanner.v1.TransactionOptions.ReadWrite other) {
         if (other == com.google.spanner.v1.TransactionOptions.ReadWrite.getDefaultInstance())
           return this;
+        if (other.readLockMode_ != 0) {
+          setReadLockModeValue(other.getReadLockModeValue());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -661,6 +924,12 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
               case 0:
                 done = true;
                 break;
+              case 8:
+                {
+                  readLockMode_ = input.readEnum();
+
+                  break;
+                } // case 8
               default:
                 {
                   if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -675,6 +944,105 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         } finally {
           onChanged();
         } // finally
+        return this;
+      }
+
+      private int readLockMode_ = 0;
+      /**
+       *
+       *
+       * <pre>
+       * Read lock mode for the transaction.
+       * </pre>
+       *
+       * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;
+       * </code>
+       *
+       * @return The enum numeric value on the wire for readLockMode.
+       */
+      @java.lang.Override
+      public int getReadLockModeValue() {
+        return readLockMode_;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Read lock mode for the transaction.
+       * </pre>
+       *
+       * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;
+       * </code>
+       *
+       * @param value The enum numeric value on the wire for readLockMode to set.
+       * @return This builder for chaining.
+       */
+      public Builder setReadLockModeValue(int value) {
+
+        readLockMode_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Read lock mode for the transaction.
+       * </pre>
+       *
+       * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;
+       * </code>
+       *
+       * @return The readLockMode.
+       */
+      @java.lang.Override
+      public com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode getReadLockMode() {
+        @SuppressWarnings("deprecation")
+        com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode result =
+            com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.valueOf(readLockMode_);
+        return result == null
+            ? com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.UNRECOGNIZED
+            : result;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Read lock mode for the transaction.
+       * </pre>
+       *
+       * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;
+       * </code>
+       *
+       * @param value The readLockMode to set.
+       * @return This builder for chaining.
+       */
+      public Builder setReadLockMode(
+          com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+
+        readLockMode_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Read lock mode for the transaction.
+       * </pre>
+       *
+       * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;
+       * </code>
+       *
+       * @return This builder for chaining.
+       */
+      public Builder clearReadLockMode() {
+
+        readLockMode_ = 0;
+        onChanged();
         return this;
       }
 
@@ -1446,7 +1814,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * If true, the Cloud Spanner-selected read timestamp is included in
-     * the [Transaction][google.spanner.v1.Transaction] message that describes the transaction.
+     * the [Transaction][google.spanner.v1.Transaction] message that describes
+     * the transaction.
      * </pre>
      *
      * <code>bool return_read_timestamp = 6;</code>
@@ -1908,7 +2277,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * If true, the Cloud Spanner-selected read timestamp is included in
-     * the [Transaction][google.spanner.v1.Transaction] message that describes the transaction.
+     * the [Transaction][google.spanner.v1.Transaction] message that describes
+     * the transaction.
      * </pre>
      *
      * <code>bool return_read_timestamp = 6;</code>
@@ -3672,7 +4042,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <pre>
        * If true, the Cloud Spanner-selected read timestamp is included in
-       * the [Transaction][google.spanner.v1.Transaction] message that describes the transaction.
+       * the [Transaction][google.spanner.v1.Transaction] message that describes
+       * the transaction.
        * </pre>
        *
        * <code>bool return_read_timestamp = 6;</code>
@@ -3688,7 +4059,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <pre>
        * If true, the Cloud Spanner-selected read timestamp is included in
-       * the [Transaction][google.spanner.v1.Transaction] message that describes the transaction.
+       * the [Transaction][google.spanner.v1.Transaction] message that describes
+       * the transaction.
        * </pre>
        *
        * <code>bool return_read_timestamp = 6;</code>
@@ -3707,7 +4079,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <pre>
        * If true, the Cloud Spanner-selected read timestamp is included in
-       * the [Transaction][google.spanner.v1.Transaction] message that describes the transaction.
+       * the [Transaction][google.spanner.v1.Transaction] message that describes
+       * the transaction.
        * </pre>
        *
        * <code>bool return_read_timestamp = 6;</code>
@@ -4246,7 +4619,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *      need to be committed.
    *      Queries on change streams must be performed with the snapshot read-only
    *      transaction mode, specifying a strong read. Please see
-   *      [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong] for more details.
+   *      [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong]
+   *      for more details.
    *   3. Partitioned DML. This type of transaction is used to execute
    *      a single Partitioned DML statement. Partitioned DML partitions
    *      the key space and runs the DML statement over each partition
@@ -4352,7 +4726,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    * timestamp.
    * Queries on change streams (see below for more details) must also specify
    * the strong read timestamp bound.
-   * See [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong].
+   * See
+   * [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong].
    * Exact staleness:
    * These timestamp bounds execute reads at a user-specified
    * timestamp. Reads at a timestamp are guaranteed to see a consistent
@@ -4368,7 +4743,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    * timestamp. As a result, they execute slightly faster than the
    * equivalent boundedly stale concurrency modes. On the other hand,
    * boundedly stale reads usually return fresher results.
-   * See [TransactionOptions.ReadOnly.read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.read_timestamp] and
+   * See
+   * [TransactionOptions.ReadOnly.read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.read_timestamp]
+   * and
    * [TransactionOptions.ReadOnly.exact_staleness][google.spanner.v1.TransactionOptions.ReadOnly.exact_staleness].
    * Bounded staleness:
    * Bounded staleness modes allow Cloud Spanner to pick the read timestamp,
@@ -4391,7 +4768,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    * Because the timestamp negotiation requires up-front knowledge of
    * which rows will be read, it can only be used with single-use
    * read-only transactions.
-   * See [TransactionOptions.ReadOnly.max_staleness][google.spanner.v1.TransactionOptions.ReadOnly.max_staleness] and
+   * See
+   * [TransactionOptions.ReadOnly.max_staleness][google.spanner.v1.TransactionOptions.ReadOnly.max_staleness]
+   * and
    * [TransactionOptions.ReadOnly.min_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.min_read_timestamp].
    * Old read timestamps and garbage collection:
    * Cloud Spanner continuously garbage collects deleted and overwritten data

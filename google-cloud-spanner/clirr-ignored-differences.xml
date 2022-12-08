@@ -242,4 +242,24 @@
     <className>com/google/cloud/spanner/DatabaseClient</className>
     <method>java.lang.String getDatabaseRole()</method>
   </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/connection/AbstractStatementParser</className>
+    <method>boolean checkReturningClauseInternal(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/ResultSet</className>
+    <method>com.google.spanner.v1.ResultSetMetadata getMetadata()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/TransactionContext</className>
+    <method>com.google.cloud.spanner.ResultSet analyzeUpdateStatement(com.google.cloud.spanner.Statement, com.google.cloud.spanner.ReadContext$QueryAnalyzeMode, com.google.cloud.spanner.Options$UpdateOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.ResultSet analyzeUpdateStatement(com.google.cloud.spanner.Statement, com.google.cloud.spanner.ReadContext$QueryAnalyzeMode, com.google.cloud.spanner.Options$UpdateOption[])</method>
+  </difference>
 </differences>

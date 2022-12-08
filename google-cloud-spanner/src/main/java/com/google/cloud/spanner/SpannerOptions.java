@@ -89,6 +89,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
           "https://www.googleapis.com/auth/spanner.admin",
           "https://www.googleapis.com/auth/spanner.data");
   private static final int MAX_CHANNELS = 256;
+  @VisibleForTesting static final int DEFAULT_CHANNELS = 4;
+  // Set the default number of channels to GRPC_GCP_ENABLED_DEFAULT_CHANNELS when gRPC-GCP extension
+  // is enabled, to make sure there are sufficient channels available to move the sessions to a
+  // different channel if a network connection in a particular channel fails.
+  @VisibleForTesting static final int GRPC_GCP_ENABLED_DEFAULT_CHANNELS = 8;
   private final TransportChannelProvider channelProvider;
 
   @SuppressWarnings("rawtypes")
@@ -669,8 +674,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     private GrpcInterceptorProvider interceptorProvider;
 
-    /** By default, we create 4 channels per {@link SpannerOptions} */
-    private int numChannels = 4;
+    private Integer numChannels;
 
     private String transportChannelExecutorThreadNameFormat = "Cloud-Spanner-TransportChannel-%d";
 
@@ -1056,7 +1060,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /**
      * Sets the compression to use for all gRPC calls. The compressor must be a valid name known in
-     * the {@link CompressorRegistry}.
+     * the {@link CompressorRegistry}. This will enable compression both from the client to the
+     * server and from the server to the client.
      *
      * <p>Supported values are:
      *
@@ -1122,8 +1127,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /** Enables gRPC-GCP extension with the default settings. */
     public Builder enableGrpcGcpExtension() {
-      this.grpcGcpExtensionEnabled = true;
-      return this;
+      return this.enableGrpcGcpExtension(null);
     }
 
     /**
@@ -1166,6 +1170,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
       }
+      if (this.numChannels == null) {
+        this.numChannels =
+            this.grpcGcpExtensionEnabled ? GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
+      }
+
       return new SpannerOptions(this);
     }
   }

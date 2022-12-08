@@ -389,6 +389,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                           MoreObjects.firstNonNull(
                               options.getInterceptorProvider(),
                               SpannerInterceptorProvider.createDefault()))
+                      // This sets the response compressor (Server -> Client).
                       .withEncoding(compressorName))
               .setHeaderProvider(headerProviderWithUserAgent)
               // Attempts direct access to spanner service over gRPC to improve throughput,
@@ -1900,6 +1901,10 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context = GrpcCallContext.createDefault();
     if (options != null) {
       context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
+    }
+    if (compressorName != null) {
+      // This sets the compressor for Client -> Server.
+      context = context.withCallOptions(context.getCallOptions().withCompression(compressorName));
     }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
     if (callCredentialsProvider != null) {

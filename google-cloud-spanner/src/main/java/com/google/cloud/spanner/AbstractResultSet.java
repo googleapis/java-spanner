@@ -72,7 +72,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /** Implementation of {@link ResultSet}. */
@@ -98,6 +97,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   static class GrpcResultSet extends AbstractResultSet<List<Object>> {
     private final GrpcValueIterator iterator;
     private final Listener listener;
+    private ResultSetMetadata metadata;
     private GrpcStruct currRow;
     private SpannerException error;
     private ResultSetStats statistics;
@@ -122,7 +122,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       }
       try {
         if (currRow == null) {
-          ResultSetMetadata metadata = iterator.getMetadata();
+          metadata = iterator.getMetadata();
           if (metadata.hasTransaction()) {
             listener.onTransactionMetadata(
                 metadata.getTransaction(), iterator.isWithBeginTransaction());
@@ -149,6 +149,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     @Nullable
     public ResultSetStats getStats() {
       return statistics;
+    }
+
+    @Override
+    public ResultSetMetadata getMetadata() {
+      checkState(metadata != null, "next() call required");
+      return metadata;
     }
 
     @Override
@@ -553,11 +559,6 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     static Object decodeArrayValue(Type elementType, ListValue listValue) {
       switch (elementType.getCode()) {
-        case BOOL:
-          // Use a view: element conversion is virtually free.
-          return Lists.transform(
-              listValue.getValuesList(),
-              input -> input.getKindCase() == KindCase.NULL_VALUE ? null : input.getBoolValue());
         case INT64:
         case ENUM:
           // For int64/float64 types, use custom containers.  These avoid wrapper object
@@ -565,78 +566,19 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return new Int64Array(listValue);
         case FLOAT64:
           return new Float64Array(listValue);
+        case BOOL:
         case NUMERIC:
-          {
-            // Materialize list: element conversion is expensive and should happen only once.
-            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              list.add(
-                  value.getKindCase() == KindCase.NULL_VALUE
-                      ? null
-                      : new BigDecimal(value.getStringValue()));
-            }
-            return list;
-          }
         case PG_NUMERIC:
         case STRING:
         case JSON:
         case PG_JSONB:
-          return listValue.getValuesList().stream()
-              .map(
-                  input ->
-                      input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue())
-              .collect(Collectors.toList());
         case BYTES:
-        case PROTO:
-          {
-            // Materialize list: element conversion is expensive and should happen only once.
-            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              list.add(
-                  value.getKindCase() == KindCase.NULL_VALUE
-                      ? null
-                      : ByteArray.fromBase64(value.getStringValue()));
-            }
-            return list;
-          }
         case TIMESTAMP:
-          {
-            // Materialize list: element conversion is expensive and should happen only once.
-            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              list.add(
-                  value.getKindCase() == KindCase.NULL_VALUE
-                      ? null
-                      : Timestamp.parseTimestamp(value.getStringValue()));
-            }
-            return list;
-          }
         case DATE:
-          {
-            // Materialize list: element conversion is expensive and should happen only once.
-            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              list.add(
-                  value.getKindCase() == KindCase.NULL_VALUE
-                      ? null
-                      : Date.parseDate(value.getStringValue()));
-            }
-            return list;
-          }
-
         case STRUCT:
-          {
-            ArrayList<Struct> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              if (value.getKindCase() == KindCase.NULL_VALUE) {
-                list.add(null);
-              } else {
-                ListValue structValue = value.getListValue();
-                list.add(decodeStructValue(elementType, structValue));
-              }
-            }
-            return list;
-          }
+        case PROTO:
+          return Lists.transform(
+              listValue.getValuesList(), input -> decodeValue(elementType, input));
         default:
           throw new AssertionError("Unhandled type code: " + elementType.getCode());
       }

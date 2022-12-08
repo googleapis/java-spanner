@@ -60,6 +60,7 @@ public class DirectExecuteResultSetTest {
     List<String> excludedMethods =
         Arrays.asList(
             "getStats",
+            "getMetadata",
             "next",
             "close",
             "ofResultSet",
@@ -79,6 +80,7 @@ public class DirectExecuteResultSetTest {
     List<String> excludedMethods =
         Arrays.asList(
             "getStats",
+            "getMetadata",
             "next",
             "close",
             "getType",
@@ -100,6 +102,7 @@ public class DirectExecuteResultSetTest {
     List<String> excludedMethods =
         Arrays.asList(
             "getStats",
+            "getMetadata",
             "next",
             "close",
             "getType",
