@@ -92,7 +92,7 @@ public class Partition implements Serializable {
     return new Partition(partitionToken, partitionOptions, statement, queryOption);
   }
 
-  ByteString getPartitionToken() {
+  public ByteString getPartitionToken() {
     return partitionToken;
   }
 
