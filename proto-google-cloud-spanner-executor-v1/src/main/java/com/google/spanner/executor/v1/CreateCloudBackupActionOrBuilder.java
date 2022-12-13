@@ -109,8 +109,8 @@ public interface CreateCloudBackupActionOrBuilder extends
 
   /**
    * <pre>
-   * The expiration time of the backup, which must be at least 6 hours and at
-   * most 366 days from the time the request is received.
+   * Output only. The expiration time of the backup, which must be at least 6
+   * hours and at most 366 days from the time the request is received.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp expire_time = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -119,8 +119,8 @@ public interface CreateCloudBackupActionOrBuilder extends
   boolean hasExpireTime();
   /**
    * <pre>
-   * The expiration time of the backup, which must be at least 6 hours and at
-   * most 366 days from the time the request is received.
+   * Output only. The expiration time of the backup, which must be at least 6
+   * hours and at most 366 days from the time the request is received.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp expire_time = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -129,8 +129,8 @@ public interface CreateCloudBackupActionOrBuilder extends
   com.google.protobuf.Timestamp getExpireTime();
   /**
    * <pre>
-   * The expiration time of the backup, which must be at least 6 hours and at
-   * most 366 days from the time the request is received.
+   * Output only. The expiration time of the backup, which must be at least 6
+   * hours and at most 366 days from the time the request is received.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp expire_time = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>

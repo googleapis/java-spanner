@@ -25,7 +25,7 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
  */
 @javax.annotation.Generated(
     value = "by gRPC proto compiler (version 1.49.0)",
-    comments = "Source: google/spanner/executor/v1/executor_service.proto")
+    comments = "Source: google/spanner/executor/v1/cloud_executor.proto")
 @io.grpc.stub.annotations.GrpcGenerated
 public final class SpannerExecutorProxyGrpc {
 
@@ -260,7 +260,7 @@ public final class SpannerExecutorProxyGrpc {
 
     @java.lang.Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return com.google.spanner.executor.v1.ExecutorServiceProto.getDescriptor();
+      return com.google.spanner.executor.v1.CloudExecutorProto.getDescriptor();
     }
 
     @java.lang.Override

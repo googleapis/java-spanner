@@ -22,8 +22,6 @@ package com.google.spanner.executor.v1;
 /**
  * <pre>
  * Concurrency for read-only transactions.
- * (-- api-linter: core::0142::time-field-type=disabled
- *     aip.dev/not-precedent: Used by existing APIs. --)
  * </pre>
  *
  * Protobuf type {@code google.spanner.executor.v1.Concurrency}
@@ -759,8 +757,6 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * Concurrency for read-only transactions.
-   * (-- api-linter: core::0142::time-field-type=disabled
-   *     aip.dev/not-precedent: Used by existing APIs. --)
    * </pre>
    *
    * Protobuf type {@code google.spanner.executor.v1.Concurrency}

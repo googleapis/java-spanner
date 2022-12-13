@@ -563,8 +563,6 @@ private static final long serialVersionUID = 0L;
    * <pre>
    * Stores rows modified by query in single DML or batch DML action.
    * In case of batch DML action, stores 0 as row count of errored DML query.
-   * (-- api-linter: core::0142::time-field-names=disabled
-   *     aip.dev/not-precedent: Not a timestamp field. --)
    * </pre>
    *
    * <code>repeated int64 dml_rows_modified = 9;</code>
@@ -579,8 +577,6 @@ private static final long serialVersionUID = 0L;
    * <pre>
    * Stores rows modified by query in single DML or batch DML action.
    * In case of batch DML action, stores 0 as row count of errored DML query.
-   * (-- api-linter: core::0142::time-field-names=disabled
-   *     aip.dev/not-precedent: Not a timestamp field. --)
    * </pre>
    *
    * <code>repeated int64 dml_rows_modified = 9;</code>
@@ -593,8 +589,6 @@ private static final long serialVersionUID = 0L;
    * <pre>
    * Stores rows modified by query in single DML or batch DML action.
    * In case of batch DML action, stores 0 as row count of errored DML query.
-   * (-- api-linter: core::0142::time-field-names=disabled
-   *     aip.dev/not-precedent: Not a timestamp field. --)
    * </pre>
    *
    * <code>repeated int64 dml_rows_modified = 9;</code>
@@ -2612,8 +2606,6 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * Stores rows modified by query in single DML or batch DML action.
      * In case of batch DML action, stores 0 as row count of errored DML query.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
      * <code>repeated int64 dml_rows_modified = 9;</code>
@@ -2628,8 +2620,6 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * Stores rows modified by query in single DML or batch DML action.
      * In case of batch DML action, stores 0 as row count of errored DML query.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
      * <code>repeated int64 dml_rows_modified = 9;</code>
@@ -2642,8 +2632,6 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * Stores rows modified by query in single DML or batch DML action.
      * In case of batch DML action, stores 0 as row count of errored DML query.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
      * <code>repeated int64 dml_rows_modified = 9;</code>
@@ -2657,8 +2645,6 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * Stores rows modified by query in single DML or batch DML action.
      * In case of batch DML action, stores 0 as row count of errored DML query.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
      * <code>repeated int64 dml_rows_modified = 9;</code>
@@ -2677,8 +2663,6 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * Stores rows modified by query in single DML or batch DML action.
      * In case of batch DML action, stores 0 as row count of errored DML query.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
      * <code>repeated int64 dml_rows_modified = 9;</code>
@@ -2695,8 +2679,6 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * Stores rows modified by query in single DML or batch DML action.
      * In case of batch DML action, stores 0 as row count of errored DML query.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
      * <code>repeated int64 dml_rows_modified = 9;</code>
@@ -2715,8 +2697,6 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * Stores rows modified by query in single DML or batch DML action.
      * In case of batch DML action, stores 0 as row count of errored DML query.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
      * <code>repeated int64 dml_rows_modified = 9;</code>

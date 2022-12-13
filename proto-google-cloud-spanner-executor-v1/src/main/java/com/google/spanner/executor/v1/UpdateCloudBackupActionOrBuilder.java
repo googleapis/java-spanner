@@ -85,7 +85,7 @@ public interface UpdateCloudBackupActionOrBuilder extends
 
   /**
    * <pre>
-   * Updated value of expire_time, this is the only field
+   * Output only. Updated value of expire_time, this is the only field
    * that supported to be updated.
    * </pre>
    *
@@ -95,7 +95,7 @@ public interface UpdateCloudBackupActionOrBuilder extends
   boolean hasExpireTime();
   /**
    * <pre>
-   * Updated value of expire_time, this is the only field
+   * Output only. Updated value of expire_time, this is the only field
    * that supported to be updated.
    * </pre>
    *
@@ -105,7 +105,7 @@ public interface UpdateCloudBackupActionOrBuilder extends
   com.google.protobuf.Timestamp getExpireTime();
   /**
    * <pre>
-   * Updated value of expire_time, this is the only field
+   * Output only. Updated value of expire_time, this is the only field
    * that supported to be updated.
    * </pre>
    *

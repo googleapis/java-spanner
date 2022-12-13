@@ -350,8 +350,8 @@ private static final long serialVersionUID = 0L;
   private com.google.protobuf.Timestamp expireTime_;
   /**
    * <pre>
-   * The expiration time of the backup, which must be at least 6 hours and at
-   * most 366 days from the time the request is received.
+   * Output only. The expiration time of the backup, which must be at least 6
+   * hours and at most 366 days from the time the request is received.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp expire_time = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -363,8 +363,8 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The expiration time of the backup, which must be at least 6 hours and at
-   * most 366 days from the time the request is received.
+   * Output only. The expiration time of the backup, which must be at least 6
+   * hours and at most 366 days from the time the request is received.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp expire_time = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -376,8 +376,8 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The expiration time of the backup, which must be at least 6 hours and at
-   * most 366 days from the time the request is received.
+   * Output only. The expiration time of the backup, which must be at least 6
+   * hours and at most 366 days from the time the request is received.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp expire_time = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -1255,8 +1255,8 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> expireTimeBuilder_;
     /**
      * <pre>
-     * The expiration time of the backup, which must be at least 6 hours and at
-     * most 366 days from the time the request is received.
+     * Output only. The expiration time of the backup, which must be at least 6
+     * hours and at most 366 days from the time the request is received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp expire_time = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -1267,8 +1267,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The expiration time of the backup, which must be at least 6 hours and at
-     * most 366 days from the time the request is received.
+     * Output only. The expiration time of the backup, which must be at least 6
+     * hours and at most 366 days from the time the request is received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp expire_time = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -1283,8 +1283,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The expiration time of the backup, which must be at least 6 hours and at
-     * most 366 days from the time the request is received.
+     * Output only. The expiration time of the backup, which must be at least 6
+     * hours and at most 366 days from the time the request is received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp expire_time = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -1304,8 +1304,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The expiration time of the backup, which must be at least 6 hours and at
-     * most 366 days from the time the request is received.
+     * Output only. The expiration time of the backup, which must be at least 6
+     * hours and at most 366 days from the time the request is received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp expire_time = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -1323,8 +1323,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The expiration time of the backup, which must be at least 6 hours and at
-     * most 366 days from the time the request is received.
+     * Output only. The expiration time of the backup, which must be at least 6
+     * hours and at most 366 days from the time the request is received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp expire_time = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -1346,8 +1346,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The expiration time of the backup, which must be at least 6 hours and at
-     * most 366 days from the time the request is received.
+     * Output only. The expiration time of the backup, which must be at least 6
+     * hours and at most 366 days from the time the request is received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp expire_time = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -1365,8 +1365,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The expiration time of the backup, which must be at least 6 hours and at
-     * most 366 days from the time the request is received.
+     * Output only. The expiration time of the backup, which must be at least 6
+     * hours and at most 366 days from the time the request is received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp expire_time = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -1378,8 +1378,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The expiration time of the backup, which must be at least 6 hours and at
-     * most 366 days from the time the request is received.
+     * Output only. The expiration time of the backup, which must be at least 6
+     * hours and at most 366 days from the time the request is received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp expire_time = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -1394,8 +1394,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The expiration time of the backup, which must be at least 6 hours and at
-     * most 366 days from the time the request is received.
+     * Output only. The expiration time of the backup, which must be at least 6
+     * hours and at most 366 days from the time the request is received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp expire_time = 5 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>

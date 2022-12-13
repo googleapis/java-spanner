@@ -278,7 +278,7 @@ private static final long serialVersionUID = 0L;
   private com.google.protobuf.Timestamp expireTime_;
   /**
    * <pre>
-   * Updated value of expire_time, this is the only field
+   * Output only. Updated value of expire_time, this is the only field
    * that supported to be updated.
    * </pre>
    *
@@ -291,7 +291,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Updated value of expire_time, this is the only field
+   * Output only. Updated value of expire_time, this is the only field
    * that supported to be updated.
    * </pre>
    *
@@ -304,7 +304,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Updated value of expire_time, this is the only field
+   * Output only. Updated value of expire_time, this is the only field
    * that supported to be updated.
    * </pre>
    *
@@ -978,7 +978,7 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> expireTimeBuilder_;
     /**
      * <pre>
-     * Updated value of expire_time, this is the only field
+     * Output only. Updated value of expire_time, this is the only field
      * that supported to be updated.
      * </pre>
      *
@@ -990,7 +990,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Updated value of expire_time, this is the only field
+     * Output only. Updated value of expire_time, this is the only field
      * that supported to be updated.
      * </pre>
      *
@@ -1006,7 +1006,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Updated value of expire_time, this is the only field
+     * Output only. Updated value of expire_time, this is the only field
      * that supported to be updated.
      * </pre>
      *
@@ -1027,7 +1027,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Updated value of expire_time, this is the only field
+     * Output only. Updated value of expire_time, this is the only field
      * that supported to be updated.
      * </pre>
      *
@@ -1046,7 +1046,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Updated value of expire_time, this is the only field
+     * Output only. Updated value of expire_time, this is the only field
      * that supported to be updated.
      * </pre>
      *
@@ -1069,7 +1069,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Updated value of expire_time, this is the only field
+     * Output only. Updated value of expire_time, this is the only field
      * that supported to be updated.
      * </pre>
      *
@@ -1088,7 +1088,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Updated value of expire_time, this is the only field
+     * Output only. Updated value of expire_time, this is the only field
      * that supported to be updated.
      * </pre>
      *
@@ -1101,7 +1101,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Updated value of expire_time, this is the only field
+     * Output only. Updated value of expire_time, this is the only field
      * that supported to be updated.
      * </pre>
      *
@@ -1117,7 +1117,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Updated value of expire_time, this is the only field
+     * Output only. Updated value of expire_time, this is the only field
      * that supported to be updated.
      * </pre>
      *

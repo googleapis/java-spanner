@@ -386,7 +386,7 @@ private static final long serialVersionUID = 0L;
    * Bytes type value, stored in CORD. It's also used for PROTO type value.
    * </pre>
    *
-   * <code>bytes bytes_value = 5 [ctype = CORD];</code>
+   * <code>bytes bytes_value = 5;</code>
    * @return Whether the bytesValue field is set.
    */
   @java.lang.Override
@@ -398,7 +398,7 @@ private static final long serialVersionUID = 0L;
    * Bytes type value, stored in CORD. It's also used for PROTO type value.
    * </pre>
    *
-   * <code>bytes bytes_value = 5 [ctype = CORD];</code>
+   * <code>bytes bytes_value = 5;</code>
    * @return The bytesValue.
    */
   @java.lang.Override
@@ -415,7 +415,7 @@ private static final long serialVersionUID = 0L;
    * String type value, stored in CORD.
    * </pre>
    *
-   * <code>string string_value = 6 [ctype = CORD];</code>
+   * <code>string string_value = 6;</code>
    * @return Whether the stringValue field is set.
    */
   public boolean hasStringValue() {
@@ -426,7 +426,7 @@ private static final long serialVersionUID = 0L;
    * String type value, stored in CORD.
    * </pre>
    *
-   * <code>string string_value = 6 [ctype = CORD];</code>
+   * <code>string string_value = 6;</code>
    * @return The stringValue.
    */
   public java.lang.String getStringValue() {
@@ -451,7 +451,7 @@ private static final long serialVersionUID = 0L;
    * String type value, stored in CORD.
    * </pre>
    *
-   * <code>string string_value = 6 [ctype = CORD];</code>
+   * <code>string string_value = 6;</code>
    * @return The bytes for stringValue.
    */
   public com.google.protobuf.ByteString
@@ -523,8 +523,6 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * Timestamp type value.
-   * (-- api-linter: core::0142::time-field-names=disabled
-   *     aip.dev/not-precedent: Intended to be used as a value. --)
    * </pre>
    *
    * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
@@ -537,8 +535,6 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * Timestamp type value.
-   * (-- api-linter: core::0142::time-field-names=disabled
-   *     aip.dev/not-precedent: Intended to be used as a value. --)
    * </pre>
    *
    * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
@@ -554,8 +550,6 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * Timestamp type value.
-   * (-- api-linter: core::0142::time-field-names=disabled
-   *     aip.dev/not-precedent: Intended to be used as a value. --)
    * </pre>
    *
    * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
@@ -601,8 +595,6 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * If set, holds the sentinel value for the transaction CommitTimestamp.
-   * (-- api-linter: core::0142::time-field-type=disabled
-   *     aip.dev/not-precedent: Not a timestamp field. --)
    * </pre>
    *
    * <code>bool is_commit_timestamp = 10;</code>
@@ -615,8 +607,6 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * If set, holds the sentinel value for the transaction CommitTimestamp.
-   * (-- api-linter: core::0142::time-field-type=disabled
-   *     aip.dev/not-precedent: Not a timestamp field. --)
    * </pre>
    *
    * <code>bool is_commit_timestamp = 10;</code>
@@ -1590,7 +1580,7 @@ private static final long serialVersionUID = 0L;
      * Bytes type value, stored in CORD. It's also used for PROTO type value.
      * </pre>
      *
-     * <code>bytes bytes_value = 5 [ctype = CORD];</code>
+     * <code>bytes bytes_value = 5;</code>
      * @return Whether the bytesValue field is set.
      */
     public boolean hasBytesValue() {
@@ -1601,7 +1591,7 @@ private static final long serialVersionUID = 0L;
      * Bytes type value, stored in CORD. It's also used for PROTO type value.
      * </pre>
      *
-     * <code>bytes bytes_value = 5 [ctype = CORD];</code>
+     * <code>bytes bytes_value = 5;</code>
      * @return The bytesValue.
      */
     public com.google.protobuf.ByteString getBytesValue() {
@@ -1615,7 +1605,7 @@ private static final long serialVersionUID = 0L;
      * Bytes type value, stored in CORD. It's also used for PROTO type value.
      * </pre>
      *
-     * <code>bytes bytes_value = 5 [ctype = CORD];</code>
+     * <code>bytes bytes_value = 5;</code>
      * @param value The bytesValue to set.
      * @return This builder for chaining.
      */
@@ -1633,7 +1623,7 @@ private static final long serialVersionUID = 0L;
      * Bytes type value, stored in CORD. It's also used for PROTO type value.
      * </pre>
      *
-     * <code>bytes bytes_value = 5 [ctype = CORD];</code>
+     * <code>bytes bytes_value = 5;</code>
      * @return This builder for chaining.
      */
     public Builder clearBytesValue() {
@@ -1650,7 +1640,7 @@ private static final long serialVersionUID = 0L;
      * String type value, stored in CORD.
      * </pre>
      *
-     * <code>string string_value = 6 [ctype = CORD];</code>
+     * <code>string string_value = 6;</code>
      * @return Whether the stringValue field is set.
      */
     @java.lang.Override
@@ -1662,7 +1652,7 @@ private static final long serialVersionUID = 0L;
      * String type value, stored in CORD.
      * </pre>
      *
-     * <code>string string_value = 6 [ctype = CORD];</code>
+     * <code>string string_value = 6;</code>
      * @return The stringValue.
      */
     @java.lang.Override
@@ -1688,7 +1678,7 @@ private static final long serialVersionUID = 0L;
      * String type value, stored in CORD.
      * </pre>
      *
-     * <code>string string_value = 6 [ctype = CORD];</code>
+     * <code>string string_value = 6;</code>
      * @return The bytes for stringValue.
      */
     @java.lang.Override
@@ -1715,7 +1705,7 @@ private static final long serialVersionUID = 0L;
      * String type value, stored in CORD.
      * </pre>
      *
-     * <code>string string_value = 6 [ctype = CORD];</code>
+     * <code>string string_value = 6;</code>
      * @param value The stringValue to set.
      * @return This builder for chaining.
      */
@@ -1734,7 +1724,7 @@ private static final long serialVersionUID = 0L;
      * String type value, stored in CORD.
      * </pre>
      *
-     * <code>string string_value = 6 [ctype = CORD];</code>
+     * <code>string string_value = 6;</code>
      * @return This builder for chaining.
      */
     public Builder clearStringValue() {
@@ -1750,7 +1740,7 @@ private static final long serialVersionUID = 0L;
      * String type value, stored in CORD.
      * </pre>
      *
-     * <code>string string_value = 6 [ctype = CORD];</code>
+     * <code>string string_value = 6;</code>
      * @param value The bytes for stringValue to set.
      * @return This builder for chaining.
      */
@@ -1958,8 +1948,6 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Timestamp type value.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Intended to be used as a value. --)
      * </pre>
      *
      * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
@@ -1972,8 +1960,6 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Timestamp type value.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Intended to be used as a value. --)
      * </pre>
      *
      * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
@@ -1996,8 +1982,6 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Timestamp type value.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Intended to be used as a value. --)
      * </pre>
      *
      * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
@@ -2018,8 +2002,6 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Timestamp type value.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Intended to be used as a value. --)
      * </pre>
      *
      * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
@@ -2038,8 +2020,6 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Timestamp type value.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Intended to be used as a value. --)
      * </pre>
      *
      * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
@@ -2067,8 +2047,6 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Timestamp type value.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Intended to be used as a value. --)
      * </pre>
      *
      * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
@@ -2092,8 +2070,6 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Timestamp type value.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Intended to be used as a value. --)
      * </pre>
      *
      * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
@@ -2104,8 +2080,6 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Timestamp type value.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Intended to be used as a value. --)
      * </pre>
      *
      * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
@@ -2124,8 +2098,6 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Timestamp type value.
-     * (-- api-linter: core::0142::time-field-names=disabled
-     *     aip.dev/not-precedent: Intended to be used as a value. --)
      * </pre>
      *
      * <code>.google.protobuf.Timestamp timestamp_value = 8;</code>
@@ -2209,8 +2181,6 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * If set, holds the sentinel value for the transaction CommitTimestamp.
-     * (-- api-linter: core::0142::time-field-type=disabled
-     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
      * <code>bool is_commit_timestamp = 10;</code>
@@ -2222,8 +2192,6 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * If set, holds the sentinel value for the transaction CommitTimestamp.
-     * (-- api-linter: core::0142::time-field-type=disabled
-     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
      * <code>bool is_commit_timestamp = 10;</code>
@@ -2238,8 +2206,6 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * If set, holds the sentinel value for the transaction CommitTimestamp.
-     * (-- api-linter: core::0142::time-field-type=disabled
-     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
      * <code>bool is_commit_timestamp = 10;</code>
@@ -2255,8 +2221,6 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * If set, holds the sentinel value for the transaction CommitTimestamp.
-     * (-- api-linter: core::0142::time-field-type=disabled
-     *     aip.dev/not-precedent: Not a timestamp field. --)
      * </pre>
      *
      * <code>bool is_commit_timestamp = 10;</code>
