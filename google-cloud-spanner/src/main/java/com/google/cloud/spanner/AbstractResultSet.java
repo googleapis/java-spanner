@@ -613,7 +613,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
-    public <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
+    protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
       Preconditions.checkNotNull(
           message,
           "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");

@@ -129,7 +129,7 @@ public final class Type implements Serializable {
    * @param protoTypeFqn Proto full name
    */
   public static Type proto(String protoTypeFqn) {
-    return new Type(Code.PROTO, null, null, protoTypeFqn);
+    return new Type(Code.PROTO, protoTypeFqn);
   }
 
   /**
@@ -138,7 +138,7 @@ public final class Type implements Serializable {
    * @param protoTypeFqn Proto ENUM full name
    */
   public static Type protoEnum(String protoTypeFqn) {
-    return new Type(Code.ENUM, null, null, protoTypeFqn);
+    return new Type(Code.ENUM, protoTypeFqn);
   }
 
   /** Returns the descriptor for the {@code BYTES} type: a variable-length byte string. */
@@ -229,12 +229,8 @@ public final class Type implements Serializable {
     this.structFields = structFields;
   }
 
-  private Type(
-      Code code,
-      @Nullable Type arrayElementType,
-      @Nullable ImmutableList<StructField> structFields,
-      @Nonnull String protoTypeFqn) {
-    this(code, arrayElementType, structFields);
+  private Type(Code code, @Nonnull String protoTypeFqn) {
+    this(code, null, null);
     this.protoTypeFqn = protoTypeFqn;
   }
 

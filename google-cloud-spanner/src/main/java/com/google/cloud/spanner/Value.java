@@ -224,7 +224,7 @@ public abstract class Value implements Serializable {
   }
 
   /**
-   * Return a {@code PROTO} value.
+   * Return a {@code PROTO} value for not null proto messages.
    *
    * @param v Not null Proto message.
    */
@@ -259,7 +259,7 @@ public abstract class Value implements Serializable {
   }
 
   /**
-   * Return a {@code ENUM} value.
+   * Return a {@code ENUM} value for not null proto messages.
    *
    * @param v Proto Enum, which may be null.
    */
