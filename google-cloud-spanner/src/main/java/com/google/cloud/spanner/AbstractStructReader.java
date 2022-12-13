@@ -583,7 +583,7 @@ public abstract class AbstractStructReader implements StructReader {
     Type arrayElementType = getColumnType(columnIndex).getArrayElementType();
     checkState(
         expectedCodes.contains(arrayElementType.getCode()),
-        "Array element for column %s is not of correct type code: expected one of [%s] but was %s",
+        "Array element for Column %s is not of correct type code: expected one of [%s] but was %s",
         columnNameForError,
         expectedCodes,
         Type.array(arrayElementType));
