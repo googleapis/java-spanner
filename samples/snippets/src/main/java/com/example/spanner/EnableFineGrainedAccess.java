@@ -24,7 +24,6 @@ import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.collect.ImmutableList;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,9 +79,7 @@ public class EnableFineGrainedAccess {
                   Condition.newBuilder()
                       .setDescription(title)
                       .setExpression(
-                          String.format(
-                              "resource.type == \"spanner.googleapis.com/DatabaseRole\" && resource.name.endsWith(\"/databaseRoles/%s\")",
-                              role))
+                          String.format("resource.name.endsWith(\"/databaseRoles/%s\")", role))
                       .setTitle(title)
                       .build())
               .setMembers(members)
