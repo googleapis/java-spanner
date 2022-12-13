@@ -92,39 +92,39 @@ public class Partition implements Serializable {
     return new Partition(partitionToken, partitionOptions, statement, queryOption);
   }
 
-  ByteString getPartitionToken() {
+  public ByteString getPartitionToken() {
     return partitionToken;
   }
 
-  String getTable() {
+  public String getTable() {
     return table;
   }
 
-  KeySet getKeys() {
+  public KeySet getKeys() {
     return keys;
   }
 
-  Iterable<String> getColumns() {
+  public Iterable<String> getColumns() {
     return columns;
   }
 
-  String getIndex() {
+  public String getIndex() {
     return index;
   }
 
-  Options getReadOptions() {
+  public Options getReadOptions() {
     return readOptions;
   }
 
-  Statement getStatement() {
+  public Statement getStatement() {
     return statement;
   }
 
-  Options getQueryOptions() {
+  public Options getQueryOptions() {
     return queryOptions;
   }
 
-  PartitionOptions getPartitionOptions() {
+  public PartitionOptions getPartitionOptions() {
     return partitionOptions;
   }
 
