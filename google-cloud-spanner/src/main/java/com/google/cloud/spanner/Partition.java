@@ -97,35 +97,35 @@ public class Partition implements Serializable {
     return partitionToken;
   }
 
-  public String getTable() {
+  String getTable() {
     return table;
   }
 
-  public KeySet getKeys() {
+  KeySet getKeys() {
     return keys;
   }
 
-  public Iterable<String> getColumns() {
-    return ImmutableList.copyOf(columns);
+  Iterable<String> getColumns() {
+    return columns;
   }
 
-  public String getIndex() {
+  String getIndex() {
     return index;
   }
 
-  public Options getReadOptions() {
+  Options getReadOptions() {
     return readOptions;
   }
 
-  public Statement getStatement() {
+  Statement getStatement() {
     return statement;
   }
 
-  public Options getQueryOptions() {
+  Options getQueryOptions() {
     return queryOptions;
   }
 
-  public PartitionOptions getPartitionOptions() {
+  PartitionOptions getPartitionOptions() {
     return partitionOptions;
   }
 
