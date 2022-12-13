@@ -16,9 +16,9 @@
 
 package com.google.cloud.spanner;
 
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -106,7 +106,7 @@ public class Partition implements Serializable {
   }
 
   public Iterable<String> getColumns() {
-    return Collections.unmodifiableList(columns);
+    return ImmutableList.copyOf(columns);
   }
 
   public String getIndex() {
