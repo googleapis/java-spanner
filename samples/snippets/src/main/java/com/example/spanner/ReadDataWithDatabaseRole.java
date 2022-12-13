@@ -32,7 +32,7 @@ public class ReadDataWithDatabaseRole {
     String projectId = "my-project";
     String instanceId = "my-instance";
     String databaseId = "my-database";
-    String role = "new-parent";
+    String role = "my-role";
     readDataWithDatabaseRole(projectId, instanceId, databaseId, role);
   }
 
@@ -51,7 +51,7 @@ public class ReadDataWithDatabaseRole {
               .singleUse()
               .read(
                   "Singers",
-                  KeySet.all(), // Read all rows in a table.
+                  KeySet.all(),
                   Arrays.asList("SingerId", "FirstName", "LastName"));
       while (resultSet.next()) {
         System.out.printf("SingerId: %d\n", resultSet.getLong(0));

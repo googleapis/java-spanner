@@ -23,6 +23,8 @@ import com.google.cloud.Policy;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.common.collect.ImmutableList;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,8 +36,8 @@ public class EnableFineGrainedAccess {
     String instanceId = "my-instance";
     String databaseId = "my-database";
     String iamMember = "user:alice@example.com";
-    String role = "new-parent";
-    String title = "my condition title";
+    String role = "my-role";
+    String title = "my-condition-title";
     enableFineGrainedAccess(projectId, instanceId, databaseId, iamMember, title, role);
   }
 
@@ -47,44 +49,50 @@ public class EnableFineGrainedAccess {
       String title,
       String role) {
     try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
+                 SpannerOptions.newBuilder()
+                         .setProjectId(projectId)
+                         .build()
+                         .getService()) {
       final DatabaseAdminClient adminClient = spanner.getDatabaseAdminClient();
       Policy policy = adminClient.getDatabaseIAMPolicy(instanceId, databaseId, 3);
       int policyVersion = policy.getVersion();
-      /* getDatabaseIAMPolicy returns the IAM policy for the given database
-       *
-       * The policy in the response might use the policy version that you specified, or it might use
-       * a lower policy version. For example, if you specify version 3, but the policy has no
-       * conditional role bindings, the response uses version 1. Valid values are 0, 1, and 3.
-       *
-       */
+      // The policy in the response from getDatabaseIAMPolicy might use the policy version
+      // that you specified, or it might use a lower policy version. For example, if you
+      // specify version 3, but the policy has no conditional role bindings, the response
+      // uses version 1. Valid values are 0, 1, and 3.
       if (policy.getVersion() < 3) {
         // conditional role bindings work with policy version 3
         policyVersion = 3;
       }
+
       List<String> members = new ArrayList<>();
       members.add(iamMember);
-      List<Binding> bindings = new ArrayList<>(policy.getBindingsList());
-
-      bindings.add(
+      Binding binding1 =
           Binding.newBuilder()
               .setRole("roles/spanner.fineGrainedAccessUser")
               .setMembers(members)
-              .build());
+              .build();
 
-      bindings.add(
+      Binding binding2 =
           Binding.newBuilder()
               .setRole("roles/spanner.databaseRoleUser")
               .setCondition(
                   Condition.newBuilder()
                       .setDescription(title)
                       .setExpression(
-                          String.format("resource.name.endsWith(\"/databaseRoles/%s\")", role))
+                          String.format(
+                              "resource.type == \"spanner.googleapis.com/DatabaseRole\" && resource.name.endsWith(\"/databaseRoles/%s\")",
+                              role))
                       .setTitle(title)
                       .build())
               .setMembers(members)
-              .build());
-
+              .build();
+      ImmutableList<Binding> bindings =
+          ImmutableList.<Binding>builder()
+              .addAll(policy.getBindingsList())
+              .add(binding1)
+              .add(binding2)
+              .build();
       Policy policyWithConditions =
           Policy.newBuilder()
               .setVersion(policyVersion)
