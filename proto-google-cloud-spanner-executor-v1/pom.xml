@@ -4,13 +4,13 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.api.grpc</groupId>
   <artifactId>proto-google-cloud-spanner-executor-v1</artifactId>
-  <version>6.31.2</version><!-- {x-version-update:proto-google-cloud-spanner-executor-v1:current} -->
+  <version>6.34.2-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-executor-v1:current} -->
   <name>proto-google-cloud-spanner-executor-v1</name>
   <description>PROTO library for proto-google-cloud-spanner-executor-v1</description>
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.31.2</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.34.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
   <dependencies>
     <dependency>
@@ -45,10 +45,39 @@
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-spanner-admin-database-v1</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-services</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
+    <extensions>
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>1.7.1</version>
+      </extension>
+    </extensions>
     <plugins>
+      <plugin>
+        <groupId>org.xolstice.maven.plugins</groupId>
+        <artifactId>protobuf-maven-plugin</artifactId>
+        <version>0.6.1</version>
+        <configuration>
+          <protocArtifact>com.google.protobuf:protoc:3.21.11:exe:${os.detected.classifier}</protocArtifact>
+          <pluginId>grpc-java</pluginId>
+          <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.51.0:exe:${os.detected.classifier}</pluginArtifact>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>compile-custom</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <?m2e ignore?>
         <groupId>org.codehaus.mojo</groupId>

@@ -25,6 +25,7 @@ import com.google.api.gax.rpc.DeadlineExceededException;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.auth.Credentials;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.NoCredentials;
@@ -51,7 +52,6 @@ import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Partition;
 import com.google.cloud.spanner.PartitionOptions;
-import com.google.cloud.spanner.PartitionTestUtil;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ReplicaInfo;
@@ -142,6 +142,8 @@ import com.google.spanner.executor.v1.StartTransactionAction;
 import com.google.spanner.executor.v1.SpannerAsyncActionRequest;
 import com.google.spanner.executor.v1.SpannerAsyncActionResponse;
 import io.grpc.stub.StreamObserver;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -161,6 +163,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.Duration;
@@ -721,7 +724,7 @@ public class CloudClientExecutor extends CloudExecutor {
       Executors.newCachedThreadPool(
           new ThreadFactoryBuilder().setNameFormat("action-pool-%d").build());
 
-  private synchronized Spanner getClientWithTimeout(long timeoutSeconds) {
+  private synchronized Spanner getClientWithTimeout(long timeoutSeconds) throws IOException {
     if (clientWithTimeout != null) {
       return clientWithTimeout;
     }
@@ -729,7 +732,7 @@ public class CloudClientExecutor extends CloudExecutor {
     return clientWithTimeout;
   }
 
-  private synchronized Spanner getClient() {
+  private synchronized Spanner getClient() throws IOException {
     if (client != null) {
       return client;
     }
@@ -738,9 +741,18 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   // Return the spanner client, create one if not exists.
-  private synchronized Spanner getClient(long timeoutSeconds) {
+  private synchronized Spanner getClient(long timeoutSeconds) throws IOException {
     // Create a cloud spanner client
-    Credentials credentials = NoCredentials.getInstance();
+    Credentials credentials;
+    if (WorkerProxy.key.isEmpty()) {
+      credentials = NoCredentials.getInstance();
+    } else {
+      credentials =
+          GoogleCredentials.fromStream(
+              new ByteArrayInputStream(FileUtils.readFileToByteArray(new File(WorkerProxy.key))),
+              HTTP_TRANSPORT_FACTORY);
+    }
+
     TransportChannelProvider channelProvider =
         CloudUtil.newChannelProviderHelper(WorkerProxy.spannerPort);
 
@@ -791,8 +803,7 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Handle actions. */
   public Status startHandlingRequest(
-      SpannerAsyncActionRequest req,
-      ExecutionFlowContext executionContext) {
+      SpannerAsyncActionRequest req, ExecutionFlowContext executionContext) {
     OutcomeSender outcomeSender = new OutcomeSender(req.getActionId(), executionContext);
 
     if (!req.hasAction()) {
@@ -1809,7 +1820,7 @@ public class CloudClientExecutor extends CloudExecutor {
         batchPartitions.add(
             BatchPartition.newBuilder()
                 .setPartition(marshall(part))
-                .setPartitionToken(PartitionTestUtil.extractPartitionToken(part))
+                .setPartitionToken(part.getPartitionToken())
                 .setTable(request.getTable())
                 .setIndex(request.getIndex())
                 .build());
@@ -1856,7 +1867,7 @@ public class CloudClientExecutor extends CloudExecutor {
         batchPartitions.add(
             BatchPartition.newBuilder()
                 .setPartition(marshall(part))
-                .setPartitionToken(PartitionTestUtil.extractPartitionToken(part))
+                .setPartitionToken(part.getPartitionToken())
                 .build());
       }
 

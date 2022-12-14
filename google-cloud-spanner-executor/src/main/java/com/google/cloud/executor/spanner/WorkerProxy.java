@@ -42,12 +42,14 @@ public class WorkerProxy {
   private static final String OPTION_SPANNER_PORT = "spanner_port";
   private static final String OPTION_PORT = "port";
   private static final String OPTION_CERTIFICATE = "cert";
+  private static final String OPTION_KEY = "key";
   private static final String OPTION_USE_PLAIN_TEXT_CHANNEL = "use_plain_text_channel";
   private static final String OPTION_ENABLE_GRPC_FAULT_INJECTOR = "enable_grpc_fault_injector";
 
   public static int spannerPort = 0;
   public static int port = 0;
   public static String cert = "";
+  public static String key = "";
   public static boolean usePlainTextChannel = false;
   public static boolean enableGrpcFaultInjector = false;
 
@@ -84,6 +86,7 @@ public class WorkerProxy {
           "Certificate need to be assigned in order to start worker proxy.");
     }
     cert = commandLine.getOptionValue(OPTION_CERTIFICATE);
+    key = commandLine.getOptionValue(OPTION_KEY);
 
     usePlainTextChannel = commandLine.hasOption(OPTION_USE_PLAIN_TEXT_CHANNEL);
     enableGrpcFaultInjector = commandLine.hasOption(OPTION_ENABLE_GRPC_FAULT_INJECTOR);
@@ -119,6 +122,7 @@ public class WorkerProxy {
     options.addOption(null, OPTION_PORT, true, "Port to start worker proxy on.");
     options.addOption(
         null, OPTION_CERTIFICATE, true, "Certificate used to connect to Spanner GFE.");
+    options.addOption(null, OPTION_KEY, true, "Service key file used to set authentication.");
     options.addOption(
         null,
         OPTION_USE_PLAIN_TEXT_CHANNEL,

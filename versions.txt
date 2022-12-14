@@ -4,9 +4,9 @@
 proto-google-cloud-spanner-admin-instance-v1:6.34.1:6.34.2-SNAPSHOT
 proto-google-cloud-spanner-v1:6.34.1:6.34.2-SNAPSHOT
 proto-google-cloud-spanner-admin-database-v1:6.34.1:6.34.2-SNAPSHOT
-proto-google-cloud-spanner-executor-v1:6.34.2:6.34.2
+proto-google-cloud-spanner-executor-v1:6.34.1:6.34.2-SNAPSHOT
 grpc-google-cloud-spanner-v1:6.34.1:6.34.2-SNAPSHOT
 grpc-google-cloud-spanner-admin-instance-v1:6.34.1:6.34.2-SNAPSHOT
 grpc-google-cloud-spanner-admin-database-v1:6.34.1:6.34.2-SNAPSHOT
 google-cloud-spanner:6.34.1:6.34.2-SNAPSHOT
-google-cloud-spanner-executor:6.34.2:6.34.2
+google-cloud-spanner-executor:6.34.1:6.34.2-SNAPSHOT

@@ -16,6 +16,8 @@
 
 package com.google.cloud.executor.spanner;
 
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.auth.http.HttpTransportFactory;
 import com.google.cloud.executor.spanner.CloudClientExecutor.ExecutionFlowContext;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
@@ -53,6 +55,9 @@ public abstract class CloudExecutor {
 
   // Project id.
   protected static final String PROJECT_ID = "spanner-cloud-systest";
+
+  // Transport factory.
+  protected static final HttpTransportFactory HTTP_TRANSPORT_FACTORY = NetHttpTransport::new;
 
   // Indicate whether grpc fault injector should be enabled.
   protected boolean enableGrpcFaultInjector;
@@ -417,6 +422,8 @@ public abstract class CloudExecutor {
     switch (e.getErrorCode()) {
       case INVALID_ARGUMENT:
         return Status.fromCode(Status.INVALID_ARGUMENT.getCode()).withDescription(e.getMessage());
+      case PERMISSION_DENIED:
+        return Status.fromCode(Status.PERMISSION_DENIED.getCode()).withDescription(e.getMessage());
       case ABORTED:
         return Status.fromCode(Status.ABORTED.getCode()).withDescription(e.getMessage());
       case ALREADY_EXISTS:

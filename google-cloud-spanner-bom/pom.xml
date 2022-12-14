@@ -58,7 +58,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-spanner-executor</artifactId>
-        <version>6.31.2</version><!-- {x-version-update:google-cloud-spanner-executor:current} -->
+        <version>6.34.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-executor:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.cloud</groupId>
@@ -83,11 +83,6 @@
       </dependency>
       <dependency>
         <groupId>com.google.api.grpc</groupId>
-        <artifactId>grpc-google-cloud-spanner-executor-v1</artifactId>
-        <version>6.31.2</version><!-- {x-version-update:grpc-google-cloud-spanner-executor-v1:current} -->
-      </dependency>
-      <dependency>
-        <groupId>com.google.api.grpc</groupId>
         <artifactId>proto-google-cloud-spanner-admin-instance-v1</artifactId>
         <version>6.34.2-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-admin-instance-v1:current} -->
       </dependency>
@@ -99,7 +94,7 @@
       <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>proto-google-cloud-spanner-executor-v1</artifactId>
-        <version>6.31.2</version><!-- {x-version-update:proto-google-cloud-spanner-executor-v1:current} -->
+        <version>6.34.2-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-executor-v1:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.api.grpc</groupId>
