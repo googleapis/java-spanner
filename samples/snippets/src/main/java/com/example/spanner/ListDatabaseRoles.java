@@ -44,15 +44,6 @@ public class ListDatabaseRoles {
       String databasePath = DatabaseId.of(projectId, instanceId, databaseId).getName();
       System.out.println("List of Database roles");
       for (DatabaseRole role : adminClient.listDatabaseRoles(instanceId, databaseId).iterateAll()) {
-        if (!role.getName().startsWith(databasePath + "/databaseRoles/")) {
-          throw new RuntimeException(
-              "Role +"
-                  + role.getName()
-                  + "does not have prefix ["
-                  + databasePath
-                  + "/databaseRoles/"
-                  + "]");
-        }
         System.out.printf("%s%n", role.getName());
       }
     }
