@@ -23,24 +23,24 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.common.base.Preconditions;
+import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import com.google.spanner.executor.v1.ChangeStreamRecord;
 import com.google.spanner.executor.v1.ChildPartitionsRecord;
-import com.google.spanner.executor.v1.QueryResult;
-import com.google.spanner.v1.StructType;
-import com.google.protobuf.Timestamp;
 import com.google.spanner.executor.v1.ColumnMetadata;
+import com.google.spanner.executor.v1.QueryResult;
 import com.google.spanner.executor.v1.ReadResult;
 import com.google.spanner.executor.v1.SpannerActionOutcome;
-import com.google.spanner.executor.v1.TableMetadata;
 import com.google.spanner.executor.v1.SpannerAsyncActionResponse;
+import com.google.spanner.executor.v1.TableMetadata;
+import com.google.spanner.v1.StructType;
 import io.grpc.Status;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /** Superclass of cloud Java Client implementations for cloud requests. */
@@ -170,8 +170,7 @@ public abstract class CloudExecutor {
     // If change stream record count exceed this value, send change stream records back in batch.
     private static final int MAX_CHANGE_STREAM_RECORDS_PER_BATCH = 2000;
 
-    public OutcomeSender(
-        int actionId, ExecutionFlowContext context) {
+    public OutcomeSender(int actionId, ExecutionFlowContext context) {
       this.actionId = actionId;
       this.context = context;
       this.index = null;
@@ -369,15 +368,17 @@ public abstract class CloudExecutor {
         partialOutcomeBuilder.addAllChangeStreamRecords(changeStreamRecords);
         partitionTokensString += "]\n";
         dataChangeRecordsString += "]\n";
-        LOGGER.log(Level.INFO, String.format(
-            "OutcomeSender with action ID %s for change stream %s and partition token %s is "
-                + "sending data change records with the following transaction id/record sequence "
-                + "combinations: %s and partition tokens: %s",
-            this.changeStreamForQuery,
-            this.partitionTokenForQuery,
-            actionId,
-            dataChangeRecordsString,
-            partitionTokensString));
+        LOGGER.log(
+            Level.INFO,
+            String.format(
+                "OutcomeSender with action ID %s for change stream %s and partition token %s is "
+                    + "sending data change records with the following transaction id/record sequence "
+                    + "combinations: %s and partition tokens: %s",
+                this.changeStreamForQuery,
+                this.partitionTokenForQuery,
+                actionId,
+                dataChangeRecordsString,
+                partitionTokensString));
         partitionTokensString = "";
         dataChangeRecordsString = "";
       }

@@ -48,6 +48,7 @@ import com.google.cloud.spanner.InstanceInfo;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeyRange;
 import com.google.cloud.spanner.KeySet;
+import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Partition;
@@ -68,7 +69,6 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
-import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.base.Function;
@@ -76,6 +76,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.longrunning.Operation;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.util.Timestamps;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.instance.v1.Instance.State;
 import com.google.spanner.executor.v1.AdminAction;
@@ -90,6 +92,7 @@ import com.google.spanner.executor.v1.CloudBackupResponse;
 import com.google.spanner.executor.v1.CloudDatabaseResponse;
 import com.google.spanner.executor.v1.CloudInstanceConfigResponse;
 import com.google.spanner.executor.v1.CloudInstanceResponse;
+import com.google.spanner.executor.v1.Concurrency;
 import com.google.spanner.executor.v1.CopyCloudBackupAction;
 import com.google.spanner.executor.v1.CreateCloudBackupAction;
 import com.google.spanner.executor.v1.CreateCloudDatabaseAction;
@@ -101,6 +104,8 @@ import com.google.spanner.executor.v1.DmlAction;
 import com.google.spanner.executor.v1.DropCloudDatabaseAction;
 import com.google.spanner.executor.v1.ExecuteChangeStreamQuery;
 import com.google.spanner.executor.v1.ExecutePartitionAction;
+import com.google.spanner.executor.v1.FinishTransactionAction;
+import com.google.spanner.executor.v1.FinishTransactionAction.Mode;
 import com.google.spanner.executor.v1.GenerateDbPartitionsForQueryAction;
 import com.google.spanner.executor.v1.GenerateDbPartitionsForReadAction;
 import com.google.spanner.executor.v1.GetCloudBackupAction;
@@ -115,13 +120,20 @@ import com.google.spanner.executor.v1.ListCloudDatabaseOperationsAction;
 import com.google.spanner.executor.v1.ListCloudDatabasesAction;
 import com.google.spanner.executor.v1.ListCloudInstanceConfigsAction;
 import com.google.spanner.executor.v1.ListCloudInstancesAction;
+import com.google.spanner.executor.v1.MutationAction;
 import com.google.spanner.executor.v1.MutationAction.InsertArgs;
 import com.google.spanner.executor.v1.MutationAction.Mod;
 import com.google.spanner.executor.v1.MutationAction.UpdateArgs;
 import com.google.spanner.executor.v1.OperationResponse;
 import com.google.spanner.executor.v1.QueryAction;
+import com.google.spanner.executor.v1.ReadAction;
 import com.google.spanner.executor.v1.RestoreCloudDatabaseAction;
+import com.google.spanner.executor.v1.SpannerAction;
+import com.google.spanner.executor.v1.SpannerActionOutcome;
+import com.google.spanner.executor.v1.SpannerAsyncActionRequest;
+import com.google.spanner.executor.v1.SpannerAsyncActionResponse;
 import com.google.spanner.executor.v1.StartBatchTransactionAction;
+import com.google.spanner.executor.v1.StartTransactionAction;
 import com.google.spanner.executor.v1.UpdateCloudBackupAction;
 import com.google.spanner.executor.v1.UpdateCloudDatabaseDdlAction;
 import com.google.spanner.executor.v1.UpdateCloudInstanceAction;
@@ -129,18 +141,6 @@ import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Status;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.util.Timestamps;
-import com.google.spanner.executor.v1.Concurrency;
-import com.google.spanner.executor.v1.FinishTransactionAction;
-import com.google.spanner.executor.v1.FinishTransactionAction.Mode;
-import com.google.spanner.executor.v1.ReadAction;
-import com.google.spanner.executor.v1.MutationAction;
-import com.google.spanner.executor.v1.SpannerAction;
-import com.google.spanner.executor.v1.SpannerActionOutcome;
-import com.google.spanner.executor.v1.StartTransactionAction;
-import com.google.spanner.executor.v1.SpannerAsyncActionRequest;
-import com.google.spanner.executor.v1.SpannerAsyncActionResponse;
 import io.grpc.stub.StreamObserver;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -158,15 +158,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
-import org.threeten.bp.LocalDate;
 import org.threeten.bp.Duration;
+import org.threeten.bp.LocalDate;
 
 /**
  * Implementation of the SpannerExecutorProxy gRPC service that proxies action request through the
@@ -1097,7 +1097,7 @@ public class CloudClientExecutor extends CloudExecutor {
               .getInstanceAdminClient()
               .listInstances(options.toArray(new Options.ListOption[0]));
       List<com.google.spanner.admin.instance.v1.Instance> instanceList = new ArrayList<>();
-      for (Instance instance : response.getValues()) {
+      for (Instance instance : response.iterateAll()) {
         instanceList.add(instanceToProto(instance));
       }
       SpannerActionOutcome outcome =
@@ -1108,7 +1108,7 @@ public class CloudClientExecutor extends CloudExecutor {
                       .setInstanceResponse(
                           CloudInstanceResponse.newBuilder()
                               .addAllListedInstances(instanceList)
-                              .setNextPageToken(response.getNextPageToken())
+                              .setNextPageToken("")
                               .build()))
               .build();
       return sender.sendOutcome(outcome);
@@ -1140,7 +1140,7 @@ public class CloudClientExecutor extends CloudExecutor {
               .listInstanceConfigs(options.toArray(new Options.ListOption[0]));
       List<com.google.spanner.admin.instance.v1.InstanceConfig> instanceConfigList =
           new ArrayList<>();
-      for (InstanceConfig instanceConfig : response.getValues()) {
+      for (InstanceConfig instanceConfig : response.iterateAll()) {
         instanceConfigList.add(instanceConfigToProto(instanceConfig));
       }
       SpannerActionOutcome outcome =
@@ -1151,7 +1151,7 @@ public class CloudClientExecutor extends CloudExecutor {
                       .setInstanceConfigResponse(
                           CloudInstanceConfigResponse.newBuilder()
                               .addAllListedInstanceConfigs(instanceConfigList)
-                              .setNextPageToken(response.getNextPageToken())
+                              .setNextPageToken("")
                               .build()))
               .build();
       return sender.sendOutcome(outcome);
@@ -1503,7 +1503,7 @@ public class CloudClientExecutor extends CloudExecutor {
                   Options.filter(action.getFilter()),
                   Options.pageToken(action.getPageToken()));
       List<com.google.spanner.admin.database.v1.Backup> backupList = new ArrayList<>();
-      for (Backup backup : response.getValues()) {
+      for (Backup backup : response.iterateAll()) {
         backupList.add(backup.getProto());
       }
       SpannerActionOutcome outcome =
@@ -1514,7 +1514,7 @@ public class CloudClientExecutor extends CloudExecutor {
                       .setBackupResponse(
                           CloudBackupResponse.newBuilder()
                               .addAllListedBackups(backupList)
-                              .setNextPageToken(response.getNextPageToken())
+                              .setNextPageToken("")
                               .build()))
               .build();
       return sender.sendOutcome(outcome);
@@ -1550,8 +1550,8 @@ public class CloudClientExecutor extends CloudExecutor {
                   AdminResult.newBuilder()
                       .setBackupResponse(
                           CloudBackupResponse.newBuilder()
-                              .addAllListedBackupOperations(response.getValues())
-                              .setNextPageToken(response.getNextPageToken())
+                              .addAllListedBackupOperations(response.iterateAll())
+                              .setNextPageToken("")
                               .build()))
               .build();
       return sender.sendOutcome(outcome);
@@ -1578,7 +1578,7 @@ public class CloudClientExecutor extends CloudExecutor {
                   Options.pageSize(action.getPageSize()),
                   Options.pageToken(action.getPageToken()));
       List<com.google.spanner.admin.database.v1.Database> databaseList = new ArrayList<>();
-      for (Database database : response.getValues()) {
+      for (Database database : response.iterateAll()) {
         databaseList.add(database.getProto());
       }
       SpannerActionOutcome outcome =
@@ -1589,7 +1589,7 @@ public class CloudClientExecutor extends CloudExecutor {
                       .setDatabaseResponse(
                           CloudDatabaseResponse.newBuilder()
                               .addAllListedDatabases(databaseList)
-                              .setNextPageToken(response.getNextPageToken())
+                              .setNextPageToken("")
                               .build()))
               .build();
       return sender.sendOutcome(outcome);
@@ -1625,8 +1625,8 @@ public class CloudClientExecutor extends CloudExecutor {
                   AdminResult.newBuilder()
                       .setDatabaseResponse(
                           CloudDatabaseResponse.newBuilder()
-                              .addAllListedDatabaseOperations(response.getValues())
-                              .setNextPageToken(response.getNextPageToken())
+                              .addAllListedDatabaseOperations(response.iterateAll())
+                              .setNextPageToken("")
                               .build()))
               .build();
       return sender.sendOutcome(outcome);

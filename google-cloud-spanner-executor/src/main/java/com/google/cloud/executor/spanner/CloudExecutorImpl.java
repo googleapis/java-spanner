@@ -18,13 +18,13 @@ package com.google.cloud.executor.spanner;
 
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.spanner.executor.v1.SpannerAsyncActionRequest;
+import com.google.spanner.executor.v1.SpannerAsyncActionResponse;
 import com.google.spanner.executor.v1.SpannerExecutorProxyGrpc;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import com.google.spanner.executor.v1.SpannerAsyncActionRequest;
-import com.google.spanner.executor.v1.SpannerAsyncActionResponse;
+import java.util.logging.Logger;
 
 /** Send proxied action requests through Spanner Cloud API. */
 public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorProxyImplBase {
@@ -48,8 +48,7 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
       @Override
       public void onNext(SpannerAsyncActionRequest request) {
         LOGGER.log(Level.INFO, String.format("Receiving request: \n%s", request));
-        Status status =
-            clientExecutor.startHandlingRequest(request, executionContext);
+        Status status = clientExecutor.startHandlingRequest(request, executionContext);
         if (!status.isOk()) {
           LOGGER.log(
               Level.WARNING,

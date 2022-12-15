@@ -21,15 +21,15 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.protobuf.services.HealthStatusManager;
+import io.grpc.protobuf.services.ProtoReflectionService;
 import java.io.IOException;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import io.grpc.protobuf.services.ProtoReflectionService;
 
 /**
  * Worker proxy for Java API. This is the main entry of the Java client proxy on cloud Spanner Java
