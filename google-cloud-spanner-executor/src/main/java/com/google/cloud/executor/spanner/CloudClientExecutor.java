@@ -43,6 +43,7 @@ import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceConfig;
 import com.google.cloud.spanner.InstanceConfigId;
+import com.google.cloud.spanner.InstanceConfigInfo;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.InstanceInfo;
 import com.google.cloud.spanner.Key;
@@ -97,9 +98,11 @@ import com.google.spanner.executor.v1.CopyCloudBackupAction;
 import com.google.spanner.executor.v1.CreateCloudBackupAction;
 import com.google.spanner.executor.v1.CreateCloudDatabaseAction;
 import com.google.spanner.executor.v1.CreateCloudInstanceAction;
+import com.google.spanner.executor.v1.CreateUserInstanceConfigAction;
 import com.google.spanner.executor.v1.DataChangeRecord;
 import com.google.spanner.executor.v1.DeleteCloudBackupAction;
 import com.google.spanner.executor.v1.DeleteCloudInstanceAction;
+import com.google.spanner.executor.v1.DeleteUserInstanceConfigAction;
 import com.google.spanner.executor.v1.DmlAction;
 import com.google.spanner.executor.v1.DropCloudDatabaseAction;
 import com.google.spanner.executor.v1.ExecuteChangeStreamQuery;
@@ -890,9 +893,10 @@ public class CloudClientExecutor extends CloudExecutor {
         return executeExecuteChangeStreamQuery(
             dbPath, action.getExecuteChangeStreamQuery(), outcomeSender);
       } else {
-        return toStatus(
-            SpannerExceptionFactory.newSpannerException(
-                ErrorCode.UNIMPLEMENTED, "Not implemented yet: \n" + action));
+        return outcomeSender.finishWithError(
+            toStatus(
+                SpannerExceptionFactory.newSpannerException(
+                    ErrorCode.UNIMPLEMENTED, "Not implemented yet: \n" + action)));
       }
     } catch (Exception e) {
       LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
@@ -920,6 +924,10 @@ public class CloudClientExecutor extends CloudExecutor {
         return executeGetCloudInstanceConfig(action.getGetCloudInstanceConfig(), outcomeSender);
       } else if (action.hasGetCloudInstance()) {
         return executeGetCloudInstance(action.getGetCloudInstance(), outcomeSender);
+      } else if (action.hasCreateUserInstanceConfig()) {
+        return executeCreateUserInstanceConfig(action.getCreateUserInstanceConfig(), outcomeSender);
+      } else if (action.hasDeleteUserInstanceConfig()) {
+        return executeDeleteUserInstanceConfig(action.getDeleteUserInstanceConfig(), outcomeSender);
       } else if (action.hasCreateCloudDatabase()) {
         return executeCreateCloudDatabase(action.getCreateCloudDatabase(), outcomeSender);
       } else if (action.hasUpdateCloudDatabaseDdl()) {
@@ -955,9 +963,10 @@ public class CloudClientExecutor extends CloudExecutor {
       } else if (action.hasCancelOperation()) {
         return executeCancelOperation(action.getCancelOperation(), outcomeSender);
       } else {
-        return toStatus(
-            SpannerExceptionFactory.newSpannerException(
-                ErrorCode.UNIMPLEMENTED, "Not implemented yet: \n" + action));
+        return outcomeSender.finishWithError(
+            toStatus(
+                SpannerExceptionFactory.newSpannerException(
+                    ErrorCode.UNIMPLEMENTED, "Not implemented yet: \n" + action)));
       }
     } catch (Exception e) {
       LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
@@ -968,7 +977,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
-  /** Execute action that create a cloud instance. */
+  /** Execute action that creates a cloud instance. */
   private Status executeCreateCloudInstance(
       CreateCloudInstanceAction action, OutcomeSender sender) {
     try {
@@ -1009,7 +1018,7 @@ public class CloudClientExecutor extends CloudExecutor {
     return sender.finishWithOK();
   }
 
-  /** Execute action that update a cloud instance. */
+  /** Execute action that updates a cloud instance. */
   private Status executeUpdateCloudInstance(
       UpdateCloudInstanceAction action, OutcomeSender sender) {
     try {
@@ -1077,7 +1086,7 @@ public class CloudClientExecutor extends CloudExecutor {
     return sender.finishWithOK();
   }
 
-  /** Execute action that list cloud instances. */
+  /** Execute action that lists cloud instances. */
   private Status executeListCloudInstances(ListCloudInstancesAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Listing instances:\n%s", action));
@@ -1123,6 +1132,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
+  /** Execute action that lists cloud instance configs. */
   private Status executeListCloudInstanceConfigs(
       ListCloudInstanceConfigsAction action, OutcomeSender sender) {
     LOGGER.log(Level.INFO, String.format("Listing instance configs:\n%s", action));
@@ -1166,6 +1176,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
+  /** Execute action that gets a cloud instance config. */
   private Status executeGetCloudInstanceConfig(
       GetCloudInstanceConfigAction action, OutcomeSender sender) {
     LOGGER.log(Level.INFO, String.format("Getting instance config:\n%s", action));
@@ -1222,6 +1233,54 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
+  /** Execute action that creates a user instance config. */
+  private Status executeCreateUserInstanceConfig(
+      CreateUserInstanceConfigAction action, OutcomeSender sender) {
+    try {
+      LOGGER.log(Level.INFO, String.format("Creating user instance config:\n%s", action));
+      final InstanceConfig baseConfig =
+          getClient().getInstanceAdminClient().getInstanceConfig(action.getBaseConfigId());
+      InstanceConfigInfo instanceConfigInfo =
+          InstanceConfig.newBuilder(
+                  InstanceConfigId.of(action.getProjectId(), action.getUserConfigId()), baseConfig)
+              .setDisplayName(action.getUserConfigId())
+              .addReadOnlyReplicas(
+                  action.getReplicasList().stream()
+                      .map(ReplicaInfo::fromProto)
+                      .collect(Collectors.toList()))
+              .build();
+      getClient().getInstanceAdminClient().createInstanceConfig(instanceConfigInfo).get();
+    } catch (SpannerException e) {
+      return sender.finishWithError(toStatus(e));
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
+      return sender.finishWithError(
+          toStatus(
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+    }
+    return sender.finishWithOK();
+  }
+
+  /** Execute action that deletes a user instance config. */
+  private Status executeDeleteUserInstanceConfig(
+      DeleteUserInstanceConfigAction action, OutcomeSender sender) {
+    try {
+      LOGGER.log(Level.INFO, String.format("Deleting user instance config:\n%s", action));
+      getClient().getInstanceAdminClient().deleteInstanceConfig(action.getUserConfigId());
+    } catch (SpannerException e) {
+      return sender.finishWithError(toStatus(e));
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
+      return sender.finishWithError(
+          toStatus(
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+    }
+    return sender.finishWithOK();
+  }
+
+  /** Execute action that creates a cloud custom encrypted database. */
   private Status executeCreateCloudCustomEncryptedDatabase(
       CreateCloudDatabaseAction action, OutcomeSender sender) {
     try {
@@ -1248,7 +1307,7 @@ public class CloudClientExecutor extends CloudExecutor {
     return sender.finishWithOK();
   }
 
-  /** Execute action that create a cloud database. */
+  /** Execute action that creates a cloud database. */
   private Status executeCreateCloudDatabase(
       CreateCloudDatabaseAction action, OutcomeSender sender) {
     if (action.hasEncryptionConfig()) {
@@ -1283,7 +1342,7 @@ public class CloudClientExecutor extends CloudExecutor {
     return sender.finishWithOK();
   }
 
-  /** Execute action that update a cloud database. */
+  /** Execute action that updates a cloud database. */
   private Status executeUpdateCloudDatabaseDdl(
       UpdateCloudDatabaseDdlAction action, OutcomeSender sender) {
     try {
@@ -1317,7 +1376,7 @@ public class CloudClientExecutor extends CloudExecutor {
     return sender.finishWithOK();
   }
 
-  /** Execute action that update a cloud database. */
+  /** Execute action that updates a cloud database. */
   private Status executeDropCloudDatabase(DropCloudDatabaseAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Dropping database: \n%s", action));
@@ -1337,7 +1396,7 @@ public class CloudClientExecutor extends CloudExecutor {
     return sender.finishWithOK();
   }
 
-  /** Execute action that create a cloud database backup. */
+  /** Execute action that creates a cloud database backup. */
   private Status executeCreateCloudBackup(CreateCloudBackupAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Creating backup: \n%s", action));
@@ -1408,7 +1467,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
-  /** Execute action that get a cloud database backup. */
+  /** Execute action that gets a cloud database backup. */
   private Status executeGetCloudBackup(GetCloudBackupAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Getting backup: \n%s", action));
@@ -1438,7 +1497,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
-  /** Execute action that update a cloud database backup. */
+  /** Execute action that updates a cloud database backup. */
   private Status executeUpdateCloudBackup(UpdateCloudBackupAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Updating backup: \n%s", action));
@@ -1471,7 +1530,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
-  /** Execute action that delete a cloud database backup. */
+  /** Execute action that deletes a cloud database backup. */
   private Status executeDeleteCloudBackup(DeleteCloudBackupAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, "Deleting backup: \n%s", action);
@@ -1490,7 +1549,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
-  /** Execute action that list cloud database backups. */
+  /** Execute action that lists cloud database backups. */
   private Status executeListCloudBackups(ListCloudBackupsAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Listing backup: \n%s", action));
@@ -1529,7 +1588,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
-  /** Execute action that list cloud database backup operations. */
+  /** Execute action that lists cloud database backup operations. */
   private Status executeListCloudBackupOperations(
       ListCloudBackupOperationsAction action, OutcomeSender sender) {
     try {
@@ -1604,7 +1663,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
-  /** Execute action that list cloud database operations. */
+  /** Execute action that lists cloud database operations. */
   private Status executeListCloudDatabaseOperations(
       ListCloudDatabaseOperationsAction action, OutcomeSender sender) {
     try {
@@ -1641,7 +1700,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
-  /** Execute action that restore a cloud database. */
+  /** Execute action that restores a cloud database. */
   private Status executeRestoreCloudDatabase(
       RestoreCloudDatabaseAction action, OutcomeSender sender) {
     try {
@@ -1675,7 +1734,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
-  /** Execute action that get a cloud database. */
+  /** Execute action that gets a cloud database. */
   private Status executeGetCloudDatabase(GetCloudDatabaseAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Getting database: \n%s", action));
@@ -1705,7 +1764,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
-  /** Execute action that get an operation. */
+  /** Execute action that gets an operation. */
   private Status executeGetOperation(GetOperationAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Getting operation: \n%s", action));
@@ -1731,7 +1790,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
-  /** Execute action that cancel an operation. */
+  /** Execute action that cancels an operation. */
   private Status executeCancelOperation(CancelOperationAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Cancelling operation: \n%s", action));
@@ -1749,7 +1808,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
-  /** Execute action that start a batch transaction. */
+  /** Execute action that starts a batch transaction. */
   private Status executeStartBatchTxn(
       StartBatchTransactionAction action,
       BatchClient batchClient,
@@ -1759,7 +1818,7 @@ public class CloudClientExecutor extends CloudExecutor {
     return executionContext.startBatchTxn(action, batchClient, sender);
   }
 
-  /** Execute action that finish a batch transaction. */
+  /** Execute action that finishes a batch transaction. */
   private Status executeCloseBatchTxn(
       CloseBatchTransactionAction action,
       OutcomeSender sender,
@@ -1775,7 +1834,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
-  /** Execute action that generate database partitions for the given read. */
+  /** Execute action that generates database partitions for the given read. */
   private Status executeGenerateDbPartitionsRead(
       GenerateDbPartitionsForReadAction action,
       OutcomeSender sender,
@@ -1842,7 +1901,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
-  /** Execute action that generate database partitions for the given query. */
+  /** Execute action that generates database partitions for the given query. */
   private Status executeGenerateDbPartitionsQuery(
       GenerateDbPartitionsForQueryAction action,
       OutcomeSender sender,
@@ -3375,7 +3434,6 @@ public class CloudClientExecutor extends CloudExecutor {
     com.google.spanner.admin.instance.v1.InstanceConfig.Builder instanceConfigBuilder =
         com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder();
     instanceConfigBuilder
-        .setBaseConfig(instanceConfig.getBaseConfig().getId().getName())
         .setDisplayName(instanceConfig.getDisplayName())
         .setEtag(instanceConfig.getEtag())
         .setName(instanceConfig.getId().getName())
@@ -3420,6 +3478,9 @@ public class CloudClientExecutor extends CloudExecutor {
         throw new IllegalArgumentException("Unknown type:" + instanceConfig.getConfigType());
     }
     instanceConfigBuilder.setConfigType(type);
+    if (instanceConfig.getBaseConfig() != null) {
+      instanceConfigBuilder.setBaseConfig(instanceConfig.getBaseConfig().getId().getName());
+    }
     return instanceConfigBuilder.build();
   }
 }
