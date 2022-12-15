@@ -1244,10 +1244,7 @@ public class CloudClientExecutor extends CloudExecutor {
           InstanceConfig.newBuilder(
                   InstanceConfigId.of(action.getProjectId(), action.getUserConfigId()), baseConfig)
               .setDisplayName(action.getUserConfigId())
-              .addReadOnlyReplicas(
-                  action.getReplicasList().stream()
-                      .map(ReplicaInfo::fromProto)
-                      .collect(Collectors.toList()))
+              .addReadOnlyReplicas(baseConfig.getOptionalReplicas())
               .build();
       getClient().getInstanceAdminClient().createInstanceConfig(instanceConfigInfo).get();
     } catch (SpannerException e) {

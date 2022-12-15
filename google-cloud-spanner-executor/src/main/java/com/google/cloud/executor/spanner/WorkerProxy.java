@@ -86,7 +86,9 @@ public class WorkerProxy {
           "Certificate need to be assigned in order to start worker proxy.");
     }
     cert = commandLine.getOptionValue(OPTION_CERTIFICATE);
-    key = commandLine.getOptionValue(OPTION_KEY);
+    if (commandLine.hasOption(OPTION_KEY)) {
+      key = commandLine.getOptionValue(OPTION_KEY);
+    }
 
     usePlainTextChannel = commandLine.hasOption(OPTION_USE_PLAIN_TEXT_CHANNEL);
     enableGrpcFaultInjector = commandLine.hasOption(OPTION_ENABLE_GRPC_FAULT_INJECTOR);
