@@ -24,8 +24,6 @@ import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.List;
 
 public class EnableFineGrainedAccess {
 
@@ -64,8 +62,10 @@ public class EnableFineGrainedAccess {
         policyVersion = 3;
       }
 
-      List<String> members = new ArrayList<>();
-      members.add(iamMember);
+      ImmutableList<String> members =
+              ImmutableList.<String>builder()
+                      .add(iamMember)
+                      .build();
       Binding binding1 =
           Binding.newBuilder()
               .setRole("roles/spanner.fineGrainedAccessUser")
