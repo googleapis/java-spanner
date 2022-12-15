@@ -62,14 +62,10 @@ public class EnableFineGrainedAccess {
         policyVersion = 3;
       }
 
-      ImmutableList<String> members =
-              ImmutableList.<String>builder()
-                      .add(iamMember)
-                      .build();
       Binding binding1 =
           Binding.newBuilder()
               .setRole("roles/spanner.fineGrainedAccessUser")
-              .setMembers(members)
+              .setMembers(ImmutableList.of(iamMember))
               .build();
 
       Binding binding2 =
@@ -82,7 +78,7 @@ public class EnableFineGrainedAccess {
                           String.format("resource.name.endsWith(\"/databaseRoles/%s\")", role))
                       .setTitle(title)
                       .build())
-              .setMembers(members)
+              .setMembers(ImmutableList.of(iamMember))
               .build();
       ImmutableList<Binding> bindings =
           ImmutableList.<Binding>builder()
