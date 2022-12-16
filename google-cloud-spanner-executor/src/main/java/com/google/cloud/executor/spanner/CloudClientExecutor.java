@@ -1209,8 +1209,7 @@ public class CloudClientExecutor extends CloudExecutor {
   private Status executeGetCloudInstance(GetCloudInstanceAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Retrieving instance:\n%s", action));
-      final InstanceId instanceId = InstanceId.of(action.getProjectId(), action.getInstanceId());
-      Instance instance = getClient().getInstanceAdminClient().getInstance(instanceId.getName());
+      Instance instance = getClient().getInstanceAdminClient().getInstance(action.getInstanceId());
       SpannerActionOutcome outcome =
           SpannerActionOutcome.newBuilder()
               .setStatus(toProto(Status.OK))
@@ -1432,15 +1431,14 @@ public class CloudClientExecutor extends CloudExecutor {
   private Status executeCopyCloudBackup(CopyCloudBackupAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Copying backup: \n%s", action));
-      final String instancePath =
-          InstanceId.of(action.getProjectId(), action.getInstanceId()).getName();
-      final String backupId = action.getBackupId();
-      final String sourceBackup = action.getSourceBackup();
       Backup backupResult =
           getClient()
               .getDatabaseAdminClient()
               .copyBackup(
-                  instancePath, backupId, sourceBackup, Timestamp.fromProto(action.getExpireTime()))
+                  action.getInstanceId(),
+                  action.getBackupId(),
+                  action.getSourceBackup(),
+                  Timestamp.fromProto(action.getExpireTime()))
               .get();
       SpannerActionOutcome outcome =
           SpannerActionOutcome.newBuilder()
@@ -1554,7 +1552,7 @@ public class CloudClientExecutor extends CloudExecutor {
           getClient()
               .getDatabaseAdminClient()
               .listBackups(
-                  InstanceId.of(action.getProjectId(), action.getInstanceId()).getName(),
+                  action.getInstanceId(),
                   Options.pageSize(action.getPageSize()),
                   Options.filter(action.getFilter()),
                   Options.pageToken(action.getPageToken()));
@@ -1595,7 +1593,7 @@ public class CloudClientExecutor extends CloudExecutor {
           getClient()
               .getDatabaseAdminClient()
               .listBackupOperations(
-                  InstanceId.of(action.getProjectId(), action.getInstanceId()).getName(),
+                  action.getInstanceId(),
                   Options.pageSize(action.getPageSize()),
                   Options.filter(action.getFilter()),
                   Options.pageToken(action.getPageToken()));
@@ -1630,7 +1628,7 @@ public class CloudClientExecutor extends CloudExecutor {
           getClient()
               .getDatabaseAdminClient()
               .listDatabases(
-                  InstanceId.of(action.getProjectId(), action.getInstanceId()).getName(),
+                  action.getInstanceId(),
                   Options.pageSize(action.getPageSize()),
                   Options.pageToken(action.getPageToken()));
       List<com.google.spanner.admin.database.v1.Database> databaseList = new ArrayList<>();
@@ -1670,7 +1668,7 @@ public class CloudClientExecutor extends CloudExecutor {
           getClient()
               .getDatabaseAdminClient()
               .listDatabaseOperations(
-                  InstanceId.of(action.getProjectId(), action.getInstanceId()).getName(),
+                  action.getInstanceId(),
                   Options.pageSize(action.getPageSize()),
                   Options.filter(action.getFilter()),
                   Options.pageToken(action.getPageToken()));
