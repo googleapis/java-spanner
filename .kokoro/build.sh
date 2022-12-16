@@ -97,7 +97,7 @@ integration-staging)
       -Dmaven.main.skip=true \
       -Dspanner.gce.config.server_url=https://staging-wrenchworks.sandbox.googleapis.com \
       -Dspanner.testenv.instance=projects/span-cloud-testing/instances/gaurav-test-instance \
-      -Dspanner.gce.config.project_id=span-cloud-testing
+      -Dspanner.gce.config.project_id=span-cloud-testing \
       -fae \
       verify
     RETURN_CODE=$?
