@@ -2814,9 +2814,11 @@ public class CloudClientExecutor extends CloudExecutor {
   private static com.google.cloud.spanner.KeySet keySetProtoToCloudKeySet(
       com.google.spanner.executor.v1.KeySet keySetProto, List<com.google.spanner.v1.Type> typeList)
       throws SpannerException {
+    LOGGER.log(Level.INFO, "STARTTTTTTTT");
     if (keySetProto.getAll()) {
       return com.google.cloud.spanner.KeySet.all();
     }
+    LOGGER.log(Level.INFO, "NOT ALL THINGGGGGGG");
     com.google.cloud.spanner.KeySet.Builder cloudKeySetBuilder =
         com.google.cloud.spanner.KeySet.newBuilder();
     for (int i = 0; i < keySetProto.getPointCount(); ++i) {
@@ -2901,17 +2903,18 @@ public class CloudClientExecutor extends CloudExecutor {
           case BYTES:
             cloudKey.append(toByteArray(part.getBytesValue()));
             break;
-          case NUMERIC:
-            String ascii = part.getStringValue();
-            cloudKey.append(new BigDecimal(ascii));
-            break;
             // Unreachable
           default:
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INVALID_ARGUMENT, "Unsupported key part type: " + type.getCode().name());
         }
       } else if (part.hasStringValue()) {
-        cloudKey.append(part.getStringValue());
+        if (type.getCode() == TypeCode.NUMERIC) {
+          String ascii = part.getStringValue();
+          cloudKey.append(new BigDecimal(ascii));
+        } else {
+          cloudKey.append(part.getStringValue());
+        }
       } else if (part.hasTimestampValue()) {
         cloudKey.append(Timestamp.parseTimestamp(Timestamps.toString(part.getTimestampValue())));
       } else if (part.hasDateDaysValue()) {
