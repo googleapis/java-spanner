@@ -2901,17 +2901,18 @@ public class CloudClientExecutor extends CloudExecutor {
           case BYTES:
             cloudKey.append(toByteArray(part.getBytesValue()));
             break;
-          case NUMERIC:
-            String ascii = part.getStringValue();
-            cloudKey.append(new BigDecimal(ascii));
-            break;
             // Unreachable
           default:
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INVALID_ARGUMENT, "Unsupported key part type: " + type.getCode().name());
         }
       } else if (part.hasStringValue()) {
-        cloudKey.append(part.getStringValue());
+        if (type.getCode() == TypeCode.NUMERIC) {
+          String ascii = part.getStringValue();
+          cloudKey.append(new BigDecimal(ascii));
+        } else {
+          cloudKey.append(part.getStringValue());
+        }
       } else if (part.hasTimestampValue()) {
         cloudKey.append(Timestamp.parseTimestamp(Timestamps.toString(part.getTimestampValue())));
       } else if (part.hasDateDaysValue()) {

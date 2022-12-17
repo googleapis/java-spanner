@@ -67,18 +67,15 @@ public abstract class CloudExecutor {
    */
   public static class Metadata {
 
-    private final Map<String, List<ColumnMetadata>> tableColumnsInOrder;
     private final Map<String, List<ColumnMetadata>> tableKeyColumnsInOrder;
     private final Map<String, Map<String, ColumnMetadata>> tableColumnsByName;
 
     /** Init metadata from list of tableMetadata in startTransaction action. */
     public Metadata(List<TableMetadata> metadata) {
-      tableColumnsInOrder = new HashMap<>();
       tableKeyColumnsInOrder = new HashMap<>();
       tableColumnsByName = new HashMap<>();
       for (TableMetadata table : metadata) {
         String tableName = table.getName();
-        tableColumnsInOrder.put(tableName, table.getColumnList());
         tableKeyColumnsInOrder.put(tableName, table.getKeyColumnList());
         tableColumnsByName.put(tableName, new HashMap<>());
         for (int j = 0; j < table.getColumnCount(); ++j) {
@@ -402,7 +399,6 @@ public abstract class CloudExecutor {
                 .setActionId(actionId)
                 .setOutcome(outcome)
                 .build();
-
         context.onNext(result);
         LOGGER.log(Level.INFO, String.format("Sent result %s actionId %s", outcome, actionId));
       } catch (SpannerException e) {
