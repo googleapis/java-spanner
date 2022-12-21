@@ -2814,11 +2814,9 @@ public class CloudClientExecutor extends CloudExecutor {
   private static com.google.cloud.spanner.KeySet keySetProtoToCloudKeySet(
       com.google.spanner.executor.v1.KeySet keySetProto, List<com.google.spanner.v1.Type> typeList)
       throws SpannerException {
-    LOGGER.log(Level.INFO, "STARTTTTTTTT");
     if (keySetProto.getAll()) {
       return com.google.cloud.spanner.KeySet.all();
     }
-    LOGGER.log(Level.INFO, "NOT ALL THINGGGGGGG");
     com.google.cloud.spanner.KeySet.Builder cloudKeySetBuilder =
         com.google.cloud.spanner.KeySet.newBuilder();
     for (int i = 0; i < keySetProto.getPointCount(); ++i) {
