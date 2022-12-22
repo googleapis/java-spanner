@@ -166,10 +166,7 @@ import javax.annotation.Generated;
  * // - It may require specifying regional endpoints when creating the service client as shown in
  * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * DatabaseAdminSettings databaseAdminSettings =
- *     DatabaseAdminSettings.newBuilder()
- *         .setTransportChannelProvider(
- *             DatabaseAdminSettings.defaultHttpJsonTransportProviderBuilder().build())
- *         .build();
+ *     DatabaseAdminSettings.newHttpJsonBuilder().build();
  * DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create(databaseAdminSettings);
  * }</pre>
  *
