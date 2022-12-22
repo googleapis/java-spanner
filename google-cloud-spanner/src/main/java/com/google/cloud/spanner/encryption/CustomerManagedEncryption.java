@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.encryption;
 
 import com.google.spanner.admin.database.v1.EncryptionConfig;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,14 +31,13 @@ public class CustomerManagedEncryption implements BackupEncryptionConfig, Restor
 
   CustomerManagedEncryption(String kmsKeyName) {
     this.kmsKeyName = kmsKeyName;
-    // TODO(harsha): Should this be [] by default?
-    this.kmsKeyNames = com.google.protobuf.LazyStringArrayList.EMPTY;
+    // this.kmsKeyNames = com.google.protobuf.LazyStringArrayList.EMPTY;
+    this.kmsKeyNames = new ArrayList<>();
   }
 
   CustomerManagedEncryption(List<String> kmsKeyNames) {
-    this.kmsKeyNames = kmsKeyNames;
-    // TODO(harsha): Should this be "" by default?
     this.kmsKeyName = "";
+    this.kmsKeyNames = kmsKeyNames;
   }
 
   public String getKmsKeyName() {

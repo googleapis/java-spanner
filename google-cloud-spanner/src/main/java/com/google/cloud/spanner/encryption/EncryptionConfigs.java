@@ -17,12 +17,17 @@
 package com.google.cloud.spanner.encryption;
 
 import com.google.api.client.util.Preconditions;
+import java.util.Arrays;
 import java.util.List;
 
-/** Encryption configuration factory. */
+/**
+ * Encryption configuration factory.
+ */
 public class EncryptionConfigs {
 
-  /** Returns a customer managed encryption configuration for the given key. */
+  /**
+   * Returns a customer managed encryption configuration for the given key.
+   */
   public static CustomerManagedEncryption customerManagedEncryption(String kmsKeyName) {
     Preconditions.checkArgument(
         kmsKeyName != null, "Customer managed encryption key name must not be null");
@@ -38,17 +43,36 @@ public class EncryptionConfigs {
     return new CustomerManagedEncryption(kmsKeyNames);
   }
 
-  /** Returns google default encryption configuration. */
+  public static CustomerManagedEncryption customerManagedEncryption(String... kmsKeyNames) {
+    Preconditions.checkArgument(
+        kmsKeyNames != null, "Customer managed encryption key names must not be null");
+    Preconditions.checkArgument(
+        kmsKeyNames.length != 0, "Customer managed encryption key names must not be empty");
+    if(kmsKeyNames.length == 1){
+      Preconditions.checkArgument(
+          kmsKeyNames[0] != null, "Customer managed encryption key name must not be null");
+      return new CustomerManagedEncryption(kmsKeyNames[0]);
+    }
+    return new CustomerManagedEncryption(Arrays.asList(kmsKeyNames));
+  }
+
+  /**
+   * Returns google default encryption configuration.
+   */
   public static GoogleDefaultEncryption googleDefaultEncryption() {
     return GoogleDefaultEncryption.INSTANCE;
   }
 
-  /** Returns use database encryption configuration. */
+  /**
+   * Returns use database encryption configuration.
+   */
   public static UseDatabaseEncryption useDatabaseEncryption() {
     return UseDatabaseEncryption.INSTANCE;
   }
 
-  /** Returns use backup encryption configuration. */
+  /**
+   * Returns use backup encryption configuration.
+   */
   public static UseBackupEncryption useBackupEncryption() {
     return UseBackupEncryption.INSTANCE;
   }
