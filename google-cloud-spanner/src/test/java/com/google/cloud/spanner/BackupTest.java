@@ -286,6 +286,8 @@ public class BackupTest {
     assertThat(backup.getVersionTime()).isEqualTo(VERSION_TIME);
     assertThat(backup.getEncryptionInfo())
         .isEqualTo(EncryptionInfo.fromProtoOrNull(ENCRYPTION_INFO));
+    assertThat(backup.getEncryptionInformation()).isEqualTo(
+        EncryptionInfo.listFromProtoOrNull(Collections.singletonList(ENCRYPTION_INFO)));
   }
 
   @Test
@@ -313,6 +315,7 @@ public class BackupTest {
             .setMaxExpireTime(
                 com.google.protobuf.Timestamp.newBuilder().setSeconds(3000L).setNanos(3000).build())
             .addAllReferencingBackups(Collections.singletonList(REFERENCING_BACKUP_NAME))
+            .addAllEncryptionInformation(Collections.singletonList(ENCRYPTION_INFO))
             .build();
     return Backup.fromProto(proto, dbClient);
   }

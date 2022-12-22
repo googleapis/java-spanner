@@ -238,10 +238,16 @@ public class ITBackupTest {
   @Test
   public void test01_Backups() throws InterruptedException, ExecutionException, TimeoutException {
     final String databaseId = testHelper.getUniqueDatabaseId() + "_db1";
+    //String keyName1 = "projects/gcloud-devel/locations/us-central1/keyRings/cmek-test-key-ring/cryptoKeys/cmek-test-key";
+    String keyName1 = "projects/span-cloud-testing/locations/us-central1/keyRings/cmek_demo/cryptoKeys/apalicherla-test";
+    //String keyName2 = "projects/span-cloud-testing/locations/global/keyRings/spanner_cmek/cryptoKeys/test_key";
+    //String keyName3 = "projects/span-cloud-testing/locations/us-central1/keyRings/multi-cmek-test/cryptoKeys/key1";
+    String keyName4 = "projects/span-cloud-testing/locations/us-central1/keyRings/cmek_demo/cryptoKeys/test-key";
     final Database sourceDatabase =
         dbAdminClient
             .newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
-            .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(keyName))
+            .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(keyName1, keyName4))
+            //.setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(keyName))
             .build();
     logger.info(String.format("Creating test database %s", databaseId));
     OperationFuture<Database, CreateDatabaseMetadata> createDatabaseOperation =
@@ -264,7 +270,7 @@ public class ITBackupTest {
                 .build()));
 
     // Verifies that the database encryption has been properly set
-    testDatabaseEncryption(database, keyName);
+    testDatabaseEncryption(database, keyName1);
     // Verifies that the database dialect has been properly set
     testDatabaseDialect(database, Dialect.GOOGLE_STANDARD_SQL);
 
