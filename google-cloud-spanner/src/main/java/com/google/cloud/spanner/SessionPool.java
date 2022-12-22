@@ -717,8 +717,14 @@ class SessionPool {
     @Override
     public ResultSetStats analyzeUpdate(
         Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+      return analyzeUpdateStatement(statement, analyzeMode, options).getStats();
+    }
+
+    @Override
+    public ResultSet analyzeUpdateStatement(
+        Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
       try {
-        return delegate.analyzeUpdate(statement, analyzeMode, options);
+        return delegate.analyzeUpdateStatement(statement, analyzeMode, options);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
       }

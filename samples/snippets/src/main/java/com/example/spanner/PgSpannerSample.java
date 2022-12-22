@@ -667,6 +667,8 @@ public class PgSpannerSample {
                     + "  FirstName  character varying(1024),"
                     + "  LastName   character varying(1024),"
                     + "  SingerInfo bytea,"
+                    + "  FullName character varying(2048) GENERATED "
+                    + "  ALWAYS AS (FirstName || ' ' || LastName) STORED,"
                     + "  PRIMARY KEY (SingerId)"
                     + ")",
                 "CREATE TABLE Albums ("

@@ -24,6 +24,7 @@ import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.Tuple;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
@@ -46,7 +47,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
-import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.SpannerGrpc;
 import java.util.concurrent.Callable;
 
@@ -179,12 +179,18 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       final QueryOption... options) {
     Preconditions.checkNotNull(statement);
     Preconditions.checkArgument(
-        statement.isQuery() || (statement.isUpdate() && analyzeMode != AnalyzeMode.NONE),
+        statement.isQuery()
+            || (statement.isUpdate()
+                && (analyzeMode != AnalyzeMode.NONE || statement.hasReturningClause())),
         "The statement must be a query, or the statement must be DML and AnalyzeMode must be PLAN or PROFILE");
     checkAndMarkUsed();
 
-    if (statement.isUpdate() && analyzeMode != AnalyzeMode.NONE) {
-      return analyzeTransactionalUpdateAsync(statement, analyzeMode);
+    if (statement.isUpdate()) {
+      if (analyzeMode != AnalyzeMode.NONE) {
+        return analyzeTransactionalUpdateAsync(statement, analyzeMode);
+      }
+      // DML with returning clause.
+      return executeDmlReturningAsync(statement, options);
     }
 
     final ReadOnlyTransaction currentTransaction =
@@ -215,6 +221,30 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         };
     readTimestamp = SettableApiFuture.create();
     return executeStatementAsync(statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
+  }
+
+  private ApiFuture<ResultSet> executeDmlReturningAsync(
+      final ParsedStatement update, QueryOption... options) {
+    Callable<ResultSet> callable =
+        () -> {
+          try {
+            writeTransaction = createWriteTransaction();
+            ResultSet resultSet =
+                writeTransaction.run(
+                    transaction ->
+                        DirectExecuteResultSet.ofResultSet(
+                            transaction.executeQuery(update.getStatement(), options)));
+            state = UnitOfWorkState.COMMITTED;
+            return resultSet;
+          } catch (Throwable t) {
+            state = UnitOfWorkState.COMMIT_FAILED;
+            throw t;
+          }
+        };
+    return executeStatementAsync(
+        update,
+        callable,
+        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
   }
 
   @Override
@@ -311,7 +341,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         res =
             ApiFutures.transform(
                 executeTransactionalUpdateAsync(update, AnalyzeMode.NONE, options),
-                ResultSetStats::getRowCountExact,
+                Tuple::x,
                 MoreExecutors.directExecutor());
         break;
       case PARTITIONED_NON_ATOMIC:
@@ -325,7 +355,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<ResultSetStats> analyzeUpdateAsync(
+  public ApiFuture<ResultSet> analyzeUpdateAsync(
       ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "Statement is not an update statement");
@@ -336,7 +366,10 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         "Analyzing update statements is not supported for Partitioned DML");
     checkAndMarkUsed();
 
-    return executeTransactionalUpdateAsync(update, analyzeMode, options);
+    return ApiFutures.transform(
+        executeTransactionalUpdateAsync(update, analyzeMode, options),
+        Tuple::y,
+        MoreExecutors.directExecutor());
   }
 
   @Override
@@ -386,23 +419,23 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     return dbClient.readWriteTransaction(options);
   }
 
-  private ApiFuture<ResultSetStats> executeTransactionalUpdateAsync(
+  private ApiFuture<Tuple<Long, ResultSet>> executeTransactionalUpdateAsync(
       final ParsedStatement update, AnalyzeMode analyzeMode, final UpdateOption... options) {
-    Callable<ResultSetStats> callable =
+    Callable<Tuple<Long, ResultSet>> callable =
         () -> {
           try {
             writeTransaction = createWriteTransaction();
-            ResultSetStats res =
+            Tuple<Long, ResultSet> res =
                 writeTransaction.run(
                     transaction -> {
                       if (analyzeMode == AnalyzeMode.NONE) {
-                        return ResultSetStats.newBuilder()
-                            .setRowCountExact(
-                                transaction.executeUpdate(update.getStatement(), options))
-                            .build();
+                        return Tuple.of(
+                            transaction.executeUpdate(update.getStatement(), options), null);
                       }
-                      return transaction.analyzeUpdate(
-                          update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options);
+                      ResultSet resultSet =
+                          transaction.analyzeUpdateStatement(
+                              update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options);
+                      return Tuple.of(null, resultSet);
                     });
             state = UnitOfWorkState.COMMITTED;
             return res;

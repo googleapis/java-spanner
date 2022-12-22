@@ -24,6 +24,7 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -61,6 +62,12 @@ import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RequestOptions.Priority;
+import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.ResultSetStats;
+import com.google.spanner.v1.StructType;
+import com.google.spanner.v1.StructType.Field;
+import com.google.spanner.v1.Type;
+import com.google.spanner.v1.TypeCode;
 import io.grpc.Context;
 import io.grpc.Server;
 import io.grpc.Status;
@@ -2326,5 +2333,52 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     assertEquals(TEST_DATABASE_ROLE, client.getDatabaseRole());
+  }
+
+  @Test
+  public void testAnalyzeUpdateStatement() {
+    String sql = "update foo set bar=1 where baz=@param";
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.of(sql),
+            com.google.spanner.v1.ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setUndeclaredParameters(
+                            StructType.newBuilder()
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setName("param")
+                                        .setType(Type.newBuilder().setCode(TypeCode.STRING).build())
+                                        .build())
+                                .build())
+                        .build())
+                .setStats(ResultSetStats.newBuilder().setRowCountExact(0L).build())
+                .build()));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              try (ResultSet resultSet =
+                  transaction.analyzeUpdateStatement(Statement.of(sql), QueryAnalyzeMode.PLAN)) {
+                assertFalse(resultSet.next());
+                assertNotNull(resultSet.getStats());
+                assertEquals(0L, resultSet.getStats().getRowCountExact());
+                assertNotNull(resultSet.getMetadata());
+                assertEquals(1, resultSet.getMetadata().getUndeclaredParameters().getFieldsCount());
+                assertEquals(
+                    "param",
+                    resultSet.getMetadata().getUndeclaredParameters().getFields(0).getName());
+                assertEquals(
+                    Type.newBuilder().setCode(TypeCode.STRING).build(),
+                    resultSet.getMetadata().getUndeclaredParameters().getFields(0).getType());
+              }
+              return null;
+            });
+    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
+    assertEquals(QueryMode.PLAN, request.getQueryMode());
   }
 }

@@ -1,5 +1,53 @@
 # Changelog
 
+## [6.34.1](https://github.com/googleapis/java-spanner/compare/v6.34.0...v6.34.1) (2022-12-13)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.1.0 ([#2187](https://github.com/googleapis/java-spanner/issues/2187)) ([4d9df2b](https://github.com/googleapis/java-spanner/commit/4d9df2bac3a2dd6c910ba5fdd466ccd43a226c7f))
+
+## [6.34.0](https://github.com/googleapis/java-spanner/compare/v6.33.0...v6.34.0) (2022-12-12)
+
+
+### Features
+
+* Setting up 6.33.x branch ([#2184](https://github.com/googleapis/java-spanner/issues/2184)) ([e237a21](https://github.com/googleapis/java-spanner/commit/e237a213cf5cb5edc338ca4e5f8ad5dd0593d2d1))
+
+
+### Bug Fixes
+
+* Remove the statement of session number limits ([#1928](https://github.com/googleapis/java-spanner/issues/1928)) ([ddd0625](https://github.com/googleapis/java-spanner/commit/ddd062527674659ca2ea73e079bca4dee62ca67f)), closes [#1927](https://github.com/googleapis/java-spanner/issues/1927)
+* Update samples/snippets pom.xml configuration to avoid fat jar ([#2100](https://github.com/googleapis/java-spanner/issues/2100)) ([19058b4](https://github.com/googleapis/java-spanner/commit/19058b4cd324ce33e8dd52447bde2486c87d4754))
+* Use a proper endpoint for DirectPath tests ([#2186](https://github.com/googleapis/java-spanner/issues/2186)) ([4d74a0d](https://github.com/googleapis/java-spanner/commit/4d74a0d8ae48e190c126ab4047b81cca117f4de1))
+
+
+### Dependencies
+
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.18 ([#2171](https://github.com/googleapis/java-spanner/issues/2171)) ([f348780](https://github.com/googleapis/java-spanner/commit/f3487805fe5f976596e94047c3796bc623eeae95))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.18 ([#2145](https://github.com/googleapis/java-spanner/issues/2145)) ([dcdd2c3](https://github.com/googleapis/java-spanner/commit/dcdd2c3b684e38892fac0abbdf06081e9c7d83b2))
+
+## [6.33.0](https://github.com/googleapis/java-spanner/compare/v6.32.0...v6.33.0) (2022-11-17)
+
+
+### Features
+
+* Adding samples for Jsonb data type ([#2147](https://github.com/googleapis/java-spanner/issues/2147)) ([1112203](https://github.com/googleapis/java-spanner/commit/1112203bd6bde68fcd04ae68a2a31ec88dd5b1ac))
+* Analyze update returns param types ([#2156](https://github.com/googleapis/java-spanner/issues/2156)) ([7c5e3da](https://github.com/googleapis/java-spanner/commit/7c5e3da4c128cb9220213db8b3e2291e33566715))
+* Support DML with Returning clause in Connection API ([#1978](https://github.com/googleapis/java-spanner/issues/1978)) ([aac20be](https://github.com/googleapis/java-spanner/commit/aac20bedf9ee7a6a2170f87fa88373b7d364ed9f))
+* Support PostgreSQL END statement ([#2131](https://github.com/googleapis/java-spanner/issues/2131)) ([4c29c17](https://github.com/googleapis/java-spanner/commit/4c29c17fb35e51fdad99e393a8f6bb57c914dc8a))
+* Update transaction.proto to include different lock modes ([#2112](https://github.com/googleapis/java-spanner/issues/2112)) ([d0195b4](https://github.com/googleapis/java-spanner/commit/d0195b45423b73969636bc911980613a46dffa97))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.7.0 ([#2164](https://github.com/googleapis/java-spanner/issues/2164)) ([82385b8](https://github.com/googleapis/java-spanner/commit/82385b8526e0299e8c85e4435e3c740474de854c))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.0.6 ([#2150](https://github.com/googleapis/java-spanner/issues/2150)) ([dba545f](https://github.com/googleapis/java-spanner/commit/dba545ff5ebb069a78b42cbffff032d66dc3d062))
+* Update dependency com.google.cloud:google-cloud-trace to v2.6.0 ([#2165](https://github.com/googleapis/java-spanner/issues/2165)) ([99f2779](https://github.com/googleapis/java-spanner/commit/99f277974fdcebf587d1e25ad643575e15cee7ff))
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.17 ([#2144](https://github.com/googleapis/java-spanner/issues/2144)) ([dd24b89](https://github.com/googleapis/java-spanner/commit/dd24b894fd80ccc962a414bb404d9624336f4612))
+* Update dependency org.openjdk.jmh:jmh-core to v1.36 ([#2160](https://github.com/googleapis/java-spanner/issues/2160)) ([29f9096](https://github.com/googleapis/java-spanner/commit/29f9096d1a10bfb9eacdbc4d6dbc4bc9c7ed05c1))
+* Update dependency org.openjdk.jmh:jmh-generator-annprocess to v1.36 ([#2161](https://github.com/googleapis/java-spanner/issues/2161)) ([9148aa3](https://github.com/googleapis/java-spanner/commit/9148aa37bfb61af25023d56bfcf6d0e735e51b9a))
+
 ## [6.32.0](https://github.com/googleapis/java-spanner/compare/v6.31.2...v6.32.0) (2022-10-27)
 
 

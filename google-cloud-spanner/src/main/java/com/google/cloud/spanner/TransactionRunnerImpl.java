@@ -43,6 +43,7 @@ import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.RequestOptions;
+import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Transaction;
@@ -671,6 +672,17 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     @Override
     public ResultSetStats analyzeUpdate(
         Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+      return internalAnalyzeStatement(statement, analyzeMode, options).getStats();
+    }
+
+    @Override
+    public com.google.cloud.spanner.ResultSet analyzeUpdateStatement(
+        Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+      return new NoRowsResultSet(internalAnalyzeStatement(statement, analyzeMode, options));
+    }
+
+    private ResultSet internalAnalyzeStatement(
+        Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
       Preconditions.checkNotNull(analyzeMode);
       QueryMode queryMode;
       switch (analyzeMode) {
@@ -689,12 +701,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public long executeUpdate(Statement statement, UpdateOption... options) {
-      ResultSetStats resultSetStats = internalExecuteUpdate(statement, QueryMode.NORMAL, options);
+      ResultSet resultSet = internalExecuteUpdate(statement, QueryMode.NORMAL, options);
       // For standard DML, using the exact row count.
-      return resultSetStats.getRowCountExact();
+      return resultSet.getStats().getRowCountExact();
     }
 
-    private ResultSetStats internalExecuteUpdate(
+    private ResultSet internalExecuteUpdate(
         Statement statement, QueryMode queryMode, UpdateOption... options) {
       beforeReadOrQuery();
       final ExecuteSqlRequest.Builder builder =
@@ -714,7 +726,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           throw new IllegalArgumentException(
               "DML response missing stats possibly due to non-DML statement as input");
         }
-        return resultSet.getStats();
+        return resultSet;
       } catch (Throwable t) {
         throw onError(
             SpannerExceptionFactory.asSpannerException(t), builder.getTransaction().hasBegin());
