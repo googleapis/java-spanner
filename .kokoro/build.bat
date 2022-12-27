@@ -18,6 +18,8 @@
 set JAVA8_HOME=%JAVA_HOME:"=%
 
 choco install -y openjdk11
+dir C:\Program Files\Java\
+dir C:\Program Files\Eclipse Adoptium\
 
 set JAVA11_HOME=C:\Program Files\Eclipse Adoptium\jdk-11.0.17.8-hotspot\
 
