@@ -23,9 +23,6 @@ cd ${scriptDir}/..
 # include common functions
 source ${scriptDir}/common.sh
 
-echo "Verify if JAVA11_HOME is set *************"
-echo $JAVA11_HOME
-
 # units-java8 uses both JDK 11 and JDK 8. GraalVM dependencies require JDK 11 to
 # compile the classes touching GraalVM classes.
 if [ ! -z "${JAVA11_HOME}" ]; then
