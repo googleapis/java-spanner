@@ -17,7 +17,7 @@
 
 set JAVA8_HOME=%JAVA_HOME:"=%
 
-choco install -y jdk11
+choco install -y openjdk11
 
 set JAVA11_HOME=%JAVA_HOME:"=%
 
