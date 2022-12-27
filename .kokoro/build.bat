@@ -21,6 +21,6 @@ choco install -y openjdk11
 dir C:\Program Files\Java\
 dir C:\Program Files\Eclipse Adoptium\
 
-set JAVA11_HOME=C:\Program Files\Eclipse Adoptium\jdk-11.0.17.8-hotspot\
+set JAVA11_HOME=C:\Program Files\OpenJDK\openjdk-11.0.12_7
 
 "C:\Program Files\Git\bin\bash.exe" %~dp0build.sh
