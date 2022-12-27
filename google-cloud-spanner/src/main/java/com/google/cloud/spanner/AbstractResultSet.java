@@ -400,8 +400,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             builder
                 .set(fieldName)
                 .to(Value.protoMessage((ByteArray) value, fieldType.getProtoTypeFqn()));
+            break;
           case ENUM:
             builder.set(fieldName).to(Value.protoEnum((Long) value, fieldType.getProtoTypeFqn()));
+            break;
           case PG_JSONB:
             builder.set(fieldName).to(Value.pgJsonb((String) value));
             break;
@@ -421,6 +423,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 builder.set(fieldName).toBoolArray((Iterable<Boolean>) value);
                 break;
               case INT64:
+              case ENUM:
                 builder.set(fieldName).toInt64Array((Iterable<Long>) value);
                 break;
               case FLOAT64:
@@ -442,6 +445,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 builder.set(fieldName).toPgJsonbArray((Iterable<String>) value);
                 break;
               case BYTES:
+              case PROTO:
                 builder.set(fieldName).toBytesArray((Iterable<ByteArray>) value);
                 break;
               case TIMESTAMP:
@@ -561,7 +565,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       switch (elementType.getCode()) {
         case INT64:
         case ENUM:
-          // For int64/float64/eum types, use custom containers.  These avoid wrapper object
+          // For int64/float64/enum types, use custom containers.  These avoid wrapper object
           // creation for non-null arrays.
           return new Int64Array(listValue);
         case FLOAT64:

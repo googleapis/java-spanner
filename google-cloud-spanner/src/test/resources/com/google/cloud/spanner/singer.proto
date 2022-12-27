@@ -13,7 +13,6 @@ message SingerInfo {
   optional Genre genre = 4;
 }
 
-
 enum Genre {
   POP = 0;
   JAZZ = 1;

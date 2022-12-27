@@ -239,11 +239,11 @@ public abstract class Value implements Serializable {
    * Return a {@code PROTO} value
    *
    * @param v Serialized Proto Array, which may be null.
-   * @param protoTypFqn Fully qualified name of proto representing the proto definition. Use static
+   * @param protoTypeFqn Fully qualified name of proto representing the proto definition. Use static
    *     method from proto class {@code MyProtoClass.getDescriptor().getFullName()}
    */
-  public static Value protoMessage(@Nullable ByteArray v, String protoTypFqn) {
-    return new ProtoMessageImpl(v == null, v, protoTypFqn);
+  public static Value protoMessage(@Nullable ByteArray v, String protoTypeFqn) {
+    return new ProtoMessageImpl(v == null, v, protoTypeFqn);
   }
 
   /**
@@ -255,7 +255,7 @@ public abstract class Value implements Serializable {
    */
   public static Value protoMessage(@Nullable ByteArray v, Descriptor descriptor) {
     Preconditions.checkNotNull(descriptor, "descriptor can't be null.");
-    return new ProtoMessageImpl(v == null, v, descriptor.getFullName());
+    return protoMessage(v, descriptor.getFullName());
   }
 
   /**
@@ -273,11 +273,11 @@ public abstract class Value implements Serializable {
    * Return a {@code ENUM} value.
    *
    * @param v Enum non-primitive Integer constant.
-   * @param protoTypFqn Fully qualified name of proto representing the enum definition. Use static
+   * @param protoTypeFqn Fully qualified name of proto representing the enum definition. Use static
    *     method from proto class {@code MyProtoEnum.getDescriptor().getFullName()}
    */
-  public static Value protoEnum(@Nullable Long v, String protoTypFqn) {
-    return new ProtoEnumImpl(v == null, v, protoTypFqn);
+  public static Value protoEnum(@Nullable Long v, String protoTypeFqn) {
+    return new ProtoEnumImpl(v == null, v, protoTypeFqn);
   }
 
   /**
@@ -289,18 +289,18 @@ public abstract class Value implements Serializable {
    */
   public static Value protoEnum(@Nullable Long v, EnumDescriptor enumDescriptor) {
     Preconditions.checkNotNull(enumDescriptor, "descriptor can't be null.");
-    return new ProtoEnumImpl(v == null, v, enumDescriptor.getFullName());
+    return protoEnum(v, enumDescriptor.getFullName());
   }
 
   /**
    * Return a {@code ENUM} value.
    *
    * @param v Enum integer primitive constant.
-   * @param protoTypFqn Fully qualified name of proto representing the enum definition. Use static
+   * @param protoTypeFqn Fully qualified name of proto representing the enum definition. Use static
    *     method from proto class {@code MyProtoEnum.getDescriptor().getFullName()}
    */
-  public static Value protoEnum(long v, String protoTypFqn) {
-    return new ProtoEnumImpl(false, v, protoTypFqn);
+  public static Value protoEnum(long v, String protoTypeFqn) {
+    return new ProtoEnumImpl(false, v, protoTypeFqn);
   }
 
   /**
@@ -507,6 +507,14 @@ public abstract class Value implements Serializable {
     return new PgJsonbArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
   }
 
+  /**
+   * Returns an {@code ARRAY<PROTO>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   * @param descriptor Proto Type Descriptor, use static method from proto class {@code
+   *     MyProtoClass.getDescriptor()}.
+   */
   public static Value protoMessageArray(
       @Nullable Iterable<AbstractMessage> v, Descriptor descriptor) {
     if (v == null) {
@@ -526,11 +534,27 @@ public abstract class Value implements Serializable {
     return new ProtoMessageArrayImpl(false, serializedArray, descriptor.getFullName());
   }
 
+  /**
+   * Returns an {@code ARRAY<PROTO>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   * @param protoTypeFqn Fully qualified name of proto representing the proto definition. Use static
+   *     method from proto class {@code MyProtoClass.getDescriptor().getFullName()}
+   */
   public static Value protoMessageArray(@Nullable Iterable<ByteArray> v, String protoTypeFqn) {
     return new ProtoMessageArrayImpl(
         v == null, v != null ? immutableCopyOf(v) : null, protoTypeFqn);
   }
 
+  /**
+   * Returns an {@code ARRAY<ENUM>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   * @param descriptor Proto Type Descriptor, use static method from proto class {@code
+   *     MyProtoClass.getDescriptor()}.
+   */
   public static Value protoEnumArray(
       @Nullable Iterable<ProtocolMessageEnum> v, EnumDescriptor descriptor) {
     if (v == null) {
@@ -550,6 +574,14 @@ public abstract class Value implements Serializable {
     return new ProtoEnumArrayImpl(false, enumConstValues, descriptor.getFullName());
   }
 
+  /**
+   * Returns an {@code ARRAY<ENUM>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   * @param protoTypeFqn Fully qualified name of proto representing the enum definition. Use static
+   *     method from proto class {@code MyProtoEnum.getDescriptor().getFullName()}
+   */
   public static Value protoEnumArray(@Nullable Iterable<Long> v, String protoTypeFqn) {
     return new ProtoEnumArrayImpl(v == null, v != null ? immutableCopyOf(v) : null, protoTypeFqn);
   }
@@ -2348,6 +2380,7 @@ public abstract class Value implements Serializable {
               case BOOL:
                 return Value.boolArray(value.getBooleanList(fieldIndex));
               case INT64:
+              case ENUM:
                 return Value.int64Array(value.getLongList(fieldIndex));
               case STRING:
                 return Value.stringArray(value.getStringList(fieldIndex));
@@ -2356,6 +2389,7 @@ public abstract class Value implements Serializable {
               case PG_JSONB:
                 return Value.pgJsonbArray(value.getPgJsonbList(fieldIndex));
               case BYTES:
+              case PROTO:
                 return Value.bytesArray(value.getBytesList(fieldIndex));
               case FLOAT64:
                 return Value.float64Array(value.getDoubleList(fieldIndex));

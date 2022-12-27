@@ -311,8 +311,7 @@ public final class Key implements Serializable {
       } else if (part instanceof ProtocolMessageEnum) {
         builder
             .addValuesBuilder()
-            .setStringValue(Long.toString(((ProtocolMessageEnum) part).getNumber()))
-            .build();
+            .setStringValue(Long.toString(((ProtocolMessageEnum) part).getNumber()));
       } else {
         throw new AssertionError("Illegal key part: " + part.getClass());
       }
