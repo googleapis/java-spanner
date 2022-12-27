@@ -18,7 +18,6 @@ package com.google.cloud.spanner.it;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
@@ -120,7 +119,9 @@ public class ITPgJsonbTest {
             instanceId,
             databaseId,
             Collections.singletonList(
-                "CREATE TABLE \"" + tableName + "\" (id BIGINT PRIMARY KEY, col1 JSONB, colarray JSONB[])"),
+                "CREATE TABLE \""
+                    + tableName
+                    + "\" (id BIGINT PRIMARY KEY, col1 JSONB, colarray JSONB[])"),
             null)
         .get(OPERATION_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
   }
@@ -196,12 +197,13 @@ public class ITPgJsonbTest {
             transaction -> {
               transaction.executeUpdate(
                   Statement.of(
-                      String.format("INSERT INTO %s (id, col1, colarray) VALUES "
-                          + "(1, '%s', array[%s]::jsonb[]), "
-                          + "(2, '%s', array[%s]::jsonb[]), "
-                          + "(3, '{}', array['{}']::jsonb[]), "
-                          + "(4, '[]', array['[]']::jsonb[]), "
-                          + "(5, null, null)",
+                      String.format(
+                          "INSERT INTO %s (id, col1, colarray) VALUES "
+                              + "(1, '%s', array[%s]::jsonb[]), "
+                              + "(2, '%s', array[%s]::jsonb[]), "
+                              + "(3, '{}', array['{}']::jsonb[]), "
+                              + "(4, '[]', array['[]']::jsonb[]), "
+                              + "(5, null, null)",
                           tableName,
                           JSON_VALUE_1,
                           // Convert array into string with literals separated by comma
@@ -265,12 +267,12 @@ public class ITPgJsonbTest {
   }
 
   private ListValue getJsonListValue(List<String> jsonList) {
-    return ListValue
-        .newBuilder()
+    return ListValue.newBuilder()
         .addAllValues(
             jsonList.stream()
                 .map(json -> com.google.protobuf.Value.newBuilder().setStringValue(json).build())
-                .collect(Collectors.toList())).build();
+                .collect(Collectors.toList()))
+        .build();
   }
 
   @Ignore("Untyped jsonb parameters are not yet supported")
@@ -485,10 +487,10 @@ public class ITPgJsonbTest {
           Value.pgJsonb("{\"color\": \"red\", \"value\": \"#f00\"}"), resultSet.getValue("col1"));
       assertEquals(
           Arrays.asList(
-                  "{\"color\": \"red\", \"value\": \"#f00\"}",
-                  "[{\"color\": \"red\", \"value\": \"#f00\"}, "
-                      + "{\"color\": \"green\", \"value\": \"#0f0\"}, "
-                      + "{\"color\": \"blue\", \"value\": \"#00f\"}]"),
+              "{\"color\": \"red\", \"value\": \"#f00\"}",
+              "[{\"color\": \"red\", \"value\": \"#f00\"}, "
+                  + "{\"color\": \"green\", \"value\": \"#0f0\"}, "
+                  + "{\"color\": \"blue\", \"value\": \"#00f\"}]"),
           resultSet.getPgJsonbList("colarray"));
       assertEquals(
           Value.pgJsonbArray(
@@ -521,22 +523,16 @@ public class ITPgJsonbTest {
       assertTrue(resultSet.next());
       assertEquals("{}", resultSet.getPgJsonb("col1"));
       assertEquals(Value.pgJsonb("{}"), resultSet.getValue("col1"));
+      assertEquals(Collections.singletonList("{}"), resultSet.getPgJsonbList("colarray"));
       assertEquals(
-          Collections.singletonList("{}"),
-          resultSet.getPgJsonbList("colarray"));
-      assertEquals(
-          Value.pgJsonbArray(Collections.singletonList("{}")),
-          resultSet.getValue("colarray"));
+          Value.pgJsonbArray(Collections.singletonList("{}")), resultSet.getValue("colarray"));
 
       assertTrue(resultSet.next());
       assertEquals("[]", resultSet.getPgJsonb("col1"));
       assertEquals(Value.pgJsonb("[]"), resultSet.getValue("col1"));
+      assertEquals(Collections.singletonList("[]"), resultSet.getPgJsonbList("colarray"));
       assertEquals(
-          Collections.singletonList("[]"),
-          resultSet.getPgJsonbList("colarray"));
-      assertEquals(
-          Value.pgJsonbArray(Collections.singletonList("[]")),
-          resultSet.getValue("colarray"));
+          Value.pgJsonbArray(Collections.singletonList("[]")), resultSet.getValue("colarray"));
 
       assertTrue(resultSet.next());
       assertTrue(resultSet.isNull("col1"));
