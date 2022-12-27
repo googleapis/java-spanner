@@ -17,7 +17,7 @@
 
 set JAVA8_HOME=%JAVA_HOME:"=%
 
-choco install -y openjdk11 --version=11.0.17.8
+choco install -y openjdk11
 
 set PATH=C:\ProgramData\chocolatey\bin;%PATH%
 set JAVA11_HOME=%JAVA_HOME:"=%
