@@ -238,46 +238,46 @@ public final class SingerProto {
               done = true;
               break;
             case 8:
-            {
-              bitField0_ |= 0x00000001;
-              singerId_ = input.readInt64();
-              break;
-            }
+              {
+                bitField0_ |= 0x00000001;
+                singerId_ = input.readInt64();
+                break;
+              }
             case 18:
-            {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000002;
-              birthDate_ = bs;
-              break;
-            }
+              {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000002;
+                birthDate_ = bs;
+                break;
+              }
             case 26:
-            {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000004;
-              nationality_ = bs;
-              break;
-            }
+              {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000004;
+                nationality_ = bs;
+                break;
+              }
             case 32:
-            {
-              int rawValue = input.readEnum();
-              @SuppressWarnings("deprecation")
-              com.example.spanner.SingerProto.Genre value =
-                  com.example.spanner.SingerProto.Genre.valueOf(rawValue);
-              if (value == null) {
-                unknownFields.mergeVarintField(4, rawValue);
-              } else {
-                bitField0_ |= 0x00000008;
-                genre_ = rawValue;
+              {
+                int rawValue = input.readEnum();
+                @SuppressWarnings("deprecation")
+                com.example.spanner.SingerProto.Genre value =
+                    com.example.spanner.SingerProto.Genre.valueOf(rawValue);
+                if (value == null) {
+                  unknownFields.mergeVarintField(4, rawValue);
+                } else {
+                  bitField0_ |= 0x00000008;
+                  genre_ = rawValue;
+                }
+                break;
               }
-              break;
-            }
             default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
+              {
+                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
               }
-              break;
-            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -297,7 +297,7 @@ public final class SingerProto {
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-    internalGetFieldAccessorTable() {
+        internalGetFieldAccessorTable() {
       return com.example.spanner.SingerProto
           .internal_static_spanner_examples_music_SingerInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -558,8 +558,8 @@ public final class SingerProto {
       return hash;
     }
 
-    public static com.example.spanner.SingerProto.SingerInfo parseFrom(
-        java.nio.ByteBuffer data) throws com.google.protobuf.InvalidProtocolBufferException {
+    public static com.example.spanner.SingerProto.SingerInfo parseFrom(java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
 
@@ -593,8 +593,8 @@ public final class SingerProto {
       return PARSER.parseFrom(data, extensionRegistry);
     }
 
-    public static com.example.spanner.SingerProto.SingerInfo parseFrom(
-        java.io.InputStream input) throws java.io.IOException {
+    public static com.example.spanner.SingerProto.SingerInfo parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
 
@@ -667,7 +667,7 @@ public final class SingerProto {
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internalGetFieldAccessorTable() {
+          internalGetFieldAccessorTable() {
         return com.example.spanner.SingerProto
             .internal_static_spanner_examples_music_SingerInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -796,8 +796,7 @@ public final class SingerProto {
       }
 
       public Builder mergeFrom(com.example.spanner.SingerProto.SingerInfo other) {
-        if (other == com.example.spanner.SingerProto.SingerInfo.getDefaultInstance())
-          return this;
+        if (other == com.example.spanner.SingerProto.SingerInfo.getDefaultInstance()) return this;
         if (other.hasSingerId()) {
           setSingerId(other.getSingerId());
         }
@@ -833,8 +832,7 @@ public final class SingerProto {
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage =
-              (com.example.spanner.SingerProto.SingerInfo) e.getUnfinishedMessage();
+          parsedMessage = (com.example.spanner.SingerProto.SingerInfo) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1174,13 +1172,13 @@ public final class SingerProto {
 
   static {
     java.lang.String[] descriptorData = {
-        "\n\014singer.proto\022\026spanner.examples.music\"v"
-            + "\n\nSingerInfo\022\021\n\tsinger_id\030\001 \001(\003\022\022\n\nbirth"
-            + "_date\030\002 \001(\t\022\023\n\013nationality\030\003 \001(\t\022,\n\005genr"
-            + "e\030\004 \001(\0162\035.spanner.examples.music.Genre*."
-            + "\n\005Genre\022\007\n\003POP\020\000\022\010\n\004JAZZ\020\001\022\010\n\004FOLK\020\002\022\010\n\004"
-            + "ROCK\020\003B)\n\030com.example.spannerB\013Sing"
-            + "erProtoP\000"
+      "\n\014singer.proto\022\026spanner.examples.music\"v"
+          + "\n\nSingerInfo\022\021\n\tsinger_id\030\001 \001(\003\022\022\n\nbirth"
+          + "_date\030\002 \001(\t\022\023\n\013nationality\030\003 \001(\t\022,\n\005genr"
+          + "e\030\004 \001(\0162\035.spanner.examples.music.Genre*."
+          + "\n\005Genre\022\007\n\003POP\020\000\022\010\n\004JAZZ\020\001\022\010\n\004FOLK\020\002\022\010\n\004"
+          + "ROCK\020\003B)\n\030com.example.spannerB\013Sing"
+          + "erProtoP\000"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
@@ -1191,7 +1189,7 @@ public final class SingerProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_spanner_examples_music_SingerInfo_descriptor,
             new java.lang.String[] {
-                "SingerId", "BirthDate", "Nationality", "Genre",
+              "SingerId", "BirthDate", "Nationality", "Genre",
             });
   }
 
