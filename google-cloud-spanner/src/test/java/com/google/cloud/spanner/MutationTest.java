@@ -23,6 +23,8 @@ import static org.junit.Assert.assertThrows;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.SingerProto.Genre;
+import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
@@ -545,6 +547,14 @@ public class MutationTest {
         .to(Value.json("{\"key\": \"value\"}}"))
         .set("jsonNull")
         .to(Value.json(null))
+        .set("protoMessage")
+        .to(SingerInfo.newBuilder().setSingerId(232).setGenre(Genre.POP).build())
+        .set("protoMessageNull")
+        .to(Value.protoMessage(null, SingerInfo.getDescriptor().getFullName()))
+        .set("protoEnum")
+        .to(Genre.JAZZ)
+        .set("protoEnumNull")
+        .to(Value.protoEnum(null, SingerInfo.getDescriptor().getFullName()))
         .set("pgJsonb")
         .to(Value.pgJsonb("{\"key\": \"value\"}}"))
         .set("pgJsonbNull")
@@ -603,6 +613,24 @@ public class MutationTest {
         .toJsonArray(null)
         .set("jsonArrValue")
         .to(Value.jsonArray(ImmutableList.of("{\"key\": \"value1\"}}", "{\"key\": \"value2\"}")))
+        .set("protoMessageArr")
+        .toProtoMessageArray(
+            ImmutableList.of(SingerInfo.newBuilder().setSingerId(232).setGenre(Genre.POP).build()),
+            SingerInfo.getDescriptor())
+        .set("protoMessageArrNull")
+        .toProtoMessageArray(null, SingerInfo.getDescriptor())
+        .set("protoMessageArrValue")
+        .to(
+            Value.protoMessageArray(
+                ImmutableList.of(
+                    SingerInfo.newBuilder().setSingerId(232).setGenre(Genre.POP).build()),
+                SingerInfo.getDescriptor()))
+        .set("protoEnumArr")
+        .toProtoEnumArray(ImmutableList.of(Genre.JAZZ), Genre.getDescriptor())
+        .set("protoEnumArrNull")
+        .toProtoEnumArray(null, Genre.getDescriptor())
+        .set("protoEnumArrValue")
+        .to(Value.protoEnumArray(ImmutableList.of(Genre.JAZZ), Genre.getDescriptor()))
         .set("pgJsonbArr")
         .toPgJsonbArray(ImmutableList.of("{\"key\": \"value1\"}}", "{\"key\": \"value2\"}"))
         .set("pgJsonbArrNull")

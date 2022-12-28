@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -122,6 +123,24 @@ public final class Type implements Serializable {
     return TYPE_PG_JSONB;
   }
 
+  /**
+   * To get the descriptor for the {@code PROTO} type.
+   *
+   * @param protoTypeFqn Proto full name
+   */
+  public static Type proto(String protoTypeFqn) {
+    return new Type(Code.PROTO, protoTypeFqn);
+  }
+
+  /**
+   * To get the descriptor for the {@code ENUM} type.
+   *
+   * @param protoTypeFqn Proto ENUM full name
+   */
+  public static Type protoEnum(String protoTypeFqn) {
+    return new Type(Code.ENUM, protoTypeFqn);
+  }
+
   /** Returns the descriptor for the {@code BYTES} type: a variable-length byte string. */
   public static Type bytes() {
     return TYPE_BYTES;
@@ -193,6 +212,7 @@ public final class Type implements Serializable {
   private final Code code;
   private final Type arrayElementType;
   private final ImmutableList<StructField> structFields;
+  private String protoTypeFqn;
 
   /**
    * Map of field name to field index. Ambiguous names are indexed to {@link #AMBIGUOUS_FIELD}. The
@@ -209,6 +229,11 @@ public final class Type implements Serializable {
     this.structFields = structFields;
   }
 
+  private Type(Code code, @Nonnull String protoTypeFqn) {
+    this(code, null, null);
+    this.protoTypeFqn = protoTypeFqn;
+  }
+
   /** Enumerates the categories of types. */
   public enum Code {
     BOOL(TypeCode.BOOL),
@@ -219,6 +244,8 @@ public final class Type implements Serializable {
     STRING(TypeCode.STRING),
     JSON(TypeCode.JSON),
     PG_JSONB(TypeCode.JSON, TypeAnnotationCode.PG_JSONB),
+    PROTO(TypeCode.PROTO),
+    ENUM(TypeCode.ENUM),
     BYTES(TypeCode.BYTES),
     TIMESTAMP(TypeCode.TIMESTAMP),
     DATE(TypeCode.DATE),
@@ -341,6 +368,17 @@ public final class Type implements Serializable {
   }
 
   /**
+   * Returns the full package name for elements of this {@code Proto or @code Enum} type.
+   *
+   * @throws IllegalStateException if {@code code() != Code.PROTO or code() != Code.ENUM}
+   */
+  public String getProtoTypeFqn() {
+    Preconditions.checkState(
+        (code == Code.PROTO || code == Code.ENUM), "Illegal call for non-Proto type");
+    return protoTypeFqn;
+  }
+
+  /**
    * Returns the index of the field named {@code fieldName} in this {@code STRUCT} type.
    *
    * @throws IllegalArgumentException if there is not exactly one element of {@link
@@ -416,7 +454,8 @@ public final class Type implements Serializable {
     Type that = (Type) o;
     return code == that.code
         && Objects.equals(arrayElementType, that.arrayElementType)
-        && Objects.equals(structFields, that.structFields);
+        && Objects.equals(structFields, that.structFields)
+        && Objects.equals(protoTypeFqn, that.protoTypeFqn);
   }
 
   @Override
@@ -435,7 +474,10 @@ public final class Type implements Serializable {
       for (StructField field : structFields) {
         fields.addFieldsBuilder().setName(field.getName()).setType(field.getType().toProto());
       }
+    } else if (code == Code.PROTO || code == Code.ENUM) {
+      proto.setProtoTypeFqn(protoTypeFqn);
     }
+
     return proto.build();
   }
 
@@ -464,6 +506,10 @@ public final class Type implements Serializable {
         return timestamp();
       case DATE:
         return date();
+      case PROTO:
+        return proto(proto.getProtoTypeFqn());
+      case ENUM:
+        return protoEnum(proto.getProtoTypeFqn());
       case ARRAY:
         checkArgument(
             proto.hasArrayElementType(),

@@ -41,6 +41,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
   private Type() {
     code_ = 0;
     typeAnnotation_ = 0;
+    protoTypeFqn_ = "";
   }
 
   @java.lang.Override
@@ -52,6 +53,96 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
   @java.lang.Override
   public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
     return this.unknownFields;
+  }
+
+  private Type(
+      com.google.protobuf.CodedInputStream input,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws com.google.protobuf.InvalidProtocolBufferException {
+    this();
+    if (extensionRegistry == null) {
+      throw new java.lang.NullPointerException();
+    }
+    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+        com.google.protobuf.UnknownFieldSet.newBuilder();
+    try {
+      boolean done = false;
+      while (!done) {
+        int tag = input.readTag();
+        switch (tag) {
+          case 0:
+            done = true;
+            break;
+          case 8:
+            {
+              int rawValue = input.readEnum();
+
+              code_ = rawValue;
+              break;
+            }
+          case 18:
+            {
+              com.google.spanner.v1.Type.Builder subBuilder = null;
+              if (arrayElementType_ != null) {
+                subBuilder = arrayElementType_.toBuilder();
+              }
+              arrayElementType_ =
+                  input.readMessage(com.google.spanner.v1.Type.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(arrayElementType_);
+                arrayElementType_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+          case 26:
+            {
+              com.google.spanner.v1.StructType.Builder subBuilder = null;
+              if (structType_ != null) {
+                subBuilder = structType_.toBuilder();
+              }
+              structType_ =
+                  input.readMessage(com.google.spanner.v1.StructType.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(structType_);
+                structType_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+          case 32:
+            {
+              int rawValue = input.readEnum();
+
+              typeAnnotation_ = rawValue;
+              break;
+            }
+          case 42:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              protoTypeFqn_ = s;
+              break;
+            }
+          default:
+            {
+              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+        }
+      }
+    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+      throw e.setUnfinishedMessage(this);
+    } catch (com.google.protobuf.UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
+    } catch (java.io.IOException e) {
+      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
+    } finally {
+      this.unknownFields = unknownFields.build();
+      makeExtensionsImmutable();
+    }
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -249,6 +340,43 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
     return result == null ? com.google.spanner.v1.TypeAnnotationCode.UNRECOGNIZED : result;
   }
 
+  public static final int PROTO_TYPE_FQN_FIELD_NUMBER = 5;
+  private volatile java.lang.Object protoTypeFqn_;
+  /**
+   * <code>string proto_type_fqn = 5;</code>
+   *
+   * @return The protoTypeFqn.
+   */
+  @java.lang.Override
+  public java.lang.String getProtoTypeFqn() {
+    java.lang.Object ref = protoTypeFqn_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      protoTypeFqn_ = s;
+      return s;
+    }
+  }
+  /**
+   * <code>string proto_type_fqn = 5;</code>
+   *
+   * @return The bytes for protoTypeFqn.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString getProtoTypeFqnBytes() {
+    java.lang.Object ref = protoTypeFqn_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+      protoTypeFqn_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -276,7 +404,10 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
         != com.google.spanner.v1.TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED.getNumber()) {
       output.writeEnum(4, typeAnnotation_);
     }
-    getUnknownFields().writeTo(output);
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(protoTypeFqn_)) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 5, protoTypeFqn_);
+    }
+    unknownFields.writeTo(output);
   }
 
   @java.lang.Override
@@ -298,7 +429,10 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
         != com.google.spanner.v1.TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(4, typeAnnotation_);
     }
-    size += getUnknownFields().getSerializedSize();
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(protoTypeFqn_)) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, protoTypeFqn_);
+    }
+    size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -323,7 +457,8 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
       if (!getStructType().equals(other.getStructType())) return false;
     }
     if (typeAnnotation_ != other.typeAnnotation_) return false;
-    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+    if (!getProtoTypeFqn().equals(other.getProtoTypeFqn())) return false;
+    if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
 
@@ -346,7 +481,9 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
     }
     hash = (37 * hash) + TYPE_ANNOTATION_FIELD_NUMBER;
     hash = (53 * hash) + typeAnnotation_;
-    hash = (29 * hash) + getUnknownFields().hashCode();
+    hash = (37 * hash) + PROTO_TYPE_FQN_FIELD_NUMBER;
+    hash = (53 * hash) + getProtoTypeFqn().hashCode();
+    hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -473,10 +610,17 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
     }
 
     // Construct using com.google.spanner.v1.Type.newBuilder()
-    private Builder() {}
+    private Builder() {
+      maybeForceBuilderInitialization();
+    }
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
+      maybeForceBuilderInitialization();
+    }
+
+    private void maybeForceBuilderInitialization() {
+      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
@@ -497,6 +641,8 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
         structTypeBuilder_ = null;
       }
       typeAnnotation_ = 0;
+
+      protoTypeFqn_ = "";
 
       return this;
     }
@@ -535,6 +681,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
         result.structType_ = structTypeBuilder_.build();
       }
       result.typeAnnotation_ = typeAnnotation_;
+      result.protoTypeFqn_ = protoTypeFqn_;
       onBuilt();
       return result;
     }
@@ -596,7 +743,11 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
       if (other.typeAnnotation_ != 0) {
         setTypeAnnotationValue(other.getTypeAnnotationValue());
       }
-      this.mergeUnknownFields(other.getUnknownFields());
+      if (!other.getProtoTypeFqn().isEmpty()) {
+        protoTypeFqn_ = other.protoTypeFqn_;
+        onChanged();
+      }
+      this.mergeUnknownFields(other.unknownFields);
       onChanged();
       return this;
     }
@@ -611,56 +762,17 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
+      com.google.spanner.v1.Type parsedMessage = null;
       try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 8:
-              {
-                code_ = input.readEnum();
-
-                break;
-              } // case 8
-            case 18:
-              {
-                input.readMessage(
-                    getArrayElementTypeFieldBuilder().getBuilder(), extensionRegistry);
-
-                break;
-              } // case 18
-            case 26:
-              {
-                input.readMessage(getStructTypeFieldBuilder().getBuilder(), extensionRegistry);
-
-                break;
-              } // case 26
-            case 32:
-              {
-                typeAnnotation_ = input.readEnum();
-
-                break;
-              } // case 32
-            default:
-              {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-          } // switch (tag)
-        } // while (!done)
+        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        parsedMessage = (com.google.spanner.v1.Type) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        onChanged();
-      } // finally
+        if (parsedMessage != null) {
+          mergeFrom(parsedMessage);
+        }
+      }
       return this;
     }
 
@@ -1258,6 +1370,82 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
+    private java.lang.Object protoTypeFqn_ = "";
+    /**
+     * <code>string proto_type_fqn = 5;</code>
+     *
+     * @return The protoTypeFqn.
+     */
+    public java.lang.String getProtoTypeFqn() {
+      java.lang.Object ref = protoTypeFqn_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        protoTypeFqn_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>string proto_type_fqn = 5;</code>
+     *
+     * @return The bytes for protoTypeFqn.
+     */
+    public com.google.protobuf.ByteString getProtoTypeFqnBytes() {
+      java.lang.Object ref = protoTypeFqn_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        protoTypeFqn_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>string proto_type_fqn = 5;</code>
+     *
+     * @param value The protoTypeFqn to set.
+     * @return This builder for chaining.
+     */
+    public Builder setProtoTypeFqn(java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+
+      protoTypeFqn_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string proto_type_fqn = 5;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearProtoTypeFqn() {
+
+      protoTypeFqn_ = getDefaultInstance().getProtoTypeFqn();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string proto_type_fqn = 5;</code>
+     *
+     * @param value The bytes for protoTypeFqn to set.
+     * @return This builder for chaining.
+     */
+    public Builder setProtoTypeFqnBytes(com.google.protobuf.ByteString value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+
+      protoTypeFqn_ = value;
+      onChanged();
+      return this;
+    }
+
     @java.lang.Override
     public final Builder setUnknownFields(final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.setUnknownFields(unknownFields);
@@ -1290,18 +1478,7 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
-          }
-          return builder.buildPartial();
+          return new Type(input, extensionRegistry);
         }
       };
 

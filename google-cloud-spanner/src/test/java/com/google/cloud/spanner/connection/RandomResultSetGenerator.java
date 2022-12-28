@@ -19,6 +19,8 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.SingerProto.Genre;
+import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.common.io.BaseEncoding;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
@@ -32,6 +34,9 @@ import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -40,73 +45,103 @@ import java.util.Random;
  */
 public class RandomResultSetGenerator {
   private static Type[] generateTypes(Dialect dialect) {
-    return new Type[] {
-      Type.newBuilder().setCode(TypeCode.BOOL).build(),
-      Type.newBuilder().setCode(TypeCode.INT64).build(),
-      Type.newBuilder().setCode(TypeCode.FLOAT64).build(),
-      dialect == Dialect.POSTGRESQL
-          ? Type.newBuilder()
-              .setCode(TypeCode.NUMERIC)
-              .setTypeAnnotation(TypeAnnotationCode.PG_NUMERIC)
-              .build()
-          : Type.newBuilder().setCode(TypeCode.NUMERIC).build(),
-      Type.newBuilder().setCode(TypeCode.STRING).build(),
-      dialect == Dialect.POSTGRESQL
-          ? Type.newBuilder()
-              .setCode(TypeCode.JSON)
-              .setTypeAnnotation(TypeAnnotationCode.PG_JSONB)
-              .build()
-          : Type.newBuilder().setCode(TypeCode.JSON).build(),
-      Type.newBuilder().setCode(TypeCode.BYTES).build(),
-      Type.newBuilder().setCode(TypeCode.DATE).build(),
-      Type.newBuilder().setCode(TypeCode.TIMESTAMP).build(),
-      Type.newBuilder()
-          .setCode(TypeCode.ARRAY)
-          .setArrayElementType(Type.newBuilder().setCode(TypeCode.BOOL))
-          .build(),
-      Type.newBuilder()
-          .setCode(TypeCode.ARRAY)
-          .setArrayElementType(Type.newBuilder().setCode(TypeCode.INT64))
-          .build(),
-      Type.newBuilder()
-          .setCode(TypeCode.ARRAY)
-          .setArrayElementType(Type.newBuilder().setCode(TypeCode.FLOAT64))
-          .build(),
-      Type.newBuilder()
-          .setCode(TypeCode.ARRAY)
-          .setArrayElementType(
-              dialect == Dialect.POSTGRESQL
-                  ? Type.newBuilder()
-                      .setCode(TypeCode.NUMERIC)
-                      .setTypeAnnotation(TypeAnnotationCode.PG_NUMERIC)
-                  : Type.newBuilder().setCode(TypeCode.NUMERIC))
-          .build(),
-      Type.newBuilder()
-          .setCode(TypeCode.ARRAY)
-          .setArrayElementType(Type.newBuilder().setCode(TypeCode.STRING))
-          .build(),
-      Type.newBuilder()
-          .setCode(TypeCode.ARRAY)
-          .setArrayElementType(
-              dialect == Dialect.POSTGRESQL
-                  ? Type.newBuilder()
-                      .setCode(TypeCode.JSON)
-                      .setTypeAnnotation(TypeAnnotationCode.PG_JSONB)
-                  : Type.newBuilder().setCode(TypeCode.JSON))
-          .build(),
-      Type.newBuilder()
-          .setCode(TypeCode.ARRAY)
-          .setArrayElementType(Type.newBuilder().setCode(TypeCode.BYTES))
-          .build(),
-      Type.newBuilder()
-          .setCode(TypeCode.ARRAY)
-          .setArrayElementType(Type.newBuilder().setCode(TypeCode.DATE))
-          .build(),
-      Type.newBuilder()
-          .setCode(TypeCode.ARRAY)
-          .setArrayElementType(Type.newBuilder().setCode(TypeCode.TIMESTAMP))
-          .build(),
-    };
+    List<Type> types =
+        new ArrayList<Type>(
+            Arrays.asList(
+                Type.newBuilder().setCode(TypeCode.BOOL).build(),
+                Type.newBuilder().setCode(TypeCode.INT64).build(),
+                Type.newBuilder().setCode(TypeCode.FLOAT64).build(),
+                dialect == Dialect.POSTGRESQL
+                    ? Type.newBuilder()
+                        .setCode(TypeCode.NUMERIC)
+                        .setTypeAnnotation(TypeAnnotationCode.PG_NUMERIC)
+                        .build()
+                    : Type.newBuilder().setCode(TypeCode.NUMERIC).build(),
+                Type.newBuilder().setCode(TypeCode.STRING).build(),
+                dialect == Dialect.POSTGRESQL
+                    ? Type.newBuilder()
+                        .setCode(TypeCode.JSON)
+                        .setTypeAnnotation(TypeAnnotationCode.PG_JSONB)
+                        .build()
+                    : Type.newBuilder().setCode(TypeCode.JSON).build(),
+                Type.newBuilder().setCode(TypeCode.BYTES).build(),
+                Type.newBuilder().setCode(TypeCode.DATE).build(),
+                Type.newBuilder().setCode(TypeCode.TIMESTAMP).build(),
+                Type.newBuilder()
+                    .setCode(TypeCode.ARRAY)
+                    .setArrayElementType(Type.newBuilder().setCode(TypeCode.BOOL))
+                    .build(),
+                Type.newBuilder()
+                    .setCode(TypeCode.ARRAY)
+                    .setArrayElementType(Type.newBuilder().setCode(TypeCode.INT64))
+                    .build(),
+                Type.newBuilder()
+                    .setCode(TypeCode.ARRAY)
+                    .setArrayElementType(Type.newBuilder().setCode(TypeCode.FLOAT64))
+                    .build(),
+                Type.newBuilder()
+                    .setCode(TypeCode.ARRAY)
+                    .setArrayElementType(
+                        dialect == Dialect.POSTGRESQL
+                            ? Type.newBuilder()
+                                .setCode(TypeCode.NUMERIC)
+                                .setTypeAnnotation(TypeAnnotationCode.PG_NUMERIC)
+                            : Type.newBuilder().setCode(TypeCode.NUMERIC))
+                    .build(),
+                Type.newBuilder()
+                    .setCode(TypeCode.ARRAY)
+                    .setArrayElementType(Type.newBuilder().setCode(TypeCode.STRING))
+                    .build(),
+                Type.newBuilder()
+                    .setCode(TypeCode.ARRAY)
+                    .setArrayElementType(
+                        dialect == Dialect.POSTGRESQL
+                            ? Type.newBuilder()
+                                .setCode(TypeCode.JSON)
+                                .setTypeAnnotation(TypeAnnotationCode.PG_JSONB)
+                            : Type.newBuilder().setCode(TypeCode.JSON))
+                    .build(),
+                Type.newBuilder()
+                    .setCode(TypeCode.ARRAY)
+                    .setArrayElementType(Type.newBuilder().setCode(TypeCode.BYTES))
+                    .build(),
+                Type.newBuilder()
+                    .setCode(TypeCode.ARRAY)
+                    .setArrayElementType(Type.newBuilder().setCode(TypeCode.DATE))
+                    .build(),
+                Type.newBuilder()
+                    .setCode(TypeCode.ARRAY)
+                    .setArrayElementType(Type.newBuilder().setCode(TypeCode.TIMESTAMP))
+                    .build()));
+
+    appendProtoTypes(types, dialect);
+    Type[] typeArray = new Type[types.size()];
+    typeArray = types.toArray(typeArray);
+    return typeArray;
+  }
+
+  /** To append Proto & Enum types * */
+  private static void appendProtoTypes(List<Type> types, Dialect dialect) {
+    if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
+      types.add(Type.newBuilder().setCode(TypeCode.PROTO).setProtoTypeFqn("testProto").build());
+      types.add(Type.newBuilder().setCode(TypeCode.ENUM).setProtoTypeFqn("testEnum").build());
+      types.add(
+          Type.newBuilder()
+              .setCode(TypeCode.ARRAY)
+              .setArrayElementType(
+                  Type.newBuilder()
+                      .setCode(TypeCode.PROTO)
+                      .setProtoTypeFqn(SingerInfo.getDescriptor().getFullName()))
+              .build());
+      types.add(
+          Type.newBuilder()
+              .setCode(TypeCode.ARRAY)
+              .setArrayElementType(
+                  Type.newBuilder()
+                      .setCode(TypeCode.ENUM)
+                      .setProtoTypeFqn(Genre.getDescriptor().getFullName()))
+              .build());
+    }
   }
 
   private static ResultSetMetadata generateMetadata(Type[] types) {
@@ -171,6 +206,7 @@ public class RandomResultSetGenerator {
           break;
         case STRING:
         case BYTES:
+        case PROTO:
           byte[] bytes = new byte[random.nextInt(200)];
           random.nextBytes(bytes);
           builder.setStringValue(BaseEncoding.base64().encode(bytes));
@@ -199,6 +235,7 @@ public class RandomResultSetGenerator {
           }
           break;
         case INT64:
+        case ENUM:
           builder.setStringValue(String.valueOf(random.nextLong()));
           break;
         case TIMESTAMP:

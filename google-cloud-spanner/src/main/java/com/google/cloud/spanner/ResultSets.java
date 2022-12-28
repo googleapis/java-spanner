@@ -29,10 +29,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Function;
 
 /** Utility methods for working with {@link com.google.cloud.spanner.ResultSet}. */
 public final class ResultSets {
@@ -301,6 +304,28 @@ public final class ResultSets {
     }
 
     @Override
+    public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T message) {
+      return getCurrentRowAsStruct().getProtoMessage(columnIndex, message);
+    }
+
+    @Override
+    public <T extends AbstractMessage> T getProtoMessage(String columnName, T message) {
+      return getCurrentRowAsStruct().getProtoMessage(columnName, message);
+    }
+
+    @Override
+    public <T extends ProtocolMessageEnum> T getProtoEnum(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+      return getCurrentRowAsStruct().getProtoEnum(columnIndex, method);
+    }
+
+    @Override
+    public <T extends ProtocolMessageEnum> T getProtoEnum(
+        String columnName, Function<Integer, ProtocolMessageEnum> method) {
+      return getCurrentRowAsStruct().getProtoEnum(columnName, method);
+    }
+
+    @Override
     public Value getValue(int columnIndex) {
       return getCurrentRowAsStruct().getValue(columnIndex);
     }
@@ -438,6 +463,28 @@ public final class ResultSets {
     @Override
     public List<Date> getDateList(String columnName) {
       return getCurrentRowAsStruct().getDateList(columnName);
+    }
+
+    @Override
+    public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T message) {
+      return getCurrentRowAsStruct().getProtoMessageList(columnIndex, message);
+    }
+
+    @Override
+    public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T message) {
+      return getCurrentRowAsStruct().getProtoMessageList(columnName, message);
+    }
+
+    @Override
+    public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+      return getCurrentRowAsStruct().getProtoEnumList(columnIndex, method);
+    }
+
+    @Override
+    public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+        String columnName, Function<Integer, ProtocolMessageEnum> method) {
+      return getCurrentRowAsStruct().getProtoEnumList(columnName, method);
     }
 
     @Override

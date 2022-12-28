@@ -194,6 +194,46 @@
   </difference>
   <difference>
     <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.protobuf.ProtocolMessageEnum getProtoEnum(int, java.util.function.Function)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.protobuf.ProtocolMessageEnum getProtoEnum(java.lang.String, java.util.function.Function)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.protobuf.AbstractMessage getProtoMessage(int, com.google.protobuf.AbstractMessage)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>com.google.protobuf.AbstractMessage getProtoMessage(java.lang.String, com.google.protobuf.AbstractMessage)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getProtoEnumList(int, java.util.function.Function)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getProtoEnumList(java.lang.String, java.util.function.Function)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getProtoMessageList(int, com.google.protobuf.AbstractMessage)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getProtoMessageList(java.lang.String, com.google.protobuf.AbstractMessage)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/BatchClient</className>
     <method>java.lang.String getDatabaseRole()</method>
   </difference>

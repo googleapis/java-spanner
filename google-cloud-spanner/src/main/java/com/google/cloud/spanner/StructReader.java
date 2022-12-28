@@ -19,8 +19,11 @@ package com.google.cloud.spanner;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * A base interface for reading the fields of a {@code STRUCT}. The Cloud Spanner yields {@code
@@ -51,6 +54,7 @@ import java.util.List;
  * Struct} is an immutable implementation of {@code StructReader}.
  */
 public interface StructReader {
+
   /**
    * Returns the type of the underlying data. This will always be a {@code STRUCT} type, with fields
    * corresponding to the data's columns. For the result of a read or query, this will always match
@@ -131,6 +135,60 @@ public interface StructReader {
 
   /** Returns the value of a non-{@code NULL} column with type {@link Type#pgJsonb()}. */
   default String getPgJsonb(String columnName) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * To get the proto message of generic type {@code T} from Struct.
+   *
+   * @param columnIndex Index of the column.
+   * @param message Proto message object. Message can't be null as it's internally used to find the
+   *     type of proto. Use @code{MyProtoClass.getDefaultInstance()}. @see <a
+   *     href="https://developers.google.com/protocol-buffers/docs/reference/java-generated#message">getDefaultInstance()</a>
+   * @return The value of a non-{@code NULL} column with type {@link Type#proto(String)} ()}.
+   */
+  default <T extends AbstractMessage> T getProtoMessage(int columnIndex, T message) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * To get the proto message of type {@code T} from Struct.
+   *
+   * @param columnName Name of the column.
+   * @param message Proto message object. Message can't be null as it's internally used to find the
+   *     type of proto. Use @code{MyProtoClass.getDefaultInstance()}. @see <a
+   *     href="https://developers.google.com/protocol-buffers/docs/reference/java-generated#message">getDefaultInstance()</a>
+   * @return The value of a non-{@code NULL} column with type {@link Type#proto(String)} ()}.
+   */
+  default <T extends AbstractMessage> T getProtoMessage(String columnName, T message) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * To get the proto enum of type {@code T} from Struct.
+   *
+   * @param columnIndex Index of the column.
+   * @param method A function that takes enum integer constant as argument and returns the enum. Use
+   *     method @code{forNumber} from generated enum class (eg: MyProtoEnum::forNumber). @see <a
+   *     href="https://developers.google.com/protocol-buffers/docs/reference/java-generated#enum">forNumber</a>
+   * @return The value of a non-{@code NULL} column with type {@link Type#protoEnum(String)} ()}.
+   */
+  default <T extends ProtocolMessageEnum> T getProtoEnum(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * To get the proto enum of type {@code T} from Struct.
+   *
+   * @param columnName Name of the column.
+   * @param method A function that takes enum integer constant as argument and returns the enum. Use
+   *     method @code{forNumber} from generated enum class (eg: MyProtoEnum::forNumber). @see <a
+   *     href="https://developers.google.com/protocol-buffers/docs/reference/java-generated#enum">forNumber</a>
+   * @return The value of a non-{@code NULL} column with type {@link Type#protoEnum(String)} ()}.
+   */
+  default <T extends ProtocolMessageEnum> T getProtoEnum(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
@@ -315,6 +373,64 @@ public interface StructReader {
   default List<String> getPgJsonbList(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
   };
+
+  /**
+   * To get the proto message of generic type {@code T} from Struct.
+   *
+   * @param columnIndex Index of the column.
+   * @param message Proto message object. Message can't be null as it's internally used to find the
+   *     type of proto. Use @code{MyProtoClass.getDefaultInstance()}. @see <a
+   *     href="https://developers.google.com/protocol-buffers/docs/reference/java-generated#message">getDefaultInstance()</a>
+   * @return The value of a non-{@code NULL} column with type {@code
+   *     Type.array(Type.proto(String))}.
+   */
+  default <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T message) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * To get the proto message of type {@code T} from Struct.
+   *
+   * @param columnName Name of the column.
+   * @param message Proto message object. Message can't be null as it's internally used to find the
+   *     type of proto. Use @code{MyProtoClass.getDefaultInstance()}. @see <a
+   *     href="https://developers.google.com/protocol-buffers/docs/reference/java-generated#message">getDefaultInstance()</a>
+   * @return The value of a non-{@code NULL} column with type {@code
+   *     Type.array(Type.proto(String))}.
+   */
+  default <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T message) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * To get the proto enum of type {@code T} from Struct.
+   *
+   * @param columnIndex Index of the column.
+   * @param method A function that takes enum integer constant as argument and returns the enum. Use
+   *     method @code{forNumber} from generated enum class (eg: MyProtoEnum::forNumber). @see <a
+   *     href="https://developers.google.com/protocol-buffers/docs/reference/java-generated#enum">forNumber</a>
+   * @return The value of a non-{@code NULL} column with type {@code
+   *     Type.array(Type.protoEnum(String))}.
+   */
+  default <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * To get the proto enum list of type {@code T} from Struct.
+   *
+   * @param columnName Name of the column.
+   * @param method A function that takes enum integer constant as argument and returns the enum. Use
+   *     method @code{forNumber} from generated enum class (eg: MyProtoEnum::forNumber). @see <a
+   *     href="https://developers.google.com/protocol-buffers/docs/reference/java-generated#enum">forNumber</a>
+   * @return The value of a non-{@code NULL} column with type {@code
+   *     Type.array(Type.protoEnum(String))}.
+   */
+  default <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
   /**
    * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bytes())}. The

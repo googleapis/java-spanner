@@ -38,6 +38,7 @@ public class TypeTest {
     private final Type.Code expectedCode;
     private final TypeCode expectedTypeCode;
     private final TypeAnnotationCode expectedTypeAnnotationCode;
+    private String protoTypeFqn = "";
 
     ScalarTypeTester(Type.Code expectedCode, TypeCode expectedTypeCode) {
       this(expectedCode, expectedTypeCode, TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED);
@@ -52,12 +53,17 @@ public class TypeTest {
       this.expectedTypeAnnotationCode = expectedTypeAnnotationCode;
     }
 
+    ScalarTypeTester(Type.Code expectedCode, TypeCode expectedTypeCode, String protoTypeFqn) {
+      this(expectedCode, expectedTypeCode);
+      this.protoTypeFqn = protoTypeFqn;
+    }
+
     abstract Type newType();
 
     void test() {
       Type t = newType();
       assertThat(t.getCode()).isEqualTo(expectedCode);
-      assertThat(newType()).isSameInstanceAs(t); // Interned.
+      assertThat(newType()).isEqualTo(t); // Interned.
       // String form is deliberately the same as the corresponding type enum in the public API.
       if (expectedTypeAnnotationCode != TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED) {
         assertThat(t.toString())
@@ -70,13 +76,13 @@ public class TypeTest {
       com.google.spanner.v1.Type proto = t.toProto();
       assertThat(proto.getCode()).isEqualTo(expectedTypeCode);
       assertThat(proto.getTypeAnnotation()).isEqualTo(expectedTypeAnnotationCode);
+      assertThat(proto.getProtoTypeFqn()).isEqualTo(protoTypeFqn);
       assertThat(proto.hasArrayElementType()).isFalse();
       assertThat(proto.hasStructType()).isFalse();
 
       // Round trip.
       Type fromProto = Type.fromProto(proto);
       assertThat(fromProto).isEqualTo(t);
-      assertThat(fromProto).isSameInstanceAs(t);
 
       reserializeAndAssert(t);
     }
@@ -173,6 +179,26 @@ public class TypeTest {
   }
 
   @Test
+  public void proto() {
+    new ScalarTypeTester(Type.Code.PROTO, TypeCode.PROTO, "com.google.temp") {
+      @Override
+      Type newType() {
+        return Type.proto("com.google.temp");
+      }
+    }.test();
+  }
+
+  @Test
+  public void protoEnum() {
+    new ScalarTypeTester(Type.Code.ENUM, TypeCode.ENUM, "com.google.temp.enum") {
+      @Override
+      Type newType() {
+        return Type.protoEnum("com.google.temp.enum");
+      }
+    }.test();
+  }
+
+  @Test
   public void timestamp() {
     new ScalarTypeTester(Type.Code.TIMESTAMP, TypeCode.TIMESTAMP) {
       @Override
@@ -197,6 +223,7 @@ public class TypeTest {
     private final TypeCode expectedElementTypeCode;
     private final TypeAnnotationCode expectedTypeAnnotationCode;
     private final boolean expectInterned;
+    private String protoTypeFqn = "";
 
     ArrayTypeTester(
         Type.Code expectedElementCode, TypeCode expectedElementTypeCode, boolean expectInterned) {
@@ -205,6 +232,19 @@ public class TypeTest {
           expectedElementTypeCode,
           TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED,
           expectInterned);
+    }
+
+    ArrayTypeTester(
+        Type.Code expectedElementCode,
+        TypeCode expectedElementTypeCode,
+        String protoTypeFqn,
+        boolean expectInterned) {
+      this(
+          expectedElementCode,
+          expectedElementTypeCode,
+          TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED,
+          expectInterned);
+      this.protoTypeFqn = protoTypeFqn;
     }
 
     ArrayTypeTester(
@@ -352,6 +392,26 @@ public class TypeTest {
       @Override
       Type newElementType() {
         return Type.date();
+      }
+    }.test();
+  }
+
+  @Test
+  public void protoArray() {
+    new ArrayTypeTester(Type.Code.PROTO, TypeCode.PROTO, "com.google.temp", false) {
+      @Override
+      Type newElementType() {
+        return Type.proto("com.google.temp");
+      }
+    }.test();
+  }
+
+  @Test
+  public void protoEnumArray() {
+    new ArrayTypeTester(Type.Code.ENUM, TypeCode.ENUM, "com.google.temp.enum", false) {
+      @Override
+      Type newElementType() {
+        return Type.protoEnum("com.google.temp.enum");
       }
     }.test();
   }
