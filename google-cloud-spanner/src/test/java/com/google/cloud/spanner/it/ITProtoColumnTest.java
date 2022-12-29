@@ -85,25 +85,16 @@ public class ITProtoColumnTest {
   }
 
   /**
-   * Test to check updates and read queries on Proto column and Enums and their arrays.
-   * Test also checks for compatability between following types:
-   * 1. Proto Messages & Bytes
-   * 2. Proto Enums & Int64
+   * Test to check updates and read queries on Proto column and Enums and their arrays. Test also
+   * checks for compatability between following types: 1. Proto Messages & Bytes 2. Proto Enums &
+   * Int64
    *
-   * Table `Types` was created through gcloud using following DDL:
-   * **************************************
-   * CREATE TABLE Types (
-   *     RowID        INT64 NOT NULL,
-   *     Int64a        INT64,
-   *     Bytes        BYTES(MAX),
-   *     Int64Array    ARRAY<INT64>,
-   *     BytesArray    ARRAY<BYTES(MAX)>,
-   *     ProtoMessage    spanner.examples.music.SingerInfo,
-   *     ProtoEnum   spanner.examples.music.Genre,
-   *     ProtoMessageArray   ARRAY<spanner.examples.music.SingerInfo>,
-   *     ProtoEnumArray  ARRAY<spanner.examples.music.Genre>,
-   * ) PRIMARY KEY (RowID);
-   * **************************************
+   * <p>Table `Types` was created through gcloud using following DDL:
+   * ************************************** CREATE TABLE Types ( RowID INT64 NOT NULL, Int64a INT64,
+   * Bytes BYTES(MAX), Int64Array ARRAY<INT64>, BytesArray ARRAY<BYTES(MAX)>, ProtoMessage
+   * spanner.examples.music.SingerInfo, ProtoEnum spanner.examples.music.Genre, ProtoMessageArray
+   * ARRAY<spanner.examples.music.SingerInfo>, ProtoEnumArray ARRAY<spanner.examples.music.Genre>, )
+   * PRIMARY KEY (RowID); **************************************
    */
   @Test
   public void testProtoUpdateAndRead() {
@@ -189,22 +180,16 @@ public class ITProtoColumnTest {
   /**
    * Test to check Parameterized Queries, Primary Keys and Indexes.
    *
-   * Table `Singers` and Index `SingerByNationalityAndGenre` for Proto column integration
-   * tests is created through gcloud using following DDL:
+   * <p>Table `Singers` and Index `SingerByNationalityAndGenre` for Proto column integration tests
+   * is created through gcloud using following DDL:
    *
-   * **************************************
-   * CREATE TABLE Singers (
-   *  SingerId   INT64 NOT NULL,
-   *  FirstName  STRING(1024),
-   *  LastName   STRING(1024),
-   *  SingerInfo spanner.examples.music.SingerInfo,
-   *  SingerGenre spanner.examples.music.Genre,
-   *  SingerNationality STRING(1024) AS (SingerInfo.nationality) STORED,
-   * ) PRIMARY KEY (SingerNationality, SingerGenre);
+   * <p>************************************** CREATE TABLE Singers ( SingerId INT64 NOT NULL,
+   * FirstName STRING(1024), LastName STRING(1024), SingerInfo spanner.examples.music.SingerInfo,
+   * SingerGenre spanner.examples.music.Genre, SingerNationality STRING(1024) AS
+   * (SingerInfo.nationality) STORED, ) PRIMARY KEY (SingerNationality, SingerGenre);
    *
-   * CREATE INDEX SingerByNationalityAndGenre ON Singers(SingerNationality, SingerGenre)
-   * STORING (SingerId, FirstName, LastName);
-   * **************************************
+   * <p>CREATE INDEX SingerByNationalityAndGenre ON Singers(SingerNationality, SingerGenre) STORING
+   * (SingerId, FirstName, LastName); **************************************
    */
   @Test
   public void testProtoColumnsDMLParameterizedQueriesAndPKIndexes() {
