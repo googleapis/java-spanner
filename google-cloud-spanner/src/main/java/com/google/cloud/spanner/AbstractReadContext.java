@@ -161,6 +161,7 @@ abstract class AbstractReadContext
     private SingleReadContext(Builder builder) {
       super(builder);
       this.bound = builder.bound;
+      this.routeToLeader = false;
     }
 
     @GuardedBy("lock")
@@ -291,6 +292,7 @@ abstract class AbstractReadContext
         this.timestamp = builder.timestamp;
         this.transactionId = builder.transactionId;
       }
+      this.routeToLeader = false;
     }
 
     @Override
@@ -347,7 +349,8 @@ abstract class AbstractReadContext
                   .setSession(session.getName())
                   .setOptions(options)
                   .build();
-          Transaction transaction = rpc.beginTransaction(request, session.getOptions());
+          Transaction transaction =
+              rpc.beginTransaction(request, session.getOptions(), routeToLeader);
           if (!transaction.hasReadTimestamp()) {
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INTERNAL, "Missing expected transaction.read_timestamp metadata field");
@@ -380,6 +383,7 @@ abstract class AbstractReadContext
   Span span;
   private final int defaultPrefetchChunks;
   private final QueryOptions defaultQueryOptions;
+  protected boolean routeToLeader = false;
 
   @GuardedBy("lock")
   private boolean isValid = true;
@@ -664,7 +668,8 @@ abstract class AbstractReadContext
               request.setTransaction(selector);
             }
             SpannerRpc.StreamingCall call =
-                rpc.executeQuery(request.build(), stream.consumer(), session.getOptions());
+                rpc.executeQuery(
+                    request.build(), stream.consumer(), session.getOptions(), routeToLeader);
             call.request(prefetchChunks);
             stream.setCall(call, request.getTransaction().hasBegin());
             return stream;
@@ -792,7 +797,7 @@ abstract class AbstractReadContext
             }
             builder.setRequestOptions(buildRequestOptions(readOptions));
             SpannerRpc.StreamingCall call =
-                rpc.read(builder.build(), stream.consumer(), session.getOptions());
+                rpc.read(builder.build(), stream.consumer(), session.getOptions(), routeToLeader);
             call.request(prefetchChunks);
             stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
             return stream;

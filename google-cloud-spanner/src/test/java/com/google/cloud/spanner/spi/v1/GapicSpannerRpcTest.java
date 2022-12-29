@@ -24,6 +24,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
 
 import com.google.api.gax.core.GaxProperties;
+import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.auth.oauth2.AccessToken;
@@ -44,6 +45,7 @@ import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc.AdminRequestsLimitExceededRetryAlgorithm;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
 import com.google.rpc.ErrorInfo;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -375,6 +377,41 @@ public class GapicSpannerRpcTest {
     SpannerOptions options = SpannerOptions.newBuilder().setProjectId("some-project").build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
     assertThat(rpc.newCallContext(optionsMap, "/some/resource", null, null)).isNotNull();
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testNewCallContextWithRouteToLeaderHeader() {
+    SpannerOptions options = SpannerOptions.newBuilder().setProjectId("some-project").build();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    GrpcCallContext callContext =
+        rpc.newCallContext(
+            optionsMap,
+            "/some/resource",
+            ExecuteSqlRequest.getDefaultInstance(),
+            SpannerGrpc.getExecuteSqlMethod(),
+            true);
+    assertThat(callContext).isNotNull();
+    assertEquals(
+        callContext.getExtraHeaders().get("x-goog-spanner-route-to-leader"),
+        ImmutableList.of("true"));
+    ;
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testNewCallContextWithoutRouteToLeaderHeader() {
+    SpannerOptions options = SpannerOptions.newBuilder().setProjectId("some-project").build();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    GrpcCallContext callContext =
+        rpc.newCallContext(
+            optionsMap,
+            "/some/resource",
+            ExecuteSqlRequest.getDefaultInstance(),
+            SpannerGrpc.getExecuteSqlMethod(),
+            false);
+    assertThat(callContext).isNotNull();
+    assertThat(callContext.getExtraHeaders().get("x-goog-spanner-route-to-leader")).isNull();
     rpc.shutdown();
   }
 

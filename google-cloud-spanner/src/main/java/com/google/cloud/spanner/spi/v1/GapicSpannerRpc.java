@@ -1592,7 +1592,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     requestBuilder.setSessionTemplate(sessionBuilder);
     BatchCreateSessionsRequest request = requestBuilder.build();
     GrpcCallContext context =
-        newCallContext(options, databaseName, request, SpannerGrpc.getBatchCreateSessionsMethod());
+        newCallContext(
+            options, databaseName, request, SpannerGrpc.getBatchCreateSessionsMethod(), true);
     return get(spannerStub.batchCreateSessionsCallable().futureCall(request, context))
         .getSessionList();
   }
@@ -1616,7 +1617,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     requestBuilder.setSession(sessionBuilder);
     CreateSessionRequest request = requestBuilder.build();
     GrpcCallContext context =
-        newCallContext(options, databaseName, request, SpannerGrpc.getCreateSessionMethod());
+        newCallContext(options, databaseName, request, SpannerGrpc.getCreateSessionMethod(), true);
     return get(spannerStub.createSessionCallable().futureCall(request, context));
   }
 
@@ -1630,15 +1631,19 @@ public class GapicSpannerRpc implements SpannerRpc {
   public ApiFuture<Empty> asyncDeleteSession(String sessionName, @Nullable Map<Option, ?> options) {
     DeleteSessionRequest request = DeleteSessionRequest.newBuilder().setName(sessionName).build();
     GrpcCallContext context =
-        newCallContext(options, sessionName, request, SpannerGrpc.getDeleteSessionMethod());
+        newCallContext(options, sessionName, request, SpannerGrpc.getDeleteSessionMethod(), false);
     return spannerStub.deleteSessionCallable().futureCall(request, context);
   }
 
   @Override
   public StreamingCall read(
-      ReadRequest request, ResultStreamConsumer consumer, @Nullable Map<Option, ?> options) {
+      ReadRequest request,
+      ResultStreamConsumer consumer,
+      @Nullable Map<Option, ?> options,
+      boolean routeToLeader) {
     GrpcCallContext context =
-        newCallContext(options, request.getSession(), request, SpannerGrpc.getReadMethod());
+        newCallContext(
+            options, request.getSession(), request, SpannerGrpc.getReadMethod(), routeToLeader);
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
     spannerStub.streamingReadCallable().call(request, responseObserver, context);
     final StreamController controller = responseObserver.getController();
@@ -1658,13 +1663,14 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public ResultSet executeQuery(ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
-    return get(executeQueryAsync(request, options));
+  public ResultSet executeQuery(
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader) {
+    return get(executeQueryAsync(request, options, routeToLeader));
   }
 
   @Override
   public ApiFuture<ResultSet> executeQueryAsync(
-      ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader) {
     GrpcCallContext context =
         newCallContext(options, request.getSession(), request, SpannerGrpc.getExecuteSqlMethod());
     return spannerStub.executeSqlCallable().futureCall(request, context);
@@ -1674,7 +1680,8 @@ public class GapicSpannerRpc implements SpannerRpc {
   public ResultSet executePartitionedDml(
       ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context =
-        newCallContext(options, request.getSession(), request, SpannerGrpc.getExecuteSqlMethod());
+        newCallContext(
+            options, request.getSession(), request, SpannerGrpc.getExecuteSqlMethod(), true);
     return get(partitionedDmlStub.executeSqlCallable().futureCall(request, context));
   }
 
@@ -1688,7 +1695,11 @@ public class GapicSpannerRpc implements SpannerRpc {
       ExecuteSqlRequest request, Map<Option, ?> options, Duration timeout) {
     GrpcCallContext context =
         newCallContext(
-            options, request.getSession(), request, SpannerGrpc.getExecuteStreamingSqlMethod());
+            options,
+            request.getSession(),
+            request,
+            SpannerGrpc.getExecuteStreamingSqlMethod(),
+            true);
     // Override any timeout settings that might have been set on the call context.
     context = context.withTimeout(timeout).withStreamWaitTimeout(timeout);
     return partitionedDmlStub.executeStreamingSqlCallable().call(request, context);
@@ -1696,10 +1707,17 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public StreamingCall executeQuery(
-      ExecuteSqlRequest request, ResultStreamConsumer consumer, @Nullable Map<Option, ?> options) {
+      ExecuteSqlRequest request,
+      ResultStreamConsumer consumer,
+      @Nullable Map<Option, ?> options,
+      boolean routeToLeader) {
     GrpcCallContext context =
         newCallContext(
-            options, request.getSession(), request, SpannerGrpc.getExecuteStreamingSqlMethod());
+            options,
+            request.getSession(),
+            request,
+            SpannerGrpc.getExecuteStreamingSqlMethod(),
+            routeToLeader);
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
     spannerStub.executeStreamingSqlCallable().call(request, responseObserver, context);
     final StreamController controller = responseObserver.getController();
@@ -1729,30 +1747,35 @@ public class GapicSpannerRpc implements SpannerRpc {
       ExecuteBatchDmlRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context =
         newCallContext(
-            options, request.getSession(), request, SpannerGrpc.getExecuteBatchDmlMethod());
+            options, request.getSession(), request, SpannerGrpc.getExecuteBatchDmlMethod(), true);
     return spannerStub.executeBatchDmlCallable().futureCall(request, context);
   }
 
   @Override
   public ApiFuture<Transaction> beginTransactionAsync(
-      BeginTransactionRequest request, @Nullable Map<Option, ?> options) {
+      BeginTransactionRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader) {
     GrpcCallContext context =
         newCallContext(
-            options, request.getSession(), request, SpannerGrpc.getBeginTransactionMethod());
+            options,
+            request.getSession(),
+            request,
+            SpannerGrpc.getBeginTransactionMethod(),
+            routeToLeader);
     return spannerStub.beginTransactionCallable().futureCall(request, context);
   }
 
   @Override
   public Transaction beginTransaction(
-      BeginTransactionRequest request, @Nullable Map<Option, ?> options) throws SpannerException {
-    return get(beginTransactionAsync(request, options));
+      BeginTransactionRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader)
+      throws SpannerException {
+    return get(beginTransactionAsync(request, options, routeToLeader));
   }
 
   @Override
   public ApiFuture<CommitResponse> commitAsync(
       CommitRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context =
-        newCallContext(options, request.getSession(), request, SpannerGrpc.getCommitMethod());
+        newCallContext(options, request.getSession(), request, SpannerGrpc.getCommitMethod(), true);
     return spannerStub.commitCallable().futureCall(request, context);
   }
 
@@ -1765,7 +1788,8 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public ApiFuture<Empty> rollbackAsync(RollbackRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context =
-        newCallContext(options, request.getSession(), request, SpannerGrpc.getRollbackMethod());
+        newCallContext(
+            options, request.getSession(), request, SpannerGrpc.getRollbackMethod(), true);
     return spannerStub.rollbackCallable().futureCall(request, context);
   }
 
@@ -1780,7 +1804,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       PartitionQueryRequest request, @Nullable Map<Option, ?> options) throws SpannerException {
     GrpcCallContext context =
         newCallContext(
-            options, request.getSession(), request, SpannerGrpc.getPartitionQueryMethod());
+            options, request.getSession(), request, SpannerGrpc.getPartitionQueryMethod(), true);
     return get(spannerStub.partitionQueryCallable().futureCall(request, context));
   }
 
@@ -1789,7 +1813,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       PartitionReadRequest request, @Nullable Map<Option, ?> options) throws SpannerException {
     GrpcCallContext context =
         newCallContext(
-            options, request.getSession(), request, SpannerGrpc.getPartitionReadMethod());
+            options, request.getSession(), request, SpannerGrpc.getPartitionReadMethod(), true);
     return get(spannerStub.partitionReadCallable().futureCall(request, context));
   }
 
@@ -1898,6 +1922,16 @@ public class GapicSpannerRpc implements SpannerRpc {
       String resource,
       ReqT request,
       MethodDescriptor<ReqT, RespT> method) {
+    return newCallContext(options, resource, request, method, false);
+  }
+
+  @VisibleForTesting
+  <ReqT, RespT> GrpcCallContext newCallContext(
+      @Nullable Map<Option, ?> options,
+      String resource,
+      ReqT request,
+      MethodDescriptor<ReqT, RespT> method,
+      boolean routeToLeader) {
     GrpcCallContext context = GrpcCallContext.createDefault();
     if (options != null) {
       context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
@@ -1907,6 +1941,9 @@ public class GapicSpannerRpc implements SpannerRpc {
       context = context.withCallOptions(context.getCallOptions().withCompression(compressorName));
     }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
+    if (routeToLeader) {
+      context = context.withExtraHeaders(metadataProvider.newRouteToLeaderHeader());
+    }
     if (callCredentialsProvider != null) {
       CallCredentials callCredentials = callCredentialsProvider.getCallCredentials();
       if (callCredentials != null) {

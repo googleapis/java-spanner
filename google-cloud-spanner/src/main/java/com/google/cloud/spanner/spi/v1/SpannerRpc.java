@@ -320,12 +320,16 @@ public interface SpannerRpc extends ServiceRpc {
       throws SpannerException;
 
   StreamingCall read(
-      ReadRequest request, ResultStreamConsumer consumer, @Nullable Map<Option, ?> options);
+      ReadRequest request,
+      ResultStreamConsumer consumer,
+      @Nullable Map<Option, ?> options,
+      boolean routeToLeader);
 
-  ResultSet executeQuery(ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
+  ResultSet executeQuery(
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader);
 
   ApiFuture<ResultSet> executeQueryAsync(
-      ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader);
 
   ResultSet executePartitionedDml(ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
 
@@ -335,18 +339,22 @@ public interface SpannerRpc extends ServiceRpc {
       ExecuteSqlRequest request, @Nullable Map<Option, ?> options, Duration timeout);
 
   StreamingCall executeQuery(
-      ExecuteSqlRequest request, ResultStreamConsumer consumer, @Nullable Map<Option, ?> options);
+      ExecuteSqlRequest request,
+      ResultStreamConsumer consumer,
+      @Nullable Map<Option, ?> options,
+      boolean routeToLeader);
 
   ExecuteBatchDmlResponse executeBatchDml(ExecuteBatchDmlRequest build, Map<Option, ?> options);
 
   ApiFuture<ExecuteBatchDmlResponse> executeBatchDmlAsync(
       ExecuteBatchDmlRequest build, Map<Option, ?> options);
 
-  Transaction beginTransaction(BeginTransactionRequest request, @Nullable Map<Option, ?> options)
+  Transaction beginTransaction(
+      BeginTransactionRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader)
       throws SpannerException;
 
   ApiFuture<Transaction> beginTransactionAsync(
-      BeginTransactionRequest request, @Nullable Map<Option, ?> options);
+      BeginTransactionRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader);
 
   CommitResponse commit(CommitRequest commitRequest, @Nullable Map<Option, ?> options)
       throws SpannerException;

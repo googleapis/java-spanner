@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 class SpannerMetadataProvider {
   private final Map<Metadata.Key<String>, String> headers;
   private final String resourceHeaderKey;
-
+  private static final String routeToLeaderHeaderKey = "x-goog-spanner-route-to-leader";
   private static final Pattern[] RESOURCE_TOKEN_PATTERNS = {
     Pattern.compile("^(?<headerValue>projects/[^/]*/instances/[^/]*/databases/[^/]*)(.*)?"),
     Pattern.compile("^(?<headerValue>projects/[^/]*/instances/[^/]*)(.*)?")
@@ -63,6 +63,12 @@ class SpannerMetadataProvider {
             resourceHeaderKey,
             Collections.singletonList(
                 getResourceHeaderValue(resourceTokenTemplate, defaultResourceToken)))
+        .build();
+  }
+
+  Map<String, List<String>> newRouteToLeaderHeader() {
+    return ImmutableMap.<String, List<String>>builder()
+        .put(routeToLeaderHeaderKey, Collections.singletonList("true"))
         .build();
   }
 

@@ -82,6 +82,17 @@ public class SpannerMetadataProviderTest {
             ImmutableMap.<String, List<String>>of("header1", ImmutableList.of("value1")));
   }
 
+  @Test
+  public void testNewRouteToLeaderHeader() {
+    SpannerMetadataProvider metadataProvider =
+        SpannerMetadataProvider.create(ImmutableMap.of(), "header1");
+    Map<String, List<String>> extraHeaders = metadataProvider.newRouteToLeaderHeader();
+    assertThat(extraHeaders)
+        .containsExactlyEntriesIn(
+            ImmutableMap.<String, List<String>>of(
+                "x-goog-spanner-route-to-leader", ImmutableList.of("true")));
+  }
+
   private String getResourceHeaderValue(
       SpannerMetadataProvider headerProvider, String resourceTokenTemplate) {
     Metadata metadata = headerProvider.newMetadata(resourceTokenTemplate, "projects/p");
