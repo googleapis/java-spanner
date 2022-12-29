@@ -24,6 +24,9 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 
+/**
+ * To query Proto column including messages and enums and array of them.
+ */
 public class QueryProtoColumnSample {
 
   static void queryProtoColumn() {
@@ -41,8 +44,16 @@ public class QueryProtoColumnSample {
   }
 
   /**
-   * Method to query Singer Table using DQL. Assuming a table Singer with columns (singer_id,
-   * singer_info, genre, singer_info_list, genre_list)
+   * Method to query Singer Table using DQL.
+   *
+   * Assuming a table Singer with columns with following DDL:
+   * CREATE TABLE Singer (
+   *     singer_id        INT64 NOT NULL,
+   *     singer_info    spanner.examples.music.SingerInfo,
+   *     genre   spanner.examples.music.Genre,
+   *     singer_info_list   ARRAY<spanner.examples.music.SingerInfo>,
+   *     genre_list  ARRAY<spanner.examples.music.Genre>,
+   * ) PRIMARY KEY (singer_id);
    */
   static void queryProtoColumn(DatabaseClient client) {
     Statement statement =

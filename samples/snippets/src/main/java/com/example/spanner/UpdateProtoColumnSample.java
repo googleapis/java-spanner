@@ -25,6 +25,9 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 
+/**
+ * To insert data into Proto column including messages and enums and array of them.
+ */
 public class UpdateProtoColumnSample {
 
   static void updateProtoData() {
@@ -42,8 +45,16 @@ public class UpdateProtoColumnSample {
   }
 
   /**
-   * Method to update Singer Table using mutations. Assuming a table Singer with columns (singer_id,
-   * singer_info, genre, singer_info_list, genre_list)
+   * Method to update Singer Table using mutations.
+   *
+   * Assuming a table Singer with columns with following DDL:
+   * CREATE TABLE Singer (
+   *     singer_id        INT64 NOT NULL,
+   *     singer_info    spanner.examples.music.SingerInfo,
+   *     genre   spanner.examples.music.Genre,
+   *     singer_info_list   ARRAY<spanner.examples.music.SingerInfo>,
+   *     genre_list  ARRAY<spanner.examples.music.Genre>,
+   * ) PRIMARY KEY (singer_id);
    */
   static void updateProtoData(DatabaseClient client) {
     SingerInfo singerInfo =
