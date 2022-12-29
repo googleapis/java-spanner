@@ -80,7 +80,7 @@ public class ITProtoColumnTest {
 
   @After
   public void after() throws Exception {
-    databaseClient.write(ImmutableList.of(Mutation.delete( "Types", KeySet.all())));
+    databaseClient.write(ImmutableList.of(Mutation.delete("Types", KeySet.all())));
     databaseClient.write(ImmutableList.of(Mutation.delete("Singers", KeySet.all())));
   }
 
@@ -130,7 +130,7 @@ public class ITProtoColumnTest {
 
     databaseClient.write(
         ImmutableList.of(
-            Mutation.newInsertOrUpdateBuilder( "Types")
+            Mutation.newInsertOrUpdateBuilder("Types")
                 .set("RowID")
                 .to(11)
                 .set("Int64a")
@@ -152,7 +152,7 @@ public class ITProtoColumnTest {
                 .build()));
 
     try (ResultSet resultSet =
-        databaseClient.singleUse().executeQuery(Statement.of("SELECT * FROM " +  "Types"))) {
+        databaseClient.singleUse().executeQuery(Statement.of("SELECT * FROM " + "Types"))) {
 
       resultSet.next();
       assertEquals(11, resultSet.getLong("RowID"));
@@ -221,71 +221,90 @@ public class ITProtoColumnTest {
 
     databaseClient
         .readWriteTransaction()
-        .run(transaction -> {
-          Statement statement1 = Statement.newBuilder(
-                  "INSERT INTO Singers (SingerId, FirstName, LastName, SingerInfo, SingerGenre) VALUES (1, \"FirstName1\", \"LastName1\", @singerInfo, @singerGenre)")
-              .bind("singerInfo")
-              .to(singerInfo1)
-              .bind("singerGenre")
-              .to(genre1)
-              .build();
+        .run(
+            transaction -> {
+              Statement statement1 =
+                  Statement.newBuilder(
+                          "INSERT INTO Singers (SingerId, FirstName, LastName, SingerInfo, SingerGenre) VALUES (1, \"FirstName1\", \"LastName1\", @singerInfo, @singerGenre)")
+                      .bind("singerInfo")
+                      .to(singerInfo1)
+                      .bind("singerGenre")
+                      .to(genre1)
+                      .build();
 
-          Statement statement2 = Statement.newBuilder(
-                  "INSERT INTO Singers (SingerId, FirstName, LastName, SingerInfo, SingerGenre) VALUES (2, \"FirstName2\", \"LastName2\", @singerInfo, @singerGenre)")
-              .bind("singerInfo")
-              .to(singerInfo2)
-              .bind("singerGenre")
-              .to(genre2)
-              .build();
+              Statement statement2 =
+                  Statement.newBuilder(
+                          "INSERT INTO Singers (SingerId, FirstName, LastName, SingerInfo, SingerGenre) VALUES (2, \"FirstName2\", \"LastName2\", @singerInfo, @singerGenre)")
+                      .bind("singerInfo")
+                      .to(singerInfo2)
+                      .bind("singerGenre")
+                      .to(genre2)
+                      .build();
 
-          transaction.batchUpdate(
-              Arrays.asList(statement1, statement2));
-          return null;
-        });
+              transaction.batchUpdate(Arrays.asList(statement1, statement2));
+              return null;
+            });
 
     // Read all rows based on Proto Message field and Proto Enum Primary key column values
-    ResultSet resultSet1 = databaseClient.singleUse()
-        .read("Singers", KeySet.newBuilder().addKey(Key.of("Country1", Genre.FOLK))
-                .addKey(Key.of("Country2", Genre.JAZZ)).build(),
-            Arrays.asList("SingerId", "FirstName", "LastName", "SingerInfo", "SingerGenre"));
+    ResultSet resultSet1 =
+        databaseClient
+            .singleUse()
+            .read(
+                "Singers",
+                KeySet.newBuilder()
+                    .addKey(Key.of("Country1", Genre.FOLK))
+                    .addKey(Key.of("Country2", Genre.JAZZ))
+                    .build(),
+                Arrays.asList("SingerId", "FirstName", "LastName", "SingerInfo", "SingerGenre"));
 
     resultSet1.next();
     assertEquals(1, resultSet1.getLong("SingerId"));
     assertEquals("FirstName1", resultSet1.getString("FirstName"));
     assertEquals("LastName1", resultSet1.getString("LastName"));
-    assertEquals(singerInfo1, resultSet1.getProtoMessage("SingerInfo", SingerInfo.getDefaultInstance()));
+    assertEquals(
+        singerInfo1, resultSet1.getProtoMessage("SingerInfo", SingerInfo.getDefaultInstance()));
     assertEquals(genre1, resultSet1.getProtoEnum("SingerGenre", Genre::forNumber));
 
     resultSet1.next();
     assertEquals(2, resultSet1.getLong("SingerId"));
     assertEquals("FirstName2", resultSet1.getString("FirstName"));
     assertEquals("LastName2", resultSet1.getString("LastName"));
-    assertEquals(singerInfo2, resultSet1.getProtoMessage("SingerInfo", SingerInfo.getDefaultInstance()));
+    assertEquals(
+        singerInfo2, resultSet1.getProtoMessage("SingerInfo", SingerInfo.getDefaultInstance()));
     assertEquals(genre2, resultSet1.getProtoEnum("SingerGenre", Genre::forNumber));
 
     // Read rows using Index on Proto Message field and Proto Enum column
-    ResultSet resultSet2 = databaseClient.singleUse()
-        .readUsingIndex("Singers", "SingerByNationalityAndGenre",
-           KeySet.singleKey(Key.of("Country2", Genre.JAZZ)),
-            Arrays.asList( "SingerId", "FirstName", "LastName"));
+    ResultSet resultSet2 =
+        databaseClient
+            .singleUse()
+            .readUsingIndex(
+                "Singers",
+                "SingerByNationalityAndGenre",
+                KeySet.singleKey(Key.of("Country2", Genre.JAZZ)),
+                Arrays.asList("SingerId", "FirstName", "LastName"));
     resultSet2.next();
     assertEquals(2, resultSet2.getLong("SingerId"));
     assertEquals("FirstName2", resultSet2.getString("FirstName"));
     assertEquals("LastName2", resultSet2.getString("LastName"));
 
     // Filter using Parameterized DQL
-    ResultSet resultSet3 = databaseClient.singleUse().executeQuery(
-        Statement.newBuilder("SELECT SingerId, SingerInfo, SingerGenre FROM "
-                + "Singers WHERE SingerInfo.Nationality=@country AND SingerGenre=@genre")
-            .bind("country")
-            .to("Country2")
-            .bind("genre")
-            .to(Genre.JAZZ)
-            .build());
+    ResultSet resultSet3 =
+        databaseClient
+            .singleUse()
+            .executeQuery(
+                Statement.newBuilder(
+                        "SELECT SingerId, SingerInfo, SingerGenre FROM "
+                            + "Singers WHERE SingerInfo.Nationality=@country AND SingerGenre=@genre")
+                    .bind("country")
+                    .to("Country2")
+                    .bind("genre")
+                    .to(Genre.JAZZ)
+                    .build());
 
     resultSet3.next();
     assertEquals(2, resultSet1.getLong("SingerId"));
-    assertEquals(singerInfo2, resultSet1.getProtoMessage("SingerInfo", SingerInfo.getDefaultInstance()));
+    assertEquals(
+        singerInfo2, resultSet1.getProtoMessage("SingerInfo", SingerInfo.getDefaultInstance()));
     assertEquals(genre2, resultSet1.getProtoEnum("SingerGenre", Genre::forNumber));
   }
 
@@ -307,15 +326,19 @@ public class ITProtoColumnTest {
                 .set("RowID")
                 .to(11)
                 .set("ProtoMessage")
-                .to(singerInfo).build()));
+                .to(singerInfo)
+                .build()));
 
-    ResultSet resultSet = databaseClient.singleUse()
-        .read("Types", KeySet.all(), Collections.singletonList("ProtoMessage"));
+    ResultSet resultSet =
+        databaseClient
+            .singleUse()
+            .read("Types", KeySet.all(), Collections.singletonList("ProtoMessage"));
     resultSet.next();
 
-    SpannerException e = assertThrows(
-        SpannerException.class,
-        () -> resultSet.getProtoMessage("ProtoMessage", Backup.getDefaultInstance()));
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> resultSet.getProtoMessage("ProtoMessage", Backup.getDefaultInstance()));
 
     // Underlying cause is InvalidWireTypeException
     assertEquals(InvalidWireTypeException.class, e.getCause().getClass());
