@@ -96,12 +96,13 @@ public class HttpJsonSpannerStub extends SpannerStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<CreateSessionRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearDatabase().build(), false))
+                                  .toBody("*", request.toBuilder().clearDatabase().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Session>newBuilder()
@@ -132,12 +133,13 @@ public class HttpJsonSpannerStub extends SpannerStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<BatchCreateSessionsRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearDatabase().build(), false))
+                                  .toBody("*", request.toBuilder().clearDatabase().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<BatchCreateSessionsResponse>newBuilder()
@@ -167,6 +169,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
                         Map<String, List<String>> fields = new HashMap<>();
                         ProtoRestSerializer<GetSessionRequest> serializer =
                             ProtoRestSerializer.create();
+                        serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                         return fields;
                       })
                   .setRequestBodyExtractor(request -> null)
@@ -203,6 +206,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
                             serializer.putQueryParam(fields, "filter", request.getFilter());
                             serializer.putQueryParam(fields, "pageSize", request.getPageSize());
                             serializer.putQueryParam(fields, "pageToken", request.getPageToken());
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(request -> null)
@@ -236,6 +240,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<DeleteSessionRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(request -> null)
@@ -269,12 +274,13 @@ public class HttpJsonSpannerStub extends SpannerStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<ExecuteSqlRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearSession().build(), false))
+                                  .toBody("*", request.toBuilder().clearSession().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<ResultSet>newBuilder()
@@ -305,12 +311,13 @@ public class HttpJsonSpannerStub extends SpannerStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<ExecuteSqlRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearSession().build(), false))
+                                  .toBody("*", request.toBuilder().clearSession().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<PartialResultSet>newBuilder()
@@ -341,12 +348,13 @@ public class HttpJsonSpannerStub extends SpannerStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<ExecuteBatchDmlRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearSession().build(), false))
+                                  .toBody("*", request.toBuilder().clearSession().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<ExecuteBatchDmlResponse>newBuilder()
@@ -374,12 +382,13 @@ public class HttpJsonSpannerStub extends SpannerStub {
                       request -> {
                         Map<String, List<String>> fields = new HashMap<>();
                         ProtoRestSerializer<ReadRequest> serializer = ProtoRestSerializer.create();
+                        serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                         return fields;
                       })
                   .setRequestBodyExtractor(
                       request ->
                           ProtoRestSerializer.create()
-                              .toBody("*", request.toBuilder().clearSession().build(), false))
+                              .toBody("*", request.toBuilder().clearSession().build(), true))
                   .build())
           .setResponseParser(
               ProtoMessageResponseParser.<ResultSet>newBuilder()
@@ -410,12 +419,13 @@ public class HttpJsonSpannerStub extends SpannerStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<ReadRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearSession().build(), false))
+                                  .toBody("*", request.toBuilder().clearSession().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<PartialResultSet>newBuilder()
@@ -446,12 +456,13 @@ public class HttpJsonSpannerStub extends SpannerStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<BeginTransactionRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearSession().build(), false))
+                                  .toBody("*", request.toBuilder().clearSession().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Transaction>newBuilder()
@@ -481,12 +492,13 @@ public class HttpJsonSpannerStub extends SpannerStub {
                         Map<String, List<String>> fields = new HashMap<>();
                         ProtoRestSerializer<CommitRequest> serializer =
                             ProtoRestSerializer.create();
+                        serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                         return fields;
                       })
                   .setRequestBodyExtractor(
                       request ->
                           ProtoRestSerializer.create()
-                              .toBody("*", request.toBuilder().clearSession().build(), false))
+                              .toBody("*", request.toBuilder().clearSession().build(), true))
                   .build())
           .setResponseParser(
               ProtoMessageResponseParser.<CommitResponse>newBuilder()
@@ -516,12 +528,13 @@ public class HttpJsonSpannerStub extends SpannerStub {
                         Map<String, List<String>> fields = new HashMap<>();
                         ProtoRestSerializer<RollbackRequest> serializer =
                             ProtoRestSerializer.create();
+                        serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                         return fields;
                       })
                   .setRequestBodyExtractor(
                       request ->
                           ProtoRestSerializer.create()
-                              .toBody("*", request.toBuilder().clearSession().build(), false))
+                              .toBody("*", request.toBuilder().clearSession().build(), true))
                   .build())
           .setResponseParser(
               ProtoMessageResponseParser.<Empty>newBuilder()
@@ -552,12 +565,13 @@ public class HttpJsonSpannerStub extends SpannerStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<PartitionQueryRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearSession().build(), false))
+                                  .toBody("*", request.toBuilder().clearSession().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<PartitionResponse>newBuilder()
@@ -588,12 +602,13 @@ public class HttpJsonSpannerStub extends SpannerStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<PartitionReadRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearSession().build(), false))
+                                  .toBody("*", request.toBuilder().clearSession().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<PartitionResponse>newBuilder()

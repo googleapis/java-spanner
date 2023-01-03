@@ -28,6 +28,7 @@ java.common_templates(
         ".kokoro/nightly/java8-samples.cfg",
         ".kokoro/nightly/java11-samples.cfg",
         ".kokoro/nightly/samples.cfg",
+        ".kokoro/build.bat",
         ".kokoro/presubmit/common.cfg",
         ".kokoro/presubmit/java8-samples.cfg",
         ".kokoro/presubmit/java11-samples.cfg",
