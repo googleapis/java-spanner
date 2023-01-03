@@ -93,11 +93,6 @@
       </dependency>
       <dependency>
         <groupId>com.google.api.grpc</groupId>
-        <artifactId>proto-google-cloud-spanner-executor-v1</artifactId>
-        <version>6.34.2-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-executor-v1:current} -->
-      </dependency>
-      <dependency>
-        <groupId>com.google.api.grpc</groupId>
         <artifactId>proto-google-cloud-spanner-admin-database-v1</artifactId>
         <version>6.34.2-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-admin-database-v1:current} -->
       </dependency>
