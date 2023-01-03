@@ -65,8 +65,8 @@ public class ITProtoColumnTest {
         "Proto Column is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     // ToDo: Update project, instance and database parameter before GA
     projectId = "span-cloud-testing";
-    databaseId = "go_int_test_proto_column_db";
-    instanceId = "go-int-test-proto-column";
+    databaseId = "int_test_proto_column_db";
+    instanceId = "integration-test-proto-column";
 
     Spanner spanner =
         SpannerOptions.newBuilder()
