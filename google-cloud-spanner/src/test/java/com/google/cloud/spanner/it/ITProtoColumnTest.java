@@ -119,6 +119,7 @@ public class ITProtoColumnTest {
     List<Long> enumConstList =
         Arrays.asList((long) Genre.FOLK_VALUE, null, (long) Genre.ROCK_VALUE);
 
+    // Inserting two rows with same data except rowID as it's used as PK.
     databaseClient.write(
         ImmutableList.of(
             Mutation.newInsertOrUpdateBuilder("Types")
@@ -140,40 +141,63 @@ public class ITProtoColumnTest {
                 .toProtoMessageArray(singerInfoList, SingerInfo.getDescriptor())
                 .set("ProtoEnumArray")
                 .toProtoEnumArray(enumList, Genre.getDescriptor())
+                .build(),
+            //Inter Compatability check between ProtoMessages/Bytes and Int64/Enum.
+            Mutation.newInsertOrUpdateBuilder("Types")
+                .set("RowID")
+                .to(12)
+                .set("Int64a")
+                .to(genre)
+                .set("Bytes")
+                .to(singerInfo)
+                .set("Int64Array")
+                .toProtoEnumArray(enumList, Genre.getDescriptor())
+                .set("BytesArray")
+                .toProtoMessageArray(singerInfoList, SingerInfo.getDescriptor())
+                .set("ProtoMessage")
+                .to(singerInfoBytes)
+                .set("ProtoEnum")
+                .to(genreConst)
+                .set("ProtoMessageArray")
+                .toBytesArray(singerInfoBytesList)
+                .set("ProtoEnumArray")
+                .toInt64Array(enumConstList)
                 .build()));
 
     try (ResultSet resultSet =
         databaseClient.singleUse().executeQuery(Statement.of("SELECT * FROM " + "Types"))) {
 
-      resultSet.next();
-      assertEquals(11, resultSet.getLong("RowID"));
-      assertEquals(genreConst, resultSet.getLong("Int64a"));
-      assertEquals(singerInfoBytes, resultSet.getBytes("Bytes"));
-      assertEquals(enumConstList, resultSet.getLongList("Int64Array"));
-      assertEquals(singerInfoBytesList, resultSet.getBytesList("BytesArray"));
-      assertEquals(
-          singerInfo, resultSet.getProtoMessage("ProtoMessage", SingerInfo.getDefaultInstance()));
-      assertEquals(genre, resultSet.getProtoEnum("ProtoEnum", Genre::forNumber));
-      assertEquals(
-          singerInfoList,
-          resultSet.getProtoMessageList("ProtoMessageArray", SingerInfo.getDefaultInstance()));
-      assertEquals(enumList, resultSet.getProtoEnumList("ProtoEnumArray", Genre::forNumber));
+      for(int i=0;i<2;i++) {
+        resultSet.next();
+        assertEquals(11 +  i, resultSet.getLong("RowID"));
+        assertEquals(genreConst, resultSet.getLong("Int64a"));
+        assertEquals(singerInfoBytes, resultSet.getBytes("Bytes"));
+        assertEquals(enumConstList, resultSet.getLongList("Int64Array"));
+        assertEquals(singerInfoBytesList, resultSet.getBytesList("BytesArray"));
+        assertEquals(
+            singerInfo, resultSet.getProtoMessage("ProtoMessage", SingerInfo.getDefaultInstance()));
+        assertEquals(genre, resultSet.getProtoEnum("ProtoEnum", Genre::forNumber));
+        assertEquals(
+            singerInfoList,
+            resultSet.getProtoMessageList("ProtoMessageArray", SingerInfo.getDefaultInstance()));
+        assertEquals(enumList, resultSet.getProtoEnumList("ProtoEnumArray", Genre::forNumber));
 
-      // Check compatability between Proto Messages & Bytes
-      assertEquals(singerInfoBytes, resultSet.getBytes("ProtoMessage"));
-      assertEquals(singerInfo, resultSet.getProtoMessage("Bytes", SingerInfo.getDefaultInstance()));
+        // Check compatability between Proto Messages & Bytes
+        assertEquals(singerInfoBytes, resultSet.getBytes("ProtoMessage"));
+        assertEquals(singerInfo, resultSet.getProtoMessage("Bytes", SingerInfo.getDefaultInstance()));
 
-      assertEquals(singerInfoBytesList, resultSet.getBytesList("ProtoMessageArray"));
-      assertEquals(
-          singerInfoList,
-          resultSet.getProtoMessageList("BytesArray", SingerInfo.getDefaultInstance()));
+        assertEquals(singerInfoBytesList, resultSet.getBytesList("ProtoMessageArray"));
+        assertEquals(
+            singerInfoList,
+            resultSet.getProtoMessageList("BytesArray", SingerInfo.getDefaultInstance()));
 
-      // Check compatability between Proto Enum & Int64
-      assertEquals(genreConst, resultSet.getLong("ProtoEnum"));
-      assertEquals(genre, resultSet.getProtoEnum("Int64a", Genre::forNumber));
+        // Check compatability between Proto Enum & Int64
+        assertEquals(genreConst, resultSet.getLong("ProtoEnum"));
+        assertEquals(genre, resultSet.getProtoEnum("Int64a", Genre::forNumber));
 
-      assertEquals(enumConstList, resultSet.getLongList("ProtoEnumArray"));
-      assertEquals(enumList, resultSet.getProtoEnumList("Int64Array", Genre::forNumber));
+        assertEquals(enumConstList, resultSet.getLongList("ProtoEnumArray"));
+        assertEquals(enumList, resultSet.getProtoEnumList("Int64Array", Genre::forNumber));
+      }
     }
   }
 
@@ -210,7 +234,7 @@ public class ITProtoColumnTest {
             transaction -> {
               Statement statement1 =
                   Statement.newBuilder(
-                          "INSERT INTO Singers (SingerId, FirstName, LastName, SingerInfo, SingerGenre) VALUES (1, \"FirstName1\", \"LastName1\", @singerInfo, @singerGenre)")
+                          "INSERT INTO Singers (SingerId, FirstName, LastName, SingerInfo, SingerGenre) VALUES (11, \"FirstName1\", \"LastName1\", @singerInfo, @singerGenre)")
                       .bind("singerInfo")
                       .to(singerInfo1)
                       .bind("singerGenre")
@@ -219,7 +243,7 @@ public class ITProtoColumnTest {
 
               Statement statement2 =
                   Statement.newBuilder(
-                          "INSERT INTO Singers (SingerId, FirstName, LastName, SingerInfo, SingerGenre) VALUES (2, \"FirstName2\", \"LastName2\", @singerInfo, @singerGenre)")
+                          "INSERT INTO Singers (SingerId, FirstName, LastName, SingerInfo, SingerGenre) VALUES (22, \"FirstName2\", \"LastName2\", @singerInfo, @singerGenre)")
                       .bind("singerInfo")
                       .to(singerInfo2)
                       .bind("singerGenre")
@@ -243,7 +267,7 @@ public class ITProtoColumnTest {
                 Arrays.asList("SingerId", "FirstName", "LastName", "SingerInfo", "SingerGenre"));
 
     resultSet1.next();
-    assertEquals(1, resultSet1.getLong("SingerId"));
+    assertEquals(11, resultSet1.getLong("SingerId"));
     assertEquals("FirstName1", resultSet1.getString("FirstName"));
     assertEquals("LastName1", resultSet1.getString("LastName"));
     assertEquals(
@@ -251,7 +275,7 @@ public class ITProtoColumnTest {
     assertEquals(genre1, resultSet1.getProtoEnum("SingerGenre", Genre::forNumber));
 
     resultSet1.next();
-    assertEquals(2, resultSet1.getLong("SingerId"));
+    assertEquals(22, resultSet1.getLong("SingerId"));
     assertEquals("FirstName2", resultSet1.getString("FirstName"));
     assertEquals("LastName2", resultSet1.getString("LastName"));
     assertEquals(
@@ -268,7 +292,7 @@ public class ITProtoColumnTest {
                 KeySet.singleKey(Key.of("Country2", Genre.JAZZ)),
                 Arrays.asList("SingerId", "FirstName", "LastName"));
     resultSet2.next();
-    assertEquals(2, resultSet2.getLong("SingerId"));
+    assertEquals(22, resultSet2.getLong("SingerId"));
     assertEquals("FirstName2", resultSet2.getString("FirstName"));
     assertEquals("LastName2", resultSet2.getString("LastName"));
 
@@ -287,7 +311,7 @@ public class ITProtoColumnTest {
                     .build());
 
     resultSet3.next();
-    assertEquals(2, resultSet1.getLong("SingerId"));
+    assertEquals(22, resultSet1.getLong("SingerId"));
     assertEquals(
         singerInfo2, resultSet1.getProtoMessage("SingerInfo", SingerInfo.getDefaultInstance()));
     assertEquals(genre2, resultSet1.getProtoEnum("SingerGenre", Genre::forNumber));
