@@ -1,5 +1,32 @@
 # Changelog
 
+## [6.34.1](https://github.com/googleapis/java-spanner/compare/v6.34.0...v6.34.1) (2022-12-13)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.1.0 ([#2187](https://github.com/googleapis/java-spanner/issues/2187)) ([4d9df2b](https://github.com/googleapis/java-spanner/commit/4d9df2bac3a2dd6c910ba5fdd466ccd43a226c7f))
+
+## [6.34.0](https://github.com/googleapis/java-spanner/compare/v6.33.0...v6.34.0) (2022-12-12)
+
+
+### Features
+
+* Setting up 6.33.x branch ([#2184](https://github.com/googleapis/java-spanner/issues/2184)) ([e237a21](https://github.com/googleapis/java-spanner/commit/e237a213cf5cb5edc338ca4e5f8ad5dd0593d2d1))
+
+
+### Bug Fixes
+
+* Remove the statement of session number limits ([#1928](https://github.com/googleapis/java-spanner/issues/1928)) ([ddd0625](https://github.com/googleapis/java-spanner/commit/ddd062527674659ca2ea73e079bca4dee62ca67f)), closes [#1927](https://github.com/googleapis/java-spanner/issues/1927)
+* Update samples/snippets pom.xml configuration to avoid fat jar ([#2100](https://github.com/googleapis/java-spanner/issues/2100)) ([19058b4](https://github.com/googleapis/java-spanner/commit/19058b4cd324ce33e8dd52447bde2486c87d4754))
+* Use a proper endpoint for DirectPath tests ([#2186](https://github.com/googleapis/java-spanner/issues/2186)) ([4d74a0d](https://github.com/googleapis/java-spanner/commit/4d74a0d8ae48e190c126ab4047b81cca117f4de1))
+
+
+### Dependencies
+
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.18 ([#2171](https://github.com/googleapis/java-spanner/issues/2171)) ([f348780](https://github.com/googleapis/java-spanner/commit/f3487805fe5f976596e94047c3796bc623eeae95))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.18 ([#2145](https://github.com/googleapis/java-spanner/issues/2145)) ([dcdd2c3](https://github.com/googleapis/java-spanner/commit/dcdd2c3b684e38892fac0abbdf06081e9c7d83b2))
+
 ## [6.33.0](https://github.com/googleapis/java-spanner/compare/v6.32.0...v6.33.0) (2022-11-17)
 
 
