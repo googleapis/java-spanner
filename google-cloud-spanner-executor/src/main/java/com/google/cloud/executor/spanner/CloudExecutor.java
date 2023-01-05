@@ -203,7 +203,7 @@ public abstract class CloudExecutor {
     /** Init the sender for batch read action, then set the table and index if there exists. */
     public void initForBatchRead(String table, String index) {
       initForRead(table, index);
-      // Cloud API supports only simple batch reads (not multireads), so request index
+      // Cloud API supports only simple batch reads (not multi reads), so request index
       // is always 0
       this.requestIndex = 0;
     }
