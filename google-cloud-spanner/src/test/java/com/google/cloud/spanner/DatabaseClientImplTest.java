@@ -37,6 +37,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.cloud.ByteArray;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractResultSet.GrpcStreamIterator;
@@ -54,6 +55,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ListValue;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
@@ -75,8 +77,10 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -2380,5 +2384,52 @@ public class DatabaseClientImplTest {
     assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
     ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
     assertEquals(QueryMode.PLAN, request.getQueryMode());
+  }
+
+  @Test
+  public void testByteArray() {
+    Random random = new Random();
+    byte[] bytes = new byte[random.nextInt(20_000)];
+    int numRows = 10;
+    List<ListValue> rows = new ArrayList<>(numRows);
+    for (int i = 0; i < numRows; i++) {
+      random.nextBytes(bytes);
+      rows.add(
+          ListValue.newBuilder()
+              .addValues(
+                  com.google.protobuf.Value.newBuilder()
+                      .setStringValue(Base64.getEncoder().encodeToString(bytes))
+                      .build())
+              .build());
+    }
+    Statement statement = Statement.of("select * from foo");
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            statement,
+            com.google.spanner.v1.ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(
+                            StructType.newBuilder()
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setType(Type.newBuilder().setCode(TypeCode.BYTES).build())
+                                        .setName("f1")
+                                        .build())
+                                .build())
+                        .build())
+                .addAllRows(rows)
+                .build()));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+      while (resultSet.next()) {
+        String base64String = resultSet.getString(0);
+        ByteArray byteArray = resultSet.getBytes(0);
+        // Use the 'old' ByteArray.fromBase64(..) method that uses the Guava encoder to ensure that
+        // the two encoders (JDK and Guava) return the same values.
+        assertEquals(ByteArray.fromBase64(base64String), byteArray);
+      }
+    }
   }
 }

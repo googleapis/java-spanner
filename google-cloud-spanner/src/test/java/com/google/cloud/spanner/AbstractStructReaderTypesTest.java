@@ -27,6 +27,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -215,7 +216,7 @@ public class AbstractStructReaderTypesTest {
             "getStringInternal",
             "1.23",
             "getString",
-            Collections.singletonList("getValue")
+            ImmutableList.of("getValue", "getBigDecimal")
           },
           {
             Type.string(),
@@ -229,7 +230,7 @@ public class AbstractStructReaderTypesTest {
             "getBytesInternal",
             ByteArray.copyFrom(new byte[] {0}),
             "getBytes",
-            Collections.singletonList("getValue")
+            ImmutableList.of("getValue", "getString")
           },
           {
             Type.json(),

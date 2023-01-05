@@ -26,6 +26,7 @@ import com.google.api.client.util.BackOff;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.ByteArray;
+import com.google.cloud.ByteArrayHelper;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Type.StructField;
@@ -55,6 +56,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
@@ -353,6 +355,39 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
   }
 
+  static class LazyByteArray implements Serializable {
+    private static final Base64.Decoder DECODER = Base64.getDecoder();
+    private final String base64String;
+    private final transient AbstractLazyInitializer<ByteArray> byteArray =
+        new AbstractLazyInitializer<ByteArray>() {
+          @Override
+          protected ByteArray initialize() {
+            return ByteArrayHelper.wrap(DECODER.decode(base64String));
+          }
+        };
+
+    LazyByteArray(String base64String) {
+      this.base64String = base64String;
+    }
+
+    ByteArray getByteArray() {
+      try {
+        return byteArray.get();
+      } catch (Throwable t) {
+        throw SpannerExceptionFactory.asSpannerException(t);
+      }
+    }
+
+    String getBase64String() {
+      return base64String;
+    }
+
+    @Override
+    public String toString() {
+      return getBase64String();
+    }
+  }
+
   static class GrpcStruct extends Struct implements Serializable {
     private final Type type;
     private final List<Object> rowData;
@@ -395,7 +430,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             builder.set(fieldName).to(Value.pgJsonb((String) value));
             break;
           case BYTES:
-            builder.set(fieldName).to((ByteArray) value);
+            builder
+                .set(fieldName)
+                .to(
+                    value instanceof LazyByteArray
+                        ? ((LazyByteArray) value).getByteArray()
+                        : (ByteArray) value);
             break;
           case TIMESTAMP:
             builder.set(fieldName).to((Timestamp) value);
@@ -511,7 +551,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return proto.getStringValue();
         case BYTES:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
-          return ByteArray.fromBase64(proto.getStringValue());
+          return new LazyByteArray(proto.getStringValue());
         case TIMESTAMP:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return Timestamp.parseTimestamp(proto.getStringValue());
@@ -619,7 +659,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     @Override
     protected String getStringInternal(int columnIndex) {
-      return (String) rowData.get(columnIndex);
+      Object value = rowData.get(columnIndex);
+      return value == null ? null : value.toString();
     }
 
     @Override
@@ -634,7 +675,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     @Override
     protected ByteArray getBytesInternal(int columnIndex) {
-      return (ByteArray) rowData.get(columnIndex);
+      return ((LazyByteArray) rowData.get(columnIndex)).getByteArray();
     }
 
     @Override
@@ -785,9 +826,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
-    @SuppressWarnings("unchecked") // We know ARRAY<BYTES> produces a List<ByteArray>.
+    @SuppressWarnings("unchecked") // We know ARRAY<BYTES> produces a List<LazyByteArray>.
     protected List<ByteArray> getBytesListInternal(int columnIndex) {
-      return Collections.unmodifiableList((List<ByteArray>) rowData.get(columnIndex));
+      return Lists.transform(
+          (List<LazyByteArray>) rowData.get(columnIndex), l -> l == null ? null : l.getByteArray());
     }
 
     @Override
