@@ -163,7 +163,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
@@ -178,6 +177,9 @@ import org.threeten.bp.LocalDate;
 public class CloudClientExecutor extends CloudExecutor {
 
   private static final Logger LOGGER = Logger.getLogger(CloudClientExecutor.class.getName());
+
+  // Prefix for host address.
+  private static final String HOST_PREFIX = "https://localhost:";
 
   public CloudClientExecutor(boolean enableGrpcFaultInjector) {
     this.enableGrpcFaultInjector = enableGrpcFaultInjector;
@@ -619,7 +621,7 @@ public class CloudClientExecutor extends CloudExecutor {
       dbClient = client;
     }
 
-    /** Return a list of key column types of the given table. */
+    /** Return a list of serviceKeyFile column types of the given table. */
     public List<com.google.spanner.v1.Type> getKeyColumnTypes(String tableName)
         throws SpannerException {
       Preconditions.checkNotNull(metadata);
@@ -747,12 +749,13 @@ public class CloudClientExecutor extends CloudExecutor {
   private synchronized Spanner getClient(long timeoutSeconds) throws IOException {
     // Create a cloud spanner client
     Credentials credentials;
-    if (WorkerProxy.key.isEmpty()) {
+    if (WorkerProxy.serviceKeyFile.isEmpty()) {
       credentials = NoCredentials.getInstance();
     } else {
       credentials =
           GoogleCredentials.fromStream(
-              new ByteArrayInputStream(FileUtils.readFileToByteArray(new File(WorkerProxy.key))),
+              new ByteArrayInputStream(
+                  FileUtils.readFileToByteArray(new File(WorkerProxy.serviceKeyFile))),
               HTTP_TRANSPORT_FACTORY);
     }
 
@@ -779,7 +782,7 @@ public class CloudClientExecutor extends CloudExecutor {
     SpannerOptions.Builder optionsBuilder =
         SpannerOptions.newBuilder()
             .setProjectId(PROJECT_ID)
-            .setHost("https://localhost:" + WorkerProxy.spannerPort)
+            .setHost(HOST_PREFIX + WorkerProxy.spannerPort)
             .setCredentials(credentials)
             .setChannelProvider(channelProvider);
 
@@ -848,7 +851,7 @@ public class CloudClientExecutor extends CloudExecutor {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INVALID_ARGUMENT, "Database path must be set for this action");
         }
-        DatabaseClient dbClient = getClient().getDatabaseClient(getDatabaseId(dbPath));
+        DatabaseClient dbClient = getClient().getDatabaseClient(DatabaseId.of(dbPath));
         return executeStartTxn(action.getStart(), dbClient, outcomeSender, executionContext);
       } else if (action.hasFinish()) {
         return executeFinishTxn(action.getFinish(), outcomeSender, executionContext);
@@ -871,7 +874,7 @@ public class CloudClientExecutor extends CloudExecutor {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INVALID_ARGUMENT, "database path must be set for this action");
         }
-        BatchClient batchClient = getClient().getBatchClient(getDatabaseId(dbPath));
+        BatchClient batchClient = getClient().getBatchClient(DatabaseId.of(dbPath));
         return executeStartBatchTxn(
             action.getStartBatchTxn(), batchClient, outcomeSender, executionContext);
       } else if (action.hasGenerateDbPartitionsRead()) {
@@ -2095,7 +2098,7 @@ public class CloudClientExecutor extends CloudExecutor {
       } else {
         spannerClient = getClient();
       }
-      DatabaseClient dbClient = spannerClient.getDatabaseClient(getDatabaseId(dbPath));
+      DatabaseClient dbClient = spannerClient.getDatabaseClient(DatabaseId.of(dbPath));
       ResultSet resultSet = dbClient.singleUse().executeQuery(Statement.of(tvfQuery));
 
       ChangeStreamRecord.Builder changeStreamRecordBuilder = ChangeStreamRecord.newBuilder();
@@ -2333,7 +2336,8 @@ public class CloudClientExecutor extends CloudExecutor {
           String.format("Executing read %s\n%s\n", executionContext.getTransactionSeed(), action));
       List<com.google.spanner.v1.Type> typeList = new ArrayList<>();
       if (action.hasIndex()) {
-        // For index read, we assume the key columns are listed at the front of the read column
+        // For index read, we assume the serviceKeyFile columns are listed at the front of the read
+        // column
         // list.
         for (int i = 0; i < action.getColumnCount(); ++i) {
           String col = action.getColumn(i);
@@ -2851,11 +2855,11 @@ public class CloudClientExecutor extends CloudExecutor {
         // Unreachable.
       default:
         throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT, "Unrecognized key range type");
+            ErrorCode.INVALID_ARGUMENT, "Unrecognized serviceKeyFile range type");
     }
   }
 
-  /** Convert a key proto(value list) to a cloud Key. */
+  /** Convert a serviceKeyFile proto(value list) to a cloud Key. */
   private static com.google.cloud.spanner.Key keyProtoToCloudKey(
       com.google.spanner.executor.v1.ValueList keyProto, List<com.google.spanner.v1.Type> typeList)
       throws SpannerException {
@@ -2863,7 +2867,7 @@ public class CloudClientExecutor extends CloudExecutor {
     if (typeList.size() < keyProto.getValueCount()) {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INVALID_ARGUMENT,
-          "There's more key parts in " + keyProto + " than column types in " + typeList);
+          "There's more serviceKeyFile parts in " + keyProto + " than column types in " + typeList);
     }
 
     for (int i = 0; i < keyProto.getValueCount(); ++i) {
@@ -2885,7 +2889,7 @@ public class CloudClientExecutor extends CloudExecutor {
           default:
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INVALID_ARGUMENT,
-                "Unsupported null key part type: " + type.getCode().name());
+                "Unsupported null serviceKeyFile part type: " + type.getCode().name());
         }
       } else if (part.hasIntValue()) {
         cloudKey.append(part.getIntValue());
@@ -2904,7 +2908,8 @@ public class CloudClientExecutor extends CloudExecutor {
             // Unreachable
           default:
             throw SpannerExceptionFactory.newSpannerException(
-                ErrorCode.INVALID_ARGUMENT, "Unsupported key part type: " + type.getCode().name());
+                ErrorCode.INVALID_ARGUMENT,
+                "Unsupported serviceKeyFile part type: " + type.getCode().name());
         }
       } else if (part.hasStringValue()) {
         if (type.getCode() == TypeCode.NUMERIC) {
@@ -2919,7 +2924,7 @@ public class CloudClientExecutor extends CloudExecutor {
         cloudKey.append(dateFromDays(part.getDateDaysValue()));
       } else {
         throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT, "Unsupported key part: " + part);
+            ErrorCode.INVALID_ARGUMENT, "Unsupported serviceKeyFile part: " + part);
       }
     }
     return cloudKey.build();
@@ -3381,16 +3386,6 @@ public class CloudClientExecutor extends CloudExecutor {
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT, "Unsupported concurrency mode: " + concurrency);
-  }
-
-  /** Get DatabaseId by parsing the given dbPath. */
-  private static DatabaseId getDatabaseId(String dbPath) {
-    Matcher matcher = DB_NAME.matcher(dbPath);
-    if (!matcher.matches()) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.INVALID_ARGUMENT, "Bad database path: " + dbPath);
-    }
-    return DatabaseId.of(matcher.group(1), matcher.group(2), matcher.group(3));
   }
 
   /** Build instance proto from cloud spanner instance. */
