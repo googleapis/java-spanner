@@ -39,12 +39,15 @@ import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
+import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -56,8 +59,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.threeten.bp.Duration;
 
-// TODO: Re-enable when jsonb is GA.
-@Ignore("Feature is not yet generally available")
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITPgJsonbTest {
@@ -118,7 +119,9 @@ public class ITPgJsonbTest {
             instanceId,
             databaseId,
             Collections.singletonList(
-                "CREATE TABLE \"" + tableName + "\" (id BIGINT PRIMARY KEY, col1 JSONB)"),
+                "CREATE TABLE \""
+                    + tableName
+                    + "\" (id BIGINT PRIMARY KEY, col1 JSONB, colarray JSONB[])"),
             null)
         .get(OPERATION_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
   }
@@ -181,6 +184,8 @@ public class ITPgJsonbTest {
           + "   {\"color\":\"green\",\"value\":\"#0f0\"},"
           + "   {\"color\":\"blue\",\"value\":\"#00f\"}"
           + "]";
+  private static final List<String> JSON_ARRAY1 = Arrays.asList(JSON_VALUE_1, JSON_VALUE_2);
+  private static final List<String> JSON_ARRAY2 = Arrays.asList("[]", "{}");
 
   @Test
   public void testLiteralPgJsonb() {
@@ -192,18 +197,24 @@ public class ITPgJsonbTest {
             transaction -> {
               transaction.executeUpdate(
                   Statement.of(
-                      "INSERT INTO "
-                          + tableName
-                          + " (id, col1) VALUES"
-                          + " (1, '"
-                          + JSON_VALUE_1
-                          + "')"
-                          + ", (2, '"
-                          + JSON_VALUE_2
-                          + "')"
-                          + ", (3, '{}')"
-                          + ", (4, '[]')"
-                          + ", (5, null)"));
+                      String.format(
+                          "INSERT INTO %s (id, col1, colarray) VALUES "
+                              + "(1, '%s', array[%s]::jsonb[]), "
+                              + "(2, '%s', array[%s]::jsonb[]), "
+                              + "(3, '{}', array['{}']::jsonb[]), "
+                              + "(4, '[]', array['[]']::jsonb[]), "
+                              + "(5, null, null)",
+                          tableName,
+                          JSON_VALUE_1,
+                          // Convert array into string with literals separated by comma
+                          // [a, b, c, null] -> 'a','b','c',null
+                          JSON_ARRAY1.stream()
+                              .map(item -> (item == null ? null : "'" + item + "'"))
+                              .collect(Collectors.joining(",")),
+                          JSON_VALUE_2,
+                          JSON_ARRAY2.stream()
+                              .map(item -> (item == null ? null : "'" + item + "'"))
+                              .collect(Collectors.joining(",")))));
               return null;
             });
 
@@ -222,27 +233,46 @@ public class ITPgJsonbTest {
                   Statement.newBuilder(
                           "INSERT INTO "
                               + tableName
-                              + " (id, col1) VALUES"
-                              + " (1, $1)"
-                              + ", (2, $2)"
-                              + ", (3, $3)"
-                              + ", (4, $4)"
-                              + ", (5, $5)")
+                              + " (id, col1, colarray) VALUES"
+                              + " (1, $1, $2)"
+                              + ", (2, $3, $4)"
+                              + ", (3, $5, $6)"
+                              + ", (4, $7, $8)"
+                              + ", (5, $9, $10)")
                       .bind("p1")
                       .to(Value.pgJsonb(JSON_VALUE_1))
                       .bind("p2")
-                      .to(Value.pgJsonb(JSON_VALUE_2))
+                      .to(Value.pgJsonbArray(JSON_ARRAY1))
                       .bind("p3")
-                      .to(Value.pgJsonb("{}"))
+                      .to(Value.pgJsonb(JSON_VALUE_2))
                       .bind("p4")
-                      .to(Value.pgJsonb("[]"))
+                      .to(Value.pgJsonbArray(JSON_ARRAY2))
                       .bind("p5")
+                      .to(Value.pgJsonb("{}"))
+                      .bind("p6")
+                      .to(Value.pgJsonbArray(Collections.singletonList("{}")))
+                      .bind("p7")
+                      .to(Value.pgJsonb("[]"))
+                      .bind("p8")
+                      .to(Value.pgJsonbArray(Collections.singletonList("[]")))
+                      .bind("p9")
                       .to(Value.pgJsonb(null))
+                      .bind("p10")
+                      .to(Value.pgJsonbArray(null))
                       .build());
               return null;
             });
 
     verifyContents();
+  }
+
+  private ListValue getJsonListValue(List<String> jsonList) {
+    return ListValue.newBuilder()
+        .addAllValues(
+            jsonList.stream()
+                .map(json -> com.google.protobuf.Value.newBuilder().setStringValue(json).build())
+                .collect(Collectors.toList()))
+        .build();
   }
 
   @Ignore("Untyped jsonb parameters are not yet supported")
@@ -261,12 +291,12 @@ public class ITPgJsonbTest {
                   Statement.newBuilder(
                           "INSERT INTO "
                               + tableName
-                              + " (id, col1) VALUES"
-                              + " (1, $1)"
-                              + ", (2, $2)"
-                              + ", (3, $3)"
-                              + ", (4, $4)"
-                              + ", (5, $5)")
+                              + " (id, col1, colarray) VALUES"
+                              + " (1, $1, $2)"
+                              + ", (2, $3, $4)"
+                              + ", (3, $5, $6)"
+                              + ", (4, $7, $8)"
+                              + ", (5, $9, $10)")
                       .bind("p1")
                       .to(
                           Value.untyped(
@@ -277,17 +307,47 @@ public class ITPgJsonbTest {
                       .to(
                           Value.untyped(
                               com.google.protobuf.Value.newBuilder()
-                                  .setStringValue(JSON_VALUE_2)
+                                  .setListValue(getJsonListValue(JSON_ARRAY1))
                                   .build()))
                       .bind("p3")
                       .to(
                           Value.untyped(
-                              com.google.protobuf.Value.newBuilder().setStringValue("{}").build()))
+                              com.google.protobuf.Value.newBuilder()
+                                  .setStringValue(JSON_VALUE_2)
+                                  .build()))
                       .bind("p4")
                       .to(
                           Value.untyped(
-                              com.google.protobuf.Value.newBuilder().setStringValue("[]").build()))
+                              com.google.protobuf.Value.newBuilder()
+                                  .setListValue(getJsonListValue(JSON_ARRAY2))
+                                  .build()))
                       .bind("p5")
+                      .to(
+                          Value.untyped(
+                              com.google.protobuf.Value.newBuilder().setStringValue("{}").build()))
+                      .bind("p6")
+                      .to(
+                          Value.untyped(
+                              com.google.protobuf.Value.newBuilder()
+                                  .setListValue(getJsonListValue(Collections.singletonList("{}")))
+                                  .build()))
+                      .bind("p7")
+                      .to(
+                          Value.untyped(
+                              com.google.protobuf.Value.newBuilder().setStringValue("[]").build()))
+                      .bind("p8")
+                      .to(
+                          Value.untyped(
+                              com.google.protobuf.Value.newBuilder()
+                                  .setListValue(getJsonListValue(Collections.singletonList("[]")))
+                                  .build()))
+                      .bind("p9")
+                      .to(
+                          Value.untyped(
+                              com.google.protobuf.Value.newBuilder()
+                                  .setNullValue(NullValue.NULL_VALUE)
+                                  .build()))
+                      .bind("p10")
                       .to(
                           Value.untyped(
                               com.google.protobuf.Value.newBuilder()
@@ -315,30 +375,40 @@ public class ITPgJsonbTest {
                           .to(1)
                           .set("col1")
                           .to(JSON_VALUE_1)
+                          .set("colarray")
+                          .to(Value.pgJsonbArray(JSON_ARRAY1))
                           .build(),
                       Mutation.newInsertBuilder(tableName)
                           .set("id")
                           .to(2)
                           .set("col1")
                           .to(JSON_VALUE_2)
+                          .set("colarray")
+                          .to(Value.pgJsonbArray(JSON_ARRAY2))
                           .build(),
                       Mutation.newInsertBuilder(tableName)
                           .set("id")
                           .to(3)
                           .set("col1")
                           .to("{}")
+                          .set("colarray")
+                          .to(Value.pgJsonbArray(Collections.singletonList("{}")))
                           .build(),
                       Mutation.newInsertBuilder(tableName)
                           .set("id")
                           .to(4)
                           .set("col1")
                           .to("[]")
+                          .set("colarray")
+                          .to(Value.pgJsonbArray(Collections.singletonList("[]")))
                           .build(),
                       Mutation.newInsertBuilder(tableName)
                           .set("id")
                           .to(5)
                           .set("col1")
                           .to((String) null)
+                          .set("colarray")
+                          .to(Value.pgJsonbArray(null))
                           .build()));
               return null;
             });
@@ -361,30 +431,40 @@ public class ITPgJsonbTest {
                           .to(1)
                           .set("col1")
                           .to(Value.pgJsonb(JSON_VALUE_1))
+                          .set("colarray")
+                          .to(Value.pgJsonbArray(JSON_ARRAY1))
                           .build(),
                       Mutation.newInsertBuilder(tableName)
                           .set("id")
                           .to(2)
                           .set("col1")
                           .to(Value.pgJsonb(JSON_VALUE_2))
+                          .set("colarray")
+                          .to(Value.pgJsonbArray(JSON_ARRAY2))
                           .build(),
                       Mutation.newInsertBuilder(tableName)
                           .set("id")
                           .to(3)
                           .set("col1")
                           .to(Value.pgJsonb("{}"))
+                          .set("colarray")
+                          .to(Value.pgJsonbArray(Collections.singletonList("{}")))
                           .build(),
                       Mutation.newInsertBuilder(tableName)
                           .set("id")
                           .to(4)
                           .set("col1")
                           .to(Value.pgJsonb("[]"))
+                          .set("colarray")
+                          .to(Value.pgJsonbArray(Collections.singletonList("[]")))
                           .build(),
                       Mutation.newInsertBuilder(tableName)
                           .set("id")
                           .to(5)
                           .set("col1")
                           .to(Value.pgJsonb(null))
+                          .set("colarray")
+                          .to(Value.pgJsonbArray(null))
                           .build()));
               return null;
             });
@@ -405,6 +485,21 @@ public class ITPgJsonbTest {
       assertEquals("{\"color\": \"red\", \"value\": \"#f00\"}", resultSet.getPgJsonb("col1"));
       assertEquals(
           Value.pgJsonb("{\"color\": \"red\", \"value\": \"#f00\"}"), resultSet.getValue("col1"));
+      assertEquals(
+          Arrays.asList(
+              "{\"color\": \"red\", \"value\": \"#f00\"}",
+              "[{\"color\": \"red\", \"value\": \"#f00\"}, "
+                  + "{\"color\": \"green\", \"value\": \"#0f0\"}, "
+                  + "{\"color\": \"blue\", \"value\": \"#00f\"}]"),
+          resultSet.getPgJsonbList("colarray"));
+      assertEquals(
+          Value.pgJsonbArray(
+              Arrays.asList(
+                  "{\"color\": \"red\", \"value\": \"#f00\"}",
+                  "[{\"color\": \"red\", \"value\": \"#f00\"}, "
+                      + "{\"color\": \"green\", \"value\": \"#0f0\"}, "
+                      + "{\"color\": \"blue\", \"value\": \"#00f\"}]")),
+          resultSet.getValue("colarray"));
 
       assertTrue(resultSet.next());
       assertEquals(
@@ -422,17 +517,26 @@ public class ITPgJsonbTest {
                   + "{\"color\": \"blue\", \"value\": \"#00f\"}"
                   + "]"),
           resultSet.getValue("col1"));
+      assertEquals(JSON_ARRAY2, resultSet.getPgJsonbList("colarray"));
+      assertEquals(Value.pgJsonbArray(JSON_ARRAY2), resultSet.getValue("colarray"));
 
       assertTrue(resultSet.next());
       assertEquals("{}", resultSet.getPgJsonb("col1"));
       assertEquals(Value.pgJsonb("{}"), resultSet.getValue("col1"));
+      assertEquals(Collections.singletonList("{}"), resultSet.getPgJsonbList("colarray"));
+      assertEquals(
+          Value.pgJsonbArray(Collections.singletonList("{}")), resultSet.getValue("colarray"));
 
       assertTrue(resultSet.next());
       assertEquals("[]", resultSet.getPgJsonb("col1"));
       assertEquals(Value.pgJsonb("[]"), resultSet.getValue("col1"));
+      assertEquals(Collections.singletonList("[]"), resultSet.getPgJsonbList("colarray"));
+      assertEquals(
+          Value.pgJsonbArray(Collections.singletonList("[]")), resultSet.getValue("colarray"));
 
       assertTrue(resultSet.next());
       assertTrue(resultSet.isNull("col1"));
+      assertTrue(resultSet.isNull("colarray"));
 
       assertFalse(resultSet.next());
     }
