@@ -529,6 +529,27 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     return getRequestOptions();
   }
 
+  public static final int SERVERLESS_ANALYTICS_ENABLED_FIELD_NUMBER = 13;
+  private boolean serverlessAnalyticsEnabled_;
+  /**
+   *
+   *
+   * <pre>
+   * If this is for a partitioned read and this field is set to `true`, the
+   * request will be executed via offline access. If the field is set to `true`
+   * but the request does not set `partition_token`, the API will return an
+   * `INVALID_ARGUMENT` error.
+   * </pre>
+   *
+   * <code>bool serverless_analytics_enabled = 13;</code>
+   *
+   * @return The serverlessAnalyticsEnabled.
+   */
+  @java.lang.Override
+  public boolean getServerlessAnalyticsEnabled() {
+    return serverlessAnalyticsEnabled_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -572,6 +593,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     }
     if (requestOptions_ != null) {
       output.writeMessage(11, getRequestOptions());
+    }
+    if (serverlessAnalyticsEnabled_ != false) {
+      output.writeBool(13, serverlessAnalyticsEnabled_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -617,6 +641,10 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     if (requestOptions_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(11, getRequestOptions());
     }
+    if (serverlessAnalyticsEnabled_ != false) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeBoolSize(13, serverlessAnalyticsEnabled_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -651,6 +679,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     if (hasRequestOptions()) {
       if (!getRequestOptions().equals(other.getRequestOptions())) return false;
     }
+    if (getServerlessAnalyticsEnabled() != other.getServerlessAnalyticsEnabled()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -690,6 +719,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       hash = (37 * hash) + REQUEST_OPTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getRequestOptions().hashCode();
     }
+    hash = (37 * hash) + SERVERLESS_ANALYTICS_ENABLED_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getServerlessAnalyticsEnabled());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -860,6 +891,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         requestOptions_ = null;
         requestOptionsBuilder_ = null;
       }
+      serverlessAnalyticsEnabled_ = false;
+
       return this;
     }
 
@@ -913,6 +946,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       } else {
         result.requestOptions_ = requestOptionsBuilder_.build();
       }
+      result.serverlessAnalyticsEnabled_ = serverlessAnalyticsEnabled_;
       onBuilt();
       return result;
     }
@@ -1002,6 +1036,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       if (other.hasRequestOptions()) {
         mergeRequestOptions(other.getRequestOptions());
       }
+      if (other.getServerlessAnalyticsEnabled() != false) {
+        setServerlessAnalyticsEnabled(other.getServerlessAnalyticsEnabled());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -1089,6 +1126,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
 
                 break;
               } // case 90
+            case 104:
+              {
+                serverlessAnalyticsEnabled_ = input.readBool();
+
+                break;
+              } // case 104
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -2453,6 +2496,67 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         requestOptions_ = null;
       }
       return requestOptionsBuilder_;
+    }
+
+    private boolean serverlessAnalyticsEnabled_;
+    /**
+     *
+     *
+     * <pre>
+     * If this is for a partitioned read and this field is set to `true`, the
+     * request will be executed via offline access. If the field is set to `true`
+     * but the request does not set `partition_token`, the API will return an
+     * `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>bool serverless_analytics_enabled = 13;</code>
+     *
+     * @return The serverlessAnalyticsEnabled.
+     */
+    @java.lang.Override
+    public boolean getServerlessAnalyticsEnabled() {
+      return serverlessAnalyticsEnabled_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * If this is for a partitioned read and this field is set to `true`, the
+     * request will be executed via offline access. If the field is set to `true`
+     * but the request does not set `partition_token`, the API will return an
+     * `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>bool serverless_analytics_enabled = 13;</code>
+     *
+     * @param value The serverlessAnalyticsEnabled to set.
+     * @return This builder for chaining.
+     */
+    public Builder setServerlessAnalyticsEnabled(boolean value) {
+
+      serverlessAnalyticsEnabled_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * If this is for a partitioned read and this field is set to `true`, the
+     * request will be executed via offline access. If the field is set to `true`
+     * but the request does not set `partition_token`, the API will return an
+     * `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>bool serverless_analytics_enabled = 13;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearServerlessAnalyticsEnabled() {
+
+      serverlessAnalyticsEnabled_ = false;
+      onChanged();
+      return this;
     }
 
     @java.lang.Override

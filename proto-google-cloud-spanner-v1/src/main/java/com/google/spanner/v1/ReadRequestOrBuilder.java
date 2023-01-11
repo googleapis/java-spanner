@@ -344,4 +344,20 @@ public interface ReadRequestOrBuilder
    * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
    */
   com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * If this is for a partitioned read and this field is set to `true`, the
+   * request will be executed via offline access. If the field is set to `true`
+   * but the request does not set `partition_token`, the API will return an
+   * `INVALID_ARGUMENT` error.
+   * </pre>
+   *
+   * <code>bool serverless_analytics_enabled = 13;</code>
+   *
+   * @return The serverlessAnalyticsEnabled.
+   */
+  boolean getServerlessAnalyticsEnabled();
 }

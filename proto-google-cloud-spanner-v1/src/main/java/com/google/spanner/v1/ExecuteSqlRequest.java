@@ -1942,6 +1942,27 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     return getRequestOptions();
   }
 
+  public static final int SERVERLESS_ANALYTICS_ENABLED_FIELD_NUMBER = 14;
+  private boolean serverlessAnalyticsEnabled_;
+  /**
+   *
+   *
+   * <pre>
+   * If this is for a partitioned query and this field is set to `true`, the
+   * request will be executed via offline access. If the field is set to `true`
+   * but the request does not set `partition_token`, the API will return an
+   * `INVALID_ARGUMENT` error.
+   * </pre>
+   *
+   * <code>bool serverless_analytics_enabled = 14;</code>
+   *
+   * @return The serverlessAnalyticsEnabled.
+   */
+  @java.lang.Override
+  public boolean getServerlessAnalyticsEnabled() {
+    return serverlessAnalyticsEnabled_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -1987,6 +2008,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
     if (requestOptions_ != null) {
       output.writeMessage(11, getRequestOptions());
+    }
+    if (serverlessAnalyticsEnabled_ != false) {
+      output.writeBool(14, serverlessAnalyticsEnabled_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -2037,6 +2061,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     if (requestOptions_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(11, getRequestOptions());
     }
+    if (serverlessAnalyticsEnabled_ != false) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeBoolSize(14, serverlessAnalyticsEnabled_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -2075,6 +2103,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     if (hasRequestOptions()) {
       if (!getRequestOptions().equals(other.getRequestOptions())) return false;
     }
+    if (getServerlessAnalyticsEnabled() != other.getServerlessAnalyticsEnabled()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -2118,6 +2147,8 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       hash = (37 * hash) + REQUEST_OPTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getRequestOptions().hashCode();
     }
+    hash = (37 * hash) + SERVERLESS_ANALYTICS_ENABLED_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getServerlessAnalyticsEnabled());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -2314,6 +2345,8 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         requestOptions_ = null;
         requestOptionsBuilder_ = null;
       }
+      serverlessAnalyticsEnabled_ = false;
+
       return this;
     }
 
@@ -2370,6 +2403,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       } else {
         result.requestOptions_ = requestOptionsBuilder_.build();
       }
+      result.serverlessAnalyticsEnabled_ = serverlessAnalyticsEnabled_;
       onBuilt();
       return result;
     }
@@ -2451,6 +2485,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
       if (other.hasRequestOptions()) {
         mergeRequestOptions(other.getRequestOptions());
+      }
+      if (other.getServerlessAnalyticsEnabled() != false) {
+        setServerlessAnalyticsEnabled(other.getServerlessAnalyticsEnabled());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -2550,6 +2587,12 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
 
                 break;
               } // case 90
+            case 112:
+              {
+                serverlessAnalyticsEnabled_ = input.readBool();
+
+                break;
+              } // case 112
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -4167,6 +4210,67 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         requestOptions_ = null;
       }
       return requestOptionsBuilder_;
+    }
+
+    private boolean serverlessAnalyticsEnabled_;
+    /**
+     *
+     *
+     * <pre>
+     * If this is for a partitioned query and this field is set to `true`, the
+     * request will be executed via offline access. If the field is set to `true`
+     * but the request does not set `partition_token`, the API will return an
+     * `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>bool serverless_analytics_enabled = 14;</code>
+     *
+     * @return The serverlessAnalyticsEnabled.
+     */
+    @java.lang.Override
+    public boolean getServerlessAnalyticsEnabled() {
+      return serverlessAnalyticsEnabled_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * If this is for a partitioned query and this field is set to `true`, the
+     * request will be executed via offline access. If the field is set to `true`
+     * but the request does not set `partition_token`, the API will return an
+     * `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>bool serverless_analytics_enabled = 14;</code>
+     *
+     * @param value The serverlessAnalyticsEnabled to set.
+     * @return This builder for chaining.
+     */
+    public Builder setServerlessAnalyticsEnabled(boolean value) {
+
+      serverlessAnalyticsEnabled_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * If this is for a partitioned query and this field is set to `true`, the
+     * request will be executed via offline access. If the field is set to `true`
+     * but the request does not set `partition_token`, the API will return an
+     * `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>bool serverless_analytics_enabled = 14;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearServerlessAnalyticsEnabled() {
+
+      serverlessAnalyticsEnabled_ = false;
+      onChanged();
+      return this;
     }
 
     @java.lang.Override
