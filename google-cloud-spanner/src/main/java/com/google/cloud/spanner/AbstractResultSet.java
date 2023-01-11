@@ -26,7 +26,6 @@ import com.google.api.client.util.BackOff;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.ByteArray;
-import com.google.cloud.ByteArrayHelper;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Type.StructField;
@@ -39,6 +38,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
+import com.google.protobuf.NullValue;
 import com.google.protobuf.Value.KindCase;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -74,6 +74,8 @@ import javax.annotation.Nullable;
 /** Implementation of {@link ResultSet}. */
 abstract class AbstractResultSet<R> extends AbstractStructReader implements ResultSet {
   private static final Tracer tracer = Tracing.getTracer();
+  private static final com.google.protobuf.Value NULL_VALUE =
+      com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
 
   interface Listener {
     /**
@@ -362,7 +364,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         new AbstractLazyInitializer<ByteArray>() {
           @Override
           protected ByteArray initialize() {
-            return ByteArrayHelper.wrap(DECODER.decode(base64String));
+            return ByteArray.copyFrom(DECODER.decode(base64String));
           }
         };
 
@@ -566,6 +568,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           checkType(fieldType, proto, KindCase.LIST_VALUE);
           ListValue structValue = proto.getListValue();
           return decodeStructValue(fieldType, structValue);
+        case UNRECOGNIZED:
+          return proto;
         default:
           throw new AssertionError("Unhandled type code: " + fieldType.getCode());
       }
@@ -675,7 +679,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     @Override
     protected ByteArray getBytesInternal(int columnIndex) {
-      return ((LazyByteArray) rowData.get(columnIndex)).getByteArray();
+      return getLazyBytesInternal(columnIndex).getByteArray();
+    }
+
+    LazyByteArray getLazyBytesInternal(int columnIndex) {
+      return (LazyByteArray) rowData.get(columnIndex);
     }
 
     @Override
@@ -712,13 +720,16 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case PG_JSONB:
           return Value.pgJsonb(isNull ? null : getPgJsonbInternal(columnIndex));
         case BYTES:
-          return Value.bytes(isNull ? null : getBytesInternal(columnIndex));
+          return Value.lazyBytes(isNull ? null : getLazyBytesInternal(columnIndex));
         case TIMESTAMP:
           return Value.timestamp(isNull ? null : getTimestampInternal(columnIndex));
         case DATE:
           return Value.date(isNull ? null : getDateInternal(columnIndex));
         case STRUCT:
           return Value.struct(isNull ? null : getStructInternal(columnIndex));
+        case UNRECOGNIZED:
+          return Value.untyped(
+              isNull ? NULL_VALUE : (com.google.protobuf.Value) rowData.get(columnIndex));
         case ARRAY:
           final Type elementType = columnType.getArrayElementType();
           switch (elementType.getCode()) {

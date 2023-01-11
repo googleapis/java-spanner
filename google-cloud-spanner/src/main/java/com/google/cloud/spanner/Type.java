@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -70,6 +71,10 @@ public final class Type implements Serializable {
 
   private static final int AMBIGUOUS_FIELD = -1;
   private static final long serialVersionUID = -3076152125004114582L;
+
+  static Type unrecognized(com.google.spanner.v1.Type proto) {
+    return new Type(proto);
+  }
 
   /** Returns the descriptor for the {@code BOOL type}. */
   public static Type bool() {
@@ -190,6 +195,7 @@ public final class Type implements Serializable {
     return new Type(Code.STRUCT, null, ImmutableList.copyOf(fields));
   }
 
+  private final com.google.spanner.v1.Type proto;
   private final Code code;
   private final Type arrayElementType;
   private final ImmutableList<StructField> structFields;
@@ -204,13 +210,23 @@ public final class Type implements Serializable {
       Code code,
       @Nullable Type arrayElementType,
       @Nullable ImmutableList<StructField> structFields) {
+    this.proto = null;
     this.code = code;
     this.arrayElementType = arrayElementType;
     this.structFields = structFields;
   }
 
+  private Type(@Nonnull com.google.spanner.v1.Type proto) {
+    this.proto = proto;
+    this.code = Code.UNRECOGNIZED;
+    this.arrayElementType =
+        proto.hasArrayElementType() ? new Type(proto.getArrayElementType()) : null;
+    this.structFields = null;
+  }
+
   /** Enumerates the categories of types. */
   public enum Code {
+    UNRECOGNIZED(TypeCode.UNRECOGNIZED),
     BOOL(TypeCode.BOOL),
     INT64(TypeCode.INT64),
     NUMERIC(TypeCode.NUMERIC),
@@ -258,8 +274,7 @@ public final class Type implements Serializable {
 
     static Code fromProto(TypeCode typeCode, TypeAnnotationCode typeAnnotationCode) {
       Code code = protoToCode.get(new SimpleEntry<>(typeCode, typeAnnotationCode));
-      checkArgument(code != null, "Invalid code: %s<%s>", typeCode, typeAnnotationCode);
-      return code;
+      return code == null ? Code.UNRECOGNIZED : code;
     }
 
     @Override
@@ -325,7 +340,7 @@ public final class Type implements Serializable {
    * @throws IllegalStateException if {@code code() != Code.ARRAY}
    */
   public Type getArrayElementType() {
-    Preconditions.checkState(code == Code.ARRAY, "Illegal call for non-ARRAY type");
+    Preconditions.checkState(arrayElementType != null, "Illegal call for non-ARRAY type");
     return arrayElementType;
   }
 
@@ -378,7 +393,7 @@ public final class Type implements Serializable {
   }
 
   void toString(StringBuilder b) {
-    if (code == Code.ARRAY) {
+    if (code == Code.ARRAY || (proto != null && proto.hasArrayElementType())) {
       b.append("ARRAY<");
       arrayElementType.toString(b);
       b.append('>');
@@ -393,6 +408,11 @@ public final class Type implements Serializable {
         f.getType().toString(b);
       }
       b.append('>');
+    } else if (proto != null) {
+      b.append(proto.getCode().name());
+      if (proto.getTypeAnnotation() != TYPE_ANNOTATION_CODE_UNSPECIFIED) {
+        b.append("<").append(proto.getTypeAnnotation().name()).append(">");
+      }
     } else {
       b.append(code.toString());
     }
@@ -414,6 +434,9 @@ public final class Type implements Serializable {
       return false;
     }
     Type that = (Type) o;
+    if (proto != null) {
+      return Objects.equals(proto, that.proto);
+    }
     return code == that.code
         && Objects.equals(arrayElementType, that.arrayElementType)
         && Objects.equals(structFields, that.structFields);
@@ -421,10 +444,16 @@ public final class Type implements Serializable {
 
   @Override
   public int hashCode() {
+    if (proto != null) {
+      return proto.hashCode();
+    }
     return Objects.hash(code, arrayElementType, structFields);
   }
 
   com.google.spanner.v1.Type toProto() {
+    if (proto != null) {
+      return proto;
+    }
     com.google.spanner.v1.Type.Builder proto = com.google.spanner.v1.Type.newBuilder();
     proto.setCode(code.getTypeCode());
     proto.setTypeAnnotation(code.getTypeAnnotationCode());
@@ -490,8 +519,9 @@ public final class Type implements Serializable {
           fields.add(StructField.of(name, fromProto(field.getType())));
         }
         return struct(fields);
+      case UNRECOGNIZED:
       default:
-        throw new AssertionError("Unimplemented case: " + type);
+        return unrecognized(proto);
     }
   }
 }
