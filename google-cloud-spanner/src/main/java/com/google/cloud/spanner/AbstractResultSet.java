@@ -32,6 +32,7 @@ import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -62,6 +63,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -69,6 +71,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Implementation of {@link ResultSet}. */
@@ -357,19 +361,42 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
   }
 
-  static class LazyByteArray implements Serializable {
+  static final class LazyByteArray implements Serializable {
+    private static final Base64.Encoder ENCODER = Base64.getEncoder();
     private static final Base64.Decoder DECODER = Base64.getDecoder();
     private final String base64String;
-    private final transient AbstractLazyInitializer<ByteArray> byteArray =
-        new AbstractLazyInitializer<ByteArray>() {
-          @Override
-          protected ByteArray initialize() {
-            return ByteArray.copyFrom(DECODER.decode(base64String));
-          }
-        };
+    private transient AbstractLazyInitializer<ByteArray> byteArray;
 
-    LazyByteArray(String base64String) {
-      this.base64String = base64String;
+    LazyByteArray(@Nonnull String base64String) {
+      this.base64String = Preconditions.checkNotNull(base64String);
+      byteArray = defaultInitializer();
+    }
+
+    LazyByteArray(@Nonnull ByteArray byteArray) {
+      this.base64String =
+          ENCODER.encodeToString(Preconditions.checkNotNull(byteArray).toByteArray());
+      this.byteArray =
+          new AbstractLazyInitializer<ByteArray>() {
+            @Override
+            protected ByteArray initialize() {
+              return byteArray;
+            }
+          };
+    }
+
+    private AbstractLazyInitializer<ByteArray> defaultInitializer() {
+      return new AbstractLazyInitializer<ByteArray>() {
+        @Override
+        protected ByteArray initialize() {
+          return ByteArray.copyFrom(DECODER.decode(base64String));
+        }
+      };
+    }
+
+    private void readObject(java.io.ObjectInputStream in)
+        throws IOException, ClassNotFoundException {
+      in.defaultReadObject();
+      byteArray = defaultInitializer();
     }
 
     ByteArray getByteArray() {
@@ -387,6 +414,23 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     @Override
     public String toString() {
       return getBase64String();
+    }
+
+    @Override
+    public int hashCode() {
+      return base64String.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o instanceof LazyByteArray) {
+        return lazyByteArraysEqual((LazyByteArray) o);
+      }
+      return false;
+    }
+
+    private boolean lazyByteArraysEqual(LazyByteArray other) {
+      return Objects.equals(getBase64String(), other.getBase64String());
     }
   }
 
@@ -435,9 +479,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             builder
                 .set(fieldName)
                 .to(
-                    value instanceof LazyByteArray
-                        ? ((LazyByteArray) value).getByteArray()
-                        : (ByteArray) value);
+                    Value.bytesFromBase64(
+                        value == null ? null : ((LazyByteArray) value).getBase64String()));
             break;
           case TIMESTAMP:
             builder.set(fieldName).to((Timestamp) value);
@@ -473,7 +516,17 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 builder.set(fieldName).toPgJsonbArray((Iterable<String>) value);
                 break;
               case BYTES:
-                builder.set(fieldName).toBytesArray((Iterable<ByteArray>) value);
+                builder
+                    .set(fieldName)
+                    .toBytesArrayFromBase64(
+                        value == null
+                            ? null
+                            : ((List<LazyByteArray>) value)
+                                .stream()
+                                    .map(
+                                        element ->
+                                            element == null ? null : element.getBase64String())
+                                    .collect(Collectors.toList()));
                 break;
               case TIMESTAMP:
                 builder.set(fieldName).toTimestampArray((Iterable<Timestamp>) value);
@@ -720,7 +773,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case PG_JSONB:
           return Value.pgJsonb(isNull ? null : getPgJsonbInternal(columnIndex));
         case BYTES:
-          return Value.lazyBytes(isNull ? null : getLazyBytesInternal(columnIndex));
+          return Value.internalBytes(isNull ? null : getLazyBytesInternal(columnIndex));
         case TIMESTAMP:
           return Value.timestamp(isNull ? null : getTimestampInternal(columnIndex));
         case DATE:

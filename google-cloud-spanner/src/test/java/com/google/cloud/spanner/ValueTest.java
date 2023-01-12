@@ -585,7 +585,7 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.bytes());
     assertThat(v.isNull()).isFalse();
     assertThat(v.getBytes()).isSameInstanceAs(bytes);
-    assertThat(v.toString()).isEqualTo(bytes.toString());
+    assertThat(v.toString()).isEqualTo(bytes.toBase64());
     assertEquals(Base64.getEncoder().encodeToString(bytes.toByteArray()), v.getAsString());
   }
 
@@ -594,7 +594,7 @@ public class ValueTest {
     ByteArray bytes = ByteArray.copyFrom(new byte[] {'a', 0, 15, -1, 'e'});
     Value v = Value.bytes(bytes);
     assertThat(v.getBytes()).isSameInstanceAs(bytes);
-    assertThat(v.toString()).isEqualTo(bytes.toString());
+    assertThat(v.toString()).isEqualTo(bytes.toBase64());
     assertEquals(Base64.getEncoder().encodeToString(bytes.toByteArray()), v.getAsString());
   }
 
@@ -1922,7 +1922,7 @@ public class ValueTest {
         Value.bytes(ByteArray.copyFrom(bytes)).getAsString());
     assertEquals(
         Base64.getEncoder().encodeToString(bytes),
-        Value.lazyBytes(new LazyByteArray(Base64.getEncoder().encodeToString(bytes)))
+        Value.internalBytes(new LazyByteArray(Base64.getEncoder().encodeToString(bytes)))
             .getAsString());
   }
 

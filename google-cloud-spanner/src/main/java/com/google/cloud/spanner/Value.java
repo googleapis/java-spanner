@@ -29,6 +29,7 @@ import com.google.common.collect.Lists;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.Value.KindCase;
+import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -227,16 +228,22 @@ public abstract class Value implements Serializable {
    * @param v the value, which may be null
    */
   public static Value bytes(@Nullable ByteArray v) {
-    return new BytesImpl(v == null, v);
+    return new LazyBytesImpl(v == null, v);
   }
 
   /**
-   * Returns a {@code BYTES} value that is lazily constructed when needed.
+   * Returns a {@code BYTES} value.
    *
-   * @param v the value, which may be null
+   * @param base64String the value in Base64 encoding, which may be null. This value must be a valid
+   *     base64 string.
    */
-  static Value lazyBytes(@Nullable LazyByteArray v) {
-    return new LazyBytesImpl(v == null, v);
+  public static Value bytesFromBase64(@Nullable String base64String) {
+    return new LazyBytesImpl(
+        base64String == null, base64String == null ? null : new LazyByteArray(base64String));
+  }
+
+  static Value internalBytes(@Nullable LazyByteArray bytes) {
+    return new LazyBytesImpl(bytes == null, bytes);
   }
 
   /** Returns a {@code TIMESTAMP} value. */
@@ -441,11 +448,37 @@ public abstract class Value implements Serializable {
    *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
    */
   public static Value bytesArray(@Nullable Iterable<ByteArray> v) {
-    return new BytesArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+    return new LazyBytesArrayImpl(v == null, v == null ? null : byteArraysToLazyByteArrayList(v));
   }
 
-  static Value lazyBytesArray(@Nullable Iterable<LazyByteArray> v) {
-    return new LazyBytesArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+  private static List<LazyByteArray> byteArraysToLazyByteArrayList(Iterable<ByteArray> byteArrays) {
+    List<LazyByteArray> list = new ArrayList<>();
+    for (ByteArray byteArray : byteArrays) {
+      list.add(byteArray == null ? null : new LazyByteArray(byteArray));
+    }
+    return Collections.unmodifiableList(list);
+  }
+
+  /**
+   * Returns an {@code ARRAY<BYTES>} value.
+   *
+   * @param base64Strings the source of element values. This may be {@code null} to produce a value
+   *     for which {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   *     Non-null values must be a valid Base64 string.
+   */
+  public static Value bytesArrayFromBase64(@Nullable Iterable<String> base64Strings) {
+    return new LazyBytesArrayImpl(
+        base64Strings == null,
+        base64Strings == null ? null : base64StringsToLazyByteArrayList(base64Strings));
+  }
+
+  private static List<LazyByteArray> base64StringsToLazyByteArrayList(
+      Iterable<String> base64Strings) {
+    List<LazyByteArray> list = new ArrayList<>();
+    for (String base64 : base64Strings) {
+      list.add(base64 == null ? null : new LazyByteArray(base64));
+    }
+    return Collections.unmodifiableList(list);
   }
 
   /**
@@ -1400,39 +1433,14 @@ public abstract class Value implements Serializable {
     }
   }
 
-  private static class BytesImpl extends AbstractObjectValue<ByteArray> {
-
-    private BytesImpl(boolean isNull, ByteArray value) {
-      super(isNull, Type.bytes(), value);
-    }
-
-    @Override
-    public ByteArray getBytes() {
-      checkNotNull();
-      return value;
-    }
-
-    @Override
-    com.google.protobuf.Value valueToProto() {
-      return com.google.protobuf.Value.newBuilder().setStringValue(value.toBase64()).build();
-    }
-
-    @Nonnull
-    @Override
-    public String getAsString() {
-      return value == null ? NULL_STRING : value.toBase64();
-    }
-
-    @Override
-    void valueToString(StringBuilder b) {
-      b.append(value.toString());
-    }
-  }
-
   private static class LazyBytesImpl extends AbstractObjectValue<LazyByteArray> {
 
     private LazyBytesImpl(boolean isNull, LazyByteArray value) {
       super(isNull, Type.bytes(), value);
+    }
+
+    private LazyBytesImpl(boolean isNull, ByteArray value) {
+      super(isNull, Type.bytes(), value == null ? null : new LazyByteArray(value));
     }
 
     @Override
@@ -1449,12 +1457,12 @@ public abstract class Value implements Serializable {
     @Nonnull
     @Override
     public String getAsString() {
-      return value.getBase64String();
+      return value == null ? NULL_STRING : value.getBase64String();
     }
 
     @Override
     void valueToString(StringBuilder b) {
-      b.append(value.toString());
+      b.append(value == null ? null : value.toString());
     }
   }
 
@@ -1906,39 +1914,28 @@ public abstract class Value implements Serializable {
     }
   }
 
-  private static class BytesArrayImpl extends AbstractArrayValue<ByteArray> {
-    private BytesArrayImpl(boolean isNull, @Nullable List<ByteArray> values) {
-      super(isNull, Type.bytes(), values);
-    }
-
-    @Override
-    public List<ByteArray> getBytesArray() {
-      checkNotNull();
-      return value;
-    }
-
-    @Override
-    String elementToString(ByteArray element) {
-      return element.toBase64();
-    }
-
-    @Override
-    void appendElement(StringBuilder b, ByteArray element) {
-      b.append(elementToString(element));
-    }
-  }
-
   private static class LazyBytesArrayImpl extends AbstractArrayValue<LazyByteArray> {
-    private final AbstractLazyInitializer<List<ByteArray>> bytesArray =
-        new AbstractLazyInitializer<List<ByteArray>>() {
-          @Override
-          protected List<ByteArray> initialize() {
-            return value.stream().map(LazyByteArray::getByteArray).collect(Collectors.toList());
-          }
-        };
+    private transient AbstractLazyInitializer<List<ByteArray>> bytesArray = defaultInitializer();
 
     private LazyBytesArrayImpl(boolean isNull, @Nullable List<LazyByteArray> values) {
       super(isNull, Type.bytes(), values);
+    }
+
+    private AbstractLazyInitializer<List<ByteArray>> defaultInitializer() {
+      return new AbstractLazyInitializer<List<ByteArray>>() {
+        @Override
+        protected List<ByteArray> initialize() {
+          return value.stream()
+              .map(element -> element == null ? null : element.getByteArray())
+              .collect(Collectors.toList());
+        }
+      };
+    }
+
+    private void readObject(java.io.ObjectInputStream in)
+        throws IOException, ClassNotFoundException {
+      in.defaultReadObject();
+      bytesArray = defaultInitializer();
     }
 
     @Override

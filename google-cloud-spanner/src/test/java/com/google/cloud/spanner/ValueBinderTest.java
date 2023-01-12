@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultBytesBase64;
 import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultJson;
 import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultPgJsonb;
 import static com.google.common.truth.Truth.assertThat;
@@ -28,7 +29,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,6 +43,7 @@ public class ValueBinderTest {
   private static final String JSON_METHOD_NAME = "json";
   private static final String PG_JSONB_METHOD_NAME = "pgJsonb";
   private static final String PG_NUMERIC_METHOD_NAME = "pgNumeric";
+  private static final String BYTES_BASE64_METHOD_NAME = "bytesFromBase64";
   public static final String DEFAULT_PG_NUMERIC = "1.23";
 
   private Value lastValue;
@@ -134,6 +138,10 @@ public class ValueBinderTest {
             binderMethod = ValueBinder.class.getMethod("to", Value.class);
             assertThat(binderMethod.invoke(binder, Value.pgNumeric(null)))
                 .isEqualTo(lastReturnValue);
+          } else if (method.getName().equalsIgnoreCase(BYTES_BASE64_METHOD_NAME)) {
+            binderMethod = ValueBinder.class.getMethod("to", Value.class);
+            assertThat(binderMethod.invoke(binder, Value.bytesFromBase64(null)))
+                .isEqualTo(lastReturnValue);
           } else {
             assertThat(binderMethod.invoke(binder, (Object) null)).isEqualTo(lastReturnValue);
           }
@@ -159,6 +167,11 @@ public class ValueBinderTest {
           defaultObject = DEFAULT_PG_NUMERIC;
           binderMethod = ValueBinder.class.getMethod("to", Value.class);
           assertThat(binderMethod.invoke(binder, Value.pgNumeric(DEFAULT_PG_NUMERIC)))
+              .isEqualTo(lastReturnValue);
+        } else if (method.getName().equalsIgnoreCase(BYTES_BASE64_METHOD_NAME)) {
+          defaultObject = defaultBytesBase64();
+          binderMethod = ValueBinder.class.getMethod("to", Value.class);
+          assertThat(binderMethod.invoke(binder, Value.bytesFromBase64(defaultBytesBase64())))
               .isEqualTo(lastReturnValue);
         } else {
           defaultObject = DefaultValues.getDefault(method.getGenericParameterTypes()[0]);
@@ -244,6 +257,10 @@ public class ValueBinderTest {
 
     public static String defaultPgJsonb() {
       return "{\"color\":\"red\",\"value\":\"#f00\"}";
+    }
+
+    public static String defaultBytesBase64() {
+      return Base64.getEncoder().encodeToString("test-bytes".getBytes(StandardCharsets.UTF_8));
     }
 
     public static ByteArray defaultByteArray() {
