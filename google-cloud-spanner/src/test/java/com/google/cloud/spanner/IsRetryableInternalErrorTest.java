@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.api.gax.grpc.GrpcStatusCode;
 import com.google.api.gax.rpc.InternalException;
@@ -112,6 +113,18 @@ public class IsRetryableInternalErrorTest {
             Status.fromCode(Code.INTERNAL).withDescription("INTERNAL: Generic."));
 
     assertThat(predicate.apply(e)).isFalse();
+  }
+
+  @Test
+  public void rstStreamInternalExceptionIsRetryable() {
+    final InternalException e =
+        new InternalException(
+            "INTERNAL: stream terminated by RST_STREAM.",
+            null,
+            GrpcStatusCode.of(Code.INTERNAL),
+            false);
+
+    assertTrue(predicate.apply(e));
   }
 
   @Test
