@@ -23,7 +23,6 @@ import static org.junit.Assert.assertThrows;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ListValue;
@@ -50,6 +49,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -418,8 +418,9 @@ public class ReadWriteTransactionWithInlineBeginTest {
               return null;
             });
     Collection<AbstractMessage> requests =
-        Collections2.filter(
-            mockSpanner.getRequests(), msg -> msg.getClass().equals(ExecuteSqlRequest.class));
+        mockSpanner.getRequests().stream()
+            .filter(msg -> msg.getClass().equals(ExecuteSqlRequest.class)).collect(
+                Collectors.toList());
     assertEquals(requests.size(), 1);
     ExecuteSqlRequest request = (ExecuteSqlRequest) Iterables.getOnlyElement(requests);
     assertEquals(request.getTransaction().getBegin(), OPTIMISTIC_LOCK_OPTIONS);
@@ -440,8 +441,9 @@ public class ReadWriteTransactionWithInlineBeginTest {
               return null;
             });
     Collection<AbstractMessage> requests =
-        Collections2.filter(
-            mockSpanner.getRequests(), msg -> msg.getClass().equals(ReadRequest.class));
+        mockSpanner.getRequests().stream().filter(msg -> msg.getClass().equals(ReadRequest.class))
+            .collect(
+                Collectors.toList());
     assertEquals(requests.size(), 1);
     ReadRequest request = (ReadRequest) Iterables.getOnlyElement(requests);
     assertThat(request.getTransaction().getBegin()).isEqualTo(OPTIMISTIC_LOCK_OPTIONS);
@@ -464,8 +466,10 @@ public class ReadWriteTransactionWithInlineBeginTest {
               return transaction.executeUpdate(UPDATE_STATEMENT);
             });
     Collection<AbstractMessage> requests =
-        Collections2.filter(
-            mockSpanner.getRequests(), msg -> msg.getClass().equals(BeginTransactionRequest.class));
+        mockSpanner.getRequests().stream()
+            .filter(msg -> msg.getClass().equals(BeginTransactionRequest.class))
+            .collect(
+                Collectors.toList());
     assertEquals(requests.size(), 1);
     BeginTransactionRequest request = (BeginTransactionRequest) Iterables.getOnlyElement(requests);
     assertEquals(request.getOptions(), OPTIMISTIC_LOCK_OPTIONS);

@@ -69,7 +69,7 @@ class SessionImpl implements Session {
 
   static TransactionOptions createReadWriteTransactionOptions(Options options) {
     TransactionOptions.ReadWrite.Builder readWrite = TransactionOptions.ReadWrite.newBuilder();
-    if (options.withOptimisticLock()) {
+    if (options.withOptimisticLock() == Boolean.TRUE) {
       readWrite.setReadLockMode(TransactionOptions.ReadWrite.ReadLockMode.OPTIMISTIC);
     }
     return TransactionOptions.newBuilder().setReadWrite(readWrite).build();

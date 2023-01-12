@@ -320,7 +320,7 @@ public final class Options implements Serializable {
   private String tag;
   private String etag;
   private Boolean validateOnly;
-  private boolean withOptimisticLock;
+  private Boolean withOptimisticLock;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -409,7 +409,7 @@ public final class Options implements Serializable {
     return validateOnly;
   }
 
-  boolean withOptimisticLock() {
+  Boolean withOptimisticLock() {
     return withOptimisticLock;
   }
 
@@ -446,7 +446,7 @@ public final class Options implements Serializable {
     if (validateOnly != null) {
       b.append("validateOnly: ").append(validateOnly).append(' ');
     }
-    if (withOptimisticLock) {
+    if (withOptimisticLock != null) {
       b.append("withOptimisticLock: ").append(withOptimisticLock).append(' ');
     }
     return b.toString();
@@ -522,8 +522,8 @@ public final class Options implements Serializable {
     if (validateOnly != null) {
       result = 31 * result + validateOnly.hashCode();
     }
-    if (withOptimisticLock) {
-      result = 31 * result + Boolean.hashCode(withOptimisticLock);
+    if (withOptimisticLock != null) {
+      result = 31 * result + withOptimisticLock.hashCode();
     }
     return result;
   }
