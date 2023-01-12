@@ -419,8 +419,8 @@ public class ReadWriteTransactionWithInlineBeginTest {
             });
     Collection<AbstractMessage> requests =
         mockSpanner.getRequests().stream()
-            .filter(msg -> msg.getClass().equals(ExecuteSqlRequest.class)).collect(
-                Collectors.toList());
+            .filter(msg -> msg.getClass().equals(ExecuteSqlRequest.class))
+            .collect(Collectors.toList());
     assertEquals(requests.size(), 1);
     ExecuteSqlRequest request = (ExecuteSqlRequest) Iterables.getOnlyElement(requests);
     assertEquals(request.getTransaction().getBegin(), OPTIMISTIC_LOCK_OPTIONS);
@@ -441,9 +441,9 @@ public class ReadWriteTransactionWithInlineBeginTest {
               return null;
             });
     Collection<AbstractMessage> requests =
-        mockSpanner.getRequests().stream().filter(msg -> msg.getClass().equals(ReadRequest.class))
-            .collect(
-                Collectors.toList());
+        mockSpanner.getRequests().stream()
+            .filter(msg -> msg.getClass().equals(ReadRequest.class))
+            .collect(Collectors.toList());
     assertEquals(requests.size(), 1);
     ReadRequest request = (ReadRequest) Iterables.getOnlyElement(requests);
     assertThat(request.getTransaction().getBegin()).isEqualTo(OPTIMISTIC_LOCK_OPTIONS);
@@ -468,8 +468,7 @@ public class ReadWriteTransactionWithInlineBeginTest {
     Collection<AbstractMessage> requests =
         mockSpanner.getRequests().stream()
             .filter(msg -> msg.getClass().equals(BeginTransactionRequest.class))
-            .collect(
-                Collectors.toList());
+            .collect(Collectors.toList());
     assertEquals(requests.size(), 1);
     BeginTransactionRequest request = (BeginTransactionRequest) Iterables.getOnlyElement(requests);
     assertEquals(request.getOptions(), OPTIMISTIC_LOCK_OPTIONS);
