@@ -22,9 +22,13 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.DeadlineExceededException;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.rpc.UnavailableException;
+import com.google.auth.Credentials;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
+import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Backup;
 import com.google.cloud.spanner.BatchClient;
@@ -144,6 +148,8 @@ import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -162,6 +168,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.threeten.bp.Duration;
 import org.threeten.bp.LocalDate;
@@ -743,6 +750,20 @@ public class CloudClientExecutor extends CloudExecutor {
 
   // Return the spanner client, create one if not exists.
   private synchronized Spanner getClient(long timeoutSeconds) throws IOException {
+    // Create a cloud spanner client
+    Credentials credentials;
+    if (WorkerProxy.serviceKeyFile.isEmpty()) {
+      credentials = NoCredentials.getInstance();
+    } else {
+      credentials =
+          GoogleCredentials.fromStream(
+              new ByteArrayInputStream(
+                  FileUtils.readFileToByteArray(new File(WorkerProxy.serviceKeyFile))),
+              HTTP_TRANSPORT_FACTORY);
+    }
+
+    TransportChannelProvider channelProvider =
+        CloudUtil.newChannelProviderHelper(WorkerProxy.spannerPort);
 
     Duration rpcTimeout = Duration.ofHours(1L);
     if (timeoutSeconds > 0) {
@@ -761,7 +782,12 @@ public class CloudClientExecutor extends CloudExecutor {
 
     // Cloud Spanner Client does not support global retry settings,
     // Thus, we need to add retry settings to each individual stub.
-    SpannerOptions.Builder optionsBuilder = SpannerOptions.newBuilder().setProjectId(PROJECT_ID);
+    SpannerOptions.Builder optionsBuilder =
+        SpannerOptions.newBuilder()
+            .setProjectId(PROJECT_ID)
+            .setHost(HOST_PREFIX + WorkerProxy.spannerPort)
+            .setCredentials(credentials)
+            .setChannelProvider(channelProvider);
 
     SpannerStubSettings.Builder stubSettingsBuilder =
         optionsBuilder.getSpannerStubSettingsBuilder();
@@ -1967,7 +1993,7 @@ public class CloudClientExecutor extends CloudExecutor {
           dbClient.executePartitionedUpdate(
               Statement.of(action.getUpdate().getSql()),
               Options.tag(options.getTag()),
-              Options.priority(RpcPriority.getEnumFromProto(options.getRpcPriority())));
+              Options.priority(RpcPriority.fromProto(options.getRpcPriority())));
       SpannerActionOutcome outcome =
           SpannerActionOutcome.newBuilder()
               .setStatus(toProto(Status.OK))

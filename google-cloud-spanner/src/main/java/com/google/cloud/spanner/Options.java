@@ -39,6 +39,13 @@ public final class Options implements Serializable {
     RpcPriority(Priority proto) {
       this.proto = Preconditions.checkNotNull(proto);
     }
+
+    public static RpcPriority fromProto(Priority proto){
+      for(RpcPriority e : RpcPriority.values()){
+        if(e.proto.equals(proto)) return e;
+      }
+      return null;
+    }
   }
 
   /** Marker interface to mark options applicable to both Read and Query operations */

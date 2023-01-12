@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -298,6 +299,14 @@ public class OptionsTest {
     Options options = Options.fromUpdateOptions(Options.priority(priority));
     assertTrue(options.hasPriority());
     assertEquals("priority: " + priority + " ", options.toString());
+  }
+
+  @Test
+  public void testRpcPriorityEnumFromProto() {
+    assertEquals(RpcPriority.fromProto(Priority.PRIORITY_LOW), RpcPriority.LOW);
+    assertEquals(RpcPriority.fromProto(Priority.PRIORITY_MEDIUM), RpcPriority.MEDIUM);
+    assertEquals(RpcPriority.fromProto(Priority.PRIORITY_HIGH), RpcPriority.HIGH);
+    assertNull(RpcPriority.fromProto(Priority.PRIORITY_UNSPECIFIED));
   }
 
   @Test
