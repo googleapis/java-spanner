@@ -97,8 +97,8 @@ public abstract class ValueBinder<R> {
 
   /**
    * Binds to {@code Value.bytes(value)}. Use {@link #to(Value)} in combination with {@link
-   * Value#bytes(String)} if you already have the value that you want to bind in base64 format. This
-   * prevents unnecessary decoding and encoding of base64 strings.
+   * Value#bytesFromBase64(String)} if you already have the value that you want to bind in base64
+   * format. This prevents unnecessary decoding and encoding of base64 strings.
    */
   public R to(@Nullable ByteArray value) {
     return handle(Value.bytes(value));

@@ -100,7 +100,16 @@ public abstract class Value implements Serializable {
    * @param value the non-null proto value (a {@link NullValue} is allowed)
    */
   public static Value untyped(com.google.protobuf.Value value) {
-    return new UntypedValueImpl(Preconditions.checkNotNull(value));
+    return new ProtoBackedValueImpl(Preconditions.checkNotNull(value), null);
+  }
+
+  /** Returns a generic Value backed by a protobuf value. This is used for unrecognized types. */
+  static Value unrecognized(com.google.protobuf.Value value, Type type) {
+    Preconditions.checkArgument(
+        type.getCode() == Code.UNRECOGNIZED
+            || type.getCode() == Code.ARRAY
+                && type.getArrayElementType().getCode() == Code.UNRECOGNIZED);
+    return new ProtoBackedValueImpl(Preconditions.checkNotNull(value), type);
   }
 
   /**
@@ -1101,11 +1110,16 @@ public abstract class Value implements Serializable {
     }
   }
 
-  private static class UntypedValueImpl extends AbstractValue {
+  /**
+   * This {@link Value} implementation is backed by a generic protobuf Value instance. It is used
+   * for untyped Values that are created by users, and for values with an unrecognized types that
+   * coming from the backend.
+   */
+  private static class ProtoBackedValueImpl extends AbstractValue {
     private final com.google.protobuf.Value value;
 
-    private UntypedValueImpl(com.google.protobuf.Value value) {
-      super(value.hasNullValue(), null);
+    private ProtoBackedValueImpl(com.google.protobuf.Value value, @Nullable Type type) {
+      super(value.hasNullValue(), type);
       this.value = value;
     }
 
@@ -1182,7 +1196,7 @@ public abstract class Value implements Serializable {
 
     @Override
     boolean valueEquals(Value v) {
-      return ((UntypedValueImpl) v).value.equals(value);
+      return ((ProtoBackedValueImpl) v).value.equals(value);
     }
 
     @Override

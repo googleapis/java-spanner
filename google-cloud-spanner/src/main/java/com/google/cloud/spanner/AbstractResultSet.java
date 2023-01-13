@@ -716,8 +716,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     @Override
     protected String getStringInternal(int columnIndex) {
-      Object value = rowData.get(columnIndex);
-      return value == null ? null : value.toString();
+      return (String) rowData.get(columnIndex);
     }
 
     @Override
@@ -781,8 +780,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case STRUCT:
           return Value.struct(isNull ? null : getStructInternal(columnIndex));
         case UNRECOGNIZED:
-          return Value.untyped(
-              isNull ? NULL_VALUE : (com.google.protobuf.Value) rowData.get(columnIndex));
+          return Value.unrecognized(
+              isNull ? NULL_VALUE : (com.google.protobuf.Value) rowData.get(columnIndex),
+              columnType);
         case ARRAY:
           final Type elementType = columnType.getArrayElementType();
           switch (elementType.getCode()) {
