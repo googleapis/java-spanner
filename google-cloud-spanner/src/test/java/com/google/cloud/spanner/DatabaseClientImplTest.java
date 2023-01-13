@@ -51,6 +51,7 @@ import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
+import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.connection.RandomResultSetGenerator;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
@@ -2901,7 +2902,7 @@ public class DatabaseClientImplTest {
       // There are no rows, but we need to call resultSet.next() before we can get the metadata.
       assertFalse(resultSet.next());
       assertEquals(
-          "STRUCT<c1 UNRECOGNIZED, c2 STRING<UNRECOGNIZED>, c3 UNRECOGNIZED<PG_NUMERIC>, c4 ARRAY<UNRECOGNIZED>, c5 ARRAY<STRING<UNRECOGNIZED>>, c6 ARRAY<UNRECOGNIZED>, c7 ARRAY<UNRECOGNIZED<PG_NUMERIC>>>",
+          "STRUCT<c1 UNRECOGNIZED, c2 STRING<UNRECOGNIZED>, c3 UNRECOGNIZED<PG_NUMERIC>, c4 ARRAY<UNRECOGNIZED>, c5 ARRAY<STRING<UNRECOGNIZED>>, c6 UNRECOGNIZED<UNRECOGNIZED>, c7 ARRAY<UNRECOGNIZED<PG_NUMERIC>>>",
           resultSet.getType().toString());
       assertEquals(
           "UNRECOGNIZED", resultSet.getType().getStructFields().get(0).getType().toString());
@@ -2913,14 +2914,32 @@ public class DatabaseClientImplTest {
           resultSet.getType().getStructFields().get(2).getType().toString());
       assertEquals(
           "ARRAY<UNRECOGNIZED>", resultSet.getType().getStructFields().get(3).getType().toString());
+      assertEquals(Code.ARRAY, resultSet.getType().getStructFields().get(3).getType().getCode());
+      assertEquals(
+          Code.UNRECOGNIZED,
+          resultSet.getType().getStructFields().get(3).getType().getArrayElementType().getCode());
       assertEquals(
           "ARRAY<STRING<UNRECOGNIZED>>",
           resultSet.getType().getStructFields().get(4).getType().toString());
+      assertEquals(Code.ARRAY, resultSet.getType().getStructFields().get(4).getType().getCode());
       assertEquals(
-          "ARRAY<UNRECOGNIZED>", resultSet.getType().getStructFields().get(5).getType().toString());
+          Code.UNRECOGNIZED,
+          resultSet.getType().getStructFields().get(4).getType().getArrayElementType().getCode());
+      assertEquals(
+          "UNRECOGNIZED<UNRECOGNIZED>",
+          resultSet.getType().getStructFields().get(5).getType().toString());
+      assertEquals(
+          Code.UNRECOGNIZED, resultSet.getType().getStructFields().get(5).getType().getCode());
+      assertEquals(
+          Code.UNRECOGNIZED,
+          resultSet.getType().getStructFields().get(5).getType().getArrayElementType().getCode());
       assertEquals(
           "ARRAY<UNRECOGNIZED<PG_NUMERIC>>",
           resultSet.getType().getStructFields().get(6).getType().toString());
+      assertEquals(Code.ARRAY, resultSet.getType().getStructFields().get(6).getType().getCode());
+      assertEquals(
+          Code.UNRECOGNIZED,
+          resultSet.getType().getStructFields().get(6).getType().getArrayElementType().getCode());
     }
   }
 

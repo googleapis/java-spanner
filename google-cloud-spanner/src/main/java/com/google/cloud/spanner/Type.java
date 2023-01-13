@@ -394,7 +394,13 @@ public final class Type implements Serializable {
 
   void toString(StringBuilder b) {
     if (code == Code.ARRAY || (proto != null && proto.hasArrayElementType())) {
-      b.append("ARRAY<");
+      if (code == Code.ARRAY) {
+        b.append("ARRAY<");
+      } else {
+        // This is very unlikely to happen. It would mean that we have introduced a type that
+        // is not an ARRAY, but does have an array element type.
+        b.append("UNRECOGNIZED<");
+      }
       arrayElementType.toString(b);
       b.append('>');
     } else if (code == Code.STRUCT) {
