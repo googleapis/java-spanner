@@ -595,6 +595,9 @@ abstract class AbstractReadContext
         builder.setTransaction(selector);
       }
     }
+    if (options.hasServerlessAnalyticsEnabled()) {
+      builder.setServerlessAnalyticsEnabled(options.serverlessAnalyticsEnabled());
+    }
     builder.setSeqno(getSeqNo());
     builder.setQueryOptions(buildQueryOptions(statement.getQueryOptions()));
     builder.setRequestOptions(buildRequestOptions(options));
@@ -772,6 +775,9 @@ abstract class AbstractReadContext
     }
     if (partitionToken != null) {
       builder.setPartitionToken(partitionToken);
+    }
+    if (readOptions.hasServerlessAnalyticsEnabled()) {
+      builder.setServerlessAnalyticsEnabled(readOptions.serverlessAnalyticsEnabled());
     }
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;

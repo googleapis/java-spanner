@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.InternalApi;
 import com.google.common.base.Preconditions;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.io.Serializable;
@@ -144,6 +145,12 @@ public final class Options implements Serializable {
    */
   public static ListOption pageSize(int pageSize) {
     return new PageSizeOption(pageSize);
+  }
+
+  @InternalApi
+  public static ServerlessQueryOption serverlessAnalyticsEnabled(
+      Boolean serverlessAnalyticsEnabled) {
+    return new ServerlessQueryOption(serverlessAnalyticsEnabled);
   }
 
   /**
@@ -321,6 +328,7 @@ public final class Options implements Serializable {
   private String etag;
   private Boolean validateOnly;
   private Boolean withOptimisticLock;
+  private Boolean serverlessAnalyticsEnabled;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -413,6 +421,14 @@ public final class Options implements Serializable {
     return withOptimisticLock;
   }
 
+  boolean hasServerlessAnalyticsEnabled() {
+    return serverlessAnalyticsEnabled != null;
+  }
+
+  Boolean serverlessAnalyticsEnabled() {
+    return serverlessAnalyticsEnabled;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -439,6 +455,9 @@ public final class Options implements Serializable {
     }
     if (tag != null) {
       b.append("tag: ").append(tag).append(' ');
+    }
+    if (serverlessAnalyticsEnabled != null) {
+      b.append("serverlessAnalyticsEnabled: ").append(serverlessAnalyticsEnabled).append(' ');
     }
     if (etag != null) {
       b.append("etag: ").append(etag).append(' ');
@@ -482,6 +501,7 @@ public final class Options implements Serializable {
         && Objects.equals(priority(), that.priority())
         && Objects.equals(tag(), that.tag())
         && Objects.equals(etag(), that.etag())
+        && Objects.equals(serverlessAnalyticsEnabled(), that.serverlessAnalyticsEnabled())
         && Objects.equals(validateOnly(), that.validateOnly())
         && Objects.equals(withOptimisticLock(), that.withOptimisticLock());
   }
@@ -524,6 +544,9 @@ public final class Options implements Serializable {
     }
     if (withOptimisticLock != null) {
       result = 31 * result + withOptimisticLock.hashCode();
+    }
+    if (serverlessAnalyticsEnabled != null) {
+      result = 31 * result + serverlessAnalyticsEnabled.hashCode();
     }
     return result;
   }
@@ -602,6 +625,21 @@ public final class Options implements Serializable {
     @Override
     void appendToOptions(Options options) {
       options.limit = limit;
+    }
+  }
+
+  static final class ServerlessQueryOption extends InternalOption
+      implements ReadAndQueryOption {
+
+    private final Boolean serverlessAnalyticsEnabled;
+
+    ServerlessQueryOption(Boolean serverlessAnalyticsEnabled) {
+      this.serverlessAnalyticsEnabled = serverlessAnalyticsEnabled;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.serverlessAnalyticsEnabled = serverlessAnalyticsEnabled;
     }
   }
 
