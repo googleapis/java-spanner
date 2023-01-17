@@ -31,6 +31,7 @@ import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Partition;
 import com.google.cloud.spanner.PartitionOptions;
@@ -236,6 +237,21 @@ public class ITBatchReadTest {
       }
     }
     assertThat(numRowsRead).isEqualTo(numRows);
+  }
+
+  @Test
+  public void serverlessQuery() {
+    BitSet seenRows = new BitSet(numRows);
+    TimestampBound bound = getRandomBound();
+    PartitionOptions partitionParams = getRandomPartitionOptions();
+    batchTxn = getBatchClient().batchReadOnlyTransaction(bound);
+    List<Partition> partitions =
+        batchTxn.partitionQuery(
+            partitionParams,
+            Statement.of("SELECT Key, Data, Fingerprint, Size FROM " + TABLE_NAME),
+            Options.serverlessAnalyticsEnabled(true));
+    BatchTransactionId txnID = batchTxn.getBatchTransactionId();
+    fetchAndValidateRows(partitions, txnID, seenRows);
   }
 
   @After
