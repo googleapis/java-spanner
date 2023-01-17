@@ -16,7 +16,7 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.InternalApi;
+import com.google.api.core.BetaApi;
 import com.google.common.base.Preconditions;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.io.Serializable;
@@ -147,7 +147,7 @@ public final class Options implements Serializable {
     return new PageSizeOption(pageSize);
   }
 
-  @InternalApi
+  @BetaApi
   public static ServerlessQueryOption serverlessAnalyticsEnabled(
       Boolean serverlessAnalyticsEnabled) {
     return new ServerlessQueryOption(serverlessAnalyticsEnabled);
