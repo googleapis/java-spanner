@@ -595,8 +595,7 @@ public final class Options implements Serializable {
     }
   }
 
-  static final class ServerlessQueryOption extends InternalOption
-      implements ReadAndQueryOption {
+  static final class ServerlessQueryOption extends InternalOption implements ReadAndQueryOption {
 
     private final Boolean serverlessAnalyticsEnabled;
 
