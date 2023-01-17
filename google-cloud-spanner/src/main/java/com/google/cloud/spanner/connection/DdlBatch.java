@@ -34,6 +34,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.Connection.InternalMetadataQuery;
+import com.google.cloud.spanner.connection.StatementExecutor.ExecutionMode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
@@ -136,7 +137,10 @@ class DdlBatch extends AbstractBaseUnitOfWork {
                   DirectExecuteResultSet.ofResultSet(
                       dbClient.singleUse().executeQuery(statement.getStatement(), internalOptions));
           return executeStatementAsync(
-              statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
+              statement,
+              callable,
+              SpannerGrpc.getExecuteStreamingSqlMethod(),
+              getExecutionMode(options));
         }
       }
     }
@@ -254,7 +258,10 @@ class DdlBatch extends AbstractBaseUnitOfWork {
         };
     this.state = UnitOfWorkState.RUNNING;
     return executeStatementAsync(
-        RUN_BATCH_STATEMENT, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
+        RUN_BATCH_STATEMENT,
+        callable,
+        DatabaseAdminGrpc.getUpdateDatabaseDdlMethod(),
+        ExecutionMode.SEQUENTIAL);
   }
 
   long[] extractUpdateCounts(OperationFuture<Void, UpdateDatabaseDdlMetadata> operation) {

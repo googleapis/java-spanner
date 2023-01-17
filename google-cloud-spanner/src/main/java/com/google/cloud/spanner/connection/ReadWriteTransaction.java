@@ -47,6 +47,7 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
+import com.google.cloud.spanner.connection.StatementExecutor.ExecutionMode;
 import com.google.cloud.spanner.connection.TransactionRetryListener.RetryResult;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -81,7 +82,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final long transactionId;
   private final DatabaseClient dbClient;
   private final TransactionManager txManager;
-  private final boolean retryAbortsInternally;
+  private boolean retryAbortsInternally;
   private int transactionRetryAttempts;
   private int successfulRetries;
   private final List<TransactionRetryListener> transactionRetryListeners;
@@ -217,7 +218,10 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       transactionStarted = Timestamp.now();
       txContextFuture =
           executeStatementAsync(
-              BEGIN_STATEMENT, () -> txManager.begin(), SpannerGrpc.getBeginTransactionMethod());
+              BEGIN_STATEMENT,
+              txManager::begin,
+              SpannerGrpc.getBeginTransactionMethod(),
+              ExecutionMode.SEQUENTIAL);
     }
   }
 
@@ -345,6 +349,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         "Statement must be a query or DML with returning clause");
     checkValidTransaction();
 
+    ExecutionMode executionMode = getExecutionMode(options);
+    // Parallel queries do not support automatic internal retries of aborted transactions.
+    if (retryAbortsInternally && executionMode == ExecutionMode.PARALLEL) {
+      retryAbortsInternally = false;
+    }
     ApiFuture<ResultSet> res;
     if (retryAbortsInternally) {
       res =
@@ -375,7 +384,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               },
               // ignore interceptors here as they are invoked in the Callable.
               InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.of(SpannerGrpc.getExecuteStreamingSqlMethod()));
+              ImmutableList.of(SpannerGrpc.getExecuteStreamingSqlMethod()),
+              executionMode);
     } else {
       res = super.executeQueryAsync(statement, analyzeMode, options);
     }
@@ -476,7 +486,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               },
               // ignore interceptors here as they are invoked in the Callable.
               InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.of(SpannerGrpc.getExecuteSqlMethod()));
+              ImmutableList.of(SpannerGrpc.getExecuteSqlMethod()),
+              ExecutionMode.SEQUENTIAL);
     } else {
       res =
           executeStatementAsync(
@@ -494,7 +505,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                             update.getStatement(), analyzeMode.getQueryAnalyzeMode(), options);
                 return Tuple.of(null, resultSet);
               },
-              SpannerGrpc.getExecuteSqlMethod());
+              SpannerGrpc.getExecuteSqlMethod(),
+              ExecutionMode.SEQUENTIAL);
     }
     ApiFutures.addCallback(
         res,
@@ -555,7 +567,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               },
               // ignore interceptors here as they are invoked in the Callable.
               InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.of(SpannerGrpc.getExecuteBatchDmlMethod()));
+              ImmutableList.of(SpannerGrpc.getExecuteBatchDmlMethod()),
+              ExecutionMode.SEQUENTIAL);
     } else {
       res =
           executeStatementAsync(
@@ -565,7 +578,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 checkAborted();
                 return get(txContextFuture).batchUpdate(updateStatements);
               },
-              SpannerGrpc.getExecuteBatchDmlMethod());
+              SpannerGrpc.getExecuteBatchDmlMethod(),
+              ExecutionMode.SEQUENTIAL);
     }
     ApiFutures.addCallback(
         res,
@@ -641,7 +655,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 }
               },
               InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.of(SpannerGrpc.getCommitMethod()));
+              ImmutableList.of(SpannerGrpc.getCommitMethod()),
+              ExecutionMode.SEQUENTIAL);
     } else {
       res =
           executeStatementAsync(
@@ -661,7 +676,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                   throw t;
                 }
               },
-              SpannerGrpc.getCommitMethod());
+              SpannerGrpc.getCommitMethod(),
+              ExecutionMode.SEQUENTIAL);
     }
     return res;
   }
@@ -919,7 +935,10 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     state = UnitOfWorkState.ROLLED_BACK;
     if (txContextFuture != null && state != UnitOfWorkState.ABORTED) {
       return executeStatementAsync(
-          ROLLBACK_STATEMENT, rollbackCallable, SpannerGrpc.getRollbackMethod());
+          ROLLBACK_STATEMENT,
+          rollbackCallable,
+          SpannerGrpc.getRollbackMethod(),
+          ExecutionMode.SEQUENTIAL);
     } else {
       return ApiFutures.immediateFuture(null);
     }

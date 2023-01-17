@@ -22,6 +22,8 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStateme
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -31,6 +33,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +45,10 @@ import org.threeten.bp.temporal.ChronoUnit;
  * statements.
  */
 class StatementExecutor {
+  enum ExecutionMode {
+    SEQUENTIAL,
+    PARALLEL,
+  }
 
   /** Simple holder class for statement timeout that allows us to pass the value by reference. */
   static class StatementTimeout {
@@ -140,14 +147,35 @@ class StatementExecutor {
           .setThreadFactory(MoreExecutors.platformThreadFactory())
           .build();
 
-  /** Creates an {@link ExecutorService} for a {@link StatementExecutor}. */
+  private static final ThreadFactory PARALLEL_THREAD_FACTORY =
+      new ThreadFactoryBuilder()
+          .setDaemon(true)
+          .setNameFormat("connection-parallel-executor-%d")
+          .setThreadFactory(MoreExecutors.platformThreadFactory())
+          .build();
+
+  /** Creates an {@link ExecutorService} for a serial {@link StatementExecutor}. */
   private static ListeningExecutorService createExecutorService() {
     return MoreExecutors.listeningDecorator(
         new ThreadPoolExecutor(
             1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), THREAD_FACTORY));
   }
 
-  private ListeningExecutorService executor = createExecutorService();
+  /** Creates an {@link ExecutorService} for a parallel {@link StatementExecutor}. */
+  private static ListeningExecutorService createParallelExecutorService() {
+    return MoreExecutors.listeningDecorator(
+        new ThreadPoolExecutor(
+            0,
+            Integer.MAX_VALUE,
+            60L,
+            TimeUnit.SECONDS,
+            new SynchronousQueue<>(),
+            PARALLEL_THREAD_FACTORY));
+  }
+
+  private final ListeningExecutorService executor;
+
+  private final ListeningExecutorService parallelExecutor;
 
   /**
    * Interceptors that should be invoked before or after a statement is executed can be registered
@@ -157,10 +185,12 @@ class StatementExecutor {
 
   @VisibleForTesting
   StatementExecutor() {
-    this.interceptors = Collections.emptyList();
+    this(Collections.emptyList());
   }
 
   StatementExecutor(List<StatementExecutionInterceptor> interceptors) {
+    this.executor = createExecutorService();
+    this.parallelExecutor = createParallelExecutorService();
     this.interceptors = Collections.unmodifiableList(interceptors);
   }
 
@@ -169,19 +199,37 @@ class StatementExecutor {
   }
 
   void awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-    executor.awaitTermination(timeout, unit);
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    if (executor.awaitTermination(timeout, unit)) {
+      long remaining = timeout - stopwatch.elapsed(unit);
+      parallelExecutor.awaitTermination(remaining, unit);
+    }
   }
 
   /**
    * Shutdown this executor now and do not wait for any statement that is being executed to finish.
    */
   List<Runnable> shutdownNow() {
-    return executor.shutdownNow();
+    return ImmutableList.<Runnable>builder()
+        .addAll(executor.shutdownNow())
+        .addAll(parallelExecutor.shutdownNow())
+        .build();
   }
 
-  /** Execute a statement on this {@link StatementExecutor}. */
-  <T> ApiFuture<T> submit(Callable<T> callable) {
-    return new ListenableFutureToApiFuture<>(executor.submit(callable));
+  /**
+   * Execute a statement on this {@link StatementExecutor}.
+   *
+   * @param callable The callable to execute
+   * @param executionMode if {@link ExecutionMode#PARALLEL}, the statement can be executed in
+   *     parallel with other statements on this executor. If {@link ExecutionMode#SEQUENTIAL}, the
+   *     statement is guaranteed to be executed sequentially with all other statements that have
+   *     been submitted as sequential statements on this executor.
+   */
+  <T> ApiFuture<T> submit(Callable<T> callable, ExecutionMode executionMode) {
+    return new ListenableFutureToApiFuture<>(
+        executionMode == ExecutionMode.PARALLEL
+            ? parallelExecutor.submit(callable)
+            : executor.submit(callable));
   }
 
   /**

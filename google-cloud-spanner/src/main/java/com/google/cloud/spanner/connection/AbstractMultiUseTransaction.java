@@ -71,7 +71,8 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
           return DirectExecuteResultSet.ofResultSet(
               internalExecuteQuery(statement, analyzeMode, options));
         },
-        SpannerGrpc.getExecuteStreamingSqlMethod());
+        SpannerGrpc.getExecuteStreamingSqlMethod(),
+        getExecutionMode(options));
   }
 
   ResultSet internalExecuteQuery(

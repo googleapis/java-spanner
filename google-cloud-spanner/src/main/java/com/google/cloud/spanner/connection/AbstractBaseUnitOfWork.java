@@ -22,12 +22,15 @@ import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.ConnectionImpl.ParallelQueryOption;
+import com.google.cloud.spanner.connection.StatementExecutor.ExecutionMode;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -136,6 +139,18 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     return statementTimeout;
   }
 
+  ExecutionMode getExecutionMode(QueryOption... options) {
+    if (options == null) {
+      return ExecutionMode.SEQUENTIAL;
+    }
+    for (QueryOption option : options) {
+      if (option == ParallelQueryOption.INSTANCE) {
+        return ExecutionMode.PARALLEL;
+      }
+    }
+    return ExecutionMode.SEQUENTIAL;
+  }
+
   @Override
   public void cancel() {
     synchronized (this) {
@@ -150,22 +165,29 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   <T> ApiFuture<T> executeStatementAsync(
       ParsedStatement statement,
       Callable<T> callable,
-      @Nullable MethodDescriptor<?, ?> applyStatementTimeoutToMethod) {
+      @Nullable MethodDescriptor<?, ?> applyStatementTimeoutToMethod,
+      ExecutionMode executionMode) {
     return executeStatementAsync(
         statement,
         callable,
         InterceptorsUsage.INVOKE_INTERCEPTORS,
         applyStatementTimeoutToMethod == null
             ? Collections.emptySet()
-            : ImmutableList.of(applyStatementTimeoutToMethod));
+            : ImmutableList.of(applyStatementTimeoutToMethod),
+        executionMode);
   }
 
   <T> ApiFuture<T> executeStatementAsync(
       ParsedStatement statement,
       Callable<T> callable,
-      Collection<MethodDescriptor<?, ?>> applyStatementTimeoutToMethods) {
+      Collection<MethodDescriptor<?, ?>> applyStatementTimeoutToMethods,
+      ExecutionMode executionMode) {
     return executeStatementAsync(
-        statement, callable, InterceptorsUsage.INVOKE_INTERCEPTORS, applyStatementTimeoutToMethods);
+        statement,
+        callable,
+        InterceptorsUsage.INVOKE_INTERCEPTORS,
+        applyStatementTimeoutToMethods,
+        executionMode);
   }
 
   <ResponseT, MetadataT> ResponseT getWithStatementTimeout(
@@ -211,7 +233,8 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
       ParsedStatement statement,
       Callable<T> callable,
       InterceptorsUsage interceptorUsage,
-      final Collection<MethodDescriptor<?, ?>> applyStatementTimeoutToMethods) {
+      final Collection<MethodDescriptor<?, ?>> applyStatementTimeoutToMethods,
+      ExecutionMode executionMode) {
     Preconditions.checkNotNull(statement);
     Preconditions.checkNotNull(callable);
 
@@ -237,7 +260,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
                 }
               });
     }
-    ApiFuture<T> f = statementExecutor.submit(context.wrap(callable));
+    ApiFuture<T> f = statementExecutor.submit(context.wrap(callable), executionMode);
     final SpannerAsyncExecutionException caller =
         new SpannerAsyncExecutionException(statement.getStatement());
     final ApiFuture<T> future =

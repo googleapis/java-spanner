@@ -30,6 +30,7 @@ import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ForceCloseSpannerFunction;
+import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
@@ -50,6 +51,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
@@ -432,6 +434,131 @@ public class ConnectionAsyncApiTest extends AbstractMockServerTest {
     try (Connection connection = createConnection()) {
       connection.startBatchDml();
       assertThat(get(connection.runBatchAsync())).isEqualTo(new long[0]);
+    }
+  }
+
+  @Test(timeout = 10_000)
+  public void testExecuteParallelQueries() throws InterruptedException, TimeoutException {
+    int numRows = 5;
+    Statement statement1 = Statement.of("select * from my_table1");
+    Statement statement2 = Statement.of("select * from my_table2");
+    Statement statement3 = Statement.of("select * from my_table3");
+    RandomResultSetGenerator generator = new RandomResultSetGenerator(numRows);
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.query(statement1, generator.generate()));
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.query(statement2, generator.generate()));
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.query(statement3, generator.generate()));
+
+    try (Connection connection = createConnection()) {
+      for (boolean readonly : new boolean[] {true, false}) {
+        for (boolean autocommit : new boolean[] {true, false}) {
+          connection.setReadOnly(readonly);
+          connection.setAutocommit(autocommit);
+
+          if (!autocommit) {
+            // Execute a non-parallel query first to ensure that we have a transaction.
+            try (ResultSet resultSet = connection.executeQuery(SELECT_COUNT_STATEMENT)) {
+              while (resultSet.next()) {}
+            }
+          }
+
+          // Freeze the Spanner server, so we know that we actually receive all the requests before
+          // they have been executed.
+          mockSpanner.freeze();
+          try (AsyncResultSet resultSet1 = connection.executeParallelQueryAsync(statement1);
+              AsyncResultSet resultSet2 = connection.executeParallelQueryAsync(statement2);
+              AsyncResultSet resultSet3 = connection.executeParallelQueryAsync(statement3)) {
+            // Verify that we receive all requests in parallel.
+            mockSpanner.waitForRequestsToContain(
+                request ->
+                    request instanceof ExecuteSqlRequest
+                        && ((ExecuteSqlRequest) request).getSql().equals(statement1.getSql()),
+                3000L);
+            mockSpanner.waitForRequestsToContain(
+                request ->
+                    request instanceof ExecuteSqlRequest
+                        && ((ExecuteSqlRequest) request).getSql().equals(statement2.getSql()),
+                3000L);
+            mockSpanner.waitForRequestsToContain(
+                request ->
+                    request instanceof ExecuteSqlRequest
+                        && ((ExecuteSqlRequest) request).getSql().equals(statement3.getSql()),
+                3000L);
+            // Unfreeze the server so we actually receive the results.
+            mockSpanner.unfreeze();
+            // Verify that we can consume all results in parallel.
+            int rowCount = 0;
+            while (resultSet1.next() && resultSet2.next() && resultSet3.next()) {
+              rowCount++;
+            }
+            assertEquals(numRows, rowCount);
+            if (!autocommit) {
+              connection.commit();
+            }
+
+            mockSpanner.clearRequests();
+          }
+        }
+      }
+    }
+  }
+
+  @Test(timeout = 10_000)
+  public void testExecuteParallelQueriesInReadWriteTransaction()
+      throws InterruptedException, TimeoutException {
+    int numRows = 5;
+    Statement statement1 = Statement.of("select * from my_table1");
+    Statement statement2 = Statement.of("select * from my_table2");
+    Statement statement3 = Statement.of("select * from my_table3");
+    RandomResultSetGenerator generator = new RandomResultSetGenerator(numRows);
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.query(statement1, generator.generate()));
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.query(statement2, generator.generate()));
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.query(statement3, generator.generate()));
+
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(false);
+      // Freeze the Spanner server, so we know that first query does not return a transaction ID
+      // before we unfreeze it.
+      mockSpanner.freeze();
+      try (AsyncResultSet resultSet1 = connection.executeParallelQueryAsync(statement1);
+          AsyncResultSet resultSet2 = connection.executeParallelQueryAsync(statement2);
+          AsyncResultSet resultSet3 = connection.executeParallelQueryAsync(statement3)) {
+        // Verify that we only receive the first query.
+        mockSpanner.waitForRequestsToContain(
+            request ->
+                request instanceof ExecuteSqlRequest
+                    && ((ExecuteSqlRequest) request).getSql().equals(statement1.getSql()),
+            3000L);
+        // Verify that this is the only request on the server.
+        assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+        // Unfreeze the server, so we actually receive the results of the first query and the
+        // transaction ID.
+        mockSpanner.unfreeze();
+        // Verify that we can consume all results in parallel.
+        int rowCount = 0;
+        while (resultSet1.next() && resultSet2.next() && resultSet3.next()) {
+          rowCount++;
+        }
+        assertEquals(numRows, rowCount);
+      }
+    }
+  }
+
+  @Test
+  public void textExecuteParallelDmlReturning() {
+    try (Connection connection = createConnection()) {
+      SpannerException exception =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  connection.executeParallelQueryAsync(
+                      Statement.of("update foo set bar=1 where id=2 then return id")));
+      assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
     }
   }
 

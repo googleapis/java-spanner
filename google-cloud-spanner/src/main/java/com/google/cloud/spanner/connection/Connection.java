@@ -926,6 +926,37 @@ public interface Connection extends AutoCloseable {
   AsyncResultSet executeQueryAsync(Statement query, QueryOption... options);
 
   /**
+   * Executes the given query asynchronously and potentially in parallel with other queries that are
+   * also executed this method and returns the result as an {@link AsyncResultSet}. This method is
+   * guaranteed to be non-blocking. If the statement does not contain a valid query, the method will
+   * throw a {@link SpannerException}. Note that this method may not be called for a DML statement.
+   *
+   * <p>See {@link AsyncResultSet#setCallback(java.util.concurrent.Executor,
+   * com.google.cloud.spanner.AsyncResultSet.ReadyCallback)} for more information on how to consume
+   * the results of the statement asynchronously.
+   *
+   * <p>It is also possible to consume the returned {@link AsyncResultSet} in the same way as a
+   * normal {@link ResultSet}, i.e. in a while-loop calling {@link AsyncResultSet#next()}.
+   *
+   * <p>NOTE: Executing parallel queries in a read/write transaction has a couple of limitations:
+   *
+   * <ol>
+   *   <li>The first query in a transaction will never execute in parallel with any other query, as
+   *       it is responsible for actually starting the transaction.
+   *   <li>Executing a parallel query in read/write transaction disables the automatic retry of the
+   *       transaction if the transaction is aborted by Cloud Spanner. Instead, the {@link
+   *       AbortedException} will be propagated and the application is responsible for retrying the
+   *       transaction. This is effectively the same as calling {@link
+   *       #setRetryAbortsInternally(boolean)} with <code>false</code> before executing the query.
+   * </ol>
+   *
+   * @param query The query statement to execute
+   * @param options the options to configure the query
+   * @return an {@link AsyncResultSet} with the results of the statement
+   */
+  AsyncResultSet executeParallelQueryAsync(Statement query, QueryOption... options);
+
+  /**
    * Analyzes a query or a DML statement and returns query plan and/or query execution statistics
    * information.
    *

@@ -42,6 +42,7 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
+import com.google.cloud.spanner.connection.StatementExecutor.ExecutionMode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -220,7 +221,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
           }
         };
     readTimestamp = SettableApiFuture.create();
-    return executeStatementAsync(statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
+    return executeStatementAsync(
+        statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod(), getExecutionMode(options));
   }
 
   private ApiFuture<ResultSet> executeDmlReturningAsync(
@@ -244,7 +246,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     return executeStatementAsync(
         update,
         callable,
-        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
+        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()),
+        ExecutionMode.SEQUENTIAL);
   }
 
   @Override
@@ -324,7 +327,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
             throw t;
           }
         };
-    return executeStatementAsync(ddl, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
+    return executeStatementAsync(
+        ddl, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod(), ExecutionMode.SEQUENTIAL);
   }
 
   @Override
@@ -447,7 +451,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     return executeStatementAsync(
         update,
         callable,
-        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
+        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()),
+        ExecutionMode.SEQUENTIAL);
   }
 
   private ApiFuture<ResultSet> analyzeTransactionalUpdateAsync(
@@ -472,7 +477,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     return executeStatementAsync(
         update,
         callable,
-        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
+        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()),
+        ExecutionMode.SEQUENTIAL);
   }
 
   private ApiFuture<Long> executePartitionedUpdateAsync(
@@ -488,7 +494,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
             throw t;
           }
         };
-    return executeStatementAsync(update, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
+    return executeStatementAsync(
+        update, callable, SpannerGrpc.getExecuteStreamingSqlMethod(), ExecutionMode.SEQUENTIAL);
   }
 
   private ApiFuture<long[]> executeTransactionalBatchUpdateAsync(
@@ -516,7 +523,10 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
               });
         };
     return executeStatementAsync(
-        RUN_BATCH_STATEMENT, callable, SpannerGrpc.getExecuteBatchDmlMethod());
+        RUN_BATCH_STATEMENT,
+        callable,
+        SpannerGrpc.getExecuteBatchDmlMethod(),
+        ExecutionMode.SEQUENTIAL);
   }
 
   @Override
@@ -543,7 +553,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
             throw t;
           }
         };
-    return executeStatementAsync(COMMIT_STATEMENT, callable, SpannerGrpc.getCommitMethod());
+    return executeStatementAsync(
+        COMMIT_STATEMENT, callable, SpannerGrpc.getCommitMethod(), ExecutionMode.SEQUENTIAL);
   }
 
   @Override

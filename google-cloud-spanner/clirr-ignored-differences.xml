@@ -222,4 +222,10 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>com.google.cloud.spanner.ResultSet analyzeUpdateStatement(com.google.cloud.spanner.Statement, com.google.cloud.spanner.ReadContext$QueryAnalyzeMode, com.google.cloud.spanner.Options$UpdateOption[])</method>
   </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.AsyncResultSet executeParallelQueryAsync(com.google.cloud.spanner.Statement, com.google.cloud.spanner.Options$QueryOption[])</method>
+  </difference>
+
 </differences>

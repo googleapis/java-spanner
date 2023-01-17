@@ -42,6 +42,7 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
+import com.google.cloud.spanner.connection.StatementExecutor.ExecutionMode;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.annotations.VisibleForTesting;
@@ -137,6 +138,17 @@ class ConnectionImpl implements Connection {
     static final InternalMetadataQuery INSTANCE = new InternalMetadataQuery();
 
     private InternalMetadataQuery() {}
+  }
+
+  /**
+   * Internal {@link QueryOption} that is used to indicate that a query should be executed using the
+   * parallel executor.
+   */
+  static final class ParallelQueryOption implements QueryOption {
+    static final ParallelQueryOption INSTANCE = new ParallelQueryOption();
+    static final QueryOption[] SINGLETON_ARRAY = new QueryOption[] {ParallelQueryOption.INSTANCE};
+
+    private ParallelQueryOption() {}
   }
 
   /** The combination of all transaction modes and batch modes. */
@@ -315,7 +327,7 @@ class ConnectionImpl implements Connection {
         // RejectedExecutionException if the executor is no longer in state where it accepts new
         // tasks.
         try {
-          futures.add(statementExecutor.submit(() -> null));
+          futures.add(statementExecutor.submit(() -> null, ExecutionMode.SEQUENTIAL));
         } catch (RejectedExecutionException ignored) {
           // ignore and continue to close the connection.
         }
@@ -910,6 +922,17 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
+  public AsyncResultSet executeParallelQueryAsync(Statement query, QueryOption... options) {
+    if (options == null || options.length == 0) {
+      options = ParallelQueryOption.SINGLETON_ARRAY;
+    } else {
+      options = Arrays.copyOf(options, options.length + 1);
+      options[options.length - 1] = ParallelQueryOption.INSTANCE;
+    }
+    return parseAndExecuteQueryAsync(query, AnalyzeMode.NONE, false, options);
+  }
+
+  @Override
   public ResultSet analyzeQuery(Statement query, QueryAnalyzeMode queryMode) {
     Preconditions.checkNotNull(queryMode);
     return parseAndExecuteQuery(query, AnalyzeMode.of(queryMode));
@@ -961,6 +984,11 @@ class ConnectionImpl implements Connection {
 
   private AsyncResultSet parseAndExecuteQueryAsync(
       Statement query, AnalyzeMode analyzeMode, QueryOption... options) {
+    return parseAndExecuteQueryAsync(query, analyzeMode, true, options);
+  }
+
+  private AsyncResultSet parseAndExecuteQueryAsync(
+      Statement query, AnalyzeMode analyzeMode, boolean allowDmlReturning, QueryOption... options) {
     Preconditions.checkNotNull(query);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
@@ -977,7 +1005,7 @@ class ConnectionImpl implements Connection {
         case QUERY:
           return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
         case UPDATE:
-          if (parsedStatement.hasReturningClause()) {
+          if (allowDmlReturning && parsedStatement.hasReturningClause()) {
             // Cannot execute DML statement with returning clause in read-only mode or in
             // READ_ONLY_TRANSACTION transaction mode.
             if (this.isReadOnly()
@@ -997,8 +1025,9 @@ class ConnectionImpl implements Connection {
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
-        "Statement is not a query or DML with returning clause: "
-            + parsedStatement.getSqlWithoutComments());
+        allowDmlReturning
+            ? "Statement is not a query or DML with returning clause: "
+            : "Statement is not a query: " + parsedStatement.getSqlWithoutComments());
   }
 
   @Override
