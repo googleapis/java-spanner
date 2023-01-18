@@ -894,11 +894,15 @@ class ConnectionImpl implements Connection {
             spanner.getAsyncExecutorProvider());
       case QUERY:
         return AsyncStatementResultImpl.of(
-            internalExecuteQueryAsync(parsedStatement, AnalyzeMode.NONE));
+            ResultSets.toAsyncResultSet(
+                internalExecuteQueryAsync(parsedStatement, AnalyzeMode.NONE),
+                spanner.getAsyncExecutorProvider()));
       case UPDATE:
         if (parsedStatement.hasReturningClause()) {
           return AsyncStatementResultImpl.of(
-              internalExecuteQueryAsync(parsedStatement, AnalyzeMode.NONE));
+              ResultSets.toAsyncResultSet(
+                  internalExecuteQueryAsync(parsedStatement, AnalyzeMode.NONE),
+                  spanner.getAsyncExecutorProvider()));
         }
         return AsyncStatementResultImpl.of(internalExecuteUpdateAsync(parsedStatement));
       case DDL:
@@ -918,11 +922,14 @@ class ConnectionImpl implements Connection {
 
   @Override
   public AsyncResultSet executeQueryAsync(Statement query, QueryOption... options) {
-    return parseAndExecuteQueryAsync(query, AnalyzeMode.NONE, options);
+    return ResultSets.toAsyncResultSet(
+        parseAndExecuteQueryAsync(query, AnalyzeMode.NONE, options),
+        spanner.getAsyncExecutorProvider(),
+        options);
   }
 
   @Override
-  public AsyncResultSet executeParallelQueryAsync(Statement query, QueryOption... options) {
+  public ApiFuture<ResultSet> executeParallelQuery(Statement query, QueryOption... options) {
     if (options == null || options.length == 0) {
       options = ParallelQueryOption.SINGLETON_ARRAY;
     } else {
@@ -930,6 +937,12 @@ class ConnectionImpl implements Connection {
       options[options.length - 1] = ParallelQueryOption.INSTANCE;
     }
     return parseAndExecuteQueryAsync(query, AnalyzeMode.NONE, false, options);
+  }
+
+  @Override
+  public AsyncResultSet executeParallelQueryAsync(Statement query, QueryOption... options) {
+    return ResultSets.toAsyncResultSet(
+        executeParallelQuery(query, options), spanner.getAsyncExecutorProvider(), options);
   }
 
   @Override
@@ -982,12 +995,12 @@ class ConnectionImpl implements Connection {
             + parsedStatement.getSqlWithoutComments());
   }
 
-  private AsyncResultSet parseAndExecuteQueryAsync(
+  private ApiFuture<ResultSet> parseAndExecuteQueryAsync(
       Statement query, AnalyzeMode analyzeMode, QueryOption... options) {
     return parseAndExecuteQueryAsync(query, analyzeMode, true, options);
   }
 
-  private AsyncResultSet parseAndExecuteQueryAsync(
+  private ApiFuture<ResultSet> parseAndExecuteQueryAsync(
       Statement query, AnalyzeMode analyzeMode, boolean allowDmlReturning, QueryOption... options) {
     Preconditions.checkNotNull(query);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
@@ -995,13 +1008,11 @@ class ConnectionImpl implements Connection {
     if (parsedStatement.isQuery() || parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case CLIENT_SIDE:
-          return ResultSets.toAsyncResultSet(
+          return ApiFutures.immediateFuture(
               parsedStatement
                   .getClientSideStatement()
                   .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments())
-                  .getResultSet(),
-              spanner.getAsyncExecutorProvider(),
-              options);
+                  .getResultSet());
         case QUERY:
           return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
         case UPDATE:
@@ -1250,7 +1261,7 @@ class ConnectionImpl implements Connection {
             statement, analyzeMode, mergeQueryRequestOptions(mergeQueryStatementTag(options))));
   }
 
-  private AsyncResultSet internalExecuteQueryAsync(
+  private ApiFuture<ResultSet> internalExecuteQueryAsync(
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
@@ -1259,11 +1270,14 @@ class ConnectionImpl implements Connection {
             || (statement.getType() == StatementType.UPDATE && statement.hasReturningClause()),
         "Statement must be a query or DML with returning clause.");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    return ResultSets.toAsyncResultSet(
-        transaction.executeQueryAsync(
-            statement, analyzeMode, mergeQueryRequestOptions(mergeQueryStatementTag(options))),
-        spanner.getAsyncExecutorProvider(),
-        options);
+    //    return ResultSets.toAsyncResultSet(
+    //        transaction.executeQueryAsync(
+    //            statement, analyzeMode,
+    // mergeQueryRequestOptions(mergeQueryStatementTag(options))),
+    //        spanner.getAsyncExecutorProvider(),
+    //        options);
+    return transaction.executeQueryAsync(
+        statement, analyzeMode, mergeQueryRequestOptions(mergeQueryStatementTag(options)));
   }
 
   private ApiFuture<Long> internalExecuteUpdateAsync(

@@ -22,8 +22,6 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStateme
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -153,6 +151,8 @@ class StatementExecutor {
           .setNameFormat("connection-parallel-executor-%d")
           .setThreadFactory(MoreExecutors.platformThreadFactory())
           .build();
+  private static final ListeningExecutorService PARALLEL_EXECUTOR_SERVICE =
+      createParallelExecutorService();
 
   /** Creates an {@link ExecutorService} for a serial {@link StatementExecutor}. */
   private static ListeningExecutorService createExecutorService() {
@@ -190,7 +190,7 @@ class StatementExecutor {
 
   StatementExecutor(List<StatementExecutionInterceptor> interceptors) {
     this.executor = createExecutorService();
-    this.parallelExecutor = createParallelExecutorService();
+    this.parallelExecutor = PARALLEL_EXECUTOR_SERVICE;
     this.interceptors = Collections.unmodifiableList(interceptors);
   }
 
@@ -199,21 +199,14 @@ class StatementExecutor {
   }
 
   void awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-    Stopwatch stopwatch = Stopwatch.createStarted();
-    if (executor.awaitTermination(timeout, unit)) {
-      long remaining = timeout - stopwatch.elapsed(unit);
-      parallelExecutor.awaitTermination(remaining, unit);
-    }
+    executor.awaitTermination(timeout, unit);
   }
 
   /**
    * Shutdown this executor now and do not wait for any statement that is being executed to finish.
    */
   List<Runnable> shutdownNow() {
-    return ImmutableList.<Runnable>builder()
-        .addAll(executor.shutdownNow())
-        .addAll(parallelExecutor.shutdownNow())
-        .build();
+    return executor.shutdownNow();
   }
 
   /**
