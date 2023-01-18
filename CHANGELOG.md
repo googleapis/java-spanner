@@ -1,5 +1,15 @@
 # Changelog
 
+## [6.35.1](https://github.com/googleapis/java-spanner/compare/v6.35.0...v6.35.1) (2023-01-18)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.9.0 ([#2230](https://github.com/googleapis/java-spanner/issues/2230)) ([717f70f](https://github.com/googleapis/java-spanner/commit/717f70f76f915e15a7283b32a83a6f4ac64fc931))
+* Update dependency com.google.cloud:google-cloud-trace to v2.8.0 ([#2231](https://github.com/googleapis/java-spanner/issues/2231)) ([557ea16](https://github.com/googleapis/java-spanner/commit/557ea164ebf948cd78f937c6996fd21e9618d3ae))
+* Update dependency org.graalvm.sdk:graal-sdk to v22.3.1 ([#2238](https://github.com/googleapis/java-spanner/issues/2238)) ([d5f5237](https://github.com/googleapis/java-spanner/commit/d5f52375394ef617f4fcb823937a374930f941e7))
+* Update dependency org.junit.vintage:junit-vintage-engine to v5.9.2 ([#2223](https://github.com/googleapis/java-spanner/issues/2223)) ([3278f91](https://github.com/googleapis/java-spanner/commit/3278f9167b1b2688ed090a7dfd5874e88b8945a5))
+
 ## [6.35.0](https://github.com/googleapis/java-spanner/compare/v6.34.1...v6.35.0) (2023-01-12)
 
 
