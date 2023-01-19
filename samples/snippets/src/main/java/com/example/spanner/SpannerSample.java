@@ -53,6 +53,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
+import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.common.io.BaseEncoding;
 import com.google.longrunning.Operation;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -306,6 +307,49 @@ public class SpannerSample {
     }
   }
   // [END spanner_create_database]
+
+  // [START spanner_create_database_with_multi_CMEK]
+  static void createDatabaseWithMultiCMEK(DatabaseAdminClient dbAdminClient, DatabaseId id) {
+    String key1 = "projects/span-cloud-testing/locations/us-central1/keyRings/cmek_demo/cryptoKeys/test-key";
+    String key2 = "projects/span-cloud-testing/locations/us-central1/keyRings/cmek_demo/cryptoKeys/apalicherla-test";
+    final Database sourceDatabase =
+        dbAdminClient
+            .newDatabaseBuilder(id)
+            .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(key1, key2))
+            //.setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(key1))
+            .build();
+    OperationFuture<Database, CreateDatabaseMetadata> op =
+        dbAdminClient.createDatabase(
+            sourceDatabase,
+            Arrays.asList(
+                "CREATE TABLE Singers ("
+                    + "  SingerId   INT64 NOT NULL,"
+                    + "  FirstName  STRING(1024),"
+                    + "  LastName   STRING(1024),"
+                    + "  SingerInfo BYTES(MAX),"
+                    + "  FullName STRING(2048) AS "
+                    + "  (ARRAY_TO_STRING([FirstName, LastName], \" \")) STORED"
+                    + ") PRIMARY KEY (SingerId)",
+                "CREATE TABLE Albums ("
+                    + "  SingerId     INT64 NOT NULL,"
+                    + "  AlbumId      INT64 NOT NULL,"
+                    + "  AlbumTitle   STRING(MAX)"
+                    + ") PRIMARY KEY (SingerId, AlbumId),"
+                    + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE"));
+    try {
+      // Initiate the request which returns an OperationFuture.
+      Database db = op.get();
+      System.out.println("Created database [" + db.getId() + "]");
+    } catch (ExecutionException e) {
+      // If the operation failed during execution, expose the cause.
+      throw (SpannerException) e.getCause();
+    } catch (InterruptedException e) {
+      // Throw when a thread is waiting, sleeping, or otherwise occupied,
+      // and the thread is interrupted, either before or during the activity.
+      throw SpannerExceptionFactory.propagateInterrupt(e);
+    }
+  }
+  // [END spanner_create_database_with_multi_CMEK]
 
   // [START spanner_create_table_with_timestamp_column]
   static void createTableWithTimestamp(DatabaseAdminClient dbAdminClient, DatabaseId id) {
@@ -1917,6 +1961,9 @@ public class SpannerSample {
       case "createdatabase":
         createDatabase(dbAdminClient, database);
         break;
+      case "createdatabaseMultiCmek":
+        createDatabaseWithMultiCMEK(dbAdminClient, database);
+        break;
       case "write":
         writeExampleData(dbClient);
         break;
@@ -2126,6 +2173,7 @@ public class SpannerSample {
     System.err.println("");
     System.err.println("Examples:");
     System.err.println("    SpannerExample createdatabase my-instance example-db");
+    System.err.println("    SpannerExample createdatabaseMultiCmek my-instance example-db");
     System.err.println("    SpannerExample write my-instance example-db");
     System.err.println("    SpannerExample delete my-instance example-db");
     System.err.println("    SpannerExample query my-instance example-db");
@@ -2190,7 +2238,10 @@ public class SpannerSample {
       printUsageAndExit();
     }
     // [START init_client]
-    SpannerOptions options = SpannerOptions.newBuilder().build();
+    SpannerOptions options = SpannerOptions.newBuilder()
+        .setHost("https://staging-wrenchworks.sandbox.googleapis.com")
+        .setProjectId("span-cloud-testing")
+        .build();
     Spanner spanner = options.getService();
     try {
       String command = args[0];

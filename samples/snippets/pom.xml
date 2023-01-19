@@ -44,6 +44,37 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
+      <version>6.33.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api.grpc</groupId>
+      <artifactId>grpc-google-cloud-spanner-admin-database-v1</artifactId>
+      <version>6.33.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api.grpc</groupId>
+      <artifactId>proto-google-cloud-spanner-admin-database-v1</artifactId>
+      <version>6.33.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api.grpc</groupId>
+      <artifactId>grpc-google-cloud-spanner-admin-instance-v1</artifactId>
+      <version>6.33.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api.grpc</groupId>
+      <artifactId>proto-google-cloud-spanner-admin-instance-v1</artifactId>
+      <version>6.33.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api.grpc</groupId>
+      <artifactId>grpc-google-cloud-spanner-v1</artifactId>
+      <version>6.33.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api.grpc</groupId>
+      <artifactId>proto-google-cloud-spanner-v1</artifactId>
+      <version>6.33.1-SNAPSHOT</version>
     </dependency>
     <!-- [END spanner_install_with_bom] -->
 
