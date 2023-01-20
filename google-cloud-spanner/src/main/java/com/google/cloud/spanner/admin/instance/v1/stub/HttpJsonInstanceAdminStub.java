@@ -115,6 +115,7 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                                 ProtoRestSerializer.create();
                             serializer.putQueryParam(fields, "pageSize", request.getPageSize());
                             serializer.putQueryParam(fields, "pageToken", request.getPageToken());
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(request -> null)
@@ -148,6 +149,7 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<GetInstanceConfigRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(request -> null)
@@ -182,12 +184,13 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<CreateInstanceConfigRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearParent().build(), false))
+                                  .toBody("*", request.toBuilder().clearParent().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()
@@ -225,12 +228,13 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<UpdateInstanceConfigRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().build(), false))
+                                  .toBody("*", request.toBuilder().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()
@@ -268,6 +272,7 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             serializer.putQueryParam(fields, "etag", request.getEtag());
                             serializer.putQueryParam(
                                 fields, "validateOnly", request.getValidateOnly());
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(request -> null)
@@ -308,6 +313,7 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             serializer.putQueryParam(fields, "filter", request.getFilter());
                             serializer.putQueryParam(fields, "pageSize", request.getPageSize());
                             serializer.putQueryParam(fields, "pageToken", request.getPageToken());
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(request -> null)
@@ -344,6 +350,7 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             serializer.putQueryParam(fields, "filter", request.getFilter());
                             serializer.putQueryParam(fields, "pageSize", request.getPageSize());
                             serializer.putQueryParam(fields, "pageToken", request.getPageToken());
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(request -> null)
@@ -378,6 +385,7 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             ProtoRestSerializer<GetInstanceRequest> serializer =
                                 ProtoRestSerializer.create();
                             serializer.putQueryParam(fields, "fieldMask", request.getFieldMask());
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(request -> null)
@@ -411,12 +419,13 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<CreateInstanceRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearParent().build(), false))
+                                  .toBody("*", request.toBuilder().clearParent().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()
@@ -451,12 +460,13 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<UpdateInstanceRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().build(), false))
+                                  .toBody("*", request.toBuilder().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Operation>newBuilder()
@@ -490,6 +500,7 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<DeleteInstanceRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(request -> null)
@@ -523,12 +534,13 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<SetIamPolicyRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearResource().build(), false))
+                                  .toBody("*", request.toBuilder().clearResource().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Policy>newBuilder()
@@ -559,12 +571,13 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<GetIamPolicyRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearResource().build(), false))
+                                  .toBody("*", request.toBuilder().clearResource().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<Policy>newBuilder()
@@ -596,12 +609,13 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             Map<String, List<String>> fields = new HashMap<>();
                             ProtoRestSerializer<TestIamPermissionsRequest> serializer =
                                 ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
                             return fields;
                           })
                       .setRequestBodyExtractor(
                           request ->
                               ProtoRestSerializer.create()
-                                  .toBody("*", request.toBuilder().clearResource().build(), false))
+                                  .toBody("*", request.toBuilder().clearResource().build(), true))
                       .build())
               .setResponseParser(
                   ProtoMessageResponseParser.<TestIamPermissionsResponse>newBuilder()
