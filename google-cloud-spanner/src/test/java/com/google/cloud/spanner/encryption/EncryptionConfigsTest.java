@@ -18,6 +18,7 @@ package com.google.cloud.spanner.encryption;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
+import java.util.Arrays;
 import org.junit.Test;
 
 /** Unit tests for {@link EncryptionConfigs} */
@@ -33,9 +34,24 @@ public class EncryptionConfigsTest {
     assertEquals(expected, actual);
   }
 
+  @Test
+  public void testCustomerManagedEncryptionMultiRegionKeys() {
+    final CustomerManagedEncryption expected = new CustomerManagedEncryption(Arrays.asList("kms-key-name-1", "kms-key-name-2"));
+
+    final CustomerManagedEncryption actual =
+        EncryptionConfigs.customerManagedEncryption("kms-key-name-1", "kms-key-name-2");
+
+    assertEquals(expected, actual);
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testCustomerManagedEncryptionNullKeyName() {
     EncryptionConfigs.customerManagedEncryption((String)null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCustomerManagedEncryptionEmptyKeyName() {
+    EncryptionConfigs.customerManagedEncryption();
   }
 
   @Test

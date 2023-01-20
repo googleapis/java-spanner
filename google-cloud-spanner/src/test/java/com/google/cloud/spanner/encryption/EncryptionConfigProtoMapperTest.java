@@ -20,12 +20,15 @@ import static org.junit.Assert.assertEquals;
 import com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig;
 import com.google.spanner.admin.database.v1.EncryptionConfig;
 import com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Test;
 
 /** Unit tests for {@link com.google.cloud.spanner.encryption.EncryptionConfigProtoMapper} */
 public class EncryptionConfigProtoMapperTest {
 
   public static final String KMS_KEY_NAME = "kms-key-name";
+  public static final List<String> KMS_KEY_NAMES = Arrays.asList("kms-key-name-1", "kms-key-name-2");
 
   @Test
   public void testEncryptionConfig() {
@@ -34,6 +37,17 @@ public class EncryptionConfigProtoMapperTest {
 
     final EncryptionConfig actual =
         EncryptionConfigProtoMapper.encryptionConfig(new CustomerManagedEncryption(KMS_KEY_NAME));
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testEncryptionConfigMultiRegionKeys() {
+    final EncryptionConfig expected =
+        EncryptionConfig.newBuilder().addAllKmsKeyNames(KMS_KEY_NAMES).build();
+
+    final EncryptionConfig actual =
+        EncryptionConfigProtoMapper.encryptionConfig(new CustomerManagedEncryption(KMS_KEY_NAMES));
 
     assertEquals(expected, actual);
   }
@@ -50,6 +64,22 @@ public class EncryptionConfigProtoMapperTest {
     final CreateBackupEncryptionConfig actual =
         EncryptionConfigProtoMapper.createBackupEncryptionConfig(
             new CustomerManagedEncryption(KMS_KEY_NAME));
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testCreateBackupConfigCustomerManagedEncryptionMultiRegionKeys() {
+    final CreateBackupEncryptionConfig expected =
+        CreateBackupEncryptionConfig.newBuilder()
+            .setEncryptionType(
+                CreateBackupEncryptionConfig.EncryptionType.CUSTOMER_MANAGED_ENCRYPTION)
+            .addAllKmsKeyNames(KMS_KEY_NAMES)
+            .build();
+
+    final CreateBackupEncryptionConfig actual =
+        EncryptionConfigProtoMapper.createBackupEncryptionConfig(
+            new CustomerManagedEncryption(KMS_KEY_NAMES));
 
     assertEquals(expected, actual);
   }
@@ -98,6 +128,22 @@ public class EncryptionConfigProtoMapperTest {
     final RestoreDatabaseEncryptionConfig actual =
         EncryptionConfigProtoMapper.restoreDatabaseEncryptionConfig(
             new CustomerManagedEncryption(KMS_KEY_NAME));
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testRestoreDatabaseConfigCustomerManagedEncryptionMultiRegionKeys() {
+    final RestoreDatabaseEncryptionConfig expected =
+        RestoreDatabaseEncryptionConfig.newBuilder()
+            .setEncryptionType(
+                RestoreDatabaseEncryptionConfig.EncryptionType.CUSTOMER_MANAGED_ENCRYPTION)
+            .addAllKmsKeyNames(KMS_KEY_NAMES)
+            .build();
+
+    final RestoreDatabaseEncryptionConfig actual =
+        EncryptionConfigProtoMapper.restoreDatabaseEncryptionConfig(
+            new CustomerManagedEncryption(KMS_KEY_NAMES));
 
     assertEquals(expected, actual);
   }

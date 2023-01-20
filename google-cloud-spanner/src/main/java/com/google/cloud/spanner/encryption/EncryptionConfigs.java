@@ -48,6 +48,7 @@ public class EncryptionConfigs {
         kmsKeyNames != null, "Customer managed encryption key names must not be null");
     Preconditions.checkArgument(
         kmsKeyNames.length != 0, "Customer managed encryption key names must not be empty");
+    // TODO(harsha): If single key is passed then the above constructor is called directly. so either make the above 2 methods as private or remove the below length==1 condition as it is not needed.
     if(kmsKeyNames.length == 1){
       Preconditions.checkArgument(
           kmsKeyNames[0] != null, "Customer managed encryption key name must not be null");

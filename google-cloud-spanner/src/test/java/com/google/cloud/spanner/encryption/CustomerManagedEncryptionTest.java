@@ -18,6 +18,7 @@ package com.google.cloud.spanner.encryption;
 import static org.junit.Assert.*;
 
 import com.google.spanner.admin.database.v1.EncryptionConfig;
+import java.util.Arrays;
 import org.junit.Test;
 
 /** Unit tests for {@link CustomerManagedEncryption}. */
@@ -44,11 +45,34 @@ public class CustomerManagedEncryptionTest {
   }
 
   @Test
+  public void testFromProtoMultiRegionKeys() {
+    final CustomerManagedEncryption expected = new CustomerManagedEncryption(Arrays.asList("kms-key-name-1", "kms-key-name-2"));
+    final EncryptionConfig encryptionConfig =
+        EncryptionConfig.newBuilder().addAllKmsKeyNames(Arrays.asList("kms-key-name-1", "kms-key-name-2")).build();
+
+    final CustomerManagedEncryption actual =
+        CustomerManagedEncryption.fromProtoOrNull(encryptionConfig);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
   public void testEqualsAndHashCode() {
     final CustomerManagedEncryption customerManagedEncryption1 =
         new CustomerManagedEncryption("kms-key-name");
     final CustomerManagedEncryption customerManagedEncryption2 =
         new CustomerManagedEncryption("kms-key-name");
+
+    assertEquals(customerManagedEncryption1, customerManagedEncryption2);
+    assertEquals(customerManagedEncryption1.hashCode(), customerManagedEncryption2.hashCode());
+  }
+
+  @Test
+  public void testEqualsAndHashCodeMultiRegionKeys() {
+    final CustomerManagedEncryption customerManagedEncryption1 =
+        new CustomerManagedEncryption(Arrays.asList("kms-key-name-1", "kms-key-name-2"));
+    final CustomerManagedEncryption customerManagedEncryption2 =
+        new CustomerManagedEncryption(Arrays.asList("kms-key-name-1", "kms-key-name-2"));
 
     assertEquals(customerManagedEncryption1, customerManagedEncryption2);
     assertEquals(customerManagedEncryption1.hashCode(), customerManagedEncryption2.hashCode());
