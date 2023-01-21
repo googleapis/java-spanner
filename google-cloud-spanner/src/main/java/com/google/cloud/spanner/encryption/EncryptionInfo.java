@@ -57,7 +57,7 @@ public class EncryptionInfo {
   public static List<EncryptionInfo> listFromProtoOrNull(
       List<com.google.spanner.admin.database.v1.EncryptionInfo> protos) {
     List<EncryptionInfo> encryptionInformation = new ArrayList<>();
-    for(com.google.spanner.admin.database.v1.EncryptionInfo proto: protos){
+    for (com.google.spanner.admin.database.v1.EncryptionInfo proto : protos) {
       encryptionInformation.add(fromProtoOrNull(proto));
     }
     return encryptionInformation;

@@ -20,14 +20,10 @@ import com.google.api.client.util.Preconditions;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Encryption configuration factory.
- */
+/** Encryption configuration factory. */
 public class EncryptionConfigs {
 
-  /**
-   * Returns a customer managed encryption configuration for the given key.
-   */
+  /** Returns a customer managed encryption configuration for the given key. */
   public static CustomerManagedEncryption customerManagedEncryption(String kmsKeyName) {
     Preconditions.checkArgument(
         kmsKeyName != null, "Customer managed encryption key name must not be null");
@@ -48,8 +44,10 @@ public class EncryptionConfigs {
         kmsKeyNames != null, "Customer managed encryption key names must not be null");
     Preconditions.checkArgument(
         kmsKeyNames.length != 0, "Customer managed encryption key names must not be empty");
-    // TODO(harsha): If single key is passed then the above constructor is called directly. so either make the above 2 methods as private or remove the below length==1 condition as it is not needed.
-    if(kmsKeyNames.length == 1){
+    // TODO(harsha): If single key is passed then the above constructor is called directly. so
+    // either make the above 2 methods as private or remove the below length==1 condition as it is
+    // not needed.
+    if (kmsKeyNames.length == 1) {
       Preconditions.checkArgument(
           kmsKeyNames[0] != null, "Customer managed encryption key name must not be null");
       return new CustomerManagedEncryption(kmsKeyNames[0]);
@@ -57,23 +55,17 @@ public class EncryptionConfigs {
     return new CustomerManagedEncryption(Arrays.asList(kmsKeyNames));
   }
 
-  /**
-   * Returns google default encryption configuration.
-   */
+  /** Returns google default encryption configuration. */
   public static GoogleDefaultEncryption googleDefaultEncryption() {
     return GoogleDefaultEncryption.INSTANCE;
   }
 
-  /**
-   * Returns use database encryption configuration.
-   */
+  /** Returns use database encryption configuration. */
   public static UseDatabaseEncryption useDatabaseEncryption() {
     return UseDatabaseEncryption.INSTANCE;
   }
 
-  /**
-   * Returns use backup encryption configuration.
-   */
+  /** Returns use backup encryption configuration. */
   public static UseBackupEncryption useBackupEncryption() {
     return UseBackupEncryption.INSTANCE;
   }

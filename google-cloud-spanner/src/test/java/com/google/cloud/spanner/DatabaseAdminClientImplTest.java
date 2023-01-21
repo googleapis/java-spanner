@@ -84,6 +84,9 @@ public class DatabaseAdminClientImplTest {
   private static final String VERSION_RETENTION_PERIOD = "7d";
   private static final String KMS_KEY_NAME =
       "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key";
+  private static final String KMS_KEY_NAME_1 =
+      "projects/my-project/locations/some-location/keyRings/my-keyring/cryptoKeys/my-key-1";
+  private static final List<String> KMS_KEY_NAMES = Arrays.asList(KMS_KEY_NAME, KMS_KEY_NAME_1);
   private static final String KMS_KEY_VERSION = "1";
   private static final DatabaseDialect DIALECT = GOOGLE_STANDARD_SQL;
 
@@ -120,6 +123,16 @@ public class DatabaseAdminClientImplTest {
         .setEncryptionConfig(
             com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder()
                 .setKmsKeyName(KMS_KEY_NAME)
+                .build())
+        .build();
+  }
+
+  private Database getMultiRegionKeysEncryptedDatabaseProto() {
+    return getDatabaseProto()
+        .toBuilder()
+        .setEncryptionConfig(
+            com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder()
+                .addAllKmsKeyNames(KMS_KEY_NAMES)
                 .build())
         .build();
   }
@@ -204,6 +217,30 @@ public class DatabaseAdminClientImplTest {
         OperationFutureUtil.immediateOperationFuture(
             "createDatabase",
             getEncryptedDatabaseProto(),
+            CreateDatabaseMetadata.getDefaultInstance());
+    when(rpc.createDatabase(
+            INSTANCE_NAME, "CREATE DATABASE `" + DB_ID + "`", Collections.emptyList(), database))
+        .thenReturn(rawOperationFuture);
+    OperationFuture<com.google.cloud.spanner.Database, CreateDatabaseMetadata> op =
+        client.createDatabase(database, Collections.emptyList());
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(DB_NAME);
+  }
+
+  @Test
+  public void createMultiRegionKeysEncryptedDatabase() throws Exception {
+    com.google.cloud.spanner.Database database =
+        client
+            .newDatabaseBuilder(DatabaseId.of(DB_NAME))
+            .setEncryptionConfig(
+                EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME, KMS_KEY_NAME_1))
+            .setDialect(Dialect.GOOGLE_STANDARD_SQL)
+            .build();
+
+    OperationFuture<Database, CreateDatabaseMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "createDatabase",
+            getMultiRegionKeysEncryptedDatabaseProto(),
             CreateDatabaseMetadata.getDefaultInstance());
     when(rpc.createDatabase(
             INSTANCE_NAME, "CREATE DATABASE `" + DB_ID + "`", Collections.emptyList(), database))
@@ -520,6 +557,32 @@ public class DatabaseAdminClientImplTest {
   }
 
   @Test
+  public void createMultiRegionKeysEncryptedBackup()
+      throws ExecutionException, InterruptedException {
+    final OperationFuture<Backup, CreateBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "createBackup", getEncryptedBackupProto(), CreateBackupMetadata.getDefaultInstance());
+    final Timestamp t =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
+                + TimeUnit.HOURS.toMicros(28));
+    final com.google.cloud.spanner.Backup backup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .setExpireTime(t)
+            .setEncryptionConfig(
+                EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME, KMS_KEY_NAME_1))
+            .build();
+    when(rpc.createBackup(backup)).thenReturn(rawOperationFuture);
+    final OperationFuture<com.google.cloud.spanner.Backup, CreateBackupMetadata> op =
+        client.createBackup(backup);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+    assertThat(op.get().getEncryptionInfo().getKmsKeyVersion()).isEqualTo(KMS_KEY_VERSION);
+  }
+
+  @Test
   public void copyBackupWithParams() throws Exception {
     OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =
         OperationFutureUtil.immediateOperationFuture(
@@ -584,6 +647,32 @@ public class DatabaseAdminClientImplTest {
             .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
             .setExpireTime(t)
             .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME))
+            .build();
+    BackupId sourceBackupId = BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID);
+    when(rpc.copyBackup(sourceBackupId, backup)).thenReturn(rawOperationFuture);
+    final OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
+        client.copyBackup(sourceBackupId, backup);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+    assertThat(op.get().getEncryptionInfo().getKmsKeyVersion()).isEqualTo(KMS_KEY_VERSION);
+  }
+
+  @Test
+  public void copyMultiRegionKeysEncryptedBackup() throws ExecutionException, InterruptedException {
+    final OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "copyBackup", getEncryptedBackupProto(), CopyBackupMetadata.getDefaultInstance());
+    final Timestamp t =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
+                + TimeUnit.HOURS.toMicros(28));
+    final com.google.cloud.spanner.Backup backup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .setExpireTime(t)
+            .setEncryptionConfig(
+                EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME, KMS_KEY_NAME_1))
             .build();
     BackupId sourceBackupId = BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID);
     when(rpc.copyBackup(sourceBackupId, backup)).thenReturn(rawOperationFuture);
@@ -676,5 +765,27 @@ public class DatabaseAdminClientImplTest {
     assertThat(op.isDone()).isTrue();
     assertThat(op.get().getId().getName()).isEqualTo(DB_NAME);
     assertThat(op.get().getEncryptionConfig().getKmsKeyName()).isEqualTo(KMS_KEY_NAME);
+  }
+
+  @Test
+  public void restoreMultiRegionKeysEncryptedDatabase() throws Exception {
+    OperationFuture<Database, RestoreDatabaseMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "restoreEncryptedDatabase",
+            getMultiRegionKeysEncryptedDatabaseProto(),
+            RestoreDatabaseMetadata.getDefaultInstance());
+    final Restore restore =
+        new Restore.Builder(
+                BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID),
+                DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .setEncryptionConfig(
+                EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME, KMS_KEY_NAME_1))
+            .build();
+    when(rpc.restoreDatabase(restore)).thenReturn(rawOperationFuture);
+    OperationFuture<com.google.cloud.spanner.Database, RestoreDatabaseMetadata> op =
+        client.restoreDatabase(restore);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(DB_NAME);
+    assertThat(op.get().getEncryptionConfig().getKmsKeyNames()).isEqualTo(KMS_KEY_NAMES);
   }
 }

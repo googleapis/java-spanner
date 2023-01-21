@@ -46,9 +46,12 @@ public class CustomerManagedEncryptionTest {
 
   @Test
   public void testFromProtoMultiRegionKeys() {
-    final CustomerManagedEncryption expected = new CustomerManagedEncryption(Arrays.asList("kms-key-name-1", "kms-key-name-2"));
+    final CustomerManagedEncryption expected =
+        new CustomerManagedEncryption(Arrays.asList("kms-key-name-1", "kms-key-name-2"));
     final EncryptionConfig encryptionConfig =
-        EncryptionConfig.newBuilder().addAllKmsKeyNames(Arrays.asList("kms-key-name-1", "kms-key-name-2")).build();
+        EncryptionConfig.newBuilder()
+            .addAllKmsKeyNames(Arrays.asList("kms-key-name-1", "kms-key-name-2"))
+            .build();
 
     final CustomerManagedEncryption actual =
         CustomerManagedEncryption.fromProtoOrNull(encryptionConfig);

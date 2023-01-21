@@ -284,7 +284,7 @@ public class BackupInfo {
     return encryptionInfo;
   }
 
-  public List<EncryptionInfo> getEncryptionInformation(){
+  public List<EncryptionInfo> getEncryptionInformation() {
     return encryptionInformation;
   }
 

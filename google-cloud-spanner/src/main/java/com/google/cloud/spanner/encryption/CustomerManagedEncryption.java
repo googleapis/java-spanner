@@ -21,9 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * The data is encrypted with a key provided by the customer.
- */
+/** The data is encrypted with a key provided by the customer. */
 public class CustomerManagedEncryption implements BackupEncryptionConfig, RestoreEncryptionConfig {
 
   private final String kmsKeyName;
@@ -55,8 +53,9 @@ public class CustomerManagedEncryption implements BackupEncryptionConfig, Restor
   public static CustomerManagedEncryption fromProtoOrNull(EncryptionConfig proto) {
     return proto.equals(EncryptionConfig.getDefaultInstance())
         ? null
-        : proto.getKmsKeyName().isEmpty() ? new CustomerManagedEncryption(
-            proto.getKmsKeyNamesList()) : new CustomerManagedEncryption(proto.getKmsKeyName());
+        : proto.getKmsKeyName().isEmpty()
+            ? new CustomerManagedEncryption(proto.getKmsKeyNamesList())
+            : new CustomerManagedEncryption(proto.getKmsKeyName());
   }
 
   @Override
@@ -68,8 +67,8 @@ public class CustomerManagedEncryption implements BackupEncryptionConfig, Restor
       return false;
     }
     CustomerManagedEncryption that = (CustomerManagedEncryption) o;
-    return Objects.equals(kmsKeyName, that.kmsKeyName) && Objects.equals(kmsKeyNames,
-        that.kmsKeyNames);
+    return Objects.equals(kmsKeyName, that.kmsKeyName)
+        && Objects.equals(kmsKeyNames, that.kmsKeyNames);
   }
 
   @Override
@@ -80,9 +79,8 @@ public class CustomerManagedEncryption implements BackupEncryptionConfig, Restor
   @Override
   public String toString() {
     /*return "CustomerManagedEncryption{" + "kmsKeyName='" + kmsKeyName + '\'' + "kmsKeyNames='"
-        + kmsKeyNames + '\'' + '}';*/
+    + kmsKeyNames + '\'' + '}';*/
     return String.format(
-        "CustomerManagedEncryption{kmsKeyName=%s,kmsKeyNames=%s}",
-        kmsKeyName, kmsKeyNames);
+        "CustomerManagedEncryption{kmsKeyName=%s,kmsKeyNames=%s}", kmsKeyName, kmsKeyNames);
   }
 }

@@ -36,7 +36,8 @@ public class EncryptionConfigsTest {
 
   @Test
   public void testCustomerManagedEncryptionMultiRegionKeys() {
-    final CustomerManagedEncryption expected = new CustomerManagedEncryption(Arrays.asList("kms-key-name-1", "kms-key-name-2"));
+    final CustomerManagedEncryption expected =
+        new CustomerManagedEncryption(Arrays.asList("kms-key-name-1", "kms-key-name-2"));
 
     final CustomerManagedEncryption actual =
         EncryptionConfigs.customerManagedEncryption("kms-key-name-1", "kms-key-name-2");
@@ -46,7 +47,7 @@ public class EncryptionConfigsTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testCustomerManagedEncryptionNullKeyName() {
-    EncryptionConfigs.customerManagedEncryption((String)null);
+    EncryptionConfigs.customerManagedEncryption((String) null);
   }
 
   @Test(expected = IllegalArgumentException.class)

@@ -28,7 +28,8 @@ import org.junit.Test;
 public class EncryptionConfigProtoMapperTest {
 
   public static final String KMS_KEY_NAME = "kms-key-name";
-  public static final List<String> KMS_KEY_NAMES = Arrays.asList("kms-key-name-1", "kms-key-name-2");
+  public static final List<String> KMS_KEY_NAMES =
+      Arrays.asList("kms-key-name-1", "kms-key-name-2");
 
   @Test
   public void testEncryptionConfig() {

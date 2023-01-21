@@ -24,15 +24,13 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 
-/**
- * Unit tests for {@link com.google.cloud.spanner.encryption.EncryptionInfo}
- */
+/** Unit tests for {@link com.google.cloud.spanner.encryption.EncryptionInfo} */
 public class EncryptionInfoTest {
 
   private static final String KMS_KEY_VERSION = "kms-key-version";
   private static final com.google.spanner.admin.database.v1.EncryptionInfo.Type
       CUSTOMER_MANAGED_ENCRYPTION =
-      com.google.spanner.admin.database.v1.EncryptionInfo.Type.CUSTOMER_MANAGED_ENCRYPTION;
+          com.google.spanner.admin.database.v1.EncryptionInfo.Type.CUSTOMER_MANAGED_ENCRYPTION;
   private static final Status OK_STATUS = Status.newBuilder().setCode(Code.OK_VALUE).build();
 
   @Test
