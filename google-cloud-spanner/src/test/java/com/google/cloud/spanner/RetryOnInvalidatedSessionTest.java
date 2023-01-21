@@ -531,6 +531,21 @@ public class RetryOnInvalidatedSessionTest {
   }
 
   @Test
+  public void readWriteTransactionReadWithOptimisticLock() throws InterruptedException {
+    TransactionRunner runner = client.readWriteTransaction(Options.optimisticLock());
+    assertThrowsSessionNotFoundIfShouldFail(
+        () ->
+            runner.run(
+                transaction -> {
+                  try (ResultSet rs =
+                      transaction.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
+                    while (rs.next()) {}
+                  }
+                  return null;
+                }));
+  }
+
+  @Test
   public void readWriteTransactionReadUsingIndex() throws InterruptedException {
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(

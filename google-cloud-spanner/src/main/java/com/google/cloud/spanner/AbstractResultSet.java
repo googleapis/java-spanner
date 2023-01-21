@@ -67,7 +67,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /** Implementation of {@link ResultSet}. */
@@ -547,88 +546,24 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     static Object decodeArrayValue(Type elementType, ListValue listValue) {
       switch (elementType.getCode()) {
-        case BOOL:
-          // Use a view: element conversion is virtually free.
-          return Lists.transform(
-              listValue.getValuesList(),
-              input -> input.getKindCase() == KindCase.NULL_VALUE ? null : input.getBoolValue());
         case INT64:
           // For int64/float64 types, use custom containers.  These avoid wrapper object
           // creation for non-null arrays.
           return new Int64Array(listValue);
         case FLOAT64:
           return new Float64Array(listValue);
+        case BOOL:
         case NUMERIC:
-          {
-            // Materialize list: element conversion is expensive and should happen only once.
-            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              list.add(
-                  value.getKindCase() == KindCase.NULL_VALUE
-                      ? null
-                      : new BigDecimal(value.getStringValue()));
-            }
-            return list;
-          }
         case PG_NUMERIC:
         case STRING:
         case JSON:
         case PG_JSONB:
-          return listValue.getValuesList().stream()
-              .map(
-                  input ->
-                      input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue())
-              .collect(Collectors.toList());
         case BYTES:
-          {
-            // Materialize list: element conversion is expensive and should happen only once.
-            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              list.add(
-                  value.getKindCase() == KindCase.NULL_VALUE
-                      ? null
-                      : ByteArray.fromBase64(value.getStringValue()));
-            }
-            return list;
-          }
         case TIMESTAMP:
-          {
-            // Materialize list: element conversion is expensive and should happen only once.
-            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              list.add(
-                  value.getKindCase() == KindCase.NULL_VALUE
-                      ? null
-                      : Timestamp.parseTimestamp(value.getStringValue()));
-            }
-            return list;
-          }
         case DATE:
-          {
-            // Materialize list: element conversion is expensive and should happen only once.
-            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              list.add(
-                  value.getKindCase() == KindCase.NULL_VALUE
-                      ? null
-                      : Date.parseDate(value.getStringValue()));
-            }
-            return list;
-          }
-
         case STRUCT:
-          {
-            ArrayList<Struct> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              if (value.getKindCase() == KindCase.NULL_VALUE) {
-                list.add(null);
-              } else {
-                ListValue structValue = value.getListValue();
-                list.add(decodeStructValue(elementType, structValue));
-              }
-            }
-            return list;
-          }
+          return Lists.transform(
+              listValue.getValuesList(), input -> decodeValue(elementType, input));
         default:
           throw new AssertionError("Unhandled type code: " + elementType.getCode());
       }
