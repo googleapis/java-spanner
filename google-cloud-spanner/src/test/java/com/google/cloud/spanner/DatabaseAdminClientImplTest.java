@@ -669,6 +669,7 @@ public class DatabaseAdminClientImplTest {
         new Restore.Builder(
                 BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID),
                 DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME))
             .build();
     when(rpc.restoreDatabase(restore)).thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Database, RestoreDatabaseMetadata> op =
