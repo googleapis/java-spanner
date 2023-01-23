@@ -16,29 +16,33 @@
 
 package com.example.spanner;
 
-// [START spanner_create_database_with_multiple_encryption_key]
+// [START spanner_create_backup_with_multiple_encryption_key]
 
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.Database;
+import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Backup;
+import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
-import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
-import java.util.Arrays;
+import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.threeten.bp.LocalDateTime;
+import org.threeten.bp.OffsetDateTime;
 
-public class CreateDatabaseWithMultipleEncryptionKey {
+public class CreateBackupWithMultipleEncryptionKey {
 
-  static void createDatabaseWithMultipleEncryptionKey() {
+  static void createBackupWithMultipleEncryptionKey() throws InterruptedException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
     String databaseId = "my-database";
+    String backupId = "my-backup";
     String kmsKeyName1 =
         "projects/" + projectId + "/locations/<location>/keyRings/<keyRing>/cryptoKeys/<keyId>";
     String kmsKeyName2 =
@@ -47,46 +51,36 @@ public class CreateDatabaseWithMultipleEncryptionKey {
     try (Spanner spanner =
         SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       DatabaseAdminClient adminClient = spanner.getDatabaseAdminClient();
-      createDatabaseWithMultipleEncryptionKey(
+      createBackupWithMultipleEncryptionKey(
           adminClient,
           projectId,
           instanceId,
           databaseId,
+          backupId,
           kmsKeyName1,
           kmsKeyName2);
     }
   }
 
-  static void createDatabaseWithMultipleEncryptionKey(DatabaseAdminClient adminClient,
-      String projectId, String instanceId, String databaseId, String kmsKeyName1, String kmsKeyName2) {
-    final Database databaseToCreate = adminClient
-        .newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
+  static void createBackupWithMultipleEncryptionKey(DatabaseAdminClient adminClient,
+      String projectId, String instanceId, String databaseId, String backupId, String kmsKeyName1, String kmsKeyName2)
+      throws InterruptedException {
+    // Set expire time to 14 days from now.
+    final Timestamp expireTime = Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
+        System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14), TimeUnit.MILLISECONDS));
+    final Backup backupToCreate = adminClient
+        .newBackupBuilder(BackupId.of(projectId, instanceId, backupId))
+        .setDatabase(DatabaseId.of(projectId, instanceId, databaseId))
+        .setExpireTime(expireTime)
         .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(kmsKeyName1, kmsKeyName2))
         .build();
-    final OperationFuture<Database, CreateDatabaseMetadata> operation = adminClient
-        .createDatabase(databaseToCreate, Arrays.asList(
-            "CREATE TABLE Singers ("
-                + "  SingerId   INT64 NOT NULL,"
-                + "  FirstName  STRING(1024),"
-                + "  LastName   STRING(1024),"
-                + "  SingerInfo BYTES(MAX)"
-                + ") PRIMARY KEY (SingerId)",
-            "CREATE TABLE Albums ("
-                + "  SingerId     INT64 NOT NULL,"
-                + "  AlbumId      INT64 NOT NULL,"
-                + "  AlbumTitle   STRING(MAX)"
-                + ") PRIMARY KEY (SingerId, AlbumId),"
-                + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE"
-        ));
+    final OperationFuture<Backup, CreateBackupMetadata> operation = adminClient
+        .createBackup(backupToCreate);
+
+    Backup backup;
     try {
       System.out.println("Waiting for operation to complete...");
-      Database createdDatabase = operation.get(120, TimeUnit.SECONDS);
-
-      System.out.printf(
-          "Database %s created with encryption key %s%n",
-          createdDatabase.getId(),
-          createdDatabase.getEncryptionConfig().getKmsKeyNames()
-      );
+      backup = operation.get(1200, TimeUnit.SECONDS);
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
       throw SpannerExceptionFactory.asSpannerException(e.getCause());
@@ -98,6 +92,18 @@ public class CreateDatabaseWithMultipleEncryptionKey {
       // If the operation timed out propagates the timeout
       throw SpannerExceptionFactory.propagateTimeout(e);
     }
+
+    System.out.printf(
+        "Backup %s of size %d bytes was created at %s using encryption key %s, %s%n",
+        backup.getId().getName(),
+        backup.getSize(),
+        LocalDateTime.ofEpochSecond(
+            backup.getProto().getCreateTime().getSeconds(),
+            backup.getProto().getCreateTime().getNanos(),
+            OffsetDateTime.now().getOffset()),
+        kmsKeyName1,
+        kmsKeyName2
+    );
   }
 }
-// [END spanner_create_database_with_multiple_encryption_key]
+// [END spanner_create_backup_with_multiple_encryption_key]
