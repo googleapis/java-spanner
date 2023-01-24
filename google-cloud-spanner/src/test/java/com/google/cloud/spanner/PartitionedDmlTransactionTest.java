@@ -375,7 +375,7 @@ public class PartitionedDmlTransactionTest {
     long count = tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10));
 
     assertThat(count).isEqualTo(1000L);
-    verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap());
+    verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap(), eq(true));
     verify(rpc)
         .executeStreamingPartitionedDml(
             Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
