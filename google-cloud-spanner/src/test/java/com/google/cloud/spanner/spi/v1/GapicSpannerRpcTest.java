@@ -416,6 +416,26 @@ public class GapicSpannerRpcTest {
   }
 
   @Test
+  public void testNewCallContextWithRouteToLeaderHeaderAndLarDisabled() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .setLeaderAwareRouting(false)
+            .build();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    GrpcCallContext callContext =
+        rpc.newCallContext(
+            optionsMap,
+            "/some/resource",
+            ExecuteSqlRequest.getDefaultInstance(),
+            SpannerGrpc.getExecuteSqlMethod(),
+            true);
+    assertThat(callContext).isNotNull();
+    assertThat(callContext.getExtraHeaders().get("x-goog-spanner-route-to-leader")).isNull();
+    rpc.shutdown();
+  }
+
+  @Test
   public void testAdminRequestsLimitExceededRetryAlgorithm() {
     AdminRequestsLimitExceededRetryAlgorithm<Long> alg =
         new AdminRequestsLimitExceededRetryAlgorithm<>();

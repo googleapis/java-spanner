@@ -304,6 +304,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final double ADMINISTRATIVE_REQUESTS_RATE_LIMIT = 1.0D;
   private static final ConcurrentMap<String, RateLimiter> ADMINISTRATIVE_REQUESTS_RATE_LIMITERS =
       new ConcurrentHashMap<>();
+  private final boolean leaderAwareRoutingEnabled;
 
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
@@ -354,6 +355,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             internalHeaderProviderBuilder.getResourceHeaderKey());
     this.callCredentialsProvider = options.getCallCredentialsProvider();
     this.compressorName = options.getCompressorName();
+    this.leaderAwareRoutingEnabled = options.isLeaderAwareRoutingEnabled();
 
     if (initializeStubs) {
       // Create a managed executor provider.
@@ -1672,7 +1674,12 @@ public class GapicSpannerRpc implements SpannerRpc {
   public ApiFuture<ResultSet> executeQueryAsync(
       ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader) {
     GrpcCallContext context =
-        newCallContext(options, request.getSession(), request, SpannerGrpc.getExecuteSqlMethod());
+        newCallContext(
+            options,
+            request.getSession(),
+            request,
+            SpannerGrpc.getExecuteSqlMethod(),
+            routeToLeader);
     return spannerStub.executeSqlCallable().futureCall(request, context);
   }
 
@@ -1941,7 +1948,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       context = context.withCallOptions(context.getCallOptions().withCompression(compressorName));
     }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
-    if (routeToLeader) {
+    if (routeToLeader && leaderAwareRoutingEnabled) {
       context = context.withExtraHeaders(metadataProvider.newRouteToLeaderHeader());
     }
     if (callCredentialsProvider != null) {

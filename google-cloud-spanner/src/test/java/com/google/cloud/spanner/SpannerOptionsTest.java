@@ -676,6 +676,26 @@ public class SpannerOptionsTest {
   }
 
   @Test
+  public void testLeaderAwareRoutingEnablement() {
+    assertThat(SpannerOptions.newBuilder().setProjectId("p").build().isLeaderAwareRoutingEnabled())
+        .isEqualTo(true);
+    assertThat(
+            SpannerOptions.newBuilder()
+                .setProjectId("p")
+                .setLeaderAwareRouting(true)
+                .build()
+                .isLeaderAwareRoutingEnabled())
+        .isEqualTo(true);
+    assertThat(
+            SpannerOptions.newBuilder()
+                .setProjectId("p")
+                .setLeaderAwareRouting(false)
+                .build()
+                .isLeaderAwareRoutingEnabled())
+        .isEqualTo(false);
+  }
+
+  @Test
   public void testSpannerCallContextTimeoutConfigurator_NullValues() {
     SpannerCallContextTimeoutConfigurator configurator =
         SpannerCallContextTimeoutConfigurator.create();
