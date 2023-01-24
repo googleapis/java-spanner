@@ -755,6 +755,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       if (startClosedBuilder_ != null) {
         startClosedBuilder_.clear();
       }
@@ -796,38 +797,35 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.KeyRange buildPartial() {
       com.google.spanner.v1.KeyRange result = new com.google.spanner.v1.KeyRange(this);
-      if (startKeyTypeCase_ == 1) {
-        if (startClosedBuilder_ == null) {
-          result.startKeyType_ = startKeyType_;
-        } else {
-          result.startKeyType_ = startClosedBuilder_.build();
-        }
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      if (startKeyTypeCase_ == 2) {
-        if (startOpenBuilder_ == null) {
-          result.startKeyType_ = startKeyType_;
-        } else {
-          result.startKeyType_ = startOpenBuilder_.build();
-        }
-      }
-      if (endKeyTypeCase_ == 3) {
-        if (endClosedBuilder_ == null) {
-          result.endKeyType_ = endKeyType_;
-        } else {
-          result.endKeyType_ = endClosedBuilder_.build();
-        }
-      }
-      if (endKeyTypeCase_ == 4) {
-        if (endOpenBuilder_ == null) {
-          result.endKeyType_ = endKeyType_;
-        } else {
-          result.endKeyType_ = endOpenBuilder_.build();
-        }
-      }
-      result.startKeyTypeCase_ = startKeyTypeCase_;
-      result.endKeyTypeCase_ = endKeyTypeCase_;
+      buildPartialOneofs(result);
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.KeyRange result) {
+      int from_bitField0_ = bitField0_;
+    }
+
+    private void buildPartialOneofs(com.google.spanner.v1.KeyRange result) {
+      result.startKeyTypeCase_ = startKeyTypeCase_;
+      result.startKeyType_ = this.startKeyType_;
+      if (startKeyTypeCase_ == 1 && startClosedBuilder_ != null) {
+        result.startKeyType_ = startClosedBuilder_.build();
+      }
+      if (startKeyTypeCase_ == 2 && startOpenBuilder_ != null) {
+        result.startKeyType_ = startOpenBuilder_.build();
+      }
+      result.endKeyTypeCase_ = endKeyTypeCase_;
+      result.endKeyType_ = this.endKeyType_;
+      if (endKeyTypeCase_ == 3 && endClosedBuilder_ != null) {
+        result.endKeyType_ = endClosedBuilder_.build();
+      }
+      if (endKeyTypeCase_ == 4 && endOpenBuilder_ != null) {
+        result.endKeyType_ = endOpenBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -1001,6 +999,8 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
+    private int bitField0_;
 
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.protobuf.ListValue,
@@ -1214,7 +1214,6 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       }
       startKeyTypeCase_ = 1;
       onChanged();
-      ;
       return startClosedBuilder_;
     }
 
@@ -1430,7 +1429,6 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       }
       startKeyTypeCase_ = 2;
       onChanged();
-      ;
       return startOpenBuilder_;
     }
 
@@ -1645,7 +1643,6 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       }
       endKeyTypeCase_ = 3;
       onChanged();
-      ;
       return endClosedBuilder_;
     }
 
@@ -1860,7 +1857,6 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       }
       endKeyTypeCase_ = 4;
       onChanged();
-      ;
       return endOpenBuilder_;
     }
 

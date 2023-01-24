@@ -270,7 +270,9 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int LOCATION_FIELD_NUMBER = 1;
-  private volatile java.lang.Object location_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object location_ = "";
   /**
    *
    *
@@ -319,7 +321,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int TYPE_FIELD_NUMBER = 2;
-  private int type_;
+  private int type_ = 0;
   /**
    *
    *
@@ -348,16 +350,15 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType getType() {
-    @SuppressWarnings("deprecation")
     com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType result =
-        com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.valueOf(type_);
+        com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.forNumber(type_);
     return result == null
         ? com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.UNRECOGNIZED
         : result;
   }
 
   public static final int DEFAULT_LEADER_LOCATION_FIELD_NUMBER = 3;
-  private boolean defaultLeaderLocation_;
+  private boolean defaultLeaderLocation_ = false;
   /**
    *
    *
@@ -588,12 +589,10 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       location_ = "";
-
       type_ = 0;
-
       defaultLeaderLocation_ = false;
-
       return this;
     }
 
@@ -621,11 +620,24 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.admin.instance.v1.ReplicaInfo buildPartial() {
       com.google.spanner.admin.instance.v1.ReplicaInfo result =
           new com.google.spanner.admin.instance.v1.ReplicaInfo(this);
-      result.location_ = location_;
-      result.type_ = type_;
-      result.defaultLeaderLocation_ = defaultLeaderLocation_;
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.instance.v1.ReplicaInfo result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.location_ = location_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.type_ = type_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.defaultLeaderLocation_ = defaultLeaderLocation_;
+      }
     }
 
     @java.lang.Override
@@ -676,6 +688,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
         return this;
       if (!other.getLocation().isEmpty()) {
         location_ = other.location_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (other.type_ != 0) {
@@ -713,19 +726,19 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
             case 10:
               {
                 location_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 16:
               {
                 type_ = input.readEnum();
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 16
             case 24:
               {
                 defaultLeaderLocation_ = input.readBool();
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 24
             default:
@@ -744,6 +757,8 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private java.lang.Object location_ = "";
     /**
@@ -806,8 +821,8 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       location_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -823,8 +838,8 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearLocation() {
-
       location_ = getDefaultInstance().getLocation();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -845,8 +860,8 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       location_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -880,8 +895,8 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setTypeValue(int value) {
-
       type_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -898,9 +913,8 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      */
     @java.lang.Override
     public com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType getType() {
-      @SuppressWarnings("deprecation")
       com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType result =
-          com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.valueOf(type_);
+          com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.forNumber(type_);
       return result == null
           ? com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.UNRECOGNIZED
           : result;
@@ -921,7 +935,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
+      bitField0_ |= 0x00000002;
       type_ = value.getNumber();
       onChanged();
       return this;
@@ -938,7 +952,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearType() {
-
+      bitField0_ = (bitField0_ & ~0x00000002);
       type_ = 0;
       onChanged();
       return this;
@@ -981,6 +995,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
     public Builder setDefaultLeaderLocation(boolean value) {
 
       defaultLeaderLocation_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -999,7 +1014,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearDefaultLeaderLocation() {
-
+      bitField0_ = (bitField0_ & ~0x00000004);
       defaultLeaderLocation_ = false;
       onChanged();
       return this;

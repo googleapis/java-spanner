@@ -298,7 +298,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
 
     public static final int TABLE_FIELD_NUMBER = 1;
-    private volatile java.lang.Object table_;
+
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object table_ = "";
     /**
      *
      *
@@ -347,6 +349,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
 
     public static final int COLUMNS_FIELD_NUMBER = 2;
+
+    @SuppressWarnings("serial")
     private com.google.protobuf.LazyStringList columns_;
     /**
      *
@@ -420,6 +424,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
 
     public static final int VALUES_FIELD_NUMBER = 3;
+
+    @SuppressWarnings("serial")
     private java.util.List<com.google.protobuf.ListValue> values_;
     /**
      *
@@ -749,17 +755,17 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         table_ = "";
-
         columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         if (valuesBuilder_ == null) {
           values_ = java.util.Collections.emptyList();
         } else {
           values_ = null;
           valuesBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -787,24 +793,36 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       public com.google.spanner.v1.Mutation.Write buildPartial() {
         com.google.spanner.v1.Mutation.Write result =
             new com.google.spanner.v1.Mutation.Write(this);
-        int from_bitField0_ = bitField0_;
-        result.table_ = table_;
-        if (((bitField0_ & 0x00000001) != 0)) {
+        buildPartialRepeatedFields(result);
+        if (bitField0_ != 0) {
+          buildPartial0(result);
+        }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartialRepeatedFields(com.google.spanner.v1.Mutation.Write result) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           columns_ = columns_.getUnmodifiableView();
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.columns_ = columns_;
         if (valuesBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) != 0)) {
+          if (((bitField0_ & 0x00000004) != 0)) {
             values_ = java.util.Collections.unmodifiableList(values_);
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000004);
           }
           result.values_ = values_;
         } else {
           result.values_ = valuesBuilder_.build();
         }
-        onBuilt();
-        return result;
+      }
+
+      private void buildPartial0(com.google.spanner.v1.Mutation.Write result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.table_ = table_;
+        }
       }
 
       @java.lang.Override
@@ -856,12 +874,13 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         if (other == com.google.spanner.v1.Mutation.Write.getDefaultInstance()) return this;
         if (!other.getTable().isEmpty()) {
           table_ = other.table_;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (!other.columns_.isEmpty()) {
           if (columns_.isEmpty()) {
             columns_ = other.columns_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureColumnsIsMutable();
             columns_.addAll(other.columns_);
@@ -872,7 +891,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           if (!other.values_.isEmpty()) {
             if (values_.isEmpty()) {
               values_ = other.values_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000004);
             } else {
               ensureValuesIsMutable();
               values_.addAll(other.values_);
@@ -885,7 +904,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
               valuesBuilder_.dispose();
               valuesBuilder_ = null;
               values_ = other.values_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000004);
               valuesBuilder_ =
                   com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
                       ? getValuesFieldBuilder()
@@ -924,7 +943,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
               case 10:
                 {
                   table_ = input.readStringRequireUtf8();
-
+                  bitField0_ |= 0x00000001;
                   break;
                 } // case 10
               case 18:
@@ -1026,8 +1045,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         if (value == null) {
           throw new NullPointerException();
         }
-
         table_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -1043,8 +1062,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * @return This builder for chaining.
        */
       public Builder clearTable() {
-
         table_ = getDefaultInstance().getTable();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -1065,8 +1084,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         checkByteStringIsUtf8(value);
-
         table_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -1075,9 +1094,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           com.google.protobuf.LazyStringArrayList.EMPTY;
 
       private void ensureColumnsIsMutable() {
-        if (!((bitField0_ & 0x00000001) != 0)) {
+        if (!((bitField0_ & 0x00000002) != 0)) {
           columns_ = new com.google.protobuf.LazyStringArrayList(columns_);
-          bitField0_ |= 0x00000001;
+          bitField0_ |= 0x00000002;
         }
       }
       /**
@@ -1236,7 +1255,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        */
       public Builder clearColumns() {
         columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
@@ -1270,9 +1289,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           java.util.Collections.emptyList();
 
       private void ensureValuesIsMutable() {
-        if (!((bitField0_ & 0x00000002) != 0)) {
+        if (!((bitField0_ & 0x00000004) != 0)) {
           values_ = new java.util.ArrayList<com.google.protobuf.ListValue>(values_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000004;
         }
       }
 
@@ -1562,7 +1581,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       public Builder clearValues() {
         if (valuesBuilder_ == null) {
           values_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000004);
           onChanged();
         } else {
           valuesBuilder_.clear();
@@ -1732,7 +1751,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
                   com.google.protobuf.ListValue,
                   com.google.protobuf.ListValue.Builder,
                   com.google.protobuf.ListValueOrBuilder>(
-                  values_, ((bitField0_ & 0x00000002) != 0), getParentForChildren(), isClean());
+                  values_, ((bitField0_ & 0x00000004) != 0), getParentForChildren(), isClean());
           values_ = null;
         }
         return valuesBuilder_;
@@ -1932,7 +1951,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
 
     public static final int TABLE_FIELD_NUMBER = 1;
-    private volatile java.lang.Object table_;
+
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object table_ = "";
     /**
      *
      *
@@ -2038,7 +2059,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      */
     @java.lang.Override
     public com.google.spanner.v1.KeySetOrBuilder getKeySetOrBuilder() {
-      return getKeySet();
+      return keySet_ == null ? com.google.spanner.v1.KeySet.getDefaultInstance() : keySet_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -2253,12 +2274,11 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         table_ = "";
-
-        if (keySetBuilder_ == null) {
-          keySet_ = null;
-        } else {
-          keySet_ = null;
+        keySet_ = null;
+        if (keySetBuilder_ != null) {
+          keySetBuilder_.dispose();
           keySetBuilder_ = null;
         }
         return this;
@@ -2288,14 +2308,21 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       public com.google.spanner.v1.Mutation.Delete buildPartial() {
         com.google.spanner.v1.Mutation.Delete result =
             new com.google.spanner.v1.Mutation.Delete(this);
-        result.table_ = table_;
-        if (keySetBuilder_ == null) {
-          result.keySet_ = keySet_;
-        } else {
-          result.keySet_ = keySetBuilder_.build();
+        if (bitField0_ != 0) {
+          buildPartial0(result);
         }
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(com.google.spanner.v1.Mutation.Delete result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.table_ = table_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.keySet_ = keySetBuilder_ == null ? keySet_ : keySetBuilder_.build();
+        }
       }
 
       @java.lang.Override
@@ -2347,6 +2374,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         if (other == com.google.spanner.v1.Mutation.Delete.getDefaultInstance()) return this;
         if (!other.getTable().isEmpty()) {
           table_ = other.table_;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (other.hasKeySet()) {
@@ -2381,13 +2409,13 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
               case 10:
                 {
                   table_ = input.readStringRequireUtf8();
-
+                  bitField0_ |= 0x00000001;
                   break;
                 } // case 10
               case 18:
                 {
                   input.readMessage(getKeySetFieldBuilder().getBuilder(), extensionRegistry);
-
+                  bitField0_ |= 0x00000002;
                   break;
                 } // case 18
               default:
@@ -2406,6 +2434,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         } // finally
         return this;
       }
+
+      private int bitField0_;
 
       private java.lang.Object table_ = "";
       /**
@@ -2468,8 +2498,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         if (value == null) {
           throw new NullPointerException();
         }
-
         table_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -2485,8 +2515,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * @return This builder for chaining.
        */
       public Builder clearTable() {
-
         table_ = getDefaultInstance().getTable();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -2507,8 +2537,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         checkByteStringIsUtf8(value);
-
         table_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -2537,7 +2567,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * @return Whether the keySet field is set.
        */
       public boolean hasKeySet() {
-        return keySetBuilder_ != null || keySet_ != null;
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        *
@@ -2584,11 +2614,11 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
             throw new NullPointerException();
           }
           keySet_ = value;
-          onChanged();
         } else {
           keySetBuilder_.setMessage(value);
         }
-
+        bitField0_ |= 0x00000002;
+        onChanged();
         return this;
       }
       /**
@@ -2609,11 +2639,11 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       public Builder setKeySet(com.google.spanner.v1.KeySet.Builder builderForValue) {
         if (keySetBuilder_ == null) {
           keySet_ = builderForValue.build();
-          onChanged();
         } else {
           keySetBuilder_.setMessage(builderForValue.build());
         }
-
+        bitField0_ |= 0x00000002;
+        onChanged();
         return this;
       }
       /**
@@ -2633,17 +2663,18 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        */
       public Builder mergeKeySet(com.google.spanner.v1.KeySet value) {
         if (keySetBuilder_ == null) {
-          if (keySet_ != null) {
-            keySet_ =
-                com.google.spanner.v1.KeySet.newBuilder(keySet_).mergeFrom(value).buildPartial();
+          if (((bitField0_ & 0x00000002) != 0)
+              && keySet_ != null
+              && keySet_ != com.google.spanner.v1.KeySet.getDefaultInstance()) {
+            getKeySetBuilder().mergeFrom(value);
           } else {
             keySet_ = value;
           }
-          onChanged();
         } else {
           keySetBuilder_.mergeFrom(value);
         }
-
+        bitField0_ |= 0x00000002;
+        onChanged();
         return this;
       }
       /**
@@ -2662,14 +2693,13 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * </code>
        */
       public Builder clearKeySet() {
-        if (keySetBuilder_ == null) {
-          keySet_ = null;
-          onChanged();
-        } else {
-          keySet_ = null;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        keySet_ = null;
+        if (keySetBuilder_ != null) {
+          keySetBuilder_.dispose();
           keySetBuilder_ = null;
         }
-
+        onChanged();
         return this;
       }
       /**
@@ -2688,7 +2718,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * </code>
        */
       public com.google.spanner.v1.KeySet.Builder getKeySetBuilder() {
-
+        bitField0_ |= 0x00000002;
         onChanged();
         return getKeySetFieldBuilder().getBuilder();
       }
@@ -3437,6 +3467,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       if (insertBuilder_ != null) {
         insertBuilder_.clear();
       }
@@ -3480,44 +3511,36 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.Mutation buildPartial() {
       com.google.spanner.v1.Mutation result = new com.google.spanner.v1.Mutation(this);
-      if (operationCase_ == 1) {
-        if (insertBuilder_ == null) {
-          result.operation_ = operation_;
-        } else {
-          result.operation_ = insertBuilder_.build();
-        }
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      if (operationCase_ == 2) {
-        if (updateBuilder_ == null) {
-          result.operation_ = operation_;
-        } else {
-          result.operation_ = updateBuilder_.build();
-        }
-      }
-      if (operationCase_ == 3) {
-        if (insertOrUpdateBuilder_ == null) {
-          result.operation_ = operation_;
-        } else {
-          result.operation_ = insertOrUpdateBuilder_.build();
-        }
-      }
-      if (operationCase_ == 4) {
-        if (replaceBuilder_ == null) {
-          result.operation_ = operation_;
-        } else {
-          result.operation_ = replaceBuilder_.build();
-        }
-      }
-      if (operationCase_ == 5) {
-        if (deleteBuilder_ == null) {
-          result.operation_ = operation_;
-        } else {
-          result.operation_ = deleteBuilder_.build();
-        }
-      }
-      result.operationCase_ = operationCase_;
+      buildPartialOneofs(result);
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.Mutation result) {
+      int from_bitField0_ = bitField0_;
+    }
+
+    private void buildPartialOneofs(com.google.spanner.v1.Mutation result) {
+      result.operationCase_ = operationCase_;
+      result.operation_ = this.operation_;
+      if (operationCase_ == 1 && insertBuilder_ != null) {
+        result.operation_ = insertBuilder_.build();
+      }
+      if (operationCase_ == 2 && updateBuilder_ != null) {
+        result.operation_ = updateBuilder_.build();
+      }
+      if (operationCase_ == 3 && insertOrUpdateBuilder_ != null) {
+        result.operation_ = insertOrUpdateBuilder_.build();
+      }
+      if (operationCase_ == 4 && replaceBuilder_ != null) {
+        result.operation_ = replaceBuilder_.build();
+      }
+      if (operationCase_ == 5 && deleteBuilder_ != null) {
+        result.operation_ = deleteBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -3682,6 +3705,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
+    private int bitField0_;
 
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.spanner.v1.Mutation.Write,
@@ -3897,7 +3922,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       operationCase_ = 1;
       onChanged();
-      ;
       return insertBuilder_;
     }
 
@@ -4115,7 +4139,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       operationCase_ = 2;
       onChanged();
-      ;
       return updateBuilder_;
     }
 
@@ -4369,7 +4392,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       operationCase_ = 3;
       onChanged();
-      ;
       return insertOrUpdateBuilder_;
     }
 
@@ -4641,7 +4663,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       operationCase_ = 4;
       onChanged();
-      ;
       return replaceBuilder_;
     }
 
@@ -4859,7 +4880,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       operationCase_ = 5;
       onChanged();
-      ;
       return deleteBuilder_;
     }
 

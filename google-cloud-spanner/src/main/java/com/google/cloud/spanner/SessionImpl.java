@@ -67,6 +67,14 @@ class SessionImpl implements Session {
     }
   }
 
+  static TransactionOptions createReadWriteTransactionOptions(Options options) {
+    TransactionOptions.ReadWrite.Builder readWrite = TransactionOptions.ReadWrite.newBuilder();
+    if (options.withOptimisticLock() == Boolean.TRUE) {
+      readWrite.setReadLockMode(TransactionOptions.ReadWrite.ReadLockMode.OPTIMISTIC);
+    }
+    return TransactionOptions.newBuilder().setReadWrite(readWrite).build();
+  }
+
   /**
    * Represents a transaction within a session. "Transaction" here is used in the general sense,
    * which covers standalone reads, standalone writes, single-use and multi-use read-only
@@ -299,14 +307,16 @@ class SessionImpl implements Session {
   }
 
   ApiFuture<ByteString> beginTransactionAsync(boolean routeToLeader) {
+    return beginTransactionAsync(Options.fromTransactionOptions(), routeToLeader);
+  }
+
+  ApiFuture<ByteString> beginTransactionAsync(Options transactionOptions, boolean routeToLeader) {
     final SettableApiFuture<ByteString> res = SettableApiFuture.create();
     final Span span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION).startSpan();
     final BeginTransactionRequest request =
         BeginTransactionRequest.newBuilder()
             .setSession(name)
-            .setOptions(
-                TransactionOptions.newBuilder()
-                    .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()))
+            .setOptions(createReadWriteTransactionOptions(transactionOptions))
             .build();
     final ApiFuture<Transaction> requestFuture =
         spanner.getRpc().beginTransactionAsync(request, options, routeToLeader);

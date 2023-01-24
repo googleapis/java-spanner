@@ -118,10 +118,14 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    */
   @java.lang.Override
   public com.google.spanner.v1.ResultSetMetadataOrBuilder getMetadataOrBuilder() {
-    return getMetadata();
+    return metadata_ == null
+        ? com.google.spanner.v1.ResultSetMetadata.getDefaultInstance()
+        : metadata_;
   }
 
   public static final int VALUES_FIELD_NUMBER = 2;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.protobuf.Value> values_;
   /**
    *
@@ -480,7 +484,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   }
 
   public static final int CHUNKED_VALUE_FIELD_NUMBER = 3;
-  private boolean chunkedValue_;
+  private boolean chunkedValue_ = false;
   /**
    *
    *
@@ -500,7 +504,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   }
 
   public static final int RESUME_TOKEN_FIELD_NUMBER = 4;
-  private com.google.protobuf.ByteString resumeToken_;
+  private com.google.protobuf.ByteString resumeToken_ = com.google.protobuf.ByteString.EMPTY;
   /**
    *
    *
@@ -579,7 +583,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    */
   @java.lang.Override
   public com.google.spanner.v1.ResultSetStatsOrBuilder getStatsOrBuilder() {
-    return getStats();
+    return stats_ == null ? com.google.spanner.v1.ResultSetStats.getDefaultInstance() : stats_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -828,10 +832,10 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      if (metadataBuilder_ == null) {
-        metadata_ = null;
-      } else {
-        metadata_ = null;
+      bitField0_ = 0;
+      metadata_ = null;
+      if (metadataBuilder_ != null) {
+        metadataBuilder_.dispose();
         metadataBuilder_ = null;
       }
       if (valuesBuilder_ == null) {
@@ -840,15 +844,12 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         values_ = null;
         valuesBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00000001);
+      bitField0_ = (bitField0_ & ~0x00000002);
       chunkedValue_ = false;
-
       resumeToken_ = com.google.protobuf.ByteString.EMPTY;
-
-      if (statsBuilder_ == null) {
-        stats_ = null;
-      } else {
-        stats_ = null;
+      stats_ = null;
+      if (statsBuilder_ != null) {
+        statsBuilder_.dispose();
         statsBuilder_ = null;
       }
       return this;
@@ -878,30 +879,40 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public com.google.spanner.v1.PartialResultSet buildPartial() {
       com.google.spanner.v1.PartialResultSet result =
           new com.google.spanner.v1.PartialResultSet(this);
-      int from_bitField0_ = bitField0_;
-      if (metadataBuilder_ == null) {
-        result.metadata_ = metadata_;
-      } else {
-        result.metadata_ = metadataBuilder_.build();
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(com.google.spanner.v1.PartialResultSet result) {
       if (valuesBuilder_ == null) {
-        if (((bitField0_ & 0x00000001) != 0)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           values_ = java.util.Collections.unmodifiableList(values_);
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.values_ = values_;
       } else {
         result.values_ = valuesBuilder_.build();
       }
-      result.chunkedValue_ = chunkedValue_;
-      result.resumeToken_ = resumeToken_;
-      if (statsBuilder_ == null) {
-        result.stats_ = stats_;
-      } else {
-        result.stats_ = statsBuilder_.build();
+    }
+
+    private void buildPartial0(com.google.spanner.v1.PartialResultSet result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.metadata_ = metadataBuilder_ == null ? metadata_ : metadataBuilder_.build();
       }
-      onBuilt();
-      return result;
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.chunkedValue_ = chunkedValue_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.resumeToken_ = resumeToken_;
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.stats_ = statsBuilder_ == null ? stats_ : statsBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -956,7 +967,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         if (!other.values_.isEmpty()) {
           if (values_.isEmpty()) {
             values_ = other.values_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureValuesIsMutable();
             values_.addAll(other.values_);
@@ -969,7 +980,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
             valuesBuilder_.dispose();
             valuesBuilder_ = null;
             values_ = other.values_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
             valuesBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
                     ? getValuesFieldBuilder()
@@ -1017,7 +1028,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
             case 10:
               {
                 input.readMessage(getMetadataFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
@@ -1035,19 +1046,19 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
             case 24:
               {
                 chunkedValue_ = input.readBool();
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 24
             case 34:
               {
                 resumeToken_ = input.readBytes();
-
+                bitField0_ |= 0x00000008;
                 break;
               } // case 34
             case 42:
               {
                 input.readMessage(getStatsFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000010;
                 break;
               } // case 42
             default:
@@ -1088,7 +1099,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * @return Whether the metadata field is set.
      */
     public boolean hasMetadata() {
-      return metadataBuilder_ != null || metadata_ != null;
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      *
@@ -1127,11 +1138,11 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
           throw new NullPointerException();
         }
         metadata_ = value;
-        onChanged();
       } else {
         metadataBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -1147,11 +1158,11 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public Builder setMetadata(com.google.spanner.v1.ResultSetMetadata.Builder builderForValue) {
       if (metadataBuilder_ == null) {
         metadata_ = builderForValue.build();
-        onChanged();
       } else {
         metadataBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -1166,19 +1177,18 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      */
     public Builder mergeMetadata(com.google.spanner.v1.ResultSetMetadata value) {
       if (metadataBuilder_ == null) {
-        if (metadata_ != null) {
-          metadata_ =
-              com.google.spanner.v1.ResultSetMetadata.newBuilder(metadata_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000001) != 0)
+            && metadata_ != null
+            && metadata_ != com.google.spanner.v1.ResultSetMetadata.getDefaultInstance()) {
+          getMetadataBuilder().mergeFrom(value);
         } else {
           metadata_ = value;
         }
-        onChanged();
       } else {
         metadataBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -1192,14 +1202,13 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * <code>.google.spanner.v1.ResultSetMetadata metadata = 1;</code>
      */
     public Builder clearMetadata() {
-      if (metadataBuilder_ == null) {
-        metadata_ = null;
-        onChanged();
-      } else {
-        metadata_ = null;
+      bitField0_ = (bitField0_ & ~0x00000001);
+      metadata_ = null;
+      if (metadataBuilder_ != null) {
+        metadataBuilder_.dispose();
         metadataBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1213,7 +1222,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * <code>.google.spanner.v1.ResultSetMetadata metadata = 1;</code>
      */
     public com.google.spanner.v1.ResultSetMetadata.Builder getMetadataBuilder() {
-
+      bitField0_ |= 0x00000001;
       onChanged();
       return getMetadataFieldBuilder().getBuilder();
     }
@@ -1266,9 +1275,9 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     private java.util.List<com.google.protobuf.Value> values_ = java.util.Collections.emptyList();
 
     private void ensureValuesIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
+      if (!((bitField0_ & 0x00000002) != 0)) {
         values_ = new java.util.ArrayList<com.google.protobuf.Value>(values_);
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000002;
       }
     }
 
@@ -2118,7 +2127,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public Builder clearValues() {
       if (valuesBuilder_ == null) {
         values_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
       } else {
         valuesBuilder_.clear();
@@ -2643,7 +2652,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
                 com.google.protobuf.Value,
                 com.google.protobuf.Value.Builder,
                 com.google.protobuf.ValueOrBuilder>(
-                values_, ((bitField0_ & 0x00000001) != 0), getParentForChildren(), isClean());
+                values_, ((bitField0_ & 0x00000002) != 0), getParentForChildren(), isClean());
         values_ = null;
       }
       return valuesBuilder_;
@@ -2684,6 +2693,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public Builder setChunkedValue(boolean value) {
 
       chunkedValue_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -2701,7 +2711,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * @return This builder for chaining.
      */
     public Builder clearChunkedValue() {
-
+      bitField0_ = (bitField0_ & ~0x00000004);
       chunkedValue_ = false;
       onChanged();
       return this;
@@ -2747,8 +2757,8 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       if (value == null) {
         throw new NullPointerException();
       }
-
       resumeToken_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -2768,7 +2778,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * @return This builder for chaining.
      */
     public Builder clearResumeToken() {
-
+      bitField0_ = (bitField0_ & ~0x00000008);
       resumeToken_ = getDefaultInstance().getResumeToken();
       onChanged();
       return this;
@@ -2797,7 +2807,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * @return Whether the stats field is set.
      */
     public boolean hasStats() {
-      return statsBuilder_ != null || stats_ != null;
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      *
@@ -2842,11 +2852,11 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
           throw new NullPointerException();
         }
         stats_ = value;
-        onChanged();
       } else {
         statsBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000010;
+      onChanged();
       return this;
     }
     /**
@@ -2866,11 +2876,11 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public Builder setStats(com.google.spanner.v1.ResultSetStats.Builder builderForValue) {
       if (statsBuilder_ == null) {
         stats_ = builderForValue.build();
-        onChanged();
       } else {
         statsBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000010;
+      onChanged();
       return this;
     }
     /**
@@ -2889,19 +2899,18 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      */
     public Builder mergeStats(com.google.spanner.v1.ResultSetStats value) {
       if (statsBuilder_ == null) {
-        if (stats_ != null) {
-          stats_ =
-              com.google.spanner.v1.ResultSetStats.newBuilder(stats_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000010) != 0)
+            && stats_ != null
+            && stats_ != com.google.spanner.v1.ResultSetStats.getDefaultInstance()) {
+          getStatsBuilder().mergeFrom(value);
         } else {
           stats_ = value;
         }
-        onChanged();
       } else {
         statsBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000010;
+      onChanged();
       return this;
     }
     /**
@@ -2919,14 +2928,13 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * <code>.google.spanner.v1.ResultSetStats stats = 5;</code>
      */
     public Builder clearStats() {
-      if (statsBuilder_ == null) {
-        stats_ = null;
-        onChanged();
-      } else {
-        stats_ = null;
+      bitField0_ = (bitField0_ & ~0x00000010);
+      stats_ = null;
+      if (statsBuilder_ != null) {
+        statsBuilder_.dispose();
         statsBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -2944,7 +2952,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * <code>.google.spanner.v1.ResultSetStats stats = 5;</code>
      */
     public com.google.spanner.v1.ResultSetStats.Builder getStatsBuilder() {
-
+      bitField0_ |= 0x00000010;
       onChanged();
       return getStatsFieldBuilder().getBuilder();
     }

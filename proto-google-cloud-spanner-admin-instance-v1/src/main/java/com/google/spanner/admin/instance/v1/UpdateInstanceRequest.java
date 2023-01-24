@@ -126,7 +126,9 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
    */
   @java.lang.Override
   public com.google.spanner.admin.instance.v1.InstanceOrBuilder getInstanceOrBuilder() {
-    return getInstance();
+    return instance_ == null
+        ? com.google.spanner.admin.instance.v1.Instance.getDefaultInstance()
+        : instance_;
   }
 
   public static final int FIELD_MASK_FIELD_NUMBER = 2;
@@ -187,7 +189,7 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
    */
   @java.lang.Override
   public com.google.protobuf.FieldMaskOrBuilder getFieldMaskOrBuilder() {
-    return getFieldMask();
+    return fieldMask_ == null ? com.google.protobuf.FieldMask.getDefaultInstance() : fieldMask_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -408,16 +410,15 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      if (instanceBuilder_ == null) {
-        instance_ = null;
-      } else {
-        instance_ = null;
+      bitField0_ = 0;
+      instance_ = null;
+      if (instanceBuilder_ != null) {
+        instanceBuilder_.dispose();
         instanceBuilder_ = null;
       }
-      if (fieldMaskBuilder_ == null) {
-        fieldMask_ = null;
-      } else {
-        fieldMask_ = null;
+      fieldMask_ = null;
+      if (fieldMaskBuilder_ != null) {
+        fieldMaskBuilder_.dispose();
         fieldMaskBuilder_ = null;
       }
       return this;
@@ -447,18 +448,21 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
     public com.google.spanner.admin.instance.v1.UpdateInstanceRequest buildPartial() {
       com.google.spanner.admin.instance.v1.UpdateInstanceRequest result =
           new com.google.spanner.admin.instance.v1.UpdateInstanceRequest(this);
-      if (instanceBuilder_ == null) {
-        result.instance_ = instance_;
-      } else {
-        result.instance_ = instanceBuilder_.build();
-      }
-      if (fieldMaskBuilder_ == null) {
-        result.fieldMask_ = fieldMask_;
-      } else {
-        result.fieldMask_ = fieldMaskBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.instance.v1.UpdateInstanceRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.instance_ = instanceBuilder_ == null ? instance_ : instanceBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.fieldMask_ = fieldMaskBuilder_ == null ? fieldMask_ : fieldMaskBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -542,13 +546,13 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
             case 10:
               {
                 input.readMessage(getInstanceFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 input.readMessage(getFieldMaskFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             default:
@@ -567,6 +571,8 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private com.google.spanner.admin.instance.v1.Instance instance_;
     private com.google.protobuf.SingleFieldBuilderV3<
@@ -591,7 +597,7 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
      * @return Whether the instance field is set.
      */
     public boolean hasInstance() {
-      return instanceBuilder_ != null || instance_ != null;
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      *
@@ -638,11 +644,11 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
           throw new NullPointerException();
         }
         instance_ = value;
-        onChanged();
       } else {
         instanceBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -663,11 +669,11 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
         com.google.spanner.admin.instance.v1.Instance.Builder builderForValue) {
       if (instanceBuilder_ == null) {
         instance_ = builderForValue.build();
-        onChanged();
       } else {
         instanceBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -686,19 +692,18 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
      */
     public Builder mergeInstance(com.google.spanner.admin.instance.v1.Instance value) {
       if (instanceBuilder_ == null) {
-        if (instance_ != null) {
-          instance_ =
-              com.google.spanner.admin.instance.v1.Instance.newBuilder(instance_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000001) != 0)
+            && instance_ != null
+            && instance_ != com.google.spanner.admin.instance.v1.Instance.getDefaultInstance()) {
+          getInstanceBuilder().mergeFrom(value);
         } else {
           instance_ = value;
         }
-        onChanged();
       } else {
         instanceBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -716,14 +721,13 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
      * </code>
      */
     public Builder clearInstance() {
-      if (instanceBuilder_ == null) {
-        instance_ = null;
-        onChanged();
-      } else {
-        instance_ = null;
+      bitField0_ = (bitField0_ & ~0x00000001);
+      instance_ = null;
+      if (instanceBuilder_ != null) {
+        instanceBuilder_.dispose();
         instanceBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -741,7 +745,7 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
      * </code>
      */
     public com.google.spanner.admin.instance.v1.Instance.Builder getInstanceBuilder() {
-
+      bitField0_ |= 0x00000001;
       onChanged();
       return getInstanceFieldBuilder().getBuilder();
     }
@@ -822,7 +826,7 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
      * @return Whether the fieldMask field is set.
      */
     public boolean hasFieldMask() {
-      return fieldMaskBuilder_ != null || fieldMask_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -867,11 +871,11 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
           throw new NullPointerException();
         }
         fieldMask_ = value;
-        onChanged();
       } else {
         fieldMaskBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -891,11 +895,11 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
     public Builder setFieldMask(com.google.protobuf.FieldMask.Builder builderForValue) {
       if (fieldMaskBuilder_ == null) {
         fieldMask_ = builderForValue.build();
-        onChanged();
       } else {
         fieldMaskBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -914,17 +918,18 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
      */
     public Builder mergeFieldMask(com.google.protobuf.FieldMask value) {
       if (fieldMaskBuilder_ == null) {
-        if (fieldMask_ != null) {
-          fieldMask_ =
-              com.google.protobuf.FieldMask.newBuilder(fieldMask_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && fieldMask_ != null
+            && fieldMask_ != com.google.protobuf.FieldMask.getDefaultInstance()) {
+          getFieldMaskBuilder().mergeFrom(value);
         } else {
           fieldMask_ = value;
         }
-        onChanged();
       } else {
         fieldMaskBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -942,14 +947,13 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
      * </code>
      */
     public Builder clearFieldMask() {
-      if (fieldMaskBuilder_ == null) {
-        fieldMask_ = null;
-        onChanged();
-      } else {
-        fieldMask_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      fieldMask_ = null;
+      if (fieldMaskBuilder_ != null) {
+        fieldMaskBuilder_.dispose();
         fieldMaskBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -967,7 +971,7 @@ public final class UpdateInstanceRequest extends com.google.protobuf.GeneratedMe
      * </code>
      */
     public com.google.protobuf.FieldMask.Builder getFieldMaskBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getFieldMaskFieldBuilder().getBuilder();
     }

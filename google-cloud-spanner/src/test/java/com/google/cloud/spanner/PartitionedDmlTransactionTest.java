@@ -346,6 +346,45 @@ public class PartitionedDmlTransactionTest {
   }
 
   @Test
+  public void testExecuteStreamingPartitionedUpdateRSTstream() {
+    ResultSetStats stats = ResultSetStats.newBuilder().setRowCountLowerBound(1000L).build();
+    PartialResultSet p1 = PartialResultSet.newBuilder().setResumeToken(resumeToken).build();
+    PartialResultSet p2 = PartialResultSet.newBuilder().setStats(stats).build();
+    ServerStream<PartialResultSet> stream1 = mock(ServerStream.class);
+    Iterator<PartialResultSet> iterator = mock(Iterator.class);
+    when(iterator.hasNext()).thenReturn(true, true, false);
+    when(iterator.next())
+        .thenReturn(p1)
+        .thenThrow(
+            new InternalException(
+                "INTERNAL: stream terminated by RST_STREAM.",
+                null,
+                GrpcStatusCode.of(Code.INTERNAL),
+                true));
+    when(stream1.iterator()).thenReturn(iterator);
+    ServerStream<PartialResultSet> stream2 = mock(ServerStream.class);
+    when(stream2.iterator()).thenReturn(ImmutableList.of(p1, p2).iterator());
+    when(rpc.executeStreamingPartitionedDml(
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class)))
+        .thenReturn(stream1);
+    when(rpc.executeStreamingPartitionedDml(
+            Mockito.eq(executeRequestWithResumeToken), anyMap(), any(Duration.class)))
+        .thenReturn(stream2);
+
+    PartitionedDmlTransaction tx = new PartitionedDmlTransaction(session, rpc, ticker);
+    long count = tx.executeStreamingPartitionedUpdate(Statement.of(sql), Duration.ofMinutes(10));
+
+    assertThat(count).isEqualTo(1000L);
+    verify(rpc).beginTransaction(any(BeginTransactionRequest.class), anyMap());
+    verify(rpc)
+        .executeStreamingPartitionedDml(
+            Mockito.eq(executeRequestWithoutResumeToken), anyMap(), any(Duration.class));
+    verify(rpc)
+        .executeStreamingPartitionedDml(
+            Mockito.eq(executeRequestWithResumeToken), anyMap(), any(Duration.class));
+  }
+
+  @Test
   public void testExecuteStreamingPartitionedUpdateGenericInternalException() {
     PartialResultSet p1 = PartialResultSet.newBuilder().setResumeToken(resumeToken).build();
     ServerStream<PartialResultSet> stream1 = mock(ServerStream.class);

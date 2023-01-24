@@ -70,7 +70,9 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
   }
 
   public static final int NAME_FIELD_NUMBER = 1;
-  private volatile java.lang.Object name_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object name_ = "";
   /**
    *
    *
@@ -119,7 +121,9 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
   }
 
   public static final int DATABASE_FIELD_NUMBER = 2;
-  private volatile java.lang.Object database_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object database_ = "";
   /**
    *
    *
@@ -215,7 +219,9 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    */
   @java.lang.Override
   public com.google.spanner.admin.database.v1.OperationProgressOrBuilder getProgressOrBuilder() {
-    return getProgress();
+    return progress_ == null
+        ? com.google.spanner.admin.database.v1.OperationProgress.getDefaultInstance()
+        : progress_;
   }
 
   public static final int CANCEL_TIME_FIELD_NUMBER = 4;
@@ -294,7 +300,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCancelTimeOrBuilder() {
-    return getCancelTime();
+    return cancelTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : cancelTime_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -533,20 +539,17 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       name_ = "";
-
       database_ = "";
-
-      if (progressBuilder_ == null) {
-        progress_ = null;
-      } else {
-        progress_ = null;
+      progress_ = null;
+      if (progressBuilder_ != null) {
+        progressBuilder_.dispose();
         progressBuilder_ = null;
       }
-      if (cancelTimeBuilder_ == null) {
-        cancelTime_ = null;
-      } else {
-        cancelTime_ = null;
+      cancelTime_ = null;
+      if (cancelTimeBuilder_ != null) {
+        cancelTimeBuilder_.dispose();
         cancelTimeBuilder_ = null;
       }
       return this;
@@ -576,20 +579,27 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
     public com.google.spanner.admin.database.v1.CreateBackupMetadata buildPartial() {
       com.google.spanner.admin.database.v1.CreateBackupMetadata result =
           new com.google.spanner.admin.database.v1.CreateBackupMetadata(this);
-      result.name_ = name_;
-      result.database_ = database_;
-      if (progressBuilder_ == null) {
-        result.progress_ = progress_;
-      } else {
-        result.progress_ = progressBuilder_.build();
-      }
-      if (cancelTimeBuilder_ == null) {
-        result.cancelTime_ = cancelTime_;
-      } else {
-        result.cancelTime_ = cancelTimeBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.database.v1.CreateBackupMetadata result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.name_ = name_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.database_ = database_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.progress_ = progressBuilder_ == null ? progress_ : progressBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.cancelTime_ = cancelTimeBuilder_ == null ? cancelTime_ : cancelTimeBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -640,10 +650,12 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
         return this;
       if (!other.getName().isEmpty()) {
         name_ = other.name_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (!other.getDatabase().isEmpty()) {
         database_ = other.database_;
+        bitField0_ |= 0x00000002;
         onChanged();
       }
       if (other.hasProgress()) {
@@ -681,25 +693,25 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
             case 10:
               {
                 name_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 database_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             case 26:
               {
                 input.readMessage(getProgressFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 26
             case 34:
               {
                 input.readMessage(getCancelTimeFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000008;
                 break;
               } // case 34
             default:
@@ -718,6 +730,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private java.lang.Object name_ = "";
     /**
@@ -780,8 +794,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
       if (value == null) {
         throw new NullPointerException();
       }
-
       name_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -797,8 +811,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * @return This builder for chaining.
      */
     public Builder clearName() {
-
       name_ = getDefaultInstance().getName();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -819,8 +833,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       name_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -886,8 +900,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
       if (value == null) {
         throw new NullPointerException();
       }
-
       database_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -903,8 +917,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * @return This builder for chaining.
      */
     public Builder clearDatabase() {
-
       database_ = getDefaultInstance().getDatabase();
+      bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
@@ -925,8 +939,8 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       database_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -950,7 +964,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * @return Whether the progress field is set.
      */
     public boolean hasProgress() {
-      return progressBuilder_ != null || progress_ != null;
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      *
@@ -989,11 +1003,11 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
           throw new NullPointerException();
         }
         progress_ = value;
-        onChanged();
       } else {
         progressBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1010,11 +1024,11 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
         com.google.spanner.admin.database.v1.OperationProgress.Builder builderForValue) {
       if (progressBuilder_ == null) {
         progress_ = builderForValue.build();
-        onChanged();
       } else {
         progressBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1029,19 +1043,19 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      */
     public Builder mergeProgress(com.google.spanner.admin.database.v1.OperationProgress value) {
       if (progressBuilder_ == null) {
-        if (progress_ != null) {
-          progress_ =
-              com.google.spanner.admin.database.v1.OperationProgress.newBuilder(progress_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000004) != 0)
+            && progress_ != null
+            && progress_
+                != com.google.spanner.admin.database.v1.OperationProgress.getDefaultInstance()) {
+          getProgressBuilder().mergeFrom(value);
         } else {
           progress_ = value;
         }
-        onChanged();
       } else {
         progressBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1055,14 +1069,13 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
      */
     public Builder clearProgress() {
-      if (progressBuilder_ == null) {
-        progress_ = null;
-        onChanged();
-      } else {
-        progress_ = null;
+      bitField0_ = (bitField0_ & ~0x00000004);
+      progress_ = null;
+      if (progressBuilder_ != null) {
+        progressBuilder_.dispose();
         progressBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1076,7 +1089,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
      */
     public com.google.spanner.admin.database.v1.OperationProgress.Builder getProgressBuilder() {
-
+      bitField0_ |= 0x00000004;
       onChanged();
       return getProgressFieldBuilder().getBuilder();
     }
@@ -1155,7 +1168,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * @return Whether the cancelTime field is set.
      */
     public boolean hasCancelTime() {
-      return cancelTimeBuilder_ != null || cancelTime_ != null;
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      *
@@ -1214,11 +1227,11 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
           throw new NullPointerException();
         }
         cancelTime_ = value;
-        onChanged();
       } else {
         cancelTimeBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1244,11 +1257,11 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
     public Builder setCancelTime(com.google.protobuf.Timestamp.Builder builderForValue) {
       if (cancelTimeBuilder_ == null) {
         cancelTime_ = builderForValue.build();
-        onChanged();
       } else {
         cancelTimeBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1273,17 +1286,18 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      */
     public Builder mergeCancelTime(com.google.protobuf.Timestamp value) {
       if (cancelTimeBuilder_ == null) {
-        if (cancelTime_ != null) {
-          cancelTime_ =
-              com.google.protobuf.Timestamp.newBuilder(cancelTime_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000008) != 0)
+            && cancelTime_ != null
+            && cancelTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getCancelTimeBuilder().mergeFrom(value);
         } else {
           cancelTime_ = value;
         }
-        onChanged();
       } else {
         cancelTimeBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1307,14 +1321,13 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * <code>.google.protobuf.Timestamp cancel_time = 4;</code>
      */
     public Builder clearCancelTime() {
-      if (cancelTimeBuilder_ == null) {
-        cancelTime_ = null;
-        onChanged();
-      } else {
-        cancelTime_ = null;
+      bitField0_ = (bitField0_ & ~0x00000008);
+      cancelTime_ = null;
+      if (cancelTimeBuilder_ != null) {
+        cancelTimeBuilder_.dispose();
         cancelTimeBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1338,7 +1351,7 @@ public final class CreateBackupMetadata extends com.google.protobuf.GeneratedMes
      * <code>.google.protobuf.Timestamp cancel_time = 4;</code>
      */
     public com.google.protobuf.Timestamp.Builder getCancelTimeBuilder() {
-
+      bitField0_ |= 0x00000008;
       onChanged();
       return getCancelTimeFieldBuilder().getBuilder();
     }

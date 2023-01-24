@@ -70,7 +70,9 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
   }
 
   public static final int PARENT_FIELD_NUMBER = 1;
-  private volatile java.lang.Object parent_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object parent_ = "";
   /**
    *
    *
@@ -125,7 +127,9 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
   }
 
   public static final int INSTANCE_CONFIG_ID_FIELD_NUMBER = 2;
-  private volatile java.lang.Object instanceConfigId_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object instanceConfigId_ = "";
   /**
    *
    *
@@ -242,11 +246,13 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
    */
   @java.lang.Override
   public com.google.spanner.admin.instance.v1.InstanceConfigOrBuilder getInstanceConfigOrBuilder() {
-    return getInstanceConfig();
+    return instanceConfig_ == null
+        ? com.google.spanner.admin.instance.v1.InstanceConfig.getDefaultInstance()
+        : instanceConfig_;
   }
 
   public static final int VALIDATE_ONLY_FIELD_NUMBER = 4;
-  private boolean validateOnly_;
+  private boolean validateOnly_ = false;
   /**
    *
    *
@@ -495,18 +501,15 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       parent_ = "";
-
       instanceConfigId_ = "";
-
-      if (instanceConfigBuilder_ == null) {
-        instanceConfig_ = null;
-      } else {
-        instanceConfig_ = null;
+      instanceConfig_ = null;
+      if (instanceConfigBuilder_ != null) {
+        instanceConfigBuilder_.dispose();
         instanceConfigBuilder_ = null;
       }
       validateOnly_ = false;
-
       return this;
     }
 
@@ -535,16 +538,29 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
     public com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest buildPartial() {
       com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest result =
           new com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest(this);
-      result.parent_ = parent_;
-      result.instanceConfigId_ = instanceConfigId_;
-      if (instanceConfigBuilder_ == null) {
-        result.instanceConfig_ = instanceConfig_;
-      } else {
-        result.instanceConfig_ = instanceConfigBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      result.validateOnly_ = validateOnly_;
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(
+        com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.parent_ = parent_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.instanceConfigId_ = instanceConfigId_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.instanceConfig_ =
+            instanceConfigBuilder_ == null ? instanceConfig_ : instanceConfigBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.validateOnly_ = validateOnly_;
+      }
     }
 
     @java.lang.Override
@@ -597,10 +613,12 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
         return this;
       if (!other.getParent().isEmpty()) {
         parent_ = other.parent_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (!other.getInstanceConfigId().isEmpty()) {
         instanceConfigId_ = other.instanceConfigId_;
+        bitField0_ |= 0x00000002;
         onChanged();
       }
       if (other.hasInstanceConfig()) {
@@ -638,25 +656,25 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
             case 10:
               {
                 parent_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 instanceConfigId_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             case 26:
               {
                 input.readMessage(getInstanceConfigFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 26
             case 32:
               {
                 validateOnly_ = input.readBool();
-
+                bitField0_ |= 0x00000008;
                 break;
               } // case 32
             default:
@@ -675,6 +693,8 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private java.lang.Object parent_ = "";
     /**
@@ -746,8 +766,8 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
       if (value == null) {
         throw new NullPointerException();
       }
-
       parent_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -766,8 +786,8 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      * @return This builder for chaining.
      */
     public Builder clearParent() {
-
       parent_ = getDefaultInstance().getParent();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -791,8 +811,8 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       parent_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -867,8 +887,8 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
       if (value == null) {
         throw new NullPointerException();
       }
-
       instanceConfigId_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -887,8 +907,8 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      * @return This builder for chaining.
      */
     public Builder clearInstanceConfigId() {
-
       instanceConfigId_ = getDefaultInstance().getInstanceConfigId();
+      bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
@@ -912,8 +932,8 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       instanceConfigId_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -942,7 +962,7 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      * @return Whether the instanceConfig field is set.
      */
     public boolean hasInstanceConfig() {
-      return instanceConfigBuilder_ != null || instanceConfig_ != null;
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      *
@@ -991,11 +1011,11 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
           throw new NullPointerException();
         }
         instanceConfig_ = value;
-        onChanged();
       } else {
         instanceConfigBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1017,11 +1037,11 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
         com.google.spanner.admin.instance.v1.InstanceConfig.Builder builderForValue) {
       if (instanceConfigBuilder_ == null) {
         instanceConfig_ = builderForValue.build();
-        onChanged();
       } else {
         instanceConfigBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1041,19 +1061,19 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      */
     public Builder mergeInstanceConfig(com.google.spanner.admin.instance.v1.InstanceConfig value) {
       if (instanceConfigBuilder_ == null) {
-        if (instanceConfig_ != null) {
-          instanceConfig_ =
-              com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder(instanceConfig_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000004) != 0)
+            && instanceConfig_ != null
+            && instanceConfig_
+                != com.google.spanner.admin.instance.v1.InstanceConfig.getDefaultInstance()) {
+          getInstanceConfigBuilder().mergeFrom(value);
         } else {
           instanceConfig_ = value;
         }
-        onChanged();
       } else {
         instanceConfigBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1072,14 +1092,13 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      * </code>
      */
     public Builder clearInstanceConfig() {
-      if (instanceConfigBuilder_ == null) {
-        instanceConfig_ = null;
-        onChanged();
-      } else {
-        instanceConfig_ = null;
+      bitField0_ = (bitField0_ & ~0x00000004);
+      instanceConfig_ = null;
+      if (instanceConfigBuilder_ != null) {
+        instanceConfigBuilder_.dispose();
         instanceConfigBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1098,7 +1117,7 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      * </code>
      */
     public com.google.spanner.admin.instance.v1.InstanceConfig.Builder getInstanceConfigBuilder() {
-
+      bitField0_ |= 0x00000004;
       onChanged();
       return getInstanceConfigFieldBuilder().getBuilder();
     }
@@ -1192,6 +1211,7 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
     public Builder setValidateOnly(boolean value) {
 
       validateOnly_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -1208,7 +1228,7 @@ public final class CreateInstanceConfigRequest extends com.google.protobuf.Gener
      * @return This builder for chaining.
      */
     public Builder clearValidateOnly() {
-
+      bitField0_ = (bitField0_ & ~0x00000008);
       validateOnly_ = false;
       onChanged();
       return this;

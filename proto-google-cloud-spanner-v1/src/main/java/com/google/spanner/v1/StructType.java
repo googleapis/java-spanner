@@ -192,7 +192,9 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
     }
 
     public static final int NAME_FIELD_NUMBER = 1;
-    private volatile java.lang.Object name_;
+
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object name_ = "";
     /**
      *
      *
@@ -295,7 +297,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
      */
     @java.lang.Override
     public com.google.spanner.v1.TypeOrBuilder getTypeOrBuilder() {
-      return getType();
+      return type_ == null ? com.google.spanner.v1.Type.getDefaultInstance() : type_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -510,12 +512,11 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         name_ = "";
-
-        if (typeBuilder_ == null) {
-          type_ = null;
-        } else {
-          type_ = null;
+        type_ = null;
+        if (typeBuilder_ != null) {
+          typeBuilder_.dispose();
           typeBuilder_ = null;
         }
         return this;
@@ -545,14 +546,21 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       public com.google.spanner.v1.StructType.Field buildPartial() {
         com.google.spanner.v1.StructType.Field result =
             new com.google.spanner.v1.StructType.Field(this);
-        result.name_ = name_;
-        if (typeBuilder_ == null) {
-          result.type_ = type_;
-        } else {
-          result.type_ = typeBuilder_.build();
+        if (bitField0_ != 0) {
+          buildPartial0(result);
         }
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(com.google.spanner.v1.StructType.Field result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.name_ = name_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.type_ = typeBuilder_ == null ? type_ : typeBuilder_.build();
+        }
       }
 
       @java.lang.Override
@@ -604,6 +612,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
         if (other == com.google.spanner.v1.StructType.Field.getDefaultInstance()) return this;
         if (!other.getName().isEmpty()) {
           name_ = other.name_;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (other.hasType()) {
@@ -638,13 +647,13 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
               case 10:
                 {
                   name_ = input.readStringRequireUtf8();
-
+                  bitField0_ |= 0x00000001;
                   break;
                 } // case 10
               case 18:
                 {
                   input.readMessage(getTypeFieldBuilder().getBuilder(), extensionRegistry);
-
+                  bitField0_ |= 0x00000002;
                   break;
                 } // case 18
               default:
@@ -663,6 +672,8 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
         } // finally
         return this;
       }
+
+      private int bitField0_;
 
       private java.lang.Object name_ = "";
       /**
@@ -743,8 +754,8 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
         if (value == null) {
           throw new NullPointerException();
         }
-
         name_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -766,8 +777,8 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
        * @return This builder for chaining.
        */
       public Builder clearName() {
-
         name_ = getDefaultInstance().getName();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -794,8 +805,8 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         checkByteStringIsUtf8(value);
-
         name_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -818,7 +829,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
        * @return Whether the type field is set.
        */
       public boolean hasType() {
-        return typeBuilder_ != null || type_ != null;
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        *
@@ -853,11 +864,11 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
             throw new NullPointerException();
           }
           type_ = value;
-          onChanged();
         } else {
           typeBuilder_.setMessage(value);
         }
-
+        bitField0_ |= 0x00000002;
+        onChanged();
         return this;
       }
       /**
@@ -872,11 +883,11 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       public Builder setType(com.google.spanner.v1.Type.Builder builderForValue) {
         if (typeBuilder_ == null) {
           type_ = builderForValue.build();
-          onChanged();
         } else {
           typeBuilder_.setMessage(builderForValue.build());
         }
-
+        bitField0_ |= 0x00000002;
+        onChanged();
         return this;
       }
       /**
@@ -890,16 +901,18 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
        */
       public Builder mergeType(com.google.spanner.v1.Type value) {
         if (typeBuilder_ == null) {
-          if (type_ != null) {
-            type_ = com.google.spanner.v1.Type.newBuilder(type_).mergeFrom(value).buildPartial();
+          if (((bitField0_ & 0x00000002) != 0)
+              && type_ != null
+              && type_ != com.google.spanner.v1.Type.getDefaultInstance()) {
+            getTypeBuilder().mergeFrom(value);
           } else {
             type_ = value;
           }
-          onChanged();
         } else {
           typeBuilder_.mergeFrom(value);
         }
-
+        bitField0_ |= 0x00000002;
+        onChanged();
         return this;
       }
       /**
@@ -912,14 +925,13 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
        * <code>.google.spanner.v1.Type type = 2;</code>
        */
       public Builder clearType() {
-        if (typeBuilder_ == null) {
-          type_ = null;
-          onChanged();
-        } else {
-          type_ = null;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        type_ = null;
+        if (typeBuilder_ != null) {
+          typeBuilder_.dispose();
           typeBuilder_ = null;
         }
-
+        onChanged();
         return this;
       }
       /**
@@ -932,7 +944,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
        * <code>.google.spanner.v1.Type type = 2;</code>
        */
       public com.google.spanner.v1.Type.Builder getTypeBuilder() {
-
+        bitField0_ |= 0x00000002;
         onChanged();
         return getTypeFieldBuilder().getBuilder();
       }
@@ -1043,6 +1055,8 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int FIELDS_FIELD_NUMBER = 1;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.v1.StructType.Field> fields_;
   /**
    *
@@ -1333,6 +1347,7 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       if (fieldsBuilder_ == null) {
         fields_ = java.util.Collections.emptyList();
       } else {
@@ -1366,7 +1381,15 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.StructType buildPartial() {
       com.google.spanner.v1.StructType result = new com.google.spanner.v1.StructType(this);
-      int from_bitField0_ = bitField0_;
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(com.google.spanner.v1.StructType result) {
       if (fieldsBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
           fields_ = java.util.Collections.unmodifiableList(fields_);
@@ -1376,8 +1399,10 @@ public final class StructType extends com.google.protobuf.GeneratedMessageV3
       } else {
         result.fields_ = fieldsBuilder_.build();
       }
-      onBuilt();
-      return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.StructType result) {
+      int from_bitField0_ = bitField0_;
     }
 
     @java.lang.Override

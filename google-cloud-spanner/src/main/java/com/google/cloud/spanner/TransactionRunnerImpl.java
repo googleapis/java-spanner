@@ -256,7 +256,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     private void createTxnAsync(final SettableApiFuture<Void> res) {
       span.addAnnotation("Creating Transaction");
-      final ApiFuture<ByteString> fut = session.beginTransactionAsync(routeToLeader);
+      final ApiFuture<ByteString> fut = session.beginTransactionAsync(options, routeToLeader);
       fut.addListener(
           () -> {
             try {
@@ -494,9 +494,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           }
           if (tx == null) {
             return TransactionSelector.newBuilder()
-                .setBegin(
-                    TransactionOptions.newBuilder()
-                        .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()))
+                .setBegin(SessionImpl.createReadWriteTransactionOptions(options))
                 .build();
           } else {
             // Wait for the transaction to come available. The tx.get() call will fail with an
