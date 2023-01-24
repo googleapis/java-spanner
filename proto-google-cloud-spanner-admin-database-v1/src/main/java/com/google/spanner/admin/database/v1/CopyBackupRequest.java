@@ -70,7 +70,9 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
   }
 
   public static final int PARENT_FIELD_NUMBER = 1;
-  private volatile java.lang.Object parent_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object parent_ = "";
   /**
    *
    *
@@ -125,7 +127,9 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
   }
 
   public static final int BACKUP_ID_FIELD_NUMBER = 2;
-  private volatile java.lang.Object backupId_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object backupId_ = "";
   /**
    *
    *
@@ -178,7 +182,9 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
   }
 
   public static final int SOURCE_BACKUP_FIELD_NUMBER = 3;
-  private volatile java.lang.Object sourceBackup_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object sourceBackup_ = "";
   /**
    *
    *
@@ -298,7 +304,7 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getExpireTimeOrBuilder() {
-    return getExpireTime();
+    return expireTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : expireTime_;
   }
 
   public static final int ENCRYPTION_CONFIG_FIELD_NUMBER = 5;
@@ -365,7 +371,9 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
   @java.lang.Override
   public com.google.spanner.admin.database.v1.CopyBackupEncryptionConfigOrBuilder
       getEncryptionConfigOrBuilder() {
-    return getEncryptionConfig();
+    return encryptionConfig_ == null
+        ? com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.getDefaultInstance()
+        : encryptionConfig_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -612,22 +620,18 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       parent_ = "";
-
       backupId_ = "";
-
       sourceBackup_ = "";
-
-      if (expireTimeBuilder_ == null) {
-        expireTime_ = null;
-      } else {
-        expireTime_ = null;
+      expireTime_ = null;
+      if (expireTimeBuilder_ != null) {
+        expireTimeBuilder_.dispose();
         expireTimeBuilder_ = null;
       }
-      if (encryptionConfigBuilder_ == null) {
-        encryptionConfig_ = null;
-      } else {
-        encryptionConfig_ = null;
+      encryptionConfig_ = null;
+      if (encryptionConfigBuilder_ != null) {
+        encryptionConfigBuilder_.dispose();
         encryptionConfigBuilder_ = null;
       }
       return this;
@@ -657,21 +661,31 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
     public com.google.spanner.admin.database.v1.CopyBackupRequest buildPartial() {
       com.google.spanner.admin.database.v1.CopyBackupRequest result =
           new com.google.spanner.admin.database.v1.CopyBackupRequest(this);
-      result.parent_ = parent_;
-      result.backupId_ = backupId_;
-      result.sourceBackup_ = sourceBackup_;
-      if (expireTimeBuilder_ == null) {
-        result.expireTime_ = expireTime_;
-      } else {
-        result.expireTime_ = expireTimeBuilder_.build();
-      }
-      if (encryptionConfigBuilder_ == null) {
-        result.encryptionConfig_ = encryptionConfig_;
-      } else {
-        result.encryptionConfig_ = encryptionConfigBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.database.v1.CopyBackupRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.parent_ = parent_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.backupId_ = backupId_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.sourceBackup_ = sourceBackup_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.expireTime_ = expireTimeBuilder_ == null ? expireTime_ : expireTimeBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.encryptionConfig_ =
+            encryptionConfigBuilder_ == null ? encryptionConfig_ : encryptionConfigBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -722,14 +736,17 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
         return this;
       if (!other.getParent().isEmpty()) {
         parent_ = other.parent_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (!other.getBackupId().isEmpty()) {
         backupId_ = other.backupId_;
+        bitField0_ |= 0x00000002;
         onChanged();
       }
       if (!other.getSourceBackup().isEmpty()) {
         sourceBackup_ = other.sourceBackup_;
+        bitField0_ |= 0x00000004;
         onChanged();
       }
       if (other.hasExpireTime()) {
@@ -767,32 +784,32 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
             case 10:
               {
                 parent_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 backupId_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             case 26:
               {
                 sourceBackup_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 26
             case 34:
               {
                 input.readMessage(getExpireTimeFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000008;
                 break;
               } // case 34
             case 42:
               {
                 input.readMessage(
                     getEncryptionConfigFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000010;
                 break;
               } // case 42
             default:
@@ -811,6 +828,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private java.lang.Object parent_ = "";
     /**
@@ -882,8 +901,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
       if (value == null) {
         throw new NullPointerException();
       }
-
       parent_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -902,8 +921,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      * @return This builder for chaining.
      */
     public Builder clearParent() {
-
       parent_ = getDefaultInstance().getParent();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -927,8 +946,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       parent_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1000,8 +1019,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
       if (value == null) {
         throw new NullPointerException();
       }
-
       backupId_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1019,8 +1038,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      * @return This builder for chaining.
      */
     public Builder clearBackupId() {
-
       backupId_ = getDefaultInstance().getBackupId();
+      bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
@@ -1043,8 +1062,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       backupId_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1131,8 +1150,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
       if (value == null) {
         throw new NullPointerException();
       }
-
       sourceBackup_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1155,8 +1174,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      * @return This builder for chaining.
      */
     public Builder clearSourceBackup() {
-
       sourceBackup_ = getDefaultInstance().getSourceBackup();
+      bitField0_ = (bitField0_ & ~0x00000004);
       onChanged();
       return this;
     }
@@ -1184,8 +1203,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       sourceBackup_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1213,7 +1232,7 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      * @return Whether the expireTime field is set.
      */
     public boolean hasExpireTime() {
-      return expireTimeBuilder_ != null || expireTime_ != null;
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      *
@@ -1260,11 +1279,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
           throw new NullPointerException();
         }
         expireTime_ = value;
-        onChanged();
       } else {
         expireTimeBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1284,11 +1303,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
     public Builder setExpireTime(com.google.protobuf.Timestamp.Builder builderForValue) {
       if (expireTimeBuilder_ == null) {
         expireTime_ = builderForValue.build();
-        onChanged();
       } else {
         expireTimeBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1307,17 +1326,18 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      */
     public Builder mergeExpireTime(com.google.protobuf.Timestamp value) {
       if (expireTimeBuilder_ == null) {
-        if (expireTime_ != null) {
-          expireTime_ =
-              com.google.protobuf.Timestamp.newBuilder(expireTime_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000008) != 0)
+            && expireTime_ != null
+            && expireTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getExpireTimeBuilder().mergeFrom(value);
         } else {
           expireTime_ = value;
         }
-        onChanged();
       } else {
         expireTimeBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1335,14 +1355,13 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      * </code>
      */
     public Builder clearExpireTime() {
-      if (expireTimeBuilder_ == null) {
-        expireTime_ = null;
-        onChanged();
-      } else {
-        expireTime_ = null;
+      bitField0_ = (bitField0_ & ~0x00000008);
+      expireTime_ = null;
+      if (expireTimeBuilder_ != null) {
+        expireTimeBuilder_.dispose();
         expireTimeBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1360,7 +1379,7 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      * </code>
      */
     public com.google.protobuf.Timestamp.Builder getExpireTimeBuilder() {
-
+      bitField0_ |= 0x00000008;
       onChanged();
       return getExpireTimeFieldBuilder().getBuilder();
     }
@@ -1442,7 +1461,7 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      * @return Whether the encryptionConfig field is set.
      */
     public boolean hasEncryptionConfig() {
-      return encryptionConfigBuilder_ != null || encryptionConfig_ != null;
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      *
@@ -1492,11 +1511,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
           throw new NullPointerException();
         }
         encryptionConfig_ = value;
-        onChanged();
       } else {
         encryptionConfigBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000010;
+      onChanged();
       return this;
     }
     /**
@@ -1518,11 +1537,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
         com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.Builder builderForValue) {
       if (encryptionConfigBuilder_ == null) {
         encryptionConfig_ = builderForValue.build();
-        onChanged();
       } else {
         encryptionConfigBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000010;
+      onChanged();
       return this;
     }
     /**
@@ -1543,20 +1562,20 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
     public Builder mergeEncryptionConfig(
         com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig value) {
       if (encryptionConfigBuilder_ == null) {
-        if (encryptionConfig_ != null) {
-          encryptionConfig_ =
-              com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.newBuilder(
-                      encryptionConfig_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000010) != 0)
+            && encryptionConfig_ != null
+            && encryptionConfig_
+                != com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                    .getDefaultInstance()) {
+          getEncryptionConfigBuilder().mergeFrom(value);
         } else {
           encryptionConfig_ = value;
         }
-        onChanged();
       } else {
         encryptionConfigBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000010;
+      onChanged();
       return this;
     }
     /**
@@ -1575,14 +1594,13 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      * </code>
      */
     public Builder clearEncryptionConfig() {
-      if (encryptionConfigBuilder_ == null) {
-        encryptionConfig_ = null;
-        onChanged();
-      } else {
-        encryptionConfig_ = null;
+      bitField0_ = (bitField0_ & ~0x00000010);
+      encryptionConfig_ = null;
+      if (encryptionConfigBuilder_ != null) {
+        encryptionConfigBuilder_.dispose();
         encryptionConfigBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1602,7 +1620,7 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      */
     public com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.Builder
         getEncryptionConfigBuilder() {
-
+      bitField0_ |= 0x00000010;
       onChanged();
       return getEncryptionConfigFieldBuilder().getBuilder();
     }

@@ -114,7 +114,9 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
   }
 
   public static final int PARENT_FIELD_NUMBER = 1;
-  private volatile java.lang.Object parent_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object parent_ = "";
   /**
    *
    *
@@ -175,7 +177,9 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
   }
 
   public static final int DATABASE_ID_FIELD_NUMBER = 2;
-  private volatile java.lang.Object databaseId_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object databaseId_ = "";
   /**
    *
    *
@@ -370,7 +374,9 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
   @java.lang.Override
   public com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfigOrBuilder
       getEncryptionConfigOrBuilder() {
-    return getEncryptionConfig();
+    return encryptionConfig_ == null
+        ? com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.getDefaultInstance()
+        : encryptionConfig_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -617,14 +623,12 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       parent_ = "";
-
       databaseId_ = "";
-
-      if (encryptionConfigBuilder_ == null) {
-        encryptionConfig_ = null;
-      } else {
-        encryptionConfig_ = null;
+      encryptionConfig_ = null;
+      if (encryptionConfigBuilder_ != null) {
+        encryptionConfigBuilder_.dispose();
         encryptionConfigBuilder_ = null;
       }
       sourceCase_ = 0;
@@ -656,19 +660,32 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
     public com.google.spanner.admin.database.v1.RestoreDatabaseRequest buildPartial() {
       com.google.spanner.admin.database.v1.RestoreDatabaseRequest result =
           new com.google.spanner.admin.database.v1.RestoreDatabaseRequest(this);
-      result.parent_ = parent_;
-      result.databaseId_ = databaseId_;
-      if (sourceCase_ == 3) {
-        result.source_ = source_;
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      if (encryptionConfigBuilder_ == null) {
-        result.encryptionConfig_ = encryptionConfig_;
-      } else {
-        result.encryptionConfig_ = encryptionConfigBuilder_.build();
-      }
-      result.sourceCase_ = sourceCase_;
+      buildPartialOneofs(result);
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.database.v1.RestoreDatabaseRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.parent_ = parent_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.databaseId_ = databaseId_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.encryptionConfig_ =
+            encryptionConfigBuilder_ == null ? encryptionConfig_ : encryptionConfigBuilder_.build();
+      }
+    }
+
+    private void buildPartialOneofs(
+        com.google.spanner.admin.database.v1.RestoreDatabaseRequest result) {
+      result.sourceCase_ = sourceCase_;
+      result.source_ = this.source_;
     }
 
     @java.lang.Override
@@ -719,10 +736,12 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
         return this;
       if (!other.getParent().isEmpty()) {
         parent_ = other.parent_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (!other.getDatabaseId().isEmpty()) {
         databaseId_ = other.databaseId_;
+        bitField0_ |= 0x00000002;
         onChanged();
       }
       if (other.hasEncryptionConfig()) {
@@ -770,13 +789,13 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
             case 10:
               {
                 parent_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 databaseId_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             case 26:
@@ -790,7 +809,7 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
               {
                 input.readMessage(
                     getEncryptionConfigFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000008;
                 break;
               } // case 34
             default:
@@ -823,6 +842,8 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
       onChanged();
       return this;
     }
+
+    private int bitField0_;
 
     private java.lang.Object parent_ = "";
     /**
@@ -903,8 +924,8 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
       if (value == null) {
         throw new NullPointerException();
       }
-
       parent_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -926,8 +947,8 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      * @return This builder for chaining.
      */
     public Builder clearParent() {
-
       parent_ = getDefaultInstance().getParent();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -954,8 +975,8 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       parent_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1030,8 +1051,8 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
       if (value == null) {
         throw new NullPointerException();
       }
-
       databaseId_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1050,8 +1071,8 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      * @return This builder for chaining.
      */
     public Builder clearDatabaseId() {
-
       databaseId_ = getDefaultInstance().getDatabaseId();
+      bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
@@ -1075,8 +1096,8 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       databaseId_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1246,7 +1267,7 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      * @return Whether the encryptionConfig field is set.
      */
     public boolean hasEncryptionConfig() {
-      return encryptionConfigBuilder_ != null || encryptionConfig_ != null;
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      *
@@ -1300,11 +1321,11 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
           throw new NullPointerException();
         }
         encryptionConfig_ = value;
-        onChanged();
       } else {
         encryptionConfigBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1328,11 +1349,11 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
             builderForValue) {
       if (encryptionConfigBuilder_ == null) {
         encryptionConfig_ = builderForValue.build();
-        onChanged();
       } else {
         encryptionConfigBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1354,20 +1375,20 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
     public Builder mergeEncryptionConfig(
         com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig value) {
       if (encryptionConfigBuilder_ == null) {
-        if (encryptionConfig_ != null) {
-          encryptionConfig_ =
-              com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.newBuilder(
-                      encryptionConfig_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000008) != 0)
+            && encryptionConfig_ != null
+            && encryptionConfig_
+                != com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig
+                    .getDefaultInstance()) {
+          getEncryptionConfigBuilder().mergeFrom(value);
         } else {
           encryptionConfig_ = value;
         }
-        onChanged();
       } else {
         encryptionConfigBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1387,14 +1408,13 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      * </code>
      */
     public Builder clearEncryptionConfig() {
-      if (encryptionConfigBuilder_ == null) {
-        encryptionConfig_ = null;
-        onChanged();
-      } else {
-        encryptionConfig_ = null;
+      bitField0_ = (bitField0_ & ~0x00000008);
+      encryptionConfig_ = null;
+      if (encryptionConfigBuilder_ != null) {
+        encryptionConfigBuilder_.dispose();
         encryptionConfigBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1415,7 +1435,7 @@ public final class RestoreDatabaseRequest extends com.google.protobuf.GeneratedM
      */
     public com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.Builder
         getEncryptionConfigBuilder() {
-
+      bitField0_ |= 0x00000008;
       onChanged();
       return getEncryptionConfigFieldBuilder().getBuilder();
     }

@@ -68,7 +68,9 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
   }
 
   public static final int DATABASE_FIELD_NUMBER = 1;
-  private volatile java.lang.Object database_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object database_ = "";
   /**
    *
    *
@@ -322,8 +324,8 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       database_ = "";
-
       return this;
     }
 
@@ -351,9 +353,18 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
     public com.google.spanner.admin.database.v1.GetDatabaseDdlRequest buildPartial() {
       com.google.spanner.admin.database.v1.GetDatabaseDdlRequest result =
           new com.google.spanner.admin.database.v1.GetDatabaseDdlRequest(this);
-      result.database_ = database_;
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.database.v1.GetDatabaseDdlRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.database_ = database_;
+      }
     }
 
     @java.lang.Override
@@ -404,6 +415,7 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
         return this;
       if (!other.getDatabase().isEmpty()) {
         database_ = other.database_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       this.mergeUnknownFields(other.getUnknownFields());
@@ -435,7 +447,7 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
             case 10:
               {
                 database_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             default:
@@ -454,6 +466,8 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private java.lang.Object database_ = "";
     /**
@@ -528,8 +542,8 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
       if (value == null) {
         throw new NullPointerException();
       }
-
       database_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -549,8 +563,8 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
      * @return This builder for chaining.
      */
     public Builder clearDatabase() {
-
       database_ = getDefaultInstance().getDatabase();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -575,8 +589,8 @@ public final class GetDatabaseDdlRequest extends com.google.protobuf.GeneratedMe
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       database_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
