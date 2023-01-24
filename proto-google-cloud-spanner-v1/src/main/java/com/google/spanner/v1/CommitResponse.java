@@ -137,7 +137,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     }
 
     public static final int MUTATION_COUNT_FIELD_NUMBER = 1;
-    private long mutationCount_;
+    private long mutationCount_ = 0L;
     /**
      *
      *
@@ -359,8 +359,8 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         mutationCount_ = 0L;
-
         return this;
       }
 
@@ -388,9 +388,18 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       public com.google.spanner.v1.CommitResponse.CommitStats buildPartial() {
         com.google.spanner.v1.CommitResponse.CommitStats result =
             new com.google.spanner.v1.CommitResponse.CommitStats(this);
-        result.mutationCount_ = mutationCount_;
+        if (bitField0_ != 0) {
+          buildPartial0(result);
+        }
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(com.google.spanner.v1.CommitResponse.CommitStats result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.mutationCount_ = mutationCount_;
+        }
       }
 
       @java.lang.Override
@@ -473,7 +482,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
               case 8:
                 {
                   mutationCount_ = input.readInt64();
-
+                  bitField0_ |= 0x00000001;
                   break;
                 } // case 8
               default:
@@ -492,6 +501,8 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         } // finally
         return this;
       }
+
+      private int bitField0_;
 
       private long mutationCount_;
       /**
@@ -536,6 +547,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       public Builder setMutationCount(long value) {
 
         mutationCount_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -557,7 +569,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
        * @return This builder for chaining.
        */
       public Builder clearMutationCount() {
-
+        bitField0_ = (bitField0_ & ~0x00000001);
         mutationCount_ = 0L;
         onChanged();
         return this;
@@ -672,7 +684,9 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCommitTimestampOrBuilder() {
-    return getCommitTimestamp();
+    return commitTimestamp_ == null
+        ? com.google.protobuf.Timestamp.getDefaultInstance()
+        : commitTimestamp_;
   }
 
   public static final int COMMIT_STATS_FIELD_NUMBER = 2;
@@ -726,7 +740,9 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.v1.CommitResponse.CommitStatsOrBuilder getCommitStatsOrBuilder() {
-    return getCommitStats();
+    return commitStats_ == null
+        ? com.google.spanner.v1.CommitResponse.CommitStats.getDefaultInstance()
+        : commitStats_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -943,16 +959,15 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      if (commitTimestampBuilder_ == null) {
-        commitTimestamp_ = null;
-      } else {
-        commitTimestamp_ = null;
+      bitField0_ = 0;
+      commitTimestamp_ = null;
+      if (commitTimestampBuilder_ != null) {
+        commitTimestampBuilder_.dispose();
         commitTimestampBuilder_ = null;
       }
-      if (commitStatsBuilder_ == null) {
-        commitStats_ = null;
-      } else {
-        commitStats_ = null;
+      commitStats_ = null;
+      if (commitStatsBuilder_ != null) {
+        commitStatsBuilder_.dispose();
         commitStatsBuilder_ = null;
       }
       return this;
@@ -981,18 +996,23 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.CommitResponse buildPartial() {
       com.google.spanner.v1.CommitResponse result = new com.google.spanner.v1.CommitResponse(this);
-      if (commitTimestampBuilder_ == null) {
-        result.commitTimestamp_ = commitTimestamp_;
-      } else {
-        result.commitTimestamp_ = commitTimestampBuilder_.build();
-      }
-      if (commitStatsBuilder_ == null) {
-        result.commitStats_ = commitStats_;
-      } else {
-        result.commitStats_ = commitStatsBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.CommitResponse result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.commitTimestamp_ =
+            commitTimestampBuilder_ == null ? commitTimestamp_ : commitTimestampBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.commitStats_ =
+            commitStatsBuilder_ == null ? commitStats_ : commitStatsBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -1075,13 +1095,13 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
             case 10:
               {
                 input.readMessage(getCommitTimestampFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 input.readMessage(getCommitStatsFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             default:
@@ -1101,6 +1121,8 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
+    private int bitField0_;
+
     private com.google.protobuf.Timestamp commitTimestamp_;
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.protobuf.Timestamp,
@@ -1119,7 +1141,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the commitTimestamp field is set.
      */
     public boolean hasCommitTimestamp() {
-      return commitTimestampBuilder_ != null || commitTimestamp_ != null;
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      *
@@ -1156,11 +1178,11 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         commitTimestamp_ = value;
-        onChanged();
       } else {
         commitTimestampBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -1175,11 +1197,11 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     public Builder setCommitTimestamp(com.google.protobuf.Timestamp.Builder builderForValue) {
       if (commitTimestampBuilder_ == null) {
         commitTimestamp_ = builderForValue.build();
-        onChanged();
       } else {
         commitTimestampBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -1193,19 +1215,18 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeCommitTimestamp(com.google.protobuf.Timestamp value) {
       if (commitTimestampBuilder_ == null) {
-        if (commitTimestamp_ != null) {
-          commitTimestamp_ =
-              com.google.protobuf.Timestamp.newBuilder(commitTimestamp_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000001) != 0)
+            && commitTimestamp_ != null
+            && commitTimestamp_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getCommitTimestampBuilder().mergeFrom(value);
         } else {
           commitTimestamp_ = value;
         }
-        onChanged();
       } else {
         commitTimestampBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -1218,14 +1239,13 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.protobuf.Timestamp commit_timestamp = 1;</code>
      */
     public Builder clearCommitTimestamp() {
-      if (commitTimestampBuilder_ == null) {
-        commitTimestamp_ = null;
-        onChanged();
-      } else {
-        commitTimestamp_ = null;
+      bitField0_ = (bitField0_ & ~0x00000001);
+      commitTimestamp_ = null;
+      if (commitTimestampBuilder_ != null) {
+        commitTimestampBuilder_.dispose();
         commitTimestampBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1238,7 +1258,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.protobuf.Timestamp commit_timestamp = 1;</code>
      */
     public com.google.protobuf.Timestamp.Builder getCommitTimestampBuilder() {
-
+      bitField0_ |= 0x00000001;
       onChanged();
       return getCommitTimestampFieldBuilder().getBuilder();
     }
@@ -1306,7 +1326,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the commitStats field is set.
      */
     public boolean hasCommitStats() {
-      return commitStatsBuilder_ != null || commitStats_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -1347,11 +1367,11 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         commitStats_ = value;
-        onChanged();
       } else {
         commitStatsBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1369,11 +1389,11 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
         com.google.spanner.v1.CommitResponse.CommitStats.Builder builderForValue) {
       if (commitStatsBuilder_ == null) {
         commitStats_ = builderForValue.build();
-        onChanged();
       } else {
         commitStatsBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1389,19 +1409,19 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeCommitStats(com.google.spanner.v1.CommitResponse.CommitStats value) {
       if (commitStatsBuilder_ == null) {
-        if (commitStats_ != null) {
-          commitStats_ =
-              com.google.spanner.v1.CommitResponse.CommitStats.newBuilder(commitStats_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && commitStats_ != null
+            && commitStats_
+                != com.google.spanner.v1.CommitResponse.CommitStats.getDefaultInstance()) {
+          getCommitStatsBuilder().mergeFrom(value);
         } else {
           commitStats_ = value;
         }
-        onChanged();
       } else {
         commitStatsBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1416,14 +1436,13 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
      */
     public Builder clearCommitStats() {
-      if (commitStatsBuilder_ == null) {
-        commitStats_ = null;
-        onChanged();
-      } else {
-        commitStats_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      commitStats_ = null;
+      if (commitStatsBuilder_ != null) {
+        commitStatsBuilder_.dispose();
         commitStatsBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1438,7 +1457,7 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.CommitResponse.CommitStats commit_stats = 2;</code>
      */
     public com.google.spanner.v1.CommitResponse.CommitStats.Builder getCommitStatsBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getCommitStatsFieldBuilder().getBuilder();
     }

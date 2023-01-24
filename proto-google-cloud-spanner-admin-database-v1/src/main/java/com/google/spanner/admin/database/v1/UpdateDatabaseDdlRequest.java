@@ -84,7 +84,9 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
   }
 
   public static final int DATABASE_FIELD_NUMBER = 1;
-  private volatile java.lang.Object database_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object database_ = "";
   /**
    *
    *
@@ -137,6 +139,8 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
   }
 
   public static final int STATEMENTS_FIELD_NUMBER = 2;
+
+  @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringList statements_;
   /**
    *
@@ -198,7 +202,9 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
   }
 
   public static final int OPERATION_ID_FIELD_NUMBER = 3;
-  private volatile java.lang.Object operationId_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object operationId_ = "";
   /**
    *
    *
@@ -515,12 +521,11 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       database_ = "";
-
       statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000001);
+      bitField0_ = (bitField0_ & ~0x00000002);
       operationId_ = "";
-
       return this;
     }
 
@@ -549,16 +554,32 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     public com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest buildPartial() {
       com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest result =
           new com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest(this);
-      int from_bitField0_ = bitField0_;
-      result.database_ = database_;
-      if (((bitField0_ & 0x00000001) != 0)) {
-        statements_ = statements_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000001);
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      result.statements_ = statements_;
-      result.operationId_ = operationId_;
       onBuilt();
       return result;
+    }
+
+    private void buildPartialRepeatedFields(
+        com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest result) {
+      if (((bitField0_ & 0x00000002) != 0)) {
+        statements_ = statements_.getUnmodifiableView();
+        bitField0_ = (bitField0_ & ~0x00000002);
+      }
+      result.statements_ = statements_;
+    }
+
+    private void buildPartial0(
+        com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.database_ = database_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.operationId_ = operationId_;
+      }
     }
 
     @java.lang.Override
@@ -610,12 +631,13 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
         return this;
       if (!other.getDatabase().isEmpty()) {
         database_ = other.database_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (!other.statements_.isEmpty()) {
         if (statements_.isEmpty()) {
           statements_ = other.statements_;
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000002);
         } else {
           ensureStatementsIsMutable();
           statements_.addAll(other.statements_);
@@ -624,6 +646,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       }
       if (!other.getOperationId().isEmpty()) {
         operationId_ = other.operationId_;
+        bitField0_ |= 0x00000004;
         onChanged();
       }
       this.mergeUnknownFields(other.getUnknownFields());
@@ -655,7 +678,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
             case 10:
               {
                 database_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
@@ -668,7 +691,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
             case 26:
               {
                 operationId_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 26
             default:
@@ -757,8 +780,8 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       if (value == null) {
         throw new NullPointerException();
       }
-
       database_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -776,8 +799,8 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
      * @return This builder for chaining.
      */
     public Builder clearDatabase() {
-
       database_ = getDefaultInstance().getDatabase();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -800,8 +823,8 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       database_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -810,9 +833,9 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
         com.google.protobuf.LazyStringArrayList.EMPTY;
 
     private void ensureStatementsIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
+      if (!((bitField0_ & 0x00000002) != 0)) {
         statements_ = new com.google.protobuf.LazyStringArrayList(statements_);
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000002;
       }
     }
     /**
@@ -947,7 +970,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
      */
     public Builder clearStatements() {
       statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000001);
+      bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
@@ -1083,8 +1106,8 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       if (value == null) {
         throw new NullPointerException();
       }
-
       operationId_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1116,8 +1139,8 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
      * @return This builder for chaining.
      */
     public Builder clearOperationId() {
-
       operationId_ = getDefaultInstance().getOperationId();
+      bitField0_ = (bitField0_ & ~0x00000004);
       onChanged();
       return this;
     }
@@ -1154,8 +1177,8 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       operationId_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
