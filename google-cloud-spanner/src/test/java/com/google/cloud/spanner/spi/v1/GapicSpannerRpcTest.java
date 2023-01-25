@@ -19,6 +19,7 @@ package com.google.cloud.spanner.spi.v1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
@@ -26,6 +27,7 @@ import static org.junit.Assume.assumeTrue;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.rpc.ApiCallContext;
+import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
@@ -209,15 +211,14 @@ public class GapicSpannerRpcTest {
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
     // GoogleAuthLibraryCallCredentials doesn't implement equals, so we can only check for the
     // existence.
-    assertThat(
-            rpc.newCallContext(
-                    optionsMap,
-                    "/some/resource",
-                    GetSessionRequest.getDefaultInstance(),
-                    SpannerGrpc.getGetSessionMethod())
-                .getCallOptions()
-                .getCredentials())
-        .isNotNull();
+    assertNotNull(
+        rpc.newCallContext(
+                optionsMap,
+                "/some/resource",
+                GetSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getGetSessionMethod())
+            .getCallOptions()
+            .getCredentials());
     rpc.shutdown();
   }
 
@@ -230,15 +231,14 @@ public class GapicSpannerRpcTest {
             .setCallCredentialsProvider(() -> null)
             .build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
-    assertThat(
-            rpc.newCallContext(
-                    optionsMap,
-                    "/some/resource",
-                    GetSessionRequest.getDefaultInstance(),
-                    SpannerGrpc.getGetSessionMethod())
-                .getCallOptions()
-                .getCredentials())
-        .isNull();
+    assertNull(
+        rpc.newCallContext(
+                optionsMap,
+                "/some/resource",
+                GetSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getGetSessionMethod())
+            .getCallOptions()
+            .getCredentials());
     rpc.shutdown();
   }
 
@@ -250,15 +250,14 @@ public class GapicSpannerRpcTest {
             .setCredentials(STATIC_CREDENTIALS)
             .build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
-    assertThat(
-            rpc.newCallContext(
-                    optionsMap,
-                    "/some/resource",
-                    GetSessionRequest.getDefaultInstance(),
-                    SpannerGrpc.getGetSessionMethod())
-                .getCallOptions()
-                .getCredentials())
-        .isNull();
+    assertNull(
+        rpc.newCallContext(
+                optionsMap,
+                "/some/resource",
+                GetSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getGetSessionMethod())
+            .getCallOptions()
+            .getCredentials());
     rpc.shutdown();
   }
 
@@ -376,7 +375,7 @@ public class GapicSpannerRpcTest {
   public void testNewCallContextWithNullRequestAndNullMethod() {
     SpannerOptions options = SpannerOptions.newBuilder().setProjectId("some-project").build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
-    assertThat(rpc.newCallContext(optionsMap, "/some/resource", null, null)).isNotNull();
+    assertNotNull(rpc.newCallContext(optionsMap, "/some/resource", null, null));
     rpc.shutdown();
   }
 
@@ -391,17 +390,20 @@ public class GapicSpannerRpcTest {
             ExecuteSqlRequest.getDefaultInstance(),
             SpannerGrpc.getExecuteSqlMethod(),
             true);
-    assertThat(callContext).isNotNull();
+    assertNotNull(callContext);
     assertEquals(
-        callContext.getExtraHeaders().get("x-goog-spanner-route-to-leader"),
-        ImmutableList.of("true"));
-    ;
+        ImmutableList.of("true"),
+        callContext.getExtraHeaders().get("x-goog-spanner-route-to-leader"));
+    assertEquals(
+        ImmutableList.of("projects/some-project"),
+        callContext.getExtraHeaders().get(ApiClientHeaderProvider.getDefaultResourceHeaderKey()));
     rpc.shutdown();
   }
 
   @Test
   public void testNewCallContextWithoutRouteToLeaderHeader() {
-    SpannerOptions options = SpannerOptions.newBuilder().setProjectId("some-project").build();
+    SpannerOptions options =
+        SpannerOptions.newBuilder().enableLeaderAwareRouting().setProjectId("some-project").build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
     GrpcCallContext callContext =
         rpc.newCallContext(
@@ -410,8 +412,8 @@ public class GapicSpannerRpcTest {
             ExecuteSqlRequest.getDefaultInstance(),
             SpannerGrpc.getExecuteSqlMethod(),
             false);
-    assertThat(callContext).isNotNull();
-    assertThat(callContext.getExtraHeaders().get("x-goog-spanner-route-to-leader")).isNull();
+    assertNotNull(callContext);
+    assertNull(callContext.getExtraHeaders().get("x-goog-spanner-route-to-leader"));
     rpc.shutdown();
   }
 
@@ -420,7 +422,7 @@ public class GapicSpannerRpcTest {
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId("some-project")
-            .setLeaderAwareRouting(false)
+            .disableLeaderAwareRouting()
             .build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
     GrpcCallContext callContext =
@@ -430,8 +432,8 @@ public class GapicSpannerRpcTest {
             ExecuteSqlRequest.getDefaultInstance(),
             SpannerGrpc.getExecuteSqlMethod(),
             true);
-    assertThat(callContext).isNotNull();
-    assertThat(callContext.getExtraHeaders().get("x-goog-spanner-route-to-leader")).isNull();
+    assertNotNull(callContext);
+    assertNull(callContext.getExtraHeaders().get("x-goog-spanner-route-to-leader"));
     rpc.shutdown();
   }
 

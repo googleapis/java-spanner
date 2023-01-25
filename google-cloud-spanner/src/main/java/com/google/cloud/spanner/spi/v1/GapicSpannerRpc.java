@@ -1633,7 +1633,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   public ApiFuture<Empty> asyncDeleteSession(String sessionName, @Nullable Map<Option, ?> options) {
     DeleteSessionRequest request = DeleteSessionRequest.newBuilder().setName(sessionName).build();
     GrpcCallContext context =
-        newCallContext(options, sessionName, request, SpannerGrpc.getDeleteSessionMethod(), false);
+        newCallContext(options, sessionName, request, SpannerGrpc.getDeleteSessionMethod());
     return spannerStub.deleteSessionCallable().futureCall(request, context);
   }
 
