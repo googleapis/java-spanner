@@ -77,4 +77,21 @@ public interface GetDatabaseDdlResponseOrBuilder
    * @return The bytes of the statements at the given index.
    */
   com.google.protobuf.ByteString getStatementsBytes(int index);
+
+  /**
+   *
+   *
+   * <pre>
+   * Proto descriptors stored in the database.
+   * Contains a protobuf-serialized
+   * [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
+   * For more details, see protobuffer [self
+   * description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
+   * </pre>
+   *
+   * <code>bytes proto_descriptors = 2;</code>
+   *
+   * @return The protoDescriptors.
+   */
+  com.google.protobuf.ByteString getProtoDescriptors();
 }

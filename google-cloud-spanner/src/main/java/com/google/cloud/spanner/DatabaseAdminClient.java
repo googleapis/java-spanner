@@ -22,10 +22,12 @@ import com.google.cloud.Policy;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.ListOption;
 import com.google.longrunning.Operation;
+import com.google.protobuf.ByteString;
 import com.google.spanner.admin.database.v1.CopyBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.List;
@@ -383,7 +385,7 @@ public interface DatabaseAdminClient {
    * <p>If an operation already exists with the given operation id, the operation will be resumed
    * and the returned future will complete when the original operation finishes. See more
    * information in {@link com.google.cloud.spanner.spi.v1.GapicSpannerRpc#updateDatabaseDdl(String,
-   * Iterable, String)}
+   * Iterable, String, ByteString)}
    *
    * <p>Example to update the database DDL.
    *
@@ -405,6 +407,14 @@ public interface DatabaseAdminClient {
       String databaseId,
       Iterable<String> statements,
       @Nullable String operationId)
+      throws SpannerException;
+
+  OperationFuture<Void, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
+      String instanceId,
+      String databaseId,
+      Iterable<String> statements,
+      @Nullable String operationId,
+      @Nullable byte[] protoDescriptors)
       throws SpannerException;
 
   /**
@@ -433,6 +443,8 @@ public interface DatabaseAdminClient {
    * }</pre>
    */
   List<String> getDatabaseDdl(String instanceId, String databaseId);
+
+  GetDatabaseDdlResponse getDatabaseDdlWithProtoDescriptors(String instanceId, String databaseId);
 
   /**
    * Returns the list of Cloud Spanner database in the given instance.

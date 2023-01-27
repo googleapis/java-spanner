@@ -46,6 +46,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class Type implements Serializable {
+
   private static final Type TYPE_BOOL = new Type(Code.BOOL, null, null);
   private static final Type TYPE_INT64 = new Type(Code.INT64, null, null);
   private static final Type TYPE_FLOAT64 = new Type(Code.FLOAT64, null, null);
@@ -72,7 +73,9 @@ public final class Type implements Serializable {
   private static final int AMBIGUOUS_FIELD = -1;
   private static final long serialVersionUID = -3076152125004114582L;
 
-  /** Returns the descriptor for the {@code BOOL type}. */
+  /**
+   * Returns the descriptor for the {@code BOOL type}.
+   */
   public static Type bool() {
     return TYPE_BOOL;
   }
@@ -93,7 +96,9 @@ public final class Type implements Serializable {
     return TYPE_FLOAT64;
   }
 
-  /** Returns the descriptor for the {@code NUMERIC} type. */
+  /**
+   * Returns the descriptor for the {@code NUMERIC} type.
+   */
   public static Type numeric() {
     return TYPE_NUMERIC;
   }
@@ -107,18 +112,23 @@ public final class Type implements Serializable {
   }
 
   /**
-   * Returns the descriptor for the {@code STRING} type: a variable-length Unicode character string.
+   * Returns the descriptor for the {@code STRING} type: a variable-length Unicode character
+   * string.
    */
   public static Type string() {
     return TYPE_STRING;
   }
 
-  /** Returns the descriptor for the {@code JSON} type. */
+  /**
+   * Returns the descriptor for the {@code JSON} type.
+   */
   public static Type json() {
     return TYPE_JSON;
   }
 
-  /** Returns the descriptor for the {@code JSONB} type. */
+  /**
+   * Returns the descriptor for the {@code JSONB} type.
+   */
   public static Type pgJsonb() {
     return TYPE_PG_JSONB;
   }
@@ -141,7 +151,9 @@ public final class Type implements Serializable {
     return new Type(Code.ENUM, protoTypeFqn);
   }
 
-  /** Returns the descriptor for the {@code BYTES} type: a variable-length byte string. */
+  /**
+   * Returns the descriptor for the {@code BYTES} type: a variable-length byte string.
+   */
   public static Type bytes() {
     return TYPE_BYTES;
   }
@@ -162,7 +174,9 @@ public final class Type implements Serializable {
     return TYPE_DATE;
   }
 
-  /** Returns a descriptor for an array of {@code elementType}. */
+  /**
+   * Returns a descriptor for an array of {@code elementType}.
+   */
   public static Type array(Type elementType) {
     Preconditions.checkNotNull(elementType);
     switch (elementType.getCode()) {
@@ -234,7 +248,9 @@ public final class Type implements Serializable {
     this.protoTypeFqn = protoTypeFqn;
   }
 
-  /** Enumerates the categories of types. */
+  /**
+   * Enumerates the categories of types.
+   */
   public enum Code {
     BOOL(TypeCode.BOOL),
     INT64(TypeCode.INT64),
@@ -299,8 +315,11 @@ public final class Type implements Serializable {
     }
   }
 
-  /** Describes an individual field in a {@code STRUCT type}. */
+  /**
+   * Describes an individual field in a {@code STRUCT type}.
+   */
   public static final class StructField implements Serializable {
+
     private static final long serialVersionUID = 8640511292704408210L;
 
     private final String name;
@@ -341,7 +360,9 @@ public final class Type implements Serializable {
     }
   }
 
-  /** Returns the type code corresponding to this type. */
+  /**
+   * Returns the type code corresponding to this type.
+   */
   public Code getCode() {
     return code;
   }
@@ -382,7 +403,7 @@ public final class Type implements Serializable {
    * Returns the index of the field named {@code fieldName} in this {@code STRUCT} type.
    *
    * @throws IllegalArgumentException if there is not exactly one element of {@link
-   *     #getStructFields()} with {@link StructField#getName()} equal to {@code fieldName}
+   * #getStructFields()} with {@link StructField#getName()} equal to {@code fieldName}
    * @throws IllegalStateException if {@code code() != Code.STRUCT}
    */
   public int getFieldIndex(String fieldName) {

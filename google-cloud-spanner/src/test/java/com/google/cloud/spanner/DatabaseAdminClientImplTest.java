@@ -51,6 +51,7 @@ import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseDialect;
 import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
+import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ import org.mockito.Mock;
 
 @RunWith(JUnit4.class)
 public class DatabaseAdminClientImplTest {
+
   private static final String PROJECT_ID = "my-project";
   private static final String INSTANCE_ID = "my-instance";
   private static final String INSTANCE_NAME = "projects/my-project/instances/my-instance";
@@ -87,7 +89,8 @@ public class DatabaseAdminClientImplTest {
   private static final String KMS_KEY_VERSION = "1";
   private static final DatabaseDialect DIALECT = GOOGLE_STANDARD_SQL;
 
-  @Mock SpannerRpc rpc;
+  @Mock
+  SpannerRpc rpc;
   DatabaseAdminClientImpl client;
 
   @Before
@@ -176,14 +179,14 @@ public class DatabaseAdminClientImplTest {
         OperationFutureUtil.immediateOperationFuture(
             "createDatabase", getDatabaseProto(), CreateDatabaseMetadata.getDefaultInstance());
     when(rpc.createDatabase(
-            INSTANCE_NAME,
-            "CREATE DATABASE `" + DB_ID + "`",
-            Collections.emptyList(),
-            client
-                .newDatabaseBuilder(DatabaseId.of(DB_NAME))
-                .setState(State.UNSPECIFIED)
-                .setDialect(Dialect.GOOGLE_STANDARD_SQL)
-                .build()))
+        INSTANCE_NAME,
+        "CREATE DATABASE `" + DB_ID + "`",
+        Collections.emptyList(),
+        client
+            .newDatabaseBuilder(DatabaseId.of(DB_NAME))
+            .setState(State.UNSPECIFIED)
+            .setDialect(Dialect.GOOGLE_STANDARD_SQL)
+            .build()))
         .thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Database, CreateDatabaseMetadata> op =
         client.createDatabase(INSTANCE_ID, DB_ID, Collections.emptyList());
@@ -206,7 +209,7 @@ public class DatabaseAdminClientImplTest {
             getEncryptedDatabaseProto(),
             CreateDatabaseMetadata.getDefaultInstance());
     when(rpc.createDatabase(
-            INSTANCE_NAME, "CREATE DATABASE `" + DB_ID + "`", Collections.emptyList(), database))
+        INSTANCE_NAME, "CREATE DATABASE `" + DB_ID + "`", Collections.emptyList(), database))
         .thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Database, CreateDatabaseMetadata> op =
         client.createDatabase(database, Collections.emptyList());
@@ -222,7 +225,7 @@ public class DatabaseAdminClientImplTest {
     OperationFuture<Empty, UpdateDatabaseDdlMetadata> rawOperationFuture =
         OperationFutureUtil.immediateOperationFuture(
             opName, Empty.getDefaultInstance(), UpdateDatabaseDdlMetadata.getDefaultInstance());
-    when(rpc.updateDatabaseDdl(DB_NAME, ddl, opId)).thenReturn(rawOperationFuture);
+    when(rpc.updateDatabaseDdl(DB_NAME, ddl, opId, null)).thenReturn(rawOperationFuture);
     OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
         client.updateDatabaseDdl(INSTANCE_ID, DB_ID, ddl, opId);
     assertThat(op.isDone()).isTrue();
@@ -240,7 +243,7 @@ public class DatabaseAdminClientImplTest {
             UpdateDatabaseDdlMetadata.getDefaultInstance());
 
     String newOpId = "newop";
-    when(rpc.updateDatabaseDdl(DB_NAME, ddl, newOpId)).thenReturn(originalOp);
+    when(rpc.updateDatabaseDdl(DB_NAME, ddl, newOpId, null)).thenReturn(originalOp);
     OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
         client.updateDatabaseDdl(INSTANCE_ID, DB_ID, ddl, newOpId);
     assertThat(op.getName()).isEqualTo(originalOpName);
@@ -255,7 +258,8 @@ public class DatabaseAdminClientImplTest {
   @Test
   public void getDatabaseDdl() {
     List<String> ddl = ImmutableList.of("CREATE TABLE mytable()");
-    when(rpc.getDatabaseDdl(DB_NAME)).thenReturn(ddl);
+    when(rpc.getDatabaseDdl(DB_NAME)).thenReturn(
+        GetDatabaseDdlResponse.newBuilder().addAllStatements(ddl).build());
     assertThat(client.getDatabaseDdl(INSTANCE_ID, DB_ID)).isEqualTo(ddl);
   }
 
@@ -648,8 +652,8 @@ public class DatabaseAdminClientImplTest {
             "restoreDatabase", getDatabaseProto(), RestoreDatabaseMetadata.getDefaultInstance());
     final Restore restore =
         new Restore.Builder(
-                BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID),
-                DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID),
+            DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
             .build();
     when(rpc.restoreDatabase(restore)).thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Database, RestoreDatabaseMetadata> op =
@@ -667,8 +671,8 @@ public class DatabaseAdminClientImplTest {
             RestoreDatabaseMetadata.getDefaultInstance());
     final Restore restore =
         new Restore.Builder(
-                BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID),
-                DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
+            BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID),
+            DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
             .build();
     when(rpc.restoreDatabase(restore)).thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Database, RestoreDatabaseMetadata> op =

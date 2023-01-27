@@ -525,6 +525,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .addAllExtraStatements(new ArrayList<String>())
    *           .setEncryptionConfig(EncryptionConfig.newBuilder().build())
    *           .setDatabaseDialect(DatabaseDialect.forNumber(0))
+   *           .setProtoDescriptors(ByteString.EMPTY)
    *           .build();
    *   Database response = databaseAdminClient.createDatabaseAsync(request).get();
    * }
@@ -564,6 +565,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .addAllExtraStatements(new ArrayList<String>())
    *           .setEncryptionConfig(EncryptionConfig.newBuilder().build())
    *           .setDatabaseDialect(DatabaseDialect.forNumber(0))
+   *           .setProtoDescriptors(ByteString.EMPTY)
    *           .build();
    *   OperationFuture<Database, CreateDatabaseMetadata> future =
    *       databaseAdminClient.createDatabaseOperationCallable().futureCall(request);
@@ -603,6 +605,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .addAllExtraStatements(new ArrayList<String>())
    *           .setEncryptionConfig(EncryptionConfig.newBuilder().build())
    *           .setDatabaseDialect(DatabaseDialect.forNumber(0))
+   *           .setProtoDescriptors(ByteString.EMPTY)
    *           .build();
    *   ApiFuture<Operation> future =
    *       databaseAdminClient.createDatabaseCallable().futureCall(request);
@@ -827,6 +830,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
    *           .addAllStatements(new ArrayList<String>())
    *           .setOperationId("operationId129704162")
+   *           .setProtoDescriptors(ByteString.EMPTY)
    *           .build();
    *   databaseAdminClient.updateDatabaseDdlAsync(request).get();
    * }
@@ -864,6 +868,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
    *           .addAllStatements(new ArrayList<String>())
    *           .setOperationId("operationId129704162")
+   *           .setProtoDescriptors(ByteString.EMPTY)
    *           .build();
    *   OperationFuture<Empty, UpdateDatabaseDdlMetadata> future =
    *       databaseAdminClient.updateDatabaseDdlOperationCallable().futureCall(request);
@@ -901,6 +906,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .setDatabase(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
    *           .addAllStatements(new ArrayList<String>())
    *           .setOperationId("operationId129704162")
+   *           .setProtoDescriptors(ByteString.EMPTY)
    *           .build();
    *   ApiFuture<Operation> future =
    *       databaseAdminClient.updateDatabaseDdlCallable().futureCall(request);

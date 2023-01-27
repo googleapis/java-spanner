@@ -98,6 +98,7 @@ import com.google.longrunning.CancelOperationRequest;
 import com.google.longrunning.GetOperationRequest;
 import com.google.longrunning.Operation;
 import com.google.longrunning.OperationsGrpc;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -117,6 +118,7 @@ import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
 import com.google.spanner.admin.database.v1.GetBackupRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
@@ -1190,8 +1192,12 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (databaseInfo.getDialect() != null) {
       requestBuilder.setDatabaseDialect(databaseInfo.getDialect().toProto());
     }
+    if (databaseInfo.getProtoDescriptors() != null){
+      requestBuilder.setProtoDescriptors(databaseInfo.getProtoDescriptors());
+    }
     final CreateDatabaseRequest request = requestBuilder.build();
-
+    String req_string = request.toString();
+    System.out.println(req_string);
     OperationFutureCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata> callable =
         new OperationFutureCallable<>(
             databaseAdminStub.createDatabaseOperationCallable(),
@@ -1248,7 +1254,8 @@ public class GapicSpannerRpc implements SpannerRpc {
   public OperationFuture<Empty, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
       final String databaseName,
       final Iterable<String> updateDatabaseStatements,
-      @Nullable final String updateId)
+      @Nullable final String updateId,
+      @Nullable ByteString protoDescriptors)
       throws SpannerException {
     acquireAdministrativeRequestsRateLimiter();
     final UpdateDatabaseDdlRequest request =
@@ -1256,6 +1263,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             .setDatabase(databaseName)
             .addAllStatements(updateDatabaseStatements)
             .setOperationId(MoreObjects.firstNonNull(updateId, ""))
+            .setProtoDescriptors(protoDescriptors)
             .build();
     final GrpcCallContext context =
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
@@ -1316,7 +1324,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public List<String> getDatabaseDdl(String databaseName) throws SpannerException {
+  public GetDatabaseDdlResponse getDatabaseDdl(String databaseName) throws SpannerException {
     acquireAdministrativeRequestsRateLimiter();
     final GetDatabaseDdlRequest request =
         GetDatabaseDdlRequest.newBuilder().setDatabase(databaseName).build();
@@ -1325,8 +1333,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getGetDatabaseDdlMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
         () ->
-            get(databaseAdminStub.getDatabaseDdlCallable().futureCall(request, context))
-                .getStatementsList());
+            get(databaseAdminStub.getDatabaseDdlCallable().futureCall(request, context)));
   }
 
   @Override

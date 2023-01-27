@@ -32,6 +32,7 @@ import com.google.iam.v1.GetPolicyOptions;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.database.v1.Backup;
@@ -40,6 +41,7 @@ import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseRole;
+import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
@@ -225,14 +227,15 @@ public interface SpannerRpc extends ServiceRpc {
       throws SpannerException;
 
   OperationFuture<Empty, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
-      String databaseName, Iterable<String> updateDatabaseStatements, @Nullable String updateId)
+      String databaseName, Iterable<String> updateDatabaseStatements, @Nullable String updateId, @Nullable
+      ByteString protoDescriptors)
       throws SpannerException;
 
   void dropDatabase(String databaseName) throws SpannerException;
 
   Database getDatabase(String databaseName) throws SpannerException;
 
-  List<String> getDatabaseDdl(String databaseName) throws SpannerException;
+  GetDatabaseDdlResponse getDatabaseDdl(String databaseName) throws SpannerException;
   /** Lists the backups in the specified instance. */
   Paginated<Backup> listBackups(
       String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken)

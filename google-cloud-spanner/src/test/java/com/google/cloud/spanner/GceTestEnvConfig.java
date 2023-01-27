@@ -100,6 +100,7 @@ public class GceTestEnvConfig implements TestEnvConfig {
           .setInterceptorProvider(interceptorProvider);
       builder.setChannelProvider(customChannelProviderBuilder.build());
     }
+    builder.setHost("https://staging-wrenchworks.sandbox.googleapis.com");
     options = builder.build();
   }
 

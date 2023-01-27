@@ -31,6 +31,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.iam.v1.GetPolicyOptions;
 import com.google.longrunning.Operation;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.database.v1.*;
@@ -416,16 +417,24 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   }
 
   @Override
+  public OperationFuture<Void, UpdateDatabaseDdlMetadata> updateDatabaseDdl(String instanceId,
+      String databaseId, Iterable<String> statements, @Nullable String operationId)
+      throws SpannerException {
+    return updateDatabaseDdl(instanceId, databaseId, statements, operationId, null);
+  }
+
+  @Override
   public OperationFuture<Void, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
       final String instanceId,
       final String databaseId,
       final Iterable<String> statements,
-      @Nullable String operationId)
+      @Nullable String operationId,
+      @Nullable byte[] protoDescriptors)
       throws SpannerException {
     final String dbName = getDatabaseName(instanceId, databaseId);
     final String opId = operationId != null ? operationId : randomOperationId();
     OperationFuture<Empty, UpdateDatabaseDdlMetadata> rawOperationFuture =
-        rpc.updateDatabaseDdl(dbName, statements, opId);
+        rpc.updateDatabaseDdl(dbName, statements, opId, ByteString.copyFrom(protoDescriptors));
     return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
@@ -447,6 +456,11 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
 
   @Override
   public List<String> getDatabaseDdl(String instanceId, String databaseId) {
+    return getDatabaseDdlWithProtoDescriptors(instanceId, databaseId).getStatementsList();
+  }
+
+  @Override
+  public GetDatabaseDdlResponse getDatabaseDdlWithProtoDescriptors(String instanceId, String databaseId) {
     String dbName = getDatabaseName(instanceId, databaseId);
     return rpc.getDatabaseDdl(dbName);
   }
