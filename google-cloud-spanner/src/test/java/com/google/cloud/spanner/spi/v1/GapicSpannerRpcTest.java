@@ -19,9 +19,11 @@ package com.google.cloud.spanner.spi.v1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import com.google.api.gax.core.GaxProperties;
@@ -45,6 +47,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc.AdminRequestsLimitExceededRetryAlgorithm;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.common.collect.ImmutableList;
@@ -140,6 +143,7 @@ public class GapicSpannerRpcTest {
   private static Metadata lastSeenHeaders;
   private static String defaultUserAgent;
   private static Spanner spanner;
+  private static boolean isRouteToLeader;
 
   @Parameter public Dialect dialect;
 
@@ -177,6 +181,17 @@ public class GapicSpannerRpcTest {
                     String auth =
                         headers.get(Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER));
                     assertThat(auth).isEqualTo("Bearer " + VARIABLE_OAUTH_TOKEN);
+                    if (call.getMethodDescriptor()
+                            .equals(SpannerGrpc.getExecuteStreamingSqlMethod())
+                        || call.getMethodDescriptor().equals(SpannerGrpc.getExecuteSqlMethod())) {
+                      String routeToLeaderHeader =
+                          headers.get(
+                              Key.of(
+                                  "x-goog-spanner-route-to-leader",
+                                  Metadata.ASCII_STRING_MARSHALLER));
+                      isRouteToLeader =
+                          (routeToLeaderHeader != null && routeToLeaderHeader.equals("true"));
+                    }
                     return Contexts.interceptCall(Context.current(), call, headers, next);
                   }
                 })
@@ -198,6 +213,7 @@ public class GapicSpannerRpcTest {
       server.shutdown();
       server.awaitTermination();
     }
+    isRouteToLeader = false;
   }
 
   @Test
@@ -506,6 +522,54 @@ public class GapicSpannerRpcTest {
             .contains("test-agent " + defaultUserAgent);
       }
     }
+  }
+
+  @Test
+  public void testRouteToLeaderHeaderForReadOnly() {
+    final SpannerOptions options = createSpannerOptions();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+      try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+        rs.next();
+      }
+
+      assertFalse(isRouteToLeader);
+    }
+  }
+
+  @Test
+  public void testRouteToLeaderHeaderForReadWrite() {
+    final SpannerOptions options = createSpannerOptions();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      TransactionRunner runner = databaseClient.readWriteTransaction();
+      runner.run(
+          transaction -> {
+            transaction.executeUpdate(UPDATE_FOO_STATEMENT);
+            return null;
+          });
+    }
+    assertTrue(isRouteToLeader);
+  }
+
+  @Test
+  public void testRouteToLeaderHeaderWithLeaderAwareRoutingDisabled() {
+    final SpannerOptions options =
+        createSpannerOptions().toBuilder().disableLeaderAwareRouting().build();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      TransactionRunner runner = databaseClient.readWriteTransaction();
+      runner.run(
+          transaction -> {
+            transaction.executeUpdate(UPDATE_FOO_STATEMENT);
+            return null;
+          });
+    }
+    assertFalse(isRouteToLeader);
   }
 
   private SpannerOptions createSpannerOptions() {
