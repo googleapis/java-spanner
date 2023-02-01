@@ -32,7 +32,6 @@ import com.google.iam.v1.GetPolicyOptions;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.database.v1.Backup;
@@ -70,6 +69,7 @@ import org.threeten.bp.Duration;
  */
 @InternalApi
 public interface SpannerRpc extends ServiceRpc {
+
   /** Options passed in {@link SpannerRpc} methods to control how an RPC is issued. */
   enum Option {
     CHANNEL_HINT("Channel Hint");
@@ -105,6 +105,7 @@ public interface SpannerRpc extends ServiceRpc {
    * @param <T> the type of result
    */
   final class Paginated<T> {
+
     private final Iterable<T> results;
     private final String nextPageToken;
 
@@ -141,6 +142,7 @@ public interface SpannerRpc extends ServiceRpc {
 
   /** Consumer for the results produced by a streaming read or query call. */
   interface ResultStreamConsumer {
+
     void onPartialResultSet(PartialResultSet results);
 
     void onCompleted();
@@ -227,8 +229,9 @@ public interface SpannerRpc extends ServiceRpc {
       throws SpannerException;
 
   OperationFuture<Empty, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
-      String databaseName, Iterable<String> updateDatabaseStatements, @Nullable String updateId, @Nullable
-      ByteString protoDescriptors)
+      com.google.cloud.spanner.Database database,
+      Iterable<String> updateDatabaseStatements,
+      @Nullable String updateId)
       throws SpannerException;
 
   void dropDatabase(String databaseName) throws SpannerException;
@@ -236,6 +239,7 @@ public interface SpannerRpc extends ServiceRpc {
   Database getDatabase(String databaseName) throws SpannerException;
 
   GetDatabaseDdlResponse getDatabaseDdl(String databaseName) throws SpannerException;
+
   /** Lists the backups in the specified instance. */
   Paginated<Backup> listBackups(
       String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken)

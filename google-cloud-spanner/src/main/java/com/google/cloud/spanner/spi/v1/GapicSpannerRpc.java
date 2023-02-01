@@ -98,7 +98,6 @@ import com.google.longrunning.CancelOperationRequest;
 import com.google.longrunning.GetOperationRequest;
 import com.google.longrunning.Operation;
 import com.google.longrunning.OperationsGrpc;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -1192,7 +1191,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (databaseInfo.getDialect() != null) {
       requestBuilder.setDatabaseDialect(databaseInfo.getDialect().toProto());
     }
-    if (databaseInfo.getProtoDescriptors() != null){
+    if (databaseInfo.getProtoDescriptors() != null) {
       requestBuilder.setProtoDescriptors(databaseInfo.getProtoDescriptors());
     }
     final CreateDatabaseRequest request = requestBuilder.build();
@@ -1252,21 +1251,26 @@ public class GapicSpannerRpc implements SpannerRpc {
    */
   @Override
   public OperationFuture<Empty, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
-      final String databaseName,
+      com.google.cloud.spanner.Database databaseInfo,
       final Iterable<String> updateDatabaseStatements,
-      @Nullable final String updateId,
-      @Nullable ByteString protoDescriptors)
+      @Nullable final String updateId)
       throws SpannerException {
     acquireAdministrativeRequestsRateLimiter();
-    final UpdateDatabaseDdlRequest request =
+    UpdateDatabaseDdlRequest.Builder requestBuilder =
         UpdateDatabaseDdlRequest.newBuilder()
-            .setDatabase(databaseName)
+            .setDatabase(databaseInfo.getId().getName())
             .addAllStatements(updateDatabaseStatements)
-            .setOperationId(MoreObjects.firstNonNull(updateId, ""))
-            .setProtoDescriptors(protoDescriptors)
-            .build();
+            .setOperationId(MoreObjects.firstNonNull(updateId, ""));
+    if (databaseInfo.getProtoDescriptors() != null) {
+      requestBuilder.setProtoDescriptors(databaseInfo.getProtoDescriptors());
+    }
+    final UpdateDatabaseDdlRequest request = requestBuilder.build();
     final GrpcCallContext context =
-        newCallContext(null, databaseName, request, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
+        newCallContext(
+            null,
+            databaseInfo.getId().getName(),
+            request,
+            DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
     final OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata> callable =
         databaseAdminStub.updateDatabaseDdlOperationCallable();
 
@@ -1288,7 +1292,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             if (t instanceof AlreadyExistsException) {
               String operationName =
                   OPERATION_NAME_TEMPLATE.instantiate(
-                      "database", databaseName, "operation", updateId);
+                      "database", databaseInfo.getId().getName(), "operation", updateId);
               return callable.resumeFutureCall(operationName, context);
             }
           }
@@ -1332,8 +1336,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getGetDatabaseDdlMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        () ->
-            get(databaseAdminStub.getDatabaseDdlCallable().futureCall(request, context)));
+        () -> get(databaseAdminStub.getDatabaseDdlCallable().futureCall(request, context)));
   }
 
   @Override

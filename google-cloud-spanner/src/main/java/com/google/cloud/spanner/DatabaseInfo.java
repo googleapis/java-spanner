@@ -21,7 +21,6 @@ import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 import com.google.protobuf.ByteString;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -161,15 +160,17 @@ public class DatabaseInfo {
     }
 
     @Override
-    public Builder setProtoDescriptors(InputStream inputStream) throws Exception{
+    public Builder setProtoDescriptors(InputStream inputStream) throws Exception {
       byte[] byteArray = ByteStreams.toByteArray(inputStream);
       this.protoDescriptors = byteArray != null ? ByteString.copyFrom(byteArray) : ByteString.EMPTY;
       return this;
     }
 
     @Override
-    public Builder setProtoDescriptors(String filePath) throws Exception{
-      InputStream inputStream = new FileInputStream(filePath);
+    // TODO(harsha): This overload method needs to be completed
+    public Builder setProtoDescriptors(String filePath) throws Exception {
+      InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath);
+      // InputStream inputStream = new FileInputStream(filePath);
       return setProtoDescriptors(inputStream);
     }
 
@@ -297,7 +298,7 @@ public class DatabaseInfo {
     return dialect;
   }
 
-  public ByteString getProtoDescriptors(){
+  public ByteString getProtoDescriptors() {
     return protoDescriptors;
   }
 

@@ -31,7 +31,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.iam.v1.GetPolicyOptions;
 import com.google.longrunning.Operation;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.database.v1.*;
@@ -41,7 +40,9 @@ import javax.annotation.Nullable;
 
 /** Default implementation of {@link DatabaseAdminClient}. */
 class DatabaseAdminClientImpl implements DatabaseAdminClient {
+
   private static final class PolicyMarshaller extends DefaultMarshaller {
+
     @Override
     protected Policy fromPb(com.google.iam.v1.Policy policyPb) {
       return super.fromPb(policyPb);
@@ -417,24 +418,26 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   }
 
   @Override
-  public OperationFuture<Void, UpdateDatabaseDdlMetadata> updateDatabaseDdl(String instanceId,
-      String databaseId, Iterable<String> statements, @Nullable String operationId)
+  public OperationFuture<Void, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
+      String instanceId,
+      String databaseId,
+      Iterable<String> statements,
+      @Nullable String operationId)
       throws SpannerException {
-    return updateDatabaseDdl(instanceId, databaseId, statements, operationId, null);
+
+    return updateDatabaseDdl(
+        newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId)).build(),
+        statements,
+        operationId);
   }
 
   @Override
   public OperationFuture<Void, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
-      final String instanceId,
-      final String databaseId,
-      final Iterable<String> statements,
-      @Nullable String operationId,
-      @Nullable byte[] protoDescriptors)
+      Database database, final Iterable<String> statements, @Nullable String operationId)
       throws SpannerException {
-    final String dbName = getDatabaseName(instanceId, databaseId);
     final String opId = operationId != null ? operationId : randomOperationId();
     OperationFuture<Empty, UpdateDatabaseDdlMetadata> rawOperationFuture =
-        rpc.updateDatabaseDdl(dbName, statements, opId, ByteString.copyFrom(protoDescriptors));
+        rpc.updateDatabaseDdl(database, statements, opId);
     return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
@@ -456,11 +459,12 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
 
   @Override
   public List<String> getDatabaseDdl(String instanceId, String databaseId) {
-    return getDatabaseDdlWithProtoDescriptors(instanceId, databaseId).getStatementsList();
+    return getDatabaseDdlResponse(instanceId, databaseId).getStatementsList();
   }
 
   @Override
-  public GetDatabaseDdlResponse getDatabaseDdlWithProtoDescriptors(String instanceId, String databaseId) {
+  public GetDatabaseDdlResponse getDatabaseDdlResponse(
+      String instanceId, String databaseId) {
     String dbName = getDatabaseName(instanceId, databaseId);
     return rpc.getDatabaseDdl(dbName);
   }

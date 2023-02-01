@@ -25,7 +25,6 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
 import com.google.common.base.Preconditions;
 import com.google.longrunning.Operation;
-import com.google.protobuf.ByteString;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 
@@ -90,8 +89,8 @@ public class Database extends DatabaseInfo {
   }
 
   public OperationFuture<Void, UpdateDatabaseDdlMetadata> updateDdl(
-      Iterable<String> statements, String operationId, byte[] protoDescriptors) throws SpannerException {
-    return dbClient.updateDatabaseDdl(instance(), database(), statements, operationId, protoDescriptors);
+      Database database, Iterable<String> statements, String operationId) throws SpannerException {
+    return dbClient.updateDatabaseDdl(database, statements, operationId);
   }
 
   /** Drops this database. */

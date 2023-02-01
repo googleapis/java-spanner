@@ -34,28 +34,20 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SingerProto.Genre;
 import com.google.cloud.spanner.SingerProto.SingerInfo;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.ByteStreams;
 import com.google.protobuf.AbstractMessage;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException.InvalidWireTypeException;
 import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.admin.database.v1.Backup;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -65,15 +57,12 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Integrations Tests to test DDL, DML and DQL for Proto Columns & Enums
- */
+/** Integrations Tests to test DDL, DML and DQL for Proto Columns & Enums */
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITProtoColumnTest {
 
-  @ClassRule
-  public static IntegrationTestEnv env = new IntegrationTestEnv();
+  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   // TODO: Replace PROJECT_ID with testHelper.getInstanceId().getProject();
   private static final String PROJECT_ID = "span-cloud-testing";
   private static String instanceId;
@@ -119,8 +108,10 @@ public class ITProtoColumnTest {
       dbAdminClient.dropDatabase(instanceId, databaseId);
     } catch (Exception e) {
       System.err.println(
-          "Failed to drop database " + dbAdminClient.getDatabase(instanceId, databaseId).getId()
-              + ", skipping...: " + e.getMessage());
+          "Failed to drop database "
+              + dbAdminClient.getDatabase(instanceId, databaseId).getId()
+              + ", skipping...: "
+              + e.getMessage());
     }
   }
 
@@ -135,39 +126,43 @@ public class ITProtoColumnTest {
     databaseId = testHelper.getUniqueDatabaseId();
     instanceId = testHelper.getInstanceId().getInstance();
     // PROJECT_ID = testHelper.getInstanceId().getProject();
-    databaseClient = testHelper.getClient()
-        .getDatabaseClient(DatabaseId.of(PROJECT_ID, instanceId, databaseId));
+    databaseClient =
+        testHelper.getClient().getDatabaseClient(DatabaseId.of(PROJECT_ID, instanceId, databaseId));
 
-    final Database databaseToCreate = dbAdminClient
-        .newDatabaseBuilder(DatabaseId.of(PROJECT_ID, instanceId, databaseId))
-        .setProtoDescriptors(
-            "/usr/local/google/home/sriharshach/github/Go/golang-samples-proto-support-v2/spanner/spanner_snippets/spanner/testdata/protos/descriptors.pb")
-        .build();
-    final Database createdDatabase = dbAdminClient
-        .createDatabase(databaseToCreate, Arrays.asList(
-            "CREATE PROTO BUNDLE ("
-                + "spanner.examples.music.SingerInfo,"
-                + "spanner.examples.music.Genre,"
-                + ")",
-            "CREATE TABLE Singers ("
-                + "  SingerId   INT64 NOT NULL,"
-                + "  FirstName  STRING(1024),"
-                + "  LastName   STRING(1024),"
-                + "  SingerInfo spanner.examples.music.SingerInfo,"
-                + "  SingerGenre spanner.examples.music.Genre,"
-                + "  ) PRIMARY KEY (SingerGenre)",
-            "CREATE TABLE Types ("
-                + "  RowID INT64 NOT NULL,"
-                + "  Int64a INT64,"
-                + "  Bytes BYTES(MAX),"
-                + "  Int64Array ARRAY<INT64>,"
-                + "  BytesArray ARRAY<BYTES(MAX)>,"
-                + "  ProtoMessage    spanner.examples.music.SingerInfo,"
-                + "  ProtoEnum   spanner.examples.music.Genre,"
-                + "  ProtoMessageArray   ARRAY<spanner.examples.music.SingerInfo>,"
-                + "  ProtoEnumArray  ARRAY<spanner.examples.music.Genre>,"
-                + "  ) PRIMARY KEY (RowID)"))
-        .get(5, TimeUnit.MINUTES);
+    // "/usr/local/google/home/sriharshach/github/Go/golang-samples-proto-support-v2/spanner/spanner_snippets/spanner/testdata/protos/descriptors.pb"
+    final Database databaseToCreate =
+        dbAdminClient
+            .newDatabaseBuilder(DatabaseId.of(PROJECT_ID, instanceId, databaseId))
+            .setProtoDescriptors("com/google/cloud/spanner/descriptors.pb")
+            .build();
+    final Database createdDatabase =
+        dbAdminClient
+            .createDatabase(
+                databaseToCreate,
+                Arrays.asList(
+                    "CREATE PROTO BUNDLE ("
+                        + "spanner.examples.music.SingerInfo,"
+                        + "spanner.examples.music.Genre,"
+                        + ")",
+                    "CREATE TABLE Singers ("
+                        + "  SingerId   INT64 NOT NULL,"
+                        + "  FirstName  STRING(1024),"
+                        + "  LastName   STRING(1024),"
+                        + "  SingerInfo spanner.examples.music.SingerInfo,"
+                        + "  SingerGenre spanner.examples.music.Genre,"
+                        + "  ) PRIMARY KEY (SingerGenre)",
+                    "CREATE TABLE Types ("
+                        + "  RowID INT64 NOT NULL,"
+                        + "  Int64a INT64,"
+                        + "  Bytes BYTES(MAX),"
+                        + "  Int64Array ARRAY<INT64>,"
+                        + "  BytesArray ARRAY<BYTES(MAX)>,"
+                        + "  ProtoMessage    spanner.examples.music.SingerInfo,"
+                        + "  ProtoEnum   spanner.examples.music.Genre,"
+                        + "  ProtoMessageArray   ARRAY<spanner.examples.music.SingerInfo>,"
+                        + "  ProtoEnumArray  ARRAY<spanner.examples.music.Genre>,"
+                        + "  ) PRIMARY KEY (RowID)"))
+            .get(5, TimeUnit.MINUTES);
 
     assertEquals(databaseId, createdDatabase.getId().getDatabase());
     assertNotNull(createdDatabase.getProtoDescriptors());
