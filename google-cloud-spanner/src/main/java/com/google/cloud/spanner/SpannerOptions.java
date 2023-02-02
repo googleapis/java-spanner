@@ -1168,8 +1168,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
-     * Enable leader aware routing. Leader aware routing would route all requests in RW/PDML
-     * transactions to the leader region.
+     * Disable leader aware routing. Disabling leader aware routing would route all requests in
+     * RW/PDML transactions to any region.
      */
     public Builder disableLeaderAwareRouting() {
       this.leaderAwareRoutingEnabled = false;
