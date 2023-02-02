@@ -207,21 +207,29 @@ public final class Type implements Serializable {
   private Map<String, Integer> fieldsByName;
 
   private Type(
-      Code code,
+      @Nonnull Code code,
       @Nullable Type arrayElementType,
       @Nullable ImmutableList<StructField> structFields) {
-    this.proto = null;
-    this.code = code;
-    this.arrayElementType = arrayElementType;
-    this.structFields = structFields;
+    this(null, Preconditions.checkNotNull(code), arrayElementType, structFields);
   }
 
   private Type(@Nonnull com.google.spanner.v1.Type proto) {
+    this(
+        Preconditions.checkNotNull(proto),
+        Code.UNRECOGNIZED,
+        proto.hasArrayElementType() ? new Type(proto.getArrayElementType()) : null,
+        null);
+  }
+
+  private Type(
+      com.google.spanner.v1.Type proto,
+      Code code,
+      Type arrayElementType,
+      ImmutableList<StructField> structFields) {
     this.proto = proto;
-    this.code = Code.UNRECOGNIZED;
-    this.arrayElementType =
-        proto.hasArrayElementType() ? new Type(proto.getArrayElementType()) : null;
-    this.structFields = null;
+    this.code = code;
+    this.arrayElementType = arrayElementType;
+    this.structFields = structFields;
   }
 
   /** Enumerates the categories of types. */

@@ -1834,8 +1834,8 @@ public abstract class Value implements Serializable {
     @Override
     public ImmutableList<String> getAsStringList() {
       ImmutableList.Builder<String> builder = ImmutableList.builder();
-      for (int i = 0; i < value.size(); i++) {
-        builder.add(value.get(i) == null ? NULL_STRING : elementToString(value.get(i)));
+      for (T element : value) {
+        builder.add(element == null ? NULL_STRING : elementToString(element));
       }
       return builder.build();
     }

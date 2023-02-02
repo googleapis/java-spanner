@@ -369,7 +369,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     LazyByteArray(@Nonnull String base64String) {
       this.base64String = Preconditions.checkNotNull(base64String);
-      byteArray = defaultInitializer();
+      this.byteArray = defaultInitializer();
     }
 
     LazyByteArray(@Nonnull ByteArray byteArray) {
@@ -748,6 +748,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       return (Date) rowData.get(columnIndex);
     }
 
+    protected com.google.protobuf.Value getProtoValueInternal(int columnIndex) {
+      return (com.google.protobuf.Value) rowData.get(columnIndex);
+    }
+
     @Override
     protected Value getValueInternal(int columnIndex) {
       final List<Type.StructField> structFields = getType().getStructFields();
@@ -781,8 +785,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return Value.struct(isNull ? null : getStructInternal(columnIndex));
         case UNRECOGNIZED:
           return Value.unrecognized(
-              isNull ? NULL_VALUE : (com.google.protobuf.Value) rowData.get(columnIndex),
-              columnType);
+              isNull ? NULL_VALUE : getProtoValueInternal(columnIndex), columnType);
         case ARRAY:
           final Type elementType = columnType.getArrayElementType();
           switch (elementType.getCode()) {
