@@ -95,7 +95,11 @@ public abstract class ValueBinder<R> {
     return handle(Value.string(value));
   }
 
-  /** Binds to {@code Value.bytes(value)} */
+  /**
+   * Binds to {@code Value.bytes(value)}. Use {@link #to(Value)} in combination with {@link
+   * Value#bytesFromBase64(String)} if you already have the value that you want to bind in base64
+   * format. This prevents unnecessary decoding and encoding of base64 strings.
+   */
   public R to(@Nullable ByteArray value) {
     return handle(Value.bytes(value));
   }
@@ -196,6 +200,15 @@ public abstract class ValueBinder<R> {
   /** Binds to {@code Value.bytesArray(values)} */
   public R toBytesArray(@Nullable Iterable<ByteArray> values) {
     return handle(Value.bytesArray(values));
+  }
+
+  /**
+   * Binds to {@code Value.bytesArray(values)}. The given strings must be valid base64 encoded
+   * strings. Use this method instead of {@link #toBytesArray(Iterable)} if you already have the
+   * values in base64 format to prevent unnecessary decoding and encoding to/from base64.
+   */
+  public R toBytesArrayFromBase64(@Nullable Iterable<String> valuesAsBase64Strings) {
+    return handle(Value.bytesArrayFromBase64(valuesAsBase64Strings));
   }
 
   /** Binds to {@code Value.timestampArray(values)} */
