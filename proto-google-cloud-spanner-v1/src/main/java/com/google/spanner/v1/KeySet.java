@@ -72,6 +72,8 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int KEYS_FIELD_NUMBER = 1;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.protobuf.ListValue> keys_;
   /**
    *
@@ -155,6 +157,8 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int RANGES_FIELD_NUMBER = 2;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.v1.KeyRange> ranges_;
   /**
    *
@@ -229,7 +233,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int ALL_FIELD_NUMBER = 3;
-  private boolean all_;
+  private boolean all_ = false;
   /**
    *
    *
@@ -468,6 +472,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       if (keysBuilder_ == null) {
         keys_ = java.util.Collections.emptyList();
       } else {
@@ -483,7 +488,6 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
       }
       bitField0_ = (bitField0_ & ~0x00000002);
       all_ = false;
-
       return this;
     }
 
@@ -509,7 +513,15 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.KeySet buildPartial() {
       com.google.spanner.v1.KeySet result = new com.google.spanner.v1.KeySet(this);
-      int from_bitField0_ = bitField0_;
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(com.google.spanner.v1.KeySet result) {
       if (keysBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
           keys_ = java.util.Collections.unmodifiableList(keys_);
@@ -528,9 +540,13 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
       } else {
         result.ranges_ = rangesBuilder_.build();
       }
-      result.all_ = all_;
-      onBuilt();
-      return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.KeySet result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.all_ = all_;
+      }
     }
 
     @java.lang.Override
@@ -688,7 +704,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
             case 24:
               {
                 all_ = input.readBool();
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 24
             default:
@@ -1505,6 +1521,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     public Builder setAll(boolean value) {
 
       all_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1522,7 +1539,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearAll() {
-
+      bitField0_ = (bitField0_ & ~0x00000004);
       all_ = false;
       onChanged();
       return this;

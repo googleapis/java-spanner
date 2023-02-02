@@ -69,7 +69,9 @@ public final class RollbackRequest extends com.google.protobuf.GeneratedMessageV
   }
 
   public static final int SESSION_FIELD_NUMBER = 1;
-  private volatile java.lang.Object session_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object session_ = "";
   /**
    *
    *
@@ -122,7 +124,7 @@ public final class RollbackRequest extends com.google.protobuf.GeneratedMessageV
   }
 
   public static final int TRANSACTION_ID_FIELD_NUMBER = 2;
-  private com.google.protobuf.ByteString transactionId_;
+  private com.google.protobuf.ByteString transactionId_ = com.google.protobuf.ByteString.EMPTY;
   /**
    *
    *
@@ -343,10 +345,9 @@ public final class RollbackRequest extends com.google.protobuf.GeneratedMessageV
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       session_ = "";
-
       transactionId_ = com.google.protobuf.ByteString.EMPTY;
-
       return this;
     }
 
@@ -374,10 +375,21 @@ public final class RollbackRequest extends com.google.protobuf.GeneratedMessageV
     public com.google.spanner.v1.RollbackRequest buildPartial() {
       com.google.spanner.v1.RollbackRequest result =
           new com.google.spanner.v1.RollbackRequest(this);
-      result.session_ = session_;
-      result.transactionId_ = transactionId_;
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.RollbackRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.session_ = session_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.transactionId_ = transactionId_;
+      }
     }
 
     @java.lang.Override
@@ -427,6 +439,7 @@ public final class RollbackRequest extends com.google.protobuf.GeneratedMessageV
       if (other == com.google.spanner.v1.RollbackRequest.getDefaultInstance()) return this;
       if (!other.getSession().isEmpty()) {
         session_ = other.session_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (other.getTransactionId() != com.google.protobuf.ByteString.EMPTY) {
@@ -461,13 +474,13 @@ public final class RollbackRequest extends com.google.protobuf.GeneratedMessageV
             case 10:
               {
                 session_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 transactionId_ = input.readBytes();
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             default:
@@ -486,6 +499,8 @@ public final class RollbackRequest extends com.google.protobuf.GeneratedMessageV
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private java.lang.Object session_ = "";
     /**
@@ -554,8 +569,8 @@ public final class RollbackRequest extends com.google.protobuf.GeneratedMessageV
       if (value == null) {
         throw new NullPointerException();
       }
-
       session_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -573,8 +588,8 @@ public final class RollbackRequest extends com.google.protobuf.GeneratedMessageV
      * @return This builder for chaining.
      */
     public Builder clearSession() {
-
       session_ = getDefaultInstance().getSession();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -597,8 +612,8 @@ public final class RollbackRequest extends com.google.protobuf.GeneratedMessageV
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       session_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -635,8 +650,8 @@ public final class RollbackRequest extends com.google.protobuf.GeneratedMessageV
       if (value == null) {
         throw new NullPointerException();
       }
-
       transactionId_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -652,7 +667,7 @@ public final class RollbackRequest extends com.google.protobuf.GeneratedMessageV
      * @return This builder for chaining.
      */
     public Builder clearTransactionId() {
-
+      bitField0_ = (bitField0_ & ~0x00000002);
       transactionId_ = getDefaultInstance().getTransactionId();
       onChanged();
       return this;

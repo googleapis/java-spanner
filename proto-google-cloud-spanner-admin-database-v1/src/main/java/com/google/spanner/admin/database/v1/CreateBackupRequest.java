@@ -69,7 +69,9 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
   }
 
   public static final int PARENT_FIELD_NUMBER = 1;
-  private volatile java.lang.Object parent_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object parent_ = "";
   /**
    *
    *
@@ -132,7 +134,9 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
   }
 
   public static final int BACKUP_ID_FIELD_NUMBER = 2;
-  private volatile java.lang.Object backupId_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object backupId_ = "";
   /**
    *
    *
@@ -235,7 +239,9 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
    */
   @java.lang.Override
   public com.google.spanner.admin.database.v1.BackupOrBuilder getBackupOrBuilder() {
-    return getBackup();
+    return backup_ == null
+        ? com.google.spanner.admin.database.v1.Backup.getDefaultInstance()
+        : backup_;
   }
 
   public static final int ENCRYPTION_CONFIG_FIELD_NUMBER = 4;
@@ -302,7 +308,9 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
   @java.lang.Override
   public com.google.spanner.admin.database.v1.CreateBackupEncryptionConfigOrBuilder
       getEncryptionConfigOrBuilder() {
-    return getEncryptionConfig();
+    return encryptionConfig_ == null
+        ? com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.getDefaultInstance()
+        : encryptionConfig_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -540,20 +548,17 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       parent_ = "";
-
       backupId_ = "";
-
-      if (backupBuilder_ == null) {
-        backup_ = null;
-      } else {
-        backup_ = null;
+      backup_ = null;
+      if (backupBuilder_ != null) {
+        backupBuilder_.dispose();
         backupBuilder_ = null;
       }
-      if (encryptionConfigBuilder_ == null) {
-        encryptionConfig_ = null;
-      } else {
-        encryptionConfig_ = null;
+      encryptionConfig_ = null;
+      if (encryptionConfigBuilder_ != null) {
+        encryptionConfigBuilder_.dispose();
         encryptionConfigBuilder_ = null;
       }
       return this;
@@ -583,20 +588,28 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
     public com.google.spanner.admin.database.v1.CreateBackupRequest buildPartial() {
       com.google.spanner.admin.database.v1.CreateBackupRequest result =
           new com.google.spanner.admin.database.v1.CreateBackupRequest(this);
-      result.parent_ = parent_;
-      result.backupId_ = backupId_;
-      if (backupBuilder_ == null) {
-        result.backup_ = backup_;
-      } else {
-        result.backup_ = backupBuilder_.build();
-      }
-      if (encryptionConfigBuilder_ == null) {
-        result.encryptionConfig_ = encryptionConfig_;
-      } else {
-        result.encryptionConfig_ = encryptionConfigBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.database.v1.CreateBackupRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.parent_ = parent_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.backupId_ = backupId_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.backup_ = backupBuilder_ == null ? backup_ : backupBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.encryptionConfig_ =
+            encryptionConfigBuilder_ == null ? encryptionConfig_ : encryptionConfigBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -647,10 +660,12 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
         return this;
       if (!other.getParent().isEmpty()) {
         parent_ = other.parent_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (!other.getBackupId().isEmpty()) {
         backupId_ = other.backupId_;
+        bitField0_ |= 0x00000002;
         onChanged();
       }
       if (other.hasBackup()) {
@@ -688,26 +703,26 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
             case 10:
               {
                 parent_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 backupId_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             case 26:
               {
                 input.readMessage(getBackupFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 26
             case 34:
               {
                 input.readMessage(
                     getEncryptionConfigFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000008;
                 break;
               } // case 34
             default:
@@ -726,6 +741,8 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private java.lang.Object parent_ = "";
     /**
@@ -809,8 +826,8 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
       if (value == null) {
         throw new NullPointerException();
       }
-
       parent_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -833,8 +850,8 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      * @return This builder for chaining.
      */
     public Builder clearParent() {
-
       parent_ = getDefaultInstance().getParent();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -862,8 +879,8 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       parent_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -935,8 +952,8 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
       if (value == null) {
         throw new NullPointerException();
       }
-
       backupId_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -954,8 +971,8 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      * @return This builder for chaining.
      */
     public Builder clearBackupId() {
-
       backupId_ = getDefaultInstance().getBackupId();
+      bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
@@ -978,8 +995,8 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       backupId_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1004,7 +1021,7 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      * @return Whether the backup field is set.
      */
     public boolean hasBackup() {
-      return backupBuilder_ != null || backup_ != null;
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      *
@@ -1045,11 +1062,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
           throw new NullPointerException();
         }
         backup_ = value;
-        onChanged();
       } else {
         backupBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1066,11 +1083,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
     public Builder setBackup(com.google.spanner.admin.database.v1.Backup.Builder builderForValue) {
       if (backupBuilder_ == null) {
         backup_ = builderForValue.build();
-        onChanged();
       } else {
         backupBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1086,19 +1103,18 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      */
     public Builder mergeBackup(com.google.spanner.admin.database.v1.Backup value) {
       if (backupBuilder_ == null) {
-        if (backup_ != null) {
-          backup_ =
-              com.google.spanner.admin.database.v1.Backup.newBuilder(backup_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000004) != 0)
+            && backup_ != null
+            && backup_ != com.google.spanner.admin.database.v1.Backup.getDefaultInstance()) {
+          getBackupBuilder().mergeFrom(value);
         } else {
           backup_ = value;
         }
-        onChanged();
       } else {
         backupBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1113,14 +1129,13 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      * </code>
      */
     public Builder clearBackup() {
-      if (backupBuilder_ == null) {
-        backup_ = null;
-        onChanged();
-      } else {
-        backup_ = null;
+      bitField0_ = (bitField0_ & ~0x00000004);
+      backup_ = null;
+      if (backupBuilder_ != null) {
+        backupBuilder_.dispose();
         backupBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1135,7 +1150,7 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      * </code>
      */
     public com.google.spanner.admin.database.v1.Backup.Builder getBackupBuilder() {
-
+      bitField0_ |= 0x00000004;
       onChanged();
       return getBackupFieldBuilder().getBuilder();
     }
@@ -1211,7 +1226,7 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      * @return Whether the encryptionConfig field is set.
      */
     public boolean hasEncryptionConfig() {
-      return encryptionConfigBuilder_ != null || encryptionConfig_ != null;
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      *
@@ -1261,11 +1276,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
           throw new NullPointerException();
         }
         encryptionConfig_ = value;
-        onChanged();
       } else {
         encryptionConfigBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1287,11 +1302,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
         com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.Builder builderForValue) {
       if (encryptionConfigBuilder_ == null) {
         encryptionConfig_ = builderForValue.build();
-        onChanged();
       } else {
         encryptionConfigBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1312,20 +1327,20 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
     public Builder mergeEncryptionConfig(
         com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig value) {
       if (encryptionConfigBuilder_ == null) {
-        if (encryptionConfig_ != null) {
-          encryptionConfig_ =
-              com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.newBuilder(
-                      encryptionConfig_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000008) != 0)
+            && encryptionConfig_ != null
+            && encryptionConfig_
+                != com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig
+                    .getDefaultInstance()) {
+          getEncryptionConfigBuilder().mergeFrom(value);
         } else {
           encryptionConfig_ = value;
         }
-        onChanged();
       } else {
         encryptionConfigBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1344,14 +1359,13 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      * </code>
      */
     public Builder clearEncryptionConfig() {
-      if (encryptionConfigBuilder_ == null) {
-        encryptionConfig_ = null;
-        onChanged();
-      } else {
-        encryptionConfig_ = null;
+      bitField0_ = (bitField0_ & ~0x00000008);
+      encryptionConfig_ = null;
+      if (encryptionConfigBuilder_ != null) {
+        encryptionConfigBuilder_.dispose();
         encryptionConfigBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1371,7 +1385,7 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      */
     public com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.Builder
         getEncryptionConfigBuilder() {
-
+      bitField0_ |= 0x00000008;
       onChanged();
       return getEncryptionConfigFieldBuilder().getBuilder();
     }

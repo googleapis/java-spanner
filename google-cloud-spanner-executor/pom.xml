@@ -5,14 +5,14 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-executor</artifactId>
-  <version>6.35.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-executor:current} -->
+  <version>6.35.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-executor:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner Executor</name>
 
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.35.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.35.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
 
   <properties>
@@ -158,7 +158,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.0.0-M7</version>
+        <version>3.0.0-M8</version>
       </plugin>
     </plugins>
   </build>

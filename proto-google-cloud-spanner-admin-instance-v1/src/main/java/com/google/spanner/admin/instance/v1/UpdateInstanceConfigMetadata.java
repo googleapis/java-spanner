@@ -111,7 +111,9 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
    */
   @java.lang.Override
   public com.google.spanner.admin.instance.v1.InstanceConfigOrBuilder getInstanceConfigOrBuilder() {
-    return getInstanceConfig();
+    return instanceConfig_ == null
+        ? com.google.spanner.admin.instance.v1.InstanceConfig.getDefaultInstance()
+        : instanceConfig_;
   }
 
   public static final int PROGRESS_FIELD_NUMBER = 2;
@@ -165,7 +167,9 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
    */
   @java.lang.Override
   public com.google.spanner.admin.instance.v1.OperationProgressOrBuilder getProgressOrBuilder() {
-    return getProgress();
+    return progress_ == null
+        ? com.google.spanner.admin.instance.v1.OperationProgress.getDefaultInstance()
+        : progress_;
   }
 
   public static final int CANCEL_TIME_FIELD_NUMBER = 3;
@@ -211,7 +215,7 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCancelTimeOrBuilder() {
-    return getCancelTime();
+    return cancelTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : cancelTime_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -448,22 +452,20 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      if (instanceConfigBuilder_ == null) {
-        instanceConfig_ = null;
-      } else {
-        instanceConfig_ = null;
+      bitField0_ = 0;
+      instanceConfig_ = null;
+      if (instanceConfigBuilder_ != null) {
+        instanceConfigBuilder_.dispose();
         instanceConfigBuilder_ = null;
       }
-      if (progressBuilder_ == null) {
-        progress_ = null;
-      } else {
-        progress_ = null;
+      progress_ = null;
+      if (progressBuilder_ != null) {
+        progressBuilder_.dispose();
         progressBuilder_ = null;
       }
-      if (cancelTimeBuilder_ == null) {
-        cancelTime_ = null;
-      } else {
-        cancelTime_ = null;
+      cancelTime_ = null;
+      if (cancelTimeBuilder_ != null) {
+        cancelTimeBuilder_.dispose();
         cancelTimeBuilder_ = null;
       }
       return this;
@@ -494,23 +496,26 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
     public com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata buildPartial() {
       com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata result =
           new com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata(this);
-      if (instanceConfigBuilder_ == null) {
-        result.instanceConfig_ = instanceConfig_;
-      } else {
-        result.instanceConfig_ = instanceConfigBuilder_.build();
-      }
-      if (progressBuilder_ == null) {
-        result.progress_ = progress_;
-      } else {
-        result.progress_ = progressBuilder_.build();
-      }
-      if (cancelTimeBuilder_ == null) {
-        result.cancelTime_ = cancelTime_;
-      } else {
-        result.cancelTime_ = cancelTimeBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(
+        com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.instanceConfig_ =
+            instanceConfigBuilder_ == null ? instanceConfig_ : instanceConfigBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.progress_ = progressBuilder_ == null ? progress_ : progressBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.cancelTime_ = cancelTimeBuilder_ == null ? cancelTime_ : cancelTimeBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -599,19 +604,19 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
             case 10:
               {
                 input.readMessage(getInstanceConfigFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 input.readMessage(getProgressFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             case 26:
               {
                 input.readMessage(getCancelTimeFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 26
             default:
@@ -631,6 +636,8 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
       return this;
     }
 
+    private int bitField0_;
+
     private com.google.spanner.admin.instance.v1.InstanceConfig instanceConfig_;
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.spanner.admin.instance.v1.InstanceConfig,
@@ -649,7 +656,7 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
      * @return Whether the instanceConfig field is set.
      */
     public boolean hasInstanceConfig() {
-      return instanceConfigBuilder_ != null || instanceConfig_ != null;
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      *
@@ -686,11 +693,11 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
           throw new NullPointerException();
         }
         instanceConfig_ = value;
-        onChanged();
       } else {
         instanceConfigBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -706,11 +713,11 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
         com.google.spanner.admin.instance.v1.InstanceConfig.Builder builderForValue) {
       if (instanceConfigBuilder_ == null) {
         instanceConfig_ = builderForValue.build();
-        onChanged();
       } else {
         instanceConfigBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -724,19 +731,19 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
      */
     public Builder mergeInstanceConfig(com.google.spanner.admin.instance.v1.InstanceConfig value) {
       if (instanceConfigBuilder_ == null) {
-        if (instanceConfig_ != null) {
-          instanceConfig_ =
-              com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder(instanceConfig_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000001) != 0)
+            && instanceConfig_ != null
+            && instanceConfig_
+                != com.google.spanner.admin.instance.v1.InstanceConfig.getDefaultInstance()) {
+          getInstanceConfigBuilder().mergeFrom(value);
         } else {
           instanceConfig_ = value;
         }
-        onChanged();
       } else {
         instanceConfigBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -749,14 +756,13 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
      * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
      */
     public Builder clearInstanceConfig() {
-      if (instanceConfigBuilder_ == null) {
-        instanceConfig_ = null;
-        onChanged();
-      } else {
-        instanceConfig_ = null;
+      bitField0_ = (bitField0_ & ~0x00000001);
+      instanceConfig_ = null;
+      if (instanceConfigBuilder_ != null) {
+        instanceConfigBuilder_.dispose();
         instanceConfigBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -769,7 +775,7 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
      * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
      */
     public com.google.spanner.admin.instance.v1.InstanceConfig.Builder getInstanceConfigBuilder() {
-
+      bitField0_ |= 0x00000001;
       onChanged();
       return getInstanceConfigFieldBuilder().getBuilder();
     }
@@ -838,7 +844,7 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
      * @return Whether the progress field is set.
      */
     public boolean hasProgress() {
-      return progressBuilder_ != null || progress_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -879,11 +885,11 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
           throw new NullPointerException();
         }
         progress_ = value;
-        onChanged();
       } else {
         progressBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -901,11 +907,11 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
         com.google.spanner.admin.instance.v1.OperationProgress.Builder builderForValue) {
       if (progressBuilder_ == null) {
         progress_ = builderForValue.build();
-        onChanged();
       } else {
         progressBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -921,19 +927,19 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
      */
     public Builder mergeProgress(com.google.spanner.admin.instance.v1.OperationProgress value) {
       if (progressBuilder_ == null) {
-        if (progress_ != null) {
-          progress_ =
-              com.google.spanner.admin.instance.v1.OperationProgress.newBuilder(progress_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && progress_ != null
+            && progress_
+                != com.google.spanner.admin.instance.v1.OperationProgress.getDefaultInstance()) {
+          getProgressBuilder().mergeFrom(value);
         } else {
           progress_ = value;
         }
-        onChanged();
       } else {
         progressBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -948,14 +954,13 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
      * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
      */
     public Builder clearProgress() {
-      if (progressBuilder_ == null) {
-        progress_ = null;
-        onChanged();
-      } else {
-        progress_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      progress_ = null;
+      if (progressBuilder_ != null) {
+        progressBuilder_.dispose();
         progressBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -970,7 +975,7 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
      * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
      */
     public com.google.spanner.admin.instance.v1.OperationProgress.Builder getProgressBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getProgressFieldBuilder().getBuilder();
     }
@@ -1040,7 +1045,7 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
      * @return Whether the cancelTime field is set.
      */
     public boolean hasCancelTime() {
-      return cancelTimeBuilder_ != null || cancelTime_ != null;
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      *
@@ -1077,11 +1082,11 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
           throw new NullPointerException();
         }
         cancelTime_ = value;
-        onChanged();
       } else {
         cancelTimeBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1096,11 +1101,11 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
     public Builder setCancelTime(com.google.protobuf.Timestamp.Builder builderForValue) {
       if (cancelTimeBuilder_ == null) {
         cancelTime_ = builderForValue.build();
-        onChanged();
       } else {
         cancelTimeBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1114,17 +1119,18 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
      */
     public Builder mergeCancelTime(com.google.protobuf.Timestamp value) {
       if (cancelTimeBuilder_ == null) {
-        if (cancelTime_ != null) {
-          cancelTime_ =
-              com.google.protobuf.Timestamp.newBuilder(cancelTime_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000004) != 0)
+            && cancelTime_ != null
+            && cancelTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getCancelTimeBuilder().mergeFrom(value);
         } else {
           cancelTime_ = value;
         }
-        onChanged();
       } else {
         cancelTimeBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1137,14 +1143,13 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
      * <code>.google.protobuf.Timestamp cancel_time = 3;</code>
      */
     public Builder clearCancelTime() {
-      if (cancelTimeBuilder_ == null) {
-        cancelTime_ = null;
-        onChanged();
-      } else {
-        cancelTime_ = null;
+      bitField0_ = (bitField0_ & ~0x00000004);
+      cancelTime_ = null;
+      if (cancelTimeBuilder_ != null) {
+        cancelTimeBuilder_.dispose();
         cancelTimeBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1157,7 +1162,7 @@ public final class UpdateInstanceConfigMetadata extends com.google.protobuf.Gene
      * <code>.google.protobuf.Timestamp cancel_time = 3;</code>
      */
     public com.google.protobuf.Timestamp.Builder getCancelTimeBuilder() {
-
+      bitField0_ |= 0x00000004;
       onChanged();
       return getCancelTimeFieldBuilder().getBuilder();
     }

@@ -80,7 +80,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
   }
 
   public static final int SESSION_FIELD_NUMBER = 1;
-  private volatile java.lang.Object session_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object session_ = "";
   /**
    *
    *
@@ -180,11 +182,15 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    */
   @java.lang.Override
   public com.google.spanner.v1.TransactionSelectorOrBuilder getTransactionOrBuilder() {
-    return getTransaction();
+    return transaction_ == null
+        ? com.google.spanner.v1.TransactionSelector.getDefaultInstance()
+        : transaction_;
   }
 
   public static final int SQL_FIELD_NUMBER = 3;
-  private volatile java.lang.Object sql_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object sql_ = "";
   /**
    *
    *
@@ -312,7 +318,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    */
   @java.lang.Override
   public com.google.protobuf.StructOrBuilder getParamsOrBuilder() {
-    return getParams();
+    return params_ == null ? com.google.protobuf.Struct.getDefaultInstance() : params_;
   }
 
   public static final int PARAM_TYPES_FIELD_NUMBER = 5;
@@ -330,6 +336,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
                     com.google.spanner.v1.Type.getDefaultInstance());
   }
 
+  @SuppressWarnings("serial")
   private com.google.protobuf.MapField<java.lang.String, com.google.spanner.v1.Type> paramTypes_;
 
   private com.google.protobuf.MapField<java.lang.String, com.google.spanner.v1.Type>
@@ -406,8 +413,10 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
   @java.lang.Override
-  public com.google.spanner.v1.Type getParamTypesOrDefault(
-      java.lang.String key, com.google.spanner.v1.Type defaultValue) {
+  public /* nullable */ com.google.spanner.v1.Type getParamTypesOrDefault(
+      java.lang.String key,
+      /* nullable */
+      com.google.spanner.v1.Type defaultValue) {
     if (key == null) {
       throw new NullPointerException("map key");
     }
@@ -488,7 +497,9 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
    */
   @java.lang.Override
   public com.google.spanner.v1.PartitionOptionsOrBuilder getPartitionOptionsOrBuilder() {
-    return getPartitionOptions();
+    return partitionOptions_ == null
+        ? com.google.spanner.v1.PartitionOptions.getDefaultInstance()
+        : partitionOptions_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -776,27 +787,23 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       session_ = "";
-
-      if (transactionBuilder_ == null) {
-        transaction_ = null;
-      } else {
-        transaction_ = null;
+      transaction_ = null;
+      if (transactionBuilder_ != null) {
+        transactionBuilder_.dispose();
         transactionBuilder_ = null;
       }
       sql_ = "";
-
-      if (paramsBuilder_ == null) {
-        params_ = null;
-      } else {
-        params_ = null;
+      params_ = null;
+      if (paramsBuilder_ != null) {
+        paramsBuilder_.dispose();
         paramsBuilder_ = null;
       }
       internalGetMutableParamTypes().clear();
-      if (partitionOptionsBuilder_ == null) {
-        partitionOptions_ = null;
-      } else {
-        partitionOptions_ = null;
+      partitionOptions_ = null;
+      if (partitionOptionsBuilder_ != null) {
+        partitionOptionsBuilder_.dispose();
         partitionOptionsBuilder_ = null;
       }
       return this;
@@ -826,28 +833,36 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     public com.google.spanner.v1.PartitionQueryRequest buildPartial() {
       com.google.spanner.v1.PartitionQueryRequest result =
           new com.google.spanner.v1.PartitionQueryRequest(this);
-      int from_bitField0_ = bitField0_;
-      result.session_ = session_;
-      if (transactionBuilder_ == null) {
-        result.transaction_ = transaction_;
-      } else {
-        result.transaction_ = transactionBuilder_.build();
-      }
-      result.sql_ = sql_;
-      if (paramsBuilder_ == null) {
-        result.params_ = params_;
-      } else {
-        result.params_ = paramsBuilder_.build();
-      }
-      result.paramTypes_ = internalGetParamTypes();
-      result.paramTypes_.makeImmutable();
-      if (partitionOptionsBuilder_ == null) {
-        result.partitionOptions_ = partitionOptions_;
-      } else {
-        result.partitionOptions_ = partitionOptionsBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.PartitionQueryRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.session_ = session_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.transaction_ =
+            transactionBuilder_ == null ? transaction_ : transactionBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.sql_ = sql_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.params_ = paramsBuilder_ == null ? params_ : paramsBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.paramTypes_ = internalGetParamTypes();
+        result.paramTypes_.makeImmutable();
+      }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.partitionOptions_ =
+            partitionOptionsBuilder_ == null ? partitionOptions_ : partitionOptionsBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -897,6 +912,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
       if (other == com.google.spanner.v1.PartitionQueryRequest.getDefaultInstance()) return this;
       if (!other.getSession().isEmpty()) {
         session_ = other.session_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (other.hasTransaction()) {
@@ -904,12 +920,14 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
       }
       if (!other.getSql().isEmpty()) {
         sql_ = other.sql_;
+        bitField0_ |= 0x00000004;
         onChanged();
       }
       if (other.hasParams()) {
         mergeParams(other.getParams());
       }
       internalGetMutableParamTypes().mergeFrom(other.internalGetParamTypes());
+      bitField0_ |= 0x00000010;
       if (other.hasPartitionOptions()) {
         mergePartitionOptions(other.getPartitionOptions());
       }
@@ -942,25 +960,25 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
             case 10:
               {
                 session_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 input.readMessage(getTransactionFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             case 26:
               {
                 sql_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 26
             case 34:
               {
                 input.readMessage(getParamsFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000008;
                 break;
               } // case 34
             case 42:
@@ -973,13 +991,14 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
                 internalGetMutableParamTypes()
                     .getMutableMap()
                     .put(paramTypes__.getKey(), paramTypes__.getValue());
+                bitField0_ |= 0x00000010;
                 break;
               } // case 42
             case 50:
               {
                 input.readMessage(
                     getPartitionOptionsFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000020;
                 break;
               } // case 50
             default:
@@ -1068,8 +1087,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
       if (value == null) {
         throw new NullPointerException();
       }
-
       session_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1087,8 +1106,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * @return This builder for chaining.
      */
     public Builder clearSession() {
-
       session_ = getDefaultInstance().getSession();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -1111,8 +1130,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       session_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1136,7 +1155,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * @return Whether the transaction field is set.
      */
     public boolean hasTransaction() {
-      return transactionBuilder_ != null || transaction_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -1175,11 +1194,11 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
           throw new NullPointerException();
         }
         transaction_ = value;
-        onChanged();
       } else {
         transactionBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1196,11 +1215,11 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
         com.google.spanner.v1.TransactionSelector.Builder builderForValue) {
       if (transactionBuilder_ == null) {
         transaction_ = builderForValue.build();
-        onChanged();
       } else {
         transactionBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1215,19 +1234,18 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      */
     public Builder mergeTransaction(com.google.spanner.v1.TransactionSelector value) {
       if (transactionBuilder_ == null) {
-        if (transaction_ != null) {
-          transaction_ =
-              com.google.spanner.v1.TransactionSelector.newBuilder(transaction_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && transaction_ != null
+            && transaction_ != com.google.spanner.v1.TransactionSelector.getDefaultInstance()) {
+          getTransactionBuilder().mergeFrom(value);
         } else {
           transaction_ = value;
         }
-        onChanged();
       } else {
         transactionBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1241,14 +1259,13 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
      */
     public Builder clearTransaction() {
-      if (transactionBuilder_ == null) {
-        transaction_ = null;
-        onChanged();
-      } else {
-        transaction_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      transaction_ = null;
+      if (transactionBuilder_ != null) {
+        transactionBuilder_.dispose();
         transactionBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1262,7 +1279,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
      */
     public com.google.spanner.v1.TransactionSelector.Builder getTransactionBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getTransactionFieldBuilder().getBuilder();
     }
@@ -1397,8 +1414,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
       if (value == null) {
         throw new NullPointerException();
       }
-
       sql_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1422,8 +1439,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * @return This builder for chaining.
      */
     public Builder clearSql() {
-
       sql_ = getDefaultInstance().getSql();
+      bitField0_ = (bitField0_ & ~0x00000004);
       onChanged();
       return this;
     }
@@ -1452,8 +1469,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       sql_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1483,7 +1500,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * @return Whether the params field is set.
      */
     public boolean hasParams() {
-      return paramsBuilder_ != null || params_ != null;
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      *
@@ -1532,11 +1549,11 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
           throw new NullPointerException();
         }
         params_ = value;
-        onChanged();
       } else {
         paramsBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1558,11 +1575,11 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     public Builder setParams(com.google.protobuf.Struct.Builder builderForValue) {
       if (paramsBuilder_ == null) {
         params_ = builderForValue.build();
-        onChanged();
       } else {
         paramsBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1583,16 +1600,18 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      */
     public Builder mergeParams(com.google.protobuf.Struct value) {
       if (paramsBuilder_ == null) {
-        if (params_ != null) {
-          params_ = com.google.protobuf.Struct.newBuilder(params_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000008) != 0)
+            && params_ != null
+            && params_ != com.google.protobuf.Struct.getDefaultInstance()) {
+          getParamsBuilder().mergeFrom(value);
         } else {
           params_ = value;
         }
-        onChanged();
       } else {
         paramsBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1612,14 +1631,13 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * <code>.google.protobuf.Struct params = 4;</code>
      */
     public Builder clearParams() {
-      if (paramsBuilder_ == null) {
-        params_ = null;
-        onChanged();
-      } else {
-        params_ = null;
+      bitField0_ = (bitField0_ & ~0x00000008);
+      params_ = null;
+      if (paramsBuilder_ != null) {
+        paramsBuilder_.dispose();
         paramsBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1639,7 +1657,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * <code>.google.protobuf.Struct params = 4;</code>
      */
     public com.google.protobuf.Struct.Builder getParamsBuilder() {
-
+      bitField0_ |= 0x00000008;
       onChanged();
       return getParamsFieldBuilder().getBuilder();
     }
@@ -1712,8 +1730,6 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
 
     private com.google.protobuf.MapField<java.lang.String, com.google.spanner.v1.Type>
         internalGetMutableParamTypes() {
-      onChanged();
-      ;
       if (paramTypes_ == null) {
         paramTypes_ =
             com.google.protobuf.MapField.newMapField(ParamTypesDefaultEntryHolder.defaultEntry);
@@ -1721,6 +1737,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
       if (!paramTypes_.isMutable()) {
         paramTypes_ = paramTypes_.copy();
       }
+      bitField0_ |= 0x00000010;
+      onChanged();
       return paramTypes_;
     }
 
@@ -1790,8 +1808,10 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
      */
     @java.lang.Override
-    public com.google.spanner.v1.Type getParamTypesOrDefault(
-        java.lang.String key, com.google.spanner.v1.Type defaultValue) {
+    public /* nullable */ com.google.spanner.v1.Type getParamTypesOrDefault(
+        java.lang.String key,
+        /* nullable */
+        com.google.spanner.v1.Type defaultValue) {
       if (key == null) {
         throw new NullPointerException("map key");
       }
@@ -1828,6 +1848,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     }
 
     public Builder clearParamTypes() {
+      bitField0_ = (bitField0_ & ~0x00000010);
       internalGetMutableParamTypes().getMutableMap().clear();
       return this;
     }
@@ -1856,6 +1877,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     /** Use alternate mutation accessors instead. */
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getMutableParamTypes() {
+      bitField0_ |= 0x00000010;
       return internalGetMutableParamTypes().getMutableMap();
     }
     /**
@@ -1880,8 +1902,8 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
       if (value == null) {
         throw new NullPointerException("map value");
       }
-
       internalGetMutableParamTypes().getMutableMap().put(key, value);
+      bitField0_ |= 0x00000010;
       return this;
     }
     /**
@@ -1902,6 +1924,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
     public Builder putAllParamTypes(
         java.util.Map<java.lang.String, com.google.spanner.v1.Type> values) {
       internalGetMutableParamTypes().getMutableMap().putAll(values);
+      bitField0_ |= 0x00000010;
       return this;
     }
 
@@ -1923,7 +1946,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * @return Whether the partitionOptions field is set.
      */
     public boolean hasPartitionOptions() {
-      return partitionOptionsBuilder_ != null || partitionOptions_ != null;
+      return ((bitField0_ & 0x00000020) != 0);
     }
     /**
      *
@@ -1960,11 +1983,11 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
           throw new NullPointerException();
         }
         partitionOptions_ = value;
-        onChanged();
       } else {
         partitionOptionsBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000020;
+      onChanged();
       return this;
     }
     /**
@@ -1980,11 +2003,11 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
         com.google.spanner.v1.PartitionOptions.Builder builderForValue) {
       if (partitionOptionsBuilder_ == null) {
         partitionOptions_ = builderForValue.build();
-        onChanged();
       } else {
         partitionOptionsBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000020;
+      onChanged();
       return this;
     }
     /**
@@ -1998,19 +2021,18 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      */
     public Builder mergePartitionOptions(com.google.spanner.v1.PartitionOptions value) {
       if (partitionOptionsBuilder_ == null) {
-        if (partitionOptions_ != null) {
-          partitionOptions_ =
-              com.google.spanner.v1.PartitionOptions.newBuilder(partitionOptions_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000020) != 0)
+            && partitionOptions_ != null
+            && partitionOptions_ != com.google.spanner.v1.PartitionOptions.getDefaultInstance()) {
+          getPartitionOptionsBuilder().mergeFrom(value);
         } else {
           partitionOptions_ = value;
         }
-        onChanged();
       } else {
         partitionOptionsBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000020;
+      onChanged();
       return this;
     }
     /**
@@ -2023,14 +2045,13 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * <code>.google.spanner.v1.PartitionOptions partition_options = 6;</code>
      */
     public Builder clearPartitionOptions() {
-      if (partitionOptionsBuilder_ == null) {
-        partitionOptions_ = null;
-        onChanged();
-      } else {
-        partitionOptions_ = null;
+      bitField0_ = (bitField0_ & ~0x00000020);
+      partitionOptions_ = null;
+      if (partitionOptionsBuilder_ != null) {
+        partitionOptionsBuilder_.dispose();
         partitionOptionsBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -2043,7 +2064,7 @@ public final class PartitionQueryRequest extends com.google.protobuf.GeneratedMe
      * <code>.google.spanner.v1.PartitionOptions partition_options = 6;</code>
      */
     public com.google.spanner.v1.PartitionOptions.Builder getPartitionOptionsBuilder() {
-
+      bitField0_ |= 0x00000020;
       onChanged();
       return getPartitionOptionsFieldBuilder().getBuilder();
     }
