@@ -21,7 +21,9 @@ import static com.google.cloud.spanner.Type.array;
 import static com.google.cloud.spanner.Type.json;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -42,6 +44,7 @@ import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Value;
@@ -52,6 +55,7 @@ import io.grpc.Context;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -429,6 +433,55 @@ public class ITWriteTest {
     Struct row = readLastRow("BytesValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getBytes(0)).isEqualTo(data);
+  }
+
+  @Test
+  public void writeBytesAsString() {
+    Random random = new Random();
+    byte[] data = new byte[256];
+    random.nextBytes(data);
+    String base64 = Base64.getEncoder().encodeToString(data);
+    write(baseInsert().set("BytesValue").to(base64).build());
+    Struct row = readLastRow("BytesValue");
+    assertFalse(row.isNull(0));
+    assertArrayEquals(data, row.getBytes(0).toByteArray());
+    assertEquals(base64, row.getValue(0).getAsString());
+  }
+
+  @Test
+  public void writeBytesAsStringUsingDml() {
+    Random random = new Random();
+    byte[] data = new byte[256];
+    random.nextBytes(data);
+    String base64 = Base64.getEncoder().encodeToString(data);
+    Long updateCount =
+        client
+            .readWriteTransaction()
+            .run(
+                transaction ->
+                    transaction.executeUpdate(
+                        Statement.newBuilder(
+                                "insert into T (BytesValue, K) values ("
+                                    + queryParamString(1)
+                                    + ", "
+                                    + queryParamString(2)
+                                    + ")")
+                            .bind("p1")
+                            .to(Value.bytesFromBase64(base64))
+                            .bind("p2")
+                            .to(lastKey = uniqueString())
+                            .build()));
+    assertNotNull(updateCount);
+    assertEquals(1L, updateCount.longValue());
+
+    Struct row = readLastRow("BytesValue");
+    assertFalse(row.isNull(0));
+    assertArrayEquals(data, row.getBytes(0).toByteArray());
+    assertEquals(base64, row.getValue(0).getAsString());
+  }
+
+  String queryParamString(int index) {
+    return dialect.dialect == Dialect.GOOGLE_STANDARD_SQL ? "@p" + index : "$" + index;
   }
 
   @Test
