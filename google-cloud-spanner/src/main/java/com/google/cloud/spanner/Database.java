@@ -194,7 +194,7 @@ public class Database extends DatabaseInfo {
   static Database fromProto(
       com.google.spanner.admin.database.v1.Database proto, DatabaseAdminClient client) {
     checkArgument(!proto.getName().isEmpty(), "Missing expected 'name' field");
-    return new Database.Builder(client, DatabaseId.of(proto.getName()))
+    DatabaseInfo.Builder builder = new Builder(client, DatabaseId.of(proto.getName()))
         .setState(fromProtoState(proto.getState()))
         .setCreateTime(Timestamp.fromProto(proto.getCreateTime()))
         .setRestoreInfo(RestoreInfo.fromProtoOrNullIfDefaultInstance(proto.getRestoreInfo()))
@@ -203,8 +203,47 @@ public class Database extends DatabaseInfo {
         .setEncryptionConfig(CustomerManagedEncryption.fromProtoOrNull(proto.getEncryptionConfig()))
         .setDefaultLeader(proto.getDefaultLeader())
         .setDialect(Dialect.fromProto(proto.getDatabaseDialect()))
-        .setProto(proto)
-        .build();
+        .setReconciling(proto.getReconciling())
+        .setProto(proto);
+    if (proto.getEnableDropProtection()) {
+      builder.enableDropProtection();
+    } else {
+      builder.disableDropProtection();
+    }
+    return builder.build();
+  }
+
+  public com.google.spanner.admin.database.v1.Database toProto() {
+    if (getProto() != null) {
+      return getProto();
+    }
+    com.google.spanner.admin.database.v1.Database.Builder builder =  com.google.spanner.admin.database.v1.Database.newBuilder()
+        .setName(getId().getName())
+        .setState(getState().toProto())
+        .setEnableDropProtection(isDropProtectionEnabled())
+        .setReconciling(getReconciling());
+    if (getCreateTime() != null) {
+      builder.setCreateTime(getCreateTime().toProto());
+    }
+    if (getRestoreInfo() != null) {
+      builder.setRestoreInfo(getRestoreInfo().getProto());
+    }
+    if (getVersionRetentionPeriod() != null) {
+      builder.setVersionRetentionPeriod(getVersionRetentionPeriod());
+    }
+    if (getEarliestVersionTime() != null) {
+      builder.setEarliestVersionTime(getEarliestVersionTime().toProto());
+    }
+    if (getEncryptionConfig() != null) {
+      builder.setEncryptionConfig(getEncryptionConfig().toProto());
+    }
+    if (getDefaultLeader() != null) {
+      builder.setDefaultLeader(getDefaultLeader());
+    }
+    if (getDialect() != null) {
+      builder.setDatabaseDialect(getDialect().toProto());
+    }
+    return builder.build();
   }
 
   static DatabaseInfo.State fromProtoState(

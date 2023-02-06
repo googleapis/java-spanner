@@ -19,6 +19,7 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -27,6 +28,8 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.DatabaseInfo;
+import com.google.cloud.spanner.DatabaseInfo.DatabaseField;
 import com.google.cloud.spanner.DatabaseRole;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
@@ -39,10 +42,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -57,6 +63,8 @@ import org.junit.runners.JUnit4;
 public class ITDatabaseAdminTest {
   private static final long TIMEOUT_MINUTES = 5;
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
+
+  private static final Logger logger = Logger.getLogger(ITDatabaseAdminTest.class.getName());
   private DatabaseAdminClient dbAdminClient;
   private RemoteSpannerHelper testHelper;
   private List<Database> dbs = new ArrayList<>();
@@ -268,5 +276,61 @@ public class ITDatabaseAdminTest {
       pageRemainingRoles = pageRemainingRoles.getNextPage();
     }
     assertThat(dbRolesRemaining).containsNoneIn(dbRoles);
+  }
+
+  @Test
+  public void dropDatabaseWithProtectionEnabled() throws Exception {
+    String instanceId = testHelper.getInstanceId().getInstance();
+    Database database =
+        dbAdminClient
+            .createDatabase(instanceId, testHelper.getUniqueDatabaseId(), ImmutableList.of())
+            .get();
+    logger.log(Level.INFO, "Created database: {0}", database.getId().getName());
+
+    // Enable drop protection for the database.
+    Database update_to = dbAdminClient.newDatabaseBuilder(database.getId())
+        .enableDropProtection().build();
+    OperationFuture<Database, UpdateDatabaseMetadata> op = dbAdminClient.updateDatabase(update_to,
+        DatabaseField.ENABLE_DROP_PROTECTION);
+    Database updated = op.get();
+    assertEquals(updated.getId().getName(), database.getId().getName());
+    assertTrue(updated.isDropProtectionEnabled());
+
+    String[] split = database.getId().getName().split("/");
+    String databaseId = split[split.length - 1];
+
+    // Assert that dropping a database with protection enabled fails due to precondition violation.
+    try {
+      dbAdminClient.dropDatabase(instanceId, databaseId);
+      fail("Expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+      assertThat(e.getMessage()).endsWith(
+          "because the `enable_drop_protection` setting is currently enabled for it. Please " +
+          "disable the setting and try again.");
+    }
+
+    // Assert that deleting the instance also fails due to precondition violation.
+    try {
+      testHelper.getClient().getInstanceAdminClient().deleteInstance(instanceId);
+      fail("Expected exception");
+    } catch (SpannerException e) {
+      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+      assertThat(e.getMessage()).endsWith(
+          "because it contains databases with drop protection enabled. Please disable drop " +
+              "protection for all databases in the instance before deleting it.");
+    }
+
+    // Disable drop protection for the database.
+    update_to = dbAdminClient.newDatabaseBuilder(database.getId())
+        .disableDropProtection().build();
+    op = dbAdminClient.updateDatabase(update_to,
+        DatabaseField.ENABLE_DROP_PROTECTION);
+    updated = op.get();
+    assertEquals(updated.getId().getName(), database.getId().getName());
+    assertFalse(updated.isDropProtectionEnabled());
+
+    // Dropping the database should succeed now.
+    dbAdminClient.dropDatabase(instanceId, databaseId);
   }
 }

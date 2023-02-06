@@ -42,6 +42,7 @@ import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.Instance;
@@ -231,6 +232,9 @@ public interface SpannerRpc extends ServiceRpc {
   void dropDatabase(String databaseName) throws SpannerException;
 
   Database getDatabase(String databaseName) throws SpannerException;
+
+  OperationFuture<Database, UpdateDatabaseMetadata> updateDatabase(
+      Database database, FieldMask fieldMask) throws SpannerException;
 
   List<String> getDatabaseDdl(String databaseName) throws SpannerException;
   /** Lists the backups in the specified instance. */
