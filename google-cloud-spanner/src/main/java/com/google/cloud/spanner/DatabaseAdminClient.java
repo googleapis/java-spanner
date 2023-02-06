@@ -28,6 +28,7 @@ import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -357,6 +358,46 @@ public interface DatabaseAdminClient {
    * }</pre>
    */
   Database getDatabase(String instanceId, String databaseId) throws SpannerException;
+
+  /**
+   * Updates a Cloud Spanner database. The returned {@code Operation} can be used to track the
+   * progress of the update. Throws SpannerException if the Cloud Spanner database does not exist.
+   *
+   * Until completion of the returned operation:
+   *
+   * <ul>
+   *   <li>Cancelling the operation is best effort and may or may not succeed.
+   *   <li>All other attempts to modify the database are rejected.
+   *   <li>Reading the database via the API continues to give the pre-request field values.
+   * </ul>
+   *
+   * Upon completion of the returned operation:
+   *
+   * <ul>
+   *   <li>The database's new fields levels are readable via the API.
+   * </ul>
+   *
+   * <p> Example of updating a database.
+   *
+   * <pre>{@code
+   *  String databaseId = my_database_id;
+   *  boolean newEnableDropProtection = my_enalbe_drop_protection;
+   *  DatabaseInfo to_update =
+   *     DatabaseInfo.newBuilder(DatabaseId.of(databaseId))
+   *         .setEnableDropProtection(newEnableDropProtection);
+   *  OperationFuture<Database, UpdateDatabaseMetadata> op =
+   *     dbAdminClient.updateDatabase(to_update, DatabaseInfo.DatabaseField.ENABLE_DROP_PROTECTION);
+   *  Database db = op.waitFor().getResult();
+   * }</pre>
+   *
+   * @param database The database to update to. The current field values of the database will be
+   *    updated to the values specified in this parameter.
+   * @param fieldsToUpdate The fields that should be updated. Only these fields will have their
+   *    values updated to the values specified in {@param database}, even if there are other fields
+   *    specified in {@param database}.
+   */
+  OperationFuture<Database, UpdateDatabaseMetadata> updateDatabase(Database database,
+      DatabaseInfo.DatabaseField... fieldsToUpdate) throws SpannerException;
 
   /**
    * Gets the current state of a Cloud Spanner database backup.

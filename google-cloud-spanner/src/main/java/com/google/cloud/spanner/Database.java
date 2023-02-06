@@ -203,6 +203,8 @@ public class Database extends DatabaseInfo {
         .setEncryptionConfig(CustomerManagedEncryption.fromProtoOrNull(proto.getEncryptionConfig()))
         .setDefaultLeader(proto.getDefaultLeader())
         .setDialect(Dialect.fromProto(proto.getDatabaseDialect()))
+        .setEnableDropProtection(proto.getEnableDropProtection())
+        .setReconciling(proto.getReconciling())
         .setProto(proto)
         .build();
   }

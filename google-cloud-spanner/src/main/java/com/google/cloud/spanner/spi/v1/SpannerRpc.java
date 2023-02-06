@@ -232,6 +232,9 @@ public interface SpannerRpc extends ServiceRpc {
 
   Database getDatabase(String databaseName) throws SpannerException;
 
+  OperationFuture<Database, UpdateDatabaseMetadata> updateDatabase(
+      Database database, FieldMask fieldMask) throws SpannerException;
+
   List<String> getDatabaseDdl(String databaseName) throws SpannerException;
   /** Lists the backups in the specified instance. */
   Paginated<Backup> listBackups(
