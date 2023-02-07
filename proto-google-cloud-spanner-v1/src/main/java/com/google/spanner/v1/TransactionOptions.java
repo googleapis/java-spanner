@@ -570,7 +570,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
 
     public static final int READ_LOCK_MODE_FIELD_NUMBER = 1;
-    private int readLockMode_;
+    private int readLockMode_ = 0;
     /**
      *
      *
@@ -599,9 +599,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      */
     @java.lang.Override
     public com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode getReadLockMode() {
-      @SuppressWarnings("deprecation")
       com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode result =
-          com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.valueOf(readLockMode_);
+          com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.forNumber(readLockMode_);
       return result == null
           ? com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.UNRECOGNIZED
           : result;
@@ -813,8 +812,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         readLockMode_ = 0;
-
         return this;
       }
 
@@ -842,9 +841,18 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       public com.google.spanner.v1.TransactionOptions.ReadWrite buildPartial() {
         com.google.spanner.v1.TransactionOptions.ReadWrite result =
             new com.google.spanner.v1.TransactionOptions.ReadWrite(this);
-        result.readLockMode_ = readLockMode_;
+        if (bitField0_ != 0) {
+          buildPartial0(result);
+        }
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(com.google.spanner.v1.TransactionOptions.ReadWrite result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.readLockMode_ = readLockMode_;
+        }
       }
 
       @java.lang.Override
@@ -927,7 +935,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
               case 8:
                 {
                   readLockMode_ = input.readEnum();
-
+                  bitField0_ |= 0x00000001;
                   break;
                 } // case 8
               default:
@@ -946,6 +954,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         } // finally
         return this;
       }
+
+      private int bitField0_;
 
       private int readLockMode_ = 0;
       /**
@@ -978,8 +988,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * @return This builder for chaining.
        */
       public Builder setReadLockModeValue(int value) {
-
         readLockMode_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -997,9 +1007,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        */
       @java.lang.Override
       public com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode getReadLockMode() {
-        @SuppressWarnings("deprecation")
         com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode result =
-            com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.valueOf(readLockMode_);
+            com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.forNumber(
+                readLockMode_);
         return result == null
             ? com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.UNRECOGNIZED
             : result;
@@ -1022,7 +1032,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         if (value == null) {
           throw new NullPointerException();
         }
-
+        bitField0_ |= 0x00000001;
         readLockMode_ = value.getNumber();
         onChanged();
         return this;
@@ -1040,7 +1050,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * @return This builder for chaining.
        */
       public Builder clearReadLockMode() {
-
+        bitField0_ = (bitField0_ & ~0x00000001);
         readLockMode_ = 0;
         onChanged();
         return this;
@@ -2271,7 +2281,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
 
     public static final int RETURN_READ_TIMESTAMP_FIELD_NUMBER = 6;
-    private boolean returnReadTimestamp_;
+    private boolean returnReadTimestamp_ = false;
     /**
      *
      *
@@ -2573,6 +2583,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         if (minReadTimestampBuilder_ != null) {
           minReadTimestampBuilder_.clear();
         }
@@ -2586,7 +2597,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
           exactStalenessBuilder_.clear();
         }
         returnReadTimestamp_ = false;
-
         timestampBoundCase_ = 0;
         timestampBound_ = null;
         return this;
@@ -2616,41 +2626,36 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       public com.google.spanner.v1.TransactionOptions.ReadOnly buildPartial() {
         com.google.spanner.v1.TransactionOptions.ReadOnly result =
             new com.google.spanner.v1.TransactionOptions.ReadOnly(this);
-        if (timestampBoundCase_ == 1) {
-          result.timestampBound_ = timestampBound_;
+        if (bitField0_ != 0) {
+          buildPartial0(result);
         }
-        if (timestampBoundCase_ == 2) {
-          if (minReadTimestampBuilder_ == null) {
-            result.timestampBound_ = timestampBound_;
-          } else {
-            result.timestampBound_ = minReadTimestampBuilder_.build();
-          }
-        }
-        if (timestampBoundCase_ == 3) {
-          if (maxStalenessBuilder_ == null) {
-            result.timestampBound_ = timestampBound_;
-          } else {
-            result.timestampBound_ = maxStalenessBuilder_.build();
-          }
-        }
-        if (timestampBoundCase_ == 4) {
-          if (readTimestampBuilder_ == null) {
-            result.timestampBound_ = timestampBound_;
-          } else {
-            result.timestampBound_ = readTimestampBuilder_.build();
-          }
-        }
-        if (timestampBoundCase_ == 5) {
-          if (exactStalenessBuilder_ == null) {
-            result.timestampBound_ = timestampBound_;
-          } else {
-            result.timestampBound_ = exactStalenessBuilder_.build();
-          }
-        }
-        result.returnReadTimestamp_ = returnReadTimestamp_;
-        result.timestampBoundCase_ = timestampBoundCase_;
+        buildPartialOneofs(result);
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(com.google.spanner.v1.TransactionOptions.ReadOnly result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000020) != 0)) {
+          result.returnReadTimestamp_ = returnReadTimestamp_;
+        }
+      }
+
+      private void buildPartialOneofs(com.google.spanner.v1.TransactionOptions.ReadOnly result) {
+        result.timestampBoundCase_ = timestampBoundCase_;
+        result.timestampBound_ = this.timestampBound_;
+        if (timestampBoundCase_ == 2 && minReadTimestampBuilder_ != null) {
+          result.timestampBound_ = minReadTimestampBuilder_.build();
+        }
+        if (timestampBoundCase_ == 3 && maxStalenessBuilder_ != null) {
+          result.timestampBound_ = maxStalenessBuilder_.build();
+        }
+        if (timestampBoundCase_ == 4 && readTimestampBuilder_ != null) {
+          result.timestampBound_ = readTimestampBuilder_.build();
+        }
+        if (timestampBoundCase_ == 5 && exactStalenessBuilder_ != null) {
+          result.timestampBound_ = exactStalenessBuilder_.build();
+        }
       }
 
       @java.lang.Override
@@ -2796,7 +2801,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
               case 48:
                 {
                   returnReadTimestamp_ = input.readBool();
-
+                  bitField0_ |= 0x00000020;
                   break;
                 } // case 48
               default:
@@ -2829,6 +2834,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         onChanged();
         return this;
       }
+
+      private int bitField0_;
 
       /**
        *
@@ -2877,6 +2884,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * @return This builder for chaining.
        */
       public Builder setStrong(boolean value) {
+
         timestampBoundCase_ = 1;
         timestampBound_ = value;
         onChanged();
@@ -3162,7 +3170,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         }
         timestampBoundCase_ = 2;
         onChanged();
-        ;
         return minReadTimestampBuilder_;
       }
 
@@ -3461,7 +3468,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         }
         timestampBoundCase_ = 3;
         onChanged();
-        ;
         return maxStalenessBuilder_;
       }
 
@@ -3751,7 +3757,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         }
         timestampBoundCase_ = 4;
         onChanged();
-        ;
         return readTimestampBuilder_;
       }
 
@@ -4032,7 +4037,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         }
         timestampBoundCase_ = 5;
         onChanged();
-        ;
         return exactStalenessBuilder_;
       }
 
@@ -4071,6 +4075,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       public Builder setReturnReadTimestamp(boolean value) {
 
         returnReadTimestamp_ = value;
+        bitField0_ |= 0x00000020;
         onChanged();
         return this;
       }
@@ -4088,7 +4093,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * @return This builder for chaining.
        */
       public Builder clearReturnReadTimestamp() {
-
+        bitField0_ = (bitField0_ & ~0x00000020);
         returnReadTimestamp_ = false;
         onChanged();
         return this;
@@ -4884,6 +4889,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       if (readWriteBuilder_ != null) {
         readWriteBuilder_.clear();
       }
@@ -4922,30 +4928,30 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     public com.google.spanner.v1.TransactionOptions buildPartial() {
       com.google.spanner.v1.TransactionOptions result =
           new com.google.spanner.v1.TransactionOptions(this);
-      if (modeCase_ == 1) {
-        if (readWriteBuilder_ == null) {
-          result.mode_ = mode_;
-        } else {
-          result.mode_ = readWriteBuilder_.build();
-        }
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      if (modeCase_ == 3) {
-        if (partitionedDmlBuilder_ == null) {
-          result.mode_ = mode_;
-        } else {
-          result.mode_ = partitionedDmlBuilder_.build();
-        }
-      }
-      if (modeCase_ == 2) {
-        if (readOnlyBuilder_ == null) {
-          result.mode_ = mode_;
-        } else {
-          result.mode_ = readOnlyBuilder_.build();
-        }
-      }
-      result.modeCase_ = modeCase_;
+      buildPartialOneofs(result);
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.TransactionOptions result) {
+      int from_bitField0_ = bitField0_;
+    }
+
+    private void buildPartialOneofs(com.google.spanner.v1.TransactionOptions result) {
+      result.modeCase_ = modeCase_;
+      result.mode_ = this.mode_;
+      if (modeCase_ == 1 && readWriteBuilder_ != null) {
+        result.mode_ = readWriteBuilder_.build();
+      }
+      if (modeCase_ == 3 && partitionedDmlBuilder_ != null) {
+        result.mode_ = partitionedDmlBuilder_.build();
+      }
+      if (modeCase_ == 2 && readOnlyBuilder_ != null) {
+        result.mode_ = readOnlyBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -5088,6 +5094,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       onChanged();
       return this;
     }
+
+    private int bitField0_;
 
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.spanner.v1.TransactionOptions.ReadWrite,
@@ -5322,7 +5330,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       }
       modeCase_ = 1;
       onChanged();
-      ;
       return readWriteBuilder_;
     }
 
@@ -5564,7 +5571,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       }
       modeCase_ = 3;
       onChanged();
-      ;
       return partitionedDmlBuilder_;
     }
 
@@ -5801,7 +5807,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       }
       modeCase_ = 2;
       onChanged();
-      ;
       return readOnlyBuilder_;
     }
 

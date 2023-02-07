@@ -126,7 +126,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
    */
   @java.lang.Override
   public com.google.spanner.v1.StructTypeOrBuilder getRowTypeOrBuilder() {
-    return getRowType();
+    return rowType_ == null ? com.google.spanner.v1.StructType.getDefaultInstance() : rowType_;
   }
 
   public static final int TRANSACTION_FIELD_NUMBER = 2;
@@ -177,7 +177,9 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
    */
   @java.lang.Override
   public com.google.spanner.v1.TransactionOrBuilder getTransactionOrBuilder() {
-    return getTransaction();
+    return transaction_ == null
+        ? com.google.spanner.v1.Transaction.getDefaultInstance()
+        : transaction_;
   }
 
   public static final int UNDECLARED_PARAMETERS_FIELD_NUMBER = 3;
@@ -249,7 +251,9 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
    */
   @java.lang.Override
   public com.google.spanner.v1.StructTypeOrBuilder getUndeclaredParametersOrBuilder() {
-    return getUndeclaredParameters();
+    return undeclaredParameters_ == null
+        ? com.google.spanner.v1.StructType.getDefaultInstance()
+        : undeclaredParameters_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -482,22 +486,20 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      if (rowTypeBuilder_ == null) {
-        rowType_ = null;
-      } else {
-        rowType_ = null;
+      bitField0_ = 0;
+      rowType_ = null;
+      if (rowTypeBuilder_ != null) {
+        rowTypeBuilder_.dispose();
         rowTypeBuilder_ = null;
       }
-      if (transactionBuilder_ == null) {
-        transaction_ = null;
-      } else {
-        transaction_ = null;
+      transaction_ = null;
+      if (transactionBuilder_ != null) {
+        transactionBuilder_.dispose();
         transactionBuilder_ = null;
       }
-      if (undeclaredParametersBuilder_ == null) {
-        undeclaredParameters_ = null;
-      } else {
-        undeclaredParameters_ = null;
+      undeclaredParameters_ = null;
+      if (undeclaredParametersBuilder_ != null) {
+        undeclaredParametersBuilder_.dispose();
         undeclaredParametersBuilder_ = null;
       }
       return this;
@@ -527,23 +529,28 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
     public com.google.spanner.v1.ResultSetMetadata buildPartial() {
       com.google.spanner.v1.ResultSetMetadata result =
           new com.google.spanner.v1.ResultSetMetadata(this);
-      if (rowTypeBuilder_ == null) {
-        result.rowType_ = rowType_;
-      } else {
-        result.rowType_ = rowTypeBuilder_.build();
-      }
-      if (transactionBuilder_ == null) {
-        result.transaction_ = transaction_;
-      } else {
-        result.transaction_ = transactionBuilder_.build();
-      }
-      if (undeclaredParametersBuilder_ == null) {
-        result.undeclaredParameters_ = undeclaredParameters_;
-      } else {
-        result.undeclaredParameters_ = undeclaredParametersBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.ResultSetMetadata result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.rowType_ = rowTypeBuilder_ == null ? rowType_ : rowTypeBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.transaction_ =
+            transactionBuilder_ == null ? transaction_ : transactionBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.undeclaredParameters_ =
+            undeclaredParametersBuilder_ == null
+                ? undeclaredParameters_
+                : undeclaredParametersBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -629,20 +636,20 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
             case 10:
               {
                 input.readMessage(getRowTypeFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 input.readMessage(getTransactionFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             case 26:
               {
                 input.readMessage(
                     getUndeclaredParametersFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 26
             default:
@@ -661,6 +668,8 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private com.google.spanner.v1.StructType rowType_;
     private com.google.protobuf.SingleFieldBuilderV3<
@@ -686,7 +695,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * @return Whether the rowType field is set.
      */
     public boolean hasRowType() {
-      return rowTypeBuilder_ != null || rowType_ != null;
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      *
@@ -733,11 +742,11 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
           throw new NullPointerException();
         }
         rowType_ = value;
-        onChanged();
       } else {
         rowTypeBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -758,11 +767,11 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
     public Builder setRowType(com.google.spanner.v1.StructType.Builder builderForValue) {
       if (rowTypeBuilder_ == null) {
         rowType_ = builderForValue.build();
-        onChanged();
       } else {
         rowTypeBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -782,17 +791,18 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      */
     public Builder mergeRowType(com.google.spanner.v1.StructType value) {
       if (rowTypeBuilder_ == null) {
-        if (rowType_ != null) {
-          rowType_ =
-              com.google.spanner.v1.StructType.newBuilder(rowType_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000001) != 0)
+            && rowType_ != null
+            && rowType_ != com.google.spanner.v1.StructType.getDefaultInstance()) {
+          getRowTypeBuilder().mergeFrom(value);
         } else {
           rowType_ = value;
         }
-        onChanged();
       } else {
         rowTypeBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -811,14 +821,13 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * <code>.google.spanner.v1.StructType row_type = 1;</code>
      */
     public Builder clearRowType() {
-      if (rowTypeBuilder_ == null) {
-        rowType_ = null;
-        onChanged();
-      } else {
-        rowType_ = null;
+      bitField0_ = (bitField0_ & ~0x00000001);
+      rowType_ = null;
+      if (rowTypeBuilder_ != null) {
+        rowTypeBuilder_.dispose();
         rowTypeBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -837,7 +846,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * <code>.google.spanner.v1.StructType row_type = 1;</code>
      */
     public com.google.spanner.v1.StructType.Builder getRowTypeBuilder() {
-
+      bitField0_ |= 0x00000001;
       onChanged();
       return getRowTypeFieldBuilder().getBuilder();
     }
@@ -914,7 +923,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * @return Whether the transaction field is set.
      */
     public boolean hasTransaction() {
-      return transactionBuilder_ != null || transaction_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -953,11 +962,11 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
           throw new NullPointerException();
         }
         transaction_ = value;
-        onChanged();
       } else {
         transactionBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -973,11 +982,11 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
     public Builder setTransaction(com.google.spanner.v1.Transaction.Builder builderForValue) {
       if (transactionBuilder_ == null) {
         transaction_ = builderForValue.build();
-        onChanged();
       } else {
         transactionBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -992,19 +1001,18 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      */
     public Builder mergeTransaction(com.google.spanner.v1.Transaction value) {
       if (transactionBuilder_ == null) {
-        if (transaction_ != null) {
-          transaction_ =
-              com.google.spanner.v1.Transaction.newBuilder(transaction_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && transaction_ != null
+            && transaction_ != com.google.spanner.v1.Transaction.getDefaultInstance()) {
+          getTransactionBuilder().mergeFrom(value);
         } else {
           transaction_ = value;
         }
-        onChanged();
       } else {
         transactionBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1018,14 +1026,13 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * <code>.google.spanner.v1.Transaction transaction = 2;</code>
      */
     public Builder clearTransaction() {
-      if (transactionBuilder_ == null) {
-        transaction_ = null;
-        onChanged();
-      } else {
-        transaction_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      transaction_ = null;
+      if (transactionBuilder_ != null) {
+        transactionBuilder_.dispose();
         transactionBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1039,7 +1046,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * <code>.google.spanner.v1.Transaction transaction = 2;</code>
      */
     public com.google.spanner.v1.Transaction.Builder getTransactionBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getTransactionFieldBuilder().getBuilder();
     }
@@ -1115,7 +1122,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * @return Whether the undeclaredParameters field is set.
      */
     public boolean hasUndeclaredParameters() {
-      return undeclaredParametersBuilder_ != null || undeclaredParameters_ != null;
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      *
@@ -1168,11 +1175,11 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
           throw new NullPointerException();
         }
         undeclaredParameters_ = value;
-        onChanged();
       } else {
         undeclaredParametersBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1196,11 +1203,11 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
         com.google.spanner.v1.StructType.Builder builderForValue) {
       if (undeclaredParametersBuilder_ == null) {
         undeclaredParameters_ = builderForValue.build();
-        onChanged();
       } else {
         undeclaredParametersBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1222,19 +1229,18 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      */
     public Builder mergeUndeclaredParameters(com.google.spanner.v1.StructType value) {
       if (undeclaredParametersBuilder_ == null) {
-        if (undeclaredParameters_ != null) {
-          undeclaredParameters_ =
-              com.google.spanner.v1.StructType.newBuilder(undeclaredParameters_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000004) != 0)
+            && undeclaredParameters_ != null
+            && undeclaredParameters_ != com.google.spanner.v1.StructType.getDefaultInstance()) {
+          getUndeclaredParametersBuilder().mergeFrom(value);
         } else {
           undeclaredParameters_ = value;
         }
-        onChanged();
       } else {
         undeclaredParametersBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1255,14 +1261,13 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
      */
     public Builder clearUndeclaredParameters() {
-      if (undeclaredParametersBuilder_ == null) {
-        undeclaredParameters_ = null;
-        onChanged();
-      } else {
-        undeclaredParameters_ = null;
+      bitField0_ = (bitField0_ & ~0x00000004);
+      undeclaredParameters_ = null;
+      if (undeclaredParametersBuilder_ != null) {
+        undeclaredParametersBuilder_.dispose();
         undeclaredParametersBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1283,7 +1288,7 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * <code>.google.spanner.v1.StructType undeclared_parameters = 3;</code>
      */
     public com.google.spanner.v1.StructType.Builder getUndeclaredParametersBuilder() {
-
+      bitField0_ |= 0x00000004;
       onChanged();
       return getUndeclaredParametersFieldBuilder().getBuilder();
     }

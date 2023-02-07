@@ -68,7 +68,7 @@ public final class Partition extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int PARTITION_TOKEN_FIELD_NUMBER = 1;
-  private com.google.protobuf.ByteString partitionToken_;
+  private com.google.protobuf.ByteString partitionToken_ = com.google.protobuf.ByteString.EMPTY;
   /**
    *
    *
@@ -282,8 +282,8 @@ public final class Partition extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       partitionToken_ = com.google.protobuf.ByteString.EMPTY;
-
       return this;
     }
 
@@ -310,9 +310,18 @@ public final class Partition extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.Partition buildPartial() {
       com.google.spanner.v1.Partition result = new com.google.spanner.v1.Partition(this);
-      result.partitionToken_ = partitionToken_;
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.Partition result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.partitionToken_ = partitionToken_;
+      }
     }
 
     @java.lang.Override
@@ -392,7 +401,7 @@ public final class Partition extends com.google.protobuf.GeneratedMessageV3
             case 10:
               {
                 partitionToken_ = input.readBytes();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             default:
@@ -411,6 +420,8 @@ public final class Partition extends com.google.protobuf.GeneratedMessageV3
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private com.google.protobuf.ByteString partitionToken_ = com.google.protobuf.ByteString.EMPTY;
     /**
@@ -448,8 +459,8 @@ public final class Partition extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       partitionToken_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -467,7 +478,7 @@ public final class Partition extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearPartitionToken() {
-
+      bitField0_ = (bitField0_ & ~0x00000001);
       partitionToken_ = getDefaultInstance().getPartitionToken();
       onChanged();
       return this;

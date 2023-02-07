@@ -67,6 +67,8 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int PLAN_NODES_FIELD_NUMBER = 1;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.v1.PlanNode> planNodes_;
   /**
    *
@@ -341,6 +343,7 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       if (planNodesBuilder_ == null) {
         planNodes_ = java.util.Collections.emptyList();
       } else {
@@ -374,7 +377,15 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.QueryPlan buildPartial() {
       com.google.spanner.v1.QueryPlan result = new com.google.spanner.v1.QueryPlan(this);
-      int from_bitField0_ = bitField0_;
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(com.google.spanner.v1.QueryPlan result) {
       if (planNodesBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
           planNodes_ = java.util.Collections.unmodifiableList(planNodes_);
@@ -384,8 +395,10 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
       } else {
         result.planNodes_ = planNodesBuilder_.build();
       }
-      onBuilt();
-      return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.QueryPlan result) {
+      int from_bitField0_ = bitField0_;
     }
 
     @java.lang.Override

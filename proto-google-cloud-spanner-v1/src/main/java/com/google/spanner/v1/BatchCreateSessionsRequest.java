@@ -68,7 +68,9 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
   }
 
   public static final int DATABASE_FIELD_NUMBER = 1;
-  private volatile java.lang.Object database_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object database_ = "";
   /**
    *
    *
@@ -165,11 +167,13 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
    */
   @java.lang.Override
   public com.google.spanner.v1.SessionOrBuilder getSessionTemplateOrBuilder() {
-    return getSessionTemplate();
+    return sessionTemplate_ == null
+        ? com.google.spanner.v1.Session.getDefaultInstance()
+        : sessionTemplate_;
   }
 
   public static final int SESSION_COUNT_FIELD_NUMBER = 3;
-  private int sessionCount_;
+  private int sessionCount_ = 0;
   /**
    *
    *
@@ -410,16 +414,14 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       database_ = "";
-
-      if (sessionTemplateBuilder_ == null) {
-        sessionTemplate_ = null;
-      } else {
-        sessionTemplate_ = null;
+      sessionTemplate_ = null;
+      if (sessionTemplateBuilder_ != null) {
+        sessionTemplateBuilder_.dispose();
         sessionTemplateBuilder_ = null;
       }
       sessionCount_ = 0;
-
       return this;
     }
 
@@ -447,15 +449,25 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
     public com.google.spanner.v1.BatchCreateSessionsRequest buildPartial() {
       com.google.spanner.v1.BatchCreateSessionsRequest result =
           new com.google.spanner.v1.BatchCreateSessionsRequest(this);
-      result.database_ = database_;
-      if (sessionTemplateBuilder_ == null) {
-        result.sessionTemplate_ = sessionTemplate_;
-      } else {
-        result.sessionTemplate_ = sessionTemplateBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      result.sessionCount_ = sessionCount_;
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.BatchCreateSessionsRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.database_ = database_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.sessionTemplate_ =
+            sessionTemplateBuilder_ == null ? sessionTemplate_ : sessionTemplateBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.sessionCount_ = sessionCount_;
+      }
     }
 
     @java.lang.Override
@@ -506,6 +518,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
         return this;
       if (!other.getDatabase().isEmpty()) {
         database_ = other.database_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (other.hasSessionTemplate()) {
@@ -543,19 +556,19 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
             case 10:
               {
                 database_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 input.readMessage(getSessionTemplateFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             case 24:
               {
                 sessionCount_ = input.readInt32();
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 24
             default:
@@ -574,6 +587,8 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private java.lang.Object database_ = "";
     /**
@@ -642,8 +657,8 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
       if (value == null) {
         throw new NullPointerException();
       }
-
       database_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -661,8 +676,8 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      * @return This builder for chaining.
      */
     public Builder clearDatabase() {
-
       database_ = getDefaultInstance().getDatabase();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -685,8 +700,8 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       database_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -709,7 +724,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      * @return Whether the sessionTemplate field is set.
      */
     public boolean hasSessionTemplate() {
-      return sessionTemplateBuilder_ != null || sessionTemplate_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -746,11 +761,11 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
           throw new NullPointerException();
         }
         sessionTemplate_ = value;
-        onChanged();
       } else {
         sessionTemplateBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -765,11 +780,11 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
     public Builder setSessionTemplate(com.google.spanner.v1.Session.Builder builderForValue) {
       if (sessionTemplateBuilder_ == null) {
         sessionTemplate_ = builderForValue.build();
-        onChanged();
       } else {
         sessionTemplateBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -783,19 +798,18 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      */
     public Builder mergeSessionTemplate(com.google.spanner.v1.Session value) {
       if (sessionTemplateBuilder_ == null) {
-        if (sessionTemplate_ != null) {
-          sessionTemplate_ =
-              com.google.spanner.v1.Session.newBuilder(sessionTemplate_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && sessionTemplate_ != null
+            && sessionTemplate_ != com.google.spanner.v1.Session.getDefaultInstance()) {
+          getSessionTemplateBuilder().mergeFrom(value);
         } else {
           sessionTemplate_ = value;
         }
-        onChanged();
       } else {
         sessionTemplateBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -808,14 +822,13 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      * <code>.google.spanner.v1.Session session_template = 2;</code>
      */
     public Builder clearSessionTemplate() {
-      if (sessionTemplateBuilder_ == null) {
-        sessionTemplate_ = null;
-        onChanged();
-      } else {
-        sessionTemplate_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      sessionTemplate_ = null;
+      if (sessionTemplateBuilder_ != null) {
+        sessionTemplateBuilder_.dispose();
         sessionTemplateBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -828,7 +841,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      * <code>.google.spanner.v1.Session session_template = 2;</code>
      */
     public com.google.spanner.v1.Session.Builder getSessionTemplateBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getSessionTemplateFieldBuilder().getBuilder();
     }
@@ -915,6 +928,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
     public Builder setSessionCount(int value) {
 
       sessionCount_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -934,7 +948,7 @@ public final class BatchCreateSessionsRequest extends com.google.protobuf.Genera
      * @return This builder for chaining.
      */
     public Builder clearSessionCount() {
-
+      bitField0_ = (bitField0_ & ~0x00000004);
       sessionCount_ = 0;
       onChanged();
       return this;

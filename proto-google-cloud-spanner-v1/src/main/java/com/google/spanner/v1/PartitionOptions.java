@@ -67,7 +67,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
   }
 
   public static final int PARTITION_SIZE_BYTES_FIELD_NUMBER = 1;
-  private long partitionSizeBytes_;
+  private long partitionSizeBytes_ = 0L;
   /**
    *
    *
@@ -89,7 +89,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
   }
 
   public static final int MAX_PARTITIONS_FIELD_NUMBER = 2;
-  private long maxPartitions_;
+  private long maxPartitions_ = 0L;
   /**
    *
    *
@@ -318,10 +318,9 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       partitionSizeBytes_ = 0L;
-
       maxPartitions_ = 0L;
-
       return this;
     }
 
@@ -349,10 +348,21 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     public com.google.spanner.v1.PartitionOptions buildPartial() {
       com.google.spanner.v1.PartitionOptions result =
           new com.google.spanner.v1.PartitionOptions(this);
-      result.partitionSizeBytes_ = partitionSizeBytes_;
-      result.maxPartitions_ = maxPartitions_;
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.PartitionOptions result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.partitionSizeBytes_ = partitionSizeBytes_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.maxPartitions_ = maxPartitions_;
+      }
     }
 
     @java.lang.Override
@@ -435,13 +445,13 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
             case 8:
               {
                 partitionSizeBytes_ = input.readInt64();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 8
             case 16:
               {
                 maxPartitions_ = input.readInt64();
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 16
             default:
@@ -460,6 +470,8 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private long partitionSizeBytes_;
     /**
@@ -500,6 +512,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     public Builder setPartitionSizeBytes(long value) {
 
       partitionSizeBytes_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -519,7 +532,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * @return This builder for chaining.
      */
     public Builder clearPartitionSizeBytes() {
-
+      bitField0_ = (bitField0_ & ~0x00000001);
       partitionSizeBytes_ = 0L;
       onChanged();
       return this;
@@ -568,6 +581,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     public Builder setMaxPartitions(long value) {
 
       maxPartitions_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -589,7 +603,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * @return This builder for chaining.
      */
     public Builder clearMaxPartitions() {
-
+      bitField0_ = (bitField0_ & ~0x00000002);
       maxPartitions_ = 0L;
       onChanged();
       return this;

@@ -68,6 +68,8 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
   }
 
   public static final int STATEMENTS_FIELD_NUMBER = 1;
+
+  @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringList statements_;
   /**
    *
@@ -337,6 +339,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       bitField0_ = (bitField0_ & ~0x00000001);
       return this;
@@ -366,14 +369,25 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
     public com.google.spanner.admin.database.v1.GetDatabaseDdlResponse buildPartial() {
       com.google.spanner.admin.database.v1.GetDatabaseDdlResponse result =
           new com.google.spanner.admin.database.v1.GetDatabaseDdlResponse(this);
-      int from_bitField0_ = bitField0_;
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(
+        com.google.spanner.admin.database.v1.GetDatabaseDdlResponse result) {
       if (((bitField0_ & 0x00000001) != 0)) {
         statements_ = statements_.getUnmodifiableView();
         bitField0_ = (bitField0_ & ~0x00000001);
       }
       result.statements_ = statements_;
-      onBuilt();
-      return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.database.v1.GetDatabaseDdlResponse result) {
+      int from_bitField0_ = bitField0_;
     }
 
     @java.lang.Override

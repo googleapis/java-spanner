@@ -39,7 +39,7 @@ import java.util.Random;
  * of Cloud Spanner filled with random data.
  */
 public class RandomResultSetGenerator {
-  private static Type[] generateTypes(Dialect dialect) {
+  public static Type[] generateAllTypes(Dialect dialect) {
     return new Type[] {
       Type.newBuilder().setCode(TypeCode.BOOL).build(),
       Type.newBuilder().setCode(TypeCode.INT64).build(),
@@ -109,7 +109,7 @@ public class RandomResultSetGenerator {
     };
   }
 
-  private static ResultSetMetadata generateMetadata(Type[] types) {
+  public static ResultSetMetadata generateAllTypesMetadata(Type[] types) {
     StructType.Builder rowTypeBuilder = StructType.newBuilder();
     for (int col = 0; col < types.length; col++) {
       rowTypeBuilder.addFields(Field.newBuilder().setName("COL" + col).setType(types[col])).build();
@@ -132,8 +132,8 @@ public class RandomResultSetGenerator {
   public RandomResultSetGenerator(int rowCount, Dialect dialect) {
     this.rowCount = rowCount;
     this.dialect = dialect;
-    this.types = generateTypes(dialect);
-    this.metadata = generateMetadata(types);
+    this.types = generateAllTypes(dialect);
+    this.metadata = generateAllTypesMetadata(types);
   }
 
   public ResultSet generate() {
