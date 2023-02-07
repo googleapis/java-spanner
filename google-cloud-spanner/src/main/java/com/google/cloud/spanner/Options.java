@@ -147,10 +147,14 @@ public final class Options implements Serializable {
     return new PageSizeOption(pageSize);
   }
 
+  /**
+   * If this option is set to `true` for a partitioned read/query the request will be
+   * executed via offline access.
+   */
   @BetaApi
-  public static ServerlessQueryOption serverlessAnalyticsEnabled(
-      Boolean serverlessAnalyticsEnabled) {
-    return new ServerlessQueryOption(serverlessAnalyticsEnabled);
+  public static DataBoostQueryOption dataBoost(
+      Boolean dataBoostEnabled) {
+    return new DataBoostQueryOption(dataBoostEnabled);
   }
 
   /**
@@ -328,7 +332,7 @@ public final class Options implements Serializable {
   private String etag;
   private Boolean validateOnly;
   private Boolean withOptimisticLock;
-  private Boolean serverlessAnalyticsEnabled;
+  private Boolean dataBoostEnabled;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -421,12 +425,12 @@ public final class Options implements Serializable {
     return withOptimisticLock;
   }
 
-  boolean hasServerlessAnalyticsEnabled() {
-    return serverlessAnalyticsEnabled != null;
+  boolean hasDataBoostEnabledEnabled() {
+    return dataBoostEnabled != null;
   }
 
-  Boolean serverlessAnalyticsEnabled() {
-    return serverlessAnalyticsEnabled;
+  Boolean dataBoost() {
+    return dataBoostEnabled;
   }
 
   @Override
@@ -456,8 +460,8 @@ public final class Options implements Serializable {
     if (tag != null) {
       b.append("tag: ").append(tag).append(' ');
     }
-    if (serverlessAnalyticsEnabled != null) {
-      b.append("serverlessAnalyticsEnabled: ").append(serverlessAnalyticsEnabled).append(' ');
+    if (dataBoostEnabled != null) {
+      b.append("dataBoostEnabled: ").append(dataBoostEnabled).append(' ');
     }
     if (etag != null) {
       b.append("etag: ").append(etag).append(' ');
@@ -501,7 +505,7 @@ public final class Options implements Serializable {
         && Objects.equals(priority(), that.priority())
         && Objects.equals(tag(), that.tag())
         && Objects.equals(etag(), that.etag())
-        && Objects.equals(serverlessAnalyticsEnabled(), that.serverlessAnalyticsEnabled())
+        && Objects.equals(dataBoost(), that.dataBoost())
         && Objects.equals(validateOnly(), that.validateOnly())
         && Objects.equals(withOptimisticLock(), that.withOptimisticLock());
   }
@@ -545,8 +549,8 @@ public final class Options implements Serializable {
     if (withOptimisticLock != null) {
       result = 31 * result + withOptimisticLock.hashCode();
     }
-    if (serverlessAnalyticsEnabled != null) {
-      result = 31 * result + serverlessAnalyticsEnabled.hashCode();
+    if (dataBoostEnabled != null) {
+      result = 31 * result + dataBoostEnabled.hashCode();
     }
     return result;
   }
@@ -628,17 +632,17 @@ public final class Options implements Serializable {
     }
   }
 
-  static final class ServerlessQueryOption extends InternalOption implements ReadAndQueryOption {
+  static final class DataBoostQueryOption extends InternalOption implements ReadAndQueryOption {
 
-    private final Boolean serverlessAnalyticsEnabled;
+    private final Boolean dataBoostEnabled;
 
-    ServerlessQueryOption(Boolean serverlessAnalyticsEnabled) {
-      this.serverlessAnalyticsEnabled = serverlessAnalyticsEnabled;
+    DataBoostQueryOption(Boolean dataBoostEnabled) {
+      this.dataBoostEnabled = dataBoostEnabled;
     }
 
     @Override
     void appendToOptions(Options options) {
-      options.serverlessAnalyticsEnabled = serverlessAnalyticsEnabled;
+      options.dataBoostEnabled = dataBoostEnabled;
     }
   }
 
