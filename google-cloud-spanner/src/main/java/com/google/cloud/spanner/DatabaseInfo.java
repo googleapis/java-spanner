@@ -154,7 +154,8 @@ public class DatabaseInfo {
     }
 
     @Override
-    public Builder setProtoDescriptors(@Nonnull byte[] protoDescriptors) {
+    public Builder setProtoDescriptors(byte[] protoDescriptors) {
+      Preconditions.checkNotNull(protoDescriptors);
       this.protoDescriptors = ByteString.copyFrom(protoDescriptors);
       return this;
     }
