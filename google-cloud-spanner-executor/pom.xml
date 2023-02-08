@@ -81,7 +81,7 @@
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-spanner-executor-v1</artifactId>
-      <version>1.0.0</version>
+      <version>1.2.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
