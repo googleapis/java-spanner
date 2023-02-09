@@ -56,13 +56,13 @@ implementation 'com.google.cloud:google-cloud-spanner'
 If you are using Gradle without BOM, add this to your dependencies:
 
 ```Groovy
-implementation 'com.google.cloud:google-cloud-spanner:6.35.2'
+implementation 'com.google.cloud:google-cloud-spanner:6.36.0'
 ```
 
 If you are using SBT, add this to your dependencies:
 
 ```Scala
-libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.35.2"
+libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.36.0"
 ```
 
 ## Authentication
