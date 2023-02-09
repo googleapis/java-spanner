@@ -19,13 +19,17 @@ package com.google.cloud.spanner;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.AbstractResultSet.LazyByteArray;
 import com.google.cloud.spanner.Type.Code;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
+import com.google.protobuf.Value.KindCase;
+import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -36,6 +40,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -95,7 +100,16 @@ public abstract class Value implements Serializable {
    * @param value the non-null proto value (a {@link NullValue} is allowed)
    */
   public static Value untyped(com.google.protobuf.Value value) {
-    return new UntypedValueImpl(Preconditions.checkNotNull(value));
+    return new ProtoBackedValueImpl(Preconditions.checkNotNull(value), null);
+  }
+
+  /** Returns a generic Value backed by a protobuf value. This is used for unrecognized types. */
+  static Value unrecognized(com.google.protobuf.Value value, Type type) {
+    Preconditions.checkArgument(
+        type.getCode() == Code.UNRECOGNIZED
+            || type.getCode() == Code.ARRAY
+                && type.getArrayElementType().getCode() == Code.UNRECOGNIZED);
+    return new ProtoBackedValueImpl(Preconditions.checkNotNull(value), type);
   }
 
   /**
@@ -223,7 +237,22 @@ public abstract class Value implements Serializable {
    * @param v the value, which may be null
    */
   public static Value bytes(@Nullable ByteArray v) {
-    return new BytesImpl(v == null, v);
+    return new LazyBytesImpl(v == null, v);
+  }
+
+  /**
+   * Returns a {@code BYTES} value.
+   *
+   * @param base64String the value in Base64 encoding, which may be null. This value must be a valid
+   *     base64 string.
+   */
+  public static Value bytesFromBase64(@Nullable String base64String) {
+    return new LazyBytesImpl(
+        base64String == null, base64String == null ? null : new LazyByteArray(base64String));
+  }
+
+  static Value internalBytes(@Nullable LazyByteArray bytes) {
+    return new LazyBytesImpl(bytes == null, bytes);
   }
 
   /** Returns a {@code TIMESTAMP} value. */
@@ -428,7 +457,37 @@ public abstract class Value implements Serializable {
    *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
    */
   public static Value bytesArray(@Nullable Iterable<ByteArray> v) {
-    return new BytesArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+    return new LazyBytesArrayImpl(v == null, v == null ? null : byteArraysToLazyByteArrayList(v));
+  }
+
+  private static List<LazyByteArray> byteArraysToLazyByteArrayList(Iterable<ByteArray> byteArrays) {
+    List<LazyByteArray> list = new ArrayList<>();
+    for (ByteArray byteArray : byteArrays) {
+      list.add(byteArray == null ? null : new LazyByteArray(byteArray));
+    }
+    return Collections.unmodifiableList(list);
+  }
+
+  /**
+   * Returns an {@code ARRAY<BYTES>} value.
+   *
+   * @param base64Strings the source of element values. This may be {@code null} to produce a value
+   *     for which {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   *     Non-null values must be a valid Base64 string.
+   */
+  public static Value bytesArrayFromBase64(@Nullable Iterable<String> base64Strings) {
+    return new LazyBytesArrayImpl(
+        base64Strings == null,
+        base64Strings == null ? null : base64StringsToLazyByteArrayList(base64Strings));
+  }
+
+  private static List<LazyByteArray> base64StringsToLazyByteArrayList(
+      Iterable<String> base64Strings) {
+    List<LazyByteArray> list = new ArrayList<>();
+    for (String base64 : base64Strings) {
+      list.add(base64 == null ? null : new LazyByteArray(base64));
+    }
+    return Collections.unmodifiableList(list);
   }
 
   /**
@@ -672,12 +731,41 @@ public abstract class Value implements Serializable {
     return b.toString();
   }
 
+  /**
+   * Returns this value as a raw string representation. This is guaranteed to work for all values,
+   * regardless of the underlying data type, and is guaranteed not to be truncated.
+   *
+   * <p>Returns the string "NULL" for null values.
+   */
+  @Nonnull
+  public String getAsString() {
+    return toString();
+  }
+
+  /**
+   * Returns this value as a list of raw string representations. This is guaranteed to work for all
+   * values, regardless of the underlying data type, and the strings are guaranteed not to be
+   * truncated. The method returns a singleton list for non-array values and a list containing as
+   * many elements as there are in the array for array values. This method can be used instead of
+   * the {@link #getAsString()} method if you need to quote the individual elements in an array.
+   *
+   * <p>Returns the string "NULL" for null values.
+   */
+  @Nonnull
+  public ImmutableList<String> getAsStringList() {
+    return ImmutableList.of(toString());
+  }
+
   // END OF PUBLIC API.
 
   static com.google.protobuf.Value toProto(Value value) {
     return value == null ? NULL_PROTO : value.toProto();
   }
 
+  /**
+   * Appends a string representation of this value to the given builder. The string representation
+   * can be truncated.
+   */
   abstract void toString(StringBuilder b);
 
   abstract com.google.protobuf.Value toProto();
@@ -948,7 +1036,7 @@ public abstract class Value implements Serializable {
 
     /**
      * Appends a representation of {@code this} to {@code b}. {@code this} is guaranteed to
-     * represent a non-null value.
+     * represent a non-null value. This value could be truncated if the underlying value is long.
      */
     abstract void valueToString(StringBuilder b);
 
@@ -1022,11 +1110,16 @@ public abstract class Value implements Serializable {
     }
   }
 
-  private static class UntypedValueImpl extends AbstractValue {
+  /**
+   * This {@link Value} implementation is backed by a generic protobuf Value instance. It is used
+   * for untyped Values that are created by users, and for values with an unrecognized types that
+   * coming from the backend.
+   */
+  private static class ProtoBackedValueImpl extends AbstractValue {
     private final com.google.protobuf.Value value;
 
-    private UntypedValueImpl(com.google.protobuf.Value value) {
-      super(value.hasNullValue(), null);
+    private ProtoBackedValueImpl(com.google.protobuf.Value value, @Nullable Type type) {
+      super(value.hasNullValue(), type);
       this.value = value;
     }
 
@@ -1053,6 +1146,44 @@ public abstract class Value implements Serializable {
       return value.getNumberValue();
     }
 
+    @Nonnull
+    @Override
+    public String getAsString() {
+      switch (value.getKindCase()) {
+        case NULL_VALUE:
+          return NULL_STRING;
+        case NUMBER_VALUE:
+          return Double.toString(value.getNumberValue());
+        case STRING_VALUE:
+          return value.getStringValue();
+        case BOOL_VALUE:
+          return Boolean.toString(value.getBoolValue());
+        case LIST_VALUE:
+          return value.getListValue().getValuesList().stream()
+              .map(element -> Value.untyped(element).getAsString())
+              .collect(Collectors.joining(",", "[", "]"));
+        case STRUCT_VALUE:
+          throw new IllegalArgumentException(
+              "Struct value with unrecognized type is not supported");
+        case KIND_NOT_SET:
+        default:
+          throw new IllegalArgumentException("Kind of value is not set or unknown");
+      }
+    }
+
+    @Nonnull
+    @Override
+    public ImmutableList<String> getAsStringList() {
+      if (value.getKindCase() == KindCase.LIST_VALUE) {
+        ImmutableList.Builder<String> builder = ImmutableList.builder();
+        value.getListValue().getValuesList().stream()
+            .map(v -> Value.untyped(v).getAsString())
+            .forEach(builder::add);
+        return builder.build();
+      }
+      return ImmutableList.of(getAsString());
+    }
+
     @Override
     void valueToString(StringBuilder b) {
       b.append(value);
@@ -1065,7 +1196,7 @@ public abstract class Value implements Serializable {
 
     @Override
     boolean valueEquals(Value v) {
-      return ((UntypedValueImpl) v).value.equals(value);
+      return ((ProtoBackedValueImpl) v).value.equals(value);
     }
 
     @Override
@@ -1234,6 +1365,12 @@ public abstract class Value implements Serializable {
       return value;
     }
 
+    @Nonnull
+    @Override
+    public String getAsString() {
+      return isNull() ? NULL_STRING : value;
+    }
+
     @Override
     void valueToString(StringBuilder b) {
       if (value.length() > MAX_DEBUG_STRING_LENGTH) {
@@ -1254,6 +1391,12 @@ public abstract class Value implements Serializable {
     public String getJson() {
       checkNotNull();
       return value;
+    }
+
+    @Nonnull
+    @Override
+    public String getAsString() {
+      return isNull() ? NULL_STRING : value;
     }
 
     @Override
@@ -1283,6 +1426,12 @@ public abstract class Value implements Serializable {
       return value;
     }
 
+    @Nonnull
+    @Override
+    public String getAsString() {
+      return isNull() ? NULL_STRING : value;
+    }
+
     @Override
     public String getString() {
       return getPgJsonb();
@@ -1298,26 +1447,36 @@ public abstract class Value implements Serializable {
     }
   }
 
-  private static class BytesImpl extends AbstractObjectValue<ByteArray> {
+  private static class LazyBytesImpl extends AbstractObjectValue<LazyByteArray> {
 
-    private BytesImpl(boolean isNull, ByteArray value) {
+    private LazyBytesImpl(boolean isNull, LazyByteArray value) {
       super(isNull, Type.bytes(), value);
+    }
+
+    private LazyBytesImpl(boolean isNull, ByteArray value) {
+      super(isNull, Type.bytes(), value == null ? null : new LazyByteArray(value));
     }
 
     @Override
     public ByteArray getBytes() {
       checkNotNull();
-      return value;
+      return value.getByteArray();
     }
 
     @Override
     com.google.protobuf.Value valueToProto() {
-      return com.google.protobuf.Value.newBuilder().setStringValue(value.toBase64()).build();
+      return com.google.protobuf.Value.newBuilder().setStringValue(value.getBase64String()).build();
+    }
+
+    @Nonnull
+    @Override
+    public String getAsString() {
+      return value == null ? NULL_STRING : value.getBase64String();
     }
 
     @Override
     void valueToString(StringBuilder b) {
-      b.append(value.toString());
+      b.append(value == null ? null : value.toString());
     }
   }
 
@@ -1482,6 +1641,16 @@ public abstract class Value implements Serializable {
     abstract T getValue(int i);
 
     abstract com.google.protobuf.Value getValueAsProto(int i);
+
+    @Nonnull
+    @Override
+    public ImmutableList<String> getAsStringList() {
+      ImmutableList.Builder<String> builder = ImmutableList.builder();
+      for (int i = 0; i < size(); i++) {
+        builder.add(isElementNull(i) ? NULL_STRING : String.valueOf(getValue(i)));
+      }
+      return builder.build();
+    }
 
     @Override
     void valueToString(StringBuilder b) {
@@ -1661,6 +1830,16 @@ public abstract class Value implements Serializable {
       return com.google.protobuf.Value.newBuilder().setListValue(list).build();
     }
 
+    @Nonnull
+    @Override
+    public ImmutableList<String> getAsStringList() {
+      ImmutableList.Builder<String> builder = ImmutableList.builder();
+      for (T element : value) {
+        builder.add(element == null ? NULL_STRING : elementToString(element));
+      }
+      return builder.build();
+    }
+
     String elementToString(T element) {
       return element.toString();
     }
@@ -1749,25 +1928,48 @@ public abstract class Value implements Serializable {
     }
   }
 
-  private static class BytesArrayImpl extends AbstractArrayValue<ByteArray> {
-    private BytesArrayImpl(boolean isNull, @Nullable List<ByteArray> values) {
+  private static class LazyBytesArrayImpl extends AbstractArrayValue<LazyByteArray> {
+    private transient AbstractLazyInitializer<List<ByteArray>> bytesArray = defaultInitializer();
+
+    private LazyBytesArrayImpl(boolean isNull, @Nullable List<LazyByteArray> values) {
       super(isNull, Type.bytes(), values);
+    }
+
+    private AbstractLazyInitializer<List<ByteArray>> defaultInitializer() {
+      return new AbstractLazyInitializer<List<ByteArray>>() {
+        @Override
+        protected List<ByteArray> initialize() {
+          return value.stream()
+              .map(element -> element == null ? null : element.getByteArray())
+              .collect(Collectors.toList());
+        }
+      };
+    }
+
+    private void readObject(java.io.ObjectInputStream in)
+        throws IOException, ClassNotFoundException {
+      in.defaultReadObject();
+      bytesArray = defaultInitializer();
     }
 
     @Override
     public List<ByteArray> getBytesArray() {
       checkNotNull();
-      return value;
+      try {
+        return bytesArray.get();
+      } catch (Exception e) {
+        throw SpannerExceptionFactory.asSpannerException(e);
+      }
     }
 
     @Override
-    String elementToString(ByteArray element) {
-      return element.toBase64();
+    String elementToString(LazyByteArray element) {
+      return element.getBase64String();
     }
 
     @Override
-    void appendElement(StringBuilder b, ByteArray element) {
-      b.append(element.toString());
+    void appendElement(StringBuilder b, LazyByteArray element) {
+      b.append(elementToString(element));
     }
   }
 

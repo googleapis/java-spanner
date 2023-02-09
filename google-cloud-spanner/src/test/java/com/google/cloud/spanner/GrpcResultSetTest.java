@@ -38,8 +38,10 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.Transaction;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -517,7 +519,10 @@ public class GrpcResultSetTest {
         Value.float64(1.0),
         Value.float64(null),
         Value.bytes(ByteArray.fromBase64("abcd")),
+        Value.bytesFromBase64(
+            Base64.getEncoder().encodeToString("test".getBytes(StandardCharsets.UTF_8))),
         Value.bytes(null),
+        Value.bytesFromBase64(null),
         Value.timestamp(Timestamp.ofTimeSecondsAndNanos(1, 2)),
         Value.timestamp(null),
         Value.date(Date.fromYearMonthDay(2017, 4, 17)),
@@ -528,6 +533,14 @@ public class GrpcResultSetTest {
         Value.boolArray((boolean[]) null),
         Value.int64Array(new long[] {1, 2, 3}),
         Value.int64Array((long[]) null),
+        Value.float64Array(new double[] {1.1, 2.2, 3.3}),
+        Value.float64Array((double[]) null),
+        Value.bytesArray(Arrays.asList(ByteArray.fromBase64("abcd"), null)),
+        Value.bytesArrayFromBase64(
+            Arrays.asList(
+                Base64.getEncoder().encodeToString("test".getBytes(StandardCharsets.UTF_8)), null)),
+        Value.bytesArray(null),
+        Value.bytesArrayFromBase64(null),
         Value.timestampArray(ImmutableList.of(Timestamp.MAX_VALUE, Timestamp.MAX_VALUE)),
         Value.timestampArray(null),
         Value.dateArray(
