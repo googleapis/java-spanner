@@ -21,6 +21,8 @@ import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 import com.google.protobuf.ByteString;
+
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -62,11 +64,11 @@ public class DatabaseInfo {
       throw new UnsupportedOperationException("Unimplemented");
     }
 
-    public abstract Builder setProtoDescriptors(byte[] protoDescriptors);
+    public abstract Builder setProtoDescriptors(@Nonnull byte[] protoDescriptors);
 
-    public abstract Builder setProtoDescriptors(InputStream inputStream) throws Exception;
+    public abstract Builder setProtoDescriptors(@Nonnull InputStream inputStream) throws IOException;
 
-    public abstract Builder setProtoDescriptors(String filePath) throws Exception;
+    public abstract Builder setProtoDescriptors(String filePath) throws IOException;
 
     abstract Builder setProto(com.google.spanner.admin.database.v1.Database proto);
 
@@ -154,24 +156,26 @@ public class DatabaseInfo {
     }
 
     @Override
-    public Builder setProtoDescriptors(byte[] protoDescriptors) {
+    public Builder setProtoDescriptors(@Nonnull byte[] protoDescriptors) {
       Preconditions.checkNotNull(protoDescriptors);
       this.protoDescriptors = ByteString.copyFrom(protoDescriptors);
       return this;
     }
 
     @Override
-    public Builder setProtoDescriptors(InputStream inputStream) throws Exception {
+    public Builder setProtoDescriptors(@Nonnull InputStream inputStream) throws IOException {
+      Preconditions.checkNotNull(inputStream);
       byte[] byteArray = ByteStreams.toByteArray(inputStream);
-      this.protoDescriptors = byteArray != null ? ByteString.copyFrom(byteArray) : ByteString.EMPTY;
+      this.protoDescriptors = ByteString.copyFrom(byteArray);
       return this;
     }
 
     @Override
     // TODO(harsha): This overload method needs to be completed
-    public Builder setProtoDescriptors(String filePath) throws Exception {
+    public Builder setProtoDescriptors(String filePath) throws IOException {
+      Preconditions.checkState(filePath.length() != 0, "Input File Path cannot be empty.");
       InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath);
-      // InputStream inputStream = new FileInputStream(filePath);
+      Preconditions.checkNotNull(inputStream, "Input File path is invalid.");
       return setProtoDescriptors(inputStream);
     }
 

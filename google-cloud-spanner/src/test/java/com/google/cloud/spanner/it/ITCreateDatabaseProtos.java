@@ -123,7 +123,7 @@ public class ITCreateDatabaseProtos {
     assertThat(database.getEarliestVersionTime()).isNotNull();
 
 
-    final GetDatabaseDdlResponse response = dbAdminClient.getDatabaseDdlWithProtoDescriptors("integration-test-proto-column", "int_test_proto_column_db");
+    final GetDatabaseDdlResponse response = dbAdminClient.getDatabaseDdlResponse("integration-test-proto-column", "int_test_proto_column_db");
     System.out.println(response.getProtoDescriptors().toByteArray());
   }
 
@@ -255,7 +255,7 @@ public class ITCreateDatabaseProtos {
     }
   }
 
-  private void updateDatabaseWithProtos(
+  /*private void updateDatabaseWithProtos(
       final String instanceId, final String databaseId, InputStream protoDescriptorFile) {
 
     byte[] protoDescriptorByteArray = null;
@@ -290,12 +290,12 @@ public class ITCreateDatabaseProtos {
       // If the operation failed during execution, expose the cause.
       throw SpannerExceptionFactory.asSpannerException(e.getCause());
     }
-  }
+  }*/
 
   private void getDatabaseDdl(
       String instanceId, String databaseId) {
     try {
-      final GetDatabaseDdlResponse response = dbAdminClient.getDatabaseDdlWithProtoDescriptors(instanceId, databaseId);
+      final GetDatabaseDdlResponse response = dbAdminClient.getDatabaseDdlResponse(instanceId, databaseId);
       System.out.println("Retrieved GetDatabaseDdlResponse for " + databaseId);
       for (String ddl : response.getStatementsList()) {
         System.out.println(ddl);
