@@ -267,6 +267,16 @@ public class DatabaseAdminClientImplTest {
   }
 
   @Test
+  public void getDatabaseDdlResponse() {
+    List<String> ddl = ImmutableList.of("CREATE TABLE mytable()");
+    when(rpc.getDatabaseDdl(DB_NAME))
+            .thenReturn(GetDatabaseDdlResponse.newBuilder().addAllStatements(ddl).setProtoDescriptors(ByteString.EMPTY).build());
+    GetDatabaseDdlResponse response = client.getDatabaseDdlResponse(INSTANCE_ID, DB_ID);
+    assertThat(response.getStatementsList()).isEqualTo(ddl);
+    assertThat(response.getProtoDescriptors()).isEqualTo(ByteString.EMPTY);
+  }
+
+  @Test
   public void listDatabases() {
     String pageToken = "token";
     when(rpc.listDatabases(INSTANCE_NAME, 1, null))

@@ -16,6 +16,31 @@
 
 package com.google.cloud.spanner;
 
+import com.google.cloud.Identity;
+import com.google.cloud.Policy;
+import com.google.cloud.Role;
+import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.DatabaseInfo.State;
+import com.google.cloud.spanner.encryption.EncryptionConfigs;
+import com.google.common.io.ByteStreams;
+import com.google.protobuf.ByteString;
+import com.google.rpc.Code;
+import com.google.rpc.Status;
+import com.google.spanner.admin.database.v1.DatabaseDialect;
+import com.google.spanner.admin.database.v1.EncryptionInfo;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+
 import static com.google.cloud.spanner.DatabaseInfo.State.CREATING;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -23,25 +48,6 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-
-import com.google.cloud.Identity;
-import com.google.cloud.Policy;
-import com.google.cloud.Role;
-import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.DatabaseInfo.State;
-import com.google.cloud.spanner.encryption.EncryptionConfigs;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
-import com.google.spanner.admin.database.v1.DatabaseDialect;
-import com.google.spanner.admin.database.v1.EncryptionInfo;
-import java.util.Collections;
-import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 
 /** Unit tests for {@link com.google.cloud.spanner.Database}. */
 @RunWith(JUnit4.class)
@@ -66,6 +72,9 @@ public class DatabaseTest {
               .build());
   private static final String DEFAULT_LEADER = "default-leader";
   private static final DatabaseDialect DEFAULT_DIALECT = DatabaseDialect.GOOGLE_STANDARD_SQL;
+  private static ByteString protoDescriptors;
+  private static InputStream protoDescriptorsInputStream;
+  private static byte[] protoDescriptorsByteArray;
 
   @Mock DatabaseAdminClient dbClient;
 
@@ -79,6 +88,15 @@ public class DatabaseTest {
         .thenAnswer(
             invocation ->
                 new Database.Builder(dbClient, (DatabaseId) invocation.getArguments()[0]));
+    try {
+      protoDescriptorsInputStream = getClass().getClassLoader().getResourceAsStream("com/google/cloud/spanner/descriptors.pb");
+      protoDescriptorsByteArray = ByteStreams.toByteArray(protoDescriptorsInputStream);
+      protoDescriptors = ByteString.copyFrom(protoDescriptorsByteArray);
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   @Test
@@ -176,6 +194,42 @@ public class DatabaseTest {
             .build();
 
     assertEquals(Dialect.GOOGLE_STANDARD_SQL, database.getDialect());
+  }
+
+  @Test
+  public void testBuildWithProtoDescriptors() throws IOException {
+    final Database database =
+            dbClient
+                    .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+                    .setProtoDescriptors("com/google/cloud/spanner/descriptors.pb")
+                    .build();
+
+    assertEquals(protoDescriptors, database.getProtoDescriptors());
+  }
+
+  // TODO(harsha): need to recheck, not passing
+  @Test
+  public void testBuildWithProtoDescriptorsFromInputStream() throws IOException {
+    InputStream in = getClass().getClassLoader().getResourceAsStream("com/google/cloud/spanner/descriptors.pb");
+    //byte[] test = ByteStreams.toByteArray(in);
+    final Database database =
+            dbClient
+                    .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+                    .setProtoDescriptors(in)
+                    .build();
+
+    assertEquals(protoDescriptors, database.getProtoDescriptors());
+  }
+
+  @Test
+  public void testBuildWithProtoDescriptorsFromByteArray() throws IOException {
+    final Database database =
+            dbClient
+                    .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+                    .setProtoDescriptors(protoDescriptorsByteArray)
+                    .build();
+
+    assertEquals(protoDescriptors, database.getProtoDescriptors());
   }
 
   @Test
