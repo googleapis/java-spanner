@@ -1195,8 +1195,6 @@ public class GapicSpannerRpc implements SpannerRpc {
       requestBuilder.setProtoDescriptors(databaseInfo.getProtoDescriptors());
     }
     final CreateDatabaseRequest request = requestBuilder.build();
-    String req_string = request.toString();
-    System.out.println(req_string);
     OperationFutureCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata> callable =
         new OperationFutureCallable<>(
             databaseAdminStub.createDatabaseOperationCallable(),

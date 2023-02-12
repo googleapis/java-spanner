@@ -21,7 +21,6 @@ import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 import com.google.protobuf.ByteString;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
@@ -66,7 +65,8 @@ public class DatabaseInfo {
 
     public abstract Builder setProtoDescriptors(@Nonnull byte[] protoDescriptors);
 
-    public abstract Builder setProtoDescriptors(@Nonnull InputStream inputStream) throws IOException;
+    public abstract Builder setProtoDescriptors(@Nonnull InputStream inputStream)
+        throws IOException;
 
     public abstract Builder setProtoDescriptors(String filePath) throws IOException;
 

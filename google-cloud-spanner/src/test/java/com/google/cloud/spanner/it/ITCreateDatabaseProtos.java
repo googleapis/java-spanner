@@ -29,22 +29,17 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.io.ByteStreams;
-import com.google.protobuf.ByteString;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import javax.xml.crypto.Data;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -122,8 +117,9 @@ public class ITCreateDatabaseProtos {
     assertThat(database.getVersionRetentionPeriod()).isEqualTo(VERSION_RETENTION_PERIOD);
     assertThat(database.getEarliestVersionTime()).isNotNull();
 
-
-    final GetDatabaseDdlResponse response = dbAdminClient.getDatabaseDdlResponse("integration-test-proto-column", "int_test_proto_column_db");
+    final GetDatabaseDdlResponse response =
+        dbAdminClient.getDatabaseDdlResponse(
+            "integration-test-proto-column", "int_test_proto_column_db");
     System.out.println(response.getProtoDescriptors().toByteArray());
   }
 
@@ -149,11 +145,14 @@ public class ITCreateDatabaseProtos {
   private Database createDatabase(
       final String projectId, final String instanceId, final String databaseId) throws IOException {
 
-    //String filePath = "/usr/local/google/home/sriharshach/github/Go/golang-samples-proto-support-v2/spanner/spanner_snippets/spanner/testdata/protos/descriptor.pb";
+    // String filePath =
+    // "/usr/local/google/home/sriharshach/github/Go/golang-samples-proto-support-v2/spanner/spanner_snippets/spanner/testdata/protos/descriptor.pb";
     // file to byte[], Path
-    //byte[] bytes = Files.readAllBytes(Paths.get(filePath));
+    // byte[] bytes = Files.readAllBytes(Paths.get(filePath));
 
-    InputStream inputStream = new FileInputStream("/usr/local/google/home/sriharshach/github/Go/golang-samples-proto-support-v2/spanner/spanner_snippets/spanner/testdata/protos/descriptors.pb");
+    InputStream inputStream =
+        new FileInputStream(
+            "/usr/local/google/home/sriharshach/github/Go/golang-samples-proto-support-v2/spanner/spanner_snippets/spanner/testdata/protos/descriptors.pb");
     byte[] byteArray = null;
 
     // Try block to check for exceptions
@@ -165,13 +164,13 @@ public class ITCreateDatabaseProtos {
 
     try {
       byteArray = ByteStreams.toByteArray(inputStream);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       System.out.println(e);
     }
 
     final Database databaseToCreate =
-        dbAdminClient.newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
+        dbAdminClient
+            .newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
             .setProtoDescriptors(byteArray)
             .build();
 
@@ -214,18 +213,21 @@ public class ITCreateDatabaseProtos {
   }
 
   private Database createDatabaseWithProtos(
-      final String projectId, final String instanceId, final String databaseId, InputStream protoDescriptorFile) {
+      final String projectId,
+      final String instanceId,
+      final String databaseId,
+      InputStream protoDescriptorFile) {
 
     byte[] protoDescriptorByteArray = null;
     try {
       protoDescriptorByteArray = ByteStreams.toByteArray(protoDescriptorFile);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       System.out.println(e);
     }
 
     final Database databaseToCreate =
-        dbAdminClient.newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
+        dbAdminClient
+            .newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
             .setProtoDescriptors(protoDescriptorByteArray)
             .build();
 
@@ -292,10 +294,10 @@ public class ITCreateDatabaseProtos {
     }
   }*/
 
-  private void getDatabaseDdl(
-      String instanceId, String databaseId) {
+  private void getDatabaseDdl(String instanceId, String databaseId) {
     try {
-      final GetDatabaseDdlResponse response = dbAdminClient.getDatabaseDdlResponse(instanceId, databaseId);
+      final GetDatabaseDdlResponse response =
+          dbAdminClient.getDatabaseDdlResponse(instanceId, databaseId);
       System.out.println("Retrieved GetDatabaseDdlResponse for " + databaseId);
       for (String ddl : response.getStatementsList()) {
         System.out.println(ddl);

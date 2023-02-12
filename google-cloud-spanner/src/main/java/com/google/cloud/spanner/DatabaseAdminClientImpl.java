@@ -463,8 +463,7 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   }
 
   @Override
-  public GetDatabaseDdlResponse getDatabaseDdlResponse(
-      String instanceId, String databaseId) {
+  public GetDatabaseDdlResponse getDatabaseDdlResponse(String instanceId, String databaseId) {
     String dbName = getDatabaseName(instanceId, databaseId);
     return rpc.getDatabaseDdl(dbName);
   }
