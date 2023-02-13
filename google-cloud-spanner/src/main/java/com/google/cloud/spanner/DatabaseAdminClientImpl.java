@@ -419,9 +419,9 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
 
   @Override
   public OperationFuture<Void, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
-      String instanceId,
-      String databaseId,
-      Iterable<String> statements,
+      final String instanceId,
+      final String databaseId,
+      final Iterable<String> statements,
       @Nullable String operationId)
       throws SpannerException {
 
