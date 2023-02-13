@@ -171,7 +171,6 @@ public class DatabaseInfo {
     }
 
     @Override
-    // TODO(harsha): This overload method needs to be completed
     public Builder setProtoDescriptors(String filePath) throws IOException {
       Preconditions.checkState(filePath.length() != 0, "Input File Path cannot be empty.");
       InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath);

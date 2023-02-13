@@ -209,12 +209,10 @@ public class DatabaseTest {
     assertEquals(protoDescriptors, database.getProtoDescriptors());
   }
 
-  // TODO(harsha): need to recheck, not passing
   @Test
   public void testBuildWithProtoDescriptorsFromInputStream() throws IOException {
     InputStream in =
         getClass().getClassLoader().getResourceAsStream("com/google/cloud/spanner/descriptors.pb");
-    // byte[] test = ByteStreams.toByteArray(in);
     final Database database =
         dbClient
             .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
