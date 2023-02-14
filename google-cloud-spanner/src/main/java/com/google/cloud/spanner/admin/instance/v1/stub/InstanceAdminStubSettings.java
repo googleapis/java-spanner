@@ -113,10 +113,7 @@ import org.threeten.bp.Duration;
  * instanceAdminSettingsBuilder
  *     .getInstanceConfigSettings()
  *     .setRetrySettings(
- *         instanceAdminSettingsBuilder
- *             .getInstanceConfigSettings()
- *             .getRetrySettings()
- *             .toBuilder()
+ *         instanceAdminSettingsBuilder.getInstanceConfigSettings().getRetrySettings().toBuilder()
  *             .setTotalTimeout(Duration.ofSeconds(30))
  *             .build());
  * InstanceAdminStubSettings instanceAdminSettings = instanceAdminSettingsBuilder.build();

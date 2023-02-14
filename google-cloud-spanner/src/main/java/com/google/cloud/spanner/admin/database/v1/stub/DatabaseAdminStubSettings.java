@@ -125,10 +125,7 @@ import org.threeten.bp.Duration;
  * databaseAdminSettingsBuilder
  *     .getDatabaseSettings()
  *     .setRetrySettings(
- *         databaseAdminSettingsBuilder
- *             .getDatabaseSettings()
- *             .getRetrySettings()
- *             .toBuilder()
+ *         databaseAdminSettingsBuilder.getDatabaseSettings().getRetrySettings().toBuilder()
  *             .setTotalTimeout(Duration.ofSeconds(30))
  *             .build());
  * DatabaseAdminStubSettings databaseAdminSettings = databaseAdminSettingsBuilder.build();

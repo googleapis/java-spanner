@@ -42,7 +42,6 @@ import javax.annotation.Nullable;
 class DatabaseAdminClientImpl implements DatabaseAdminClient {
 
   private static final class PolicyMarshaller extends DefaultMarshaller {
-
     @Override
     protected Policy fromPb(com.google.iam.v1.Policy policyPb) {
       return super.fromPb(policyPb);
