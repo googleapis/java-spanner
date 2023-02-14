@@ -63,8 +63,6 @@ public class ITProtoColumnTest {
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static DatabaseId databaseID;
-  // For reference of databaseClient and dbAdminClient usage check ITPgJsonbTest.java or
-  // ITWithGrpcGcpTest.java
   private static DatabaseAdminClient dbAdminClient;
   private static DatabaseClient databaseClient;
 

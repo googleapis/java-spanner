@@ -68,7 +68,6 @@ import org.mockito.Mock;
 
 @RunWith(JUnit4.class)
 public class DatabaseAdminClientImplTest {
-
   private static final String PROJECT_ID = "my-project";
   private static final String INSTANCE_ID = "my-instance";
   private static final String INSTANCE_NAME = "projects/my-project/instances/my-instance";

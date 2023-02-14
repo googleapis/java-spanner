@@ -86,10 +86,7 @@ import javax.annotation.Generated;
  * spannerSettingsBuilder
  *     .createSessionSettings()
  *     .setRetrySettings(
- *         spannerSettingsBuilder
- *             .createSessionSettings()
- *             .getRetrySettings()
- *             .toBuilder()
+ *         spannerSettingsBuilder.createSessionSettings().getRetrySettings().toBuilder()
  *             .setTotalTimeout(Duration.ofSeconds(30))
  *             .build());
  * SpannerSettings spannerSettings = spannerSettingsBuilder.build();

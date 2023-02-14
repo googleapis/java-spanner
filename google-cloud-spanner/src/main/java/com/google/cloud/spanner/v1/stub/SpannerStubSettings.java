@@ -103,10 +103,7 @@ import org.threeten.bp.Duration;
  * spannerSettingsBuilder
  *     .createSessionSettings()
  *     .setRetrySettings(
- *         spannerSettingsBuilder
- *             .createSessionSettings()
- *             .getRetrySettings()
- *             .toBuilder()
+ *         spannerSettingsBuilder.createSessionSettings().getRetrySettings().toBuilder()
  *             .setTotalTimeout(Duration.ofSeconds(30))
  *             .build());
  * SpannerStubSettings spannerSettings = spannerSettingsBuilder.build();
