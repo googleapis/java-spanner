@@ -21,9 +21,20 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.ByteArray;
-import com.google.cloud.spanner.*;
+import com.google.cloud.spanner.Database;
+import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.IntegrationTestEnv;
+import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.KeySet;
+import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.ParallelIntegrationTest;
+import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SingerProto.Genre;
 import com.google.cloud.spanner.SingerProto.SingerInfo;
+import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
@@ -59,11 +70,6 @@ public class ITProtoColumnTest {
 
   @BeforeClass
   public static void setUpDatabase() throws Exception {
-    // Get default spanner options for an integration test.
-    // SpannerOptions.Builder builder = env.getTestHelper().getOptions().toBuilder();
-    // Create a new testHelper with the cloud-devel host.
-    // testHelper = RemoteSpannerHelper.create(builder.build(),
-    // env.getTestHelper().getInstanceId());
     RemoteSpannerHelper testHelper = env.getTestHelper();
     databaseID = DatabaseId.of(testHelper.getInstanceId(), testHelper.getUniqueDatabaseId());
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
@@ -141,9 +147,9 @@ public class ITProtoColumnTest {
   }
 
   /**
-   * Test to check data update and read queries on Proto columns and Enums and their arrays. Test
-   * also checks for compatability between following types: 1. Proto Messages & Bytes 2. Proto Enums
-   * & Int64
+   * Test to check data update and read queries on Proto Messages, Proto Enums and their arrays.
+   * Test also checks for compatability between following types: 1. Proto Messages & Bytes 2. Proto
+   * Enums & Int64
    */
   @Test
   public void testProtoColumnsUpdateAndRead() {

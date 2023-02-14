@@ -46,7 +46,6 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class Type implements Serializable {
-
   private static final Type TYPE_BOOL = new Type(Code.BOOL, null, null);
   private static final Type TYPE_INT64 = new Type(Code.INT64, null, null);
   private static final Type TYPE_FLOAT64 = new Type(Code.FLOAT64, null, null);

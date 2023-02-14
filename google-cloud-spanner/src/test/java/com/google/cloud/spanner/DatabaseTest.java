@@ -74,6 +74,8 @@ public class DatabaseTest {
   private static ByteString protoDescriptors;
   private static InputStream protoDescriptorsInputStream;
   private static byte[] protoDescriptorsByteArray;
+  private static final String PROTO_DESCRIPTORS_RESOURCE_PATH =
+      "com/google/cloud/spanner/descriptors.pb";
 
   @Mock DatabaseAdminClient dbClient;
 
@@ -89,9 +91,7 @@ public class DatabaseTest {
                 new Database.Builder(dbClient, (DatabaseId) invocation.getArguments()[0]));
     try {
       protoDescriptorsInputStream =
-          getClass()
-              .getClassLoader()
-              .getResourceAsStream("com/google/cloud/spanner/descriptors.pb");
+          getClass().getClassLoader().getResourceAsStream(PROTO_DESCRIPTORS_RESOURCE_PATH);
       protoDescriptorsByteArray = ByteStreams.toByteArray(protoDescriptorsInputStream);
       protoDescriptors = ByteString.copyFrom(protoDescriptorsByteArray);
     } catch (FileNotFoundException e) {
@@ -203,7 +203,7 @@ public class DatabaseTest {
     final Database database =
         dbClient
             .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
-            .setProtoDescriptors("com/google/cloud/spanner/descriptors.pb")
+            .setProtoDescriptors(PROTO_DESCRIPTORS_RESOURCE_PATH)
             .build();
 
     assertEquals(protoDescriptors, database.getProtoDescriptors());
@@ -212,7 +212,7 @@ public class DatabaseTest {
   @Test
   public void testBuildWithProtoDescriptorsFromInputStream() throws IOException {
     InputStream in =
-        getClass().getClassLoader().getResourceAsStream("com/google/cloud/spanner/descriptors.pb");
+        getClass().getClassLoader().getResourceAsStream(PROTO_DESCRIPTORS_RESOURCE_PATH);
     final Database database =
         dbClient
             .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))

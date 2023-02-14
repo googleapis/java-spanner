@@ -69,7 +69,6 @@ import org.threeten.bp.Duration;
  */
 @InternalApi
 public interface SpannerRpc extends ServiceRpc {
-
   /** Options passed in {@link SpannerRpc} methods to control how an RPC is issued. */
   enum Option {
     CHANNEL_HINT("Channel Hint");
@@ -105,7 +104,6 @@ public interface SpannerRpc extends ServiceRpc {
    * @param <T> the type of result
    */
   final class Paginated<T> {
-
     private final Iterable<T> results;
     private final String nextPageToken;
 
@@ -142,7 +140,6 @@ public interface SpannerRpc extends ServiceRpc {
 
   /** Consumer for the results produced by a streaming read or query call. */
   interface ResultStreamConsumer {
-
     void onPartialResultSet(PartialResultSet results);
 
     void onCompleted();
@@ -152,7 +149,6 @@ public interface SpannerRpc extends ServiceRpc {
 
   /** Handle for cancellation of a streaming read or query call. */
   interface StreamingCall {
-
     /**
      * Requests more messages from the stream. We disable the auto flow control mechanism in grpc,
      * so we need to request messages ourself. This gives us more control over how much buffer we
