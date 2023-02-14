@@ -40,7 +40,6 @@ import javax.annotation.Nullable;
 
 /** Default implementation of {@link DatabaseAdminClient}. */
 class DatabaseAdminClientImpl implements DatabaseAdminClient {
-
   private static final class PolicyMarshaller extends DefaultMarshaller {
     @Override
     protected Policy fromPb(com.google.iam.v1.Policy policyPb) {
