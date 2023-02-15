@@ -223,7 +223,7 @@ public class DatabaseTest {
   }
 
   @Test
-  public void testBuildWithProtoDescriptorsFromByteArray() throws IOException {
+  public void testBuildWithProtoDescriptorsFromByteArray() {
     final Database database =
         dbClient
             .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
@@ -231,6 +231,37 @@ public class DatabaseTest {
             .build();
 
     assertEquals(protoDescriptors, database.getProtoDescriptors());
+  }
+
+  @Test
+  public void testBuildWithProtoDescriptorsThrowsException() throws IOException {
+    InputStream in =
+        getClass().getClassLoader().getResourceAsStream(PROTO_DESCRIPTORS_RESOURCE_PATH);
+    in.close();
+    // case1: Test empty file path
+    assertThrows(
+        IllegalStateException.class,
+        () ->
+            dbClient
+                .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+                .setProtoDescriptors("")
+                .build());
+    // case2: Test invalid file path
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            dbClient
+                .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+                .setProtoDescriptors("empty.pb")
+                .build());
+    // case3: Test one of the IOException case, where InputStream is closed before read
+    assertThrows(
+        IOException.class,
+        () ->
+            dbClient
+                .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+                .setProtoDescriptors(in)
+                .build());
   }
 
   @Test
