@@ -16,9 +16,11 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.common.base.Strings;
 import javax.annotation.Nullable;
 
 /**
@@ -41,5 +43,25 @@ class ConnectionPreconditions {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.FAILED_PRECONDITION, String.valueOf(errorMessage));
     }
+  }
+
+  static void checkArgument(boolean expression, String message) {
+    if (!expression) {
+      throw SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, message);
+    }
+  }
+
+  /** Verifies that the given identifier is a valid identifier for the given dialect. */
+  static String checkValidIdentifier(Dialect dialect, String identifier) {
+    checkArgument(!Strings.isNullOrEmpty(identifier), "Identifier may not be null or empty");
+    switch (dialect) {
+      case GOOGLE_STANDARD_SQL:
+        break;
+      case POSTGRESQL:
+        break;
+      default:
+        throw new IllegalArgumentException("Unknown dialect: " + dialect);
+    }
+    return identifier;
   }
 }

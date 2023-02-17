@@ -296,4 +296,9 @@ class DdlBatch extends AbstractBaseUnitOfWork {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Rollback is not allowed for DDL batches.");
   }
+
+  @Override
+  String getUnitOfWorkName() {
+    return "DDL batch";
+  }
 }

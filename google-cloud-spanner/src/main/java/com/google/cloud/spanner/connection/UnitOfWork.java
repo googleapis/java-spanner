@@ -20,6 +20,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.CommitResponse;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.UpdateOption;
@@ -30,6 +31,7 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.concurrent.ExecutionException;
+import javax.annotation.Nonnull;
 
 /** Internal interface for transactions and batches on {@link Connection}s. */
 @InternalApi
@@ -86,6 +88,15 @@ interface UnitOfWork {
    * @return An {@link ApiFuture} that is done when the rollback has finished.
    */
   ApiFuture<Void> rollbackAsync();
+
+  /** @see Connection#savepoint(String) */
+  void savepoint(@Nonnull String name, @Nonnull Dialect dialect);
+
+  /** @see Connection#releaseSavepoint(String) */
+  void releaseSavepoint(@Nonnull String name);
+
+  /** @see Connection#rollbackToSavepoint(String) */
+  void rollbackToSavepoint(@Nonnull String name);
 
   /**
    * Sends the currently buffered statements in this unit of work to the database and ends the

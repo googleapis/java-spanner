@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
+import static com.google.cloud.spanner.connection.ConnectionPreconditions.checkValidIdentifier;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -838,6 +839,29 @@ class ConnectionImpl implements Connection {
       setDefaultTransactionOptions();
     }
     return res;
+  }
+
+  @Override
+  public void savepoint(String name) {
+    ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
+    getCurrentUnitOfWorkOrStartNewUnitOfWork()
+        .savepoint(checkValidIdentifier(getDialect(), name), getDialect());
+  }
+
+  @Override
+  public void releaseSavepoint(String name) {
+    ConnectionPreconditions.checkState(
+        isTransactionStarted(), "This connection has no active transaction");
+    getCurrentUnitOfWorkOrStartNewUnitOfWork()
+        .releaseSavepoint(checkValidIdentifier(getDialect(), name));
+  }
+
+  @Override
+  public void rollbackToSavepoint(String name) {
+    ConnectionPreconditions.checkState(
+        isTransactionStarted(), "This connection has no active transaction");
+    getCurrentUnitOfWorkOrStartNewUnitOfWork()
+        .rollbackToSavepoint(checkValidIdentifier(getDialect(), name));
   }
 
   @Override
