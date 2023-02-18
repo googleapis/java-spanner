@@ -37,6 +37,8 @@ import java.util.Objects;
  * read/write statements.
  */
 abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
+
+  /** In-memory savepoint implementation that is used by the Connection API. */
   static class Savepoint {
     private final String name;
 
@@ -48,10 +50,12 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
       this.name = name;
     }
 
+    /** Returns the index of the first statement that was executed after this savepoint. */
     int getStatementPosition() {
       return -1;
     }
 
+    /** Returns the index of the first mutation that was executed after this savepoint. */
     int getMutationPosition() {
       return -1;
     }
@@ -150,8 +154,9 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
 
   @Override
   public void savepoint(String name, Dialect dialect) {
-    if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
-      // Check that there is no savepoint with this name.
+    if (dialect != Dialect.POSTGRESQL) {
+      // Check that there is no savepoint with this name. Note that PostgreSQL allows multiple
+      // savepoints in a transaction with the same name, so we don't execute this check for PG.
       if (savepoints.stream().anyMatch(savepoint -> savepoint.name.equals(name))) {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT, "Savepoint with name " + name + " already exists");
@@ -162,6 +167,7 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
 
   @Override
   public void releaseSavepoint(String name) {
+    // Remove the given savepoint and all later savepoints from the transaction.
     savepoints.subList(getSavepointIndex(name), savepoints.size()).clear();
   }
 
@@ -170,6 +176,8 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
     int index = getSavepointIndex(name);
     rollbackToSavepoint(savepoints.get(index));
     if (index < (savepoints.size() - 1)) {
+      // Remove all savepoints that come after this savepoint from the transaction.
+      // Rolling back to a savepoint does not remove that savepoint, only the ones that come after.
       savepoints.subList(index + 1, savepoints.size()).clear();
     }
   }

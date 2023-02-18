@@ -510,4 +510,60 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
       assertEquals(CommitRequest.class, requests.get(index++).getClass());
     }
   }
+
+  @Test
+  public void testRollbackToSavepointWithoutInternalRetries() {
+    Statement statement = Statement.of("select * from foo where bar=true");
+    int numRows = 10;
+    RandomResultSetGenerator generator = new RandomResultSetGenerator(numRows);
+    mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+    try (Connection connection = createConnection()) {
+      connection.setRetryAbortsInternally(false);
+
+      connection.savepoint("s1");
+      try (ResultSet resultSet = connection.executeQuery(statement)) {
+        int count = 0;
+        while (resultSet.next()) {
+          count++;
+        }
+        assertEquals(numRows, count);
+      }
+      // This should work.
+      connection.rollbackToSavepoint("s1");
+      // Resuming after a rollback is not supported without internal retries enabled.
+      assertThrows(SpannerException.class, () -> connection.executeUpdate(INSERT_STATEMENT));
+    }
+  }
+
+  @Test
+  public void testRollbackToSavepointWithoutInternalRetriesInReadOnlyTransaction() {
+    Statement statement = Statement.of("select * from foo where bar=true");
+    int numRows = 10;
+    RandomResultSetGenerator generator = new RandomResultSetGenerator(numRows);
+    mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+    try (Connection connection = createConnection()) {
+      connection.setRetryAbortsInternally(false);
+      connection.setReadOnly(true);
+
+      connection.savepoint("s1");
+      try (ResultSet resultSet = connection.executeQuery(statement)) {
+        int count = 0;
+        while (resultSet.next()) {
+          count++;
+        }
+        assertEquals(numRows, count);
+      }
+
+      // Both rolling back and resuming after a rollback are supported in a read-only transaction,
+      // even if internal retries have been disabled.
+      connection.rollbackToSavepoint("s1");
+      try (ResultSet resultSet = connection.executeQuery(statement)) {
+        int count = 0;
+        while (resultSet.next()) {
+          count++;
+        }
+        assertEquals(numRows, count);
+      }
+    }
+  }
 }

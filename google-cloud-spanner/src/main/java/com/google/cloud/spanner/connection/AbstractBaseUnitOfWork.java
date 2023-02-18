@@ -129,6 +129,10 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     this.rpcPriority = builder.rpcPriority;
   }
 
+  /**
+   * Returns a descriptive name for the type of transaction / unit of work. This is used in error
+   * messages.
+   */
   abstract String getUnitOfWorkName();
 
   @Override
