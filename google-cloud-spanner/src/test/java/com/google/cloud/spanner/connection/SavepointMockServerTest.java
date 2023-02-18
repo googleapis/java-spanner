@@ -27,6 +27,7 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.AbstractMessage;
 import com.google.spanner.v1.BeginTransactionRequest;
@@ -76,6 +77,13 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
       } else {
         assertThrows(SpannerException.class, () -> connection.savepoint("s1"));
       }
+
+      // Test invalid identifiers.
+      assertThrows(SpannerException.class, () -> connection.savepoint(null));
+      assertThrows(SpannerException.class, () -> connection.savepoint(""));
+      assertThrows(SpannerException.class, () -> connection.savepoint("1"));
+      assertThrows(SpannerException.class, () -> connection.savepoint("-foo"));
+      assertThrows(SpannerException.class, () -> connection.savepoint(Strings.repeat("t", 129)));
     }
   }
 

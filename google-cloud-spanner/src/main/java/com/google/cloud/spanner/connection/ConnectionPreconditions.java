@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -52,16 +51,16 @@ class ConnectionPreconditions {
   }
 
   /** Verifies that the given identifier is a valid identifier for the given dialect. */
-  static String checkValidIdentifier(Dialect dialect, String identifier) {
+  static String checkValidIdentifier(String identifier) {
     checkArgument(!Strings.isNullOrEmpty(identifier), "Identifier may not be null or empty");
-    switch (dialect) {
-      case GOOGLE_STANDARD_SQL:
-        break;
-      case POSTGRESQL:
-        break;
-      default:
-        throw new IllegalArgumentException("Unknown dialect: " + dialect);
+    checkArgument(
+        Character.isJavaIdentifierStart(identifier.charAt(0)), "Invalid identifier: " + identifier);
+    for (int i = 1; i < identifier.length(); i++) {
+      checkArgument(
+          Character.isJavaIdentifierPart(identifier.charAt(i)),
+          "Invalid identifier: " + identifier);
     }
+    checkArgument(identifier.length() <= 128, "Max identifier length is 128 characters");
     return identifier;
   }
 }

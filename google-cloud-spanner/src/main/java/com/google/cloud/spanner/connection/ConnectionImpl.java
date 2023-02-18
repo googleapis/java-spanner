@@ -844,24 +844,21 @@ class ConnectionImpl implements Connection {
   @Override
   public void savepoint(String name) {
     ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
-    getCurrentUnitOfWorkOrStartNewUnitOfWork()
-        .savepoint(checkValidIdentifier(getDialect(), name), getDialect());
+    getCurrentUnitOfWorkOrStartNewUnitOfWork().savepoint(checkValidIdentifier(name), getDialect());
   }
 
   @Override
   public void releaseSavepoint(String name) {
     ConnectionPreconditions.checkState(
         isTransactionStarted(), "This connection has no active transaction");
-    getCurrentUnitOfWorkOrStartNewUnitOfWork()
-        .releaseSavepoint(checkValidIdentifier(getDialect(), name));
+    getCurrentUnitOfWorkOrStartNewUnitOfWork().releaseSavepoint(checkValidIdentifier(name));
   }
 
   @Override
   public void rollbackToSavepoint(String name) {
     ConnectionPreconditions.checkState(
         isTransactionStarted(), "This connection has no active transaction");
-    getCurrentUnitOfWorkOrStartNewUnitOfWork()
-        .rollbackToSavepoint(checkValidIdentifier(getDialect(), name));
+    getCurrentUnitOfWorkOrStartNewUnitOfWork().rollbackToSavepoint(checkValidIdentifier(name));
   }
 
   @Override
