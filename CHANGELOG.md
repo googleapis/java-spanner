@@ -1,5 +1,22 @@
 # Changelog
 
+## [6.36.1](https://github.com/googleapis/java-spanner/compare/v6.36.0...v6.36.1) (2023-02-21)
+
+
+### Bug Fixes
+
+* Prevent illegal negative timeout values into thread sleep() method while retrying exceptions in unit tests. ([#2268](https://github.com/googleapis/java-spanner/issues/2268)) ([ce66098](https://github.com/googleapis/java-spanner/commit/ce66098c7139ea13d5ea91cf6fbceb5c732b392d))
+
+
+### Dependencies
+
+* Update dependency com.google.api.grpc:proto-google-cloud-spanner-executor-v1 to v1.2.0 ([#2256](https://github.com/googleapis/java-spanner/issues/2256)) ([f0ca86a](https://github.com/googleapis/java-spanner/commit/f0ca86a0858bde84cc38f1ad8fae5f3c4f4f3395))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.12.0 ([#2284](https://github.com/googleapis/java-spanner/issues/2284)) ([0be701a](https://github.com/googleapis/java-spanner/commit/0be701a8b59277f2cfb990a88e4f1dafcbafdd97))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.3.0 ([#2285](https://github.com/googleapis/java-spanner/issues/2285)) ([bb5d5c6](https://github.com/googleapis/java-spanner/commit/bb5d5c66e78812b943a85e0fd888e7021c11bde1))
+* Update dependency com.google.cloud:google-cloud-trace to v2.11.0 ([#2286](https://github.com/googleapis/java-spanner/issues/2286)) ([3c80932](https://github.com/googleapis/java-spanner/commit/3c80932d577de0ea108e695d0a4e542fbfc01deb))
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.20 ([#2280](https://github.com/googleapis/java-spanner/issues/2280)) ([685d1ea](https://github.com/googleapis/java-spanner/commit/685d1ea1c3bf59cd71093a68c260276c605d835f))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.20 ([#2281](https://github.com/googleapis/java-spanner/issues/2281)) ([f2aabc2](https://github.com/googleapis/java-spanner/commit/f2aabc24770d1b9c505dfc96b39fe81c6a0ad5a5))
+
 ## [6.36.0](https://github.com/googleapis/java-spanner/compare/v6.35.2...v6.36.0) (2023-02-08)
 
 
