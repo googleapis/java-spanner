@@ -1,5 +1,24 @@
 # Changelog
 
+## [6.36.0](https://github.com/googleapis/java-spanner/compare/v6.35.2...v6.36.0) (2023-02-08)
+
+
+### Features
+
+* Support UNRECOGNIZED types + decode BYTES columns lazily ([#2219](https://github.com/googleapis/java-spanner/issues/2219)) ([fc721c4](https://github.com/googleapis/java-spanner/commit/fc721c4d30de6ed9e5bc4fbbe0e1e7b79a5c7490))
+
+
+### Bug Fixes
+
+* **java:** Skip fixing poms for special modules ([#1744](https://github.com/googleapis/java-spanner/issues/1744)) ([#2244](https://github.com/googleapis/java-spanner/issues/2244)) ([e7f4b40](https://github.com/googleapis/java-spanner/commit/e7f4b4016f8c4c7e4fac0b822f5af2cffd181134))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.11.0 ([#2262](https://github.com/googleapis/java-spanner/issues/2262)) ([d566613](https://github.com/googleapis/java-spanner/commit/d566613442217bdfc69caea7242464fba2647519))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.2.0 ([#2264](https://github.com/googleapis/java-spanner/issues/2264)) ([b5fdbc0](https://github.com/googleapis/java-spanner/commit/b5fdbc0accdaaf1f63c62c1837d72bb378dc8f43))
+* Update dependency com.google.cloud:google-cloud-trace to v2.10.0 ([#2263](https://github.com/googleapis/java-spanner/issues/2263)) ([96f0c81](https://github.com/googleapis/java-spanner/commit/96f0c8181aeb8ca75647a783d8b163f371ad937e))
+
 ## [6.35.2](https://github.com/googleapis/java-spanner/compare/v6.35.1...v6.35.2) (2023-01-24)
 
 
