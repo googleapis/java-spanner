@@ -159,7 +159,8 @@ public class ITDatabaseRolePermissionTest {
             .get(5, TimeUnit.MINUTES);
 
     // Connect to db with dbRoleOrphan
-    SpannerOptions options = SpannerOptions.newBuilder().setDatabaseRole(dbRoleOrphan).build();
+    SpannerOptions options =
+        testHelper.getOptions().toBuilder().setDatabaseRole(dbRoleOrphan).build();
 
     Spanner spanner = options.getService();
     DatabaseClient dbClient = spanner.getDatabaseClient(createdDatabase.getId());
