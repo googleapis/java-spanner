@@ -68,6 +68,8 @@ public final class BatchCreateSessionsResponse extends com.google.protobuf.Gener
   }
 
   public static final int SESSION_FIELD_NUMBER = 1;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.v1.Session> session_;
   /**
    *
@@ -335,6 +337,7 @@ public final class BatchCreateSessionsResponse extends com.google.protobuf.Gener
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       if (sessionBuilder_ == null) {
         session_ = java.util.Collections.emptyList();
       } else {
@@ -369,7 +372,16 @@ public final class BatchCreateSessionsResponse extends com.google.protobuf.Gener
     public com.google.spanner.v1.BatchCreateSessionsResponse buildPartial() {
       com.google.spanner.v1.BatchCreateSessionsResponse result =
           new com.google.spanner.v1.BatchCreateSessionsResponse(this);
-      int from_bitField0_ = bitField0_;
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(
+        com.google.spanner.v1.BatchCreateSessionsResponse result) {
       if (sessionBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
           session_ = java.util.Collections.unmodifiableList(session_);
@@ -379,8 +391,10 @@ public final class BatchCreateSessionsResponse extends com.google.protobuf.Gener
       } else {
         result.session_ = sessionBuilder_.build();
       }
-      onBuilt();
-      return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.BatchCreateSessionsResponse result) {
+      int from_bitField0_ = bitField0_;
     }
 
     @java.lang.Override

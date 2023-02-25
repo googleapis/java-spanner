@@ -85,6 +85,8 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
   }
 
   public static final int RESULT_SETS_FIELD_NUMBER = 1;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.v1.ResultSet> resultSets_;
   /**
    *
@@ -224,7 +226,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    */
   @java.lang.Override
   public com.google.rpc.StatusOrBuilder getStatusOrBuilder() {
-    return getStatus();
+    return status_ == null ? com.google.rpc.Status.getDefaultInstance() : status_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -457,6 +459,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       if (resultSetsBuilder_ == null) {
         resultSets_ = java.util.Collections.emptyList();
       } else {
@@ -464,10 +467,9 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
         resultSetsBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000001);
-      if (statusBuilder_ == null) {
-        status_ = null;
-      } else {
-        status_ = null;
+      status_ = null;
+      if (statusBuilder_ != null) {
+        statusBuilder_.dispose();
         statusBuilder_ = null;
       }
       return this;
@@ -497,7 +499,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
     public com.google.spanner.v1.ExecuteBatchDmlResponse buildPartial() {
       com.google.spanner.v1.ExecuteBatchDmlResponse result =
           new com.google.spanner.v1.ExecuteBatchDmlResponse(this);
-      int from_bitField0_ = bitField0_;
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(com.google.spanner.v1.ExecuteBatchDmlResponse result) {
       if (resultSetsBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
           resultSets_ = java.util.Collections.unmodifiableList(resultSets_);
@@ -507,13 +517,13 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
       } else {
         result.resultSets_ = resultSetsBuilder_.build();
       }
-      if (statusBuilder_ == null) {
-        result.status_ = status_;
-      } else {
-        result.status_ = statusBuilder_.build();
+    }
+
+    private void buildPartial0(com.google.spanner.v1.ExecuteBatchDmlResponse result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.status_ = statusBuilder_ == null ? status_ : statusBuilder_.build();
       }
-      onBuilt();
-      return result;
     }
 
     @java.lang.Override
@@ -632,7 +642,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
             case 18:
               {
                 input.readMessage(getStatusFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             default:
@@ -1109,7 +1119,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      * @return Whether the status field is set.
      */
     public boolean hasStatus() {
-      return statusBuilder_ != null || status_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -1146,11 +1156,11 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
           throw new NullPointerException();
         }
         status_ = value;
-        onChanged();
       } else {
         statusBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1166,11 +1176,11 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
     public Builder setStatus(com.google.rpc.Status.Builder builderForValue) {
       if (statusBuilder_ == null) {
         status_ = builderForValue.build();
-        onChanged();
       } else {
         statusBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1185,16 +1195,18 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      */
     public Builder mergeStatus(com.google.rpc.Status value) {
       if (statusBuilder_ == null) {
-        if (status_ != null) {
-          status_ = com.google.rpc.Status.newBuilder(status_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && status_ != null
+            && status_ != com.google.rpc.Status.getDefaultInstance()) {
+          getStatusBuilder().mergeFrom(value);
         } else {
           status_ = value;
         }
-        onChanged();
       } else {
         statusBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1208,14 +1220,13 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      * <code>.google.rpc.Status status = 2;</code>
      */
     public Builder clearStatus() {
-      if (statusBuilder_ == null) {
-        status_ = null;
-        onChanged();
-      } else {
-        status_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      status_ = null;
+      if (statusBuilder_ != null) {
+        statusBuilder_.dispose();
         statusBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1229,7 +1240,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      * <code>.google.rpc.Status status = 2;</code>
      */
     public com.google.rpc.Status.Builder getStatusBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getStatusFieldBuilder().getBuilder();
     }

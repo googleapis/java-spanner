@@ -32,12 +32,14 @@ import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
+import com.google.protobuf.NullValue;
 import com.google.protobuf.Value.KindCase;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -55,11 +57,13 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -67,11 +71,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Implementation of {@link ResultSet}. */
 abstract class AbstractResultSet<R> extends AbstractStructReader implements ResultSet {
   private static final Tracer tracer = Tracing.getTracer();
+  private static final com.google.protobuf.Value NULL_VALUE =
+      com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
 
   interface Listener {
     /**
@@ -353,6 +361,79 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
   }
 
+  static final class LazyByteArray implements Serializable {
+    private static final Base64.Encoder ENCODER = Base64.getEncoder();
+    private static final Base64.Decoder DECODER = Base64.getDecoder();
+    private final String base64String;
+    private transient AbstractLazyInitializer<ByteArray> byteArray;
+
+    LazyByteArray(@Nonnull String base64String) {
+      this.base64String = Preconditions.checkNotNull(base64String);
+      this.byteArray = defaultInitializer();
+    }
+
+    LazyByteArray(@Nonnull ByteArray byteArray) {
+      this.base64String =
+          ENCODER.encodeToString(Preconditions.checkNotNull(byteArray).toByteArray());
+      this.byteArray =
+          new AbstractLazyInitializer<ByteArray>() {
+            @Override
+            protected ByteArray initialize() {
+              return byteArray;
+            }
+          };
+    }
+
+    private AbstractLazyInitializer<ByteArray> defaultInitializer() {
+      return new AbstractLazyInitializer<ByteArray>() {
+        @Override
+        protected ByteArray initialize() {
+          return ByteArray.copyFrom(DECODER.decode(base64String));
+        }
+      };
+    }
+
+    private void readObject(java.io.ObjectInputStream in)
+        throws IOException, ClassNotFoundException {
+      in.defaultReadObject();
+      byteArray = defaultInitializer();
+    }
+
+    ByteArray getByteArray() {
+      try {
+        return byteArray.get();
+      } catch (Throwable t) {
+        throw SpannerExceptionFactory.asSpannerException(t);
+      }
+    }
+
+    String getBase64String() {
+      return base64String;
+    }
+
+    @Override
+    public String toString() {
+      return getBase64String();
+    }
+
+    @Override
+    public int hashCode() {
+      return base64String.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o instanceof LazyByteArray) {
+        return lazyByteArraysEqual((LazyByteArray) o);
+      }
+      return false;
+    }
+
+    private boolean lazyByteArraysEqual(LazyByteArray other) {
+      return Objects.equals(getBase64String(), other.getBase64String());
+    }
+  }
+
   static class GrpcStruct extends Struct implements Serializable {
     private final Type type;
     private final List<Object> rowData;
@@ -395,7 +476,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             builder.set(fieldName).to(Value.pgJsonb((String) value));
             break;
           case BYTES:
-            builder.set(fieldName).to((ByteArray) value);
+            builder
+                .set(fieldName)
+                .to(
+                    Value.bytesFromBase64(
+                        value == null ? null : ((LazyByteArray) value).getBase64String()));
             break;
           case TIMESTAMP:
             builder.set(fieldName).to((Timestamp) value);
@@ -431,7 +516,17 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 builder.set(fieldName).toPgJsonbArray((Iterable<String>) value);
                 break;
               case BYTES:
-                builder.set(fieldName).toBytesArray((Iterable<ByteArray>) value);
+                builder
+                    .set(fieldName)
+                    .toBytesArrayFromBase64(
+                        value == null
+                            ? null
+                            : ((List<LazyByteArray>) value)
+                                .stream()
+                                    .map(
+                                        element ->
+                                            element == null ? null : element.getBase64String())
+                                    .collect(Collectors.toList()));
                 break;
               case TIMESTAMP:
                 builder.set(fieldName).toTimestampArray((Iterable<Timestamp>) value);
@@ -511,7 +606,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return proto.getStringValue();
         case BYTES:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
-          return ByteArray.fromBase64(proto.getStringValue());
+          return new LazyByteArray(proto.getStringValue());
         case TIMESTAMP:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return Timestamp.parseTimestamp(proto.getStringValue());
@@ -526,6 +621,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           checkType(fieldType, proto, KindCase.LIST_VALUE);
           ListValue structValue = proto.getListValue();
           return decodeStructValue(fieldType, structValue);
+        case UNRECOGNIZED:
+          return proto;
         default:
           throw new AssertionError("Unhandled type code: " + fieldType.getCode());
       }
@@ -634,7 +731,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     @Override
     protected ByteArray getBytesInternal(int columnIndex) {
-      return (ByteArray) rowData.get(columnIndex);
+      return getLazyBytesInternal(columnIndex).getByteArray();
+    }
+
+    LazyByteArray getLazyBytesInternal(int columnIndex) {
+      return (LazyByteArray) rowData.get(columnIndex);
     }
 
     @Override
@@ -645,6 +746,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     @Override
     protected Date getDateInternal(int columnIndex) {
       return (Date) rowData.get(columnIndex);
+    }
+
+    protected com.google.protobuf.Value getProtoValueInternal(int columnIndex) {
+      return (com.google.protobuf.Value) rowData.get(columnIndex);
     }
 
     @Override
@@ -671,13 +776,16 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case PG_JSONB:
           return Value.pgJsonb(isNull ? null : getPgJsonbInternal(columnIndex));
         case BYTES:
-          return Value.bytes(isNull ? null : getBytesInternal(columnIndex));
+          return Value.internalBytes(isNull ? null : getLazyBytesInternal(columnIndex));
         case TIMESTAMP:
           return Value.timestamp(isNull ? null : getTimestampInternal(columnIndex));
         case DATE:
           return Value.date(isNull ? null : getDateInternal(columnIndex));
         case STRUCT:
           return Value.struct(isNull ? null : getStructInternal(columnIndex));
+        case UNRECOGNIZED:
+          return Value.unrecognized(
+              isNull ? NULL_VALUE : getProtoValueInternal(columnIndex), columnType);
         case ARRAY:
           final Type elementType = columnType.getArrayElementType();
           switch (elementType.getCode()) {
@@ -785,9 +893,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
-    @SuppressWarnings("unchecked") // We know ARRAY<BYTES> produces a List<ByteArray>.
+    @SuppressWarnings("unchecked") // We know ARRAY<BYTES> produces a List<LazyByteArray>.
     protected List<ByteArray> getBytesListInternal(int columnIndex) {
-      return Collections.unmodifiableList((List<ByteArray>) rowData.get(columnIndex));
+      return Lists.transform(
+          (List<LazyByteArray>) rowData.get(columnIndex), l -> l == null ? null : l.getByteArray());
     }
 
     @Override

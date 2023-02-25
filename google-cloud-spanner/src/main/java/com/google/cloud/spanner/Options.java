@@ -95,6 +95,17 @@ public final class Options implements Serializable {
   }
 
   /**
+   * Specifying this instructs the transaction to request Optimistic Lock from the backend. In this
+   * concurrency mode, operations during the execution phase, i.e., reads and queries, are performed
+   * without acquiring locks, and transactional consistency is ensured by running a validation
+   * process in the commit phase (when any needed locks are acquired). The validation process
+   * succeeds only if there are no conflicting committed transactions (that committed mutations to
+   * the read data at a commit timestamp after the read timestamp).
+   */
+  public static TransactionOption optimisticLock() {
+    return OPTIMISTIC_LOCK_OPTION;
+  }
+  /**
    * Specifying this will cause the read to yield at most this many rows. This should be greater
    * than 0.
    */
@@ -214,6 +225,16 @@ public final class Options implements Serializable {
 
   static final CommitStatsOption COMMIT_STATS_OPTION = new CommitStatsOption();
 
+  /** Option to request Optimistic Concurrency Control for read/write transactions. */
+  static final class OptimisticLockOption extends InternalOption implements TransactionOption {
+    @Override
+    void appendToOptions(Options options) {
+      options.withOptimisticLock = true;
+    }
+  }
+
+  static final OptimisticLockOption OPTIMISTIC_LOCK_OPTION = new OptimisticLockOption();
+
   /** Option pertaining to flow control. */
   static final class FlowControlOption extends InternalOption implements ReadAndQueryOption {
     final int prefetchChunks;
@@ -306,6 +327,7 @@ public final class Options implements Serializable {
   private String tag;
   private String etag;
   private Boolean validateOnly;
+  private Boolean withOptimisticLock;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -394,6 +416,10 @@ public final class Options implements Serializable {
     return validateOnly;
   }
 
+  Boolean withOptimisticLock() {
+    return withOptimisticLock;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -426,6 +452,9 @@ public final class Options implements Serializable {
     }
     if (validateOnly != null) {
       b.append("validateOnly: ").append(validateOnly).append(' ');
+    }
+    if (withOptimisticLock != null) {
+      b.append("withOptimisticLock: ").append(withOptimisticLock).append(' ');
     }
     return b.toString();
   }
@@ -460,7 +489,8 @@ public final class Options implements Serializable {
         && Objects.equals(priority(), that.priority())
         && Objects.equals(tag(), that.tag())
         && Objects.equals(etag(), that.etag())
-        && Objects.equals(validateOnly(), that.validateOnly());
+        && Objects.equals(validateOnly(), that.validateOnly())
+        && Objects.equals(withOptimisticLock(), that.withOptimisticLock());
   }
 
   @Override
@@ -498,6 +528,9 @@ public final class Options implements Serializable {
     }
     if (validateOnly != null) {
       result = 31 * result + validateOnly.hashCode();
+    }
+    if (withOptimisticLock != null) {
+      result = 31 * result + withOptimisticLock.hashCode();
     }
     return result;
   }

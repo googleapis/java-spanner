@@ -266,7 +266,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int NAME_FIELD_NUMBER = 1;
-  private volatile java.lang.Object name_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object name_ = "";
   /**
    *
    *
@@ -323,7 +325,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int STATE_FIELD_NUMBER = 2;
-  private int state_;
+  private int state_ = 0;
   /**
    *
    *
@@ -356,9 +358,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.admin.database.v1.Database.State getState() {
-    @SuppressWarnings("deprecation")
     com.google.spanner.admin.database.v1.Database.State result =
-        com.google.spanner.admin.database.v1.Database.State.valueOf(state_);
+        com.google.spanner.admin.database.v1.Database.State.forNumber(state_);
     return result == null
         ? com.google.spanner.admin.database.v1.Database.State.UNRECOGNIZED
         : result;
@@ -410,7 +411,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder() {
-    return getCreateTime();
+    return createTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : createTime_;
   }
 
   public static final int RESTORE_INFO_FIELD_NUMBER = 4;
@@ -467,7 +468,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.admin.database.v1.RestoreInfoOrBuilder getRestoreInfoOrBuilder() {
-    return getRestoreInfo();
+    return restoreInfo_ == null
+        ? com.google.spanner.admin.database.v1.RestoreInfo.getDefaultInstance()
+        : restoreInfo_;
   }
 
   public static final int ENCRYPTION_CONFIG_FIELD_NUMBER = 5;
@@ -531,10 +534,14 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
   @java.lang.Override
   public com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder
       getEncryptionConfigOrBuilder() {
-    return getEncryptionConfig();
+    return encryptionConfig_ == null
+        ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
+        : encryptionConfig_;
   }
 
   public static final int ENCRYPTION_INFO_FIELD_NUMBER = 8;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.admin.database.v1.EncryptionInfo> encryptionInfo_;
   /**
    *
@@ -646,7 +653,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int VERSION_RETENTION_PERIOD_FIELD_NUMBER = 6;
-  private volatile java.lang.Object versionRetentionPeriod_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object versionRetentionPeriod_ = "";
   /**
    *
    *
@@ -765,11 +774,15 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getEarliestVersionTimeOrBuilder() {
-    return getEarliestVersionTime();
+    return earliestVersionTime_ == null
+        ? com.google.protobuf.Timestamp.getDefaultInstance()
+        : earliestVersionTime_;
   }
 
   public static final int DEFAULT_LEADER_FIELD_NUMBER = 9;
-  private volatile java.lang.Object defaultLeader_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object defaultLeader_ = "";
   /**
    *
    *
@@ -826,7 +839,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int DATABASE_DIALECT_FIELD_NUMBER = 10;
-  private int databaseDialect_;
+  private int databaseDialect_ = 0;
   /**
    *
    *
@@ -859,9 +872,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect() {
-    @SuppressWarnings("deprecation")
     com.google.spanner.admin.database.v1.DatabaseDialect result =
-        com.google.spanner.admin.database.v1.DatabaseDialect.valueOf(databaseDialect_);
+        com.google.spanner.admin.database.v1.DatabaseDialect.forNumber(databaseDialect_);
     return result == null
         ? com.google.spanner.admin.database.v1.DatabaseDialect.UNRECOGNIZED
         : result;
@@ -1173,26 +1185,22 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       name_ = "";
-
       state_ = 0;
-
-      if (createTimeBuilder_ == null) {
-        createTime_ = null;
-      } else {
-        createTime_ = null;
+      createTime_ = null;
+      if (createTimeBuilder_ != null) {
+        createTimeBuilder_.dispose();
         createTimeBuilder_ = null;
       }
-      if (restoreInfoBuilder_ == null) {
-        restoreInfo_ = null;
-      } else {
-        restoreInfo_ = null;
+      restoreInfo_ = null;
+      if (restoreInfoBuilder_ != null) {
+        restoreInfoBuilder_.dispose();
         restoreInfoBuilder_ = null;
       }
-      if (encryptionConfigBuilder_ == null) {
-        encryptionConfig_ = null;
-      } else {
-        encryptionConfig_ = null;
+      encryptionConfig_ = null;
+      if (encryptionConfigBuilder_ != null) {
+        encryptionConfigBuilder_.dispose();
         encryptionConfigBuilder_ = null;
       }
       if (encryptionInfoBuilder_ == null) {
@@ -1201,19 +1209,15 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         encryptionInfo_ = null;
         encryptionInfoBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00000001);
+      bitField0_ = (bitField0_ & ~0x00000020);
       versionRetentionPeriod_ = "";
-
-      if (earliestVersionTimeBuilder_ == null) {
-        earliestVersionTime_ = null;
-      } else {
-        earliestVersionTime_ = null;
+      earliestVersionTime_ = null;
+      if (earliestVersionTimeBuilder_ != null) {
+        earliestVersionTimeBuilder_.dispose();
         earliestVersionTimeBuilder_ = null;
       }
       defaultLeader_ = "";
-
       databaseDialect_ = 0;
-
       return this;
     }
 
@@ -1241,43 +1245,60 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.admin.database.v1.Database buildPartial() {
       com.google.spanner.admin.database.v1.Database result =
           new com.google.spanner.admin.database.v1.Database(this);
-      int from_bitField0_ = bitField0_;
-      result.name_ = name_;
-      result.state_ = state_;
-      if (createTimeBuilder_ == null) {
-        result.createTime_ = createTime_;
-      } else {
-        result.createTime_ = createTimeBuilder_.build();
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      if (restoreInfoBuilder_ == null) {
-        result.restoreInfo_ = restoreInfo_;
-      } else {
-        result.restoreInfo_ = restoreInfoBuilder_.build();
-      }
-      if (encryptionConfigBuilder_ == null) {
-        result.encryptionConfig_ = encryptionConfig_;
-      } else {
-        result.encryptionConfig_ = encryptionConfigBuilder_.build();
-      }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(com.google.spanner.admin.database.v1.Database result) {
       if (encryptionInfoBuilder_ == null) {
-        if (((bitField0_ & 0x00000001) != 0)) {
+        if (((bitField0_ & 0x00000020) != 0)) {
           encryptionInfo_ = java.util.Collections.unmodifiableList(encryptionInfo_);
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000020);
         }
         result.encryptionInfo_ = encryptionInfo_;
       } else {
         result.encryptionInfo_ = encryptionInfoBuilder_.build();
       }
-      result.versionRetentionPeriod_ = versionRetentionPeriod_;
-      if (earliestVersionTimeBuilder_ == null) {
-        result.earliestVersionTime_ = earliestVersionTime_;
-      } else {
-        result.earliestVersionTime_ = earliestVersionTimeBuilder_.build();
+    }
+
+    private void buildPartial0(com.google.spanner.admin.database.v1.Database result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.name_ = name_;
       }
-      result.defaultLeader_ = defaultLeader_;
-      result.databaseDialect_ = databaseDialect_;
-      onBuilt();
-      return result;
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.state_ = state_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.createTime_ = createTimeBuilder_ == null ? createTime_ : createTimeBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.restoreInfo_ =
+            restoreInfoBuilder_ == null ? restoreInfo_ : restoreInfoBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.encryptionConfig_ =
+            encryptionConfigBuilder_ == null ? encryptionConfig_ : encryptionConfigBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000040) != 0)) {
+        result.versionRetentionPeriod_ = versionRetentionPeriod_;
+      }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.earliestVersionTime_ =
+            earliestVersionTimeBuilder_ == null
+                ? earliestVersionTime_
+                : earliestVersionTimeBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000100) != 0)) {
+        result.defaultLeader_ = defaultLeader_;
+      }
+      if (((from_bitField0_ & 0x00000200) != 0)) {
+        result.databaseDialect_ = databaseDialect_;
+      }
     }
 
     @java.lang.Override
@@ -1327,6 +1348,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       if (other == com.google.spanner.admin.database.v1.Database.getDefaultInstance()) return this;
       if (!other.getName().isEmpty()) {
         name_ = other.name_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (other.state_ != 0) {
@@ -1345,7 +1367,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         if (!other.encryptionInfo_.isEmpty()) {
           if (encryptionInfo_.isEmpty()) {
             encryptionInfo_ = other.encryptionInfo_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000020);
           } else {
             ensureEncryptionInfoIsMutable();
             encryptionInfo_.addAll(other.encryptionInfo_);
@@ -1358,7 +1380,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
             encryptionInfoBuilder_.dispose();
             encryptionInfoBuilder_ = null;
             encryptionInfo_ = other.encryptionInfo_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000020);
             encryptionInfoBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
                     ? getEncryptionInfoFieldBuilder()
@@ -1370,6 +1392,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       }
       if (!other.getVersionRetentionPeriod().isEmpty()) {
         versionRetentionPeriod_ = other.versionRetentionPeriod_;
+        bitField0_ |= 0x00000040;
         onChanged();
       }
       if (other.hasEarliestVersionTime()) {
@@ -1377,6 +1400,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       }
       if (!other.getDefaultLeader().isEmpty()) {
         defaultLeader_ = other.defaultLeader_;
+        bitField0_ |= 0x00000100;
         onChanged();
       }
       if (other.databaseDialect_ != 0) {
@@ -1411,45 +1435,45 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
             case 10:
               {
                 name_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 16:
               {
                 state_ = input.readEnum();
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 16
             case 26:
               {
                 input.readMessage(getCreateTimeFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 26
             case 34:
               {
                 input.readMessage(getRestoreInfoFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000008;
                 break;
               } // case 34
             case 42:
               {
                 input.readMessage(
                     getEncryptionConfigFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000010;
                 break;
               } // case 42
             case 50:
               {
                 versionRetentionPeriod_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000040;
                 break;
               } // case 50
             case 58:
               {
                 input.readMessage(
                     getEarliestVersionTimeFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000080;
                 break;
               } // case 58
             case 66:
@@ -1469,13 +1493,13 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
             case 74:
               {
                 defaultLeader_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000100;
                 break;
               } // case 74
             case 80:
               {
                 databaseDialect_ = input.readEnum();
-
+                bitField0_ |= 0x00000200;
                 break;
               } // case 80
             default:
@@ -1570,8 +1594,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       name_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1591,8 +1615,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearName() {
-
       name_ = getDefaultInstance().getName();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -1617,8 +1641,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       name_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1656,8 +1680,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setStateValue(int value) {
-
       state_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1676,9 +1700,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      */
     @java.lang.Override
     public com.google.spanner.admin.database.v1.Database.State getState() {
-      @SuppressWarnings("deprecation")
       com.google.spanner.admin.database.v1.Database.State result =
-          com.google.spanner.admin.database.v1.Database.State.valueOf(state_);
+          com.google.spanner.admin.database.v1.Database.State.forNumber(state_);
       return result == null
           ? com.google.spanner.admin.database.v1.Database.State.UNRECOGNIZED
           : result;
@@ -1701,7 +1724,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
+      bitField0_ |= 0x00000002;
       state_ = value.getNumber();
       onChanged();
       return this;
@@ -1720,7 +1743,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearState() {
-
+      bitField0_ = (bitField0_ & ~0x00000002);
       state_ = 0;
       onChanged();
       return this;
@@ -1746,7 +1769,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the createTime field is set.
      */
     public boolean hasCreateTime() {
-      return createTimeBuilder_ != null || createTime_ != null;
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      *
@@ -1787,11 +1810,11 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         createTime_ = value;
-        onChanged();
       } else {
         createTimeBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1808,11 +1831,11 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     public Builder setCreateTime(com.google.protobuf.Timestamp.Builder builderForValue) {
       if (createTimeBuilder_ == null) {
         createTime_ = builderForValue.build();
-        onChanged();
       } else {
         createTimeBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1828,17 +1851,18 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeCreateTime(com.google.protobuf.Timestamp value) {
       if (createTimeBuilder_ == null) {
-        if (createTime_ != null) {
-          createTime_ =
-              com.google.protobuf.Timestamp.newBuilder(createTime_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000004) != 0)
+            && createTime_ != null
+            && createTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getCreateTimeBuilder().mergeFrom(value);
         } else {
           createTime_ = value;
         }
-        onChanged();
       } else {
         createTimeBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1853,14 +1877,13 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public Builder clearCreateTime() {
-      if (createTimeBuilder_ == null) {
-        createTime_ = null;
-        onChanged();
-      } else {
-        createTime_ = null;
+      bitField0_ = (bitField0_ & ~0x00000004);
+      createTime_ = null;
+      if (createTimeBuilder_ != null) {
+        createTimeBuilder_.dispose();
         createTimeBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1875,7 +1898,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public com.google.protobuf.Timestamp.Builder getCreateTimeBuilder() {
-
+      bitField0_ |= 0x00000004;
       onChanged();
       return getCreateTimeFieldBuilder().getBuilder();
     }
@@ -1948,7 +1971,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the restoreInfo field is set.
      */
     public boolean hasRestoreInfo() {
-      return restoreInfoBuilder_ != null || restoreInfo_ != null;
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      *
@@ -1991,11 +2014,11 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         restoreInfo_ = value;
-        onChanged();
       } else {
         restoreInfoBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -2014,11 +2037,11 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         com.google.spanner.admin.database.v1.RestoreInfo.Builder builderForValue) {
       if (restoreInfoBuilder_ == null) {
         restoreInfo_ = builderForValue.build();
-        onChanged();
       } else {
         restoreInfoBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -2035,19 +2058,19 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeRestoreInfo(com.google.spanner.admin.database.v1.RestoreInfo value) {
       if (restoreInfoBuilder_ == null) {
-        if (restoreInfo_ != null) {
-          restoreInfo_ =
-              com.google.spanner.admin.database.v1.RestoreInfo.newBuilder(restoreInfo_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000008) != 0)
+            && restoreInfo_ != null
+            && restoreInfo_
+                != com.google.spanner.admin.database.v1.RestoreInfo.getDefaultInstance()) {
+          getRestoreInfoBuilder().mergeFrom(value);
         } else {
           restoreInfo_ = value;
         }
-        onChanged();
       } else {
         restoreInfoBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -2063,14 +2086,13 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public Builder clearRestoreInfo() {
-      if (restoreInfoBuilder_ == null) {
-        restoreInfo_ = null;
-        onChanged();
-      } else {
-        restoreInfo_ = null;
+      bitField0_ = (bitField0_ & ~0x00000008);
+      restoreInfo_ = null;
+      if (restoreInfoBuilder_ != null) {
+        restoreInfoBuilder_.dispose();
         restoreInfoBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -2086,7 +2108,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public com.google.spanner.admin.database.v1.RestoreInfo.Builder getRestoreInfoBuilder() {
-
+      bitField0_ |= 0x00000008;
       onChanged();
       return getRestoreInfoFieldBuilder().getBuilder();
     }
@@ -2163,7 +2185,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the encryptionConfig field is set.
      */
     public boolean hasEncryptionConfig() {
-      return encryptionConfigBuilder_ != null || encryptionConfig_ != null;
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      *
@@ -2211,11 +2233,11 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         encryptionConfig_ = value;
-        onChanged();
       } else {
         encryptionConfigBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000010;
+      onChanged();
       return this;
     }
     /**
@@ -2236,11 +2258,11 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         com.google.spanner.admin.database.v1.EncryptionConfig.Builder builderForValue) {
       if (encryptionConfigBuilder_ == null) {
         encryptionConfig_ = builderForValue.build();
-        onChanged();
       } else {
         encryptionConfigBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000010;
+      onChanged();
       return this;
     }
     /**
@@ -2260,19 +2282,19 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     public Builder mergeEncryptionConfig(
         com.google.spanner.admin.database.v1.EncryptionConfig value) {
       if (encryptionConfigBuilder_ == null) {
-        if (encryptionConfig_ != null) {
-          encryptionConfig_ =
-              com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder(encryptionConfig_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000010) != 0)
+            && encryptionConfig_ != null
+            && encryptionConfig_
+                != com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()) {
+          getEncryptionConfigBuilder().mergeFrom(value);
         } else {
           encryptionConfig_ = value;
         }
-        onChanged();
       } else {
         encryptionConfigBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000010;
+      onChanged();
       return this;
     }
     /**
@@ -2290,14 +2312,13 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public Builder clearEncryptionConfig() {
-      if (encryptionConfigBuilder_ == null) {
-        encryptionConfig_ = null;
-        onChanged();
-      } else {
-        encryptionConfig_ = null;
+      bitField0_ = (bitField0_ & ~0x00000010);
+      encryptionConfig_ = null;
+      if (encryptionConfigBuilder_ != null) {
+        encryptionConfigBuilder_.dispose();
         encryptionConfigBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -2316,7 +2337,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      */
     public com.google.spanner.admin.database.v1.EncryptionConfig.Builder
         getEncryptionConfigBuilder() {
-
+      bitField0_ |= 0x00000010;
       onChanged();
       return getEncryptionConfigFieldBuilder().getBuilder();
     }
@@ -2379,11 +2400,11 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         java.util.Collections.emptyList();
 
     private void ensureEncryptionInfoIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
+      if (!((bitField0_ & 0x00000020) != 0)) {
         encryptionInfo_ =
             new java.util.ArrayList<com.google.spanner.admin.database.v1.EncryptionInfo>(
                 encryptionInfo_);
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000020;
       }
     }
 
@@ -2690,7 +2711,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     public Builder clearEncryptionInfo() {
       if (encryptionInfoBuilder_ == null) {
         encryptionInfo_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000020);
         onChanged();
       } else {
         encryptionInfoBuilder_.clear();
@@ -2873,7 +2894,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
                 com.google.spanner.admin.database.v1.EncryptionInfo.Builder,
                 com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>(
                 encryptionInfo_,
-                ((bitField0_ & 0x00000001) != 0),
+                ((bitField0_ & 0x00000020) != 0),
                 getParentForChildren(),
                 isClean());
         encryptionInfo_ = null;
@@ -2957,8 +2978,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       versionRetentionPeriod_ = value;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -2979,8 +3000,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearVersionRetentionPeriod() {
-
       versionRetentionPeriod_ = getDefaultInstance().getVersionRetentionPeriod();
+      bitField0_ = (bitField0_ & ~0x00000040);
       onChanged();
       return this;
     }
@@ -3006,8 +3027,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       versionRetentionPeriod_ = value;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -3036,7 +3057,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the earliestVersionTime field is set.
      */
     public boolean hasEarliestVersionTime() {
-      return earliestVersionTimeBuilder_ != null || earliestVersionTime_ != null;
+      return ((bitField0_ & 0x00000080) != 0);
     }
     /**
      *
@@ -3085,11 +3106,11 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         earliestVersionTime_ = value;
-        onChanged();
       } else {
         earliestVersionTimeBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000080;
+      onChanged();
       return this;
     }
     /**
@@ -3110,11 +3131,11 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     public Builder setEarliestVersionTime(com.google.protobuf.Timestamp.Builder builderForValue) {
       if (earliestVersionTimeBuilder_ == null) {
         earliestVersionTime_ = builderForValue.build();
-        onChanged();
       } else {
         earliestVersionTimeBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000080;
+      onChanged();
       return this;
     }
     /**
@@ -3134,19 +3155,18 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeEarliestVersionTime(com.google.protobuf.Timestamp value) {
       if (earliestVersionTimeBuilder_ == null) {
-        if (earliestVersionTime_ != null) {
-          earliestVersionTime_ =
-              com.google.protobuf.Timestamp.newBuilder(earliestVersionTime_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000080) != 0)
+            && earliestVersionTime_ != null
+            && earliestVersionTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getEarliestVersionTimeBuilder().mergeFrom(value);
         } else {
           earliestVersionTime_ = value;
         }
-        onChanged();
       } else {
         earliestVersionTimeBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000080;
+      onChanged();
       return this;
     }
     /**
@@ -3165,14 +3185,13 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public Builder clearEarliestVersionTime() {
-      if (earliestVersionTimeBuilder_ == null) {
-        earliestVersionTime_ = null;
-        onChanged();
-      } else {
-        earliestVersionTime_ = null;
+      bitField0_ = (bitField0_ & ~0x00000080);
+      earliestVersionTime_ = null;
+      if (earliestVersionTimeBuilder_ != null) {
+        earliestVersionTimeBuilder_.dispose();
         earliestVersionTimeBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -3191,7 +3210,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public com.google.protobuf.Timestamp.Builder getEarliestVersionTimeBuilder() {
-
+      bitField0_ |= 0x00000080;
       onChanged();
       return getEarliestVersionTimeFieldBuilder().getBuilder();
     }
@@ -3324,8 +3343,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       defaultLeader_ = value;
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }
@@ -3345,8 +3364,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearDefaultLeader() {
-
       defaultLeader_ = getDefaultInstance().getDefaultLeader();
+      bitField0_ = (bitField0_ & ~0x00000100);
       onChanged();
       return this;
     }
@@ -3371,8 +3390,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       defaultLeader_ = value;
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }
@@ -3410,8 +3429,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setDatabaseDialectValue(int value) {
-
       databaseDialect_ = value;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -3430,9 +3449,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      */
     @java.lang.Override
     public com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect() {
-      @SuppressWarnings("deprecation")
       com.google.spanner.admin.database.v1.DatabaseDialect result =
-          com.google.spanner.admin.database.v1.DatabaseDialect.valueOf(databaseDialect_);
+          com.google.spanner.admin.database.v1.DatabaseDialect.forNumber(databaseDialect_);
       return result == null
           ? com.google.spanner.admin.database.v1.DatabaseDialect.UNRECOGNIZED
           : result;
@@ -3455,7 +3473,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
+      bitField0_ |= 0x00000200;
       databaseDialect_ = value.getNumber();
       onChanged();
       return this;
@@ -3474,7 +3492,7 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearDatabaseDialect() {
-
+      bitField0_ = (bitField0_ & ~0x00000200);
       databaseDialect_ = 0;
       onChanged();
       return this;

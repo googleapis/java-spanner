@@ -408,7 +408,9 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int NAME_FIELD_NUMBER = 1;
-  private volatile java.lang.Object name_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object name_ = "";
   /**
    *
    *
@@ -461,7 +463,9 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int DISPLAY_NAME_FIELD_NUMBER = 2;
-  private volatile java.lang.Object displayName_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object displayName_ = "";
   /**
    *
    *
@@ -510,7 +514,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int CONFIG_TYPE_FIELD_NUMBER = 5;
-  private int configType_;
+  private int configType_ = 0;
   /**
    *
    *
@@ -545,15 +549,16 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.admin.instance.v1.InstanceConfig.Type getConfigType() {
-    @SuppressWarnings("deprecation")
     com.google.spanner.admin.instance.v1.InstanceConfig.Type result =
-        com.google.spanner.admin.instance.v1.InstanceConfig.Type.valueOf(configType_);
+        com.google.spanner.admin.instance.v1.InstanceConfig.Type.forNumber(configType_);
     return result == null
         ? com.google.spanner.admin.instance.v1.InstanceConfig.Type.UNRECOGNIZED
         : result;
   }
 
   public static final int REPLICAS_FIELD_NUMBER = 3;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.admin.instance.v1.ReplicaInfo> replicas_;
   /**
    *
@@ -628,6 +633,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int OPTIONAL_REPLICAS_FIELD_NUMBER = 6;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.admin.instance.v1.ReplicaInfo> optionalReplicas_;
   /**
    *
@@ -714,7 +721,9 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int BASE_CONFIG_FIELD_NUMBER = 7;
-  private volatile java.lang.Object baseConfig_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object baseConfig_ = "";
   /**
    *
    *
@@ -781,6 +790,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
             "");
   }
 
+  @SuppressWarnings("serial")
   private com.google.protobuf.MapField<java.lang.String, java.lang.String> labels_;
 
   private com.google.protobuf.MapField<java.lang.String, java.lang.String> internalGetLabels() {
@@ -889,7 +899,10 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    * <code>map&lt;string, string&gt; labels = 8;</code>
    */
   @java.lang.Override
-  public java.lang.String getLabelsOrDefault(java.lang.String key, java.lang.String defaultValue) {
+  public /* nullable */ java.lang.String getLabelsOrDefault(
+      java.lang.String key,
+      /* nullable */
+      java.lang.String defaultValue) {
     if (key == null) {
       throw new NullPointerException("map key");
     }
@@ -935,7 +948,9 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int ETAG_FIELD_NUMBER = 9;
-  private volatile java.lang.Object etag_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object etag_ = "";
   /**
    *
    *
@@ -1002,6 +1017,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int LEADER_OPTIONS_FIELD_NUMBER = 4;
+
+  @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringList leaderOptions_;
   /**
    *
@@ -1067,7 +1084,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int RECONCILING_FIELD_NUMBER = 10;
-  private boolean reconciling_;
+  private boolean reconciling_ = false;
   /**
    *
    *
@@ -1086,7 +1103,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int STATE_FIELD_NUMBER = 11;
-  private int state_;
+  private int state_ = 0;
   /**
    *
    *
@@ -1119,9 +1136,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.admin.instance.v1.InstanceConfig.State getState() {
-    @SuppressWarnings("deprecation")
     com.google.spanner.admin.instance.v1.InstanceConfig.State result =
-        com.google.spanner.admin.instance.v1.InstanceConfig.State.valueOf(state_);
+        com.google.spanner.admin.instance.v1.InstanceConfig.State.forNumber(state_);
     return result == null
         ? com.google.spanner.admin.instance.v1.InstanceConfig.State.UNRECOGNIZED
         : result;
@@ -1460,37 +1476,31 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       name_ = "";
-
       displayName_ = "";
-
       configType_ = 0;
-
       if (replicasBuilder_ == null) {
         replicas_ = java.util.Collections.emptyList();
       } else {
         replicas_ = null;
         replicasBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00000001);
+      bitField0_ = (bitField0_ & ~0x00000008);
       if (optionalReplicasBuilder_ == null) {
         optionalReplicas_ = java.util.Collections.emptyList();
       } else {
         optionalReplicas_ = null;
         optionalReplicasBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00000002);
+      bitField0_ = (bitField0_ & ~0x00000010);
       baseConfig_ = "";
-
       internalGetMutableLabels().clear();
       etag_ = "";
-
       leaderOptions_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000008);
+      bitField0_ = (bitField0_ & ~0x00000100);
       reconciling_ = false;
-
       state_ = 0;
-
       return this;
     }
 
@@ -1518,41 +1528,68 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.admin.instance.v1.InstanceConfig buildPartial() {
       com.google.spanner.admin.instance.v1.InstanceConfig result =
           new com.google.spanner.admin.instance.v1.InstanceConfig(this);
-      int from_bitField0_ = bitField0_;
-      result.name_ = name_;
-      result.displayName_ = displayName_;
-      result.configType_ = configType_;
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(
+        com.google.spanner.admin.instance.v1.InstanceConfig result) {
       if (replicasBuilder_ == null) {
-        if (((bitField0_ & 0x00000001) != 0)) {
+        if (((bitField0_ & 0x00000008) != 0)) {
           replicas_ = java.util.Collections.unmodifiableList(replicas_);
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000008);
         }
         result.replicas_ = replicas_;
       } else {
         result.replicas_ = replicasBuilder_.build();
       }
       if (optionalReplicasBuilder_ == null) {
-        if (((bitField0_ & 0x00000002) != 0)) {
+        if (((bitField0_ & 0x00000010) != 0)) {
           optionalReplicas_ = java.util.Collections.unmodifiableList(optionalReplicas_);
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000010);
         }
         result.optionalReplicas_ = optionalReplicas_;
       } else {
         result.optionalReplicas_ = optionalReplicasBuilder_.build();
       }
-      result.baseConfig_ = baseConfig_;
-      result.labels_ = internalGetLabels();
-      result.labels_.makeImmutable();
-      result.etag_ = etag_;
-      if (((bitField0_ & 0x00000008) != 0)) {
+      if (((bitField0_ & 0x00000100) != 0)) {
         leaderOptions_ = leaderOptions_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000100);
       }
       result.leaderOptions_ = leaderOptions_;
-      result.reconciling_ = reconciling_;
-      result.state_ = state_;
-      onBuilt();
-      return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.instance.v1.InstanceConfig result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.name_ = name_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.displayName_ = displayName_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.configType_ = configType_;
+      }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.baseConfig_ = baseConfig_;
+      }
+      if (((from_bitField0_ & 0x00000040) != 0)) {
+        result.labels_ = internalGetLabels();
+        result.labels_.makeImmutable();
+      }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.etag_ = etag_;
+      }
+      if (((from_bitField0_ & 0x00000200) != 0)) {
+        result.reconciling_ = reconciling_;
+      }
+      if (((from_bitField0_ & 0x00000400) != 0)) {
+        result.state_ = state_;
+      }
     }
 
     @java.lang.Override
@@ -1603,10 +1640,12 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
         return this;
       if (!other.getName().isEmpty()) {
         name_ = other.name_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (!other.getDisplayName().isEmpty()) {
         displayName_ = other.displayName_;
+        bitField0_ |= 0x00000002;
         onChanged();
       }
       if (other.configType_ != 0) {
@@ -1616,7 +1655,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
         if (!other.replicas_.isEmpty()) {
           if (replicas_.isEmpty()) {
             replicas_ = other.replicas_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000008);
           } else {
             ensureReplicasIsMutable();
             replicas_.addAll(other.replicas_);
@@ -1629,7 +1668,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
             replicasBuilder_.dispose();
             replicasBuilder_ = null;
             replicas_ = other.replicas_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000008);
             replicasBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
                     ? getReplicasFieldBuilder()
@@ -1643,7 +1682,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
         if (!other.optionalReplicas_.isEmpty()) {
           if (optionalReplicas_.isEmpty()) {
             optionalReplicas_ = other.optionalReplicas_;
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000010);
           } else {
             ensureOptionalReplicasIsMutable();
             optionalReplicas_.addAll(other.optionalReplicas_);
@@ -1656,7 +1695,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
             optionalReplicasBuilder_.dispose();
             optionalReplicasBuilder_ = null;
             optionalReplicas_ = other.optionalReplicas_;
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000010);
             optionalReplicasBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
                     ? getOptionalReplicasFieldBuilder()
@@ -1668,17 +1707,20 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
       }
       if (!other.getBaseConfig().isEmpty()) {
         baseConfig_ = other.baseConfig_;
+        bitField0_ |= 0x00000020;
         onChanged();
       }
       internalGetMutableLabels().mergeFrom(other.internalGetLabels());
+      bitField0_ |= 0x00000040;
       if (!other.getEtag().isEmpty()) {
         etag_ = other.etag_;
+        bitField0_ |= 0x00000080;
         onChanged();
       }
       if (!other.leaderOptions_.isEmpty()) {
         if (leaderOptions_.isEmpty()) {
           leaderOptions_ = other.leaderOptions_;
-          bitField0_ = (bitField0_ & ~0x00000008);
+          bitField0_ = (bitField0_ & ~0x00000100);
         } else {
           ensureLeaderOptionsIsMutable();
           leaderOptions_.addAll(other.leaderOptions_);
@@ -1720,13 +1762,13 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
             case 10:
               {
                 name_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 displayName_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             case 26:
@@ -1753,7 +1795,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
             case 40:
               {
                 configType_ = input.readEnum();
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 40
             case 50:
@@ -1773,7 +1815,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
             case 58:
               {
                 baseConfig_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000020;
                 break;
               } // case 58
             case 66:
@@ -1785,24 +1827,25 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
                 internalGetMutableLabels()
                     .getMutableMap()
                     .put(labels__.getKey(), labels__.getValue());
+                bitField0_ |= 0x00000040;
                 break;
               } // case 66
             case 74:
               {
                 etag_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000080;
                 break;
               } // case 74
             case 80:
               {
                 reconciling_ = input.readBool();
-
+                bitField0_ |= 0x00000200;
                 break;
               } // case 80
             case 88:
               {
                 state_ = input.readEnum();
-
+                bitField0_ |= 0x00000400;
                 break;
               } // case 88
             default:
@@ -1891,8 +1934,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       name_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1910,8 +1953,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearName() {
-
       name_ = getDefaultInstance().getName();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -1934,8 +1977,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       name_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -2001,8 +2044,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       displayName_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -2018,8 +2061,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearDisplayName() {
-
       displayName_ = getDefaultInstance().getDisplayName();
+      bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
@@ -2040,8 +2083,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       displayName_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -2081,8 +2124,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setConfigTypeValue(int value) {
-
       configType_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -2102,9 +2145,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      */
     @java.lang.Override
     public com.google.spanner.admin.instance.v1.InstanceConfig.Type getConfigType() {
-      @SuppressWarnings("deprecation")
       com.google.spanner.admin.instance.v1.InstanceConfig.Type result =
-          com.google.spanner.admin.instance.v1.InstanceConfig.Type.valueOf(configType_);
+          com.google.spanner.admin.instance.v1.InstanceConfig.Type.forNumber(configType_);
       return result == null
           ? com.google.spanner.admin.instance.v1.InstanceConfig.Type.UNRECOGNIZED
           : result;
@@ -2128,7 +2170,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
+      bitField0_ |= 0x00000004;
       configType_ = value.getNumber();
       onChanged();
       return this;
@@ -2148,7 +2190,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearConfigType() {
-
+      bitField0_ = (bitField0_ & ~0x00000004);
       configType_ = 0;
       onChanged();
       return this;
@@ -2158,10 +2200,10 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
         java.util.Collections.emptyList();
 
     private void ensureReplicasIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
+      if (!((bitField0_ & 0x00000008) != 0)) {
         replicas_ =
             new java.util.ArrayList<com.google.spanner.admin.instance.v1.ReplicaInfo>(replicas_);
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000008;
       }
     }
 
@@ -2388,7 +2430,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     public Builder clearReplicas() {
       if (replicasBuilder_ == null) {
         replicas_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000008);
         onChanged();
       } else {
         replicasBuilder_.clear();
@@ -2518,7 +2560,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
                 com.google.spanner.admin.instance.v1.ReplicaInfo,
                 com.google.spanner.admin.instance.v1.ReplicaInfo.Builder,
                 com.google.spanner.admin.instance.v1.ReplicaInfoOrBuilder>(
-                replicas_, ((bitField0_ & 0x00000001) != 0), getParentForChildren(), isClean());
+                replicas_, ((bitField0_ & 0x00000008) != 0), getParentForChildren(), isClean());
         replicas_ = null;
       }
       return replicasBuilder_;
@@ -2528,11 +2570,11 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
         java.util.Collections.emptyList();
 
     private void ensureOptionalReplicasIsMutable() {
-      if (!((bitField0_ & 0x00000002) != 0)) {
+      if (!((bitField0_ & 0x00000010) != 0)) {
         optionalReplicas_ =
             new java.util.ArrayList<com.google.spanner.admin.instance.v1.ReplicaInfo>(
                 optionalReplicas_);
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000010;
       }
     }
 
@@ -2784,7 +2826,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     public Builder clearOptionalReplicas() {
       if (optionalReplicasBuilder_ == null) {
         optionalReplicas_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000010);
         onChanged();
       } else {
         optionalReplicasBuilder_.clear();
@@ -2931,7 +2973,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
                 com.google.spanner.admin.instance.v1.ReplicaInfo.Builder,
                 com.google.spanner.admin.instance.v1.ReplicaInfoOrBuilder>(
                 optionalReplicas_,
-                ((bitField0_ & 0x00000002) != 0),
+                ((bitField0_ & 0x00000010) != 0),
                 getParentForChildren(),
                 isClean());
         optionalReplicas_ = null;
@@ -3009,8 +3051,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       baseConfig_ = value;
+      bitField0_ |= 0x00000020;
       onChanged();
       return this;
     }
@@ -3029,8 +3071,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearBaseConfig() {
-
       baseConfig_ = getDefaultInstance().getBaseConfig();
+      bitField0_ = (bitField0_ & ~0x00000020);
       onChanged();
       return this;
     }
@@ -3054,8 +3096,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       baseConfig_ = value;
+      bitField0_ |= 0x00000020;
       onChanged();
       return this;
     }
@@ -3071,14 +3113,14 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
 
     private com.google.protobuf.MapField<java.lang.String, java.lang.String>
         internalGetMutableLabels() {
-      onChanged();
-      ;
       if (labels_ == null) {
         labels_ = com.google.protobuf.MapField.newMapField(LabelsDefaultEntryHolder.defaultEntry);
       }
       if (!labels_.isMutable()) {
         labels_ = labels_.copy();
       }
+      bitField0_ |= 0x00000040;
+      onChanged();
       return labels_;
     }
 
@@ -3181,8 +3223,10 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * <code>map&lt;string, string&gt; labels = 8;</code>
      */
     @java.lang.Override
-    public java.lang.String getLabelsOrDefault(
-        java.lang.String key, java.lang.String defaultValue) {
+    public /* nullable */ java.lang.String getLabelsOrDefault(
+        java.lang.String key,
+        /* nullable */
+        java.lang.String defaultValue) {
       if (key == null) {
         throw new NullPointerException("map key");
       }
@@ -3228,6 +3272,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     }
 
     public Builder clearLabels() {
+      bitField0_ = (bitField0_ & ~0x00000040);
       internalGetMutableLabels().getMutableMap().clear();
       return this;
     }
@@ -3267,6 +3312,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     /** Use alternate mutation accessors instead. */
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, java.lang.String> getMutableLabels() {
+      bitField0_ |= 0x00000040;
       return internalGetMutableLabels().getMutableMap();
     }
     /**
@@ -3302,8 +3348,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException("map value");
       }
-
       internalGetMutableLabels().getMutableMap().put(key, value);
+      bitField0_ |= 0x00000040;
       return this;
     }
     /**
@@ -3334,6 +3380,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder putAllLabels(java.util.Map<java.lang.String, java.lang.String> values) {
       internalGetMutableLabels().getMutableMap().putAll(values);
+      bitField0_ |= 0x00000040;
       return this;
     }
 
@@ -3425,8 +3472,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       etag_ = value;
+      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -3451,8 +3498,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearEtag() {
-
       etag_ = getDefaultInstance().getEtag();
+      bitField0_ = (bitField0_ & ~0x00000080);
       onChanged();
       return this;
     }
@@ -3482,8 +3529,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       etag_ = value;
+      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -3492,9 +3539,9 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.LazyStringArrayList.EMPTY;
 
     private void ensureLeaderOptionsIsMutable() {
-      if (!((bitField0_ & 0x00000008) != 0)) {
+      if (!((bitField0_ & 0x00000100) != 0)) {
         leaderOptions_ = new com.google.protobuf.LazyStringArrayList(leaderOptions_);
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000100;
       }
     }
     /**
@@ -3637,7 +3684,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder clearLeaderOptions() {
       leaderOptions_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000008);
+      bitField0_ = (bitField0_ & ~0x00000100);
       onChanged();
       return this;
     }
@@ -3698,6 +3745,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
     public Builder setReconciling(boolean value) {
 
       reconciling_ = value;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -3714,7 +3762,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearReconciling() {
-
+      bitField0_ = (bitField0_ & ~0x00000200);
       reconciling_ = false;
       onChanged();
       return this;
@@ -3753,8 +3801,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setStateValue(int value) {
-
       state_ = value;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3773,9 +3821,8 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      */
     @java.lang.Override
     public com.google.spanner.admin.instance.v1.InstanceConfig.State getState() {
-      @SuppressWarnings("deprecation")
       com.google.spanner.admin.instance.v1.InstanceConfig.State result =
-          com.google.spanner.admin.instance.v1.InstanceConfig.State.valueOf(state_);
+          com.google.spanner.admin.instance.v1.InstanceConfig.State.forNumber(state_);
       return result == null
           ? com.google.spanner.admin.instance.v1.InstanceConfig.State.UNRECOGNIZED
           : result;
@@ -3798,7 +3845,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
+      bitField0_ |= 0x00000400;
       state_ = value.getNumber();
       onChanged();
       return this;
@@ -3817,7 +3864,7 @@ public final class InstanceConfig extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearState() {
-
+      bitField0_ = (bitField0_ & ~0x00000400);
       state_ = 0;
       onChanged();
       return this;

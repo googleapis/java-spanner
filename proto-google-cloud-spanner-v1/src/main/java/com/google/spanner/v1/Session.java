@@ -78,7 +78,9 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int NAME_FIELD_NUMBER = 1;
-  private volatile java.lang.Object name_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object name_ = "";
   /**
    *
    *
@@ -139,6 +141,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
             "");
   }
 
+  @SuppressWarnings("serial")
   private com.google.protobuf.MapField<java.lang.String, java.lang.String> labels_;
 
   private com.google.protobuf.MapField<java.lang.String, java.lang.String> internalGetLabels() {
@@ -214,7 +217,10 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    * <code>map&lt;string, string&gt; labels = 2;</code>
    */
   @java.lang.Override
-  public java.lang.String getLabelsOrDefault(java.lang.String key, java.lang.String defaultValue) {
+  public /* nullable */ java.lang.String getLabelsOrDefault(
+      java.lang.String key,
+      /* nullable */
+      java.lang.String defaultValue) {
     if (key == null) {
       throw new NullPointerException("map key");
     }
@@ -294,7 +300,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder() {
-    return getCreateTime();
+    return createTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : createTime_;
   }
 
   public static final int APPROXIMATE_LAST_USE_TIME_FIELD_NUMBER = 4;
@@ -351,11 +357,15 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getApproximateLastUseTimeOrBuilder() {
-    return getApproximateLastUseTime();
+    return approximateLastUseTime_ == null
+        ? com.google.protobuf.Timestamp.getDefaultInstance()
+        : approximateLastUseTime_;
   }
 
   public static final int CREATOR_ROLE_FIELD_NUMBER = 5;
-  private volatile java.lang.Object creatorRole_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object creatorRole_ = "";
   /**
    *
    *
@@ -672,23 +682,20 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       name_ = "";
-
       internalGetMutableLabels().clear();
-      if (createTimeBuilder_ == null) {
-        createTime_ = null;
-      } else {
-        createTime_ = null;
+      createTime_ = null;
+      if (createTimeBuilder_ != null) {
+        createTimeBuilder_.dispose();
         createTimeBuilder_ = null;
       }
-      if (approximateLastUseTimeBuilder_ == null) {
-        approximateLastUseTime_ = null;
-      } else {
-        approximateLastUseTime_ = null;
+      approximateLastUseTime_ = null;
+      if (approximateLastUseTimeBuilder_ != null) {
+        approximateLastUseTimeBuilder_.dispose();
         approximateLastUseTimeBuilder_ = null;
       }
       creatorRole_ = "";
-
       return this;
     }
 
@@ -715,23 +722,34 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.Session buildPartial() {
       com.google.spanner.v1.Session result = new com.google.spanner.v1.Session(this);
-      int from_bitField0_ = bitField0_;
-      result.name_ = name_;
-      result.labels_ = internalGetLabels();
-      result.labels_.makeImmutable();
-      if (createTimeBuilder_ == null) {
-        result.createTime_ = createTime_;
-      } else {
-        result.createTime_ = createTimeBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      if (approximateLastUseTimeBuilder_ == null) {
-        result.approximateLastUseTime_ = approximateLastUseTime_;
-      } else {
-        result.approximateLastUseTime_ = approximateLastUseTimeBuilder_.build();
-      }
-      result.creatorRole_ = creatorRole_;
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.Session result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.name_ = name_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.labels_ = internalGetLabels();
+        result.labels_.makeImmutable();
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.createTime_ = createTimeBuilder_ == null ? createTime_ : createTimeBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.approximateLastUseTime_ =
+            approximateLastUseTimeBuilder_ == null
+                ? approximateLastUseTime_
+                : approximateLastUseTimeBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.creatorRole_ = creatorRole_;
+      }
     }
 
     @java.lang.Override
@@ -781,9 +799,11 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
       if (other == com.google.spanner.v1.Session.getDefaultInstance()) return this;
       if (!other.getName().isEmpty()) {
         name_ = other.name_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       internalGetMutableLabels().mergeFrom(other.internalGetLabels());
+      bitField0_ |= 0x00000002;
       if (other.hasCreateTime()) {
         mergeCreateTime(other.getCreateTime());
       }
@@ -792,6 +812,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
       }
       if (!other.getCreatorRole().isEmpty()) {
         creatorRole_ = other.creatorRole_;
+        bitField0_ |= 0x00000010;
         onChanged();
       }
       this.mergeUnknownFields(other.getUnknownFields());
@@ -823,7 +844,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
             case 10:
               {
                 name_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
@@ -835,25 +856,26 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
                 internalGetMutableLabels()
                     .getMutableMap()
                     .put(labels__.getKey(), labels__.getValue());
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             case 26:
               {
                 input.readMessage(getCreateTimeFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 26
             case 34:
               {
                 input.readMessage(
                     getApproximateLastUseTimeFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000008;
                 break;
               } // case 34
             case 42:
               {
                 creatorRole_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000010;
                 break;
               } // case 42
             default:
@@ -936,8 +958,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       name_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -953,8 +975,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearName() {
-
       name_ = getDefaultInstance().getName();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -975,8 +997,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       name_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -992,14 +1014,14 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
 
     private com.google.protobuf.MapField<java.lang.String, java.lang.String>
         internalGetMutableLabels() {
-      onChanged();
-      ;
       if (labels_ == null) {
         labels_ = com.google.protobuf.MapField.newMapField(LabelsDefaultEntryHolder.defaultEntry);
       }
       if (!labels_.isMutable()) {
         labels_ = labels_.copy();
       }
+      bitField0_ |= 0x00000002;
+      onChanged();
       return labels_;
     }
 
@@ -1069,8 +1091,10 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * <code>map&lt;string, string&gt; labels = 2;</code>
      */
     @java.lang.Override
-    public java.lang.String getLabelsOrDefault(
-        java.lang.String key, java.lang.String defaultValue) {
+    public /* nullable */ java.lang.String getLabelsOrDefault(
+        java.lang.String key,
+        /* nullable */
+        java.lang.String defaultValue) {
       if (key == null) {
         throw new NullPointerException("map key");
       }
@@ -1105,6 +1129,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
     }
 
     public Builder clearLabels() {
+      bitField0_ = (bitField0_ & ~0x00000002);
       internalGetMutableLabels().getMutableMap().clear();
       return this;
     }
@@ -1133,6 +1158,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
     /** Use alternate mutation accessors instead. */
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, java.lang.String> getMutableLabels() {
+      bitField0_ |= 0x00000002;
       return internalGetMutableLabels().getMutableMap();
     }
     /**
@@ -1157,8 +1183,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException("map value");
       }
-
       internalGetMutableLabels().getMutableMap().put(key, value);
+      bitField0_ |= 0x00000002;
       return this;
     }
     /**
@@ -1178,6 +1204,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder putAllLabels(java.util.Map<java.lang.String, java.lang.String> values) {
       internalGetMutableLabels().getMutableMap().putAll(values);
+      bitField0_ |= 0x00000002;
       return this;
     }
 
@@ -1201,7 +1228,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the createTime field is set.
      */
     public boolean hasCreateTime() {
-      return createTimeBuilder_ != null || createTime_ != null;
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      *
@@ -1242,11 +1269,11 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         createTime_ = value;
-        onChanged();
       } else {
         createTimeBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1263,11 +1290,11 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
     public Builder setCreateTime(com.google.protobuf.Timestamp.Builder builderForValue) {
       if (createTimeBuilder_ == null) {
         createTime_ = builderForValue.build();
-        onChanged();
       } else {
         createTimeBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1283,17 +1310,18 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeCreateTime(com.google.protobuf.Timestamp value) {
       if (createTimeBuilder_ == null) {
-        if (createTime_ != null) {
-          createTime_ =
-              com.google.protobuf.Timestamp.newBuilder(createTime_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000004) != 0)
+            && createTime_ != null
+            && createTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getCreateTimeBuilder().mergeFrom(value);
         } else {
           createTime_ = value;
         }
-        onChanged();
       } else {
         createTimeBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1308,14 +1336,13 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public Builder clearCreateTime() {
-      if (createTimeBuilder_ == null) {
-        createTime_ = null;
-        onChanged();
-      } else {
-        createTime_ = null;
+      bitField0_ = (bitField0_ & ~0x00000004);
+      createTime_ = null;
+      if (createTimeBuilder_ != null) {
+        createTimeBuilder_.dispose();
         createTimeBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1330,7 +1357,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public com.google.protobuf.Timestamp.Builder getCreateTimeBuilder() {
-
+      bitField0_ |= 0x00000004;
       onChanged();
       return getCreateTimeFieldBuilder().getBuilder();
     }
@@ -1403,7 +1430,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the approximateLastUseTime field is set.
      */
     public boolean hasApproximateLastUseTime() {
-      return approximateLastUseTimeBuilder_ != null || approximateLastUseTime_ != null;
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      *
@@ -1446,11 +1473,11 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         approximateLastUseTime_ = value;
-        onChanged();
       } else {
         approximateLastUseTimeBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1469,11 +1496,11 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.Timestamp.Builder builderForValue) {
       if (approximateLastUseTimeBuilder_ == null) {
         approximateLastUseTime_ = builderForValue.build();
-        onChanged();
       } else {
         approximateLastUseTimeBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1490,19 +1517,18 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeApproximateLastUseTime(com.google.protobuf.Timestamp value) {
       if (approximateLastUseTimeBuilder_ == null) {
-        if (approximateLastUseTime_ != null) {
-          approximateLastUseTime_ =
-              com.google.protobuf.Timestamp.newBuilder(approximateLastUseTime_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000008) != 0)
+            && approximateLastUseTime_ != null
+            && approximateLastUseTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getApproximateLastUseTimeBuilder().mergeFrom(value);
         } else {
           approximateLastUseTime_ = value;
         }
-        onChanged();
       } else {
         approximateLastUseTimeBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1518,14 +1544,13 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public Builder clearApproximateLastUseTime() {
-      if (approximateLastUseTimeBuilder_ == null) {
-        approximateLastUseTime_ = null;
-        onChanged();
-      } else {
-        approximateLastUseTime_ = null;
+      bitField0_ = (bitField0_ & ~0x00000008);
+      approximateLastUseTime_ = null;
+      if (approximateLastUseTimeBuilder_ != null) {
+        approximateLastUseTimeBuilder_.dispose();
         approximateLastUseTimeBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1541,7 +1566,7 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public com.google.protobuf.Timestamp.Builder getApproximateLastUseTimeBuilder() {
-
+      bitField0_ |= 0x00000008;
       onChanged();
       return getApproximateLastUseTimeFieldBuilder().getBuilder();
     }
@@ -1656,8 +1681,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       creatorRole_ = value;
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1673,8 +1698,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearCreatorRole() {
-
       creatorRole_ = getDefaultInstance().getCreatorRole();
+      bitField0_ = (bitField0_ & ~0x00000010);
       onChanged();
       return this;
     }
@@ -1695,8 +1720,8 @@ public final class Session extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       creatorRole_ = value;
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }

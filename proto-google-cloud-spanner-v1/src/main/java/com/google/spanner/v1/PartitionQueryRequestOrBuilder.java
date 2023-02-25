@@ -253,7 +253,6 @@ public interface PartitionQueryRequestOrBuilder
    *
    * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 5;</code>
    */
-
   /* nullable */
   com.google.spanner.v1.Type getParamTypesOrDefault(
       java.lang.String key,
