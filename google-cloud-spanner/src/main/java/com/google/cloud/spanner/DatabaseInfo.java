@@ -19,7 +19,6 @@ package com.google.cloud.spanner;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
 import com.google.common.base.Preconditions;
-import com.google.common.io.ByteStreams;
 import com.google.protobuf.ByteString;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,11 +62,39 @@ public class DatabaseInfo {
       throw new UnsupportedOperationException("Unimplemented");
     }
 
+    /**
+     * Optional for creating a new database.
+     *
+     * <p>The proto descriptors input as byte[] to be used for the database.
+     *
+     * <p>It is used by CREATE/ALTER PROTO BUNDLE statements which are part of DDL statements.
+     * Contains a protobuf-serialized [google.protobuf.FileDescriptorSet]. To generate a proto
+     * descriptors file run `protoc` with --include_imports and --descriptor_set_out.
+     */
     public abstract Builder setProtoDescriptors(@Nonnull byte[] protoDescriptors);
 
+    /**
+     * Optional for creating a new database.
+     *
+     * <p>The proto descriptors input as InputStream to be used for the database.
+     *
+     * <p>It is used by CREATE/ALTER PROTO BUNDLE statements which are part of DDL statements.
+     * Contains a protobuf-serialized [google.protobuf.FileDescriptorSet]. To generate a proto
+     * descriptors file run `protoc` with --include_imports and --descriptor_set_out.
+     */
     public abstract Builder setProtoDescriptors(@Nonnull InputStream inputStream)
         throws IOException;
 
+    /**
+     * Optional for creating a new database.
+     *
+     * <p>The proto descriptors file path input as String to be used for the database. The proto
+     * descriptors file must be present with in the project resources directory.
+     *
+     * <p>It is used by CREATE/ALTER PROTO BUNDLE statements which are part of DDL statements.
+     * Contains a protobuf-serialized [google.protobuf.FileDescriptorSet]. To generate a proto
+     * descriptors file run `protoc` with --include_imports and --descriptor_set_out.
+     */
     public abstract Builder setProtoDescriptors(@Nonnull String filePath) throws IOException;
 
     abstract Builder setProto(com.google.spanner.admin.database.v1.Database proto);
@@ -172,7 +199,8 @@ public class DatabaseInfo {
     @Override
     public Builder setProtoDescriptors(@Nonnull String filePath) throws IOException {
       Preconditions.checkNotNull(filePath);
-      Preconditions.checkState(filePath.length() != 0, "Input Proto Descriptors File Path cannot be empty.");
+      Preconditions.checkState(
+          filePath.length() != 0, "Input Proto Descriptors File Path cannot be empty.");
       InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath);
       Preconditions.checkNotNull(inputStream, "Input Proto Descriptors File path is invalid.");
       return setProtoDescriptors(inputStream);
