@@ -1254,6 +1254,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       @Nullable final String updateId)
       throws SpannerException {
     acquireAdministrativeRequestsRateLimiter();
+    Preconditions.checkNotNull(databaseInfo.getId());
     UpdateDatabaseDdlRequest.Builder requestBuilder =
         UpdateDatabaseDdlRequest.newBuilder()
             .setDatabase(databaseInfo.getId().getName())

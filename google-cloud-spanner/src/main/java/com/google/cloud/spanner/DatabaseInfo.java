@@ -68,7 +68,7 @@ public class DatabaseInfo {
     public abstract Builder setProtoDescriptors(@Nonnull InputStream inputStream)
         throws IOException;
 
-    public abstract Builder setProtoDescriptors(String filePath) throws IOException;
+    public abstract Builder setProtoDescriptors(@Nonnull String filePath) throws IOException;
 
     abstract Builder setProto(com.google.spanner.admin.database.v1.Database proto);
 
@@ -165,16 +165,16 @@ public class DatabaseInfo {
     @Override
     public Builder setProtoDescriptors(@Nonnull InputStream inputStream) throws IOException {
       Preconditions.checkNotNull(inputStream);
-      byte[] byteArray = ByteStreams.toByteArray(inputStream);
-      this.protoDescriptors = ByteString.copyFrom(byteArray);
+      this.protoDescriptors = ByteString.readFrom(inputStream);
       return this;
     }
 
     @Override
-    public Builder setProtoDescriptors(String filePath) throws IOException {
-      Preconditions.checkState(filePath.length() != 0, "Input File Path cannot be empty.");
+    public Builder setProtoDescriptors(@Nonnull String filePath) throws IOException {
+      Preconditions.checkNotNull(filePath);
+      Preconditions.checkState(filePath.length() != 0, "Input Proto Descriptors File Path cannot be empty.");
       InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath);
-      Preconditions.checkNotNull(inputStream, "Input File path is invalid.");
+      Preconditions.checkNotNull(inputStream, "Input Proto Descriptors File path is invalid.");
       return setProtoDescriptors(inputStream);
     }
 

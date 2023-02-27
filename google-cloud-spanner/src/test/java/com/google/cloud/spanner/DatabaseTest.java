@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.DatabaseInfo.State.CREATING;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -72,7 +73,6 @@ public class DatabaseTest {
   private static final String DEFAULT_LEADER = "default-leader";
   private static final DatabaseDialect DEFAULT_DIALECT = DatabaseDialect.GOOGLE_STANDARD_SQL;
   private static ByteString protoDescriptors;
-  private static InputStream protoDescriptorsInputStream;
   private static byte[] protoDescriptorsByteArray;
   private static final String PROTO_DESCRIPTORS_RESOURCE_PATH =
       "com/google/cloud/spanner/descriptors.pb";
@@ -90,12 +90,11 @@ public class DatabaseTest {
             invocation ->
                 new Database.Builder(dbClient, (DatabaseId) invocation.getArguments()[0]));
     try {
-      protoDescriptorsInputStream =
+      InputStream protoDescriptorsInputStream =
           getClass().getClassLoader().getResourceAsStream(PROTO_DESCRIPTORS_RESOURCE_PATH);
+      assertNotNull(protoDescriptorsInputStream);
       protoDescriptorsByteArray = ByteStreams.toByteArray(protoDescriptorsInputStream);
       protoDescriptors = ByteString.copyFrom(protoDescriptorsByteArray);
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -213,6 +212,7 @@ public class DatabaseTest {
   public void testBuildWithProtoDescriptorsFromInputStream() throws IOException {
     InputStream in =
         getClass().getClassLoader().getResourceAsStream(PROTO_DESCRIPTORS_RESOURCE_PATH);
+    assertNotNull(in);
     final Database database =
         dbClient
             .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
