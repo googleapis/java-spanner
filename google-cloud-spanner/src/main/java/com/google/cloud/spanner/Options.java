@@ -40,9 +40,9 @@ public final class Options implements Serializable {
       this.proto = Preconditions.checkNotNull(proto);
     }
 
-    public static RpcPriority fromProto(Priority proto){
-      for(RpcPriority e : RpcPriority.values()){
-        if(e.proto.equals(proto)) return e;
+    public static RpcPriority fromProto(Priority proto) {
+      for (RpcPriority e : RpcPriority.values()) {
+        if (e.proto.equals(proto)) return e;
       }
       return null;
     }
