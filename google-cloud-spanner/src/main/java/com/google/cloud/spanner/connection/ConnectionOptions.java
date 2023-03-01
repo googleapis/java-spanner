@@ -434,7 +434,7 @@ public class ConnectionOptions {
      *       database on the emulator will remain untouched. No other configuration is needed in
      *       order to connect to the emulator than setting this property.
      *   <li>routeToLeader (boolean): Sets the routeToLeader flag to route requests to leader (true)
-     *       or any region (false) in RW/PDML transactions. Default is true.
+     *       or any region (false) in read/write transactions and Partitioned DML. Default is true.
      * </ul>
      *
      * @param uri The URI of the Spanner database to connect to.

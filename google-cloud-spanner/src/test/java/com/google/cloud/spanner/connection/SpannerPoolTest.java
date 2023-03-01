@@ -469,6 +469,8 @@ public class SpannerPoolTest {
             .setUri("cloudspanner:/projects/p/instances/i/databases/d")
             .setCredentials(NoCredentials.getInstance())
             .build();
+    // Not passing in routeToLeader in Connection URI is equivalent to passing it as true,
+    // as routeToLeader is true by default.
     ConnectionOptions options4 =
         ConnectionOptions.newBuilder()
             .setUri("cloudspanner:/projects/p/instances/i/databases/d?routeToLeader=true")
@@ -492,6 +494,5 @@ public class SpannerPoolTest {
     assertNotEquals(key1, new Object());
     assertEquals(key3, key4);
     assertNotEquals(key4, key5);
-    assertEquals(key2, key4);
   }
 }

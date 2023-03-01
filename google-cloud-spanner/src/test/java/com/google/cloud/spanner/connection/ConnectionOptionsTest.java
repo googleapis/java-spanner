@@ -49,6 +49,9 @@ public class ConnectionOptionsTest {
   private static final String FILE_TEST_PATH =
       ConnectionOptionsTest.class.getResource("test-key.json").getFile();
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
+  private static final String TEST_PROJECT = "test-project-123";
+  private static final String TEST_INSTANCE = "test-instance-123";
+  private static final String TEST_DATABASE = "test-database-123";
 
   @Test
   public void testBuildWithURIWithDots() {
@@ -151,21 +154,19 @@ public class ConnectionOptionsTest {
 
   @Test
   public void testBuildWithRouteToLeader() {
+    final String BASE_URI =
+        "cloudspanner:/projects/test-project-123/instances/test-instance-123/databases/test-database-123";
     ConnectionOptions.Builder builder = ConnectionOptions.newBuilder();
-    builder.setUri(
-        "cloudspanner:/projects/test-project-123/instances/test-instance-123/databases/test-database-123?routeToLeader=false");
+    builder.setUri(BASE_URI + "?routeToLeader=false");
     ConnectionOptions options = builder.build();
     assertEquals(options.getHost(), DEFAULT_HOST);
-    assertEquals(options.getProjectId(), "test-project-123");
-    assertEquals(options.getInstanceId(), "test-instance-123");
-    assertEquals(options.getDatabaseName(), "test-database-123");
+    assertEquals(options.getProjectId(), TEST_PROJECT);
+    assertEquals(options.getInstanceId(), TEST_INSTANCE);
+    assertEquals(options.getDatabaseName(), TEST_DATABASE);
     assertFalse(options.isRouteToLeader());
 
     // Test for default behavior for routeToLeader property.
-    builder =
-        ConnectionOptions.newBuilder()
-            .setUri(
-                "cloudspanner:/projects/test-project-123/instances/test-instance-123/databases/test-database-123");
+    builder = ConnectionOptions.newBuilder().setUri(BASE_URI);
     options = builder.build();
     assertTrue(options.isRouteToLeader());
   }
