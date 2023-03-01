@@ -236,7 +236,7 @@ public class ConnectionOptions {
                       DEFAULT_READONLY),
                   ConnectionProperty.createBooleanProperty(
                       ROUTE_TO_LEADER_PROPERTY_NAME,
-                      "Should the RW/PDML requests be routed to leader region (true/false)",
+                      "Should read/write transactions and partitioned DML be routed to leader region (true/false)",
                       DEFAULT_ROUTE_TO_LEADER),
                   ConnectionProperty.createBooleanProperty(
                       RETRY_ABORTS_INTERNALLY_PROPERTY_NAME,
