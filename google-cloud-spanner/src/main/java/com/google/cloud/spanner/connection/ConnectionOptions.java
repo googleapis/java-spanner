@@ -1041,7 +1041,11 @@ public class ConnectionOptions {
   public boolean isReadOnly() {
     return readOnly;
   }
-  /** Whether RW/PDML requests are preferred to be routed to the leader region. */
+
+  /**
+   * Whether read/write transactions and partitioned DML are preferred to be routed to the leader
+   * region.
+   */
   public boolean isRouteToLeader() {
     return routeToLeader;
   }
