@@ -148,12 +148,11 @@ public final class Options implements Serializable {
   }
 
   /**
-   * If this option is set to `true` for a partitioned read/query the request will be
-   * executed via offline access.
+   * If this is for a partitioned read & query and this field is set to `true`, the request will be
+   * executed via Spanner independent compute resources.
    */
   @BetaApi
-  public static DataBoostQueryOption dataBoost(
-      Boolean dataBoostEnabled) {
+  public static DataBoostQueryOption dataBoostEnabled(Boolean dataBoostEnabled) {
     return new DataBoostQueryOption(dataBoostEnabled);
   }
 
@@ -429,7 +428,7 @@ public final class Options implements Serializable {
     return dataBoostEnabled != null;
   }
 
-  Boolean dataBoost() {
+  Boolean dataBoostEnabled() {
     return dataBoostEnabled;
   }
 
@@ -505,7 +504,7 @@ public final class Options implements Serializable {
         && Objects.equals(priority(), that.priority())
         && Objects.equals(tag(), that.tag())
         && Objects.equals(etag(), that.etag())
-        && Objects.equals(dataBoost(), that.dataBoost())
+        && Objects.equals(dataBoostEnabled(), that.dataBoostEnabled())
         && Objects.equals(validateOnly(), that.validateOnly())
         && Objects.equals(withOptimisticLock(), that.withOptimisticLock());
   }

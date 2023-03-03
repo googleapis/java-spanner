@@ -19,7 +19,6 @@ package com.example.spanner;
 import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.BatchReadOnlyTransaction;
 import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Partition;
 import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ResultSet;
@@ -80,8 +79,7 @@ public class BatchSample {
       List<Partition> partitions =
           txn.partitionQuery(
               PartitionOptions.getDefaultInstance(),
-              Statement.of("SELECT SingerId, FirstName, LastName FROM Singers"),
-              Options.dataBoost(true));
+              Statement.of("SELECT SingerId, FirstName, LastName FROM Singers"));
 
       totalPartitions = partitions.size();
 

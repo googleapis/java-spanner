@@ -18,8 +18,6 @@ package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.ByteArray;
@@ -30,7 +28,6 @@ import com.google.cloud.spanner.BatchTransactionId;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Dialect;
-import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
@@ -39,7 +36,6 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Partition;
 import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.common.collect.ImmutableList;
@@ -82,9 +78,6 @@ public class ITBatchReadTest {
   private static HashFunction hasher;
   private static BatchClient googleStandardSQLBatchClient;
   private static BatchClient postgreSQLBatchClient;
-
-  private static DatabaseClient googleStandardDatabaseClient;
-  private static DatabaseClient postgreSQLDatabaseClient;
   private static final Random RANDOM = new Random();
 
   private BatchReadOnlyTransaction batchTxn;
@@ -128,7 +121,6 @@ public class ITBatchReadTest {
                 "CREATE INDEX " + INDEX_NAME + " ON " + TABLE_NAME + "(Fingerprint)");
     hasher = Hashing.goodFastHash(64);
     googleStandardSQLBatchClient = env.getTestHelper().getBatchClient(googleStandardDatabase);
-    googleStandardDatabaseClient = env.getTestHelper().getDatabaseClient(googleStandardDatabase);
 
     List<DatabaseClient> databaseClients = new ArrayList<>();
     databaseClients.add(env.getTestHelper().getDatabaseClient(googleStandardDatabase));
@@ -156,8 +148,6 @@ public class ITBatchReadTest {
           .get();
       postgreSQLBatchClient = env.getTestHelper().getBatchClient(postgreSQLDatabase);
       databaseClients.add(env.getTestHelper().getDatabaseClient(postgreSQLDatabase));
-
-      postgreSQLDatabaseClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
     }
 
     List<Integer> rows = manyRows();
@@ -201,13 +191,6 @@ public class ITBatchReadTest {
     return googleStandardSQLBatchClient;
   }
 
-  private DatabaseClient getDatabaseClient() {
-    if (dialect.dialect == Dialect.POSTGRESQL) {
-      return postgreSQLDatabaseClient;
-    }
-    return googleStandardDatabaseClient;
-  }
-
   @Test
   public void read() {
     assumeFalse(
@@ -222,8 +205,7 @@ public class ITBatchReadTest {
             partitionParams,
             TABLE_NAME,
             KeySet.all(),
-            Arrays.asList("Key", "Data", "Fingerprint", "Size"),
-            Options.dataBoost(true));
+            Arrays.asList("Key", "Data", "Fingerprint", "Size"));
     BatchTransactionId txnID = batchTxn.getBatchTransactionId();
     fetchAndValidateRows(partitions, txnID, seenRows);
   }
@@ -258,27 +240,24 @@ public class ITBatchReadTest {
   }
 
   @Test
-  public void dataBoostInvalidRead() {
-    SpannerException e =
-        assertThrows(
-            SpannerException.class, () -> getDatabaseClient().singleUse().read(
-                TABLE_NAME,
-                KeySet.all(),
-                Arrays.asList("Key", "Data", "Fingerprint", "Size"),
-                Options.dataBoost(true)));
+  public void dataBoostRead() {
+    assumeFalse(
+        "PostgreSQL does not support the PartitionRead RPC", dialect.dialect == Dialect.POSTGRESQL);
+    assumeFalse("Emulator does not support data boost read", isUsingEmulator());
 
-    assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
-  }
-
-  @Test
-  public void dataBoostInvalidQuery() {
-    SpannerException e =
-        assertThrows(
-            SpannerException.class, () -> getDatabaseClient().singleUse().executeQuery(
-                Statement.of("Select Key, Data, Fingerprint, Size From " + TABLE_NAME),
-                Options.dataBoost(true)));
-
-    assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+    BitSet seenRows = new BitSet(numRows);
+    TimestampBound bound = getRandomBound();
+    PartitionOptions partitionParams = getRandomPartitionOptions();
+    batchTxn = getBatchClient().batchReadOnlyTransaction(bound);
+    List<Partition> partitions =
+        batchTxn.partitionRead(
+            partitionParams,
+            TABLE_NAME,
+            KeySet.all(),
+            Arrays.asList("Key", "Data", "Fingerprint", "Size"),
+            Options.dataBoostEnabled(true));
+    BatchTransactionId txnID = batchTxn.getBatchTransactionId();
+    fetchAndValidateRows(partitions, txnID, seenRows);
   }
 
   @After
@@ -314,6 +293,22 @@ public class ITBatchReadTest {
       parameters = PartitionOptions.getDefaultInstance();
     }
     return parameters;
+  }
+
+  @Test
+  public void dataBoostQuery() {
+    assumeFalse("Emulator does not support data boost query", isUsingEmulator());
+    BitSet seenRows = new BitSet(numRows);
+    TimestampBound bound = getRandomBound();
+    PartitionOptions partitionParams = getRandomPartitionOptions();
+    batchTxn = getBatchClient().batchReadOnlyTransaction(bound);
+    List<Partition> partitions =
+        batchTxn.partitionQuery(
+            partitionParams,
+            Statement.of("SELECT Key, Data, Fingerprint, Size FROM " + TABLE_NAME),
+            Options.dataBoostEnabled(true));
+    BatchTransactionId txnID = batchTxn.getBatchTransactionId();
+    fetchAndValidateRows(partitions, txnID, seenRows);
   }
 
   private TimestampBound getRandomBound() {

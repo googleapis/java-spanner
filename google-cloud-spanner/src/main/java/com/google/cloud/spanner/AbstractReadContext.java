@@ -596,7 +596,7 @@ abstract class AbstractReadContext
       }
     }
     if (options.hasDataBoostEnabled()) {
-      builder.setDataBoostEnabled(options.dataBoost());
+      builder.setDataBoostEnabled(options.dataBoostEnabled());
     }
     builder.setSeqno(getSeqNo());
     builder.setQueryOptions(buildQueryOptions(statement.getQueryOptions()));
@@ -777,7 +777,7 @@ abstract class AbstractReadContext
       builder.setPartitionToken(partitionToken);
     }
     if (readOptions.hasDataBoostEnabled()) {
-      builder.setDataBoostEnabled(readOptions.dataBoost());
+      builder.setDataBoostEnabled(readOptions.dataBoostEnabled());
     }
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;
