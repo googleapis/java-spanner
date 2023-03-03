@@ -595,8 +595,8 @@ abstract class AbstractReadContext
         builder.setTransaction(selector);
       }
     }
-    if (options.hasDataBoostEnabledEnabled()) {
-      builder.setServerlessAnalyticsEnabled(options.dataBoost());
+    if (options.hasDataBoostEnabled()) {
+      builder.setDataBoostEnabled(options.dataBoost());
     }
     builder.setSeqno(getSeqNo());
     builder.setQueryOptions(buildQueryOptions(statement.getQueryOptions()));
@@ -776,8 +776,8 @@ abstract class AbstractReadContext
     if (partitionToken != null) {
       builder.setPartitionToken(partitionToken);
     }
-    if (readOptions.hasDataBoostEnabledEnabled()) {
-      builder.setServerlessAnalyticsEnabled(readOptions.dataBoost());
+    if (readOptions.hasDataBoostEnabled()) {
+      builder.setDataBoostEnabled(readOptions.dataBoost());
     }
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;

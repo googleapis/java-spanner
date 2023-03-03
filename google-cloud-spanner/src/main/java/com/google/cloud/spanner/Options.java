@@ -425,7 +425,7 @@ public final class Options implements Serializable {
     return withOptimisticLock;
   }
 
-  boolean hasDataBoostEnabledEnabled() {
+  boolean hasDataBoostEnabled() {
     return dataBoostEnabled != null;
   }
 
