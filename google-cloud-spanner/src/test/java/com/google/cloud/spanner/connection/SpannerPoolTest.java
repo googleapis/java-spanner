@@ -117,40 +117,40 @@ public class SpannerPoolTest {
     // assert equal
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options1, connection2);
-    assertThat(spanner1).isEqualTo(spanner2);
+    assertEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options2, connection1);
     spanner2 = pool.getSpanner(options2, connection2);
-    assertThat(spanner1).isEqualTo(spanner2);
+    assertEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options3, connection1);
     spanner2 = pool.getSpanner(options3, connection2);
-    assertThat(spanner1).isEqualTo(spanner2);
+    assertEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options4, connection1);
     spanner2 = pool.getSpanner(options4, connection2);
-    assertThat(spanner1).isEqualTo(spanner2);
+    assertEquals(spanner1, spanner2);
     // Options 5 and 6 both use default credentials.
     spanner1 = pool.getSpanner(options5, connection1);
     spanner2 = pool.getSpanner(options6, connection2);
-    assertThat(spanner1).isEqualTo(spanner2);
+    assertEquals(spanner1, spanner2);
 
     // assert not equal
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options2, connection2);
-    assertThat(spanner1).isNotEqualTo(spanner2);
+    assertNotEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options3, connection2);
-    assertThat(spanner1).isNotEqualTo(spanner2);
+    assertNotEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options4, connection2);
-    assertThat(spanner1).isNotEqualTo(spanner2);
+    assertNotEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options2, connection1);
     spanner2 = pool.getSpanner(options3, connection2);
-    assertThat(spanner1).isNotEqualTo(spanner2);
+    assertNotEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options2, connection1);
     spanner2 = pool.getSpanner(options4, connection2);
-    assertThat(spanner1).isNotEqualTo(spanner2);
+    assertNotEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options3, connection1);
     spanner2 = pool.getSpanner(options4, connection2);
-    assertThat(spanner1).isNotEqualTo(spanner2);
+    assertNotEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options7, connection1);
     spanner2 = pool.getSpanner(options8, connection2);
     assertNotEquals(spanner1, spanner2);
