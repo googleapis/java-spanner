@@ -1972,6 +1972,27 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         : requestOptions_;
   }
 
+  public static final int DATA_BOOST_ENABLED_FIELD_NUMBER = 15;
+  private boolean dataBoostEnabled_ = false;
+  /**
+   *
+   *
+   * <pre>
+   * If this is for a partitioned read and this field is set to `true`, the
+   * request will be executed via Spanner independent compute resources.
+   * If the field is set to `true` but the request does not set
+   * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
+   * </pre>
+   *
+   * <code>bool data_boost_enabled = 15;</code>
+   *
+   * @return The dataBoostEnabled.
+   */
+  @java.lang.Override
+  public boolean getDataBoostEnabled() {
+    return dataBoostEnabled_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -2017,6 +2038,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     }
     if (requestOptions_ != null) {
       output.writeMessage(11, getRequestOptions());
+    }
+    if (dataBoostEnabled_ != false) {
+      output.writeBool(15, dataBoostEnabled_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -2067,6 +2091,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     if (requestOptions_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(11, getRequestOptions());
     }
+    if (dataBoostEnabled_ != false) {
+      size += com.google.protobuf.CodedOutputStream.computeBoolSize(15, dataBoostEnabled_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -2105,6 +2132,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     if (hasRequestOptions()) {
       if (!getRequestOptions().equals(other.getRequestOptions())) return false;
     }
+    if (getDataBoostEnabled() != other.getDataBoostEnabled()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -2148,6 +2176,8 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       hash = (37 * hash) + REQUEST_OPTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getRequestOptions().hashCode();
     }
+    hash = (37 * hash) + DATA_BOOST_ENABLED_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getDataBoostEnabled());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -2335,6 +2365,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         requestOptionsBuilder_.dispose();
         requestOptionsBuilder_ = null;
       }
+      dataBoostEnabled_ = false;
       return this;
     }
 
@@ -2407,6 +2438,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       if (((from_bitField0_ & 0x00000400) != 0)) {
         result.requestOptions_ =
             requestOptionsBuilder_ == null ? requestOptions_ : requestOptionsBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000800) != 0)) {
+        result.dataBoostEnabled_ = dataBoostEnabled_;
       }
     }
 
@@ -2490,6 +2524,9 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       }
       if (other.hasRequestOptions()) {
         mergeRequestOptions(other.getRequestOptions());
+      }
+      if (other.getDataBoostEnabled() != false) {
+        setDataBoostEnabled(other.getDataBoostEnabled());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -2590,6 +2627,12 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
                 bitField0_ |= 0x00000400;
                 break;
               } // case 90
+            case 120:
+              {
+                dataBoostEnabled_ = input.readBool();
+                bitField0_ |= 0x00000800;
+                break;
+              } // case 120
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -4208,6 +4251,68 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         requestOptions_ = null;
       }
       return requestOptionsBuilder_;
+    }
+
+    private boolean dataBoostEnabled_;
+    /**
+     *
+     *
+     * <pre>
+     * If this is for a partitioned read and this field is set to `true`, the
+     * request will be executed via Spanner independent compute resources.
+     * If the field is set to `true` but the request does not set
+     * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>bool data_boost_enabled = 15;</code>
+     *
+     * @return The dataBoostEnabled.
+     */
+    @java.lang.Override
+    public boolean getDataBoostEnabled() {
+      return dataBoostEnabled_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * If this is for a partitioned read and this field is set to `true`, the
+     * request will be executed via Spanner independent compute resources.
+     * If the field is set to `true` but the request does not set
+     * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>bool data_boost_enabled = 15;</code>
+     *
+     * @param value The dataBoostEnabled to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDataBoostEnabled(boolean value) {
+
+      dataBoostEnabled_ = value;
+      bitField0_ |= 0x00000800;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * If this is for a partitioned read and this field is set to `true`, the
+     * request will be executed via Spanner independent compute resources.
+     * If the field is set to `true` but the request does not set
+     * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>bool data_boost_enabled = 15;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearDataBoostEnabled() {
+      bitField0_ = (bitField0_ & ~0x00000800);
+      dataBoostEnabled_ = false;
+      onChanged();
+      return this;
     }
 
     @java.lang.Override
