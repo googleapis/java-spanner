@@ -307,6 +307,7 @@ public class OptionsTest {
     assertEquals(RpcPriority.fromProto(Priority.PRIORITY_MEDIUM), RpcPriority.MEDIUM);
     assertEquals(RpcPriority.fromProto(Priority.PRIORITY_HIGH), RpcPriority.HIGH);
     assertEquals(RpcPriority.fromProto(Priority.PRIORITY_UNSPECIFIED), RpcPriority.UNSPECIFIED);
+    assertEquals(RpcPriority.fromProto(null), RpcPriority.UNSPECIFIED);
   }
 
   @Test
