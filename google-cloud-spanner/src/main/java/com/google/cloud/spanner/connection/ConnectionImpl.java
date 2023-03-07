@@ -1006,7 +1006,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(update);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = getStatementParser().parse(update);
-    if (parsedStatement.isUpdate()) {
+    if (parsedStatement.isUpdate() || parsedStatement.isDdl()) {
       switch (parsedStatement.getType()) {
         case UPDATE:
           if (parsedStatement.hasReturningClause()) {
@@ -1017,16 +1017,19 @@ class ConnectionImpl implements Connection {
                     + ". Please use executeQuery instead.");
           }
           return get(internalExecuteUpdateAsync(parsedStatement));
+        case DDL:
+          get(executeDdlAsync(parsedStatement));
+          return 0L;
         case CLIENT_SIDE:
         case QUERY:
-        case DDL:
         case UNKNOWN:
         default:
       }
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
-        "Statement is not an update statement: " + parsedStatement.getSqlWithoutComments());
+        "Statement is not a non-returning DML/DDL statement: "
+            + parsedStatement.getSqlWithoutComments());
   }
 
   @Override

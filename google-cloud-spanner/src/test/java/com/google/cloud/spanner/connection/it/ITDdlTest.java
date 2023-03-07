@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection.it;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
@@ -53,6 +54,21 @@ public class ITDdlTest extends ITAbstractSpannerTest {
     try (Connection connection = createConnection()) {
       connection.execute(Statement.of(String.format("CREATE DATABASE `%s`", name)));
       assertNotNull(client.getDatabase(instance, name));
+    } finally {
+      client.dropDatabase(instance, name);
+    }
+  }
+
+  @Test
+  public void testCreateDatabaseExecuteUpdate() {
+    DatabaseAdminClient client = getTestEnv().getTestHelper().getClient().getDatabaseAdminClient();
+    String instance = getTestEnv().getTestHelper().getInstanceId().getInstance();
+    String name = getTestEnv().getTestHelper().getUniqueDatabaseId();
+
+    try (Connection connection = createConnection()) {
+      long updateCount =
+          connection.executeUpdate(Statement.of(String.format("CREATE DATABASE `%s`", name)));
+      assertEquals(updateCount, 0);
     } finally {
       client.dropDatabase(instance, name);
     }

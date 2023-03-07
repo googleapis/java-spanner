@@ -993,6 +993,18 @@ public abstract class AbstractConnectionImplTest {
             },
             connection,
             ErrorCode.FAILED_PRECONDITION);
+      } else if (type == StatementType.DDL) {
+        if (!isExecuteAllowed(StatementType.DDL)) {
+          expectSpannerException(
+              type + " should be an invalid argument",
+              t -> t.executeUpdate(getTestStatement(type)),
+              connection,
+              ErrorCode.FAILED_PRECONDITION);
+        } else {
+          log("@EXPECT UPDATE_COUNT 0");
+          log(getTestStatement(type).getSql() + ";");
+          assertEquals(connection.executeUpdate(getTestStatement(type)), 0);
+        }
       } else {
         expectSpannerException(
             type + " should be an invalid argument",
