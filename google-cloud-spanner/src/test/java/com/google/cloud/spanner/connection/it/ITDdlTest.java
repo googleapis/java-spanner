@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
+import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseNotFoundException;
 import com.google.cloud.spanner.ParallelIntegrationTest;
@@ -27,6 +28,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.Connection;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import com.google.cloud.spanner.connection.SqlScriptVerifier;
+import java.util.concurrent.ExecutionException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -69,6 +71,24 @@ public class ITDdlTest extends ITAbstractSpannerTest {
       long updateCount =
           connection.executeUpdate(Statement.of(String.format("CREATE DATABASE `%s`", name)));
       assertEquals(updateCount, 0);
+    } finally {
+      client.dropDatabase(instance, name);
+    }
+  }
+
+  @Test
+  public void testCreateDatabaseExecuteUpdateAsync() {
+    DatabaseAdminClient client = getTestEnv().getTestHelper().getClient().getDatabaseAdminClient();
+    String instance = getTestEnv().getTestHelper().getInstanceId().getInstance();
+    String name = getTestEnv().getTestHelper().getUniqueDatabaseId();
+
+    try (Connection connection = createConnection()) {
+      ApiFuture<Long> updateCountFuture =
+          connection.executeUpdateAsync(Statement.of(String.format("CREATE DATABASE `%s`", name)));
+      long updateCount = updateCountFuture.get();
+      assertEquals(updateCount, 0L);
+    } catch (ExecutionException | InterruptedException e) {
+      // pass
     } finally {
       client.dropDatabase(instance, name);
     }

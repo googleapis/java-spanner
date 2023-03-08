@@ -1060,17 +1060,17 @@ class ConnectionImpl implements Connection {
                   + parsedStatement.getSqlWithoutComments()
                   + ". Please use executeQueryAsync instead.");
         }
-        return ApiFutures.transform(
+        return ApiFutures.transformAsync(
             ApiFutures.immediateFuture(
                 parsedStatement
                     .getClientSideStatement()
                     .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments())),
-            unused -> Long.valueOf(0),
+            unused -> ApiFutures.immediateFuture(0L),
             MoreExecutors.directExecutor());
       case DDL:
-        return ApiFutures.transform(
+        return ApiFutures.transformAsync(
             executeDdlAsync(parsedStatement),
-            unused -> Long.valueOf(0),
+            unused -> ApiFutures.immediateFuture(0L),
             MoreExecutors.directExecutor());
       case QUERY:
       case UNKNOWN:
