@@ -925,33 +925,31 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(analyzeMode);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
-    if (parsedStatement.isQuery() || parsedStatement.isUpdate()) {
-      switch (parsedStatement.getType()) {
-        case CLIENT_SIDE:
-          return parsedStatement
-              .getClientSideStatement()
-              .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments())
-              .getResultSet();
-        case QUERY:
-          return internalExecuteQuery(parsedStatement, analyzeMode, options);
-        case UPDATE:
-          if (parsedStatement.hasReturningClause()) {
-            // Cannot execute DML statement with returning clause in read-only mode or in
-            // READ_ONLY_TRANSACTION transaction mode.
-            if (this.isReadOnly()
-                || (this.isInTransaction()
-                    && this.getTransactionMode() == TransactionMode.READ_ONLY_TRANSACTION)) {
-              throw SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.FAILED_PRECONDITION,
-                  "DML statement with returning clause cannot be executed in read-only mode: "
-                      + parsedStatement.getSqlWithoutComments());
-            }
-            return internalExecuteQuery(parsedStatement, analyzeMode, options);
+    switch (parsedStatement.getType()) {
+      case CLIENT_SIDE:
+        return parsedStatement
+            .getClientSideStatement()
+            .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments())
+            .getResultSet();
+      case QUERY:
+        return internalExecuteQuery(parsedStatement, analyzeMode, options);
+      case UPDATE:
+        if (parsedStatement.hasReturningClause()) {
+          // Cannot execute DML statement with returning clause in read-only mode or in
+          // READ_ONLY_TRANSACTION transaction mode.
+          if (this.isReadOnly()
+              || (this.isInTransaction()
+                  && this.getTransactionMode() == TransactionMode.READ_ONLY_TRANSACTION)) {
+            throw SpannerExceptionFactory.newSpannerException(
+                ErrorCode.FAILED_PRECONDITION,
+                "DML statement with returning clause cannot be executed in read-only mode: "
+                    + parsedStatement.getSqlWithoutComments());
           }
-        case DDL:
-        case UNKNOWN:
-        default:
-      }
+          return internalExecuteQuery(parsedStatement, analyzeMode, options);
+        }
+      case DDL:
+      case UNKNOWN:
+      default:
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
@@ -964,36 +962,34 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(query);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
-    if (parsedStatement.isQuery() || parsedStatement.isUpdate()) {
-      switch (parsedStatement.getType()) {
-        case CLIENT_SIDE:
-          return ResultSets.toAsyncResultSet(
-              parsedStatement
-                  .getClientSideStatement()
-                  .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments())
-                  .getResultSet(),
-              spanner.getAsyncExecutorProvider(),
-              options);
-        case QUERY:
-          return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
-        case UPDATE:
-          if (parsedStatement.hasReturningClause()) {
-            // Cannot execute DML statement with returning clause in read-only mode or in
-            // READ_ONLY_TRANSACTION transaction mode.
-            if (this.isReadOnly()
-                || (this.isInTransaction()
-                    && this.getTransactionMode() == TransactionMode.READ_ONLY_TRANSACTION)) {
-              throw SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.FAILED_PRECONDITION,
-                  "DML statement with returning clause cannot be executed in read-only mode: "
-                      + parsedStatement.getSqlWithoutComments());
-            }
-            return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
+    switch (parsedStatement.getType()) {
+      case CLIENT_SIDE:
+        return ResultSets.toAsyncResultSet(
+            parsedStatement
+                .getClientSideStatement()
+                .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments())
+                .getResultSet(),
+            spanner.getAsyncExecutorProvider(),
+            options);
+      case QUERY:
+        return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
+      case UPDATE:
+        if (parsedStatement.hasReturningClause()) {
+          // Cannot execute DML statement with returning clause in read-only mode or in
+          // READ_ONLY_TRANSACTION transaction mode.
+          if (this.isReadOnly()
+              || (this.isInTransaction()
+                  && this.getTransactionMode() == TransactionMode.READ_ONLY_TRANSACTION)) {
+            throw SpannerExceptionFactory.newSpannerException(
+                ErrorCode.FAILED_PRECONDITION,
+                "DML statement with returning clause cannot be executed in read-only mode: "
+                    + parsedStatement.getSqlWithoutComments());
           }
-        case DDL:
-        case UNKNOWN:
-        default:
-      }
+          return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
+        }
+      case DDL:
+      case UNKNOWN:
+      default:
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
@@ -1006,25 +1002,34 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(update);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = getStatementParser().parse(update);
-    if (parsedStatement.isUpdate() || parsedStatement.isDdl()) {
-      switch (parsedStatement.getType()) {
-        case UPDATE:
-          if (parsedStatement.hasReturningClause()) {
-            throw SpannerExceptionFactory.newSpannerException(
-                ErrorCode.FAILED_PRECONDITION,
-                "DML statement with returning clause cannot be executed using executeUpdate: "
-                    + parsedStatement.getSqlWithoutComments()
-                    + ". Please use executeQuery instead.");
-          }
-          return get(internalExecuteUpdateAsync(parsedStatement));
-        case DDL:
-          get(executeDdlAsync(parsedStatement));
-          return 0L;
-        case CLIENT_SIDE:
-        case QUERY:
-        case UNKNOWN:
-        default:
-      }
+    switch (parsedStatement.getType()) {
+      case UPDATE:
+        if (parsedStatement.hasReturningClause()) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.FAILED_PRECONDITION,
+              "DML statement with returning clause cannot be executed using executeUpdate: "
+                  + parsedStatement.getSqlWithoutComments()
+                  + ". Please use executeQuery instead.");
+        }
+        return get(internalExecuteUpdateAsync(parsedStatement));
+      case DDL:
+        get(executeDdlAsync(parsedStatement));
+        return 0L;
+      case CLIENT_SIDE:
+        if (parsedStatement.getClientSideStatement().isQuery()) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.FAILED_PRECONDITION,
+              "ClientSideStatement which returns a ResultSet cannot be executed using executeUpdate: "
+                  + parsedStatement.getSqlWithoutComments()
+                  + ". Please use executeQuery instead.");
+        }
+        parsedStatement
+            .getClientSideStatement()
+            .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments());
+        return 0L;
+      case QUERY:
+      case UNKNOWN:
+      default:
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
@@ -1037,23 +1042,39 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(update);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = getStatementParser().parse(update);
-    if (parsedStatement.isUpdate()) {
-      switch (parsedStatement.getType()) {
-        case UPDATE:
-          if (parsedStatement.hasReturningClause()) {
-            throw SpannerExceptionFactory.newSpannerException(
-                ErrorCode.FAILED_PRECONDITION,
-                "DML statement with returning clause cannot be executed using executeUpdateAsync: "
-                    + parsedStatement.getSqlWithoutComments()
-                    + ". Please use executeQueryAsync instead.");
-          }
-          return internalExecuteUpdateAsync(parsedStatement);
-        case CLIENT_SIDE:
-        case QUERY:
-        case DDL:
-        case UNKNOWN:
-        default:
-      }
+    switch (parsedStatement.getType()) {
+      case UPDATE:
+        if (parsedStatement.hasReturningClause()) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.FAILED_PRECONDITION,
+              "DML statement with returning clause cannot be executed using executeUpdateAsync: "
+                  + parsedStatement.getSqlWithoutComments()
+                  + ". Please use executeQueryAsync instead.");
+        }
+        return internalExecuteUpdateAsync(parsedStatement);
+      case CLIENT_SIDE:
+        if (parsedStatement.getClientSideStatement().isQuery()) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.FAILED_PRECONDITION,
+              "ClientSideStatement which returns a ResultSet cannot be executed using executeUpdateAsync: "
+                  + parsedStatement.getSqlWithoutComments()
+                  + ". Please use executeQueryAsync instead.");
+        }
+        return ApiFutures.transform(
+            ApiFutures.immediateFuture(
+                parsedStatement
+                    .getClientSideStatement()
+                    .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments())),
+            unused -> Long.valueOf(0),
+            MoreExecutors.directExecutor());
+      case DDL:
+        return ApiFutures.transform(
+            executeDdlAsync(parsedStatement),
+            unused -> Long.valueOf(0),
+            MoreExecutors.directExecutor());
+      case QUERY:
+      case UNKNOWN:
+      default:
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
