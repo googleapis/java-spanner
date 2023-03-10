@@ -406,14 +406,14 @@ public class SessionPoolOptions {
     }
 
     /**
-     * If greater than zero waits for the session pool to have at least {@link
+     * If greater than zero, waits for the session pool to have at least {@link
      * SessionPoolOptions#minSessions} before returning the database client to the caller. Note that
-     * this check is only done during the client creation. This is usually done asynchronously in
-     * order to provide the client back to the caller as soon as possible. We don't recommend using
-     * this option unless you are executing benchmarks and wants to guarantee the session pool has
-     * been fully initialized before continuing.
+     * this check is only done during the session pool creation. This is usually done asynchronously
+     * in order to provide the client back to the caller as soon as possible. We don't recommend
+     * using this option unless you are executing benchmarks and want to guarantee the session pool
+     * has min sessions in the pool before continuing.
      *
-     * <p>Defaults to zero.
+     * <p>Defaults to zero (initialization is done asynchronously).
      */
     public Builder setWaitForMinSessions(Duration waitForMinSessions) {
       this.waitForMinSessions = waitForMinSessions;

@@ -131,7 +131,7 @@ class SessionPool {
   /**
    * If the {@link SessionPoolOptions#getWaitForMinSessions()} duration is greater than zero, waits
    * for the creation of at least {@link SessionPoolOptions#getMinSessions()} in the pool using the
-   * given duration. If the waiting times out a {@link SpannerException} with the {@link
+   * given duration. If the waiting times out, a {@link SpannerException} with the {@link
    * ErrorCode#DEADLINE_EXCEEDED} is thrown.
    */
   void maybeWaitOnMinSessions() {
