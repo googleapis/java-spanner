@@ -16,26 +16,7 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.MetricRegistryConstants.COUNT;
-import static com.google.cloud.spanner.MetricRegistryConstants.GET_SESSION_TIMEOUTS;
-import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS;
-import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS_DESCRIPTION;
-import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
-import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS_DESCRIPTION;
-import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESSIONS;
-import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESSIONS_DESCRIPTION;
-import static com.google.cloud.spanner.MetricRegistryConstants.NUM_IN_USE_SESSIONS;
-import static com.google.cloud.spanner.MetricRegistryConstants.NUM_READ_SESSIONS;
-import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS;
-import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS_DESCRIPTION;
-import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_BEING_PREPARED;
-import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_POOL;
-import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_POOL_DESCRIPTION;
-import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSIONS;
-import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_TIMEOUTS_DESCRIPTION;
-import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
-import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
-import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
+import static com.google.cloud.spanner.MetricRegistryConstants.*;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -69,34 +50,10 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.ResultSetStats;
 import io.opencensus.common.Scope;
-import io.opencensus.metrics.DerivedLongCumulative;
-import io.opencensus.metrics.DerivedLongGauge;
-import io.opencensus.metrics.LabelValue;
-import io.opencensus.metrics.MetricOptions;
-import io.opencensus.metrics.MetricRegistry;
-import io.opencensus.metrics.Metrics;
-import io.opencensus.trace.Annotation;
-import io.opencensus.trace.AttributeValue;
-import io.opencensus.trace.BlankSpan;
-import io.opencensus.trace.Span;
-import io.opencensus.trace.Status;
-import io.opencensus.trace.Tracer;
-import io.opencensus.trace.Tracing;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import io.opencensus.metrics.*;
+import io.opencensus.trace.*;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -127,6 +84,31 @@ class SessionPool {
           ErrorCode.OUT_OF_RANGE,
           ErrorCode.UNIMPLEMENTED,
           ErrorCode.INTERNAL);
+
+  /**
+   * If the {@link SessionPoolOptions#getWaitForMinSessions()} duration is greater than zero, waits
+   * for the creation of at least {@link SessionPoolOptions#getMinSessions()} in the pool using the
+   * given duration. If the waiting times out a {@link SpannerException} with the {@link
+   * ErrorCode#DEADLINE_EXCEEDED} is thrown.
+   */
+  void maybeWaitOnMinSessions() {
+    final long timeoutNanos = options.getWaitForMinSessions().toNanos();
+    if (timeoutNanos <= 0) {
+      return;
+    }
+
+    try {
+      if (!waitOnMinSessionsLatch.await(timeoutNanos, TimeUnit.NANOSECONDS)) {
+        final long timeoutMillis = options.getWaitForMinSessions().toMillis();
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.DEADLINE_EXCEEDED,
+            "Timed out after waiting " + timeoutMillis + "ms for session pool creation");
+      }
+    } catch (InterruptedException e) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.DEADLINE_EXCEEDED, "Error while waiting for session pool creation", e);
+    }
+  }
 
   /**
    * Wrapper around current time so that we can fake it in tests. TODO(user): Replace with Java 8
@@ -1855,6 +1837,8 @@ class SessionPool {
 
   @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
 
+  private final CountDownLatch waitOnMinSessionsLatch;
+
   /**
    * Create a session pool with the given options and for the given database. It will also start
    * eagerly creating sessions if {@link SessionPoolOptions#getMinSessions()} is greater than 0.
@@ -1934,6 +1918,8 @@ class SessionPool {
     this.clock = clock;
     this.poolMaintainer = new PoolMaintainer();
     this.initMetricsCollection(metricRegistry, labelValues);
+    this.waitOnMinSessionsLatch =
+        options.getMinSessions() > 0 ? new CountDownLatch(1) : new CountDownLatch(0);
   }
 
   /**
@@ -2399,6 +2385,7 @@ class SessionPool {
       PooledSession pooledSession = null;
       boolean closeSession = false;
       synchronized (lock) {
+        int minSessions = options.getMinSessions();
         pooledSession = new PooledSession(session);
         numSessionsBeingCreated--;
         if (closureFuture != null) {
@@ -2406,6 +2393,9 @@ class SessionPool {
         } else {
           Preconditions.checkState(totalSessions() <= options.getMaxSessions() - 1);
           allSessions.add(pooledSession);
+          if (allSessions.size() >= minSessions) {
+            waitOnMinSessionsLatch.countDown();
+          }
           if (options.isAutoDetectDialect() && !detectDialectStarted) {
             // Get the dialect of the underlying database if that has not yet been done. Note that
             // this method will release the session into the pool once it is done.
