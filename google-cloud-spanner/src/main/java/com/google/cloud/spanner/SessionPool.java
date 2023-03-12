@@ -148,8 +148,7 @@ class SessionPool {
             "Timed out after waiting " + timeoutMillis + "ms for session pool creation");
       }
     } catch (InterruptedException e) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.DEADLINE_EXCEEDED, "Error while waiting for session pool creation", e);
+      throw SpannerExceptionFactory.propagateInterrupt(e);
     }
   }
 
