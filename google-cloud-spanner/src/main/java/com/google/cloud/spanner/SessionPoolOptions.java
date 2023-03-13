@@ -51,6 +51,7 @@ public class SessionPoolOptions {
   private final ActionOnSessionLeak actionOnSessionLeak;
   private final long initialWaitForSessionTimeoutMillis;
   private final boolean autoDetectDialect;
+  private final Duration waitForMinSessions;
 
   private SessionPoolOptions(Builder builder) {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
@@ -69,6 +70,7 @@ public class SessionPoolOptions {
     this.keepAliveIntervalMinutes = builder.keepAliveIntervalMinutes;
     this.removeInactiveSessionAfter = builder.removeInactiveSessionAfter;
     this.autoDetectDialect = builder.autoDetectDialect;
+    this.waitForMinSessions = builder.waitForMinSessions;
   }
 
   @Override
@@ -90,7 +92,8 @@ public class SessionPoolOptions {
         && Objects.equals(this.loopFrequency, other.loopFrequency)
         && Objects.equals(this.keepAliveIntervalMinutes, other.keepAliveIntervalMinutes)
         && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter)
-        && Objects.equals(this.autoDetectDialect, other.autoDetectDialect);
+        && Objects.equals(this.autoDetectDialect, other.autoDetectDialect)
+        && Objects.equals(this.waitForMinSessions, other.waitForMinSessions);
   }
 
   @Override
@@ -108,7 +111,8 @@ public class SessionPoolOptions {
         this.loopFrequency,
         this.keepAliveIntervalMinutes,
         this.removeInactiveSessionAfter,
-        this.autoDetectDialect);
+        this.autoDetectDialect,
+        this.waitForMinSessions);
   }
 
   public Builder toBuilder() {
@@ -186,6 +190,11 @@ public class SessionPoolOptions {
     return actionOnSessionLeak == ActionOnSessionLeak.FAIL;
   }
 
+  @VisibleForTesting
+  Duration getWaitForMinSessions() {
+    return waitForMinSessions;
+  }
+
   public static Builder newBuilder() {
     return new Builder();
   }
@@ -229,6 +238,7 @@ public class SessionPoolOptions {
     private int keepAliveIntervalMinutes = 30;
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
     private boolean autoDetectDialect = false;
+    private Duration waitForMinSessions = Duration.ZERO;
 
     public Builder() {}
 
@@ -247,6 +257,7 @@ public class SessionPoolOptions {
       this.keepAliveIntervalMinutes = options.keepAliveIntervalMinutes;
       this.removeInactiveSessionAfter = options.removeInactiveSessionAfter;
       this.autoDetectDialect = options.autoDetectDialect;
+      this.waitForMinSessions = options.waitForMinSessions;
     }
 
     /**
@@ -391,6 +402,21 @@ public class SessionPoolOptions {
      */
     public Builder setWriteSessionsFraction(float writeSessionsFraction) {
       this.writeSessionsFraction = writeSessionsFraction;
+      return this;
+    }
+
+    /**
+     * If greater than zero, waits for the session pool to have at least {@link
+     * SessionPoolOptions#minSessions} before returning the database client to the caller. Note that
+     * this check is only done during the session pool creation. This is usually done asynchronously
+     * in order to provide the client back to the caller as soon as possible. We don't recommend
+     * using this option unless you are executing benchmarks and want to guarantee the session pool
+     * has min sessions in the pool before continuing.
+     *
+     * <p>Defaults to zero (initialization is done asynchronously).
+     */
+    public Builder setWaitForMinSessions(Duration waitForMinSessions) {
+      this.waitForMinSessions = waitForMinSessions;
       return this;
     }
 
