@@ -2451,10 +2451,10 @@ public class CloudClientExecutor extends CloudExecutor {
         QueryAction update = action.getUpdates(i);
         Statement.Builder stmt = Statement.newBuilder(update.getSql());
         for (int j = 0; j < update.getParamsCount(); ++j) {
-          stmt.bind(update.getParams(i).getName())
+          stmt.bind(update.getParams(j).getName())
               .to(
                   valueProtoToCloudValue(
-                      update.getParams(i).getType(), update.getParams(i).getValue()));
+                      update.getParams(j).getType(), update.getParams(j).getValue()));
         }
         queries.add(stmt.build());
       }
