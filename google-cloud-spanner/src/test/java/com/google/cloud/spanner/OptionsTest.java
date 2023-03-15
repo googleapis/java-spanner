@@ -301,6 +301,15 @@ public class OptionsTest {
   }
 
   @Test
+  public void testRpcPriorityEnumFromProto() {
+    assertEquals(RpcPriority.fromProto(Priority.PRIORITY_LOW), RpcPriority.LOW);
+    assertEquals(RpcPriority.fromProto(Priority.PRIORITY_MEDIUM), RpcPriority.MEDIUM);
+    assertEquals(RpcPriority.fromProto(Priority.PRIORITY_HIGH), RpcPriority.HIGH);
+    assertEquals(RpcPriority.fromProto(Priority.PRIORITY_UNSPECIFIED), RpcPriority.UNSPECIFIED);
+    assertEquals(RpcPriority.fromProto(null), RpcPriority.UNSPECIFIED);
+  }
+
+  @Test
   public void testTransactionOptionsHashCode() {
     Options option1 = Options.fromTransactionOptions();
     Options option2 = Options.fromTransactionOptions();
