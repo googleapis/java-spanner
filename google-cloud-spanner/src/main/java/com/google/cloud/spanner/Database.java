@@ -89,7 +89,7 @@ public class Database extends DatabaseInfo {
   }
 
   /**
-   * Updates a database in a Cloud Spanner instance
+   * Updates the schema of a database in a Cloud Spanner instance
    *
    * @param database Database object to set configuration options such as proto_descriptors.
    * @param statements DDL statements to run while updating the database.

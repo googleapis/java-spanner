@@ -410,8 +410,8 @@ public interface DatabaseAdminClient {
       throws SpannerException;
 
   /**
-   * Updates a database in a Cloud Spanner instance. Few configuration options in the {@link
-   * Database} instance will be included in the {@link UpdateDatabaseDdlRequest}.
+   * Updates a database in a Cloud Spanner instance. Any proto descriptors that have been set for
+   * the {@link Database} instance will be included in the {@link UpdateDatabaseDdlRequest}.
    *
    * <p>If an operation already exists with the given operation id, the operation will be resumed
    * and the returned future will complete when the original operation finishes. See more
