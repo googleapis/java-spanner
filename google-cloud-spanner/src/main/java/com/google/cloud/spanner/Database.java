@@ -88,20 +88,6 @@ public class Database extends DatabaseInfo {
     return dbClient.updateDatabaseDdl(instance(), database(), statements, operationId);
   }
 
-  /**
-   * Updates the schema of a database in a Cloud Spanner instance
-   *
-   * @param database Database object to set configuration options such as proto_descriptors.
-   * @param statements DDL statements to run while updating the database.
-   * @param operationId Operation id assigned to this operation. If null, system will autogenerate
-   *     one. This must be unique within a database abd must be a valid identifier
-   *     [a-zA-Z][a-zA-Z0-9_]*.
-   */
-  public OperationFuture<Void, UpdateDatabaseDdlMetadata> updateDdl(
-      Database database, Iterable<String> statements, String operationId) throws SpannerException {
-    return dbClient.updateDatabaseDdl(database, statements, operationId);
-  }
-
   /** Drops this database. */
   public void drop() throws SpannerException {
     dbClient.dropDatabase(instance(), database());
