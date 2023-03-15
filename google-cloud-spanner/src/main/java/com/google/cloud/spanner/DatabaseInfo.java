@@ -90,22 +90,6 @@ public class DatabaseInfo {
     public abstract Builder setProtoDescriptors(@Nonnull InputStream inputStream)
         throws IOException;
 
-    /**
-     * Optional for creating a new database.
-     *
-     * <p>It is used by CREATE/ALTER PROTO BUNDLE statements which are part of DDL statements.
-     * Contains a protobuf-serialized [google.protobuf.FileDescriptorSet]. To generate a proto
-     * descriptors file run {@code protoc --include_imports
-     * --descriptor_set_out=DESCRIPTOR_OUTPUT_LOCATION LOCATION-OF-PROTO-FILES}
-     *
-     * @param filePath The proto descriptors file path input as String to be used for the database.
-     *     The proto descriptors file must be present with in the project resources directory.
-     * @return {@link Builder}
-     * @throws IOException If the filePath is invalid or outside of project resources directory, or
-     *     if file does not exist
-     */
-    public abstract Builder setProtoDescriptors(@Nonnull String filePath) throws IOException;
-
     abstract Builder setProto(com.google.spanner.admin.database.v1.Database proto);
 
     /** Builds the database from this builder. */
@@ -203,16 +187,6 @@ public class DatabaseInfo {
       Preconditions.checkNotNull(inputStream);
       this.protoDescriptors = ByteString.readFrom(inputStream);
       return this;
-    }
-
-    @Override
-    public Builder setProtoDescriptors(@Nonnull String filePath) throws IOException {
-      Preconditions.checkNotNull(filePath);
-      Preconditions.checkState(
-          filePath.length() != 0, "Input Proto Descriptors File Path cannot be empty.");
-      InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath);
-      Preconditions.checkNotNull(inputStream, "Input Proto Descriptors File path is invalid.");
-      return setProtoDescriptors(inputStream);
     }
 
     @Override

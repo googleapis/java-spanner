@@ -197,17 +197,6 @@ public class DatabaseTest {
   }
 
   @Test
-  public void testBuildWithProtoDescriptors() throws IOException {
-    final Database database =
-        dbClient
-            .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
-            .setProtoDescriptors(PROTO_DESCRIPTORS_RESOURCE_PATH)
-            .build();
-
-    assertEquals(protoDescriptors, database.getProtoDescriptors());
-  }
-
-  @Test
   public void testBuildWithProtoDescriptorsFromInputStream() throws IOException {
     InputStream in =
         getClass().getClassLoader().getResourceAsStream(PROTO_DESCRIPTORS_RESOURCE_PATH);
@@ -237,23 +226,7 @@ public class DatabaseTest {
     InputStream in =
         getClass().getClassLoader().getResourceAsStream(PROTO_DESCRIPTORS_RESOURCE_PATH);
     in.close();
-    // case1: Test empty file path
-    assertThrows(
-        IllegalStateException.class,
-        () ->
-            dbClient
-                .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
-                .setProtoDescriptors("")
-                .build());
-    // case2: Test invalid file path
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            dbClient
-                .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
-                .setProtoDescriptors("empty.pb")
-                .build());
-    // case3: Test one of the IOException case, where InputStream is closed before read
+    // case1: Test one of the IOException case, where InputStream is closed before read
     assertThrows(
         IOException.class,
         () ->

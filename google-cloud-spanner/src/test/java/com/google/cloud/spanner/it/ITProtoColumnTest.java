@@ -42,6 +42,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException.InvalidWireTypeException;
 import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.admin.database.v1.Backup;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -76,11 +77,12 @@ public class ITProtoColumnTest {
   }
 
   public static void createDatabase() throws Exception {
+    InputStream in =
+        ITProtoColumnTest.class
+            .getClassLoader()
+            .getResourceAsStream("com/google/cloud/spanner/descriptors.pb");
     final Database databaseToCreate =
-        dbAdminClient
-            .newDatabaseBuilder(databaseID)
-            .setProtoDescriptors("com/google/cloud/spanner/descriptors.pb")
-            .build();
+        dbAdminClient.newDatabaseBuilder(databaseID).setProtoDescriptors(in).build();
     final Database createdDatabase =
         dbAdminClient
             .createDatabase(
@@ -120,6 +122,7 @@ public class ITProtoColumnTest {
     // dbAdminClient.getDatabaseDdlResponse(databaseID.getInstanceId().getInstance(),
     // databaseID.getDatabase());
     // assertNotNull(response.getProtoDescriptors());
+    in.close();
   }
 
   @AfterClass
