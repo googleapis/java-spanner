@@ -117,6 +117,7 @@ import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
 import com.google.spanner.admin.database.v1.GetBackupRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
@@ -1190,8 +1191,10 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (databaseInfo.getDialect() != null) {
       requestBuilder.setDatabaseDialect(databaseInfo.getDialect().toProto());
     }
+    if (databaseInfo.getProtoDescriptors() != null) {
+      requestBuilder.setProtoDescriptors(databaseInfo.getProtoDescriptors());
+    }
     final CreateDatabaseRequest request = requestBuilder.build();
-
     OperationFutureCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata> callable =
         new OperationFutureCallable<>(
             databaseAdminStub.createDatabaseOperationCallable(),
@@ -1246,19 +1249,27 @@ public class GapicSpannerRpc implements SpannerRpc {
    */
   @Override
   public OperationFuture<Empty, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
-      final String databaseName,
+      com.google.cloud.spanner.Database databaseInfo,
       final Iterable<String> updateDatabaseStatements,
       @Nullable final String updateId)
       throws SpannerException {
     acquireAdministrativeRequestsRateLimiter();
-    final UpdateDatabaseDdlRequest request =
+    Preconditions.checkNotNull(databaseInfo.getId());
+    UpdateDatabaseDdlRequest.Builder requestBuilder =
         UpdateDatabaseDdlRequest.newBuilder()
-            .setDatabase(databaseName)
+            .setDatabase(databaseInfo.getId().getName())
             .addAllStatements(updateDatabaseStatements)
-            .setOperationId(MoreObjects.firstNonNull(updateId, ""))
-            .build();
+            .setOperationId(MoreObjects.firstNonNull(updateId, ""));
+    if (databaseInfo.getProtoDescriptors() != null) {
+      requestBuilder.setProtoDescriptors(databaseInfo.getProtoDescriptors());
+    }
+    final UpdateDatabaseDdlRequest request = requestBuilder.build();
     final GrpcCallContext context =
-        newCallContext(null, databaseName, request, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
+        newCallContext(
+            null,
+            databaseInfo.getId().getName(),
+            request,
+            DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
     final OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata> callable =
         databaseAdminStub.updateDatabaseDdlOperationCallable();
 
@@ -1280,7 +1291,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             if (t instanceof AlreadyExistsException) {
               String operationName =
                   OPERATION_NAME_TEMPLATE.instantiate(
-                      "database", databaseName, "operation", updateId);
+                      "database", databaseInfo.getId().getName(), "operation", updateId);
               return callable.resumeFutureCall(operationName, context);
             }
           }
@@ -1316,7 +1327,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public List<String> getDatabaseDdl(String databaseName) throws SpannerException {
+  public GetDatabaseDdlResponse getDatabaseDdl(String databaseName) throws SpannerException {
     acquireAdministrativeRequestsRateLimiter();
     final GetDatabaseDdlRequest request =
         GetDatabaseDdlRequest.newBuilder().setDatabase(databaseName).build();
@@ -1324,9 +1335,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getGetDatabaseDdlMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        () ->
-            get(databaseAdminStub.getDatabaseDdlCallable().futureCall(request, context))
-                .getStatementsList());
+        () -> get(databaseAdminStub.getDatabaseDdlCallable().futureCall(request, context)));
   }
 
   @Override

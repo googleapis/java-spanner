@@ -422,10 +422,20 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
       final Iterable<String> statements,
       @Nullable String operationId)
       throws SpannerException {
-    final String dbName = getDatabaseName(instanceId, databaseId);
+
+    return updateDatabaseDdl(
+        newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId)).build(),
+        statements,
+        operationId);
+  }
+
+  @Override
+  public OperationFuture<Void, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
+      Database database, final Iterable<String> statements, @Nullable String operationId)
+      throws SpannerException {
     final String opId = operationId != null ? operationId : randomOperationId();
     OperationFuture<Empty, UpdateDatabaseDdlMetadata> rawOperationFuture =
-        rpc.updateDatabaseDdl(dbName, statements, opId);
+        rpc.updateDatabaseDdl(database, statements, opId);
     return new OperationFutureImpl<>(
         rawOperationFuture.getPollingFuture(),
         rawOperationFuture.getInitialFuture(),
@@ -447,6 +457,11 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
 
   @Override
   public List<String> getDatabaseDdl(String instanceId, String databaseId) {
+    return getDatabaseDdlResponse(instanceId, databaseId).getStatementsList();
+  }
+
+  @Override
+  public GetDatabaseDdlResponse getDatabaseDdlResponse(String instanceId, String databaseId) {
     String dbName = getDatabaseName(instanceId, databaseId);
     return rpc.getDatabaseDdl(dbName);
   }

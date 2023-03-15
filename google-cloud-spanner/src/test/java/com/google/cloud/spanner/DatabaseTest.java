@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.DatabaseInfo.State.CREATING;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,10 +31,14 @@ import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseInfo.State;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
+import com.google.common.io.ByteStreams;
+import com.google.protobuf.ByteString;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import com.google.spanner.admin.database.v1.DatabaseDialect;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
@@ -66,6 +71,10 @@ public class DatabaseTest {
               .build());
   private static final String DEFAULT_LEADER = "default-leader";
   private static final DatabaseDialect DEFAULT_DIALECT = DatabaseDialect.GOOGLE_STANDARD_SQL;
+  private static ByteString protoDescriptors;
+  private static byte[] protoDescriptorsByteArray;
+  private static final String PROTO_DESCRIPTORS_RESOURCE_PATH =
+      "com/google/cloud/spanner/descriptors.pb";
 
   @Mock DatabaseAdminClient dbClient;
 
@@ -79,6 +88,15 @@ public class DatabaseTest {
         .thenAnswer(
             invocation ->
                 new Database.Builder(dbClient, (DatabaseId) invocation.getArguments()[0]));
+    try {
+      InputStream protoDescriptorsInputStream =
+          getClass().getClassLoader().getResourceAsStream(PROTO_DESCRIPTORS_RESOURCE_PATH);
+      assertNotNull(protoDescriptorsInputStream);
+      protoDescriptorsByteArray = ByteStreams.toByteArray(protoDescriptorsInputStream);
+      protoDescriptors = ByteString.copyFrom(protoDescriptorsByteArray);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   @Test
@@ -176,6 +194,46 @@ public class DatabaseTest {
             .build();
 
     assertEquals(Dialect.GOOGLE_STANDARD_SQL, database.getDialect());
+  }
+
+  @Test
+  public void testBuildWithProtoDescriptorsFromInputStream() throws IOException {
+    InputStream in =
+        getClass().getClassLoader().getResourceAsStream(PROTO_DESCRIPTORS_RESOURCE_PATH);
+    assertNotNull(in);
+    final Database database =
+        dbClient
+            .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+            .setProtoDescriptors(in)
+            .build();
+
+    assertEquals(protoDescriptors, database.getProtoDescriptors());
+  }
+
+  @Test
+  public void testBuildWithProtoDescriptorsFromByteArray() {
+    final Database database =
+        dbClient
+            .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+            .setProtoDescriptors(protoDescriptorsByteArray)
+            .build();
+
+    assertEquals(protoDescriptors, database.getProtoDescriptors());
+  }
+
+  @Test
+  public void testBuildWithProtoDescriptorsThrowsException() throws IOException {
+    InputStream in =
+        getClass().getClassLoader().getResourceAsStream(PROTO_DESCRIPTORS_RESOURCE_PATH);
+    in.close();
+    // case1: Test one of the IOException case, where InputStream is closed before read
+    assertThrows(
+        IOException.class,
+        () ->
+            dbClient
+                .newDatabaseBuilder(DatabaseId.of("my-project", "my-instance", "my-database"))
+                .setProtoDescriptors(in)
+                .build());
   }
 
   @Test

@@ -159,4 +159,36 @@ public interface UpdateDatabaseDdlRequestOrBuilder
    * @return The bytes for operationId.
    */
   com.google.protobuf.ByteString getOperationIdBytes();
+
+  /**
+   *
+   *
+   * <pre>
+   * Proto descriptors used by CREATE/ALTER PROTO BUNDLE statements.
+   * Contains a protobuf-serialized
+   * [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
+   * To generate it, [install](https://grpc.io/docs/protoc-installation/) and
+   * run `protoc` with --include_imports and --descriptor_set_out. For example,
+   * to generate for moon/shot/app.proto, run
+   * """
+   * $protoc  --proto_path=/app_path --proto_path=/lib_path &#92;
+   *          --include_imports &#92;
+   *          --descriptor_set_out=descriptors.data &#92;
+   *          moon/shot/app.proto
+   * """
+   * For more details, see protobuffer [self
+   * description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
+   * (--
+   * TODO(b/236424835) remove visibility check before launch.
+   * --)
+   * (-- api-linter: core::0134::request-unknown-fields=disabled
+   *     aip.dev/not-precedent: This Update*Request provides an alter action
+   *     rather than the usual entity field updating. --)
+   * </pre>
+   *
+   * <code>bytes proto_descriptors = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
+   *
+   * @return The protoDescriptors.
+   */
+  com.google.protobuf.ByteString getProtoDescriptors();
 }

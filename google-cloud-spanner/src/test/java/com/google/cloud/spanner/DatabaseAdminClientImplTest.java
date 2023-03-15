@@ -51,6 +51,7 @@ import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseDialect;
 import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
+import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.ArrayList;
@@ -222,7 +223,9 @@ public class DatabaseAdminClientImplTest {
     OperationFuture<Empty, UpdateDatabaseDdlMetadata> rawOperationFuture =
         OperationFutureUtil.immediateOperationFuture(
             opName, Empty.getDefaultInstance(), UpdateDatabaseDdlMetadata.getDefaultInstance());
-    when(rpc.updateDatabaseDdl(DB_NAME, ddl, opId)).thenReturn(rawOperationFuture);
+    when(rpc.updateDatabaseDdl(
+            client.newDatabaseBuilder(DatabaseId.of(DB_NAME)).build(), ddl, opId))
+        .thenReturn(rawOperationFuture);
     OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
         client.updateDatabaseDdl(INSTANCE_ID, DB_ID, ddl, opId);
     assertThat(op.isDone()).isTrue();
@@ -240,7 +243,9 @@ public class DatabaseAdminClientImplTest {
             UpdateDatabaseDdlMetadata.getDefaultInstance());
 
     String newOpId = "newop";
-    when(rpc.updateDatabaseDdl(DB_NAME, ddl, newOpId)).thenReturn(originalOp);
+    when(rpc.updateDatabaseDdl(
+            client.newDatabaseBuilder(DatabaseId.of(DB_NAME)).build(), ddl, newOpId))
+        .thenReturn(originalOp);
     OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
         client.updateDatabaseDdl(INSTANCE_ID, DB_ID, ddl, newOpId);
     assertThat(op.getName()).isEqualTo(originalOpName);
@@ -255,8 +260,23 @@ public class DatabaseAdminClientImplTest {
   @Test
   public void getDatabaseDdl() {
     List<String> ddl = ImmutableList.of("CREATE TABLE mytable()");
-    when(rpc.getDatabaseDdl(DB_NAME)).thenReturn(ddl);
+    when(rpc.getDatabaseDdl(DB_NAME))
+        .thenReturn(GetDatabaseDdlResponse.newBuilder().addAllStatements(ddl).build());
     assertThat(client.getDatabaseDdl(INSTANCE_ID, DB_ID)).isEqualTo(ddl);
+  }
+
+  @Test
+  public void getDatabaseDdlResponse() {
+    List<String> ddl = ImmutableList.of("CREATE TABLE mytable()");
+    when(rpc.getDatabaseDdl(DB_NAME))
+        .thenReturn(
+            GetDatabaseDdlResponse.newBuilder()
+                .addAllStatements(ddl)
+                .setProtoDescriptors(ByteString.EMPTY)
+                .build());
+    GetDatabaseDdlResponse response = client.getDatabaseDdlResponse(INSTANCE_ID, DB_ID);
+    assertThat(response.getStatementsList()).isEqualTo(ddl);
+    assertThat(response.getProtoDescriptors()).isEqualTo(ByteString.EMPTY);
   }
 
   @Test
