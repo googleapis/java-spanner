@@ -32,12 +32,20 @@ public final class Options implements Serializable {
   public enum RpcPriority {
     LOW(Priority.PRIORITY_LOW),
     MEDIUM(Priority.PRIORITY_MEDIUM),
-    HIGH(Priority.PRIORITY_HIGH);
+    HIGH(Priority.PRIORITY_HIGH),
+    UNSPECIFIED(Priority.PRIORITY_UNSPECIFIED);
 
     private final Priority proto;
 
     RpcPriority(Priority proto) {
       this.proto = Preconditions.checkNotNull(proto);
+    }
+
+    public static RpcPriority fromProto(Priority proto) {
+      for (RpcPriority e : RpcPriority.values()) {
+        if (e.proto.equals(proto)) return e;
+      }
+      return RpcPriority.UNSPECIFIED;
     }
   }
 
