@@ -241,8 +241,6 @@ public class ITBatchReadTest {
 
   @Test
   public void dataBoostRead() {
-    assumeFalse(
-        "PostgreSQL does not support the PartitionRead RPC", dialect.dialect == Dialect.POSTGRESQL);
     assumeFalse("Emulator does not support data boost read", isUsingEmulator());
 
     BitSet seenRows = new BitSet(numRows);

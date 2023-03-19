@@ -157,7 +157,8 @@ public final class Options implements Serializable {
 
   /**
    * If this is for a partitioned read & query and this field is set to `true`, the request will be
-   * executed via Spanner independent compute resources.
+   * executed via Spanner independent compute resources. The method is available in Beta mode (and
+   * is not generally available now).
    */
   @BetaApi
   public static DataBoostQueryOption dataBoostEnabled(Boolean dataBoostEnabled) {
@@ -467,9 +468,6 @@ public final class Options implements Serializable {
     if (tag != null) {
       b.append("tag: ").append(tag).append(' ');
     }
-    if (dataBoostEnabled != null) {
-      b.append("dataBoostEnabled: ").append(dataBoostEnabled).append(' ');
-    }
     if (etag != null) {
       b.append("etag: ").append(etag).append(' ');
     }
@@ -478,6 +476,9 @@ public final class Options implements Serializable {
     }
     if (withOptimisticLock != null) {
       b.append("withOptimisticLock: ").append(withOptimisticLock).append(' ');
+    }
+    if (dataBoostEnabled != null) {
+      b.append("dataBoostEnabled: ").append(dataBoostEnabled).append(' ');
     }
     return b.toString();
   }
@@ -512,9 +513,9 @@ public final class Options implements Serializable {
         && Objects.equals(priority(), that.priority())
         && Objects.equals(tag(), that.tag())
         && Objects.equals(etag(), that.etag())
-        && Objects.equals(dataBoostEnabled(), that.dataBoostEnabled())
         && Objects.equals(validateOnly(), that.validateOnly())
-        && Objects.equals(withOptimisticLock(), that.withOptimisticLock());
+        && Objects.equals(withOptimisticLock(), that.withOptimisticLock())
+        && Objects.equals(dataBoostEnabled(), that.dataBoostEnabled());
   }
 
   @Override
