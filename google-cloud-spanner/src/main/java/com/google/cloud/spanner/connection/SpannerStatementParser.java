@@ -213,9 +213,6 @@ public class SpannerStatementParser extends AbstractStatementParser {
   @InternalApi
   @Override
   ParametersInfo convertPositionalParametersToNamedParametersInternal(char paramChar, String sql) {
-    final char SINGLE_QUOTE = '\'';
-    final char DOUBLE_QUOTE = '"';
-    final char BACKTICK_QUOTE = '`';
     boolean isInQuoted = false;
     char startQuote = 0;
     boolean lastCharWasEscapeChar = false;
