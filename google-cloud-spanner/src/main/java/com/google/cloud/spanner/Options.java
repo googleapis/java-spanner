@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.BetaApi;
 import com.google.common.base.Preconditions;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.io.Serializable;
@@ -152,6 +153,16 @@ public final class Options implements Serializable {
    */
   public static ListOption pageSize(int pageSize) {
     return new PageSizeOption(pageSize);
+  }
+
+  /**
+   * If this is for a partitioned read & query and this field is set to `true`, the request will be
+   * executed via Spanner independent compute resources. The method is available in Beta mode (and
+   * is not generally available now).
+   */
+  @BetaApi
+  public static DataBoostQueryOption dataBoostEnabled(Boolean dataBoostEnabled) {
+    return new DataBoostQueryOption(dataBoostEnabled);
   }
 
   /**
@@ -329,6 +340,7 @@ public final class Options implements Serializable {
   private String etag;
   private Boolean validateOnly;
   private Boolean withOptimisticLock;
+  private Boolean dataBoostEnabled;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -421,6 +433,14 @@ public final class Options implements Serializable {
     return withOptimisticLock;
   }
 
+  boolean hasDataBoostEnabled() {
+    return dataBoostEnabled != null;
+  }
+
+  Boolean dataBoostEnabled() {
+    return dataBoostEnabled;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -457,6 +477,9 @@ public final class Options implements Serializable {
     if (withOptimisticLock != null) {
       b.append("withOptimisticLock: ").append(withOptimisticLock).append(' ');
     }
+    if (dataBoostEnabled != null) {
+      b.append("dataBoostEnabled: ").append(dataBoostEnabled).append(' ');
+    }
     return b.toString();
   }
 
@@ -491,7 +514,8 @@ public final class Options implements Serializable {
         && Objects.equals(tag(), that.tag())
         && Objects.equals(etag(), that.etag())
         && Objects.equals(validateOnly(), that.validateOnly())
-        && Objects.equals(withOptimisticLock(), that.withOptimisticLock());
+        && Objects.equals(withOptimisticLock(), that.withOptimisticLock())
+        && Objects.equals(dataBoostEnabled(), that.dataBoostEnabled());
   }
 
   @Override
@@ -532,6 +556,9 @@ public final class Options implements Serializable {
     }
     if (withOptimisticLock != null) {
       result = 31 * result + withOptimisticLock.hashCode();
+    }
+    if (dataBoostEnabled != null) {
+      result = 31 * result + dataBoostEnabled.hashCode();
     }
     return result;
   }
@@ -610,6 +637,20 @@ public final class Options implements Serializable {
     @Override
     void appendToOptions(Options options) {
       options.limit = limit;
+    }
+  }
+
+  static final class DataBoostQueryOption extends InternalOption implements ReadAndQueryOption {
+
+    private final Boolean dataBoostEnabled;
+
+    DataBoostQueryOption(Boolean dataBoostEnabled) {
+      this.dataBoostEnabled = dataBoostEnabled;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.dataBoostEnabled = dataBoostEnabled;
     }
   }
 
