@@ -349,13 +349,13 @@ public interface ReadRequestOrBuilder
    *
    *
    * <pre>
-   * If this is for a partitioned query and this field is set to `true`, the
+   * If this is for a partitioned read and this field is set to `true`, the
    * request will be executed via Spanner independent compute resources.
    * If the field is set to `true` but the request does not set
    * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
    * </pre>
    *
-   * <code>bool data_boost_enabled = 16;</code>
+   * <code>bool data_boost_enabled = 15;</code>
    *
    * @return The dataBoostEnabled.
    */

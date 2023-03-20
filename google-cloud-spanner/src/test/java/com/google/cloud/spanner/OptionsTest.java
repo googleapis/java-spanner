@@ -63,11 +63,15 @@ public class OptionsTest {
 
   @Test
   public void allOptionsPresent() {
-    Options options = Options.fromReadOptions(Options.limit(10), Options.prefetchChunks(1));
+    Options options =
+        Options.fromReadOptions(
+            Options.limit(10), Options.prefetchChunks(1), Options.dataBoostEnabled(true));
     assertThat(options.hasLimit()).isTrue();
     assertThat(options.limit()).isEqualTo(10);
     assertThat(options.hasPrefetchChunks()).isTrue();
     assertThat(options.prefetchChunks()).isEqualTo(1);
+    assertThat(options.hasDataBoostEnabled()).isTrue();
+    assertTrue(options.dataBoostEnabled());
   }
 
   @Test
@@ -79,6 +83,7 @@ public class OptionsTest {
     assertThat(options.hasPageToken()).isFalse();
     assertThat(options.hasPriority()).isFalse();
     assertThat(options.hasTag()).isFalse();
+    assertThat(options.hasDataBoostEnabled()).isFalse();
     assertThat(options.toString()).isEqualTo("");
     assertThat(options.equals(options)).isTrue();
     assertThat(options.equals(null)).isFalse();
@@ -153,11 +158,17 @@ public class OptionsTest {
   public void readOptionsTest() {
     int limit = 3;
     String tag = "app=spanner,env=test,action=read";
-    Options options = Options.fromReadOptions(Options.limit(limit), Options.tag(tag));
+    boolean dataBoost = true;
+    Options options =
+        Options.fromReadOptions(
+            Options.limit(limit), Options.tag(tag), Options.dataBoostEnabled(true));
 
-    assertThat(options.toString()).isEqualTo("limit: " + limit + " " + "tag: " + tag + " ");
+    assertThat(options.toString())
+        .isEqualTo(
+            "limit: " + limit + " " + "tag: " + tag + " " + "dataBoostEnabled: " + dataBoost + " ");
     assertThat(options.tag()).isEqualTo(tag);
-    assertThat(options.hashCode()).isEqualTo(-1111478426);
+    assertEquals(dataBoost, options.dataBoostEnabled());
+    assertThat(options.hashCode()).isEqualTo(-96091607);
   }
 
   @Test
@@ -185,12 +196,41 @@ public class OptionsTest {
   public void queryOptionsTest() {
     int chunks = 3;
     String tag = "app=spanner,env=test,action=query";
-    Options options = Options.fromQueryOptions(Options.prefetchChunks(chunks), Options.tag(tag));
+    boolean dataBoost = true;
+    Options options =
+        Options.fromQueryOptions(
+            Options.prefetchChunks(chunks), Options.tag(tag), Options.dataBoostEnabled(true));
     assertThat(options.toString())
-        .isEqualTo("prefetchChunks: " + chunks + " " + "tag: " + tag + " ");
+        .isEqualTo(
+            "prefetchChunks: "
+                + chunks
+                + " "
+                + "tag: "
+                + tag
+                + " "
+                + "dataBoostEnabled: "
+                + dataBoost
+                + " ");
     assertThat(options.prefetchChunks()).isEqualTo(chunks);
     assertThat(options.tag()).isEqualTo(tag);
-    assertThat(options.hashCode()).isEqualTo(-97431824);
+    assertEquals(dataBoost, options.dataBoostEnabled());
+    assertThat(options.hashCode()).isEqualTo(1274581983);
+  }
+
+  @Test
+  public void testReadOptionsDataBoost() {
+    boolean dataBoost = true;
+    Options options = Options.fromReadOptions(Options.dataBoostEnabled(true));
+    assertTrue(options.hasDataBoostEnabled());
+    assertEquals("dataBoostEnabled: " + dataBoost + " ", options.toString());
+  }
+
+  @Test
+  public void testQueryOptionsDataBoost() {
+    boolean dataBoost = true;
+    Options options = Options.fromQueryOptions(Options.dataBoostEnabled(true));
+    assertTrue(options.hasDataBoostEnabled());
+    assertEquals("dataBoostEnabled: " + dataBoost + " ", options.toString());
   }
 
   @Test
