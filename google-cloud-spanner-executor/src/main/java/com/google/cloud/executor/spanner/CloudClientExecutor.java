@@ -52,6 +52,7 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Partition;
 import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext;
@@ -128,6 +129,8 @@ import com.google.spanner.executor.v1.MutationAction.InsertArgs;
 import com.google.spanner.executor.v1.MutationAction.Mod;
 import com.google.spanner.executor.v1.MutationAction.UpdateArgs;
 import com.google.spanner.executor.v1.OperationResponse;
+import com.google.spanner.executor.v1.PartitionedUpdateAction;
+import com.google.spanner.executor.v1.PartitionedUpdateAction.ExecutePartitionedUpdateOptions;
 import com.google.spanner.executor.v1.QueryAction;
 import com.google.spanner.executor.v1.ReadAction;
 import com.google.spanner.executor.v1.RestoreCloudDatabaseAction;
@@ -886,6 +889,13 @@ public class CloudClientExecutor extends CloudExecutor {
       } else if (action.hasExecutePartition()) {
         return executeExecutePartition(
             action.getExecutePartition(), outcomeSender, executionContext);
+      } else if (action.hasPartitionedUpdate()) {
+        if (dbPath == null) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT, "Database path must be set for this action");
+        }
+        DatabaseClient dbClient = getClient().getDatabaseClient(DatabaseId.of(dbPath));
+        return executePartitionedUpdate(action.getPartitionedUpdate(), dbClient, outcomeSender);
       } else if (action.hasCloseBatchTxn()) {
         return executeCloseBatchTxn(action.getCloseBatchTxn(), outcomeSender, executionContext);
       } else if (action.hasExecuteChangeStreamQuery()) {
@@ -1974,6 +1984,33 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
+  /** Execute a partitioned update which runs different partitions in parallel. */
+  private Status executePartitionedUpdate(
+      PartitionedUpdateAction action, DatabaseClient dbClient, OutcomeSender sender) {
+    try {
+      ExecutePartitionedUpdateOptions options = action.getOptions();
+      Long count =
+          dbClient.executePartitionedUpdate(
+              Statement.of(action.getUpdate().getSql()),
+              Options.tag(options.getTag()),
+              Options.priority(RpcPriority.fromProto(options.getRpcPriority())));
+      SpannerActionOutcome outcome =
+          SpannerActionOutcome.newBuilder()
+              .setStatus(toProto(Status.OK))
+              .addDmlRowsModified(count)
+              .build();
+      sender.sendOutcome(outcome);
+      return sender.finishWithOK();
+    } catch (SpannerException e) {
+      return sender.finishWithError(toStatus(e));
+    } catch (Exception e) {
+      return sender.finishWithError(
+          toStatus(
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+    }
+  }
+
   /** Build a child partition record proto out of childPartitionRecord returned by client. */
   private ChildPartitionsRecord buildChildPartitionRecord(Struct childPartitionRecord)
       throws Exception {
@@ -2451,10 +2488,10 @@ public class CloudClientExecutor extends CloudExecutor {
         QueryAction update = action.getUpdates(i);
         Statement.Builder stmt = Statement.newBuilder(update.getSql());
         for (int j = 0; j < update.getParamsCount(); ++j) {
-          stmt.bind(update.getParams(i).getName())
+          stmt.bind(update.getParams(j).getName())
               .to(
                   valueProtoToCloudValue(
-                      update.getParams(i).getType(), update.getParams(i).getValue()));
+                      update.getParams(j).getType(), update.getParams(j).getValue()));
         }
         queries.add(stmt.build());
       }

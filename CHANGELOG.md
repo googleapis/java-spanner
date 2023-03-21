@@ -1,5 +1,48 @@
 # Changelog
 
+## [6.38.0](https://github.com/googleapis/java-spanner/compare/v6.37.0...v6.38.0) (2023-03-20)
+
+
+### Features
+
+* Add option to wait on session pool creation ([#2329](https://github.com/googleapis/java-spanner/issues/2329)) ([ff17244](https://github.com/googleapis/java-spanner/commit/ff17244ee918fa17c96488a0f7081728cda7b342))
+* Add PartitionedUpdate support to executor ([#2228](https://github.com/googleapis/java-spanner/issues/2228)) ([2c8ecf6](https://github.com/googleapis/java-spanner/commit/2c8ecf6fee591df95ee4abfa230c3fcf0c34c589))
+* Adding support for databoost enabled in PartitionedRead and PartitionedQuery ([#2316](https://github.com/googleapis/java-spanner/issues/2316)) ([f39e4a3](https://github.com/googleapis/java-spanner/commit/f39e4a383cbe720b9814077317940fa3452e2f96))
+
+
+### Bug Fixes
+
+* Correcting the proto field Id for field data_boost_enabled ([#2328](https://github.com/googleapis/java-spanner/issues/2328)) ([6159d7e](https://github.com/googleapis/java-spanner/commit/6159d7ec49b17f6bc40e1b8c93d1e64198c59dcf))
+* Update executeCloudBatchDmlUpdates. ([#2326](https://github.com/googleapis/java-spanner/issues/2326)) ([27ef53c](https://github.com/googleapis/java-spanner/commit/27ef53c8447bd51a56fdfe6b2b206afe234fad80))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.14.0 ([#2333](https://github.com/googleapis/java-spanner/issues/2333)) ([9c81109](https://github.com/googleapis/java-spanner/commit/9c81109e452d6bae2598cf6cf541a09423a8ed6e))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.5.0 ([#2335](https://github.com/googleapis/java-spanner/issues/2335)) ([5eac2be](https://github.com/googleapis/java-spanner/commit/5eac2beb2ce5eebb61e70428e2ac2e11593fc986))
+* Update dependency com.google.cloud:google-cloud-trace to v2.13.0 ([#2334](https://github.com/googleapis/java-spanner/issues/2334)) ([c461ba0](https://github.com/googleapis/java-spanner/commit/c461ba0b1a145cc3e9bee805ec6ad827376e5168))
+
+## [6.37.0](https://github.com/googleapis/java-spanner/compare/v6.36.1...v6.37.0) (2023-03-03)
+
+
+### Features
+
+* Adding new fields for Serverless analytics ([#2315](https://github.com/googleapis/java-spanner/issues/2315)) ([ce9cd74](https://github.com/googleapis/java-spanner/commit/ce9cd7469e2fed15711a8dffe944934cdaa45ce8))
+
+
+### Bug Fixes
+
+* Update test certificate name. ([#2300](https://github.com/googleapis/java-spanner/issues/2300)) ([18e76d6](https://github.com/googleapis/java-spanner/commit/18e76d6636c530c9cfc0ac872d72e321e75c990e))
+
+
+### Dependencies
+
+* Update dependency com.google.api.grpc:proto-google-cloud-spanner-executor-v1 to v1.3.0 ([#2306](https://github.com/googleapis/java-spanner/issues/2306)) ([8372250](https://github.com/googleapis/java-spanner/commit/8372250e0aaae68b0d610d59c1ee88c4dc0d9e8b))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.13.0 ([#2311](https://github.com/googleapis/java-spanner/issues/2311)) ([6ba613b](https://github.com/googleapis/java-spanner/commit/6ba613b44598e48699aca320683e65572a730fc7))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.4.0 ([#2312](https://github.com/googleapis/java-spanner/issues/2312)) ([266c49c](https://github.com/googleapis/java-spanner/commit/266c49cc58beaa935a328599a3e75d3b1fb4988d))
+* Update dependency com.google.cloud:google-cloud-trace to v2.12.0 ([#2313](https://github.com/googleapis/java-spanner/issues/2313)) ([e5f76c6](https://github.com/googleapis/java-spanner/commit/e5f76c6598887b616d371b4d0b3551e236e080f8))
+* Update dependency org.json:json to v20230227 ([#2310](https://github.com/googleapis/java-spanner/issues/2310)) ([badcc14](https://github.com/googleapis/java-spanner/commit/badcc14182244929042412f97e5a7e05799eea22))
+
 ## [6.36.1](https://github.com/googleapis/java-spanner/compare/v6.36.0...v6.36.1) (2023-02-21)
 
 

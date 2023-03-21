@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -186,6 +187,17 @@ public class AbstractReadContextTest {
             Options.fromQueryOptions(Options.priority(RpcPriority.MEDIUM)),
             false);
     assertEquals(Priority.PRIORITY_MEDIUM, request.getRequestOptions().getPriority());
+  }
+
+  @Test
+  public void testGetExecuteSqlRequestBuilderWithDataBoost() {
+    ExecuteSqlRequest.Builder request =
+        context.getExecuteSqlRequestBuilder(
+            Statement.of("SELECT * FROM FOO"),
+            QueryMode.NORMAL,
+            Options.fromQueryOptions(Options.dataBoostEnabled(true)),
+            false);
+    assertTrue(request.getDataBoostEnabled());
   }
 
   @Test
