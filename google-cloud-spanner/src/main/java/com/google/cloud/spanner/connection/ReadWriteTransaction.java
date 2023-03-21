@@ -83,6 +83,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final TransactionOption[] transactionOptions;
   private TransactionManager txManager;
   private final boolean retryAbortsInternally;
+  private final SavepointSupport savepointSupport;
   private int transactionRetryAttempts;
   private int successfulRetries;
   private final List<TransactionRetryListener> transactionRetryListeners;
@@ -103,6 +104,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     private DatabaseClient dbClient;
     private Boolean retryAbortsInternally;
     private boolean returnCommitStats;
+    private SavepointSupport savepointSupport;
     private List<TransactionRetryListener> transactionRetryListeners;
 
     private Builder() {}
@@ -123,6 +125,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       return this;
     }
 
+    Builder setSavepointSupport(SavepointSupport savepointSupport) {
+      this.savepointSupport = savepointSupport;
+      return this;
+    }
+
     Builder setTransactionRetryListeners(List<TransactionRetryListener> listeners) {
       Preconditions.checkNotNull(listeners);
       this.transactionRetryListeners = listeners;
@@ -136,6 +143,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           retryAbortsInternally != null, "RetryAbortsInternally is not specified");
       Preconditions.checkState(
           transactionRetryListeners != null, "TransactionRetryListeners are not specified");
+      Preconditions.checkState(savepointSupport != null, "SavepointSupport is not specified");
       return new ReadWriteTransaction(this);
     }
   }
@@ -149,6 +157,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     this.transactionId = ID_GENERATOR.incrementAndGet();
     this.dbClient = builder.dbClient;
     this.retryAbortsInternally = builder.retryAbortsInternally;
+    this.savepointSupport = builder.savepointSupport;
     this.transactionRetryListeners = builder.transactionRetryListeners;
     this.transactionOptions = extractOptions(builder);
     this.txManager = dbClient.transactionManager(this.transactionOptions);
@@ -286,9 +295,17 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   void checkRolledBackToSavepoint() {
     if (this.rolledBackToSavepointException != null) {
-      AbortedException exception = this.rolledBackToSavepointException;
-      this.rolledBackToSavepointException = null;
-      throw exception;
+      if (savepointSupport == SavepointSupport.FAIL_AFTER_ROLLBACK) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.FAILED_PRECONDITION,
+            "Using a read/write transaction after rolling back to a savepoint is not supported "
+                + "with SavepointSupport="
+                + savepointSupport);
+      } else {
+        AbortedException exception = this.rolledBackToSavepointException;
+        this.rolledBackToSavepointException = null;
+        throw exception;
+      }
     }
   }
 

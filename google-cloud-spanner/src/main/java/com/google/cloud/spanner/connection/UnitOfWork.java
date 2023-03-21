@@ -96,7 +96,7 @@ interface UnitOfWork {
   void releaseSavepoint(@Nonnull String name);
 
   /** @see Connection#rollbackToSavepoint(String) */
-  void rollbackToSavepoint(@Nonnull String name);
+  void rollbackToSavepoint(@Nonnull String name, @Nonnull SavepointSupport savepointSupport);
 
   /**
    * Sends the currently buffered statements in this unit of work to the database and ends the

@@ -214,6 +214,7 @@ class ConnectionImpl implements Connection {
   private TimestampBound readOnlyStaleness = TimestampBound.strong();
   private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
   private RpcPriority rpcPriority = null;
+  private SavepointSupport savepointSupport = SavepointSupport.FAIL_AFTER_ROLLBACK;
 
   private String transactionTag;
   private String statementTag;
@@ -842,8 +843,27 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
+  public SavepointSupport getSavepointSupport() {
+    return this.savepointSupport;
+  }
+
+  @Override
+  public void setSavepointSupport(SavepointSupport savepointSupport) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Cannot set SavepointSupport while in a batch");
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(), "Cannot set SavepointSupport while a transaction is active");
+    this.savepointSupport = savepointSupport;
+  }
+
+  @Override
   public void savepoint(String name) {
     ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
+    ConnectionPreconditions.checkState(
+        savepointSupport.isSavepointCreationAllowed(),
+        "This connection does not allow the creation of savepoints. Current value of SavepointSupport: "
+            + savepointSupport);
     getCurrentUnitOfWorkOrStartNewUnitOfWork().savepoint(checkValidIdentifier(name), getDialect());
   }
 
@@ -858,7 +878,8 @@ class ConnectionImpl implements Connection {
   public void rollbackToSavepoint(String name) {
     ConnectionPreconditions.checkState(
         isTransactionStarted(), "This connection has no active transaction");
-    getCurrentUnitOfWorkOrStartNewUnitOfWork().rollbackToSavepoint(checkValidIdentifier(name));
+    getCurrentUnitOfWorkOrStartNewUnitOfWork()
+        .rollbackToSavepoint(checkValidIdentifier(name), savepointSupport);
   }
 
   @Override
@@ -1323,6 +1344,7 @@ class ConnectionImpl implements Connection {
           return ReadWriteTransaction.newBuilder()
               .setDatabaseClient(dbClient)
               .setRetryAbortsInternally(retryAbortsInternally)
+              .setSavepointSupport(savepointSupport)
               .setReturnCommitStats(returnCommitStats)
               .setTransactionRetryListeners(transactionRetryListeners)
               .setStatementTimeout(statementTimeout)

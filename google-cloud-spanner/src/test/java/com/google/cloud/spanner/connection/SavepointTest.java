@@ -153,22 +153,24 @@ public class SavepointTest {
 
     transaction.savepoint("s1", dialect);
     assertEquals(ImmutableList.of(Savepoint.of("s1")), transaction.getSavepoints());
-    transaction.rollbackToSavepoint("s1");
+    transaction.rollbackToSavepoint("s1", SavepointSupport.ENABLED);
     assertEquals(ImmutableList.of(Savepoint.of("s1")), transaction.getSavepoints());
 
     transaction.savepoint("s2", dialect);
     assertEquals(
         ImmutableList.of(Savepoint.of("s1"), Savepoint.of("s2")), transaction.getSavepoints());
-    transaction.rollbackToSavepoint("s2");
+    transaction.rollbackToSavepoint("s2", SavepointSupport.ENABLED);
     assertEquals(
         ImmutableList.of(Savepoint.of("s1"), Savepoint.of("s2")), transaction.getSavepoints());
 
     assertEquals(
         ImmutableList.of(Savepoint.of("s1"), Savepoint.of("s2")), transaction.getSavepoints());
-    transaction.rollbackToSavepoint("s1");
+    transaction.rollbackToSavepoint("s1", SavepointSupport.ENABLED);
     assertEquals(ImmutableList.of(Savepoint.of("s1")), transaction.getSavepoints());
 
-    assertThrows(SpannerException.class, () -> transaction.rollbackToSavepoint("s2"));
+    assertThrows(
+        SpannerException.class,
+        () -> transaction.rollbackToSavepoint("s2", SavepointSupport.ENABLED));
   }
 
   @Test
@@ -178,22 +180,24 @@ public class SavepointTest {
 
     transaction.savepoint("s1", dialect);
     assertEquals(ImmutableList.of(Savepoint.of("s1")), transaction.getSavepoints());
-    transaction.rollbackToSavepoint("s1");
+    transaction.rollbackToSavepoint("s1", SavepointSupport.ENABLED);
     assertEquals(ImmutableList.of(Savepoint.of("s1")), transaction.getSavepoints());
 
     transaction.savepoint("s2", dialect);
     assertEquals(
         ImmutableList.of(Savepoint.of("s1"), Savepoint.of("s2")), transaction.getSavepoints());
-    transaction.rollbackToSavepoint("s2");
+    transaction.rollbackToSavepoint("s2", SavepointSupport.ENABLED);
     assertEquals(
         ImmutableList.of(Savepoint.of("s1"), Savepoint.of("s2")), transaction.getSavepoints());
 
     assertEquals(
         ImmutableList.of(Savepoint.of("s1"), Savepoint.of("s2")), transaction.getSavepoints());
-    transaction.rollbackToSavepoint("s1");
+    transaction.rollbackToSavepoint("s1", SavepointSupport.ENABLED);
     assertEquals(ImmutableList.of(Savepoint.of("s1")), transaction.getSavepoints());
 
-    assertThrows(SpannerException.class, () -> transaction.rollbackToSavepoint("s2"));
+    assertThrows(
+        SpannerException.class,
+        () -> transaction.rollbackToSavepoint("s2", SavepointSupport.ENABLED));
     assertEquals(ImmutableList.of(Savepoint.of("s1")), transaction.getSavepoints());
 
     transaction.savepoint("s2", dialect);
@@ -201,7 +205,7 @@ public class SavepointTest {
     assertEquals(
         ImmutableList.of(Savepoint.of("s1"), Savepoint.of("s2"), Savepoint.of("s1")),
         transaction.getSavepoints());
-    transaction.rollbackToSavepoint("s1");
+    transaction.rollbackToSavepoint("s1", SavepointSupport.ENABLED);
     assertEquals(
         ImmutableList.of(Savepoint.of("s1"), Savepoint.of("s2"), Savepoint.of("s1")),
         transaction.getSavepoints());

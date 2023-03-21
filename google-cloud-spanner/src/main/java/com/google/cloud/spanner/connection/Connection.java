@@ -713,6 +713,12 @@ public interface Connection extends AutoCloseable {
    */
   ApiFuture<Void> rollbackAsync();
 
+  /** Returns the current savepoint support for this connection. */
+  SavepointSupport getSavepointSupport();
+
+  /** Sets how savepoints should be supported on this connection. */
+  void setSavepointSupport(SavepointSupport savepointSupport);
+
   /**
    * Creates a savepoint with the given name.
    *

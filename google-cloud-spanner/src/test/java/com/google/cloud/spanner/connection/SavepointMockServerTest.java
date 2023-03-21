@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
@@ -88,6 +89,14 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
   }
 
   @Test
+  public void testCreateSavepointWhenDisabled() {
+    try (Connection connection = createConnection()) {
+      connection.setSavepointSupport(SavepointSupport.DISABLED);
+      assertThrows(SpannerException.class, () -> connection.savepoint("s1"));
+    }
+  }
+
+  @Test
   public void testReleaseSavepoint() {
     try (Connection connection = createConnection()) {
       connection.savepoint("s1");
@@ -115,28 +124,33 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
 
   @Test
   public void testRollbackToSavepoint() {
-    try (Connection connection = createConnection()) {
-      connection.savepoint("s1");
-      connection.rollbackToSavepoint("s1");
-      // Rolling back to a savepoint does not remove it, so we can roll back multiple times to the
-      // same savepoint.
-      connection.rollbackToSavepoint("s1");
+    for (SavepointSupport savepointSupport :
+        new SavepointSupport[] {SavepointSupport.ENABLED, SavepointSupport.FAIL_AFTER_ROLLBACK}) {
+      try (Connection connection = createConnection()) {
+        connection.setSavepointSupport(savepointSupport);
 
-      connection.savepoint("s2");
-      connection.rollbackToSavepoint("s1");
-      // Rolling back to a savepoint removes all savepoints after it.
-      assertThrows(SpannerException.class, () -> connection.rollbackToSavepoint("s2"));
-
-      if (dialect == Dialect.POSTGRESQL) {
-        // PostgreSQL allows multiple savepoints with the same name.
-        connection.savepoint("s2");
         connection.savepoint("s1");
         connection.rollbackToSavepoint("s1");
-        connection.rollbackToSavepoint("s2");
+        // Rolling back to a savepoint does not remove it, so we can roll back multiple times to the
+        // same savepoint.
         connection.rollbackToSavepoint("s1");
+
+        connection.savepoint("s2");
         connection.rollbackToSavepoint("s1");
-        connection.releaseSavepoint("s1");
-        assertThrows(SpannerException.class, () -> connection.rollbackToSavepoint("s1"));
+        // Rolling back to a savepoint removes all savepoints after it.
+        assertThrows(SpannerException.class, () -> connection.rollbackToSavepoint("s2"));
+
+        if (dialect == Dialect.POSTGRESQL) {
+          // PostgreSQL allows multiple savepoints with the same name.
+          connection.savepoint("s2");
+          connection.savepoint("s1");
+          connection.rollbackToSavepoint("s1");
+          connection.rollbackToSavepoint("s2");
+          connection.rollbackToSavepoint("s1");
+          connection.rollbackToSavepoint("s1");
+          connection.releaseSavepoint("s1");
+          assertThrows(SpannerException.class, () -> connection.rollbackToSavepoint("s1"));
+        }
       }
     }
   }
@@ -156,43 +170,50 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
 
   @Test
   public void testRollbackToSavepointInReadOnlyTransaction() {
-    try (Connection connection = createConnection()) {
-      connection.setReadOnly(true);
+    for (SavepointSupport savepointSupport :
+        new SavepointSupport[] {SavepointSupport.ENABLED, SavepointSupport.FAIL_AFTER_ROLLBACK}) {
+      try (Connection connection = createConnection()) {
+        connection.setSavepointSupport(savepointSupport);
+        connection.setReadOnly(true);
 
-      // Read-only transactions also support savepoints, but they do not do anything. This feature
-      // is here purely for compatibility.
-      connection.savepoint("s1");
-      try (ResultSet resultSet = connection.executeQuery(SELECT_RANDOM_STATEMENT)) {
-        int count = 0;
-        while (resultSet.next()) {
-          count++;
+        // Read-only transactions also support savepoints, but they do not do anything. This feature
+        // is here purely for compatibility.
+        connection.savepoint("s1");
+        try (ResultSet resultSet = connection.executeQuery(SELECT_RANDOM_STATEMENT)) {
+          int count = 0;
+          while (resultSet.next()) {
+            count++;
+          }
+          assertEquals(RANDOM_RESULT_SET_ROW_COUNT, count);
         }
-        assertEquals(RANDOM_RESULT_SET_ROW_COUNT, count);
-      }
 
-      connection.rollbackToSavepoint("s1");
-      try (ResultSet resultSet = connection.executeQuery(SELECT_RANDOM_STATEMENT)) {
-        int count = 0;
-        while (resultSet.next()) {
-          count++;
+        connection.rollbackToSavepoint("s1");
+        try (ResultSet resultSet = connection.executeQuery(SELECT_RANDOM_STATEMENT)) {
+          int count = 0;
+          while (resultSet.next()) {
+            count++;
+          }
+          assertEquals(RANDOM_RESULT_SET_ROW_COUNT, count);
         }
-        assertEquals(RANDOM_RESULT_SET_ROW_COUNT, count);
-      }
-      // Committing a read-only transaction is necessary to mark the end of the transaction.
-      // It is a no-op on Cloud Spanner.
-      connection.commit();
+        // Committing a read-only transaction is necessary to mark the end of the transaction.
+        // It is a no-op on Cloud Spanner.
+        connection.commit();
 
-      assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
-      BeginTransactionRequest beginRequest =
-          mockSpanner.getRequestsOfType(BeginTransactionRequest.class).get(0);
-      assertTrue(beginRequest.getOptions().hasReadOnly());
-      assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
+        assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+        BeginTransactionRequest beginRequest =
+            mockSpanner.getRequestsOfType(BeginTransactionRequest.class).get(0);
+        assertTrue(beginRequest.getOptions().hasReadOnly());
+        assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
+      }
+      mockSpanner.clearRequests();
     }
   }
 
   @Test
   public void testRollbackToSavepointInReadWriteTransaction() {
     try (Connection connection = createConnection()) {
+      connection.setSavepointSupport(SavepointSupport.ENABLED);
+
       connection.savepoint("s1");
       try (ResultSet resultSet = connection.executeQuery(SELECT_RANDOM_STATEMENT)) {
         int count = 0;
@@ -238,6 +259,8 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
   @Test
   public void testRollbackToSavepointWithDmlStatements() {
     try (Connection connection = createConnection()) {
+      connection.setSavepointSupport(SavepointSupport.ENABLED);
+
       // First do a query that is included in the transaction.
       try (ResultSet resultSet = connection.executeQuery(SELECT_RANDOM_STATEMENT)) {
         int count = 0;
@@ -289,6 +312,8 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
     RandomResultSetGenerator generator = new RandomResultSetGenerator(numRows);
     mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
     try (Connection connection = createConnection()) {
+      connection.setSavepointSupport(SavepointSupport.ENABLED);
+
       try (ResultSet resultSet = connection.executeQuery(statement)) {
         int count = 0;
         while (resultSet.next()) {
@@ -336,12 +361,14 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testRollbackToSavepointSucceedsWithRollback() {
+  public void testRollbackToSavepointWithFailAfterRollback() {
     Statement statement = Statement.of("select * from foo where bar=true");
     int numRows = 10;
     RandomResultSetGenerator generator = new RandomResultSetGenerator(numRows);
     mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
     try (Connection connection = createConnection()) {
+      connection.setSavepointSupport(SavepointSupport.FAIL_AFTER_ROLLBACK);
+
       try (ResultSet resultSet = connection.executeQuery(statement)) {
         int count = 0;
         while (resultSet.next()) {
@@ -349,20 +376,60 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
         }
         assertEquals(numRows, count);
       }
-      // Change the result of the initial query and set a savepoint.
+      // Set a savepoint and execute a couple of DML statements.
       connection.savepoint("s1");
-      mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+      connection.executeUpdate(INSERT_STATEMENT);
+      connection.executeUpdate(INSERT_STATEMENT);
+      // Rollback to before the DML statements.
       // This will succeed as long as we don't execute any further statements.
       connection.rollbackToSavepoint("s1");
 
-      // Rolling back the transaction should now be a no-op, as it has already been rolled back.
-      connection.rollback();
+      // Trying to commit the transaction or execute any other statements on the transaction will
+      // fail with an FAILED_PRECONDITION error, as using a transaction after a rollback to
+      // savepoint has been disabled.
+      SpannerException exception = assertThrows(SpannerException.class, connection::commit);
+      assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
+      assertEquals(
+          "FAILED_PRECONDITION: Using a read/write transaction after rolling back to a "
+              + "savepoint is not supported with SavepointSupport=FAIL_AFTER_ROLLBACK",
+          exception.getMessage());
+    }
+  }
 
-      // Read/write transactions are started with inlined Begin transaction options.
-      assertEquals(0, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
-      assertEquals(1, mockSpanner.countRequestsOfType(RollbackRequest.class));
-      assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
-      assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+  @Test
+  public void testRollbackToSavepointSucceedsWithRollback() {
+    for (SavepointSupport savepointSupport :
+        new SavepointSupport[] {SavepointSupport.ENABLED, SavepointSupport.FAIL_AFTER_ROLLBACK}) {
+      Statement statement = Statement.of("select * from foo where bar=true");
+      int numRows = 10;
+      RandomResultSetGenerator generator = new RandomResultSetGenerator(numRows);
+      mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+      try (Connection connection = createConnection()) {
+        connection.setSavepointSupport(savepointSupport);
+
+        try (ResultSet resultSet = connection.executeQuery(statement)) {
+          int count = 0;
+          while (resultSet.next()) {
+            count++;
+          }
+          assertEquals(numRows, count);
+        }
+        // Change the result of the initial query and set a savepoint.
+        connection.savepoint("s1");
+        mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+        // This will succeed as long as we don't execute any further statements.
+        connection.rollbackToSavepoint("s1");
+
+        // Rolling back the transaction should now be a no-op, as it has already been rolled back.
+        connection.rollback();
+
+        // Read/write transactions are started with inlined Begin transaction options.
+        assertEquals(0, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+        assertEquals(1, mockSpanner.countRequestsOfType(RollbackRequest.class));
+        assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
+        assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+      }
+      mockSpanner.clearRequests();
     }
   }
 
@@ -408,6 +475,8 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
     RandomResultSetGenerator generator = new RandomResultSetGenerator(numRows);
     mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
     try (Connection connection = createConnection()) {
+      connection.setSavepointSupport(SavepointSupport.ENABLED);
+
       try (ResultSet resultSet = connection.executeQuery(statement)) {
         int count = 0;
         while (resultSet.next()) {
@@ -453,6 +522,8 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
   @Test
   public void testRollbackMutations() {
     try (Connection connection = createConnection()) {
+      connection.setSavepointSupport(SavepointSupport.ENABLED);
+
       connection.bufferedWrite(Mutation.newInsertBuilder("foo1").build());
       connection.savepoint("s1");
       connection.executeUpdate(INSERT_STATEMENT);
@@ -478,6 +549,8 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
   @Test
   public void testRollbackBatchDml() {
     try (Connection connection = createConnection()) {
+      connection.setSavepointSupport(SavepointSupport.ENABLED);
+
       connection.executeUpdate(INSERT_STATEMENT);
       connection.savepoint("s1");
       connection.executeBatchUpdate(ImmutableList.of(INSERT_STATEMENT, INSERT_STATEMENT));

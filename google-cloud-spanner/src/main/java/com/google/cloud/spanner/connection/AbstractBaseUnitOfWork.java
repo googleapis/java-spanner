@@ -46,6 +46,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
@@ -136,20 +137,21 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   abstract String getUnitOfWorkName();
 
   @Override
-  public void savepoint(String name, Dialect dialect) {
+  public void savepoint(@Nonnull String name, @Nonnull Dialect dialect) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Savepoint is not supported for " + getUnitOfWorkName());
   }
 
   @Override
-  public void releaseSavepoint(String name) {
+  public void releaseSavepoint(@Nonnull String name) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "Release savepoint is not supported for " + getUnitOfWorkName());
   }
 
   @Override
-  public void rollbackToSavepoint(String name) {
+  public void rollbackToSavepoint(
+      @Nonnull String name, @Nonnull SavepointSupport savepointSupport) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "Rollback to savepoint is not supported for " + getUnitOfWorkName());

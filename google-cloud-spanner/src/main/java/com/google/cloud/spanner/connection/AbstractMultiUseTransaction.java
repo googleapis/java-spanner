@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.SpannerGrpc;
 import java.util.LinkedList;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 
 /**
  * Base class for {@link Connection}-based transactions that can be used for multiple read and
@@ -153,7 +154,7 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public void savepoint(String name, Dialect dialect) {
+  public void savepoint(@Nonnull String name, @Nonnull Dialect dialect) {
     if (dialect != Dialect.POSTGRESQL) {
       // Check that there is no savepoint with this name. Note that PostgreSQL allows multiple
       // savepoints in a transaction with the same name, so we don't execute this check for PG.
@@ -166,13 +167,14 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public void releaseSavepoint(String name) {
+  public void releaseSavepoint(@Nonnull String name) {
     // Remove the given savepoint and all later savepoints from the transaction.
     savepoints.subList(getSavepointIndex(name), savepoints.size()).clear();
   }
 
   @Override
-  public void rollbackToSavepoint(String name) {
+  public void rollbackToSavepoint(
+      @Nonnull String name, @Nonnull SavepointSupport savepointSupport) {
     int index = getSavepointIndex(name);
     rollbackToSavepoint(savepoints.get(index));
     if (index < (savepoints.size() - 1)) {
