@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_RE
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_STATEMENT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_TABLE_NAME;
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
+import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1_RESULTSET;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -2940,6 +2941,24 @@ public class DatabaseClientImplTest {
       assertEquals(
           Code.UNRECOGNIZED,
           resultSet.getType().getStructFields().get(6).getType().getArrayElementType().getCode());
+    }
+  }
+
+  @Test
+  public void testStatementWithBytesArrayParameter() {
+    Statement statement =
+        Statement.newBuilder("select id from test where b=@p1")
+            .bind("p1")
+            .toBytesArray(
+                ImmutableList.of(ByteArray.copyFrom("test1"), ByteArray.copyFrom("test2")))
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(statement, SELECT1_RESULTSET));
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+      assertTrue(resultSet.next());
+      assertEquals(1L, resultSet.getLong(0));
+      assertFalse(resultSet.next());
     }
   }
 
