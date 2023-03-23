@@ -27,6 +27,7 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
+import com.google.cloud.spanner.connection.SavepointSupport;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,6 +59,7 @@ public class ITSavepointTest extends ITAbstractSpannerTest {
   @Test
   public void testRollbackDmlStatement() {
     try (ITConnection connection = createConnection()) {
+      connection.setSavepointSupport(SavepointSupport.ENABLED);
       assertEquals(
           1L,
           connection.executeUpdate(
@@ -93,6 +95,7 @@ public class ITSavepointTest extends ITAbstractSpannerTest {
   @Test
   public void testRollbackMutations() {
     try (ITConnection connection = createConnection()) {
+      connection.setSavepointSupport(SavepointSupport.ENABLED);
       connection.bufferedWrite(
           Mutation.newInsertBuilder("test").set("id").to(1L).set("name").to("One").build());
       connection.savepoint("s1");
@@ -125,6 +128,7 @@ public class ITSavepointTest extends ITAbstractSpannerTest {
   @Test
   public void testRollbackBatchDmlStatement() {
     try (ITConnection connection = createConnection()) {
+      connection.setSavepointSupport(SavepointSupport.ENABLED);
       assertArrayEquals(
           new long[] {1L, 1L},
           connection.executeBatchUpdate(
