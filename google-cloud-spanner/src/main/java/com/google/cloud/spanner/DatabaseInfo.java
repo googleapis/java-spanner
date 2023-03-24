@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-
 import com.google.cloud.FieldSelector;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.encryption.CustomerManagedEncryption;

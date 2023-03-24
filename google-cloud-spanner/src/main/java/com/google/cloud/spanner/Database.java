@@ -194,17 +194,19 @@ public class Database extends DatabaseInfo {
   static Database fromProto(
       com.google.spanner.admin.database.v1.Database proto, DatabaseAdminClient client) {
     checkArgument(!proto.getName().isEmpty(), "Missing expected 'name' field");
-    DatabaseInfo.Builder builder = new Builder(client, DatabaseId.of(proto.getName()))
-        .setState(fromProtoState(proto.getState()))
-        .setCreateTime(Timestamp.fromProto(proto.getCreateTime()))
-        .setRestoreInfo(RestoreInfo.fromProtoOrNullIfDefaultInstance(proto.getRestoreInfo()))
-        .setVersionRetentionPeriod(proto.getVersionRetentionPeriod())
-        .setEarliestVersionTime(Timestamp.fromProto(proto.getEarliestVersionTime()))
-        .setEncryptionConfig(CustomerManagedEncryption.fromProtoOrNull(proto.getEncryptionConfig()))
-        .setDefaultLeader(proto.getDefaultLeader())
-        .setDialect(Dialect.fromProto(proto.getDatabaseDialect()))
-        .setReconciling(proto.getReconciling())
-        .setProto(proto);
+    DatabaseInfo.Builder builder =
+        new Builder(client, DatabaseId.of(proto.getName()))
+            .setState(fromProtoState(proto.getState()))
+            .setCreateTime(Timestamp.fromProto(proto.getCreateTime()))
+            .setRestoreInfo(RestoreInfo.fromProtoOrNullIfDefaultInstance(proto.getRestoreInfo()))
+            .setVersionRetentionPeriod(proto.getVersionRetentionPeriod())
+            .setEarliestVersionTime(Timestamp.fromProto(proto.getEarliestVersionTime()))
+            .setEncryptionConfig(
+                CustomerManagedEncryption.fromProtoOrNull(proto.getEncryptionConfig()))
+            .setDefaultLeader(proto.getDefaultLeader())
+            .setDialect(Dialect.fromProto(proto.getDatabaseDialect()))
+            .setReconciling(proto.getReconciling())
+            .setProto(proto);
     if (proto.getEnableDropProtection()) {
       builder.enableDropProtection();
     } else {
@@ -217,11 +219,12 @@ public class Database extends DatabaseInfo {
     if (getProto() != null) {
       return getProto();
     }
-    com.google.spanner.admin.database.v1.Database.Builder builder =  com.google.spanner.admin.database.v1.Database.newBuilder()
-        .setName(getId().getName())
-        .setState(getState().toProto())
-        .setEnableDropProtection(isDropProtectionEnabled())
-        .setReconciling(getReconciling());
+    com.google.spanner.admin.database.v1.Database.Builder builder =
+        com.google.spanner.admin.database.v1.Database.newBuilder()
+            .setName(getId().getName())
+            .setState(getState().toProto())
+            .setEnableDropProtection(isDropProtectionEnabled())
+            .setReconciling(getReconciling());
     if (getCreateTime() != null) {
       builder.setCreateTime(getCreateTime().toProto());
     }
