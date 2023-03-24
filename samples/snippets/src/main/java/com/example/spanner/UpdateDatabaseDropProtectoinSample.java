@@ -43,7 +43,8 @@ public class UpdateDatabaseDropProtectionSample {
       final DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
 
       // Enable drop protection
-      Database update_to = databaseAdminClient.newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
+      Database update_to = databaseAdminClient.newDatabaseBuilder(
+              DatabaseId.of(projectId, instanceId, databaseId))
           .enableDropProtection().build();
       OperationFuture<Database, UpdateDatabaseMetadata> operation = databaseAdminClient.updateDatabase(
           update_to, DatabaseField.ENABLE_DROP_PROTECTION);
@@ -54,7 +55,8 @@ public class UpdateDatabaseDropProtectionSample {
           + db.isDropProtectionEnabled());
 
       // Disable drop protection
-      update_to = databaseAdminClient.newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
+      update_to = databaseAdminClient.newDatabaseBuilder(
+              DatabaseId.of(projectId, instanceId, databaseId))
           .disableDropProtection().build();
       operation = databaseAdminClient.updateDatabase(
           update_to, DatabaseField.ENABLE_DROP_PROTECTION);
