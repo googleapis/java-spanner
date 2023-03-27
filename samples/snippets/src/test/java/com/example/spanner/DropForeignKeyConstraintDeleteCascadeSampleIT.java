@@ -42,7 +42,8 @@ public class DropForeignKeyConstraintDeleteCascadeSampleIT extends SampleTestBas
                     + "              CartId INT64 NOT NULL,\n"
                     + "              CustomerId INT64 NOT NULL,\n"
                     + "              CustomerName STRING(62) NOT NULL,\n"
-                    + "              CONSTRAINT FKShoppingCartsCustomerName FOREIGN KEY (CustomerName)\n"
+                    + "              CONSTRAINT FKShoppingCartsCustomerName"
+                    + " FOREIGN KEY (CustomerName)\n"
                     + "              REFERENCES Customers (CustomerName) ON DELETE CASCADE\n"
                     + "              ) PRIMARY KEY (CartId)\n"))
         .get(5, TimeUnit.MINUTES);

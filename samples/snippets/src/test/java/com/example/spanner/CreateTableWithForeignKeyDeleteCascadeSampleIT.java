@@ -13,19 +13,24 @@ public class CreateTableWithForeignKeyDeleteCascadeSampleIT extends SampleTestBa
 
     // Creates database
     final String databaseId = idGenerator.generateDatabaseId();
-    databaseAdminClient.createDatabase(instanceId, databaseId, Arrays.asList()
-    ).get(5, TimeUnit.MINUTES);
+    databaseAdminClient
+        .createDatabase(instanceId, databaseId, Arrays.asList())
+        .get(5, TimeUnit.MINUTES);
 
     // Runs sample
-    final String out = SampleRunner.runSample(() -> CreateTableWithForeignKeyDeleteCascadeSample
-        .createForeignKeyDeleteCascadeConstraint(databaseAdminClient, instanceId, databaseId)
-    );
+    final String out =
+        SampleRunner.runSample(
+            () ->
+                CreateTableWithForeignKeyDeleteCascadeSample
+                    .createForeignKeyDeleteCascadeConstraint(
+                        databaseAdminClient, instanceId, databaseId));
 
     assertTrue(
-        "Expected to have created database " + databaseId + " with tables containing "
-            + "foreign key constraints.", out.contains("Created Customers and ShoppingCarts table "
-            + "with FKShoppingCartsCustomerId"
-        )
-    );
+        "Expected to have created database "
+            + databaseId
+            + " with tables containing "
+            + "foreign key constraints.",
+        out.contains(
+            "Created Customers and ShoppingCarts table " + "with FKShoppingCartsCustomerId"));
   }
 }
