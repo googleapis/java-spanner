@@ -15,10 +15,10 @@
  */
 package com.google.cloud.spanner.it;
 
-import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -32,6 +32,7 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -134,11 +135,11 @@ public class ITForeignKeyDeleteCascadeTest {
 
   @BeforeClass
   public static void setUpDatabase() {
-    GOOGLE_STANDARD_SQL_DATABASE =
-        env.getTestHelper()
-            .createTestDatabase(
-                ImmutableList.of(CREATE_TABLE_SINGER, CREATE_TABLE_CONCERT_WITH_FOREIGN_KEY));
-    if (!isUsingEmulator()) {
+    if (!EmulatorSpannerHelper.isUsingEmulator()) {
+      GOOGLE_STANDARD_SQL_DATABASE =
+          env.getTestHelper()
+              .createTestDatabase(
+                  ImmutableList.of(CREATE_TABLE_SINGER, CREATE_TABLE_CONCERT_WITH_FOREIGN_KEY));
       POSTGRESQL_DATABASE =
           env.getTestHelper()
               .createTestDatabase(
@@ -146,9 +147,10 @@ public class ITForeignKeyDeleteCascadeTest {
                   ImmutableList.of(
                       POSTGRES_CREATE_TABLE_SINGER,
                       POSTGRES_CREATE_TABLE_CONCERT_WITH_FOREIGN_KEY));
+
+      dbs.add(GOOGLE_STANDARD_SQL_DATABASE);
+      dbs.add(POSTGRESQL_DATABASE);
     }
-    dbs.add(GOOGLE_STANDARD_SQL_DATABASE);
-    dbs.add(POSTGRESQL_DATABASE);
   }
 
   @AfterClass
@@ -161,6 +163,10 @@ public class ITForeignKeyDeleteCascadeTest {
 
   @Test
   public void testForeignKeyDeleteCascadeConstraints_withCreateDDLStatements() {
+    assumeFalse(
+        "Emulator does not yet support foreign key delete cascade",
+        EmulatorSpannerHelper.isUsingEmulator());
+
     final DatabaseClient databaseClient = getCreatedDatabaseClient();
     final String referentialConstraintQuery = getReferentialConstraintsQueryStatement();
     try (final ResultSet rs =
@@ -173,6 +179,9 @@ public class ITForeignKeyDeleteCascadeTest {
 
   @Test
   public void testForeignKeyDeleteCascadeConstraints_withAlterDDLStatements() throws Exception {
+    assumeFalse(
+        "Emulator does not yet support foreign key delete cascade",
+        EmulatorSpannerHelper.isUsingEmulator());
     // Creating new tables within this test to ensure we don't pollute tables used by other tests in
     // this class.
     final List<String> createStatements = getCreateAndAlterTableStatementsWithForeignKey();
@@ -212,6 +221,9 @@ public class ITForeignKeyDeleteCascadeTest {
 
   @Test
   public void testForeignKeyDeleteCascadeConstraints_verifyValidInsertions() {
+    assumeFalse(
+        "Emulator does not yet support foreign key delete cascade",
+        EmulatorSpannerHelper.isUsingEmulator());
 
     final DatabaseClient databaseClient = getCreatedDatabaseClient();
     final String singerInsertStatement = getInsertStatementForSingerTable();
@@ -276,6 +288,10 @@ public class ITForeignKeyDeleteCascadeTest {
 
   @Test
   public void testForeignKeyDeleteCascadeConstraints_verifyInvalidInsertions() {
+    assumeFalse(
+        "Emulator does not yet support foreign key delete cascade",
+        EmulatorSpannerHelper.isUsingEmulator());
+
     final DatabaseClient databaseClient = getCreatedDatabaseClient();
 
     // unsuccessful inserts into referencing tables when foreign key is not inserted into referenced
@@ -307,6 +323,9 @@ public class ITForeignKeyDeleteCascadeTest {
 
   @Test
   public void testForeignKeyDeleteCascadeConstraints_forDeletions() {
+    assumeFalse(
+        "Emulator does not yet support foreign key delete cascade",
+        EmulatorSpannerHelper.isUsingEmulator());
 
     final DatabaseClient databaseClient = getCreatedDatabaseClient();
 
@@ -374,6 +393,10 @@ public class ITForeignKeyDeleteCascadeTest {
 
   @Test
   public void testForeignKeyDeleteCascadeConstraints_forMutations_onConflictDueToParentTable() {
+    assumeFalse(
+        "Emulator does not yet support foreign key delete cascade",
+        EmulatorSpannerHelper.isUsingEmulator());
+
     final DatabaseClient databaseClient = getCreatedDatabaseClient();
 
     // inserting and deleting the referenced key within the same mutation are considered
@@ -402,6 +425,10 @@ public class ITForeignKeyDeleteCascadeTest {
 
   @Test
   public void testForeignKeyDeleteCascadeConstraints_forMutations_onConflictsDueToChildTable() {
+    assumeFalse(
+        "Emulator does not yet support foreign key delete cascade",
+        EmulatorSpannerHelper.isUsingEmulator());
+
     final DatabaseClient databaseClient = getCreatedDatabaseClient();
 
     // referencing a foreign key in child table and deleting the referenced key in parent table
