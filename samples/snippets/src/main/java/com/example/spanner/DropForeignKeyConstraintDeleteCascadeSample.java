@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,10 @@
 package com.example.spanner;
 
 // [START spanner_drop_foreign_key_constraint_delete_cascade]
-import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.Instance;
-import com.google.cloud.spanner.InstanceAdminClient;
-import com.google.cloud.spanner.InstanceConfigId;
-import com.google.cloud.spanner.InstanceId;
-import com.google.cloud.spanner.InstanceInfo;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.collect.ImmutableList;
-import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
-import java.util.concurrent.ExecutionException;
 
 class DropForeignKeyConstraintDeleteCascadeSample {
 
@@ -50,13 +42,16 @@ class DropForeignKeyConstraintDeleteCascadeSample {
     adminClient.updateDatabaseDdl(
         instanceId,
         databaseId,
-        ImmutableList.of("ALTER TABLE ShoppingCarts\n"
-            + "              DROP CONSTRAINT FKShoppingCartsCustomerName\n"),
+        ImmutableList.of(
+            "ALTER TABLE ShoppingCarts\n"
+                + "              DROP CONSTRAINT FKShoppingCartsCustomerName\n"),
         null);
 
-    System.out.printf(String.format("Altered ShoppingCarts table to drop FKShoppingCartsCustomerName\n"
-        + "foreign key constraint on database %s on instance %s\n", databaseId, instanceId));
-
+    System.out.printf(
+        String.format(
+            "Altered ShoppingCarts table to drop FKShoppingCartsCustomerName\n"
+                + "foreign key constraint on database %s on instance %s\n",
+            databaseId, instanceId));
   }
 }
 // [END spanner_drop_foreign_key_constraint_delete_cascade]

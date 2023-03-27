@@ -1,10 +1,24 @@
+/*
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -18,18 +32,11 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
-import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
-import com.google.spanner.v1.BeginTransactionRequest;
-import com.google.spanner.v1.CommitRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -54,8 +61,6 @@ public class ITForeignKeyDeleteCascadeTest {
 
   private static final String TABLE_NAME_SINGER = "Singer";
   private static final String TABLE_NAME_CONCERTS = "Concerts";
-  private static final String CONCERTS_SINGER_FOREIGN_KEY_CONSTRAINT_NAME = "Fk_Concerts_Singer";
-  private static final String CONCERTS_SINGER_FOREIGN_KEY_CONSTRAINT_NAME_V2 = "Fk_Concerts_Singer_V2";
   private static final String DELETE_RULE_CASCADE = "CASCADE";
   private static final String DELETE_RULE_DEFAULT = "NO ACTION";
   private static final String DELETE_RULE_COLUMN_NAME = "DELETE_RULE";
@@ -83,10 +88,11 @@ public class ITForeignKeyDeleteCascadeTest {
           + "      CONSTRAINT Fk_Concerts_Singer FOREIGN KEY (singer_id) REFERENCES Singer (singer_id) ON DELETE CASCADE\n"
           + "      )";
 
-  private static final String CREATE_TABLE_CONCERT_V2_WITHOUT_FOREIGN_KEY = "CREATE TABLE ConcertsV2 (\n"
-      + "  VenueId      INT64 NOT NULL,\n"
-      + "  SingerId     INT64 NOT NULL,\n"
-      + ") PRIMARY KEY(VenueId, SingerId)";
+  private static final String CREATE_TABLE_CONCERT_V2_WITHOUT_FOREIGN_KEY =
+      "CREATE TABLE ConcertsV2 (\n"
+          + "  VenueId      INT64 NOT NULL,\n"
+          + "  SingerId     INT64 NOT NULL,\n"
+          + ") PRIMARY KEY(VenueId, SingerId)";
 
   private static final String POSTGRES_CREATE_TABLE_CONCERT_V2_WITHOUT_FOREIGN_KEY =
       "CREATE TABLE ConcertsV2 (\n"
@@ -96,50 +102,28 @@ public class ITForeignKeyDeleteCascadeTest {
           + "      )";
 
   private static final String ALTER_TABLE_CONCERT_V2_WITH_FOREIGN_KEY = "ALTER TABLE ConcertsV2 "
-      + "ADD CONSTRAINT " + CONCERTS_SINGER_FOREIGN_KEY_CONSTRAINT_NAME_V2
-      + " FOREIGN KEY(SingerId) REFERENCES Singer(SingerId) "
+      + "ADD CONSTRAINT Fk_Concerts_Singer_V2 FOREIGN KEY(SingerId) REFERENCES Singer(SingerId) "
       + "ON DELETE CASCADE";
 
   private static final String POSTGRES_ALTER_TABLE_CONCERT_V2_WITH_FOREIGN_KEY =
       "ALTER TABLE ConcertsV2 "
-          + "ADD CONSTRAINT " + CONCERTS_SINGER_FOREIGN_KEY_CONSTRAINT_NAME_V2
-          + " FOREIGN KEY(singer_id) REFERENCES Singer(singer_id) "
+          + "ADD CONSTRAINT Fk_Concerts_Singer_V2 FOREIGN KEY(singer_id) REFERENCES Singer(singer_id) "
           + "ON DELETE CASCADE";
 
   private static final String ALTER_TABLE_CONCERT_V2_UPDATE_FOREIGN_KEY_WITHOUT_DELETE_CASCADE =
       "ALTER TABLE ConcertsV2 "
-          + "ADD CONSTRAINT " + CONCERTS_SINGER_FOREIGN_KEY_CONSTRAINT_NAME_V2
-          + " FOREIGN KEY(SingerId) REFERENCES Singer(SingerId) ";
+          + "ADD CONSTRAINT Fk_Concerts_Singer_V2 FOREIGN KEY(SingerId) REFERENCES Singer(SingerId) ";
 
   private static final String POSTGRES_ALTER_TABLE_CONCERT_V2_UPDATE_FOREIGN_KEY_WITHOUT_DELETE_CASCADE =
       "ALTER TABLE ConcertsV2 "
-          + "ADD CONSTRAINT " + CONCERTS_SINGER_FOREIGN_KEY_CONSTRAINT_NAME_V2
-          + " FOREIGN KEY(singer_id) REFERENCES Singer(singer_id) ";
+          + "ADD CONSTRAINT Fk_Concerts_Singer_V2 FOREIGN KEY(singer_id) REFERENCES Singer(singer_id) ";
 
   private static final String ALTER_TABLE_CONCERT_V2_DROP_FOREIGN_KEY_CONSTRAINT =
       "ALTER TABLE ConcertsV2\n"
-          + "DROP CONSTRAINT " + CONCERTS_SINGER_FOREIGN_KEY_CONSTRAINT_NAME_V2;
-
-  private static final String QUERY_REFERENTIAL_CONSTRAINTS = "SELECT DELETE_RULE\n"
-      + "FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS\n"
-      + "WHERE CONSTRAINT_NAME =" + "\"" + CONCERTS_SINGER_FOREIGN_KEY_CONSTRAINT_NAME
-      + "\"";
-  private static final String POSTGRES_QUERY_REFERENTIAL_CONSTRAINTS = "SELECT DELETE_RULE\n"
-      + "FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS\n"
-      + "WHERE CONSTRAINT_NAME =" + "'" + CONCERTS_SINGER_FOREIGN_KEY_CONSTRAINT_NAME
-      + "'";
-
-  private static final String QUERY_REFERENTIAL_CONSTRAINTS_V2 = "SELECT DELETE_RULE\n"
-      + "FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS\n"
-      + "WHERE CONSTRAINT_NAME =" + "\"" + CONCERTS_SINGER_FOREIGN_KEY_CONSTRAINT_NAME_V2
-      + "\"";
-  private static final String POSTGRES_QUERY_REFERENTIAL_CONSTRAINTS_V2 = "SELECT DELETE_RULE\n"
-      + "FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS\n"
-      + "WHERE CONSTRAINT_NAME =" + "'" + CONCERTS_SINGER_FOREIGN_KEY_CONSTRAINT_NAME_V2
-      + "'";
+          + "DROP CONSTRAINT Fk_Concerts_Singer_V2";
 
   private static Database GOOGLE_STANDARD_SQL_DATABASE;
-  private static Database POST_GRE_SQL_DATABASE;
+  private static Database POSTGRESQL_DATABASE;
   private static List<Database> dbs = new ArrayList<>();
 
 
@@ -153,7 +137,7 @@ public class ITForeignKeyDeleteCascadeTest {
             .createTestDatabase(ImmutableList.of(
                 CREATE_TABLE_SINGER, CREATE_TABLE_CONCERT_WITH_FOREIGN_KEY));
     if (!isUsingEmulator()) {
-      POST_GRE_SQL_DATABASE =
+      POSTGRESQL_DATABASE =
           env.getTestHelper()
               .createTestDatabase(
                   Dialect.POSTGRESQL,
@@ -161,7 +145,7 @@ public class ITForeignKeyDeleteCascadeTest {
                       POSTGRES_CREATE_TABLE_CONCERT_WITH_FOREIGN_KEY));
     }
     dbs.add(GOOGLE_STANDARD_SQL_DATABASE);
-    dbs.add(POST_GRE_SQL_DATABASE);
+    dbs.add(POSTGRESQL_DATABASE);
   }
 
   @AfterClass
@@ -190,7 +174,8 @@ public class ITForeignKeyDeleteCascadeTest {
   public void testForeignKeyDeleteCascadeConstraints_withAlterDDLStatements() throws Exception {
     // Creating new tables within this test to ensure we don't pollute tables used by other tests in this class.
     final List<String> createStatements = getCreateAndAlterTableStatementsWithForeignKey();
-    final Database createdDatabase = createDatabase(createStatements);
+    final Database createdDatabase =
+        env.getTestHelper().createTestDatabase(dialect.dialect, createStatements);
     dbs.add(createdDatabase);
 
     final DatabaseClient databaseClient = getCreatedDatabaseClient();
@@ -244,14 +229,9 @@ public class ITForeignKeyDeleteCascadeTest {
         .readWriteTransaction()
         .run(
             transaction -> {
-              transaction.executeUpdate(singerInsertStatementWithValues);
-              return null;
-            });
-    databaseClient
-        .readWriteTransaction()
-        .run(
-            transaction -> {
-              transaction.executeUpdate(concertInsertStatementWithValues);
+              transaction.batchUpdate(
+                  ImmutableList.of(singerInsertStatementWithValues,
+                      concertInsertStatementWithValues));
               return null;
             });
 
@@ -293,19 +273,17 @@ public class ITForeignKeyDeleteCascadeTest {
         // Use 'p1' to bind to the parameter with index 1 etc.
         .bind("p1").to(2L)
         .bind("p2").to(2L).build();
-    try {
-      databaseClient
-          .readWriteTransaction()
-          .run(
-              transaction -> {
-                transaction.executeUpdate(concertInsertStatementWithInvalidValues);
-                return null;
-              });
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-      assertThat(ex.getMessage()).contains("Cannot find referenced values");
-    }
+
+    SpannerException ex = assertThrows(SpannerException.class, () ->
+        databaseClient
+            .readWriteTransaction()
+            .run(
+                transaction -> {
+                  transaction.executeUpdate(concertInsertStatementWithInvalidValues);
+                  return null;
+                }));
+    assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
+    assertThat(ex.getMessage()).contains("Cannot find referenced values");
   }
 
   @Test
@@ -330,14 +308,9 @@ public class ITForeignKeyDeleteCascadeTest {
         .readWriteTransaction()
         .run(
             transaction -> {
-              transaction.executeUpdate(singerInsertStatementWithValues);
-              return null;
-            });
-    databaseClient
-        .readWriteTransaction()
-        .run(
-            transaction -> {
-              transaction.executeUpdate(concertInsertStatementWithValues);
+              transaction.batchUpdate(
+                  ImmutableList.of(singerInsertStatementWithValues,
+                      concertInsertStatementWithValues));
               return null;
             });
 
@@ -373,23 +346,20 @@ public class ITForeignKeyDeleteCascadeTest {
 
     // inserting and deleting the referenced key within the same mutation are considered
     // conflicting operations, thus this results in an exception.
-    try {
-      databaseClient
-          .readWriteTransaction()
-          .run(
-              transaction -> {
-                transaction.buffer(
-                    Arrays.asList(
-                        Mutation.newInsertBuilder("Singer")
-                            .set(getSingerIdColumnName()).to(4L)
-                            .set(getSingerFirstNameColumnName()).to("singerName").build(),
-                        Mutation.delete("Singer", Key.of(4L))));
-                return null;
-              });
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-    }
+    SpannerException ex = assertThrows(SpannerException.class, () ->
+        databaseClient
+            .readWriteTransaction()
+            .run(
+                transaction -> {
+                  transaction.buffer(
+                      Arrays.asList(
+                          Mutation.newInsertBuilder("Singer")
+                              .set(getSingerIdColumnName()).to(4L)
+                              .set(getSingerFirstNameColumnName()).to("singerName").build(),
+                          Mutation.delete("Singer", Key.of(4L))));
+                  return null;
+                }));
+    assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
   }
 
   @Test
@@ -398,64 +368,55 @@ public class ITForeignKeyDeleteCascadeTest {
 
     // referencing a foreign key in child table and deleting the referenced key in parent table
     // within the same mutations are considered conflicting operations.
-    try {
-      final String singerInsertStatement = getInsertStatementForSingerTable();
-      final Statement singerInsertStatementWithValues = Statement.newBuilder(singerInsertStatement)
-          // Use 'p1' to bind to the parameter with index 1 etc.
-          .bind("p1").to(5L)
-          .bind("p2").to("singerName").build();
+    final String singerInsertStatement = getInsertStatementForSingerTable();
+    final Statement singerInsertStatementWithValues = Statement.newBuilder(singerInsertStatement)
+        // Use 'p1' to bind to the parameter with index 1 etc.
+        .bind("p1").to(5L)
+        .bind("p2").to("singerName").build();
 
-      databaseClient
-          .readWriteTransaction()
-          .run(
-              transaction -> {
-                transaction.executeUpdate(singerInsertStatementWithValues);
-                return null;
-              });
-
-      databaseClient
-          .readWriteTransaction()
-          .run(
-              transaction -> {
-                transaction.buffer(
-                    Arrays.asList(
-                        Mutation.newInsertBuilder("Concerts")
-                            .set(getConcertVenueIdColumnName()).to(5L)
-                            .set(getSingerIdColumnName()).to(5L).build(),
-                        Mutation.delete("Singer", Key.of(5L))));
-                return null;
-              });
-      fail("Expected exception");
-    } catch (SpannerException ex) {
-      assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
-    }
-  }
-
-  private Database createDatabase(final List<String> statements) {
-    final Database database;
-    if (dialect.dialect == Dialect.POSTGRESQL) {
-      database = env.getTestHelper()
-          .createTestDatabase(Dialect.POSTGRESQL, statements);
-    } else {
-      database = env.getTestHelper()
-          .createTestDatabase(statements);
-    }
-    return database;
+    databaseClient
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              transaction.executeUpdate(singerInsertStatementWithValues);
+              return null;
+            });
+    SpannerException ex = assertThrows(SpannerException.class, () ->
+        databaseClient
+            .readWriteTransaction()
+            .run(
+                transaction -> {
+                  transaction.buffer(
+                      Arrays.asList(
+                          Mutation.newInsertBuilder("Concerts")
+                              .set(getConcertVenueIdColumnName()).to(5L)
+                              .set(getSingerIdColumnName()).to(5L).build(),
+                          Mutation.delete("Singer", Key.of(5L))));
+                  return null;
+                }));
   }
 
   private String getReferentialConstraintsQueryStatement() {
     if (dialect.dialect == Dialect.POSTGRESQL) {
-      return POSTGRES_QUERY_REFERENTIAL_CONSTRAINTS;
+      return "SELECT DELETE_RULE\n"
+          + "FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS\n"
+          + "WHERE CONSTRAINT_NAME ='Fk_Concerts_Singer'";
     } else {
-      return QUERY_REFERENTIAL_CONSTRAINTS;
+      return "SELECT DELETE_RULE\n"
+          + "FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS\n"
+          + "WHERE CONSTRAINT_NAME =\"Fk_Concerts_Singer\"";
     }
   }
 
   private String getReferentialConstraintsQueryStatementV2() {
     if (dialect.dialect == Dialect.POSTGRESQL) {
-      return POSTGRES_QUERY_REFERENTIAL_CONSTRAINTS_V2;
+      return "SELECT DELETE_RULE\n"
+          + "FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS\n"
+          + "WHERE CONSTRAINT_NAME ='Fk_Concerts_Singer_V2'";
     } else {
-      return QUERY_REFERENTIAL_CONSTRAINTS_V2;
+      return "SELECT DELETE_RULE\n"
+          + "FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS\n"
+          + "WHERE CONSTRAINT_NAME =\"Fk_Concerts_Singer_V2\"";
     }
   }
 
@@ -483,9 +444,10 @@ public class ITForeignKeyDeleteCascadeTest {
   private DatabaseAdminClient getDatabaseAdminClient() {
     return env.getTestHelper().getClient().getDatabaseAdminClient();
   }
+
   private DatabaseClient getCreatedDatabaseClient() {
     if (dialect.dialect == Dialect.POSTGRESQL) {
-      return env.getTestHelper().getDatabaseClient(this.POST_GRE_SQL_DATABASE);
+      return env.getTestHelper().getDatabaseClient(this.POSTGRESQL_DATABASE);
     }
     return env.getTestHelper().getDatabaseClient(this.GOOGLE_STANDARD_SQL_DATABASE);
   }

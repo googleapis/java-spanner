@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,10 @@
 package com.example.spanner;
 
 // [START spanner_alter_table_with_foreign_key_delete_cascade]
-import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.Instance;
-import com.google.cloud.spanner.InstanceAdminClient;
-import com.google.cloud.spanner.InstanceConfigId;
-import com.google.cloud.spanner.InstanceId;
-import com.google.cloud.spanner.InstanceInfo;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.collect.ImmutableList;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
-import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
-import java.util.concurrent.ExecutionException;
 
 class AlterTableWithForeignKeyDeleteCascadeSample {
 
@@ -49,18 +40,20 @@ class AlterTableWithForeignKeyDeleteCascadeSample {
   static void alterForeignKeyDeleteCascadeConstraint(
       DatabaseAdminClient adminClient, String instanceId, String databaseId) {
     adminClient.updateDatabaseDdl(
-            instanceId,
-            databaseId,
-            ImmutableList.of("ALTER TABLE ShoppingCarts\n"
+        instanceId,
+        databaseId,
+        ImmutableList.of(
+            "ALTER TABLE ShoppingCarts\n"
                 + "              ADD CONSTRAINT FKShoppingCartsCustomerName\n"
                 + "              FOREIGN KEY (CustomerName)\n"
                 + "              REFERENCES Customers(CustomerName)\n"
                 + "              ON DELETE CASCADE\n"),
-            null);
-
-    System.out.printf(String.format("Altered ShoppingCarts table with FKShoppingCartsCustomerName\n"
-        + "foreign key constraint on database %s on instance %s", databaseId, instanceId));
-
+        null);
+    System.out.printf(
+        String.format(
+            "Altered ShoppingCarts table with FKShoppingCartsCustomerName\n"
+                + "foreign key constraint on database %s on instance %s",
+            databaseId, instanceId));
   }
 }
 // [END spanner_alter_table_with_foreign_key_delete_cascade]

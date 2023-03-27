@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,10 @@
 package com.example.spanner;
 
 // [START spanner_create_table_with_foreign_key_delete_cascade]
-import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.Instance;
-import com.google.cloud.spanner.InstanceAdminClient;
-import com.google.cloud.spanner.InstanceConfigId;
-import com.google.cloud.spanner.InstanceId;
-import com.google.cloud.spanner.InstanceInfo;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.collect.ImmutableList;
-import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
-import java.util.concurrent.ExecutionException;
 
 class CreateTableWithForeignKeyDeleteCascadeSample {
 
@@ -50,10 +42,11 @@ class CreateTableWithForeignKeyDeleteCascadeSample {
     adminClient.updateDatabaseDdl(
         instanceId,
         databaseId,
-        ImmutableList.of("CREATE TABLE Customers (\n"
-            + "              CustomerId INT64 NOT NULL,\n"
-            + "              CustomerName STRING(62) NOT NULL,\n"
-            + "              ) PRIMARY KEY (CustomerId)",
+        ImmutableList.of(
+            "CREATE TABLE Customers (\n"
+                + "              CustomerId INT64 NOT NULL,\n"
+                + "              CustomerName STRING(62) NOT NULL,\n"
+                + "              ) PRIMARY KEY (CustomerId)",
             "CREATE TABLE ShoppingCarts (\n"
                 + "              CartId INT64 NOT NULL,\n"
                 + "              CustomerId INT64 NOT NULL,\n"
@@ -63,8 +56,11 @@ class CreateTableWithForeignKeyDeleteCascadeSample {
                 + "              ) PRIMARY KEY (CartId)\n"),
         null);
 
-    System.out.printf(String.format("Created Customers and ShoppingCarts table with FKShoppingCartsCustomerId\n"
-        + "foreign key constraint on database %s on instance %s\n", databaseId, instanceId));
+    System.out.printf(
+        String.format(
+            "Created Customers and ShoppingCarts table with FKShoppingCartsCustomerId\n"
+                + "foreign key constraint on database %s on instance %s\n",
+            databaseId, instanceId));
   }
 }
 // [END spanner_create_table_with_foreign_key_delete_cascade]
