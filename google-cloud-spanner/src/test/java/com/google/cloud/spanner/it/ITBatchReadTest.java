@@ -31,6 +31,7 @@ import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Partition;
 import com.google.cloud.spanner.PartitionOptions;
@@ -238,6 +239,25 @@ public class ITBatchReadTest {
     assertThat(numRowsRead).isEqualTo(numRows);
   }
 
+  @Test
+  public void dataBoostRead() {
+    assumeFalse("Emulator does not support data boost read", isUsingEmulator());
+
+    BitSet seenRows = new BitSet(numRows);
+    TimestampBound bound = getRandomBound();
+    PartitionOptions partitionParams = getRandomPartitionOptions();
+    batchTxn = getBatchClient().batchReadOnlyTransaction(bound);
+    List<Partition> partitions =
+        batchTxn.partitionRead(
+            partitionParams,
+            TABLE_NAME,
+            KeySet.all(),
+            Arrays.asList("Key", "Data", "Fingerprint", "Size"),
+            Options.dataBoostEnabled(true));
+    BatchTransactionId txnID = batchTxn.getBatchTransactionId();
+    fetchAndValidateRows(partitions, txnID, seenRows);
+  }
+
   @After
   public void tearDown() {
     if (batchTxn != null) {
@@ -271,6 +291,22 @@ public class ITBatchReadTest {
       parameters = PartitionOptions.getDefaultInstance();
     }
     return parameters;
+  }
+
+  @Test
+  public void dataBoostQuery() {
+    assumeFalse("Emulator does not support data boost query", isUsingEmulator());
+    BitSet seenRows = new BitSet(numRows);
+    TimestampBound bound = getRandomBound();
+    PartitionOptions partitionParams = getRandomPartitionOptions();
+    batchTxn = getBatchClient().batchReadOnlyTransaction(bound);
+    List<Partition> partitions =
+        batchTxn.partitionQuery(
+            partitionParams,
+            Statement.of("SELECT Key, Data, Fingerprint, Size FROM " + TABLE_NAME),
+            Options.dataBoostEnabled(true));
+    BatchTransactionId txnID = batchTxn.getBatchTransactionId();
+    fetchAndValidateRows(partitions, txnID, seenRows);
   }
 
   private TimestampBound getRandomBound() {

@@ -1972,19 +1972,19 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
         : requestOptions_;
   }
 
-  public static final int DATA_BOOST_ENABLED_FIELD_NUMBER = 15;
+  public static final int DATA_BOOST_ENABLED_FIELD_NUMBER = 16;
   private boolean dataBoostEnabled_ = false;
   /**
    *
    *
    * <pre>
-   * If this is for a partitioned read and this field is set to `true`, the
+   * If this is for a partitioned query and this field is set to `true`, the
    * request will be executed via Spanner independent compute resources.
    * If the field is set to `true` but the request does not set
    * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
    * </pre>
    *
-   * <code>bool data_boost_enabled = 15;</code>
+   * <code>bool data_boost_enabled = 16;</code>
    *
    * @return The dataBoostEnabled.
    */
@@ -2040,7 +2040,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       output.writeMessage(11, getRequestOptions());
     }
     if (dataBoostEnabled_ != false) {
-      output.writeBool(15, dataBoostEnabled_);
+      output.writeBool(16, dataBoostEnabled_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -2092,7 +2092,7 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(11, getRequestOptions());
     }
     if (dataBoostEnabled_ != false) {
-      size += com.google.protobuf.CodedOutputStream.computeBoolSize(15, dataBoostEnabled_);
+      size += com.google.protobuf.CodedOutputStream.computeBoolSize(16, dataBoostEnabled_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -2627,12 +2627,12 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
                 bitField0_ |= 0x00000400;
                 break;
               } // case 90
-            case 120:
+            case 128:
               {
                 dataBoostEnabled_ = input.readBool();
                 bitField0_ |= 0x00000800;
                 break;
-              } // case 120
+              } // case 128
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -4258,13 +4258,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * If this is for a partitioned read and this field is set to `true`, the
+     * If this is for a partitioned query and this field is set to `true`, the
      * request will be executed via Spanner independent compute resources.
      * If the field is set to `true` but the request does not set
      * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
      * </pre>
      *
-     * <code>bool data_boost_enabled = 15;</code>
+     * <code>bool data_boost_enabled = 16;</code>
      *
      * @return The dataBoostEnabled.
      */
@@ -4276,13 +4276,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * If this is for a partitioned read and this field is set to `true`, the
+     * If this is for a partitioned query and this field is set to `true`, the
      * request will be executed via Spanner independent compute resources.
      * If the field is set to `true` but the request does not set
      * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
      * </pre>
      *
-     * <code>bool data_boost_enabled = 15;</code>
+     * <code>bool data_boost_enabled = 16;</code>
      *
      * @param value The dataBoostEnabled to set.
      * @return This builder for chaining.
@@ -4298,13 +4298,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * If this is for a partitioned read and this field is set to `true`, the
+     * If this is for a partitioned query and this field is set to `true`, the
      * request will be executed via Spanner independent compute resources.
      * If the field is set to `true` but the request does not set
      * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
      * </pre>
      *
-     * <code>bool data_boost_enabled = 15;</code>
+     * <code>bool data_boost_enabled = 16;</code>
      *
      * @return This builder for chaining.
      */
