@@ -758,7 +758,7 @@ public final class InstanceAdminGrpc {
    * databases in that instance, and their performance may suffer.
    * </pre>
    */
-  public abstract static class InstanceAdminImplBase implements io.grpc.BindableService {
+  public interface AsyncService {
 
     /**
      *
@@ -767,7 +767,7 @@ public final class InstanceAdminGrpc {
      * Lists the supported instance configurations for a given project.
      * </pre>
      */
-    public void listInstanceConfigs(
+    default void listInstanceConfigs(
         com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest request,
         io.grpc.stub.StreamObserver<
                 com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>
@@ -783,7 +783,7 @@ public final class InstanceAdminGrpc {
      * Gets information about a particular instance configuration.
      * </pre>
      */
-    public void getInstanceConfig(
+    default void getInstanceConfig(
         com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.InstanceConfig>
             responseObserver) {
@@ -830,7 +830,7 @@ public final class InstanceAdminGrpc {
      * [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].
      * </pre>
      */
-    public void createInstanceConfig(
+    default void createInstanceConfig(
         com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
@@ -878,7 +878,7 @@ public final class InstanceAdminGrpc {
      * the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].
      * </pre>
      */
-    public void updateInstanceConfig(
+    default void updateInstanceConfig(
         com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
@@ -897,7 +897,7 @@ public final class InstanceAdminGrpc {
      * the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].
      * </pre>
      */
-    public void deleteInstanceConfig(
+    default void deleteInstanceConfig(
         com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
@@ -921,7 +921,7 @@ public final class InstanceAdminGrpc {
      * from the most recently started operation.
      * </pre>
      */
-    public void listInstanceConfigOperations(
+    default void listInstanceConfigOperations(
         com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest request,
         io.grpc.stub.StreamObserver<
                 com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse>
@@ -937,7 +937,7 @@ public final class InstanceAdminGrpc {
      * Lists all instances in the given project.
      * </pre>
      */
-    public void listInstances(
+    default void listInstances(
         com.google.spanner.admin.instance.v1.ListInstancesRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.ListInstancesResponse>
             responseObserver) {
@@ -952,7 +952,7 @@ public final class InstanceAdminGrpc {
      * Gets information about a particular instance.
      * </pre>
      */
-    public void getInstance(
+    default void getInstance(
         com.google.spanner.admin.instance.v1.GetInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.Instance>
             responseObserver) {
@@ -993,7 +993,7 @@ public final class InstanceAdminGrpc {
      * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
      * </pre>
      */
-    public void createInstance(
+    default void createInstance(
         com.google.spanner.admin.instance.v1.CreateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
@@ -1038,7 +1038,7 @@ public final class InstanceAdminGrpc {
      * the resource [name][google.spanner.admin.instance.v1.Instance.name].
      * </pre>
      */
-    public void updateInstance(
+    default void updateInstance(
         com.google.spanner.admin.instance.v1.UpdateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
@@ -1058,7 +1058,7 @@ public final class InstanceAdminGrpc {
      *     is permanently deleted.
      * </pre>
      */
-    public void deleteInstance(
+    default void deleteInstance(
         com.google.spanner.admin.instance.v1.DeleteInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
@@ -1075,7 +1075,7 @@ public final class InstanceAdminGrpc {
      * [resource][google.iam.v1.SetIamPolicyRequest.resource].
      * </pre>
      */
-    public void setIamPolicy(
+    default void setIamPolicy(
         com.google.iam.v1.SetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
@@ -1092,7 +1092,7 @@ public final class InstanceAdminGrpc {
      * [resource][google.iam.v1.GetIamPolicyRequest.resource].
      * </pre>
      */
-    public void getIamPolicy(
+    default void getIamPolicy(
         com.google.iam.v1.GetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
@@ -1110,112 +1110,50 @@ public final class InstanceAdminGrpc {
      * empty set of permissions.
      * </pre>
      */
-    public void testIamPermissions(
+    default void testIamPermissions(
         com.google.iam.v1.TestIamPermissionsRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.TestIamPermissionsResponse>
             responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
           getTestIamPermissionsMethod(), responseObserver);
     }
+  }
+
+  /**
+   * Base class for the server implementation of the service InstanceAdmin.
+   *
+   * <pre>
+   * Cloud Spanner Instance Admin API
+   * The Cloud Spanner Instance Admin API can be used to create, delete,
+   * modify and list instances. Instances are dedicated Cloud Spanner serving
+   * and storage resources to be used by Cloud Spanner databases.
+   * Each instance has a "configuration", which dictates where the
+   * serving resources for the Cloud Spanner instance are located (e.g.,
+   * US-central, Europe). Configurations are created by Google based on
+   * resource availability.
+   * Cloud Spanner billing is based on the instances that exist and their
+   * sizes. After an instance exists, there are no additional
+   * per-database or per-operation charges for use of the instance
+   * (though there may be additional network bandwidth charges).
+   * Instances offer isolation: problems with databases in one instance
+   * will not affect other instances. However, within an instance
+   * databases can affect each other. For example, if one database in an
+   * instance receives a lot of requests and consumes most of the
+   * instance resources, fewer resources are available for other
+   * databases in that instance, and their performance may suffer.
+   * </pre>
+   */
+  public abstract static class InstanceAdminImplBase
+      implements io.grpc.BindableService, AsyncService {
 
     @java.lang.Override
     public final io.grpc.ServerServiceDefinition bindService() {
-      return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
-          .addMethod(
-              getListInstanceConfigsMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest,
-                      com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>(
-                      this, METHODID_LIST_INSTANCE_CONFIGS)))
-          .addMethod(
-              getGetInstanceConfigMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.GetInstanceConfigRequest,
-                      com.google.spanner.admin.instance.v1.InstanceConfig>(
-                      this, METHODID_GET_INSTANCE_CONFIG)))
-          .addMethod(
-              getCreateInstanceConfigMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest,
-                      com.google.longrunning.Operation>(this, METHODID_CREATE_INSTANCE_CONFIG)))
-          .addMethod(
-              getUpdateInstanceConfigMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest,
-                      com.google.longrunning.Operation>(this, METHODID_UPDATE_INSTANCE_CONFIG)))
-          .addMethod(
-              getDeleteInstanceConfigMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest,
-                      com.google.protobuf.Empty>(this, METHODID_DELETE_INSTANCE_CONFIG)))
-          .addMethod(
-              getListInstanceConfigOperationsMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest,
-                      com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse>(
-                      this, METHODID_LIST_INSTANCE_CONFIG_OPERATIONS)))
-          .addMethod(
-              getListInstancesMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.ListInstancesRequest,
-                      com.google.spanner.admin.instance.v1.ListInstancesResponse>(
-                      this, METHODID_LIST_INSTANCES)))
-          .addMethod(
-              getGetInstanceMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.GetInstanceRequest,
-                      com.google.spanner.admin.instance.v1.Instance>(this, METHODID_GET_INSTANCE)))
-          .addMethod(
-              getCreateInstanceMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.CreateInstanceRequest,
-                      com.google.longrunning.Operation>(this, METHODID_CREATE_INSTANCE)))
-          .addMethod(
-              getUpdateInstanceMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.UpdateInstanceRequest,
-                      com.google.longrunning.Operation>(this, METHODID_UPDATE_INSTANCE)))
-          .addMethod(
-              getDeleteInstanceMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.DeleteInstanceRequest,
-                      com.google.protobuf.Empty>(this, METHODID_DELETE_INSTANCE)))
-          .addMethod(
-              getSetIamPolicyMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.iam.v1.SetIamPolicyRequest, com.google.iam.v1.Policy>(
-                      this, METHODID_SET_IAM_POLICY)))
-          .addMethod(
-              getGetIamPolicyMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.iam.v1.GetIamPolicyRequest, com.google.iam.v1.Policy>(
-                      this, METHODID_GET_IAM_POLICY)))
-          .addMethod(
-              getTestIamPermissionsMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.iam.v1.TestIamPermissionsRequest,
-                      com.google.iam.v1.TestIamPermissionsResponse>(
-                      this, METHODID_TEST_IAM_PERMISSIONS)))
-          .build();
+      return InstanceAdminGrpc.bindService(this);
     }
   }
 
   /**
-   *
+   * A stub to allow clients to do asynchronous rpc calls to service InstanceAdmin.
    *
    * <pre>
    * Cloud Spanner Instance Admin API
@@ -1637,7 +1575,7 @@ public final class InstanceAdminGrpc {
   }
 
   /**
-   *
+   * A stub to allow clients to do synchronous rpc calls to service InstanceAdmin.
    *
    * <pre>
    * Cloud Spanner Instance Admin API
@@ -2009,7 +1947,7 @@ public final class InstanceAdminGrpc {
   }
 
   /**
-   *
+   * A stub to allow clients to do ListenableFuture-style rpc calls to service InstanceAdmin.
    *
    * <pre>
    * Cloud Spanner Instance Admin API
@@ -2412,10 +2350,10 @@ public final class InstanceAdminGrpc {
           io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,
           io.grpc.stub.ServerCalls.ClientStreamingMethod<Req, Resp>,
           io.grpc.stub.ServerCalls.BidiStreamingMethod<Req, Resp> {
-    private final InstanceAdminImplBase serviceImpl;
+    private final AsyncService serviceImpl;
     private final int methodId;
 
-    MethodHandlers(InstanceAdminImplBase serviceImpl, int methodId) {
+    MethodHandlers(AsyncService serviceImpl, int methodId) {
       this.serviceImpl = serviceImpl;
       this.methodId = methodId;
     }
@@ -2517,6 +2455,98 @@ public final class InstanceAdminGrpc {
           throw new AssertionError();
       }
     }
+  }
+
+  public static final io.grpc.ServerServiceDefinition bindService(AsyncService service) {
+    return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
+        .addMethod(
+            getListInstanceConfigsMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest,
+                    com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>(
+                    service, METHODID_LIST_INSTANCE_CONFIGS)))
+        .addMethod(
+            getGetInstanceConfigMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.GetInstanceConfigRequest,
+                    com.google.spanner.admin.instance.v1.InstanceConfig>(
+                    service, METHODID_GET_INSTANCE_CONFIG)))
+        .addMethod(
+            getCreateInstanceConfigMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest,
+                    com.google.longrunning.Operation>(service, METHODID_CREATE_INSTANCE_CONFIG)))
+        .addMethod(
+            getUpdateInstanceConfigMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest,
+                    com.google.longrunning.Operation>(service, METHODID_UPDATE_INSTANCE_CONFIG)))
+        .addMethod(
+            getDeleteInstanceConfigMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest,
+                    com.google.protobuf.Empty>(service, METHODID_DELETE_INSTANCE_CONFIG)))
+        .addMethod(
+            getListInstanceConfigOperationsMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest,
+                    com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse>(
+                    service, METHODID_LIST_INSTANCE_CONFIG_OPERATIONS)))
+        .addMethod(
+            getListInstancesMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.ListInstancesRequest,
+                    com.google.spanner.admin.instance.v1.ListInstancesResponse>(
+                    service, METHODID_LIST_INSTANCES)))
+        .addMethod(
+            getGetInstanceMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.GetInstanceRequest,
+                    com.google.spanner.admin.instance.v1.Instance>(service, METHODID_GET_INSTANCE)))
+        .addMethod(
+            getCreateInstanceMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.CreateInstanceRequest,
+                    com.google.longrunning.Operation>(service, METHODID_CREATE_INSTANCE)))
+        .addMethod(
+            getUpdateInstanceMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.UpdateInstanceRequest,
+                    com.google.longrunning.Operation>(service, METHODID_UPDATE_INSTANCE)))
+        .addMethod(
+            getDeleteInstanceMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.DeleteInstanceRequest,
+                    com.google.protobuf.Empty>(service, METHODID_DELETE_INSTANCE)))
+        .addMethod(
+            getSetIamPolicyMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<com.google.iam.v1.SetIamPolicyRequest, com.google.iam.v1.Policy>(
+                    service, METHODID_SET_IAM_POLICY)))
+        .addMethod(
+            getGetIamPolicyMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<com.google.iam.v1.GetIamPolicyRequest, com.google.iam.v1.Policy>(
+                    service, METHODID_GET_IAM_POLICY)))
+        .addMethod(
+            getTestIamPermissionsMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.iam.v1.TestIamPermissionsRequest,
+                    com.google.iam.v1.TestIamPermissionsResponse>(
+                    service, METHODID_TEST_IAM_PERMISSIONS)))
+        .build();
   }
 
   private abstract static class InstanceAdminBaseDescriptorSupplier
