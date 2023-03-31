@@ -75,12 +75,12 @@ public final class QueryPlanProto {
           + "\001(\t\022\r\n\005value\030\002 \001(\005:\0028\001\"8\n\004Kind\022\024\n\020KIND_U"
           + "NSPECIFIED\020\000\022\016\n\nRELATIONAL\020\001\022\n\n\006SCALAR\020\002"
           + "\"<\n\tQueryPlan\022/\n\nplan_nodes\030\001 \003(\0132\033.goog"
-          + "le.spanner.v1.PlanNodeB\264\001\n\025com.google.sp"
-          + "anner.v1B\016QueryPlanProtoP\001Z8google.golan"
-          + "g.org/genproto/googleapis/spanner/v1;spa"
-          + "nner\252\002\027Google.Cloud.Spanner.V1\312\002\027Google\\"
-          + "Cloud\\Spanner\\V1\352\002\032Google::Cloud::Spanne"
-          + "r::V1b\006proto3"
+          + "le.spanner.v1.PlanNodeB\261\001\n\025com.google.sp"
+          + "anner.v1B\016QueryPlanProtoP\001Z5cloud.google"
+          + ".com/go/spanner/apiv1/spannerpb;spannerp"
+          + "b\252\002\027Google.Cloud.Spanner.V1\312\002\027Google\\Clo"
+          + "ud\\Spanner\\V1\352\002\032Google::Cloud::Spanner::"
+          + "V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(

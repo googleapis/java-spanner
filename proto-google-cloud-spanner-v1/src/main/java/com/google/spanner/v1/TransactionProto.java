@@ -87,12 +87,12 @@ public final class TransactionProto {
           + "actionSelector\022;\n\nsingle_use\030\001 \001(\0132%.goo"
           + "gle.spanner.v1.TransactionOptionsH\000\022\014\n\002i"
           + "d\030\002 \001(\014H\000\0226\n\005begin\030\003 \001(\0132%.google.spanne"
-          + "r.v1.TransactionOptionsH\000B\n\n\010selectorB\266\001"
+          + "r.v1.TransactionOptionsH\000B\n\n\010selectorB\263\001"
           + "\n\025com.google.spanner.v1B\020TransactionProt"
-          + "oP\001Z8google.golang.org/genproto/googleap"
-          + "is/spanner/v1;spanner\252\002\027Google.Cloud.Spa"
-          + "nner.V1\312\002\027Google\\Cloud\\Spanner\\V1\352\002\032Goog"
-          + "le::Cloud::Spanner::V1b\006proto3"
+          + "oP\001Z5cloud.google.com/go/spanner/apiv1/s"
+          + "pannerpb;spannerpb\252\002\027Google.Cloud.Spanne"
+          + "r.V1\312\002\027Google\\Cloud\\Spanner\\V1\352\002\032Google:"
+          + ":Cloud::Spanner::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
