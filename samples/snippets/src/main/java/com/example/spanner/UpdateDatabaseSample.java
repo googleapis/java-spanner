@@ -47,7 +47,7 @@ public class UpdateDatabaseSample {
               DatabaseId.of(projectId, instanceId, databaseId))
           .enableDropProtection().build();
       OperationFuture<Database, UpdateDatabaseMetadata> operation = databaseAdminClient.updateDatabase(
-          update_to, DatabaseField.ENABLE_DROP_PROTECTION);
+          update_to, DatabaseField.DROP_PROTECTION);
       System.out.printf("Waiting for update operation for %s to complete...\n", databaseId);
       Database db = operation.get();
       System.out.printf("Updated database %s.\n", databaseId);

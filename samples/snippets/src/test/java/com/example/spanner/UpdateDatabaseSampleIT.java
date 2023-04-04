@@ -50,7 +50,7 @@ public class UpdateDatabaseSampleIT extends SampleTestBase {
             DatabaseId.of(projectId, instanceId, databaseId))
         .disableDropProtection().build();
     OperationFuture<Database, UpdateDatabaseMetadata> operation = databaseAdminClient.updateDatabase(
-        update_to, DatabaseField.ENABLE_DROP_PROTECTION);
+        update_to, DatabaseField.DROP_PROTECTION);
     Database db = operation.get();
     assertFalse(db.isDropProtectionEnabled());
   }
