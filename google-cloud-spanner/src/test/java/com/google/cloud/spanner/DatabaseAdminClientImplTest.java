@@ -259,10 +259,10 @@ public class DatabaseAdminClientImplTest {
         OperationFutureUtil.immediateOperationFuture(
             "updateDatabase", database_proto, UpdateDatabaseMetadata.getDefaultInstance());
     when(rpc.updateDatabase(
-            database_proto, DatabaseField.toFieldMask(DatabaseField.ENABLE_DROP_PROTECTION)))
+            database_proto, DatabaseField.toFieldMask(DatabaseField.DROP_PROTECTION)))
         .thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Database, UpdateDatabaseMetadata> op =
-        client.updateDatabase(database, DatabaseField.ENABLE_DROP_PROTECTION);
+        client.updateDatabase(database, DatabaseField.DROP_PROTECTION);
     assertTrue(op.isDone());
     assertEquals(op.get().getId().getName(), DB_NAME);
     assertTrue(op.get().isDropProtectionEnabled());

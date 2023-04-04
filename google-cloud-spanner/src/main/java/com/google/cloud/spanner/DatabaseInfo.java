@@ -30,7 +30,7 @@ public class DatabaseInfo {
 
   /** Represent an updatable field in a Cloud Spanner database. */
   public enum DatabaseField implements FieldSelector {
-    ENABLE_DROP_PROTECTION("enable_drop_protection");
+    DROP_PROTECTION("drop_protection");
 
     private final String selector;
 

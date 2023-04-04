@@ -290,7 +290,7 @@ public class ITDatabaseAdminTest {
     Database update_to =
         dbAdminClient.newDatabaseBuilder(database.getId()).enableDropProtection().build();
     OperationFuture<Database, UpdateDatabaseMetadata> op =
-        dbAdminClient.updateDatabase(update_to, DatabaseField.ENABLE_DROP_PROTECTION);
+        dbAdminClient.updateDatabase(update_to, DatabaseField.DROP_PROTECTION);
     Database updated = op.get();
     assertEquals(updated.getId().getName(), database.getId().getName());
     assertTrue(updated.isDropProtectionEnabled());
@@ -324,7 +324,7 @@ public class ITDatabaseAdminTest {
 
     // Disable drop protection for the database.
     update_to = dbAdminClient.newDatabaseBuilder(database.getId()).disableDropProtection().build();
-    op = dbAdminClient.updateDatabase(update_to, DatabaseField.ENABLE_DROP_PROTECTION);
+    op = dbAdminClient.updateDatabase(update_to, DatabaseField.DROP_PROTECTION);
     updated = op.get();
     assertEquals(updated.getId().getName(), database.getId().getName());
     assertFalse(updated.isDropProtectionEnabled());
