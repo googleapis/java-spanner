@@ -19,7 +19,7 @@ If you are using Maven with [BOM][libraries-bom], add this to your pom.xml file:
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>libraries-bom</artifactId>
-      <version>26.10.0</version>
+      <version>26.11.0</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -34,14 +34,15 @@ If you are using Maven with [BOM][libraries-bom], add this to your pom.xml file:
 
 ```
 
-If you are using Maven without BOM, add this to your dependencies:
+If you are using Maven without the BOM, add this to your dependencies:
 
+<!-- {x-version-update-start:google-cloud-spanner:released} -->
 
 ```xml
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>6.38.0</version>
+  <version>6.38.2</version>
 </dependency>
 
 ```
@@ -64,6 +65,7 @@ If you are using SBT, add this to your dependencies:
 ```Scala
 libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.38.2"
 ```
+<!-- {x-version-update-end} -->
 
 ## Authentication
 
@@ -417,7 +419,7 @@ Java is a registered trademark of Oracle and/or its affiliates.
 [developer-console]: https://console.developers.google.com/
 [create-project]: https://cloud.google.com/resource-manager/docs/creating-managing-projects
 [cloud-cli]: https://cloud.google.com/cli
-[troubleshooting]: https://github.com/googleapis/google-cloud-common/blob/main/troubleshooting/readme.md#troubleshooting
+[troubleshooting]: https://github.com/googleapis/google-cloud-java/blob/main/TROUBLESHOOTING.md
 [contributing]: https://github.com/googleapis/java-spanner/blob/main/CONTRIBUTING.md
 [code-of-conduct]: https://github.com/googleapis/java-spanner/blob/main/CODE_OF_CONDUCT.md#contributor-code-of-conduct
 [license]: https://github.com/googleapis/java-spanner/blob/main/LICENSE
