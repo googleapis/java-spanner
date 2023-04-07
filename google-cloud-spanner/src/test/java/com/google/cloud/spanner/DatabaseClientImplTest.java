@@ -84,6 +84,7 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -2950,7 +2951,7 @@ public class DatabaseClientImplTest {
         Statement.newBuilder("select id from test where b=@p1")
             .bind("p1")
             .toBytesArray(
-                ImmutableList.of(ByteArray.copyFrom("test1"), ByteArray.copyFrom("test2")))
+                Arrays.asList(ByteArray.copyFrom("test1"), null, ByteArray.copyFrom("test2")))
             .build();
     mockSpanner.putStatementResult(StatementResult.query(statement, SELECT1_RESULTSET));
     DatabaseClient client =
