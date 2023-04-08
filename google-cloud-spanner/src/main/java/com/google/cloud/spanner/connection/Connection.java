@@ -755,10 +755,10 @@ public interface Connection extends AutoCloseable {
 
   /**
    * Rolls back to the given savepoint. Rolling back to a savepoint undoes all changes and releases
-   * all locks that have been taken after the savepoint. Rolling back to a savepoint does not remove
-   * the savepoint from the transaction, and it is possible to roll back to the same savepoint
-   * multiple times. All savepoints that have been defined after the given savepoint are removed
-   * from the transaction.
+   * all internal locks that have been taken by the transaction after the savepoint. Rolling back to
+   * a savepoint does not remove the savepoint from the transaction, and it is possible to roll back
+   * to the same savepoint multiple times. All savepoints that have been defined after the given
+   * savepoint are removed from the transaction.
    *
    * @param name the name of the savepoint to roll back to.
    * @throws SpannerException if no savepoint with the given name exists.
