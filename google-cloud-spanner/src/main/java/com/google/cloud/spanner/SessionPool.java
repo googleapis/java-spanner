@@ -1099,6 +1099,10 @@ class SessionPool {
     private LeakedSessionException() {
       super("Session was checked out from the pool at " + clock.instant());
     }
+
+    private LeakedSessionException(String message) {
+      super(message);
+    }
   }
 
   private enum SessionState {
@@ -1131,7 +1135,9 @@ class SessionPool {
     }
 
     private void markCheckedOut() {
-      this.leakedException = new LeakedSessionException();
+      if (options.isTrackStackTraceOfSessionCheckout()) {
+        this.leakedException = new LeakedSessionException();
+      }
     }
 
     @Override
@@ -2323,6 +2329,16 @@ class SessionPool {
             throw session.leakedException;
           } else {
             logger.log(Level.WARNING, "Leaked session", session.leakedException);
+          }
+        } else {
+          String message =
+              "Leaked session. "
+                  + "Call SessionOptions.Builder#setTrackStackTraceOfSessionCheckout(true) to start "
+                  + "tracking the call stack trace of the thread that checked out the session.";
+          if (options.isFailOnSessionLeak()) {
+            throw new LeakedSessionException(message);
+          } else {
+            logger.log(Level.WARNING, message);
           }
         }
       }

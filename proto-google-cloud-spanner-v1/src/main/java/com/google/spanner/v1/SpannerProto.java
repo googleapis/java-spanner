@@ -348,14 +348,14 @@ public final class SpannerProto {
           + "ssions/*}:partitionRead:\001*\032w\312A\026spanner.g"
           + "oogleapis.com\322A[https://www.googleapis.c"
           + "om/auth/cloud-platform,https://www.googl"
-          + "eapis.com/auth/spanner.dataB\224\002\n\025com.goog"
-          + "le.spanner.v1B\014SpannerProtoP\001Z8google.go"
-          + "lang.org/genproto/googleapis/spanner/v1;"
-          + "spanner\252\002\027Google.Cloud.Spanner.V1\312\002\027Goog"
-          + "le\\Cloud\\Spanner\\V1\352\002\032Google::Cloud::Spa"
-          + "nner::V1\352A_\n\037spanner.googleapis.com/Data"
-          + "base\022<projects/{project}/instances/{inst"
-          + "ance}/databases/{database}P\010b\006proto3"
+          + "eapis.com/auth/spanner.dataB\221\002\n\025com.goog"
+          + "le.spanner.v1B\014SpannerProtoP\001Z5cloud.goo"
+          + "gle.com/go/spanner/apiv1/spannerpb;spann"
+          + "erpb\252\002\027Google.Cloud.Spanner.V1\312\002\027Google\\"
+          + "Cloud\\Spanner\\V1\352\002\032Google::Cloud::Spanne"
+          + "r::V1\352A_\n\037spanner.googleapis.com/Databas"
+          + "e\022<projects/{project}/instances/{instanc"
+          + "e}/databases/{database}P\010b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
