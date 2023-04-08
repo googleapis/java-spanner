@@ -1367,7 +1367,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                             (Iterable<LazyByteArray>)
                                 GrpcStruct.decodeArrayValue(
                                     com.google.cloud.spanner.Type.bytes(), value.getListValue()),
-                            LazyByteArray::getByteArray));
+                            lazyByteArray ->
+                                lazyByteArray == null ? null : lazyByteArray.getByteArray()));
                 break;
               case DATE:
                 builder
