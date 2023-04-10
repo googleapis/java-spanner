@@ -2038,7 +2038,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             "DirectedReadOptions can't be set for Read-Write or Partitioned DML transactions");
       }
     }
-    if (directedReadOptions != null) {
+    if (!request.hasDirectedReadOptions() && directedReadOptions != null) {
       return request.toBuilder().setDirectedReadOptions(directedReadOptions).build();
     }
     return request;
@@ -2052,7 +2052,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             "DirectedReadOptions can't be set for Read-Write or Partitioned DML transactions");
       }
     }
-    if (directedReadOptions != null) {
+    if (!request.hasDirectedReadOptions() && directedReadOptions != null) {
       return request.toBuilder().setDirectedReadOptions(directedReadOptions).build();
     }
     return request;

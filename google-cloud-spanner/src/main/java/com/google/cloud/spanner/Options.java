@@ -228,6 +228,10 @@ public final class Options implements Serializable {
     return new ValidateOnlyOption(validateOnly);
   }
 
+  public static DirectedReadOption directedReadOption(DirectedReadOptions directedReadOptions) {
+    return new DirectedReadOption(directedReadOptions);
+  }
+
   /** Option to request {@link CommitStats} for read/write transactions. */
   static final class CommitStatsOption extends InternalOption implements TransactionOption {
     @Override

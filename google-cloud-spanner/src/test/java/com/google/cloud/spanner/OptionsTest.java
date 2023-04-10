@@ -18,12 +18,16 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import com.google.spanner.v1.RequestOptions.Priority;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +36,12 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link Options}. */
 @RunWith(JUnit4.class)
 public class OptionsTest {
-
+  private static final DirectedReadOptions DIRECTED_READ_OPTIONS =
+      DirectedReadOptions
+          .newBuilder()
+          .setIncludeReplicas(IncludeReplicas.newBuilder().addReplicaSelections(
+              ReplicaSelection.newBuilder().setLocation("us-west1").build()))
+          .build();
   @Test
   public void negativeLimitsNotAllowed() {
     IllegalArgumentException e =
@@ -65,13 +74,14 @@ public class OptionsTest {
   public void allOptionsPresent() {
     Options options =
         Options.fromReadOptions(
-            Options.limit(10), Options.prefetchChunks(1), Options.dataBoostEnabled(true));
+            Options.limit(10), Options.prefetchChunks(1), Options.dataBoostEnabled(true), Options.directedReadOption(DIRECTED_READ_OPTIONS));
     assertThat(options.hasLimit()).isTrue();
     assertThat(options.limit()).isEqualTo(10);
     assertThat(options.hasPrefetchChunks()).isTrue();
     assertThat(options.prefetchChunks()).isEqualTo(1);
     assertThat(options.hasDataBoostEnabled()).isTrue();
     assertTrue(options.dataBoostEnabled());
+    assertEquals(options.directedReadOptions(), DIRECTED_READ_OPTIONS);
   }
 
   @Test
@@ -84,6 +94,7 @@ public class OptionsTest {
     assertThat(options.hasPriority()).isFalse();
     assertThat(options.hasTag()).isFalse();
     assertThat(options.hasDataBoostEnabled()).isFalse();
+    assertFalse(options.hasDirectedReadOptions());
     assertThat(options.toString()).isEqualTo("");
     assertThat(options.equals(options)).isTrue();
     assertThat(options.equals(null)).isFalse();
@@ -161,14 +172,14 @@ public class OptionsTest {
     boolean dataBoost = true;
     Options options =
         Options.fromReadOptions(
-            Options.limit(limit), Options.tag(tag), Options.dataBoostEnabled(true));
+            Options.limit(limit), Options.tag(tag), Options.dataBoostEnabled(true), Options.directedReadOption(DIRECTED_READ_OPTIONS));
 
     assertThat(options.toString())
         .isEqualTo(
-            "limit: " + limit + " " + "tag: " + tag + " " + "dataBoostEnabled: " + dataBoost + " ");
+            "limit: " + limit + " " + "tag: " + tag + " " + "dataBoostEnabled: " + dataBoost + " " + "directedReadOptions: " + DIRECTED_READ_OPTIONS + " ");
     assertThat(options.tag()).isEqualTo(tag);
     assertEquals(dataBoost, options.dataBoostEnabled());
-    assertThat(options.hashCode()).isEqualTo(-96091607);
+    assertEquals(DIRECTED_READ_OPTIONS, options.directedReadOptions());
   }
 
   @Test
@@ -199,7 +210,7 @@ public class OptionsTest {
     boolean dataBoost = true;
     Options options =
         Options.fromQueryOptions(
-            Options.prefetchChunks(chunks), Options.tag(tag), Options.dataBoostEnabled(true));
+            Options.prefetchChunks(chunks), Options.tag(tag), Options.dataBoostEnabled(true), Options.directedReadOption(DIRECTED_READ_OPTIONS));
     assertThat(options.toString())
         .isEqualTo(
             "prefetchChunks: "
@@ -210,11 +221,14 @@ public class OptionsTest {
                 + " "
                 + "dataBoostEnabled: "
                 + dataBoost
+                + " "
+                + "directedReadOptions: "
+                + DIRECTED_READ_OPTIONS
                 + " ");
     assertThat(options.prefetchChunks()).isEqualTo(chunks);
     assertThat(options.tag()).isEqualTo(tag);
     assertEquals(dataBoost, options.dataBoostEnabled());
-    assertThat(options.hashCode()).isEqualTo(1274581983);
+    assertEquals(DIRECTED_READ_OPTIONS, options.directedReadOptions());
   }
 
   @Test
