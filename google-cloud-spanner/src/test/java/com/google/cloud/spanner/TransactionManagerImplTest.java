@@ -286,7 +286,8 @@ public class TransactionManagerImplTest {
                         .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
                         .build()));
     final AtomicInteger transactionsStarted = new AtomicInteger();
-    when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap()))
+    when(rpc.executeQuery(
+            Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap(), Mockito.anyBoolean()))
         .thenAnswer(
             invocation -> {
               ResultSet.Builder builder =
@@ -334,7 +335,9 @@ public class TransactionManagerImplTest {
       verify(rpc, Mockito.never())
           .beginTransaction(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
       // We should have 2 ExecuteSql requests.
-      verify(rpc, times(2)).executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap());
+      verify(rpc, times(2))
+          .executeQuery(
+              Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap(), Mockito.anyBoolean());
       // But only 1 with a BeginTransaction.
       assertThat(transactionsStarted.get()).isEqualTo(1);
     }

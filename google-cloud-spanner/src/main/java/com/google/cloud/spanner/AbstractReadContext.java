@@ -598,6 +598,10 @@ abstract class AbstractReadContext
     if (options.hasDataBoostEnabled()) {
       builder.setDataBoostEnabled(options.dataBoostEnabled());
     }
+    if (options.hasDirectedReadOptions()) {
+      SpannerUtil.verifyDirectedReadOptions(options.directedReadOptions());
+      builder.setDirectedReadOptions(options.directedReadOptions());
+    }
     builder.setSeqno(getSeqNo());
     builder.setQueryOptions(buildQueryOptions(statement.getQueryOptions()));
     builder.setRequestOptions(buildRequestOptions(options));
@@ -667,7 +671,7 @@ abstract class AbstractReadContext
               request.setTransaction(selector);
             }
             SpannerRpc.StreamingCall call =
-                rpc.executeQuery(request.build(), stream.consumer(), session.getOptions());
+                rpc.executeQuery(request.build(), stream.consumer(), session.getOptions(), true);
             call.request(prefetchChunks);
             stream.setCall(call, request.getTransaction().hasBegin());
             return stream;
@@ -779,6 +783,10 @@ abstract class AbstractReadContext
     if (readOptions.hasDataBoostEnabled()) {
       builder.setDataBoostEnabled(readOptions.dataBoostEnabled());
     }
+    if (readOptions.hasDirectedReadOptions()) {
+      SpannerUtil.verifyDirectedReadOptions(readOptions.directedReadOptions());
+      builder.setDirectedReadOptions(readOptions.directedReadOptions());
+    }
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;
     ResumableStreamIterator stream =
@@ -798,7 +806,7 @@ abstract class AbstractReadContext
             }
             builder.setRequestOptions(buildRequestOptions(readOptions));
             SpannerRpc.StreamingCall call =
-                rpc.read(builder.build(), stream.consumer(), session.getOptions());
+                rpc.read(builder.build(), stream.consumer(), session.getOptions(), true);
             call.request(prefetchChunks);
             stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
             return stream;

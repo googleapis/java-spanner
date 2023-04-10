@@ -320,12 +320,16 @@ public interface SpannerRpc extends ServiceRpc {
       throws SpannerException;
 
   StreamingCall read(
-      ReadRequest request, ResultStreamConsumer consumer, @Nullable Map<Option, ?> options);
+      ReadRequest request,
+      ResultStreamConsumer consumer,
+      @Nullable Map<Option, ?> options,
+      boolean readOnly);
 
-  ResultSet executeQuery(ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
+  ResultSet executeQuery(
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean readOnly);
 
   ApiFuture<ResultSet> executeQueryAsync(
-      ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean readOnly);
 
   ResultSet executePartitionedDml(ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
 
@@ -335,7 +339,10 @@ public interface SpannerRpc extends ServiceRpc {
       ExecuteSqlRequest request, @Nullable Map<Option, ?> options, Duration timeout);
 
   StreamingCall executeQuery(
-      ExecuteSqlRequest request, ResultStreamConsumer consumer, @Nullable Map<Option, ?> options);
+      ExecuteSqlRequest request,
+      ResultStreamConsumer consumer,
+      @Nullable Map<Option, ?> options,
+      boolean readOnly);
 
   ExecuteBatchDmlResponse executeBatchDml(ExecuteBatchDmlRequest build, Map<Option, ?> options);
 

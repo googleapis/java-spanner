@@ -100,7 +100,8 @@ public class TransactionRunnerImplTest {
     MockitoAnnotations.initMocks(this);
     firstRun = true;
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
-    when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap()))
+    when(rpc.executeQuery(
+            Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap(), Mockito.anyBoolean()))
         .thenAnswer(
             invocation -> {
               ResultSet.Builder builder =

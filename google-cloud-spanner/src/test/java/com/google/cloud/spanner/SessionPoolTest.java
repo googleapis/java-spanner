@@ -763,9 +763,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(rpc.asyncDeleteSession(Mockito.anyString(), Mockito.anyMap()))
           .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
       when(rpc.executeQuery(
-              any(ExecuteSqlRequest.class), any(ResultStreamConsumer.class), any(Map.class)))
+              any(ExecuteSqlRequest.class),
+              any(ResultStreamConsumer.class),
+              any(Map.class),
+              any(Boolean.class)))
           .thenReturn(closedStreamingCall);
-      when(rpc.executeQuery(any(ExecuteSqlRequest.class), any(Map.class)))
+      when(rpc.executeQuery(any(ExecuteSqlRequest.class), any(Map.class), any(Boolean.class)))
           .thenThrow(sessionNotFound);
       when(rpc.executeBatchDml(any(ExecuteBatchDmlRequest.class), any(Map.class)))
           .thenThrow(sessionNotFound);

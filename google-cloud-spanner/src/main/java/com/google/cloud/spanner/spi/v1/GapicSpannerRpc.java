@@ -160,6 +160,7 @@ import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -304,6 +305,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final double ADMINISTRATIVE_REQUESTS_RATE_LIMIT = 1.0D;
   private static final ConcurrentMap<String, RateLimiter> ADMINISTRATIVE_REQUESTS_RATE_LIMITERS =
       new ConcurrentHashMap<>();
+  private final DirectedReadOptions directedReadOptions;
 
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
@@ -354,6 +356,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             internalHeaderProviderBuilder.getResourceHeaderKey());
     this.callCredentialsProvider = options.getCallCredentialsProvider();
     this.compressorName = options.getCompressorName();
+    this.directedReadOptions = options.getDirectedReadOptions();
 
     if (initializeStubs) {
       // Create a managed executor provider.
@@ -1636,7 +1639,11 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public StreamingCall read(
-      ReadRequest request, ResultStreamConsumer consumer, @Nullable Map<Option, ?> options) {
+      ReadRequest request,
+      ResultStreamConsumer consumer,
+      @Nullable Map<Option, ?> options,
+      boolean readOnly) {
+    request = validateReadRequest(request, readOnly);
     GrpcCallContext context =
         newCallContext(options, request.getSession(), request, SpannerGrpc.getReadMethod());
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
@@ -1658,13 +1665,15 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public ResultSet executeQuery(ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
-    return get(executeQueryAsync(request, options));
+  public ResultSet executeQuery(
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean readOnly) {
+    return get(executeQueryAsync(request, options, readOnly));
   }
 
   @Override
   public ApiFuture<ResultSet> executeQueryAsync(
-      ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean readOnly) {
+    request = validateExecuteSqlRequest(request, readOnly);
     GrpcCallContext context =
         newCallContext(options, request.getSession(), request, SpannerGrpc.getExecuteSqlMethod());
     return spannerStub.executeSqlCallable().futureCall(request, context);
@@ -1673,6 +1682,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public ResultSet executePartitionedDml(
       ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
+    request = validateExecuteSqlRequest(request, false);
     GrpcCallContext context =
         newCallContext(options, request.getSession(), request, SpannerGrpc.getExecuteSqlMethod());
     return get(partitionedDmlStub.executeSqlCallable().futureCall(request, context));
@@ -1686,6 +1696,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public ServerStream<PartialResultSet> executeStreamingPartitionedDml(
       ExecuteSqlRequest request, Map<Option, ?> options, Duration timeout) {
+    request = validateExecuteSqlRequest(request, false);
     GrpcCallContext context =
         newCallContext(
             options, request.getSession(), request, SpannerGrpc.getExecuteStreamingSqlMethod());
@@ -1696,7 +1707,11 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public StreamingCall executeQuery(
-      ExecuteSqlRequest request, ResultStreamConsumer consumer, @Nullable Map<Option, ?> options) {
+      ExecuteSqlRequest request,
+      ResultStreamConsumer consumer,
+      @Nullable Map<Option, ?> options,
+      boolean readOnly) {
+    request = validateExecuteSqlRequest(request, readOnly);
     GrpcCallContext context =
         newCallContext(
             options, request.getSession(), request, SpannerGrpc.getExecuteStreamingSqlMethod());
@@ -2013,5 +2028,33 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static Duration systemProperty(String name, int defaultValue) {
     String stringValue = System.getProperty(name, "");
     return Duration.ofSeconds(stringValue.isEmpty() ? defaultValue : Integer.parseInt(stringValue));
+  }
+
+  private ExecuteSqlRequest validateExecuteSqlRequest(ExecuteSqlRequest request, boolean readOnly) {
+    if (!readOnly) {
+      if (request.hasDirectedReadOptions() || (directedReadOptions != null)) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.FAILED_PRECONDITION,
+            "DirectedReadOptions can't be set for Read-Write or Partitioned DML transactions");
+      }
+    }
+    if (directedReadOptions != null) {
+      return request.toBuilder().setDirectedReadOptions(directedReadOptions).build();
+    }
+    return request;
+  }
+
+  private ReadRequest validateReadRequest(ReadRequest request, boolean readOnly) {
+    if (!readOnly) {
+      if (request.hasDirectedReadOptions() || (directedReadOptions != null)) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.FAILED_PRECONDITION,
+            "DirectedReadOptions can't be set for Read-Write or Partitioned DML transactions");
+      }
+    }
+    if (directedReadOptions != null) {
+      return request.toBuilder().setDirectedReadOptions(directedReadOptions).build();
+    }
+    return request;
   }
 }

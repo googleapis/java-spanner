@@ -47,6 +47,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.SpannerGrpc;
@@ -132,6 +133,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final CallCredentialsProvider callCredentialsProvider;
   private final CloseableExecutorProvider asyncExecutorProvider;
   private final String compressorName;
+  private final DirectedReadOptions directedReadOptions;
 
   /**
    * Interface that can be used to provide {@link CallCredentials} instead of {@link Credentials} to
@@ -600,6 +602,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     callCredentialsProvider = builder.callCredentialsProvider;
     asyncExecutorProvider = builder.asyncExecutorProvider;
     compressorName = builder.compressorName;
+    directedReadOptions = builder.directedReadOptions;
   }
 
   /**
@@ -700,6 +703,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private CloseableExecutorProvider asyncExecutorProvider;
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
+    private DirectedReadOptions directedReadOptions;
 
     private Builder() {
       // Manually set retry and polling settings that work.
@@ -1081,6 +1085,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    public Builder setDirectedReadOptions(DirectedReadOptions directedReadOptions) {
+      Preconditions.checkNotNull(directedReadOptions, "DirectedReadOptions cannot be null");
+      this.directedReadOptions = directedReadOptions;
+      return this;
+    }
+
     /**
      * Sets the {@link ExecutorProvider} to use for high-level async calls that need an executor,
      * such as fetching results for an {@link AsyncResultSet}.
@@ -1173,6 +1183,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       if (this.numChannels == null) {
         this.numChannels =
             this.grpcGcpExtensionEnabled ? GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
+      }
+      if (directedReadOptions != null) {
+        SpannerUtil.verifyDirectedReadOptions(directedReadOptions);
       }
 
       return new SpannerOptions(this);
@@ -1289,6 +1302,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public String getCompressorName() {
     return compressorName;
+  }
+
+  public DirectedReadOptions getDirectedReadOptions() {
+    return directedReadOptions;
   }
 
   /** Returns the default query options to use for the specific database. */

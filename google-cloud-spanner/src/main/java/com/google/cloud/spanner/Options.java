@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.BetaApi;
 import com.google.common.base.Preconditions;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.io.Serializable;
 import java.util.Objects;
@@ -328,6 +329,19 @@ public final class Options implements Serializable {
     }
   }
 
+  static final class DirectedReadOption extends InternalOption implements ReadAndQueryOption {
+    private final DirectedReadOptions directedReadOptions;
+
+    DirectedReadOption(DirectedReadOptions directedReadOptions) {
+      this.directedReadOptions = directedReadOptions;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.directedReadOptions = directedReadOptions;
+    }
+  }
+
   private boolean withCommitStats;
   private Long limit;
   private Integer prefetchChunks;
@@ -341,6 +355,7 @@ public final class Options implements Serializable {
   private Boolean validateOnly;
   private Boolean withOptimisticLock;
   private Boolean dataBoostEnabled;
+  private DirectedReadOptions directedReadOptions;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -441,6 +456,14 @@ public final class Options implements Serializable {
     return dataBoostEnabled;
   }
 
+  boolean hasDirectedReadOptions() {
+    return directedReadOptions != null;
+  }
+
+  DirectedReadOptions directedReadOptions() {
+    return directedReadOptions;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -480,6 +503,9 @@ public final class Options implements Serializable {
     if (dataBoostEnabled != null) {
       b.append("dataBoostEnabled: ").append(dataBoostEnabled).append(' ');
     }
+    if (directedReadOptions != null) {
+      b.append("directedReadOptions: ").append(directedReadOptions).append(' ');
+    }
     return b.toString();
   }
 
@@ -515,7 +541,8 @@ public final class Options implements Serializable {
         && Objects.equals(etag(), that.etag())
         && Objects.equals(validateOnly(), that.validateOnly())
         && Objects.equals(withOptimisticLock(), that.withOptimisticLock())
-        && Objects.equals(dataBoostEnabled(), that.dataBoostEnabled());
+        && Objects.equals(dataBoostEnabled(), that.dataBoostEnabled())
+        && Objects.equals(directedReadOptions(), that.directedReadOptions());
   }
 
   @Override
@@ -559,6 +586,9 @@ public final class Options implements Serializable {
     }
     if (dataBoostEnabled != null) {
       result = 31 * result + dataBoostEnabled.hashCode();
+    }
+    if (directedReadOptions != null) {
+      result = 31 * result + directedReadOptions.hashCode();
     }
     return result;
   }
