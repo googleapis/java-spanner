@@ -233,6 +233,16 @@ public interface SpannerRpc extends ServiceRpc {
 
   Database getDatabase(String databaseName) throws SpannerException;
 
+  /**
+   * Updates the specified fields of a Cloud Spanner database.
+   *
+   * @param database The database proto whose field values will be used as the new values in the
+   *     stored database.
+   * @param fieldMask The fields to update. Currently, only the "enable_drop_protection" field of
+   *     the database supports updates.
+   * @return an `OperationFuture` that can be used to track the status of the update.
+   * @throws SpannerException
+   */
   OperationFuture<Database, UpdateDatabaseMetadata> updateDatabase(
       Database database, FieldMask fieldMask) throws SpannerException;
 

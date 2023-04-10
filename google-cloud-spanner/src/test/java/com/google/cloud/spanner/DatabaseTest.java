@@ -67,9 +67,9 @@ public class DatabaseTest {
   private static final String DEFAULT_LEADER = "default-leader";
   private static final DatabaseDialect DEFAULT_DIALECT = DatabaseDialect.GOOGLE_STANDARD_SQL;
 
-  private static final boolean DEFAULT_DROP_PROTECTION = true;
+  private static final boolean DROP_PROTECTION_ENABLED = true;
 
-  private static final boolean DEFAULT_RECONCILING = true;
+  private static final boolean RECONCILING = true;
 
   @Mock DatabaseAdminClient dbClient;
 
@@ -131,8 +131,8 @@ public class DatabaseTest {
     assertEquals(ENCRYPTION_CONFIG, database.getEncryptionConfig());
     assertEquals(DEFAULT_LEADER, database.getDefaultLeader());
     assertEquals(DEFAULT_DIALECT, database.getDatabaseDialect());
-    assertEquals(DEFAULT_DROP_PROTECTION, database.getEnableDropProtection());
-    assertEquals(DEFAULT_RECONCILING, database.getReconciling());
+    assertEquals(DROP_PROTECTION_ENABLED, database.getEnableDropProtection());
+    assertEquals(RECONCILING, database.getReconciling());
   }
 
   @Test
@@ -251,8 +251,8 @@ public class DatabaseTest {
         .addAllEncryptionInfo(ENCRYPTION_INFOS)
         .setDefaultLeader(DEFAULT_LEADER)
         .setDatabaseDialect(DEFAULT_DIALECT)
-        .setEnableDropProtection(DEFAULT_DROP_PROTECTION)
-        .setReconciling(DEFAULT_RECONCILING)
+        .setEnableDropProtection(DROP_PROTECTION_ENABLED)
+        .setReconciling(RECONCILING)
         .build();
   }
 }
