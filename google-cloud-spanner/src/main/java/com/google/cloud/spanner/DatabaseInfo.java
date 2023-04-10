@@ -30,7 +30,7 @@ public class DatabaseInfo {
 
   /** Represent an updatable field in a Cloud Spanner database. */
   public enum DatabaseField implements FieldSelector {
-    DROP_PROTECTION("drop_protection");
+    DROP_PROTECTION("enable_drop_protection");
 
     private final String selector;
 
@@ -349,7 +349,6 @@ public class DatabaseInfo {
     return dialect;
   }
 
-  /** @return */
   public boolean isDropProtectionEnabled() {
     return dropProtectionEnabled;
   }
@@ -404,7 +403,7 @@ public class DatabaseInfo {
   @Override
   public String toString() {
     return String.format(
-        "Database[%s, %s, %s, %s, %s, %s, %s, %s, %s %d %d]",
+        "Database[%s, %s, %s, %s, %s, %s, %s, %s, %s %s %s]",
         id.getName(),
         state,
         createTime,

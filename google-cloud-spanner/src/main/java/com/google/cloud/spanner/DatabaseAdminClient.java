@@ -380,13 +380,15 @@ public interface DatabaseAdminClient {
    * <p>Example of updating a database.
    *
    * <pre>{@code
+   * String projectId = my_project_id;
+   * String instanceId = my_instance_id;
    * String databaseId = my_database_id;
-   * DatabaseInfo to_update =
-   *    DatabaseInfo.newBuilder(DatabaseId.of(databaseId))
-   *        .enableDropProtection();
-   * OperationFuture<Database, UpdateDatabaseMetadata> op =
-   *    dbAdminClient.updateDatabase(to_update, DatabaseInfo.DatabaseField.ENABLE_DROP_PROTECTION);
-   * Database db = op.waitFor().getResult();
+   * Database databaseToUpdate = databaseAdminClient.newDatabaseBuilder(
+   *         DatabaseId.of(projectId, instanceId, databaseId))
+   *      .enableDropProtection().build();
+   * OperationFuture<Database, UpdateDatabaseMetadata> op = databaseAdminClient.updateDatabase(
+   *           databaseToUpdate, DatabaseField.DROP_PROTECTION);
+   * Database updateDatabase = op.get(5, TimeUnit.MINUTES);
    * }</pre>
    *
    * @param database The database to update to. The current field values of the database will be

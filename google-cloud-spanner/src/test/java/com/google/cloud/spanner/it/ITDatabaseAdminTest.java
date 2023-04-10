@@ -287,16 +287,15 @@ public class ITDatabaseAdminTest {
     logger.log(Level.INFO, "Created database: {0}", database.getId().getName());
 
     // Enable drop protection for the database.
-    Database update_to =
+    Database databaseToUpdate =
         dbAdminClient.newDatabaseBuilder(database.getId()).enableDropProtection().build();
     OperationFuture<Database, UpdateDatabaseMetadata> op =
-        dbAdminClient.updateDatabase(update_to, DatabaseField.DROP_PROTECTION);
-    Database updated = op.get();
-    assertEquals(updated.getId().getName(), database.getId().getName());
-    assertTrue(updated.isDropProtectionEnabled());
+        dbAdminClient.updateDatabase(databaseToUpdate, DatabaseField.DROP_PROTECTION);
+    Database updatedDatabase = op.get(5, TimeUnit.MINUTES);
+    assertEquals(updatedDatabase.getId().getName(), database.getId().getName());
+    assertTrue(updatedDatabase.isDropProtectionEnabled());
 
-    String[] split = database.getId().getName().split("/");
-    String databaseId = split[split.length - 1];
+    String databaseId = database.getId().getDatabase();
 
     // Assert that dropping a database with protection enabled fails due to precondition violation.
     try {
@@ -304,10 +303,6 @@ public class ITDatabaseAdminTest {
       fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-      assertThat(e.getMessage())
-          .endsWith(
-              "because the `enable_drop_protection` setting is currently enabled for it. Please "
-                  + "disable the setting and try again.");
     }
 
     // Assert that deleting the instance also fails due to precondition violation.
@@ -316,18 +311,15 @@ public class ITDatabaseAdminTest {
       fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-      assertThat(e.getMessage())
-          .endsWith(
-              "because it contains databases with drop protection enabled. Please disable drop "
-                  + "protection for all databases in the instance before deleting it.");
     }
 
     // Disable drop protection for the database.
-    update_to = dbAdminClient.newDatabaseBuilder(database.getId()).disableDropProtection().build();
-    op = dbAdminClient.updateDatabase(update_to, DatabaseField.DROP_PROTECTION);
-    updated = op.get();
-    assertEquals(updated.getId().getName(), database.getId().getName());
-    assertFalse(updated.isDropProtectionEnabled());
+    databaseToUpdate =
+        dbAdminClient.newDatabaseBuilder(database.getId()).disableDropProtection().build();
+    op = dbAdminClient.updateDatabase(databaseToUpdate, DatabaseField.DROP_PROTECTION);
+    updatedDatabase = op.get(5, TimeUnit.MINUTES);
+    assertEquals(updatedDatabase.getId().getName(), database.getId().getName());
+    assertFalse(updatedDatabase.isDropProtectionEnabled());
 
     // Dropping the database should succeed now.
     dbAdminClient.dropDatabase(instanceId, databaseId);

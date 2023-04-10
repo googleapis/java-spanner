@@ -216,9 +216,6 @@ public class Database extends DatabaseInfo {
   }
 
   public com.google.spanner.admin.database.v1.Database toProto() {
-    if (getProto() != null) {
-      return getProto();
-    }
     com.google.spanner.admin.database.v1.Database.Builder builder =
         com.google.spanner.admin.database.v1.Database.newBuilder()
             .setName(getId().getName())

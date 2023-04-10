@@ -254,12 +254,12 @@ public class DatabaseAdminClientImplTest {
   public void updateDatabase() throws Exception {
     com.google.cloud.spanner.Database database =
         client.newDatabaseBuilder(DatabaseId.of(DB_NAME)).enableDropProtection().build();
-    Database database_proto = database.toProto();
+    Database databaseProto = database.toProto();
     OperationFuture<Database, UpdateDatabaseMetadata> rawOperationFuture =
         OperationFutureUtil.immediateOperationFuture(
-            "updateDatabase", database_proto, UpdateDatabaseMetadata.getDefaultInstance());
+            "updateDatabase", databaseProto, UpdateDatabaseMetadata.getDefaultInstance());
     when(rpc.updateDatabase(
-            database_proto, DatabaseField.toFieldMask(DatabaseField.DROP_PROTECTION)))
+            databaseProto, DatabaseField.toFieldMask(DatabaseField.DROP_PROTECTION)))
         .thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Database, UpdateDatabaseMetadata> op =
         client.updateDatabase(database, DatabaseField.DROP_PROTECTION);
