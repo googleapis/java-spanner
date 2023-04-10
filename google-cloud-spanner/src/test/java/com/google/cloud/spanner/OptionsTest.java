@@ -37,11 +37,13 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class OptionsTest {
   private static final DirectedReadOptions DIRECTED_READ_OPTIONS =
-      DirectedReadOptions
-          .newBuilder()
-          .setIncludeReplicas(IncludeReplicas.newBuilder().addReplicaSelections(
-              ReplicaSelection.newBuilder().setLocation("us-west1").build()))
+      DirectedReadOptions.newBuilder()
+          .setIncludeReplicas(
+              IncludeReplicas.newBuilder()
+                  .addReplicaSelections(
+                      ReplicaSelection.newBuilder().setLocation("us-west1").build()))
           .build();
+
   @Test
   public void negativeLimitsNotAllowed() {
     IllegalArgumentException e =
@@ -74,7 +76,10 @@ public class OptionsTest {
   public void allOptionsPresent() {
     Options options =
         Options.fromReadOptions(
-            Options.limit(10), Options.prefetchChunks(1), Options.dataBoostEnabled(true), Options.directedReadOption(DIRECTED_READ_OPTIONS));
+            Options.limit(10),
+            Options.prefetchChunks(1),
+            Options.dataBoostEnabled(true),
+            Options.directedReadOption(DIRECTED_READ_OPTIONS));
     assertThat(options.hasLimit()).isTrue();
     assertThat(options.limit()).isEqualTo(10);
     assertThat(options.hasPrefetchChunks()).isTrue();
@@ -172,11 +177,25 @@ public class OptionsTest {
     boolean dataBoost = true;
     Options options =
         Options.fromReadOptions(
-            Options.limit(limit), Options.tag(tag), Options.dataBoostEnabled(true), Options.directedReadOption(DIRECTED_READ_OPTIONS));
+            Options.limit(limit),
+            Options.tag(tag),
+            Options.dataBoostEnabled(true),
+            Options.directedReadOption(DIRECTED_READ_OPTIONS));
 
     assertThat(options.toString())
         .isEqualTo(
-            "limit: " + limit + " " + "tag: " + tag + " " + "dataBoostEnabled: " + dataBoost + " " + "directedReadOptions: " + DIRECTED_READ_OPTIONS + " ");
+            "limit: "
+                + limit
+                + " "
+                + "tag: "
+                + tag
+                + " "
+                + "dataBoostEnabled: "
+                + dataBoost
+                + " "
+                + "directedReadOptions: "
+                + DIRECTED_READ_OPTIONS
+                + " ");
     assertThat(options.tag()).isEqualTo(tag);
     assertEquals(dataBoost, options.dataBoostEnabled());
     assertEquals(DIRECTED_READ_OPTIONS, options.directedReadOptions());
@@ -210,7 +229,10 @@ public class OptionsTest {
     boolean dataBoost = true;
     Options options =
         Options.fromQueryOptions(
-            Options.prefetchChunks(chunks), Options.tag(tag), Options.dataBoostEnabled(true), Options.directedReadOption(DIRECTED_READ_OPTIONS));
+            Options.prefetchChunks(chunks),
+            Options.tag(tag),
+            Options.dataBoostEnabled(true),
+            Options.directedReadOption(DIRECTED_READ_OPTIONS));
     assertThat(options.toString())
         .isEqualTo(
             "prefetchChunks: "
