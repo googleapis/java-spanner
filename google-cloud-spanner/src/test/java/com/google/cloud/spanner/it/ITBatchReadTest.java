@@ -297,8 +297,8 @@ public class ITBatchReadTest {
 
   @Test
   public void dataBoostQuery() {
-    // ToDo: Remove the following check before GA
-    assumeFalse("Data Boost IT Tests are disabled till GA", true);
+    // TODO: Remove the following check during GA
+    assumeFalse("DataBoost feature is not yet generally available" true);
     assumeFalse("Emulator does not support data boost query", isUsingEmulator());
     BitSet seenRows = new BitSet(numRows);
     TimestampBound bound = getRandomBound();
