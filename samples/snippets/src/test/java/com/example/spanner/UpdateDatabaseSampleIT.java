@@ -32,26 +32,25 @@ public class UpdateDatabaseSampleIT extends SampleTestBase {
   public void testUpdateDatabase() throws Exception {
     // Create database
     final String databaseId = idGenerator.generateDatabaseId();
-    databaseAdminClient.createDatabase(instanceId, databaseId, Collections.emptyList())
+    databaseAdminClient
+        .createDatabase(instanceId, databaseId, Collections.emptyList())
         .get(5, TimeUnit.MINUTES);
 
     // Runs sample
-    final String out = SampleRunner.runSample(() -> UpdateDatabaseSample
-        .updateDatabase(projectId, instanceId, databaseId)
-    );
+    final String out =
+        SampleRunner.runSample(
+            () -> UpdateDatabaseSample.updateDatabase(projectId, instanceId, databaseId));
 
     DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
     assertTrue(
         "Expected that database would have been updated. Output received was " + out,
-        out.contains(String.format("Updated database %s", dbId))
-    );
+        out.contains(String.format("Updated database %s", dbId)));
 
     // Cleanup
-    Database databaseToUpdate = databaseAdminClient.newDatabaseBuilder(
-            dbId)
-        .disableDropProtection().build();
-    OperationFuture<Database, UpdateDatabaseMetadata> operation = databaseAdminClient.updateDatabase(
-        databaseToUpdate, DatabaseField.DROP_PROTECTION);
+    Database databaseToUpdate =
+        databaseAdminClient.newDatabaseBuilder(dbId).disableDropProtection().build();
+    OperationFuture<Database, UpdateDatabaseMetadata> operation =
+        databaseAdminClient.updateDatabase(databaseToUpdate, DatabaseField.DROP_PROTECTION);
     Database updatedDb = operation.get(5, TimeUnit.MINUTES);
     assertFalse(updatedDb.isDropProtectionEnabled());
   }

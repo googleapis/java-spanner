@@ -16,12 +16,11 @@
 
 package com.example.spanner;
 
-//[START spanner_update_database]
+// [START spanner_update_database]
 
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.DatabaseInfo.DatabaseField;
 import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
-import io.grpc.netty.shaded.io.netty.util.Timeout;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -36,22 +35,17 @@ public class UpdateDatabaseSample {
     updateDatabase(projectId, instanceId, databaseId);
   }
 
-  static void updateDatabase(
-      String projectId, String instanceId, String databaseId) {
-    try (Spanner spanner = SpannerOptions
-        .newBuilder()
-        .setProjectId(projectId)
-        .build()
-        .getService()) {
+  static void updateDatabase(String projectId, String instanceId, String databaseId) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
 
       // Enable drop protection
       DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
-      Database databaseToUpdate = databaseAdminClient.newDatabaseBuilder(
-              dbId)
-          .enableDropProtection().build();
-      OperationFuture<Database, UpdateDatabaseMetadata> operation = databaseAdminClient.updateDatabase(
-          databaseToUpdate, DatabaseField.DROP_PROTECTION);
+      Database databaseToUpdate =
+          databaseAdminClient.newDatabaseBuilder(dbId).enableDropProtection().build();
+      OperationFuture<Database, UpdateDatabaseMetadata> operation =
+          databaseAdminClient.updateDatabase(databaseToUpdate, DatabaseField.DROP_PROTECTION);
       System.out.printf("Waiting for update operation for %s to complete...\n", dbId);
       Database updatedDb = operation.get(5, TimeUnit.MINUTES);
       System.out.printf("Updated database %s.\n", updatedDb.getId().getName());
@@ -65,4 +59,4 @@ public class UpdateDatabaseSample {
     }
   }
 }
-//[END spanner_update_database]
+// [END spanner_update_database]
