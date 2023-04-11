@@ -40,18 +40,19 @@ public class UpdateDatabaseSampleIT extends SampleTestBase {
         .updateDatabase(projectId, instanceId, databaseId)
     );
 
+    DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
     assertTrue(
         "Expected that database would have been updated. Output received was " + out,
-        out.contains(String.format("Updated database %s", databaseId))
+        out.contains(String.format("Updated database %s", dbId))
     );
 
     // Cleanup
-    Database update_to = databaseAdminClient.newDatabaseBuilder(
-            DatabaseId.of(projectId, instanceId, databaseId))
+    Database databaseToUpdate = databaseAdminClient.newDatabaseBuilder(
+            dbId)
         .disableDropProtection().build();
     OperationFuture<Database, UpdateDatabaseMetadata> operation = databaseAdminClient.updateDatabase(
-        update_to, DatabaseField.DROP_PROTECTION);
-    Database db = operation.get();
-    assertFalse(db.isDropProtectionEnabled());
+        databaseToUpdate, DatabaseField.DROP_PROTECTION);
+    Database updatedDb = operation.get(5, TimeUnit.MINUTES);
+    assertFalse(updatedDb.isDropProtectionEnabled());
   }
 }

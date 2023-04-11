@@ -21,7 +21,10 @@ package com.example.spanner;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.DatabaseInfo.DatabaseField;
 import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+import io.grpc.netty.shaded.io.netty.util.Timeout;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class UpdateDatabaseSample {
 
@@ -43,17 +46,18 @@ public class UpdateDatabaseSample {
       final DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
 
       // Enable drop protection
-      Database update_to = databaseAdminClient.newDatabaseBuilder(
-              DatabaseId.of(projectId, instanceId, databaseId))
+      DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
+      Database databaseToUpdate = databaseAdminClient.newDatabaseBuilder(
+              dbId)
           .enableDropProtection().build();
       OperationFuture<Database, UpdateDatabaseMetadata> operation = databaseAdminClient.updateDatabase(
-          update_to, DatabaseField.DROP_PROTECTION);
-      System.out.printf("Waiting for update operation for %s to complete...\n", databaseId);
-      Database db = operation.get();
-      System.out.printf("Updated database %s.\n", databaseId);
-    } catch (ExecutionException e) {
+          databaseToUpdate, DatabaseField.DROP_PROTECTION);
+      System.out.printf("Waiting for update operation for %s to complete...\n", dbId);
+      Database updatedDb = operation.get(5, TimeUnit.MINUTES);
+      System.out.printf("Updated database %s.\n", updatedDb.getId().getName());
+    } catch (ExecutionException | TimeoutException e) {
       // If the operation failed during execution, expose the cause.
-      throw (SpannerException) e.getCause();
+      throw SpannerExceptionFactory.asSpannerException(e.getCause());
     } catch (InterruptedException e) {
       // Throw when a thread is waiting, sleeping, or otherwise occupied,
       // and the thread is interrupted, either before or during the activity.
