@@ -117,8 +117,8 @@ public class DatabaseTest {
         EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME), database.getEncryptionConfig());
     assertEquals(DEFAULT_LEADER, database.getDefaultLeader());
     assertEquals(Dialect.GOOGLE_STANDARD_SQL, database.getDialect());
-    assertEquals(DEFAULT_DROP_PROTECTION, database.isDropProtectionEnabled());
-    assertEquals(DEFAULT_RECONCILING, database.getReconciling());
+    assertEquals(DROP_PROTECTION_ENABLED, database.isDropProtectionEnabled());
+    assertEquals(RECONCILING, database.getReconciling());
   }
 
   @Test
