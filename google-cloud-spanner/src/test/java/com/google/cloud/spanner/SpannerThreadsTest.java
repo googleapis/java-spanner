@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -185,6 +184,7 @@ public class SpannerThreadsTest {
       while (getNumberOfThreadsWithName(threadName, false, initialNumberOfThreads)
               > initialNumberOfThreads
           && watch.elapsed(TimeUnit.SECONDS) < 2) {
+        //noinspection BusyWait
         Thread.sleep(10L);
       }
       assertThat(
@@ -241,6 +241,7 @@ public class SpannerThreadsTest {
     while (getNumberOfThreadsWithName(threadName, false, initialNumberOfThreads)
             > initialNumberOfThreads
         && watch.elapsed(TimeUnit.SECONDS) < 5) {
+      //noinspection BusyWait
       Thread.sleep(10L);
     }
     assertEquals(
@@ -283,7 +284,7 @@ public class SpannerThreadsTest {
       }
     }
     if (dumpStack && res > expected) {
-      found.stream().forEach(t -> dumpThread(t));
+      found.forEach(this::dumpThread);
     }
     return res;
   }

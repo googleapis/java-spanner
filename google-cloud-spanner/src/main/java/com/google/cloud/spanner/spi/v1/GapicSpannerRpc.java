@@ -23,7 +23,6 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
 import com.google.api.core.NanoClock;
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.GaxGrpcProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
@@ -185,7 +184,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -200,8 +198,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -211,53 +207,6 @@ import org.threeten.bp.Duration;
 /** Implementation of Cloud Spanner remote calls using Gapic libraries. */
 @InternalApi
 public class GapicSpannerRpc implements SpannerRpc {
-
-  /**
-   * {@link ExecutorProvider} that keeps track of the executors that are created and shuts these
-   * down when the {@link SpannerRpc} is closed.
-   */
-  private static final class ManagedInstantiatingExecutorProvider implements ExecutorProvider {
-
-    // 4 Gapic clients * 4 channels per client.
-    private static final int DEFAULT_MIN_THREAD_COUNT = 16;
-    private final List<ScheduledExecutorService> executors = new LinkedList<>();
-    private final ThreadFactory threadFactory;
-
-    private ManagedInstantiatingExecutorProvider(ThreadFactory threadFactory) {
-      this.threadFactory = threadFactory;
-    }
-
-    @Override
-    public boolean shouldAutoClose() {
-      return false;
-    }
-
-    @Override
-    public ScheduledExecutorService getExecutor() {
-      int numCpus = Runtime.getRuntime().availableProcessors();
-      int numThreads = Math.max(DEFAULT_MIN_THREAD_COUNT, numCpus);
-      ScheduledExecutorService executor =
-          new ScheduledThreadPoolExecutor(numThreads, threadFactory);
-      synchronized (this) {
-        executors.add(executor);
-      }
-      return executor;
-    }
-
-    /** Shuts down all executors that have been created by this {@link ExecutorProvider}. */
-    private synchronized void shutdown() {
-      for (ScheduledExecutorService executor : executors) {
-        executor.shutdown();
-      }
-    }
-
-    private void awaitTermination() throws InterruptedException {
-      for (ScheduledExecutorService executor : executors) {
-        executor.awaitTermination(10L, TimeUnit.SECONDS);
-      }
-    }
-  }
-
   private static final PathTemplate PROJECT_NAME_TEMPLATE =
       PathTemplate.create("projects/{project}");
   private static final PathTemplate OPERATION_NAME_TEMPLATE =
@@ -277,7 +226,6 @@ public class GapicSpannerRpc implements SpannerRpc {
       CLIENT_LIBRARY_LANGUAGE + "/" + GaxProperties.getLibraryVersion(GapicSpannerRpc.class);
   private static final String API_FILE = "grpc-gcp-apiconfig.json";
 
-  private final ManagedInstantiatingExecutorProvider executorProvider;
   private boolean rpcIsClosed;
   private final SpannerStub spannerStub;
   private final SpannerStub partitionedDmlStub;
@@ -356,13 +304,6 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.compressorName = options.getCompressorName();
 
     if (initializeStubs) {
-      // Create a managed executor provider.
-      this.executorProvider =
-          new ManagedInstantiatingExecutorProvider(
-              new ThreadFactoryBuilder()
-                  .setDaemon(true)
-                  .setNameFormat(options.getTransportChannelExecutorThreadNameFormat())
-                  .build());
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
       // with information gathered from SpannerOptions if none is provided
       InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder =
@@ -372,11 +313,6 @@ public class GapicSpannerRpc implements SpannerRpc {
               .setMaxInboundMessageSize(MAX_MESSAGE_SIZE)
               .setMaxInboundMetadataSize(MAX_METADATA_SIZE)
               .setPoolSize(options.getNumChannels())
-
-              // Before updating this method to setExecutor, please verify with a code owner on
-              // the lowest version of gax-grpc that needs to be supported. Currently v1.47.17,
-              // which doesn't support the setExecutor variant.
-              .setExecutorProvider(executorProvider)
 
               // Set a keepalive time of 120 seconds to help long running
               // commit GRPC calls succeed
@@ -536,7 +472,6 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.databaseAdminStubSettings = null;
       this.spannerWatchdog = null;
       this.partitionedDmlRetrySettings = null;
-      this.executorProvider = null;
     }
   }
 
@@ -1932,7 +1867,6 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.instanceAdminStub.close();
       this.databaseAdminStub.close();
       this.spannerWatchdog.shutdown();
-      this.executorProvider.shutdown();
 
       try {
         this.spannerStub.awaitTermination(10L, TimeUnit.SECONDS);
@@ -1940,7 +1874,6 @@ public class GapicSpannerRpc implements SpannerRpc {
         this.instanceAdminStub.awaitTermination(10L, TimeUnit.SECONDS);
         this.databaseAdminStub.awaitTermination(10L, TimeUnit.SECONDS);
         this.spannerWatchdog.awaitTermination(10L, TimeUnit.SECONDS);
-        this.executorProvider.awaitTermination();
       } catch (InterruptedException e) {
         throw SpannerExceptionFactory.propagateInterrupt(e);
       }
@@ -1954,7 +1887,6 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.instanceAdminStub.close();
     this.databaseAdminStub.close();
     this.spannerWatchdog.shutdown();
-    this.executorProvider.shutdown();
 
     this.spannerStub.shutdownNow();
     this.partitionedDmlStub.shutdownNow();
