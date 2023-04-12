@@ -457,6 +457,25 @@ class ClientSideStatementValueConverters {
     }
   }
 
+  /** Converter for converting strings to {@link SavepointSupport} values. */
+  static class SavepointSupportConverter
+      implements ClientSideStatementValueConverter<SavepointSupport> {
+    private final CaseInsensitiveEnumMap<SavepointSupport> values =
+        new CaseInsensitiveEnumMap<>(SavepointSupport.class);
+
+    public SavepointSupportConverter(String allowedValues) {}
+
+    @Override
+    public Class<SavepointSupport> getParameterClass() {
+      return SavepointSupport.class;
+    }
+
+    @Override
+    public SavepointSupport convert(String value) {
+      return values.get(value);
+    }
+  }
+
   static class ExplainCommandConverter implements ClientSideStatementValueConverter<String> {
     @Override
     public Class<String> getParameterClass() {

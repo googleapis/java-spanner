@@ -21,6 +21,7 @@ import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.rpc.ApiCallContext;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SpannerException;
@@ -45,6 +46,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
@@ -126,6 +128,33 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     this.statementTimeout = builder.statementTimeout;
     this.transactionTag = builder.transactionTag;
     this.rpcPriority = builder.rpcPriority;
+  }
+
+  /**
+   * Returns a descriptive name for the type of transaction / unit of work. This is used in error
+   * messages.
+   */
+  abstract String getUnitOfWorkName();
+
+  @Override
+  public void savepoint(@Nonnull String name, @Nonnull Dialect dialect) {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.FAILED_PRECONDITION, "Savepoint is not supported for " + getUnitOfWorkName());
+  }
+
+  @Override
+  public void releaseSavepoint(@Nonnull String name) {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.FAILED_PRECONDITION,
+        "Release savepoint is not supported for " + getUnitOfWorkName());
+  }
+
+  @Override
+  public void rollbackToSavepoint(
+      @Nonnull String name, @Nonnull SavepointSupport savepointSupport) {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.FAILED_PRECONDITION,
+        "Rollback to savepoint is not supported for " + getUnitOfWorkName());
   }
 
   StatementExecutor getStatementExecutor() {
