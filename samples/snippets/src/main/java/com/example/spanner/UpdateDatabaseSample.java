@@ -40,7 +40,6 @@ public class UpdateDatabaseSample {
         SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
 
-      // Enable drop protection
       DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
       Database databaseToUpdate =
           databaseAdminClient.newDatabaseBuilder(dbId).enableDropProtection().build();
