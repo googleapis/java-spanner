@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmul
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -45,6 +46,7 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -278,6 +280,26 @@ public class ITDatabaseAdminTest {
   }
 
   @Test
+  public void updateDatabaseInvalidFieldsToUpdate() throws Exception {
+    String instanceId = testHelper.getInstanceId().getInstance();
+    Database database =
+        dbAdminClient
+            .createDatabase(instanceId, testHelper.getUniqueDatabaseId(), ImmutableList.of())
+            .get();
+    logger.log(Level.INFO, "Created database: {0}", database.getId().getName());
+
+    Database databaseToUpdate =
+        dbAdminClient.newDatabaseBuilder(database.getId()).enableDropProtection().build();
+    // Don't provide any fields to update.
+    OperationFuture<Database, UpdateDatabaseMetadata> op =
+        dbAdminClient.updateDatabase(databaseToUpdate);
+
+    ExecutionException e =
+        assertThrows(ExecutionException.class, () -> op.get(5, TimeUnit.MINUTES));
+    assertThat(e.getMessage()).contains("Invalid field mask");
+  }
+
+  @Test
   public void dropDatabaseWithProtectionEnabled() throws Exception {
     String instanceId = testHelper.getInstanceId().getInstance();
     Database database =
@@ -298,20 +320,17 @@ public class ITDatabaseAdminTest {
     String databaseId = database.getId().getDatabase();
 
     // Assert that dropping a database with protection enabled fails due to precondition violation.
-    try {
-      dbAdminClient.dropDatabase(instanceId, databaseId);
-      fail("Expected exception");
-    } catch (SpannerException e) {
-      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-    }
+    SpannerException e =
+        assertThrows(
+            SpannerException.class, () -> dbAdminClient.dropDatabase(instanceId, databaseId));
+    assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
 
     // Assert that deleting the instance also fails due to precondition violation.
-    try {
-      testHelper.getClient().getInstanceAdminClient().deleteInstance(instanceId);
-      fail("Expected exception");
-    } catch (SpannerException e) {
-      assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-    }
+    e =
+        assertThrows(
+            SpannerException.class,
+            () -> testHelper.getClient().getInstanceAdminClient().deleteInstance(instanceId));
+    assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
 
     // Disable drop protection for the database.
     databaseToUpdate =

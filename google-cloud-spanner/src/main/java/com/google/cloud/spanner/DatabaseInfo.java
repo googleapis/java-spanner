@@ -380,8 +380,8 @@ public class DatabaseInfo {
         && Objects.equals(encryptionConfig, that.encryptionConfig)
         && Objects.equals(defaultLeader, that.defaultLeader)
         && Objects.equals(dialect, that.dialect)
-        && dropProtectionEnabled == that.dropProtectionEnabled
-        && reconciling == that.reconciling;
+        && Objects.equals(dropProtectionEnabled, that.dropProtectionEnabled)
+        && Objects.equals(reconciling, that.reconciling);
   }
 
   @Override
