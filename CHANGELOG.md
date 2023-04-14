@@ -1,5 +1,24 @@
 # Changelog
 
+## [6.40.0](https://github.com/googleapis/java-spanner/compare/v6.39.0...v6.40.0) (2023-04-14)
+
+
+### Features
+
+* Savepoints ([#2278](https://github.com/googleapis/java-spanner/issues/2278)) ([b02f584](https://github.com/googleapis/java-spanner/commit/b02f58435b97346cc8e08a96635affe8383981bb))
+
+
+### Performance Improvements
+
+* Remove custom transport executor ([#2366](https://github.com/googleapis/java-spanner/issues/2366)) ([e27dbe5](https://github.com/googleapis/java-spanner/commit/e27dbe5f58229dab208eeeed44d53e741700c814))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.7.0 ([#2377](https://github.com/googleapis/java-spanner/issues/2377)) ([40402af](https://github.com/googleapis/java-spanner/commit/40402af54f94f16619d018e252181db29ae6855e))
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.21 ([#2379](https://github.com/googleapis/java-spanner/issues/2379)) ([ae7262d](https://github.com/googleapis/java-spanner/commit/ae7262d37391c0ec2fee1dcbb24899e4fa16ae17))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.21 ([#2380](https://github.com/googleapis/java-spanner/issues/2380)) ([0cb159e](https://github.com/googleapis/java-spanner/commit/0cb159efc97f02b42f064244e3812a0fd3d82db6))
+
 ## [6.39.0](https://github.com/googleapis/java-spanner/compare/v6.38.2...v6.39.0) (2023-04-11)
 
 
