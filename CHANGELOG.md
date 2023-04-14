@@ -1,5 +1,27 @@
 # Changelog
 
+## [6.39.0](https://github.com/googleapis/java-spanner/compare/v6.38.2...v6.39.0) (2023-04-11)
+
+
+### Features
+
+* Capture stack trace for session checkout is now optional ([#2350](https://github.com/googleapis/java-spanner/issues/2350)) ([6b6427a](https://github.com/googleapis/java-spanner/commit/6b6427a25af25fde944dfc1dd4bf6a6463682caf))
+
+## [6.38.2](https://github.com/googleapis/java-spanner/compare/v6.38.1...v6.38.2) (2023-04-01)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.15.0 ([#2356](https://github.com/googleapis/java-spanner/issues/2356)) ([e4c001a](https://github.com/googleapis/java-spanner/commit/e4c001a2a78af756213fb28e01c571721e105262))
+* Update dependency com.google.cloud:google-cloud-trace to v2.14.0 ([#2357](https://github.com/googleapis/java-spanner/issues/2357)) ([dbb8e66](https://github.com/googleapis/java-spanner/commit/dbb8e669d855c08f48c15c9eafec03a85fa08bca))
+
+## [6.38.1](https://github.com/googleapis/java-spanner/compare/v6.38.0...v6.38.1) (2023-03-29)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.6.0 ([#2352](https://github.com/googleapis/java-spanner/issues/2352)) ([19175ce](https://github.com/googleapis/java-spanner/commit/19175ce22777ac68f8c825a438c0a2503234aa42))
+
 ## [6.38.0](https://github.com/googleapis/java-spanner/compare/v6.37.0...v6.38.0) (2023-03-20)
 
 

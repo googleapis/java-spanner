@@ -49,6 +49,7 @@ public class SessionPoolOptions {
   private final Duration removeInactiveSessionAfter;
   private final ActionOnSessionNotFound actionOnSessionNotFound;
   private final ActionOnSessionLeak actionOnSessionLeak;
+  private final boolean trackStackTraceOfSessionCheckout;
   private final long initialWaitForSessionTimeoutMillis;
   private final boolean autoDetectDialect;
   private final Duration waitForMinSessions;
@@ -65,6 +66,7 @@ public class SessionPoolOptions {
     this.actionOnExhaustion = builder.actionOnExhaustion;
     this.actionOnSessionNotFound = builder.actionOnSessionNotFound;
     this.actionOnSessionLeak = builder.actionOnSessionLeak;
+    this.trackStackTraceOfSessionCheckout = builder.trackStackTraceOfSessionCheckout;
     this.initialWaitForSessionTimeoutMillis = builder.initialWaitForSessionTimeoutMillis;
     this.loopFrequency = builder.loopFrequency;
     this.keepAliveIntervalMinutes = builder.keepAliveIntervalMinutes;
@@ -88,6 +90,8 @@ public class SessionPoolOptions {
         && Objects.equals(this.actionOnSessionNotFound, other.actionOnSessionNotFound)
         && Objects.equals(this.actionOnSessionLeak, other.actionOnSessionLeak)
         && Objects.equals(
+            this.trackStackTraceOfSessionCheckout, other.trackStackTraceOfSessionCheckout)
+        && Objects.equals(
             this.initialWaitForSessionTimeoutMillis, other.initialWaitForSessionTimeoutMillis)
         && Objects.equals(this.loopFrequency, other.loopFrequency)
         && Objects.equals(this.keepAliveIntervalMinutes, other.keepAliveIntervalMinutes)
@@ -107,6 +111,7 @@ public class SessionPoolOptions {
         this.actionOnExhaustion,
         this.actionOnSessionNotFound,
         this.actionOnSessionLeak,
+        this.trackStackTraceOfSessionCheckout,
         this.initialWaitForSessionTimeoutMillis,
         this.loopFrequency,
         this.keepAliveIntervalMinutes,
@@ -190,6 +195,10 @@ public class SessionPoolOptions {
     return actionOnSessionLeak == ActionOnSessionLeak.FAIL;
   }
 
+  public boolean isTrackStackTraceOfSessionCheckout() {
+    return trackStackTraceOfSessionCheckout;
+  }
+
   @VisibleForTesting
   Duration getWaitForMinSessions() {
     return waitForMinSessions;
@@ -234,6 +243,17 @@ public class SessionPoolOptions {
     private long initialWaitForSessionTimeoutMillis = 30_000L;
     private ActionOnSessionNotFound actionOnSessionNotFound = ActionOnSessionNotFound.RETRY;
     private ActionOnSessionLeak actionOnSessionLeak = ActionOnSessionLeak.WARN;
+    /**
+     * Capture the call stack of the thread that checked out a session of the pool. This will
+     * pre-create a {@link com.google.cloud.spanner.SessionPool.LeakedSessionException} already when
+     * a session is checked out. This can be disabled by users, for example if their monitoring
+     * systems log the pre-created exception. If disabled, the {@link
+     * com.google.cloud.spanner.SessionPool.LeakedSessionException} will only be created when an
+     * actual session leak is detected. The stack trace of the exception will in that case not
+     * contain the call stack of when the session was checked out.
+     */
+    private boolean trackStackTraceOfSessionCheckout = true;
+
     private long loopFrequency = 10 * 1000L;
     private int keepAliveIntervalMinutes = 30;
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
@@ -253,6 +273,7 @@ public class SessionPoolOptions {
       this.initialWaitForSessionTimeoutMillis = options.initialWaitForSessionTimeoutMillis;
       this.actionOnSessionNotFound = options.actionOnSessionNotFound;
       this.actionOnSessionLeak = options.actionOnSessionLeak;
+      this.trackStackTraceOfSessionCheckout = options.trackStackTraceOfSessionCheckout;
       this.loopFrequency = options.loopFrequency;
       this.keepAliveIntervalMinutes = options.keepAliveIntervalMinutes;
       this.removeInactiveSessionAfter = options.removeInactiveSessionAfter;
@@ -390,6 +411,21 @@ public class SessionPoolOptions {
     @VisibleForTesting
     Builder setFailOnSessionLeak() {
       this.actionOnSessionLeak = ActionOnSessionLeak.FAIL;
+      return this;
+    }
+
+    /**
+     * Sets whether the session pool should capture the call stack trace when a session is checked
+     * out of the pool. This will internally prepare a {@link
+     * com.google.cloud.spanner.SessionPool.LeakedSessionException} that will only be thrown if the
+     * session is actually leaked. This makes it easier to debug session leaks, as the stack trace
+     * of the thread that checked out the session will be available in the exception.
+     *
+     * <p>Some monitoring tools might log these exceptions even though they are not thrown. This
+     * option can be used to suppress the creation and logging of these exceptions.
+     */
+    public Builder setTrackStackTraceOfSessionCheckout(boolean trackStackTraceOfSessionCheckout) {
+      this.trackStackTraceOfSessionCheckout = trackStackTraceOfSessionCheckout;
       return this;
     }
 

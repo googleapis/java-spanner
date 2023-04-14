@@ -46,14 +46,13 @@ public final class CommonProto {
           + "perationProgress\022\030\n\020progress_percent\030\001 \001"
           + "(\005\022.\n\nstart_time\030\002 \001(\0132\032.google.protobuf"
           + ".Timestamp\022,\n\010end_time\030\003 \001(\0132\032.google.pr"
-          + "otobuf.TimestampB\377\001\n$com.google.spanner."
-          + "admin.instance.v1B\013CommonProtoP\001ZHgoogle"
-          + ".golang.org/genproto/googleapis/spanner/"
-          + "admin/instance/v1;instance\252\002&Google.Clou"
-          + "d.Spanner.Admin.Instance.V1\312\002&Google\\Clo"
-          + "ud\\Spanner\\Admin\\Instance\\V1\352\002+Google::C"
-          + "loud::Spanner::Admin::Instance::V1b\006prot"
-          + "o3"
+          + "otobuf.TimestampB\375\001\n$com.google.spanner."
+          + "admin.instance.v1B\013CommonProtoP\001ZFcloud."
+          + "google.com/go/spanner/admin/instance/api"
+          + "v1/instancepb;instancepb\252\002&Google.Cloud."
+          + "Spanner.Admin.Instance.V1\312\002&Google\\Cloud"
+          + "\\Spanner\\Admin\\Instance\\V1\352\002+Google::Clo"
+          + "ud::Spanner::Admin::Instance::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
