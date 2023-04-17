@@ -62,13 +62,15 @@ public class ITDatabaseRolePermissionTest {
 
   private static List<DatabaseId> databasesToDrop;
 
-  @Parameter
-  public DialectTestParameter dialect;
+  @Parameter public DialectTestParameter dialect;
+
   @Parameters(name = "Dialect = {0}")
   public static List<DialectTestParameter> data() {
-    // new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL),
-    return ImmutableList.of(new DialectTestParameter(Dialect.POSTGRESQL));
+    return ImmutableList.of(
+        new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL),
+        new DialectTestParameter(Dialect.POSTGRESQL));
   }
+
   @BeforeClass
   public static void setUp() {
     assumeFalse("Emulator does not support database roles", isUsingEmulator());
@@ -100,9 +102,13 @@ public class ITDatabaseRolePermissionTest {
     final String createTableT = getCreateTableStatement();
     final String createRoleParent = String.format("CREATE ROLE %s", dbRoleParent);
     final String grantSelectOnTableToParent =
-        String.format("GRANT SELECT ON TABLE T TO ROLE %s", dbRoleParent);
+        dialect.dialect == Dialect.POSTGRESQL
+            ? String.format("GRANT SELECT ON TABLE T TO %s", dbRoleParent)
+            : String.format("GRANT SELECT ON TABLE T TO ROLE %s", dbRoleParent);
     final Database createdDatabase =
-        createAndUpdateDatabase(instanceId, databaseId,
+        createAndUpdateDatabase(
+            instanceId,
+            databaseId,
             ImmutableList.of(createTableT, createRoleParent, grantSelectOnTableToParent));
 
     // Connect to db with dbRoleParent.
@@ -125,11 +131,16 @@ public class ITDatabaseRolePermissionTest {
 
     // Revoke select Permission for dbRoleParent.
     final String revokeSelectOnTableFromParent =
-        String.format("REVOKE SELECT ON TABLE T FROM ROLE %s", dbRoleParent);
+        dialect.dialect == Dialect.POSTGRESQL
+            ? String.format("REVOKE SELECT ON TABLE T FROM %s", dbRoleParent)
+            : String.format("REVOKE SELECT ON TABLE T FROM ROLE %s", dbRoleParent);
 
     dbAdminClient
         .updateDatabaseDdl(
-            instanceId.getInstance(), databaseId, Arrays.asList(revokeSelectOnTableFromParent), null)
+            instanceId.getInstance(),
+            databaseId,
+            Arrays.asList(revokeSelectOnTableFromParent),
+            null)
         .get(5, TimeUnit.MINUTES);
 
     // Test SELECT permissions to role dbRoleParent on table T.
@@ -144,7 +155,8 @@ public class ITDatabaseRolePermissionTest {
     final String dropTableT = "DROP TABLE T";
     final String dropRoleParent = String.format("DROP ROLE %s", dbRoleParent);
     dbAdminClient
-        .updateDatabaseDdl(instanceId.getInstance(), databaseId, Arrays.asList(dropTableT, dropRoleParent), null)
+        .updateDatabaseDdl(
+            instanceId.getInstance(), databaseId, Arrays.asList(dropTableT, dropRoleParent), null)
         .get(5, TimeUnit.MINUTES);
     databasesToDrop.add(createdDatabase.getId());
   }
@@ -159,8 +171,8 @@ public class ITDatabaseRolePermissionTest {
     final String createRoleOrphan = String.format("CREATE ROLE %s", dbRoleOrphan);
 
     final Database createdDatabase =
-        createAndUpdateDatabase(instanceId, databaseId,
-            ImmutableList.of(createTableT, createRoleOrphan));
+        createAndUpdateDatabase(
+            instanceId, databaseId, ImmutableList.of(createTableT, createRoleOrphan));
 
     // Connect to db with dbRoleOrphan
     SpannerOptions options =
@@ -181,20 +193,27 @@ public class ITDatabaseRolePermissionTest {
     final String dropTableT = "DROP TABLE T";
     final String dropRoleParent = String.format("DROP ROLE %s", dbRoleOrphan);
     dbAdminClient
-        .updateDatabaseDdl(instanceId.getInstance(), databaseId, Arrays.asList(dropTableT, dropRoleParent), null)
+        .updateDatabaseDdl(
+            instanceId.getInstance(), databaseId, Arrays.asList(dropTableT, dropRoleParent), null)
         .get(5, TimeUnit.MINUTES);
     databasesToDrop.add(createdDatabase.getId());
   }
-  private Database createAndUpdateDatabase(final InstanceId instanceId, final String databaseId,
-      final List<String> statements) throws Exception {
+
+  private Database createAndUpdateDatabase(
+      final InstanceId instanceId, final String databaseId, final List<String> statements)
+      throws Exception {
     if (dialect.dialect == Dialect.POSTGRESQL) {
       // DDL statements other than <CREATE DATABASE> are not allowed in database creation request
       // for PostgreSQL-enabled databases.
-      final Database database = dbAdminClient
-          .createDatabase(
-              dbAdminClient.newDatabaseBuilder(DatabaseId.of(instanceId, databaseId))
-                  .setDialect(dialect.dialect).build(), ImmutableList.of())
-          .get(5, TimeUnit.MINUTES);
+      final Database database =
+          dbAdminClient
+              .createDatabase(
+                  dbAdminClient
+                      .newDatabaseBuilder(DatabaseId.of(instanceId, databaseId))
+                      .setDialect(dialect.dialect)
+                      .build(),
+                  ImmutableList.of())
+              .get(5, TimeUnit.MINUTES);
       dbAdminClient
           .updateDatabaseDdl(instanceId.getInstance(), databaseId, statements, null)
           .get(5, TimeUnit.MINUTES);
@@ -202,20 +221,20 @@ public class ITDatabaseRolePermissionTest {
     } else {
       return dbAdminClient
           .createDatabase(
-              dbAdminClient.newDatabaseBuilder(DatabaseId.of(instanceId, databaseId))
-                  .setDialect(dialect.dialect).build(), statements)
+              dbAdminClient
+                  .newDatabaseBuilder(DatabaseId.of(instanceId, databaseId))
+                  .setDialect(dialect.dialect)
+                  .build(),
+              statements)
           .get(5, TimeUnit.MINUTES);
     }
   }
+
   private String getCreateTableStatement() {
     if (dialect.dialect == Dialect.POSTGRESQL) {
-      return "CREATE TABLE T ("
-          + "  \"K\"    VARCHAR PRIMARY KEY"
-          + ")";
+      return "CREATE TABLE T (" + "  \"K\"    VARCHAR PRIMARY KEY" + ")";
     } else {
-      return "CREATE TABLE T ("
-          + "  K    STRING(MAX)"
-          + ") PRIMARY KEY (K)";
+      return "CREATE TABLE T (" + "  K    STRING(MAX)" + ") PRIMARY KEY (K)";
     }
   }
 }
