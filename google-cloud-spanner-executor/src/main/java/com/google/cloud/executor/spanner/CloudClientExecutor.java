@@ -95,6 +95,7 @@ import com.google.spanner.executor.v1.CloudDatabaseResponse;
 import com.google.spanner.executor.v1.CloudInstanceConfigResponse;
 import com.google.spanner.executor.v1.CloudInstanceResponse;
 import com.google.spanner.executor.v1.Concurrency;
+import com.google.spanner.executor.v1.TransactionExecutionOptions;
 import com.google.spanner.executor.v1.CopyCloudBackupAction;
 import com.google.spanner.executor.v1.CreateCloudBackupAction;
 import com.google.spanner.executor.v1.CreateCloudDatabaseAction;
@@ -233,8 +234,8 @@ public class CloudClientExecutor extends CloudExecutor {
     // committed, abandoned or threw an error.
     private boolean runnerCompleted;
 
-    public ReadWriteTransaction(DatabaseClient dbClient, String transactionSeed,
-        boolean optimistic) {
+    public ReadWriteTransaction(
+        DatabaseClient dbClient, String transactionSeed, boolean optimistic) {
       this.dbClient = dbClient;
       this.transactionSeed = transactionSeed;
       this.optimistic = optimistic;
@@ -322,8 +323,10 @@ public class CloudClientExecutor extends CloudExecutor {
       Runnable runnable =
           () -> {
             try {
-              runner = optimistic ? dbClient.readWriteTransaction(Options.optimisticLock())
-                  : dbClient.readWriteTransaction();
+              runner =
+                  optimistic
+                      ? dbClient.readWriteTransaction(Options.optimisticLock())
+                      : dbClient.readWriteTransaction();
               LOGGER.log(Level.INFO, String.format("Ready to run callable %s\n", transactionSeed));
               runner.run(callable);
               transactionSucceeded(runner.getCommitTimestamp().toProto());
@@ -542,8 +545,8 @@ public class CloudClientExecutor extends CloudExecutor {
     }
 
     /** Start a read-write transaction. */
-    public synchronized void startReadWriteTxn(DatabaseClient dbClient, Metadata metadata,
-        TransactionExecutionOptions options)
+    public synchronized void startReadWriteTxn(
+        DatabaseClient dbClient, Metadata metadata, TransactionExecutionOptions options)
         throws Exception {
       if ((rwTxn != null) || (roTxn != null) || (batchTxn != null)) {
         throw SpannerExceptionFactory.newSpannerException(
