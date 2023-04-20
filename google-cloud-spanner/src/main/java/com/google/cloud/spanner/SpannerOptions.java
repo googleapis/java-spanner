@@ -1085,6 +1085,18 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Sets the {@link DirectedReadOptions} that specify which replicas or regions should be used
+     * for non-transactional reads or queries.
+     *
+     * <p>Note that DirectedReadOptions can only be set for ReadOnlyTransaction and
+     * SingleUseTransaction; it cannot be set for ReadWriteTransaction and
+     * PartitionedDmlTransaction.
+     *
+     * <p>DirectedReadOptions set at the request level will take precedence over the options set
+     * using this method. If DirectedReadOptions are set at the request level, they will override
+     * the options set here when the RPC call is made.
+     */
     public Builder setDirectedReadOptions(DirectedReadOptions directedReadOptions) {
       Preconditions.checkNotNull(directedReadOptions, "DirectedReadOptions cannot be null");
       this.directedReadOptions = directedReadOptions;

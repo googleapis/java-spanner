@@ -228,6 +228,7 @@ public final class Options implements Serializable {
     return new ValidateOnlyOption(validateOnly);
   }
 
+  /** Option to request DirectedRead for ReadOnlyTransaction and SingleUseTransaction. */
   public static ReadAndQueryOption directedRead(DirectedReadOptions directedReadOptions) {
     return new DirectedReadOption(directedReadOptions);
   }
