@@ -1099,6 +1099,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setDirectedReadOptions(DirectedReadOptions directedReadOptions) {
       Preconditions.checkNotNull(directedReadOptions, "DirectedReadOptions cannot be null");
+      SpannerUtil.verifyDirectedReadOptions(directedReadOptions);
       this.directedReadOptions = directedReadOptions;
       return this;
     }
@@ -1195,9 +1196,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       if (this.numChannels == null) {
         this.numChannels =
             this.grpcGcpExtensionEnabled ? GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
-      }
-      if (directedReadOptions != null) {
-        SpannerUtil.verifyDirectedReadOptions(directedReadOptions);
       }
 
       return new SpannerOptions(this);
