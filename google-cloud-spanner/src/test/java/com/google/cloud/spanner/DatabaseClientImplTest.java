@@ -359,7 +359,7 @@ public class DatabaseClientImplTest {
     }
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
-    assertThat(requests).hasSize(1);
+    assertEquals(requests.size(), 1);
     ExecuteSqlRequest request = requests.get(0);
     assertTrue(request.hasDirectedReadOptions());
     assertEquals(request.getDirectedReadOptions(), DIRECTED_READ_OPTIONS1);
@@ -382,7 +382,7 @@ public class DatabaseClientImplTest {
     }
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
-    assertThat(requests).hasSize(1);
+    assertEquals(requests.size(), 1);
     ExecuteSqlRequest request = requests.get(0);
     assertTrue(request.hasDirectedReadOptions());
     assertEquals(request.getDirectedReadOptions(), DIRECTED_READ_OPTIONS2);
@@ -428,7 +428,7 @@ public class DatabaseClientImplTest {
     }
 
     List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
-    assertThat(requests).hasSize(1);
+    assertEquals(requests.size(), 1);
     ReadRequest request = requests.get(0);
     assertTrue(request.hasDirectedReadOptions());
     assertEquals(request.getDirectedReadOptions(), DIRECTED_READ_OPTIONS1);
@@ -452,7 +452,7 @@ public class DatabaseClientImplTest {
     }
 
     List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
-    assertThat(requests).hasSize(1);
+    assertEquals(requests.size(), 1);
     ReadRequest request = requests.get(0);
     assertTrue(request.hasDirectedReadOptions());
     assertEquals(request.getDirectedReadOptions(), DIRECTED_READ_OPTIONS2);
@@ -566,7 +566,6 @@ public class DatabaseClientImplTest {
         .isEqualTo("app=spanner,env=test,action=txn");
   }
 
-  // FIX_IT
   @Test
   public void testReadWriteExecuteReadWithDirectedReadOptionsViaRequest() {
     DatabaseClient client =

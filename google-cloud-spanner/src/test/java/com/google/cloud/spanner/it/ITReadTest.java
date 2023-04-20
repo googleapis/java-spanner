@@ -83,6 +83,17 @@ public class ITReadTest {
   private static final Type TABLE_TYPE =
       Type.struct(
           StructField.of("key", Type.string()), StructField.of("stringvalue", Type.string()));
+  private static DirectedReadOptions DIRECTED_READ_OPTIONS =
+      DirectedReadOptions.newBuilder()
+          .setIncludeReplicas(
+              IncludeReplicas.newBuilder()
+                  .addReplicaSelections(
+                      ReplicaSelection.newBuilder()
+                          .setLocation("us-west1")
+                          .setType(ReplicaSelection.Type.READ_ONLY)
+                          .build())
+                  .setAutoFailover(true))
+          .build();
 
   private static DatabaseClient googleStandardSQLClient;
   private static DatabaseClient postgreSQLClient;
@@ -317,17 +328,6 @@ public class ITReadTest {
 
   @Test
   public void pointReadWithDirectedReadOptions() {
-    DirectedReadOptions directedReadOptions =
-        DirectedReadOptions.newBuilder()
-            .setIncludeReplicas(
-                IncludeReplicas.newBuilder()
-                    .addReplicaSelections(
-                        ReplicaSelection.newBuilder()
-                            .setLocation("us-west1")
-                            .setType(ReplicaSelection.Type.READ_ONLY)
-                            .build())
-                    .setAutoFailover(true))
-            .build();
     try (ResultSet rs =
         getClient(dialect.dialect)
             .singleUse()
@@ -335,7 +335,7 @@ public class ITReadTest {
                 TABLE_NAME,
                 KeySet.singleKey(Key.of("k1")),
                 ALL_COLUMNS,
-                Options.directedRead(directedReadOptions))) {
+                Options.directedRead(DIRECTED_READ_OPTIONS))) {
       assertTrue(rs.next());
       assertEquals(rs.getString(0), "k1");
       assertEquals(rs.getString(1), "v1");

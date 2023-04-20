@@ -80,32 +80,31 @@ public class OptionsTest {
             Options.prefetchChunks(1),
             Options.dataBoostEnabled(true),
             Options.directedRead(DIRECTED_READ_OPTIONS));
-    assertThat(options.hasLimit()).isTrue();
-    assertThat(options.limit()).isEqualTo(10);
-    assertThat(options.hasPrefetchChunks()).isTrue();
-    assertThat(options.prefetchChunks()).isEqualTo(1);
-    assertThat(options.hasDataBoostEnabled()).isTrue();
+    assertTrue(options.hasLimit());
+    assertEquals(options.limit(), 10);
+    assertTrue(options.hasPrefetchChunks());
+    assertEquals(options.prefetchChunks(), 1);
+    assertTrue(options.hasDataBoostEnabled());
     assertTrue(options.dataBoostEnabled());
+    assertTrue(options.hasDirectedReadOptions());
     assertEquals(options.directedReadOptions(), DIRECTED_READ_OPTIONS);
   }
 
   @Test
   public void allOptionsAbsent() {
     Options options = Options.fromReadOptions();
-    assertThat(options.hasLimit()).isFalse();
-    assertThat(options.hasPrefetchChunks()).isFalse();
-    assertThat(options.hasFilter()).isFalse();
-    assertThat(options.hasPageToken()).isFalse();
-    assertThat(options.hasPriority()).isFalse();
-    assertThat(options.hasTag()).isFalse();
-    assertThat(options.hasDataBoostEnabled()).isFalse();
+    assertFalse(options.hasLimit());
+    assertFalse(options.hasPrefetchChunks());
+    assertFalse(options.hasFilter());
+    assertFalse(options.hasPageToken());
+    assertFalse(options.hasPriority());
+    assertFalse(options.hasTag());
+    assertFalse(options.hasDataBoostEnabled());
     assertFalse(options.hasDirectedReadOptions());
-    assertThat(options.toString()).isEqualTo("");
-    assertThat(options.equals(options)).isTrue();
-    assertThat(options.equals(null)).isFalse();
-    assertThat(options.equals(this)).isFalse();
-
-    assertThat(options.hashCode()).isEqualTo(31);
+    assertEquals(options.toString(), "");
+    assertTrue(options.equals(options));
+    assertNotEquals(null, options);
+    assertEquals(options.hashCode(), 31);
   }
 
   @Test
@@ -196,7 +195,7 @@ public class OptionsTest {
                 + "directedReadOptions: "
                 + DIRECTED_READ_OPTIONS
                 + " ");
-    assertThat(options.tag()).isEqualTo(tag);
+    assertEquals(options.tag(), tag);
     assertEquals(dataBoost, options.dataBoostEnabled());
     assertEquals(DIRECTED_READ_OPTIONS, options.directedReadOptions());
   }
@@ -233,22 +232,22 @@ public class OptionsTest {
             Options.tag(tag),
             Options.dataBoostEnabled(true),
             Options.directedRead(DIRECTED_READ_OPTIONS));
-    assertThat(options.toString())
-        .isEqualTo(
-            "prefetchChunks: "
-                + chunks
-                + " "
-                + "tag: "
-                + tag
-                + " "
-                + "dataBoostEnabled: "
-                + dataBoost
-                + " "
-                + "directedReadOptions: "
-                + DIRECTED_READ_OPTIONS
-                + " ");
-    assertThat(options.prefetchChunks()).isEqualTo(chunks);
-    assertThat(options.tag()).isEqualTo(tag);
+    assertEquals(
+        options.toString(),
+        "prefetchChunks: "
+            + chunks
+            + " "
+            + "tag: "
+            + tag
+            + " "
+            + "dataBoostEnabled: "
+            + dataBoost
+            + " "
+            + "directedReadOptions: "
+            + DIRECTED_READ_OPTIONS
+            + " ");
+    assertEquals(options.prefetchChunks(), chunks);
+    assertEquals(options.tag(), tag);
     assertEquals(dataBoost, options.dataBoostEnabled());
     assertEquals(DIRECTED_READ_OPTIONS, options.directedReadOptions());
   }

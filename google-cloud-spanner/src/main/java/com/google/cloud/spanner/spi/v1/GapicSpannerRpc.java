@@ -2039,6 +2039,10 @@ public class GapicSpannerRpc implements SpannerRpc {
             "DirectedReadOptions can't be set for Read-Write or Partitioned DML transactions");
       }
     }
+    // If DirectedReadOptions is not set at request-level, the request object won't be
+    // having DirectedReadOptions field set. Though, if DirectedReadOptions is set at client-level
+    // (through SpannerOptions), we must modify the request object to set the DirectedReadOptions
+    // proto field to this value.
     if (!request.hasDirectedReadOptions() && directedReadOptions != null) {
       return request.toBuilder().setDirectedReadOptions(directedReadOptions).build();
     }
@@ -2053,6 +2057,10 @@ public class GapicSpannerRpc implements SpannerRpc {
             "DirectedReadOptions can't be set for Read-Write or Partitioned DML transactions");
       }
     }
+    // If DirectedReadOptions is not set at request-level, the request object won't be
+    // having DirectedReadOptions field set. Though, if DirectedReadOptions is set at client-level
+    // (through SpannerOptions), we must modify the request object to set the DirectedReadOptions
+    // proto field to this value.
     if (!request.hasDirectedReadOptions() && directedReadOptions != null) {
       return request.toBuilder().setDirectedReadOptions(directedReadOptions).build();
     }
