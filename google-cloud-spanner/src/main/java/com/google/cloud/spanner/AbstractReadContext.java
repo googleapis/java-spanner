@@ -387,6 +387,8 @@ abstract class AbstractReadContext
   @GuardedBy("lock")
   protected boolean isClosed = false;
 
+  protected boolean readOnly;
+
   // A per-transaction sequence number used to identify this ExecuteSqlRequests. Required for DML,
   // ignored for query by the server.
   private AtomicLong seqNo = new AtomicLong();
@@ -405,6 +407,7 @@ abstract class AbstractReadContext
     this.defaultQueryOptions = builder.defaultQueryOptions;
     this.span = builder.span;
     this.executorProvider = builder.executorProvider;
+    this.readOnly = true;
   }
 
   @Override
@@ -671,7 +674,8 @@ abstract class AbstractReadContext
               request.setTransaction(selector);
             }
             SpannerRpc.StreamingCall call =
-                rpc.executeQuery(request.build(), stream.consumer(), session.getOptions(), true);
+                rpc.executeQuery(
+                    request.build(), stream.consumer(), session.getOptions(), readOnly);
             call.request(prefetchChunks);
             stream.setCall(call, request.getTransaction().hasBegin());
             return stream;
@@ -806,7 +810,7 @@ abstract class AbstractReadContext
             }
             builder.setRequestOptions(buildRequestOptions(readOptions));
             SpannerRpc.StreamingCall call =
-                rpc.read(builder.build(), stream.consumer(), session.getOptions(), true);
+                rpc.read(builder.build(), stream.consumer(), session.getOptions(), readOnly);
             call.request(prefetchChunks);
             stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
             return stream;

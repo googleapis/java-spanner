@@ -57,20 +57,6 @@ public class SpannerUtilTest {
   }
 
   @Test
-  public void testDirectedReadOptions_BothIncludeExcludeReplicasSet() {
-    // This test can be skipped because using the proto object directly will handle this case
-    // automatically and will set only IncludeReplicas, if both IncludeReplicas and ExcludeReplicas
-    // are passed in.
-    DirectedReadOptions directedReadOptions =
-        getDirectedReadOptions_BothIncludeExcludeReplicasSet();
-    SpannerException e =
-        assertThrows(
-            SpannerException.class,
-            () -> SpannerUtil.verifyDirectedReadOptions(directedReadOptions));
-    assertEquals(e.getErrorCode(), ErrorCode.INVALID_ARGUMENT);
-  }
-
-  @Test
   public void testDirectedReadOptions_IncludeReplica_ReplicaSelectionCountGreaterThanMax() {
     DirectedReadOptions directedReadOptions =
         getDirectedReadOptions_IncludeReplica_ReplicaSelectionCountGreaterThanMax();

@@ -21,6 +21,9 @@ import static com.google.cloud.spanner.Type.StructField;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.Database;
@@ -42,6 +45,9 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import io.grpc.Context;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -307,6 +313,34 @@ public class ITReadTest {
     KeySet keys =
         KeySet.newBuilder().addKey(Key.of("v3")).addKey(Key.of("v5")).addKey(Key.of("v7")).build();
     checkRange(Source.INDEX, keys, 3, 5, 7);
+  }
+
+  @Test
+  public void pointReadWithDirectedReadOptions() {
+    DirectedReadOptions directedReadOptions =
+        DirectedReadOptions.newBuilder()
+            .setIncludeReplicas(
+                IncludeReplicas.newBuilder()
+                    .addReplicaSelections(
+                        ReplicaSelection.newBuilder()
+                            .setLocation("us-west1")
+                            .setType(ReplicaSelection.Type.READ_ONLY)
+                            .build())
+                    .setAutoFailover(true))
+            .build();
+    try (ResultSet rs =
+        getClient(dialect.dialect)
+            .singleUse()
+            .read(
+                TABLE_NAME,
+                KeySet.singleKey(Key.of("k1")),
+                ALL_COLUMNS,
+                Options.directedRead(directedReadOptions))) {
+      assertTrue(rs.next());
+      assertEquals(rs.getString(0), "k1");
+      assertEquals(rs.getString(1), "v1");
+      assertFalse(rs.next());
+    }
   }
 
   @Test

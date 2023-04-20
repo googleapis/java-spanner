@@ -2030,7 +2030,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     return Duration.ofSeconds(stringValue.isEmpty() ? defaultValue : Integer.parseInt(stringValue));
   }
 
-  private ExecuteSqlRequest validateExecuteSqlRequest(ExecuteSqlRequest request, boolean readOnly) {
+  @VisibleForTesting
+  ExecuteSqlRequest validateExecuteSqlRequest(ExecuteSqlRequest request, boolean readOnly) {
     if (!readOnly) {
       if (request.hasDirectedReadOptions() || (directedReadOptions != null)) {
         throw SpannerExceptionFactory.newSpannerException(
@@ -2044,7 +2045,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     return request;
   }
 
-  private ReadRequest validateReadRequest(ReadRequest request, boolean readOnly) {
+  ReadRequest validateReadRequest(ReadRequest request, boolean readOnly) {
     if (!readOnly) {
       if (request.hasDirectedReadOptions() || (directedReadOptions != null)) {
         throw SpannerExceptionFactory.newSpannerException(

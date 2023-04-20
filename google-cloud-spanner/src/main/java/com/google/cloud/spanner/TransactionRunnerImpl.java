@@ -196,6 +196,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       this.trackTransactionStarter = builder.trackTransactionStarter;
       this.options = builder.options;
       this.finishedAsyncOperations.set(null);
+      this.readOnly = false;
     }
 
     private void increaseAsyncOperations() {
@@ -717,7 +718,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               /* withTransactionSelector = */ true);
       try {
         com.google.spanner.v1.ResultSet resultSet =
-            rpc.executeQuery(builder.build(), session.getOptions(), false);
+            rpc.executeQuery(builder.build(), session.getOptions(), readOnly);
         if (resultSet.getMetadata().hasTransaction()) {
           onTransactionMetadata(
               resultSet.getMetadata().getTransaction(), builder.getTransaction().hasBegin());
@@ -747,7 +748,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         // Register the update as an async operation that must finish before the transaction may
         // commit.
         increaseAsyncOperations();
-        resultSet = rpc.executeQueryAsync(builder.build(), session.getOptions(), false);
+        resultSet = rpc.executeQueryAsync(builder.build(), session.getOptions(), readOnly);
       } catch (Throwable t) {
         decreaseAsyncOperations();
         throw t;

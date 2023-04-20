@@ -79,7 +79,7 @@ public class OptionsTest {
             Options.limit(10),
             Options.prefetchChunks(1),
             Options.dataBoostEnabled(true),
-            Options.directedReadOption(DIRECTED_READ_OPTIONS));
+            Options.directedRead(DIRECTED_READ_OPTIONS));
     assertThat(options.hasLimit()).isTrue();
     assertThat(options.limit()).isEqualTo(10);
     assertThat(options.hasPrefetchChunks()).isTrue();
@@ -180,7 +180,7 @@ public class OptionsTest {
             Options.limit(limit),
             Options.tag(tag),
             Options.dataBoostEnabled(true),
-            Options.directedReadOption(DIRECTED_READ_OPTIONS));
+            Options.directedRead(DIRECTED_READ_OPTIONS));
 
     assertThat(options.toString())
         .isEqualTo(
@@ -232,7 +232,7 @@ public class OptionsTest {
             Options.prefetchChunks(chunks),
             Options.tag(tag),
             Options.dataBoostEnabled(true),
-            Options.directedReadOption(DIRECTED_READ_OPTIONS));
+            Options.directedRead(DIRECTED_READ_OPTIONS));
     assertThat(options.toString())
         .isEqualTo(
             "prefetchChunks: "

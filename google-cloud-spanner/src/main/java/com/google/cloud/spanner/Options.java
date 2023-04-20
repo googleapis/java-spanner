@@ -162,7 +162,7 @@ public final class Options implements Serializable {
    * is not generally available now).
    */
   @BetaApi
-  public static DataBoostQueryOption dataBoostEnabled(Boolean dataBoostEnabled) {
+  public static ReadAndQueryOption dataBoostEnabled(Boolean dataBoostEnabled) {
     return new DataBoostQueryOption(dataBoostEnabled);
   }
 
@@ -228,7 +228,7 @@ public final class Options implements Serializable {
     return new ValidateOnlyOption(validateOnly);
   }
 
-  public static DirectedReadOption directedReadOption(DirectedReadOptions directedReadOptions) {
+  public static ReadAndQueryOption directedRead(DirectedReadOptions directedReadOptions) {
     return new DirectedReadOption(directedReadOptions);
   }
 
