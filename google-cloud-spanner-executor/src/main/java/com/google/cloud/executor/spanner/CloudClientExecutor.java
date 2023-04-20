@@ -95,7 +95,6 @@ import com.google.spanner.executor.v1.CloudDatabaseResponse;
 import com.google.spanner.executor.v1.CloudInstanceConfigResponse;
 import com.google.spanner.executor.v1.CloudInstanceResponse;
 import com.google.spanner.executor.v1.Concurrency;
-import com.google.spanner.executor.v1.TransactionExecutionOptions;
 import com.google.spanner.executor.v1.CopyCloudBackupAction;
 import com.google.spanner.executor.v1.CreateCloudBackupAction;
 import com.google.spanner.executor.v1.CreateCloudDatabaseAction;
