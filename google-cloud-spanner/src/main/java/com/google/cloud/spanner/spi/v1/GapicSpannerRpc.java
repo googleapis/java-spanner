@@ -68,6 +68,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.SpannerOptions.CallCredentialsProvider;
+import com.google.cloud.spanner.SpannerUtil;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminCallableFactory;
@@ -1643,7 +1644,14 @@ public class GapicSpannerRpc implements SpannerRpc {
       ResultStreamConsumer consumer,
       @Nullable Map<Option, ?> options,
       boolean readOnly) {
-    request = validateReadRequest(request, readOnly);
+    DirectedReadOptions preferredDirectedReadOptions =
+        SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+            directedReadOptions,
+            request.hasDirectedReadOptions() ? request.getDirectedReadOptions() : null,
+            readOnly);
+    if (preferredDirectedReadOptions != null) {
+      request = request.toBuilder().setDirectedReadOptions(preferredDirectedReadOptions).build();
+    }
     GrpcCallContext context =
         newCallContext(options, request.getSession(), request, SpannerGrpc.getReadMethod());
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
@@ -1673,7 +1681,14 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public ApiFuture<ResultSet> executeQueryAsync(
       ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean readOnly) {
-    request = validateExecuteSqlRequest(request, readOnly);
+    DirectedReadOptions preferredDirectedReadOptions =
+        SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+            directedReadOptions,
+            request.hasDirectedReadOptions() ? request.getDirectedReadOptions() : null,
+            readOnly);
+    if (preferredDirectedReadOptions != null) {
+      request = request.toBuilder().setDirectedReadOptions(preferredDirectedReadOptions).build();
+    }
     GrpcCallContext context =
         newCallContext(options, request.getSession(), request, SpannerGrpc.getExecuteSqlMethod());
     return spannerStub.executeSqlCallable().futureCall(request, context);
@@ -1682,7 +1697,10 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public ResultSet executePartitionedDml(
       ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
-    request = validateExecuteSqlRequest(request, false);
+    SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+        directedReadOptions,
+        request.hasDirectedReadOptions() ? request.getDirectedReadOptions() : null,
+        false);
     GrpcCallContext context =
         newCallContext(options, request.getSession(), request, SpannerGrpc.getExecuteSqlMethod());
     return get(partitionedDmlStub.executeSqlCallable().futureCall(request, context));
@@ -1696,7 +1714,10 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public ServerStream<PartialResultSet> executeStreamingPartitionedDml(
       ExecuteSqlRequest request, Map<Option, ?> options, Duration timeout) {
-    request = validateExecuteSqlRequest(request, false);
+    SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+        directedReadOptions,
+        request.hasDirectedReadOptions() ? request.getDirectedReadOptions() : null,
+        false);
     GrpcCallContext context =
         newCallContext(
             options, request.getSession(), request, SpannerGrpc.getExecuteStreamingSqlMethod());
@@ -1711,7 +1732,14 @@ public class GapicSpannerRpc implements SpannerRpc {
       ResultStreamConsumer consumer,
       @Nullable Map<Option, ?> options,
       boolean readOnly) {
-    request = validateExecuteSqlRequest(request, readOnly);
+    DirectedReadOptions preferredDirectedReadOptions =
+        SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+            directedReadOptions,
+            request.hasDirectedReadOptions() ? request.getDirectedReadOptions() : null,
+            readOnly);
+    if (preferredDirectedReadOptions != null) {
+      request = request.toBuilder().setDirectedReadOptions(preferredDirectedReadOptions).build();
+    }
     GrpcCallContext context =
         newCallContext(
             options, request.getSession(), request, SpannerGrpc.getExecuteStreamingSqlMethod());
@@ -2028,42 +2056,5 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static Duration systemProperty(String name, int defaultValue) {
     String stringValue = System.getProperty(name, "");
     return Duration.ofSeconds(stringValue.isEmpty() ? defaultValue : Integer.parseInt(stringValue));
-  }
-
-  @VisibleForTesting
-  ExecuteSqlRequest validateExecuteSqlRequest(ExecuteSqlRequest request, boolean readOnly) {
-    if (!readOnly) {
-      if (request.hasDirectedReadOptions() || (directedReadOptions != null)) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.FAILED_PRECONDITION,
-            "DirectedReadOptions can't be set for Read-Write or Partitioned DML transactions");
-      }
-    }
-    // If DirectedReadOptions is not set at request-level, the request object won't be
-    // having DirectedReadOptions field set. Though, if DirectedReadOptions is set at client-level
-    // (through SpannerOptions), we must modify the request object to set the DirectedReadOptions
-    // proto field to this value.
-    if (!request.hasDirectedReadOptions() && directedReadOptions != null) {
-      return request.toBuilder().setDirectedReadOptions(directedReadOptions).build();
-    }
-    return request;
-  }
-
-  ReadRequest validateReadRequest(ReadRequest request, boolean readOnly) {
-    if (!readOnly) {
-      if (request.hasDirectedReadOptions() || (directedReadOptions != null)) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.FAILED_PRECONDITION,
-            "DirectedReadOptions can't be set for Read-Write or Partitioned DML transactions");
-      }
-    }
-    // If DirectedReadOptions is not set at request-level, the request object won't be
-    // having DirectedReadOptions field set. Though, if DirectedReadOptions is set at client-level
-    // (through SpannerOptions), we must modify the request object to set the DirectedReadOptions
-    // proto field to this value.
-    if (!request.hasDirectedReadOptions() && directedReadOptions != null) {
-      return request.toBuilder().setDirectedReadOptions(directedReadOptions).build();
-    }
-    return request;
   }
 }

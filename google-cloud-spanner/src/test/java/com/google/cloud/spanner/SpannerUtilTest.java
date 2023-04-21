@@ -80,4 +80,63 @@ public class SpannerUtilTest {
             () -> SpannerUtil.verifyDirectedReadOptions(directedReadOptions));
     assertEquals(e.getErrorCode(), ErrorCode.INVALID_ARGUMENT);
   }
+
+  @Test
+  public void testValidateDirectedReadOptions() {
+    DirectedReadOptions directedReadOptions =
+        DirectedReadOptions.newBuilder()
+            .setIncludeReplicas(
+                IncludeReplicas.newBuilder()
+                    .addReplicaSelections(
+                        ReplicaSelection.newBuilder().setLocation("us-west1").build()))
+            .build();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> {
+              SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+                  null, directedReadOptions, false);
+            });
+    assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
+
+    e =
+        assertThrows(
+            SpannerException.class,
+            () -> {
+              SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+                  directedReadOptions, null, false);
+            });
+    assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
+  }
+
+  @Test
+  public void testGetPreferredDirectedReadOptions() {
+    DirectedReadOptions directedReadOptionsForClient =
+        DirectedReadOptions.newBuilder()
+            .setIncludeReplicas(
+                IncludeReplicas.newBuilder()
+                    .addReplicaSelections(
+                        ReplicaSelection.newBuilder().setLocation("us-west1").build()))
+            .build();
+    DirectedReadOptions directedReadOptionsForRequest =
+        DirectedReadOptions.newBuilder()
+            .setExcludeReplicas(
+                ExcludeReplicas.newBuilder()
+                    .addReplicaSelections(
+                        ReplicaSelection.newBuilder().setLocation("us-east1").build()))
+            .build();
+
+    assertEquals(
+        SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+            directedReadOptionsForClient, directedReadOptionsForRequest, true),
+        directedReadOptionsForRequest);
+    assertEquals(
+        SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+            directedReadOptionsForClient, null, true),
+        directedReadOptionsForClient);
+    assertEquals(
+        SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+            null, directedReadOptionsForRequest, true),
+        directedReadOptionsForRequest);
+  }
 }

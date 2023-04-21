@@ -19,10 +19,10 @@ package com.google.cloud.spanner;
 import com.google.spanner.v1.DirectedReadOptions;
 
 /** Utility methods for Spanner. */
-class SpannerUtil {
+public class SpannerUtil {
   static final int MAX_REPLICA_SELECTIONS_COUNT = 10;
 
-  static void verifyDirectedReadOptions(DirectedReadOptions directedReadOptions) {
+  public static void verifyDirectedReadOptions(DirectedReadOptions directedReadOptions) {
     if (directedReadOptions.hasIncludeReplicas() && directedReadOptions.hasExcludeReplicas()) {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INVALID_ARGUMENT,
@@ -40,5 +40,26 @@ class SpannerUtil {
               "Maximum length of replica selection allowed in IncludeReplicas/ExcludeReplicas is %d",
               MAX_REPLICA_SELECTIONS_COUNT));
     }
+  }
+
+  public static DirectedReadOptions validateAndGetPreferredDirectedReadOptions(
+      DirectedReadOptions directedReadOptionsForClient,
+      DirectedReadOptions directedReadOptionsForRequest,
+      boolean readOnly) {
+    if (!readOnly) {
+      if ((directedReadOptionsForRequest != null) || (directedReadOptionsForClient != null)) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.FAILED_PRECONDITION,
+            "DirectedReadOptions can't be set for Read-Write or Partitioned DML transactions");
+      }
+    }
+    // If DirectedReadOptions is not set at request-level, the request object won't be
+    // having DirectedReadOptions field set. Though, if DirectedReadOptions is set at client-level
+    // (through SpannerOptions), we must modify the request object to set the DirectedReadOptions
+    // proto field to this value.
+    if ((directedReadOptionsForRequest == null) && (directedReadOptionsForClient != null)) {
+      return directedReadOptionsForClient;
+    }
+    return directedReadOptionsForRequest;
   }
 }

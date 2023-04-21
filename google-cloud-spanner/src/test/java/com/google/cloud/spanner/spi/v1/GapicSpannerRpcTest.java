@@ -19,7 +19,6 @@ package com.google.cloud.spanner.spi.v1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
@@ -52,7 +51,6 @@ import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
 import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.GetSessionRequest;
-import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.StructType;
@@ -479,126 +477,6 @@ public class GapicSpannerRpcTest {
             .contains("test-agent " + defaultUserAgent);
       }
     }
-  }
-
-  @Test
-  public void testValidateExecuteSqlRequest() {
-    ExecuteSqlRequest.Builder requestBuilder =
-        ExecuteSqlRequest.newBuilder().setSql("SELECT * FROM FOO");
-    ExecuteSqlRequest requestWithoutDirectedReadOptions = requestBuilder.build();
-    ExecuteSqlRequest requestWithDirectedReadOptions =
-        requestBuilder.setDirectedReadOptions(DIRECTED_READ_OPTIONS2).build();
-
-    // Case 1: Read-only transaction.
-    // Case 1.1: DirectedReadOptions passed in via SpannerOptions only.
-    ExecuteSqlRequest returnedRequest =
-        RPC_WITH_DIRECTED_READ_OPTIONS.validateExecuteSqlRequest(
-            requestWithoutDirectedReadOptions, true);
-    assertEquals(returnedRequest.getDirectedReadOptions(), DIRECTED_READ_OPTIONS1);
-    // Case 1.2: DirectedReadOptions passed in via request only.
-    returnedRequest =
-        RPC_WITHOUT_DIRECTED_READ_OPTIONS.validateExecuteSqlRequest(
-            requestWithDirectedReadOptions, true);
-    assertEquals(returnedRequest.getDirectedReadOptions(), DIRECTED_READ_OPTIONS2);
-    // Case 1.3: DirectedReadOptions passed in via both SpannerOptions and request.
-    returnedRequest =
-        RPC_WITH_DIRECTED_READ_OPTIONS.validateExecuteSqlRequest(
-            requestWithDirectedReadOptions, true);
-    assertEquals(returnedRequest.getDirectedReadOptions(), DIRECTED_READ_OPTIONS2);
-    // Case 1.4: DirectedReadOptions passed in via neither SpannerOptions and request.
-    returnedRequest =
-        RPC_WITHOUT_DIRECTED_READ_OPTIONS.validateExecuteSqlRequest(
-            requestWithoutDirectedReadOptions, true);
-    assertFalse(returnedRequest.hasDirectedReadOptions());
-
-    // Case 2: Read-write/PDML transaction.
-    // Case 2.1: DirectedReadOptions passed in via SpannerOptions only.
-    SpannerException e =
-        assertThrows(
-            SpannerException.class,
-            () ->
-                RPC_WITH_DIRECTED_READ_OPTIONS.validateExecuteSqlRequest(
-                    requestWithoutDirectedReadOptions, false));
-    assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
-    // Case 2.2: DirectedReadOptions passed in via request only.
-    e =
-        assertThrows(
-            SpannerException.class,
-            () ->
-                RPC_WITHOUT_DIRECTED_READ_OPTIONS.validateExecuteSqlRequest(
-                    requestWithDirectedReadOptions, false));
-    assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
-    // Case 2.3: DirectedReadOptions passed in via both SpannerOptions and request.
-    e =
-        assertThrows(
-            SpannerException.class,
-            () ->
-                RPC_WITH_DIRECTED_READ_OPTIONS.validateExecuteSqlRequest(
-                    requestWithDirectedReadOptions, false));
-    assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
-    // Case 2.4: DirectedReadOptions passed in via both SpannerOptions and request.
-    returnedRequest =
-        RPC_WITHOUT_DIRECTED_READ_OPTIONS.validateExecuteSqlRequest(
-            requestWithoutDirectedReadOptions, false);
-    assertFalse(returnedRequest.hasDirectedReadOptions());
-  }
-
-  @Test
-  public void testValidateReadRequest() {
-    ReadRequest.Builder requestBuilder = ReadRequest.newBuilder().setTable("tbl");
-    ReadRequest requestWithoutDirectedReadOptions = requestBuilder.build();
-    ReadRequest requestWithDirectedReadOptions =
-        requestBuilder.setDirectedReadOptions(DIRECTED_READ_OPTIONS2).build();
-
-    // Case 1: Read-only transaction.
-    // Case 1.1: DirectedReadOptions passed in via SpannerOptions only.
-    ReadRequest returnedRequest =
-        RPC_WITH_DIRECTED_READ_OPTIONS.validateReadRequest(requestWithoutDirectedReadOptions, true);
-    assertEquals(returnedRequest.getDirectedReadOptions(), DIRECTED_READ_OPTIONS1);
-    // Case 1.2: DirectedReadOptions passed in via request only.
-    returnedRequest =
-        RPC_WITHOUT_DIRECTED_READ_OPTIONS.validateReadRequest(requestWithDirectedReadOptions, true);
-    assertEquals(returnedRequest.getDirectedReadOptions(), DIRECTED_READ_OPTIONS2);
-    // Case 1.3: DirectedReadOptions passed in via both SpannerOptions and request.
-    returnedRequest =
-        RPC_WITH_DIRECTED_READ_OPTIONS.validateReadRequest(requestWithDirectedReadOptions, true);
-    assertEquals(returnedRequest.getDirectedReadOptions(), DIRECTED_READ_OPTIONS2);
-    // Case 1.4: DirectedReadOptions passed in via neither SpannerOptions and request.
-    returnedRequest =
-        RPC_WITHOUT_DIRECTED_READ_OPTIONS.validateReadRequest(
-            requestWithoutDirectedReadOptions, true);
-    assertFalse(returnedRequest.hasDirectedReadOptions());
-
-    // Case 2: Read-write/PDML transaction.
-    // Case 2.1: DirectedReadOptions passed in via SpannerOptions only.
-    SpannerException e =
-        assertThrows(
-            SpannerException.class,
-            () ->
-                RPC_WITH_DIRECTED_READ_OPTIONS.validateReadRequest(
-                    requestWithoutDirectedReadOptions, false));
-    assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
-    // Case 2.2: DirectedReadOptions passed in via request only.
-    e =
-        assertThrows(
-            SpannerException.class,
-            () ->
-                RPC_WITHOUT_DIRECTED_READ_OPTIONS.validateReadRequest(
-                    requestWithDirectedReadOptions, false));
-    assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
-    // Case 2.3: DirectedReadOptions passed in via both SpannerOptions and request.
-    e =
-        assertThrows(
-            SpannerException.class,
-            () ->
-                RPC_WITH_DIRECTED_READ_OPTIONS.validateReadRequest(
-                    requestWithDirectedReadOptions, false));
-    assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
-    // Case 2.4: DirectedReadOptions passed in via both SpannerOptions and request.
-    returnedRequest =
-        RPC_WITHOUT_DIRECTED_READ_OPTIONS.validateReadRequest(
-            requestWithoutDirectedReadOptions, false);
-    assertFalse(returnedRequest.hasDirectedReadOptions());
   }
 
   private SpannerOptions createSpannerOptions() {
