@@ -99,5 +99,7 @@ public class DirectedReadSampleIT extends SampleTestBase {
             () -> DirectedReadSample.directedRead(projectId, instanceId, databaseId.getDatabase()));
     assertTrue(out.contains("SingerId: 1, AlbumId: 1, AlbumTitle: title 1"));
     assertTrue(out.contains("SingerId: 2, AlbumId: 2, AlbumTitle: title 2"));
+    assertTrue(
+        out.contains("Successfully executed read-only transaction with directedReadOptions"));
   }
 }
