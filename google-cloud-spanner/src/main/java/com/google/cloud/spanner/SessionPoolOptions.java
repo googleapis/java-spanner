@@ -50,6 +50,9 @@ public class SessionPoolOptions {
   private final ActionOnSessionNotFound actionOnSessionNotFound;
   private final ActionOnSessionLeak actionOnSessionLeak;
   private final boolean trackStackTraceOfSessionCheckout;
+  private final ActionOnInactiveTransaction actionOnInactiveTransaction;
+
+  private final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions;
   private final long initialWaitForSessionTimeoutMillis;
   private final boolean autoDetectDialect;
   private final Duration waitForMinSessions;
@@ -73,6 +76,8 @@ public class SessionPoolOptions {
     this.removeInactiveSessionAfter = builder.removeInactiveSessionAfter;
     this.autoDetectDialect = builder.autoDetectDialect;
     this.waitForMinSessions = builder.waitForMinSessions;
+    this.actionOnInactiveTransaction = builder.actionOnInactiveTransaction;
+    this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
   }
 
   @Override
@@ -98,6 +103,7 @@ public class SessionPoolOptions {
         && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter)
         && Objects.equals(this.autoDetectDialect, other.autoDetectDialect)
         && Objects.equals(this.waitForMinSessions, other.waitForMinSessions);
+    // TODO add checks for new fields
   }
 
   @Override
@@ -180,6 +186,17 @@ public class SessionPoolOptions {
     return autoDetectDialect;
   }
 
+  public boolean closeInactiveTransactions() {
+    return actionOnInactiveTransaction == ActionOnInactiveTransaction.CLOSE;
+  }
+
+  InactiveTransactionRemovalOptions getInactiveTransactionRemovalOptions() {
+    return inactiveTransactionRemovalOptions;
+  }
+  public boolean warnInactiveTransactions() {
+    return actionOnInactiveTransaction == ActionOnInactiveTransaction.WARN;
+  }
+
   @VisibleForTesting
   long getInitialWaitForSessionTimeoutMillis() {
     return initialWaitForSessionTimeoutMillis;
@@ -223,6 +240,107 @@ public class SessionPoolOptions {
     FAIL
   }
 
+  private enum ActionOnInactiveTransaction {
+    WARN,
+    CLOSE
+  }
+
+  static class InactiveTransactionRemovalOptions {
+    // recurrence duration for closing long-running transactions.
+    private Duration recurrenceDuration;
+
+    // long-running transactions would be cleaned up if utilisation is greater than the below
+    // threshold
+    private double usedSessionsRatioThreshold;
+    // transaction that are not long-running are expected to complete within this defined threshold.
+    private Duration executionTimeThreshold;
+
+    public InactiveTransactionRemovalOptions(final Builder builder) {
+      this.executionTimeThreshold = builder.executionTimeThreshold;
+      this.recurrenceDuration = builder.recurrenceDuration;
+      this.usedSessionsRatioThreshold = builder.usedSessionsRatioThreshold;
+    }
+
+    Duration getRecurrenceDuration() {
+      return recurrenceDuration;
+    }
+
+    double getUsedSessionsRatioThreshold() {
+      return usedSessionsRatioThreshold;
+    }
+
+    Duration getExecutionTimeThreshold() {
+      return executionTimeThreshold;
+    }
+
+    public static InactiveTransactionRemovalOptions.Builder newBuilder() {
+      return new Builder();
+    }
+
+    /**
+     * Builder for creating InactiveTransactionRemovalOptions.
+     * */
+    static class Builder {
+      private Duration recurrenceDuration = Duration.ofMinutes(2);
+      private double usedSessionsRatioThreshold = 0.95;
+      private Duration executionTimeThreshold = Duration.ofMinutes(60L);
+
+      public Builder() {}
+
+      public InactiveTransactionRemovalOptions build() {
+        validate();
+        return new InactiveTransactionRemovalOptions(this);
+      }
+
+      private void validate() {
+        Preconditions.checkArgument(
+            recurrenceDuration.toMillis() > 0,
+            "Recurrence duration %s should be positive",
+            recurrenceDuration.toMillis());
+        Preconditions.checkArgument(
+            executionTimeThreshold.toMillis() > 0,
+            "Execution Time Threshold duration %s should be positive",
+            executionTimeThreshold.toMillis());
+      }
+
+      /**
+       *
+       * @param recurrenceDuration
+       * @return
+       */
+      @VisibleForTesting
+      InactiveTransactionRemovalOptions.Builder setRecurrenceDuration(
+          final Duration recurrenceDuration) {
+        this.recurrenceDuration = recurrenceDuration;
+        return this;
+      }
+
+      /**
+       *
+       * @param usedSessionsRatioThreshold
+       * @return
+       */
+      @VisibleForTesting
+      InactiveTransactionRemovalOptions.Builder setUsedSessionsRatioThreshold(
+          final double usedSessionsRatioThreshold) {
+        this.usedSessionsRatioThreshold = usedSessionsRatioThreshold;
+        return this;
+      }
+
+      /**
+       *
+       * @param executionTimeThreshold
+       * @return
+       */
+      @VisibleForTesting
+      InactiveTransactionRemovalOptions.Builder setExecutionTimeThreshold(
+          final Duration executionTimeThreshold) {
+        this.executionTimeThreshold = executionTimeThreshold;
+        return this;
+      }
+    }
+  }
+
   /** Builder for creating SessionPoolOptions. */
   public static class Builder {
     private boolean minSessionsSet = false;
@@ -254,6 +372,10 @@ public class SessionPoolOptions {
      */
     private boolean trackStackTraceOfSessionCheckout = true;
 
+    private ActionOnInactiveTransaction actionOnInactiveTransaction
+        = ActionOnInactiveTransaction.CLOSE;
+    private InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions
+        = InactiveTransactionRemovalOptions.newBuilder().build();
     private long loopFrequency = 10 * 1000L;
     private int keepAliveIntervalMinutes = 30;
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
@@ -274,6 +396,7 @@ public class SessionPoolOptions {
       this.actionOnSessionNotFound = options.actionOnSessionNotFound;
       this.actionOnSessionLeak = options.actionOnSessionLeak;
       this.trackStackTraceOfSessionCheckout = options.trackStackTraceOfSessionCheckout;
+      this.actionOnInactiveTransaction = options.actionOnInactiveTransaction;
       this.loopFrequency = options.loopFrequency;
       this.keepAliveIntervalMinutes = options.keepAliveIntervalMinutes;
       this.removeInactiveSessionAfter = options.removeInactiveSessionAfter;
@@ -335,6 +458,12 @@ public class SessionPoolOptions {
       return this;
     }
 
+    Builder setInactiveTransactionRemovalOptions(
+        InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions) {
+      this.inactiveTransactionRemovalOptions = inactiveTransactionRemovalOptions;
+      return this;
+    }
+
     public Builder setRemoveInactiveSessionAfter(Duration duration) {
       this.removeInactiveSessionAfter = duration;
       return this;
@@ -366,6 +495,26 @@ public class SessionPoolOptions {
      */
     public Builder setBlockIfPoolExhausted() {
       this.actionOnExhaustion = ActionOnExhaustion.BLOCK;
+      return this;
+    }
+
+    /**
+     * If there are inactive transactions, log warning messages with the origin of
+     * such transactions to aid debugging. The transactions will continue to remain open.
+     * @return
+     */
+    public Builder setWarnIfInactiveTransactions() {
+      this.actionOnInactiveTransaction = ActionOnInactiveTransaction.WARN;
+      return this;
+    }
+
+    /**
+     * Sets whether the client should automatically close inactive transactions which are running
+     * for unexpectedly large durations.
+     * @return
+     */
+    public Builder setCloseIfInactiveTransactions() {
+      this.actionOnInactiveTransaction = ActionOnInactiveTransaction.CLOSE;
       return this;
     }
 

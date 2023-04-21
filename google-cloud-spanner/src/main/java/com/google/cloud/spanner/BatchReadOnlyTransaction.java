@@ -199,6 +199,11 @@ public interface BatchReadOnlyTransaction extends ReadOnlyTransaction {
   BatchTransactionId getBatchTransactionId();
 
   /**
+   * Returns true if the transaction is expected to be long-running. Else return false;
+   */
+  boolean isLongRunning();
+
+  /**
    * Closes the session as part of the cleanup. It is the responsibility of the caller to make a
    * call to this method once the transaction completes execution across all the channels (which is
    * understandably hard to identify). It is okay if the caller does not call the method because the
