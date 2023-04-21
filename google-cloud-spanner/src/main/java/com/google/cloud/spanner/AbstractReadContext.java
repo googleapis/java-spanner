@@ -602,7 +602,6 @@ abstract class AbstractReadContext
       builder.setDataBoostEnabled(options.dataBoostEnabled());
     }
     if (options.hasDirectedReadOptions()) {
-      SpannerUtil.verifyDirectedReadOptions(options.directedReadOptions());
       builder.setDirectedReadOptions(options.directedReadOptions());
     }
     builder.setSeqno(getSeqNo());
@@ -788,7 +787,6 @@ abstract class AbstractReadContext
       builder.setDataBoostEnabled(readOptions.dataBoostEnabled());
     }
     if (readOptions.hasDirectedReadOptions()) {
-      SpannerUtil.verifyDirectedReadOptions(readOptions.directedReadOptions());
       builder.setDirectedReadOptions(readOptions.directedReadOptions());
     }
     final int prefetchChunks =

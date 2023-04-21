@@ -108,6 +108,13 @@ public class OptionsTest {
   }
 
   @Test
+  public void directedReadsNullNotAllowed() {
+    assertThrows(
+        NullPointerException.class,
+        () -> Options.directedRead(null));
+  }
+
+  @Test
   public void listOptionsTest() {
     int pageSize = 3;
     String pageToken = "ptok";
