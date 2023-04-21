@@ -397,7 +397,8 @@ public class GapicSpannerRpcTest {
 
   @Test
   public void testNewCallContextWithRouteToLeaderHeader() {
-    SpannerOptions options = SpannerOptions.newBuilder().setProjectId("some-project").build();
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setProjectId("some-project").enableLeaderAwareRouting().build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
     GrpcCallContext callContext =
         rpc.newCallContext(
@@ -526,7 +527,8 @@ public class GapicSpannerRpcTest {
 
   @Test
   public void testRouteToLeaderHeaderForReadOnly() {
-    final SpannerOptions options = createSpannerOptions();
+    final SpannerOptions options =
+        createSpannerOptions().toBuilder().enableLeaderAwareRouting().build();
     try (Spanner spanner = options.getService()) {
       final DatabaseClient databaseClient =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
@@ -541,7 +543,8 @@ public class GapicSpannerRpcTest {
 
   @Test
   public void testRouteToLeaderHeaderForReadWrite() {
-    final SpannerOptions options = createSpannerOptions();
+    final SpannerOptions options =
+        createSpannerOptions().toBuilder().enableLeaderAwareRouting().build();
     try (Spanner spanner = options.getService()) {
       final DatabaseClient databaseClient =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
