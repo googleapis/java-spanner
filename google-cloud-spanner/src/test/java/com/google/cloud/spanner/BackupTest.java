@@ -202,17 +202,6 @@ public class BackupTest {
   }
 
   @Test
-  public void updateExpireTimeWithoutExpireTime() {
-    Backup backup =
-        dbClient
-            .newBackupBuilder(BackupId.of("test-project", "test-instance", "test-backup"))
-            .build();
-    IllegalStateException e =
-        assertThrows(IllegalStateException.class, () -> backup.updateExpireTime());
-    assertNotNull(e.getMessage());
-  }
-
-  @Test
   public void restore() {
     Backup backup =
         dbClient

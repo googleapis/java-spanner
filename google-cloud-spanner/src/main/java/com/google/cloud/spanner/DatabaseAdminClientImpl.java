@@ -180,6 +180,8 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
       BackupId sourceBackupId, Backup destinationBackup) throws SpannerException {
     Preconditions.checkNotNull(sourceBackupId);
     Preconditions.checkNotNull(destinationBackup);
+    Preconditions.checkArgument(
+        destinationBackup.getExpireTime() != null, "Cannot copy a backup without an expire time");
 
     final OperationFuture<com.google.spanner.admin.database.v1.Backup, CopyBackupMetadata>
         rawOperationFuture = rpc.copyBackup(sourceBackupId, destinationBackup);
@@ -208,6 +210,8 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
 
   @Override
   public Backup updateBackup(String instanceId, String backupId, Timestamp expireTime) {
+    Preconditions.checkArgument(
+        expireTime != null, "Cannot update a backup without an expire time");
     String backupName = getBackupName(instanceId, backupId);
     final com.google.spanner.admin.database.v1.Backup backup =
         com.google.spanner.admin.database.v1.Backup.newBuilder()

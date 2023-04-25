@@ -108,7 +108,6 @@ public class Backup extends BackupInfo {
    * an expire time, the method will throw an {@link IllegalStateException}.
    */
   public void updateExpireTime() {
-    Preconditions.checkState(getExpireTime() != null, "This backup has no expire time");
     dbClient.updateBackup(instance(), backup(), getExpireTime());
   }
 

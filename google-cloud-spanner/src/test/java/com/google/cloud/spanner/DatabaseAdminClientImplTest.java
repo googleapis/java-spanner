@@ -594,6 +594,18 @@ public class DatabaseAdminClientImplTest {
     assertThat(op.get().getEncryptionInfo().getKmsKeyVersion()).isEqualTo(KMS_KEY_VERSION);
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void copyBackupWithNoExpireTime() {
+    OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "copyBackup", getBackupProto(), CopyBackupMetadata.getDefaultInstance());
+    final com.google.cloud.spanner.Backup backup =
+        client.newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID)).build();
+    when(rpc.copyBackup(BackupId.of(PROJECT_ID, INSTANCE_ID, SOURCE_BK), backup))
+        .thenReturn(rawOperationFuture);
+    client.copyBackup(INSTANCE_ID, SOURCE_BK, BK_ID, null);
+  }
+
   @Test
   public void deleteBackup() {
     client.deleteBackup(INSTANCE_ID, BK_ID);
@@ -639,6 +651,14 @@ public class DatabaseAdminClientImplTest {
                 .build());
     com.google.cloud.spanner.Backup updatedBackup = client.updateBackup(INSTANCE_ID, BK_ID, t);
     assertThat(updatedBackup.getExpireTime()).isEqualTo(t);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void updateBackupWithNoExpireTime() {
+    Backup backup = Backup.newBuilder().setName(BK_NAME).build();
+    when(rpc.updateBackup(backup, FieldMask.newBuilder().addPaths("expire_time").build()))
+        .thenReturn(Backup.newBuilder().setName(BK_NAME).setDatabase(DB_NAME).build());
+    client.updateBackup(INSTANCE_ID, BK_ID, null);
   }
 
   @Test
