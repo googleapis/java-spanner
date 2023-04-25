@@ -1271,9 +1271,10 @@ public class GapicSpannerRpc implements SpannerRpc {
     final String databaseName = backupInfo.getDatabase().getName();
     final String backupId = backupInfo.getId().getBackup();
     final Backup.Builder backupBuilder =
-        com.google.spanner.admin.database.v1.Backup.newBuilder()
-            .setDatabase(databaseName)
-            .setExpireTime(backupInfo.getExpireTime().toProto());
+        com.google.spanner.admin.database.v1.Backup.newBuilder().setDatabase(databaseName);
+    if (backupInfo.getExpireTime() != null) {
+      backupBuilder.setExpireTime(backupInfo.getExpireTime().toProto());
+    }
     if (backupInfo.getVersionTime() != null) {
       backupBuilder.setVersionTime(backupInfo.getVersionTime().toProto());
     }
