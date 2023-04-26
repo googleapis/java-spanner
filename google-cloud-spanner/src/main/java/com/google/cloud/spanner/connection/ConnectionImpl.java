@@ -84,7 +84,7 @@ class ConnectionImpl implements Connection {
     }
   }
 
-  private volatile LeakedConnectionException leakedException = new LeakedConnectionException();
+  private volatile LeakedConnectionException leakedException;;
   private final SpannerPool spannerPool;
   private AbstractStatementParser statementParser;
   /**
@@ -222,6 +222,8 @@ class ConnectionImpl implements Connection {
   /** Create a connection and register it in the SpannerPool. */
   ConnectionImpl(ConnectionOptions options) {
     Preconditions.checkNotNull(options);
+    this.leakedException =
+        options.isTrackConnectionLeaks() ? new LeakedConnectionException() : null;
     this.statementExecutor = new StatementExecutor(options.getStatementExecutionInterceptors());
     this.spannerPool = SpannerPool.INSTANCE;
     this.options = options;
@@ -251,6 +253,8 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(spannerPool);
     Preconditions.checkNotNull(ddlClient);
     Preconditions.checkNotNull(dbClient);
+    this.leakedException =
+        options.isTrackConnectionLeaks() ? new LeakedConnectionException() : null;
     this.statementExecutor = new StatementExecutor(Collections.emptyList());
     this.spannerPool = spannerPool;
     this.options = options;
