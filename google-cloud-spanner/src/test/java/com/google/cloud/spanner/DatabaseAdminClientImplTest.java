@@ -473,15 +473,22 @@ public class DatabaseAdminClientImplTest {
     assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testCreateBackupNoExpireTime() {
+  @Test
+  public void createBackupWithNullExpireTime() throws ExecutionException, InterruptedException {
+    final OperationFuture<Backup, CreateBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "createBackup", getBackupProto(), CreateBackupMetadata.getDefaultInstance());
     final com.google.cloud.spanner.Backup requestBackup =
         client
             .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
             .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
             .build();
 
-    client.createBackup(requestBackup);
+    when(rpc.createBackup(requestBackup)).thenReturn(rawOperationFuture);
+    final OperationFuture<com.google.cloud.spanner.Backup, CreateBackupMetadata> op =
+        client.createBackup(requestBackup);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
   }
 
   @Test(expected = IllegalArgumentException.class)
