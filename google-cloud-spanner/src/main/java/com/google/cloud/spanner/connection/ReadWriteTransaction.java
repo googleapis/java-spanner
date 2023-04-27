@@ -80,8 +80,10 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private static final int MAX_INTERNAL_RETRIES = 50;
   private final long transactionId;
   private final DatabaseClient dbClient;
-  private final TransactionManager txManager;
+  private final TransactionOption[] transactionOptions;
+  private TransactionManager txManager;
   private final boolean retryAbortsInternally;
+  private final SavepointSupport savepointSupport;
   private int transactionRetryAttempts;
   private int successfulRetries;
   private final List<TransactionRetryListener> transactionRetryListeners;
@@ -89,16 +91,20 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private volatile SettableApiFuture<CommitResponse> commitResponseFuture;
   private volatile UnitOfWorkState state = UnitOfWorkState.STARTED;
   private volatile AbortedException abortedException;
+  private AbortedException rolledBackToSavepointException;
   private boolean timedOutOrCancelled = false;
   private final List<RetriableStatement> statements = new ArrayList<>();
   private final List<Mutation> mutations = new ArrayList<>();
   private Timestamp transactionStarted;
   final Object abortedLock = new Object();
 
+  private static final class RollbackToSavepointException extends Exception {}
+
   static class Builder extends AbstractMultiUseTransaction.Builder<Builder, ReadWriteTransaction> {
     private DatabaseClient dbClient;
     private Boolean retryAbortsInternally;
     private boolean returnCommitStats;
+    private SavepointSupport savepointSupport;
     private List<TransactionRetryListener> transactionRetryListeners;
 
     private Builder() {}
@@ -119,6 +125,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       return this;
     }
 
+    Builder setSavepointSupport(SavepointSupport savepointSupport) {
+      this.savepointSupport = savepointSupport;
+      return this;
+    }
+
     Builder setTransactionRetryListeners(List<TransactionRetryListener> listeners) {
       Preconditions.checkNotNull(listeners);
       this.transactionRetryListeners = listeners;
@@ -132,6 +143,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           retryAbortsInternally != null, "RetryAbortsInternally is not specified");
       Preconditions.checkState(
           transactionRetryListeners != null, "TransactionRetryListeners are not specified");
+      Preconditions.checkState(savepointSupport != null, "SavepointSupport is not specified");
       return new ReadWriteTransaction(this);
     }
   }
@@ -145,8 +157,10 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     this.transactionId = ID_GENERATOR.incrementAndGet();
     this.dbClient = builder.dbClient;
     this.retryAbortsInternally = builder.retryAbortsInternally;
+    this.savepointSupport = builder.savepointSupport;
     this.transactionRetryListeners = builder.transactionRetryListeners;
-    this.txManager = dbClient.transactionManager(extractOptions(builder));
+    this.transactionOptions = extractOptions(builder);
+    this.txManager = dbClient.transactionManager(this.transactionOptions);
   }
 
   private TransactionOption[] extractOptions(Builder builder) {
@@ -231,6 +245,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
             + "or "
             + UnitOfWorkState.ABORTED
             + " is allowed.");
+    ConnectionPreconditions.checkState(
+        this.retryAbortsInternally || this.rolledBackToSavepointException == null,
+        "Cannot resume execution after rolling back to a savepoint if internal retries have been disabled. "
+            + "Call Connection#setRetryAbortsInternally(true) or execute `SET RETRY_ABORTS_INTERNALLY=TRUE` to enable "
+            + "resuming execution after rolling back to a savepoint.");
     checkTimedOut();
   }
 
@@ -270,6 +289,22 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
             ErrorCode.ABORTED,
             "This transaction has already been aborted. Rollback this transaction to start a new one.",
             this.abortedException);
+      }
+    }
+  }
+
+  void checkRolledBackToSavepoint() {
+    if (this.rolledBackToSavepointException != null) {
+      if (savepointSupport == SavepointSupport.FAIL_AFTER_ROLLBACK) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.FAILED_PRECONDITION,
+            "Using a read/write transaction after rolling back to a savepoint is not supported "
+                + "with SavepointSupport="
+                + savepointSupport);
+      } else {
+        AbortedException exception = this.rolledBackToSavepointException;
+        this.rolledBackToSavepointException = null;
+        throw exception;
       }
     }
   }
@@ -690,6 +725,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       synchronized (abortedLock) {
         checkAborted();
         try {
+          checkRolledBackToSavepoint();
           return callable.call();
         } catch (final AbortedException aborted) {
           handleAborted(aborted);
@@ -792,7 +828,12 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               ErrorCode.CANCELLED, "The statement was cancelled");
         }
         try {
-          txContextFuture = ApiFutures.immediateFuture(txManager.resetForRetry());
+          if (aborted.getCause() instanceof RollbackToSavepointException) {
+            txManager = dbClient.transactionManager(transactionOptions);
+            txContextFuture = ApiFutures.immediateFuture(txManager.begin());
+          } else {
+            txContextFuture = ApiFutures.immediateFuture(txManager.resetForRetry());
+          }
           // Inform listeners about the transaction retry that is about to start.
           invokeTransactionRetryListenersOnStart();
           // Then retry all transaction statements.
@@ -899,7 +940,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         @Override
         public Void call() {
           try {
-            if (state != UnitOfWorkState.ABORTED) {
+            if (state != UnitOfWorkState.ABORTED && rolledBackToSavepointException == null) {
               // Make sure the transaction has actually started before we try to rollback.
               get(txContextFuture);
               txManager.rollback();
@@ -913,16 +954,69 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public ApiFuture<Void> rollbackAsync() {
+    return rollbackAsync(true);
+  }
+
+  private ApiFuture<Void> rollbackAsync(boolean updateStatus) {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED || state == UnitOfWorkState.ABORTED,
         "This transaction has status " + state.name());
-    state = UnitOfWorkState.ROLLED_BACK;
+    if (updateStatus) {
+      state = UnitOfWorkState.ROLLED_BACK;
+    }
     if (txContextFuture != null && state != UnitOfWorkState.ABORTED) {
       return executeStatementAsync(
           ROLLBACK_STATEMENT, rollbackCallable, SpannerGrpc.getRollbackMethod());
     } else {
       return ApiFutures.immediateFuture(null);
     }
+  }
+
+  @Override
+  String getUnitOfWorkName() {
+    return "read/write transaction";
+  }
+
+  static class ReadWriteSavepoint extends Savepoint {
+    private final int statementPosition;
+    private final int mutationPosition;
+
+    ReadWriteSavepoint(String name, int statementPosition, int mutationPosition) {
+      super(name);
+      this.statementPosition = statementPosition;
+      this.mutationPosition = mutationPosition;
+    }
+
+    @Override
+    int getStatementPosition() {
+      return this.statementPosition;
+    }
+
+    @Override
+    int getMutationPosition() {
+      return this.mutationPosition;
+    }
+  }
+
+  @Override
+  Savepoint savepoint(String name) {
+    return new ReadWriteSavepoint(name, statements.size(), mutations.size());
+  }
+
+  @Override
+  void rollbackToSavepoint(Savepoint savepoint) {
+    get(rollbackAsync(false));
+    // Mark the state of the transaction as rolled back to a savepoint. This will ensure that the
+    // transaction will retry the next time a statement is actually executed.
+    this.rolledBackToSavepointException =
+        (AbortedException)
+            SpannerExceptionFactory.newSpannerException(
+                ErrorCode.ABORTED,
+                "Transaction has been rolled back to a savepoint",
+                new RollbackToSavepointException());
+    // Clear all statements and mutations after the savepoint.
+    this.statements.subList(savepoint.getStatementPosition(), this.statements.size()).clear();
+    this.mutations.subList(savepoint.getMutationPosition(), this.mutations.size()).clear();
   }
 
   /**

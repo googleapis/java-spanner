@@ -54,12 +54,12 @@ public final class KeysProto {
           + ".ListValueH\001B\020\n\016start_key_typeB\016\n\014end_ke"
           + "y_type\"l\n\006KeySet\022(\n\004keys\030\001 \003(\0132\032.google."
           + "protobuf.ListValue\022+\n\006ranges\030\002 \003(\0132\033.goo"
-          + "gle.spanner.v1.KeyRange\022\013\n\003all\030\003 \001(\010B\257\001\n"
-          + "\025com.google.spanner.v1B\tKeysProtoP\001Z8goo"
-          + "gle.golang.org/genproto/googleapis/spann"
-          + "er/v1;spanner\252\002\027Google.Cloud.Spanner.V1\312"
-          + "\002\027Google\\Cloud\\Spanner\\V1\352\002\032Google::Clou"
-          + "d::Spanner::V1b\006proto3"
+          + "gle.spanner.v1.KeyRange\022\013\n\003all\030\003 \001(\010B\254\001\n"
+          + "\025com.google.spanner.v1B\tKeysProtoP\001Z5clo"
+          + "ud.google.com/go/spanner/apiv1/spannerpb"
+          + ";spannerpb\252\002\027Google.Cloud.Spanner.V1\312\002\027G"
+          + "oogle\\Cloud\\Spanner\\V1\352\002\032Google::Cloud::"
+          + "Spanner::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(

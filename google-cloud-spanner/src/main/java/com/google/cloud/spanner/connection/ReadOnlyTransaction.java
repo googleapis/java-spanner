@@ -30,6 +30,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 /**
@@ -72,7 +73,8 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
     return new Builder();
   }
 
-  private ReadOnlyTransaction(Builder builder) {
+  @VisibleForTesting
+  ReadOnlyTransaction(Builder builder) {
     super(builder);
     this.dbClient = builder.dbClient;
     this.readOnlyStaleness = builder.readOnlyStaleness;
@@ -201,5 +203,20 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
     }
     this.state = UnitOfWorkState.ROLLED_BACK;
     return ApiFutures.immediateFuture(null);
+  }
+
+  @Override
+  String getUnitOfWorkName() {
+    return "read-only transaction";
+  }
+
+  Savepoint savepoint(String name) {
+    // Read-only transactions do not keep track of the executed statements as they also do not take
+    // any locks. There is therefore no savepoint positions that must be rolled back to.
+    return Savepoint.of(name);
+  }
+
+  void rollbackToSavepoint(Savepoint savepoint) {
+    // no-op for read-only transactions
   }
 }

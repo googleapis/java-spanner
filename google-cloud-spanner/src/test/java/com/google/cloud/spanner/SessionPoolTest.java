@@ -94,6 +94,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.threeten.bp.Duration;
 
 /** Tests for SessionPool that mock out the underlying stub. */
 @RunWith(Parameterized.class)
@@ -1189,6 +1190,47 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     setupMockSessionCreation();
     pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
     assertEquals(TEST_DATABASE_ROLE, pool.getDatabaseRole());
+  }
+
+  @Test
+  public void testWaitOnMinSessionsWhenSessionsAreCreatedBeforeTimeout() {
+    doAnswer(
+            invocation ->
+                executor.submit(
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgument(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(mockSession());
+                    }))
+        .when(sessionClient)
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(minSessions)
+            .setMaxSessions(minSessions + 1)
+            .setWaitForMinSessions(Duration.ofSeconds(5))
+            .build();
+    pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
+    pool.maybeWaitOnMinSessions();
+    assertTrue(pool.getNumberOfSessionsInPool() >= minSessions);
+  }
+
+  @Test(expected = SpannerException.class)
+  public void testWaitOnMinSessionsThrowsExceptionWhenTimeoutIsReached() {
+    // Does not call onSessionReady, so session pool is never populated
+    doAnswer(invocation -> null)
+        .when(sessionClient)
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(minSessions + 1)
+            .setMaxSessions(minSessions + 1)
+            .setWaitForMinSessions(Duration.ofMillis(100))
+            .build();
+    pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
+    pool.maybeWaitOnMinSessions();
   }
 
   private void mockKeepAlive(Session session) {

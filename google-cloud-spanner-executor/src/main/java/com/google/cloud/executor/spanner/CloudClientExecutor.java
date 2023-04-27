@@ -52,6 +52,7 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Partition;
 import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext;
@@ -128,6 +129,8 @@ import com.google.spanner.executor.v1.MutationAction.InsertArgs;
 import com.google.spanner.executor.v1.MutationAction.Mod;
 import com.google.spanner.executor.v1.MutationAction.UpdateArgs;
 import com.google.spanner.executor.v1.OperationResponse;
+import com.google.spanner.executor.v1.PartitionedUpdateAction;
+import com.google.spanner.executor.v1.PartitionedUpdateAction.ExecutePartitionedUpdateOptions;
 import com.google.spanner.executor.v1.QueryAction;
 import com.google.spanner.executor.v1.ReadAction;
 import com.google.spanner.executor.v1.RestoreCloudDatabaseAction;
@@ -137,6 +140,7 @@ import com.google.spanner.executor.v1.SpannerAsyncActionRequest;
 import com.google.spanner.executor.v1.SpannerAsyncActionResponse;
 import com.google.spanner.executor.v1.StartBatchTransactionAction;
 import com.google.spanner.executor.v1.StartTransactionAction;
+import com.google.spanner.executor.v1.TransactionExecutionOptions;
 import com.google.spanner.executor.v1.UpdateCloudBackupAction;
 import com.google.spanner.executor.v1.UpdateCloudDatabaseDdlAction;
 import com.google.spanner.executor.v1.UpdateCloudInstanceAction;
@@ -224,13 +228,16 @@ public class CloudClientExecutor extends CloudExecutor {
     private Mode finishMode;
     private SpannerException error;
     private final String transactionSeed;
+    private final boolean optimistic;
     // Set to true when the transaction runner completed, one of these three could happen: runner
     // committed, abandoned or threw an error.
     private boolean runnerCompleted;
 
-    public ReadWriteTransaction(DatabaseClient dbClient, String transactionSeed) {
+    public ReadWriteTransaction(
+        DatabaseClient dbClient, String transactionSeed, boolean optimistic) {
       this.dbClient = dbClient;
       this.transactionSeed = transactionSeed;
+      this.optimistic = optimistic;
       this.runnerCompleted = false;
     }
 
@@ -315,7 +322,10 @@ public class CloudClientExecutor extends CloudExecutor {
       Runnable runnable =
           () -> {
             try {
-              runner = dbClient.readWriteTransaction();
+              runner =
+                  optimistic
+                      ? dbClient.readWriteTransaction(Options.optimisticLock())
+                      : dbClient.readWriteTransaction();
               LOGGER.log(Level.INFO, String.format("Ready to run callable %s\n", transactionSeed));
               runner.run(callable);
               transactionSucceeded(runner.getCommitTimestamp().toProto());
@@ -534,7 +544,8 @@ public class CloudClientExecutor extends CloudExecutor {
     }
 
     /** Start a read-write transaction. */
-    public synchronized void startReadWriteTxn(DatabaseClient dbClient, Metadata metadata)
+    public synchronized void startReadWriteTxn(
+        DatabaseClient dbClient, Metadata metadata, TransactionExecutionOptions options)
         throws Exception {
       if ((rwTxn != null) || (roTxn != null) || (batchTxn != null)) {
         throw SpannerExceptionFactory.newSpannerException(
@@ -545,7 +556,7 @@ public class CloudClientExecutor extends CloudExecutor {
           String.format(
               "There's no active transaction, safe to create rwTxn: %s\n", getTransactionSeed()));
       this.metadata = metadata;
-      rwTxn = new ReadWriteTransaction(dbClient, transactionSeed);
+      rwTxn = new ReadWriteTransaction(dbClient, transactionSeed, options.getOptimistic());
       LOGGER.log(
           Level.INFO,
           String.format(
@@ -886,6 +897,13 @@ public class CloudClientExecutor extends CloudExecutor {
       } else if (action.hasExecutePartition()) {
         return executeExecutePartition(
             action.getExecutePartition(), outcomeSender, executionContext);
+      } else if (action.hasPartitionedUpdate()) {
+        if (dbPath == null) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT, "Database path must be set for this action");
+        }
+        DatabaseClient dbClient = getClient().getDatabaseClient(DatabaseId.of(dbPath));
+        return executePartitionedUpdate(action.getPartitionedUpdate(), dbClient, outcomeSender);
       } else if (action.hasCloseBatchTxn()) {
         return executeCloseBatchTxn(action.getCloseBatchTxn(), outcomeSender, executionContext);
       } else if (action.hasExecuteChangeStreamQuery()) {
@@ -1974,6 +1992,33 @@ public class CloudClientExecutor extends CloudExecutor {
     }
   }
 
+  /** Execute a partitioned update which runs different partitions in parallel. */
+  private Status executePartitionedUpdate(
+      PartitionedUpdateAction action, DatabaseClient dbClient, OutcomeSender sender) {
+    try {
+      ExecutePartitionedUpdateOptions options = action.getOptions();
+      Long count =
+          dbClient.executePartitionedUpdate(
+              Statement.of(action.getUpdate().getSql()),
+              Options.tag(options.getTag()),
+              Options.priority(RpcPriority.fromProto(options.getRpcPriority())));
+      SpannerActionOutcome outcome =
+          SpannerActionOutcome.newBuilder()
+              .setStatus(toProto(Status.OK))
+              .addDmlRowsModified(count)
+              .build();
+      sender.sendOutcome(outcome);
+      return sender.finishWithOK();
+    } catch (SpannerException e) {
+      return sender.finishWithError(toStatus(e));
+    } catch (Exception e) {
+      return sender.finishWithError(
+          toStatus(
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+    }
+  }
+
   /** Build a child partition record proto out of childPartitionRecord returned by client. */
   private ChildPartitionsRecord buildChildPartitionRecord(Struct childPartitionRecord)
       throws Exception {
@@ -2209,7 +2254,7 @@ public class CloudClientExecutor extends CloudExecutor {
             Level.INFO,
             "Starting read-write transaction %s\n",
             executionContext.getTransactionSeed());
-        executionContext.startReadWriteTxn(dbClient, metadata);
+        executionContext.startReadWriteTxn(dbClient, metadata, action.getExecutionOptions());
       }
       executionContext.setDatabaseClient(dbClient);
       executionContext.initReadState();
@@ -2451,10 +2496,10 @@ public class CloudClientExecutor extends CloudExecutor {
         QueryAction update = action.getUpdates(i);
         Statement.Builder stmt = Statement.newBuilder(update.getSql());
         for (int j = 0; j < update.getParamsCount(); ++j) {
-          stmt.bind(update.getParams(i).getName())
+          stmt.bind(update.getParams(j).getName())
               .to(
                   valueProtoToCloudValue(
-                      update.getParams(i).getType(), update.getParams(i).getValue()));
+                      update.getParams(j).getType(), update.getParams(j).getValue()));
         }
         queries.add(stmt.build());
       }
