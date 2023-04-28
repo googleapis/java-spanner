@@ -132,6 +132,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final CallCredentialsProvider callCredentialsProvider;
   private final CloseableExecutorProvider asyncExecutorProvider;
   private final String compressorName;
+  private final boolean leaderAwareRoutingEnabled;
 
   /**
    * Interface that can be used to provide {@link CallCredentials} instead of {@link Credentials} to
@@ -600,6 +601,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     callCredentialsProvider = builder.callCredentialsProvider;
     asyncExecutorProvider = builder.asyncExecutorProvider;
     compressorName = builder.compressorName;
+    leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
   }
 
   /**
@@ -700,6 +702,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private CloseableExecutorProvider asyncExecutorProvider;
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
+    private boolean leaderAwareRoutingEnabled = false;
 
     private Builder() {
       // Manually set retry and polling settings that work.
@@ -1155,6 +1158,24 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Enable leader aware routing. Leader aware routing would route all requests in RW/PDML
+     * transactions to the leader region.
+     */
+    public Builder enableLeaderAwareRouting() {
+      this.leaderAwareRoutingEnabled = true;
+      return this;
+    }
+
+    /**
+     * Disable leader aware routing. Disabling leader aware routing would route all requests in
+     * RW/PDML transactions to any region.
+     */
+    public Builder disableLeaderAwareRouting() {
+      this.leaderAwareRoutingEnabled = false;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1289,6 +1310,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public String getCompressorName() {
     return compressorName;
+  }
+
+  public boolean isLeaderAwareRoutingEnabled() {
+    return leaderAwareRoutingEnabled;
   }
 
   /** Returns the default query options to use for the specific database. */
