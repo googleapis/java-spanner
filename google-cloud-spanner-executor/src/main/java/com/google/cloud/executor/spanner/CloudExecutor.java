@@ -428,7 +428,8 @@ public abstract class CloudExecutor {
       case CANCELLED:
         return Status.fromCode(Status.CANCELLED.getCode()).withDescription(e.getMessage());
       case INTERNAL:
-        return Status.fromCode(Status.INTERNAL.getCode()).withDescription(e.getMessage());
+        return Status.fromCode(Status.INTERNAL.getCode())
+            .withDescription(e.getMessage() + e.getReason() == null ? "" : ": " + e.getReason());
       case FAILED_PRECONDITION:
         return Status.fromCode(Status.FAILED_PRECONDITION.getCode())
             .withDescription(e.getMessage());
