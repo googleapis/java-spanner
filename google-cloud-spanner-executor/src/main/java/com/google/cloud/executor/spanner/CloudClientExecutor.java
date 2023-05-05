@@ -168,9 +168,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
-import org.jetbrains.annotations.NotNull;
 import org.threeten.bp.Duration;
 import org.threeten.bp.LocalDate;
 
@@ -652,7 +652,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
 
     /** Execute a batch of updates in a read-write transaction. */
-    public synchronized long[] executeBatchDml(@NotNull List<Statement> stmts)
+    public synchronized long[] executeBatchDml(@Nonnull List<Statement> stmts)
         throws SpannerException {
       for (int i = 0; i < stmts.size(); i++) {
         LOGGER.log(
@@ -3323,7 +3323,7 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Convert a cloud Type to a Type proto. */
-  private static com.google.spanner.v1.Type cloudTypeToTypeProto(@NotNull Type cloudTypeProto) {
+  private static com.google.spanner.v1.Type cloudTypeToTypeProto(@Nonnull Type cloudTypeProto) {
     switch (cloudTypeProto.getCode()) {
       case BOOL:
         return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.BOOL).build();
