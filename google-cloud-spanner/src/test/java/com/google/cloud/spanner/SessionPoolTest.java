@@ -176,401 +176,390 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             Mockito.anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class));
   }
 
-  public class SessionPoolMaintainerTest {
-    @Test
-    public void testClosedPoolIncludesClosedException() {
-      pool = createPool();
-      assertTrue(pool.isValid());
-      closePoolWithStacktrace();
-      IllegalStateException e = assertThrows(IllegalStateException.class, () -> pool.getSession());
-      assertThat(e.getCause()).isInstanceOf(ClosedException.class);
-      StringWriter sw = new StringWriter();
-      e.getCause().printStackTrace(new PrintWriter(sw));
-      assertThat(sw.toString()).contains("closePoolWithStacktrace");
+  @Test
+  public void testClosedPoolIncludesClosedException() {
+    pool = createPool();
+    assertTrue(pool.isValid());
+    closePoolWithStacktrace();
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> pool.getSession());
+    assertThat(e.getCause()).isInstanceOf(ClosedException.class);
+    StringWriter sw = new StringWriter();
+    e.getCause().printStackTrace(new PrintWriter(sw));
+    assertThat(sw.toString()).contains("closePoolWithStacktrace");
+  }
+
+  private void closePoolWithStacktrace() {
+    pool.closeAsync(new SpannerImpl.ClosedException());
+  }
+
+  @Test
+  public void sessionCreation() {
+    setupMockSessionCreation();
+    pool = createPool();
+    try (Session session = pool.getSession()) {
+      assertThat(session).isNotNull();
     }
+  }
 
-    private void closePoolWithStacktrace() {
-      pool.closeAsync(new SpannerImpl.ClosedException());
-    }
+  @Test
+  public void poolLifo() {
+    setupMockSessionCreation();
+    pool = createPool();
+    Session session1 = pool.getSession().get();
+    Session session2 = pool.getSession().get();
+    assertThat(session1).isNotEqualTo(session2);
 
-    @Test
-    public void sessionCreation() {
-      setupMockSessionCreation();
-      pool = createPool();
-      try (Session session = pool.getSession()) {
-        assertThat(session).isNotNull();
-      }
-    }
+    session2.close();
+    session1.close();
+    Session session3 = pool.getSession().get();
+    Session session4 = pool.getSession().get();
+    assertThat(session3).isEqualTo(session1);
+    assertThat(session4).isEqualTo(session2);
+    session3.close();
+    session4.close();
+  }
 
-    @Test
-    public void poolLifo() {
-      setupMockSessionCreation();
-      pool = createPool();
-      Session session1 = pool.getSession().get();
-      Session session2 = pool.getSession().get();
-      assertThat(session1).isNotEqualTo(session2);
+  @Test
+  public void poolClosure() throws Exception {
+    setupMockSessionCreation();
+    pool = createPool();
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
+  }
 
-      session2.close();
-      session1.close();
-      Session session3 = pool.getSession().get();
-      Session session4 = pool.getSession().get();
-      assertThat(session3).isEqualTo(session1);
-      assertThat(session4).isEqualTo(session2);
-      session3.close();
-      session4.close();
-    }
+  @Test
+  public void poolClosureClosesLeakedSessions() throws Exception {
+    SessionImpl mockSession1 = mockSession();
+    SessionImpl mockSession2 = mockSession();
+    final LinkedList<SessionImpl> sessions =
+        new LinkedList<>(Arrays.asList(mockSession1, mockSession2));
+    doAnswer(
+            invocation -> {
+              executor.submit(
+                  () -> {
+                    SessionConsumerImpl consumer =
+                        invocation.getArgument(2, SessionConsumerImpl.class);
+                    consumer.onSessionReady(sessions.pop());
+                  });
+              return null;
+            })
+        .when(sessionClient)
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+    pool = createPool();
+    Session session1 = pool.getSession();
+    // Leaked sessions
+    PooledSessionFuture leakedSession = pool.getSession();
+    // Clear the leaked exception to suppress logging of expected exceptions.
+    leakedSession.clearLeakedException();
+    session1.close();
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
+    verify(mockSession1).asyncClose();
+    verify(mockSession2).asyncClose();
+  }
 
-    @Test
-    public void poolClosure() throws Exception {
-      setupMockSessionCreation();
-      pool = createPool();
-      pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
-    }
+  @Test
+  public void poolClosesWhenMaintenanceLoopIsRunning() throws Exception {
+    setupMockSessionCreation();
+    final FakeClock clock = new FakeClock();
+    pool = createPool(clock);
+    final AtomicBoolean stop = new AtomicBoolean(false);
+    new Thread(
+            () -> {
+              // Run in a tight loop.
+              while (!stop.get()) {
+                runMaintenanceLoop(clock, pool, 1);
+              }
+            })
+        .start();
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
+    stop.set(true);
+  }
 
-    @Test
-    public void poolClosureClosesLeakedSessions() throws Exception {
-      SessionImpl mockSession1 = mockSession();
-      SessionImpl mockSession2 = mockSession();
-      final LinkedList<SessionImpl> sessions =
-          new LinkedList<>(Arrays.asList(mockSession1, mockSession2));
-      doAnswer(
-              invocation -> {
-                executor.submit(
-                    () -> {
-                      SessionConsumerImpl consumer =
-                          invocation.getArgument(2, SessionConsumerImpl.class);
-                      consumer.onSessionReady(sessions.pop());
-                    });
-                return null;
-              })
-          .when(sessionClient)
-          .asyncBatchCreateSessions(
-              Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-      pool = createPool();
-      Session session1 = pool.getSession();
-      // Leaked sessions
-      PooledSessionFuture leakedSession = pool.getSession();
-      // Clear the leaked exception to suppress logging of expected exceptions.
-      leakedSession.clearLeakedException();
-      session1.close();
-      pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
-      verify(mockSession1).asyncClose();
-      verify(mockSession2).asyncClose();
-    }
+  @Test
+  public void poolClosureFailsPendingReadWaiters() throws Exception {
+    final CountDownLatch insideCreation = new CountDownLatch(1);
+    final CountDownLatch releaseCreation = new CountDownLatch(1);
+    final SessionImpl session1 = mockSession();
+    final SessionImpl session2 = mockSession();
+    doAnswer(
+            invocation -> {
+              executor.submit(
+                  () -> {
+                    SessionConsumerImpl consumer =
+                        invocation.getArgument(2, SessionConsumerImpl.class);
+                    consumer.onSessionReady(session1);
+                  });
+              return null;
+            })
+        .doAnswer(
+            invocation -> {
+              executor.submit(
+                  () -> {
+                    insideCreation.countDown();
+                    releaseCreation.await();
+                    SessionConsumerImpl consumer =
+                        invocation.getArgument(2, SessionConsumerImpl.class);
+                    consumer.onSessionReady(session2);
+                    return null;
+                  });
+              return null;
+            })
+        .when(sessionClient)
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
 
-    @Test
-    public void poolClosesWhenMaintenanceLoopIsRunning() throws Exception {
-      setupMockSessionCreation();
-      final FakeClock clock = new FakeClock();
-      pool = createPool(clock);
-      final AtomicBoolean stop = new AtomicBoolean(false);
-      new Thread(
-              () -> {
-                // Run in a tight loop.
-                while (!stop.get()) {
-                  runMaintenanceLoop(clock, pool, 1);
-                }
-              })
-          .start();
-      pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
-      stop.set(true);
-    }
+    pool = createPool();
+    PooledSessionFuture leakedSession = pool.getSession();
+    // Suppress expected leakedSession warning.
+    leakedSession.clearLeakedException();
+    AtomicBoolean failed = new AtomicBoolean(false);
+    CountDownLatch latch = new CountDownLatch(1);
+    getSessionAsync(latch, failed);
+    insideCreation.await();
+    pool.closeAsync(new SpannerImpl.ClosedException());
+    releaseCreation.countDown();
+    latch.await(5L, TimeUnit.SECONDS);
+    assertThat(failed.get()).isTrue();
+  }
 
-    @Test
-    public void poolClosureFailsPendingReadWaiters() throws Exception {
-      final CountDownLatch insideCreation = new CountDownLatch(1);
-      final CountDownLatch releaseCreation = new CountDownLatch(1);
-      final SessionImpl session1 = mockSession();
-      final SessionImpl session2 = mockSession();
-      doAnswer(
-              invocation -> {
-                executor.submit(
-                    () -> {
-                      SessionConsumerImpl consumer =
-                          invocation.getArgument(2, SessionConsumerImpl.class);
-                      consumer.onSessionReady(session1);
-                    });
-                return null;
-              })
-          .doAnswer(
-              invocation -> {
-                executor.submit(
-                    () -> {
-                      insideCreation.countDown();
-                      releaseCreation.await();
-                      SessionConsumerImpl consumer =
-                          invocation.getArgument(2, SessionConsumerImpl.class);
-                      consumer.onSessionReady(session2);
-                      return null;
-                    });
-                return null;
-              })
-          .when(sessionClient)
-          .asyncBatchCreateSessions(
-              Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+  @Test
+  public void poolClosureFailsPendingWriteWaiters() throws Exception {
+    final CountDownLatch insideCreation = new CountDownLatch(1);
+    final CountDownLatch releaseCreation = new CountDownLatch(1);
+    final SessionImpl session1 = mockSession();
+    final SessionImpl session2 = mockSession();
+    doAnswer(
+            invocation -> {
+              executor.submit(
+                  () -> {
+                    SessionConsumerImpl consumer =
+                        invocation.getArgument(2, SessionConsumerImpl.class);
+                    consumer.onSessionReady(session1);
+                  });
+              return null;
+            })
+        .doAnswer(
+            invocation -> {
+              executor.submit(
+                  () -> {
+                    insideCreation.countDown();
+                    releaseCreation.await();
+                    SessionConsumerImpl consumer =
+                        invocation.getArgument(2, SessionConsumerImpl.class);
+                    consumer.onSessionReady(session2);
+                    return null;
+                  });
+              return null;
+            })
+        .when(sessionClient)
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
 
-      pool = createPool();
-      PooledSessionFuture leakedSession = pool.getSession();
-      // Suppress expected leakedSession warning.
-      leakedSession.clearLeakedException();
-      AtomicBoolean failed = new AtomicBoolean(false);
-      CountDownLatch latch = new CountDownLatch(1);
+    pool = createPool();
+    PooledSessionFuture leakedSession = pool.getSession();
+    // Suppress expected leakedSession warning.
+    leakedSession.clearLeakedException();
+    AtomicBoolean failed = new AtomicBoolean(false);
+    CountDownLatch latch = new CountDownLatch(1);
+    getSessionAsync(latch, failed);
+    insideCreation.await();
+    pool.closeAsync(new SpannerImpl.ClosedException());
+    releaseCreation.countDown();
+    latch.await();
+    assertThat(failed.get()).isTrue();
+  }
+
+  @Test
+  public void poolClosesEvenIfCreationFails() throws Exception {
+    final CountDownLatch insideCreation = new CountDownLatch(1);
+    final CountDownLatch releaseCreation = new CountDownLatch(1);
+    doAnswer(
+            invocation -> {
+              executor.submit(
+                  () -> {
+                    insideCreation.countDown();
+                    releaseCreation.await();
+                    SessionConsumerImpl consumer =
+                        invocation.getArgument(2, SessionConsumerImpl.class);
+                    consumer.onSessionCreateFailure(
+                        SpannerExceptionFactory.newSpannerException(new RuntimeException()), 1);
+                    return null;
+                  });
+              return null;
+            })
+        .when(sessionClient)
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+    pool = createPool();
+    AtomicBoolean failed = new AtomicBoolean(false);
+    CountDownLatch latch = new CountDownLatch(1);
+    getSessionAsync(latch, failed);
+    insideCreation.await();
+    ListenableFuture<Void> f = pool.closeAsync(new SpannerImpl.ClosedException());
+    releaseCreation.countDown();
+    f.get();
+    assertThat(f.isDone()).isTrue();
+  }
+
+  @Test
+  public void poolClosureFailsNewRequests() {
+    final SessionImpl session = mockSession();
+    doAnswer(
+            invocation -> {
+              executor.submit(
+                  () -> {
+                    SessionConsumerImpl consumer =
+                        invocation.getArgument(2, SessionConsumerImpl.class);
+                    consumer.onSessionReady(session);
+                  });
+              return null;
+            })
+        .when(sessionClient)
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+    pool = createPool();
+    PooledSessionFuture leakedSession = pool.getSession();
+    leakedSession.get();
+    // Suppress expected leakedSession warning.
+    leakedSession.clearLeakedException();
+    pool.closeAsync(new SpannerImpl.ClosedException());
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> pool.getSession());
+    assertNotNull(e.getMessage());
+  }
+
+  @Test
+  public void atMostMaxSessionsCreated() {
+    setupMockSessionCreation();
+    AtomicBoolean failed = new AtomicBoolean(false);
+    pool = createPool();
+    int numSessions = 10;
+    final CountDownLatch latch = new CountDownLatch(numSessions);
+    for (int i = 0; i < numSessions; i++) {
       getSessionAsync(latch, failed);
-      insideCreation.await();
-      pool.closeAsync(new SpannerImpl.ClosedException());
-      releaseCreation.countDown();
-      latch.await(5L, TimeUnit.SECONDS);
-      assertThat(failed.get()).isTrue();
     }
+    Uninterruptibles.awaitUninterruptibly(latch);
+    verify(sessionClient, atMost(options.getMaxSessions()))
+        .asyncBatchCreateSessions(eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+    assertThat(failed.get()).isFalse();
+  }
 
-    @Test
-    public void poolClosureFailsPendingWriteWaiters() throws Exception {
-      final CountDownLatch insideCreation = new CountDownLatch(1);
-      final CountDownLatch releaseCreation = new CountDownLatch(1);
-      final SessionImpl session1 = mockSession();
-      final SessionImpl session2 = mockSession();
-      doAnswer(
-              invocation -> {
-                executor.submit(
-                    () -> {
-                      SessionConsumerImpl consumer =
-                          invocation.getArgument(2, SessionConsumerImpl.class);
-                      consumer.onSessionReady(session1);
-                    });
-                return null;
-              })
-          .doAnswer(
-              invocation -> {
-                executor.submit(
-                    () -> {
-                      insideCreation.countDown();
-                      releaseCreation.await();
-                      SessionConsumerImpl consumer =
-                          invocation.getArgument(2, SessionConsumerImpl.class);
-                      consumer.onSessionReady(session2);
-                      return null;
-                    });
-                return null;
-              })
-          .when(sessionClient)
-          .asyncBatchCreateSessions(
-              Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+  @Test
+  public void creationExceptionPropagatesToReadSession() {
+    doAnswer(
+            invocation -> {
+              executor.submit(
+                  () -> {
+                    SessionConsumerImpl consumer =
+                        invocation.getArgument(2, SessionConsumerImpl.class);
+                    consumer.onSessionCreateFailure(
+                        SpannerExceptionFactory.newSpannerException(ErrorCode.INTERNAL, ""), 1);
+                    return null;
+                  });
+              return null;
+            })
+        .when(sessionClient)
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+    pool = createPool();
+    SpannerException e = assertThrows(SpannerException.class, () -> pool.getSession().get());
+    assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
+  }
 
-      pool = createPool();
-      PooledSessionFuture leakedSession = pool.getSession();
-      // Suppress expected leakedSession warning.
-      leakedSession.clearLeakedException();
-      AtomicBoolean failed = new AtomicBoolean(false);
-      CountDownLatch latch = new CountDownLatch(1);
-      getSessionAsync(latch, failed);
-      insideCreation.await();
-      pool.closeAsync(new SpannerImpl.ClosedException());
-      releaseCreation.countDown();
-      latch.await();
-      assertThat(failed.get()).isTrue();
+  @Test
+  public void failOnPoolExhaustion() {
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(1)
+            .setFailIfPoolExhausted()
+            .build();
+    doAnswer(
+            invocation -> {
+              executor.submit(
+                  () -> {
+                    SessionConsumerImpl consumer =
+                        invocation.getArgument(2, SessionConsumerImpl.class);
+                    consumer.onSessionReady(mockSession());
+                  });
+              return null;
+            })
+        .when(sessionClient)
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+    pool = createPool();
+    Session session1 = pool.getSession();
+    SpannerException e = assertThrows(SpannerException.class, () -> pool.getSession());
+    assertEquals(ErrorCode.RESOURCE_EXHAUSTED, e.getErrorCode());
+    session1.close();
+    session1 = pool.getSession();
+    assertThat(session1).isNotNull();
+    session1.close();
+  }
+
+  @Test
+  public void idleSessionCleanup() throws Exception {
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(3)
+            .setIncStep(1)
+            .setMaxIdleSessions(0)
+            .build();
+    SessionImpl session1 = mockSession();
+    SessionImpl session2 = mockSession();
+    SessionImpl session3 = mockSession();
+    final LinkedList<SessionImpl> sessions =
+        new LinkedList<>(Arrays.asList(session1, session2, session3));
+    doAnswer(
+            invocation -> {
+              executor.submit(
+                  () -> {
+                    SessionConsumerImpl consumer =
+                        invocation.getArgument(2, SessionConsumerImpl.class);
+                    consumer.onSessionReady(sessions.pop());
+                  });
+              return null;
+            })
+        .when(sessionClient)
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+    for (SessionImpl session : sessions) {
+      mockKeepAlive(session);
     }
-
-    @Test
-    public void poolClosesEvenIfCreationFails() throws Exception {
-      final CountDownLatch insideCreation = new CountDownLatch(1);
-      final CountDownLatch releaseCreation = new CountDownLatch(1);
-      doAnswer(
-              invocation -> {
-                executor.submit(
-                    () -> {
-                      insideCreation.countDown();
-                      releaseCreation.await();
-                      SessionConsumerImpl consumer =
-                          invocation.getArgument(2, SessionConsumerImpl.class);
-                      consumer.onSessionCreateFailure(
-                          SpannerExceptionFactory.newSpannerException(new RuntimeException()), 1);
-                      return null;
-                    });
-                return null;
-              })
-          .when(sessionClient)
-          .asyncBatchCreateSessions(
-              Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-      pool = createPool();
-      AtomicBoolean failed = new AtomicBoolean(false);
-      CountDownLatch latch = new CountDownLatch(1);
-      getSessionAsync(latch, failed);
-      insideCreation.await();
-      ListenableFuture<Void> f = pool.closeAsync(new SpannerImpl.ClosedException());
-      releaseCreation.countDown();
-      f.get();
-      assertThat(f.isDone()).isTrue();
-    }
-
-    @Test
-    public void poolClosureFailsNewRequests() {
-      final SessionImpl session = mockSession();
-      doAnswer(
-              invocation -> {
-                executor.submit(
-                    () -> {
-                      SessionConsumerImpl consumer =
-                          invocation.getArgument(2, SessionConsumerImpl.class);
-                      consumer.onSessionReady(session);
-                    });
-                return null;
-              })
-          .when(sessionClient)
-          .asyncBatchCreateSessions(
-              Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-      pool = createPool();
-      PooledSessionFuture leakedSession = pool.getSession();
-      leakedSession.get();
-      // Suppress expected leakedSession warning.
-      leakedSession.clearLeakedException();
-      pool.closeAsync(new SpannerImpl.ClosedException());
-      IllegalStateException e = assertThrows(IllegalStateException.class, () -> pool.getSession());
-      assertNotNull(e.getMessage());
-    }
-
-    @Test
-    public void atMostMaxSessionsCreated() {
-      setupMockSessionCreation();
-      AtomicBoolean failed = new AtomicBoolean(false);
-      pool = createPool();
-      int numSessions = 10;
-      final CountDownLatch latch = new CountDownLatch(numSessions);
-      for (int i = 0; i < numSessions; i++) {
-        getSessionAsync(latch, failed);
-      }
-      Uninterruptibles.awaitUninterruptibly(latch);
-      verify(sessionClient, atMost(options.getMaxSessions()))
-          .asyncBatchCreateSessions(eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-      assertThat(failed.get()).isFalse();
-    }
-
-    @Test
-    public void creationExceptionPropagatesToReadSession() {
-      doAnswer(
-              invocation -> {
-                executor.submit(
-                    () -> {
-                      SessionConsumerImpl consumer =
-                          invocation.getArgument(2, SessionConsumerImpl.class);
-                      consumer.onSessionCreateFailure(
-                          SpannerExceptionFactory.newSpannerException(ErrorCode.INTERNAL, ""), 1);
-                      return null;
-                    });
-                return null;
-              })
-          .when(sessionClient)
-          .asyncBatchCreateSessions(
-              Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-      pool = createPool();
-      SpannerException e = assertThrows(SpannerException.class, () -> pool.getSession().get());
-      assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
-    }
-
-    @Test
-    public void failOnPoolExhaustion() {
-      options =
-          SessionPoolOptions.newBuilder()
-              .setMinSessions(1)
-              .setMaxSessions(1)
-              .setFailIfPoolExhausted()
-              .build();
-      doAnswer(
-              invocation -> {
-                executor.submit(
-                    () -> {
-                      SessionConsumerImpl consumer =
-                          invocation.getArgument(2, SessionConsumerImpl.class);
-                      consumer.onSessionReady(mockSession());
-                    });
-                return null;
-              })
-          .when(sessionClient)
-          .asyncBatchCreateSessions(
-              Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-      pool = createPool();
-      Session session1 = pool.getSession();
-      SpannerException e = assertThrows(SpannerException.class, () -> pool.getSession());
-      assertEquals(ErrorCode.RESOURCE_EXHAUSTED, e.getErrorCode());
-      session1.close();
-      session1 = pool.getSession();
-      assertThat(session1).isNotNull();
-      session1.close();
-    }
-
-    @Test
-    public void idleSessionCleanup() throws Exception {
-      options =
-          SessionPoolOptions.newBuilder()
-              .setMinSessions(1)
-              .setMaxSessions(3)
-              .setIncStep(1)
-              .setMaxIdleSessions(0)
-              .build();
-      SessionImpl session1 = mockSession();
-      SessionImpl session2 = mockSession();
-      SessionImpl session3 = mockSession();
-      final LinkedList<SessionImpl> sessions =
-          new LinkedList<>(Arrays.asList(session1, session2, session3));
-      doAnswer(
-              invocation -> {
-                executor.submit(
-                    () -> {
-                      SessionConsumerImpl consumer =
-                          invocation.getArgument(2, SessionConsumerImpl.class);
-                      consumer.onSessionReady(sessions.pop());
-                    });
-                return null;
-              })
-          .when(sessionClient)
-          .asyncBatchCreateSessions(
-              Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-      for (SessionImpl session : sessions) {
-        mockKeepAlive(session);
-      }
-      FakeClock clock = new FakeClock();
-      clock.currentTimeMillis = System.currentTimeMillis();
-      pool = createPool(clock);
-      // Make sure pool has been initialized
-      pool.getSession().close();
-      runMaintenanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
-      assertThat(pool.numIdleSessionsRemoved()).isEqualTo(0L);
-      PooledSessionFuture readSession1 = pool.getSession();
-      PooledSessionFuture readSession2 = pool.getSession();
-      PooledSessionFuture readSession3 = pool.getSession();
-      // Wait until the sessions have actually been gotten in order to make sure they are in use in
-      // parallel.
-      readSession1.get();
-      readSession2.get();
-      readSession3.get();
-      readSession1.close();
-      readSession2.close();
-      readSession3.close();
-      // Now there are 3 sessions in the pool but since none of them has timed out, they will all be
-      // kept in the pool.
-      runMaintenanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
-      assertThat(pool.numIdleSessionsRemoved()).isEqualTo(0L);
-      // Counters have now been reset
-      // Use all 3 sessions sequentially
-      pool.getSession().close();
-      pool.getSession().close();
-      pool.getSession().close();
-      // Advance the time by running the maintainer. This should cause
-      // one session to be kept alive and two sessions to be removed.
-      long cycles =
-          options.getRemoveInactiveSessionAfter().toMillis() / pool.poolMaintainer.loopFrequency;
-      runMaintenanceLoop(clock, pool, cycles);
-      // We will still close 2 sessions since at any point in time only 1 session was in use.
-      assertThat(pool.numIdleSessionsRemoved()).isEqualTo(2L);
-      pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
-    }
+    FakeClock clock = new FakeClock();
+    clock.currentTimeMillis = System.currentTimeMillis();
+    pool = createPool(clock);
+    // Make sure pool has been initialized
+    pool.getSession().close();
+    runMaintenanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
+    assertThat(pool.numIdleSessionsRemoved()).isEqualTo(0L);
+    PooledSessionFuture readSession1 = pool.getSession();
+    PooledSessionFuture readSession2 = pool.getSession();
+    PooledSessionFuture readSession3 = pool.getSession();
+    // Wait until the sessions have actually been gotten in order to make sure they are in use in
+    // parallel.
+    readSession1.get();
+    readSession2.get();
+    readSession3.get();
+    readSession1.close();
+    readSession2.close();
+    readSession3.close();
+    // Now there are 3 sessions in the pool but since none of them has timed out, they will all be
+    // kept in the pool.
+    runMaintenanceLoop(clock, pool, pool.poolMaintainer.numClosureCycles);
+    assertThat(pool.numIdleSessionsRemoved()).isEqualTo(0L);
+    // Counters have now been reset
+    // Use all 3 sessions sequentially
+    pool.getSession().close();
+    pool.getSession().close();
+    pool.getSession().close();
+    // Advance the time by running the maintainer. This should cause
+    // one session to be kept alive and two sessions to be removed.
+    long cycles =
+        options.getRemoveInactiveSessionAfter().toMillis() / pool.poolMaintainer.loopFrequency;
+    runMaintenanceLoop(clock, pool, cycles);
+    // We will still close 2 sessions since at any point in time only 1 session was in use.
+    assertThat(pool.numIdleSessionsRemoved()).isEqualTo(2L);
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
   @RunWith(MockitoJUnitRunner.class)
   public class LongRunningTransactionsCleanupTest {
 
     @Test
-    public void longRunningTransactionsCleanup_whenActionSetToClose_verifyInactiveSessionsClosed()
-        throws Exception {
+    public void longRunningTransactionsCleanup_whenActionSetToClose_verifyInactiveSessionsClosed() throws Exception {
       setupForLongRunningTransactionsCleanup();
       options =
           SessionPoolOptions.newBuilder()
@@ -612,10 +601,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       assertEquals(1, pool.totalSessions());
       pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
     }
-
     @Test
-    public void longRunningTransactionsCleanup_whenActionSetToWarn_verifyInactiveSessionsOpen()
-        throws Exception {
+    public void longRunningTransactionsCleanup_whenActionSetToWarn_verifyInactiveSessionsOpen() throws Exception {
       setupForLongRunningTransactionsCleanup();
       options =
           SessionPoolOptions.newBuilder()
@@ -623,8 +610,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               .setMaxSessions(3)
               .setIncStep(1)
               .setMaxIdleSessions(0)
-              .setWarnIfInactiveTransactions() // set option to warn (via logs) inactive
-                                               // transactions
+              .setWarnIfInactiveTransactions() // set option to warn (via logs) inactive transactions
               .build();
       Clock clock = mock(Clock.class);
       when(clock.instant()).thenReturn(Instant.now());
@@ -658,9 +644,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     }
 
     @Test
-    public void
-        longRunningTransactionsCleanup_whenUtilisationBelowThreshold_verifyInactiveSessionsOpen()
-            throws Exception {
+    public void longRunningTransactionsCleanup_whenUtilisationBelowThreshold_verifyInactiveSessionsOpen() throws Exception {
       setupForLongRunningTransactionsCleanup();
       options =
           SessionPoolOptions.newBuilder()
@@ -679,6 +663,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       // 2/3 sessions are used. Hence utilisation < 95%
       PooledSessionFuture readSession1 = pool.getSession();
       PooledSessionFuture readSession2 = pool.getSession();
+
 
       // complete the async tasks and mark sessions as checked out
       readSession1.get().setIsLongRunning(false);
@@ -699,9 +684,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     }
 
     @Test
-    public void
-        longRunningTransactionsCleanup_whenAllAreExpectedlyLongRunning_verifyInactiveSessionsOpen()
-            throws Exception {
+    public void longRunningTransactionsCleanup_whenAllAreExpectedlyLongRunning_verifyInactiveSessionsOpen() throws Exception {
       SessionImpl session1 = mockSession();
       SessionImpl session2 = mockSession();
       SessionImpl session3 = mockSession();
@@ -709,18 +692,17 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       final LinkedList<SessionImpl> sessions =
           new LinkedList<>(Arrays.asList(session1, session2, session3));
       doAnswer(
-              invocation -> {
-                executor.submit(
-                    () -> {
-                      SessionConsumerImpl consumer =
-                          invocation.getArgument(2, SessionConsumerImpl.class);
-                      consumer.onSessionReady(sessions.pop());
-                    });
-                return null;
-              })
+          invocation -> {
+            executor.submit(
+                () -> {
+                  SessionConsumerImpl consumer =
+                      invocation.getArgument(2, SessionConsumerImpl.class);
+                  consumer.onSessionReady(sessions.pop());
+                });
+            return null;
+          })
           .when(sessionClient)
-          .asyncBatchCreateSessions(
-              Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+          .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
 
       for (SessionImpl session : sessions) {
         mockKeepAlive(session);
@@ -765,9 +747,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     }
 
     @Test
-    public void
-        longRunningTransactionsCleanup_whenBelowDurationThreshold_verifyInactiveSessionsOpen()
-            throws Exception {
+    public void longRunningTransactionsCleanup_whenBelowDurationThreshold_verifyInactiveSessionsOpen() throws Exception {
       setupForLongRunningTransactionsCleanup();
       options =
           SessionPoolOptions.newBuilder()
@@ -850,9 +830,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     }
 
     @Test
-    public void
-        longRunningTransactionsCleanup_whenTaskRecurrenceBelowThreshold_verifyInactiveSessionsOpen()
-            throws Exception {
+    public void longRunningTransactionsCleanup_whenTaskRecurrenceBelowThreshold_verifyInactiveSessionsOpen() throws Exception {
       setupForLongRunningTransactionsCleanup();
       options =
           SessionPoolOptions.newBuilder()
@@ -900,26 +878,27 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       final LinkedList<SessionImpl> sessions =
           new LinkedList<>(Arrays.asList(session1, session2, session3));
       doAnswer(
-              invocation -> {
-                executor.submit(
-                    () -> {
-                      SessionConsumerImpl consumer =
-                          invocation.getArgument(2, SessionConsumerImpl.class);
-                      consumer.onSessionReady(sessions.pop());
-                    });
-                return null;
-              })
+          invocation -> {
+            executor.submit(
+                () -> {
+                  SessionConsumerImpl consumer =
+                      invocation.getArgument(2, SessionConsumerImpl.class);
+                  consumer.onSessionReady(sessions.pop());
+                });
+            return null;
+          })
           .when(sessionClient)
-          .asyncBatchCreateSessions(
-              Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+          .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
 
       for (SessionImpl session : sessions) {
         mockKeepAlive(session);
       }
     }
+
   }
 
-  @Test
+
+    @Test
   public void keepAlive() throws Exception {
     options = SessionPoolOptions.newBuilder().setMinSessions(2).setMaxSessions(3).build();
     final SessionImpl session = mockSession();
