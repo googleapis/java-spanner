@@ -172,6 +172,8 @@ public class ConnectionOptions {
   private static final RpcPriority DEFAULT_RPC_PRIORITY = null;
   private static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
   private static final boolean DEFAULT_LENIENT = false;
+  private static final boolean DEFAULT_TRACK_SESSION_LEAKS = true;
+  private static final boolean DEFAULT_TRACK_CONNECTION_LEAKS = true;
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -218,6 +220,10 @@ public class ConnectionOptions {
   private static final String DIALECT_PROPERTY_NAME = "dialect";
   /** Name of the 'databaseRole' connection property. */
   public static final String DATABASE_ROLE_PROPERTY_NAME = "databaseRole";
+  /** Name of the 'trackStackTraceOfSessionCheckout' connection property. */
+  public static final String TRACK_SESSION_LEAKS_PROPERTY_NAME = "trackSessionLeaks";
+  /** Name of the 'trackStackTraceOfConnectionCreation' connection property. */
+  public static final String TRACK_CONNECTION_LEAKS_PROPERTY_NAME = "trackConnectionLeaks";
   /** All valid connection properties. */
   public static final Set<ConnectionProperty> VALID_PROPERTIES =
       Collections.unmodifiableSet(
@@ -287,7 +293,25 @@ public class ConnectionOptions {
                       DIALECT_PROPERTY_NAME, "Sets the dialect to use for this connection."),
                   ConnectionProperty.createStringProperty(
                       DATABASE_ROLE_PROPERTY_NAME,
-                      "Sets the database role to use for this connection. The default is privileges assigned to IAM role"))));
+                      "Sets the database role to use for this connection. The default is privileges assigned to IAM role"),
+                  ConnectionProperty.createBooleanProperty(
+                      TRACK_SESSION_LEAKS_PROPERTY_NAME,
+                      "Capture the call stack of the thread that checked out a session of the session pool. This will "
+                          + "pre-create a LeakedSessionException already when a session is checked out. This can be disabled, "
+                          + "for example if a monitoring system logs the pre-created exception. "
+                          + "If disabled, the LeakedSessionException will only be created when an "
+                          + "actual session leak is detected. The stack trace of the exception will "
+                          + "in that case not contain the call stack of when the session was checked out.",
+                      DEFAULT_TRACK_SESSION_LEAKS),
+                  ConnectionProperty.createBooleanProperty(
+                      TRACK_CONNECTION_LEAKS_PROPERTY_NAME,
+                      "Capture the call stack of the thread that created a connection. This will "
+                          + "pre-create a LeakedConnectionException already when a connection is created. "
+                          + "This can be disabled, for example if a monitoring system logs the pre-created exception. "
+                          + "If disabled, the LeakedConnectionException will only be created when an "
+                          + "actual connection leak is detected. The stack trace of the exception will "
+                          + "in that case not contain the call stack of when the connection was created.",
+                      DEFAULT_TRACK_CONNECTION_LEAKS))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -544,6 +568,8 @@ public class ConnectionOptions {
   private final boolean returnCommitStats;
   private final boolean autoConfigEmulator;
   private final RpcPriority rpcPriority;
+  private final boolean trackSessionLeaks;
+  private final boolean trackConnectionLeaks;
 
   private final boolean autocommit;
   private final boolean readOnly;
@@ -588,6 +614,8 @@ public class ConnectionOptions {
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
     this.host = determineHost(matcher, autoConfigEmulator, usePlainText);
     this.rpcPriority = parseRPCPriority(this.uri);
+    this.trackSessionLeaks = parseTrackSessionLeaks(this.uri);
+    this.trackConnectionLeaks = parseTrackConnectionLeaks(this.uri);
 
     this.instanceId = matcher.group(Builder.INSTANCE_GROUP);
     this.databaseName = matcher.group(Builder.DATABASE_GROUP);
@@ -641,11 +669,12 @@ public class ConnectionOptions {
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
 
-    if (this.minSessions != null || this.maxSessions != null) {
+    if (this.minSessions != null || this.maxSessions != null || !this.trackSessionLeaks) {
       SessionPoolOptions.Builder sessionPoolOptionsBuilder =
           builder.sessionPoolOptions == null
               ? SessionPoolOptions.newBuilder()
               : builder.sessionPoolOptions.toBuilder();
+      sessionPoolOptionsBuilder.setTrackStackTraceOfSessionCheckout(this.trackSessionLeaks);
       sessionPoolOptionsBuilder.setAutoDetectDialect(true);
       if (this.minSessions != null) {
         sessionPoolOptionsBuilder.setMinSessions(this.minSessions);
@@ -836,6 +865,18 @@ public class ConnectionOptions {
   static boolean parseLenient(String uri) {
     String value = parseUriProperty(uri, LENIENT_PROPERTY_NAME);
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_LENIENT;
+  }
+
+  @VisibleForTesting
+  static boolean parseTrackSessionLeaks(String uri) {
+    String value = parseUriProperty(uri, TRACK_SESSION_LEAKS_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_TRACK_SESSION_LEAKS;
+  }
+
+  @VisibleForTesting
+  static boolean parseTrackConnectionLeaks(String uri) {
+    String value = parseUriProperty(uri, TRACK_CONNECTION_LEAKS_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_TRACK_CONNECTION_LEAKS;
   }
 
   @VisibleForTesting
@@ -1076,6 +1117,10 @@ public class ConnectionOptions {
   /** The {@link RpcPriority} to use for the connection. */
   RpcPriority getRPCPriority() {
     return rpcPriority;
+  }
+
+  boolean isTrackConnectionLeaks() {
+    return this.trackConnectionLeaks;
   }
 
   /** Interceptors that should be executed after each statement */

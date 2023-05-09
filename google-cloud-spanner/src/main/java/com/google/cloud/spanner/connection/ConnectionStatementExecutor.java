@@ -113,6 +113,10 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowRPCPriority();
 
+  StatementResult statementSetSavepointSupport(SavepointSupport savepointSupport);
+
+  StatementResult statementShowSavepointSupport();
+
   StatementResult statementShowTransactionIsolationLevel();
 
   StatementResult statementExplain(String sql);
