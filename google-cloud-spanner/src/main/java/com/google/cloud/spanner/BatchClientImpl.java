@@ -104,10 +104,6 @@ public class BatchClientImpl implements BatchClient {
     }
 
     @Override
-    public boolean isLongRunning() {
-      return true;
-    }
-    @Override
     public BatchTransactionId getBatchTransactionId() {
       return new BatchTransactionId(sessionName, getTransactionId(), getReadTimestamp());
     }

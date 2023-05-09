@@ -102,8 +102,10 @@ public class SessionPoolOptions {
         && Objects.equals(this.keepAliveIntervalMinutes, other.keepAliveIntervalMinutes)
         && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter)
         && Objects.equals(this.autoDetectDialect, other.autoDetectDialect)
-        && Objects.equals(this.waitForMinSessions, other.waitForMinSessions);
-    // TODO add checks for new fields
+        && Objects.equals(this.waitForMinSessions, other.waitForMinSessions)
+        && Objects.equals(this.actionOnInactiveTransaction, other.actionOnInactiveTransaction)
+        && Objects.equals(
+            this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions);
   }
 
   @Override
@@ -117,13 +119,15 @@ public class SessionPoolOptions {
         this.actionOnExhaustion,
         this.actionOnSessionNotFound,
         this.actionOnSessionLeak,
+        this.actionOnInactiveTransaction,
         this.trackStackTraceOfSessionCheckout,
         this.initialWaitForSessionTimeoutMillis,
         this.loopFrequency,
         this.keepAliveIntervalMinutes,
         this.removeInactiveSessionAfter,
         this.autoDetectDialect,
-        this.waitForMinSessions);
+        this.waitForMinSessions,
+        this.inactiveTransactionRemovalOptions);
   }
 
   public Builder toBuilder() {
@@ -193,6 +197,7 @@ public class SessionPoolOptions {
   InactiveTransactionRemovalOptions getInactiveTransactionRemovalOptions() {
     return inactiveTransactionRemovalOptions;
   }
+
   public boolean warnInactiveTransactions() {
     return actionOnInactiveTransaction == ActionOnInactiveTransaction.WARN;
   }
@@ -261,6 +266,23 @@ public class SessionPoolOptions {
       this.usedSessionsRatioThreshold = builder.usedSessionsRatioThreshold;
     }
 
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof InactiveTransactionRemovalOptions)) {
+        return false;
+      }
+      InactiveTransactionRemovalOptions other = (InactiveTransactionRemovalOptions) o;
+      return Objects.equals(this.executionTimeThreshold, other.executionTimeThreshold)
+          && Objects.equals(this.recurrenceDuration, other.recurrenceDuration)
+          && Objects.equals(this.usedSessionsRatioThreshold, other.usedSessionsRatioThreshold);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(
+          this.executionTimeThreshold, this.recurrenceDuration, this.usedSessionsRatioThreshold);
+    }
+
     Duration getRecurrenceDuration() {
       return recurrenceDuration;
     }
@@ -277,9 +299,7 @@ public class SessionPoolOptions {
       return new Builder();
     }
 
-    /**
-     * Builder for creating InactiveTransactionRemovalOptions.
-     * */
+    /** Builder for creating InactiveTransactionRemovalOptions. */
     static class Builder {
       private Duration recurrenceDuration = Duration.ofMinutes(2);
       private double usedSessionsRatioThreshold = 0.95;
@@ -304,7 +324,6 @@ public class SessionPoolOptions {
       }
 
       /**
-       *
        * @param recurrenceDuration
        * @return
        */
@@ -316,7 +335,6 @@ public class SessionPoolOptions {
       }
 
       /**
-       *
        * @param usedSessionsRatioThreshold
        * @return
        */
@@ -328,7 +346,6 @@ public class SessionPoolOptions {
       }
 
       /**
-       *
        * @param executionTimeThreshold
        * @return
        */
@@ -372,10 +389,10 @@ public class SessionPoolOptions {
      */
     private boolean trackStackTraceOfSessionCheckout = true;
 
-    private ActionOnInactiveTransaction actionOnInactiveTransaction
-        = ActionOnInactiveTransaction.CLOSE;
-    private InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions
-        = InactiveTransactionRemovalOptions.newBuilder().build();
+    private ActionOnInactiveTransaction actionOnInactiveTransaction =
+        ActionOnInactiveTransaction.WARN;
+    private InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
+        InactiveTransactionRemovalOptions.newBuilder().build();
     private long loopFrequency = 10 * 1000L;
     private int keepAliveIntervalMinutes = 30;
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
@@ -499,8 +516,9 @@ public class SessionPoolOptions {
     }
 
     /**
-     * If there are inactive transactions, log warning messages with the origin of
-     * such transactions to aid debugging. The transactions will continue to remain open.
+     * If there are inactive transactions, log warning messages with the origin of such transactions
+     * to aid debugging. The transactions will continue to remain open.
+     *
      * @return
      */
     public Builder setWarnIfInactiveTransactions() {
@@ -511,6 +529,7 @@ public class SessionPoolOptions {
     /**
      * Sets whether the client should automatically close inactive transactions which are running
      * for unexpectedly large durations.
+     *
      * @return
      */
     public Builder setCloseIfInactiveTransactions() {

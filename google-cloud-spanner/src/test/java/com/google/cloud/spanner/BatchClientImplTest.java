@@ -18,7 +18,6 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.anyMap;
 import static org.mockito.Mockito.eq;
@@ -122,14 +121,5 @@ public final class BatchClientImplTest {
   @Test
   public void testGetDatabaseRole() {
     assertEquals(client.getDatabaseRole(), "role");
-  }
-
-  @Test
-  public void testIsLongRunning() {
-    when(txnID.getSessionId()).thenReturn(SESSION_NAME);
-    when(txnID.getTransactionId()).thenReturn(TXN_ID);
-
-    BatchReadOnlyTransaction batchTxn = client.batchReadOnlyTransaction(txnID);
-    assertTrue(batchTxn.isLongRunning());
   }
 }
