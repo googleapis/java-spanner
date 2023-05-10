@@ -19,6 +19,11 @@ jobs:
         distribution: zulu
     - run: echo "JAVA11_HOME=${JAVA_HOME}" >> $GITHUB_ENV
       shell: bash
+    # GraalVM dependencies require JDK 11 to compile the classes touching GraalVM classes.
+    - name: Install project
+      run: mvn install -B -V -ntp -DskipTests=true -Dclirr.skip=true \
+          -Denforcer.skip=true -Dmaven.javadoc.skip=true -Dgcloud.download.skip=true -T 1C
+
     - uses: actions/setup-java@v3
       with:
         java-version: 8
