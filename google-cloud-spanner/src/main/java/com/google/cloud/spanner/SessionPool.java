@@ -1583,7 +1583,6 @@ class SessionPool {
     /**
      * Method to mark a session occupied by a long-running transaction. Any transaction that is
      * expected to be long-running (for ex - Partitioned DML, Batch Read) must use this method.
-     *
      */
     void markLongRunning() {
       isLongRunning = true;
@@ -1690,7 +1689,7 @@ class SessionPool {
     /**
      * Variable maintaining the last execution time of the long-running transaction cleanup task.
      *
-     * The long-running transaction cleanup needs to be performed every X minutes. The X minutes
+     * <p>The long-running transaction cleanup needs to be performed every X minutes. The X minutes
      * recurs multiple times within the invocation of the pool maintainer thread. For ex - If the
      * main thread runs every 10s and the long-running transaction clean-up needs to be performed
      * every 2 minutes, then we need to keep a track of when was the last time that this task

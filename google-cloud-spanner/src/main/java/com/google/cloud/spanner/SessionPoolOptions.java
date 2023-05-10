@@ -250,9 +250,7 @@ public class SessionPoolOptions {
     CLOSE
   }
 
-  /**
-   * Configuration options for task to clean up long-running transactions.
-   */
+  /** Configuration options for task to clean up long-running transactions. */
   static class InactiveTransactionRemovalOptions {
     /**
      * Recurrence duration for closing long-running transactions. Between two consecutive task
@@ -261,8 +259,7 @@ public class SessionPoolOptions {
     private Duration interval;
 
     /**
-     * Long-running transactions would be cleaned up if utilisation is greater than the below
-     * value.
+     * Long-running transactions would be cleaned up if utilisation is greater than the below value.
      */
     private double usedSessionsRatioThreshold;
 
@@ -519,7 +516,7 @@ public class SessionPoolOptions {
      * to aid debugging. A transaction is classified as in-active if it executes for more than a
      * system defined configuration.
      *
-     * This option won't change the state of the transactions. It only generates warning logs for
+     * <p>This option won't change the state of the transactions. It only generates warning logs for
      * the customer which can be used for debugging.
      *
      * @return this builder for chaining
@@ -530,13 +527,13 @@ public class SessionPoolOptions {
     }
 
     /**
-     * If there are inactive transactions, release the resources consumed by such transactions.
-     * A transaction is classified as in-active if it executes for more than a system defined
-     * configuration. The option would also produce necessary warning logs through which it can
-     * be debugged as to what resources were released due to this option.
+     * If there are inactive transactions, release the resources consumed by such transactions. A
+     * transaction is classified as in-active if it executes for more than a system defined
+     * configuration. The option would also produce necessary warning logs through which it can be
+     * debugged as to what resources were released due to this option.
      *
-     * If we require to print just the logs and not release any resources, consider using the option
-     * {@link Builder#setWarnIfInactiveTransactions()} instead of this.
+     * <p>If we require to print just the logs and not release any resources, consider using the
+     * option {@link Builder#setWarnIfInactiveTransactions()} instead of this.
      *
      * @return this builder for chaining
      */
