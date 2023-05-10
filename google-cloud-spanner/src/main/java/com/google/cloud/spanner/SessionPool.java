@@ -1580,6 +1580,11 @@ class SessionPool {
       lastUseTime = clock.instant();
     }
 
+    /**
+     * Method to mark a session occupied by a long-running transaction. Any transaction that is
+     * expected to be long-running (for ex - Partitioned DML, Batch Read) must use this method.
+     *
+     */
     void markLongRunning() {
       isLongRunning = true;
     }
@@ -1663,9 +1668,10 @@ class SessionPool {
    *   <li>Keeps alive sessions that have not been used for a user configured time in order to keep
    *       MinSessions sessions alive in the pool at any time. The keep-alive traffic is smeared out
    *       over a window of 10 minutes to avoid bursty traffic.
-   *   <li>Removed unexpected long running transactions from the pool. Only certain transaction
-   *       types can be long running. This tasks checks the sessions which have been executing for a
-   *       longer than usual duration (60 minutes) and returns such sessions back to the pool.
+   *   <li>Removes unexpected long running transactions from the pool. Only certain transaction
+   *       types (for ex - Partitioned DML / Batch Reads) can be long running. This tasks checks the
+   *       sessions which have been executing for a longer than usual duration (60 minutes) and
+   *       returns such sessions back to the pool.
    * </ul>
    */
   final class PoolMaintainer {
@@ -1682,11 +1688,13 @@ class SessionPool {
     @VisibleForTesting final long numKeepAliveCycles = keepAliveMillis.toMillis() / loopFrequency;
 
     /**
+     * Variable maintaining the last execution time of the long-running transaction cleanup task.
+     *
      * The long-running transaction cleanup needs to be performed every X minutes. The X minutes
-     * recurs multiple times within the invocation of the main thread. For ex - If the main thread
-     * runs every 10s and the long-running transaction clean-up needs to be performed every 2
-     * minutes, then we need to keep a track of when was the last time that this task executed and
-     * make sure we only execute it every 2 minutes and not every 10 seconds.
+     * recurs multiple times within the invocation of the pool maintainer thread. For ex - If the
+     * main thread runs every 10s and the long-running transaction clean-up needs to be performed
+     * every 2 minutes, then we need to keep a track of when was the last time that this task
+     * executed and makes sure we only execute it every 2 minutes and not every 10 seconds.
      */
     @VisibleForTesting public volatile Instant lastExecutionTime;
 
@@ -1831,10 +1839,8 @@ class SessionPool {
           }
           final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
               options.getInactiveTransactionRemovalOptions();
-          // We would want this task to execute every 2 minutes. If the last execution time of task
-          // is within the last 2 minutes, then do not execute the task.
           final Instant minExecutionTime =
-              lastExecutionTime.plus(inactiveTransactionRemovalOptions.getRecurrenceDuration());
+              lastExecutionTime.plus(inactiveTransactionRemovalOptions.getInterval());
           if (currentTime.isBefore(minExecutionTime)) {
             return;
           }
@@ -2130,6 +2136,7 @@ class SessionPool {
     }
   }
 
+  @VisibleForTesting
   long numInactiveSessionsRemoved() {
     synchronized (lock) {
       return numInactiveSessionsRemoved;

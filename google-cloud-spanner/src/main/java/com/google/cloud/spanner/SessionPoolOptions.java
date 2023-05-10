@@ -250,19 +250,31 @@ public class SessionPoolOptions {
     CLOSE
   }
 
+  /**
+   * Configuration options for task to clean up long-running transactions.
+   */
   static class InactiveTransactionRemovalOptions {
-    // recurrence duration for closing long-running transactions.
-    private Duration recurrenceDuration;
+    /**
+     * Recurrence duration for closing long-running transactions. Between two consecutive task
+     * executions, its ensured that the duration is grater or equal to this duration.
+     */
+    private Duration interval;
 
-    // long-running transactions would be cleaned up if utilisation is greater than the below
-    // threshold
+    /**
+     * Long-running transactions would be cleaned up if utilisation is greater than the below
+     * value.
+     */
     private double usedSessionsRatioThreshold;
-    // transaction that are not long-running are expected to complete within this defined threshold.
+
+    /**
+     * A transaction is considered to be long-running if it executes for a duration greater than the
+     * below value.
+     */
     private Duration executionTimeThreshold;
 
     public InactiveTransactionRemovalOptions(final Builder builder) {
       this.executionTimeThreshold = builder.executionTimeThreshold;
-      this.recurrenceDuration = builder.recurrenceDuration;
+      this.interval = builder.recurrenceDuration;
       this.usedSessionsRatioThreshold = builder.usedSessionsRatioThreshold;
     }
 
@@ -273,18 +285,18 @@ public class SessionPoolOptions {
       }
       InactiveTransactionRemovalOptions other = (InactiveTransactionRemovalOptions) o;
       return Objects.equals(this.executionTimeThreshold, other.executionTimeThreshold)
-          && Objects.equals(this.recurrenceDuration, other.recurrenceDuration)
+          && Objects.equals(this.interval, other.interval)
           && Objects.equals(this.usedSessionsRatioThreshold, other.usedSessionsRatioThreshold);
     }
 
     @Override
     public int hashCode() {
       return Objects.hash(
-          this.executionTimeThreshold, this.recurrenceDuration, this.usedSessionsRatioThreshold);
+          this.executionTimeThreshold, this.interval, this.usedSessionsRatioThreshold);
     }
 
-    Duration getRecurrenceDuration() {
-      return recurrenceDuration;
+    Duration getInterval() {
+      return interval;
     }
 
     double getUsedSessionsRatioThreshold() {
@@ -299,7 +311,6 @@ public class SessionPoolOptions {
       return new Builder();
     }
 
-    /** Builder for creating InactiveTransactionRemovalOptions. */
     static class Builder {
       private Duration recurrenceDuration = Duration.ofMinutes(2);
       private double usedSessionsRatioThreshold = 0.95;
@@ -323,10 +334,6 @@ public class SessionPoolOptions {
             executionTimeThreshold.toMillis());
       }
 
-      /**
-       * @param recurrenceDuration
-       * @return
-       */
       @VisibleForTesting
       InactiveTransactionRemovalOptions.Builder setRecurrenceDuration(
           final Duration recurrenceDuration) {
@@ -334,10 +341,6 @@ public class SessionPoolOptions {
         return this;
       }
 
-      /**
-       * @param usedSessionsRatioThreshold
-       * @return
-       */
       @VisibleForTesting
       InactiveTransactionRemovalOptions.Builder setUsedSessionsRatioThreshold(
           final double usedSessionsRatioThreshold) {
@@ -345,10 +348,6 @@ public class SessionPoolOptions {
         return this;
       }
 
-      /**
-       * @param executionTimeThreshold
-       * @return
-       */
       @VisibleForTesting
       InactiveTransactionRemovalOptions.Builder setExecutionTimeThreshold(
           final Duration executionTimeThreshold) {
@@ -517,9 +516,13 @@ public class SessionPoolOptions {
 
     /**
      * If there are inactive transactions, log warning messages with the origin of such transactions
-     * to aid debugging. The transactions will continue to remain open.
+     * to aid debugging. A transaction is classified as in-active if it executes for more than a
+     * system defined configuration.
      *
-     * @return
+     * This option won't change the state of the transactions. It only generates warning logs for
+     * the customer which can be used for debugging.
+     *
+     * @return this builder for chaining
      */
     public Builder setWarnIfInactiveTransactions() {
       this.actionOnInactiveTransaction = ActionOnInactiveTransaction.WARN;
@@ -527,10 +530,15 @@ public class SessionPoolOptions {
     }
 
     /**
-     * Sets whether the client should automatically close inactive transactions which are running
-     * for unexpectedly large durations.
+     * If there are inactive transactions, release the resources consumed by such transactions.
+     * A transaction is classified as in-active if it executes for more than a system defined
+     * configuration. The option would also produce necessary warning logs through which it can
+     * be debugged as to what resources were released due to this option.
      *
-     * @return
+     * If we require to print just the logs and not release any resources, consider using the option
+     * {@link Builder#setWarnIfInactiveTransactions()} instead of this.
+     *
+     * @return this builder for chaining
      */
     public Builder setCloseIfInactiveTransactions() {
       this.actionOnInactiveTransaction = ActionOnInactiveTransaction.CLOSE;
