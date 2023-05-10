@@ -31,8 +31,6 @@ jobs:
     - run: echo "JAVA8_HOME=${JAVA_HOME}" >> $GITHUB_ENV
       shell: bash
     - run: java -version
-    - name: Compiling main library
-      run: .kokoro/build.sh
     - name: Run unit tests
       run: mvn test -B -Ptest-all
     - name: Run integration tests
