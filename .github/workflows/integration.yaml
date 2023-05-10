@@ -8,12 +8,7 @@ jobs:
   integration-test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/setup-java@v3
-      with:
-        java-version: 8
-        distribution: zulu
-    - run: echo "JAVA8_HOME=${JAVA_HOME}" >> $GITHUB_ENV
-      shell: bash
+    - uses: actions/checkout@v2
     - uses: stCarolas/setup-maven@v4
       with:
         maven-version: 3.8.1
