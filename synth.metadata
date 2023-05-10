@@ -109,7 +109,6 @@
     "CONTRIBUTING.md",
     "LICENSE",
     "SECURITY.md",
-    "codecov.yaml",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/DatabaseAdminClient.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/DatabaseAdminSettings.java",
     "google-cloud-spanner/src/main/java/com/google/cloud/spanner/admin/database/v1/gapic_metadata.json",
