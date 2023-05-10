@@ -35,9 +35,8 @@ jobs:
       working-directory: google-cloud-spanner
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
-      working-directory: google-cloud-spanner
       with:
-        directory: ./target/site/jacoco-unit-test-coverage-report
+        directory: ./google-cloud-spanner/target/site/jacoco-unit-test-coverage-report
         fail_ci_if_error: true
         flags: all_tests
         name: codecov-umbrella
