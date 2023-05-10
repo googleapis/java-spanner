@@ -22,7 +22,6 @@ jobs:
     # GraalVM dependencies require JDK 11 to compile the classes touching GraalVM classes.
     - name: Install project
       run: mvn clean install
-      working-directory: google-cloud-spanner
     - uses: actions/setup-java@v3
       with:
         java-version: 8
