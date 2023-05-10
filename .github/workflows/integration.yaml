@@ -21,8 +21,8 @@ jobs:
       shell: bash
     # GraalVM dependencies require JDK 11 to compile the classes touching GraalVM classes.
     - name: Install project
-      run: mvn install -B -V -ntp -DskipTests=true -Dclirr.skip=true -Denforcer.skip=true -Dmaven.javadoc.skip=true -Dgcloud.download.skip=true -T 1C
-
+      run: mvn clean install
+      working-directory: google-cloud-spanner
     - uses: actions/setup-java@v3
       with:
         java-version: 8
@@ -32,8 +32,10 @@ jobs:
     - run: java -version
     - name: Run unit tests
       run: mvn test -B -V -Dclirr.skip=true -Denforcer.skip=true -Djava.net.preferIPv4Stack=true
+      working-directory: google-cloud-spanner
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
+      working-directory: google-cloud-spanner
       with:
         directory: ./target/site/jacoco-unit-test-coverage-report
         fail_ci_if_error: true
