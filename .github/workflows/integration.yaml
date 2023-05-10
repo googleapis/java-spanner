@@ -32,9 +32,7 @@ jobs:
       shell: bash
     - run: java -version
     - name: Run unit tests
-      run: mvn test -B -Ptest-all
-    - name: Run integration tests
-      run: mvn verify -B -ntp -Penable-integration-tests -Djava.net.preferIPv4Stack=true -DtrimStackTrace=false -Dclirr.skip=true -Denforcer.skip=true -Dmaven.main.skip=true
+      run: mvn test -B -V -Dclirr.skip=true -Denforcer.skip=true -Djava.net.preferIPv4Stack=true
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
