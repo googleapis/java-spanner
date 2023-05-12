@@ -600,7 +600,9 @@ public class DatabaseAdminClientImplTest {
         OperationFutureUtil.immediateOperationFuture(
             "copyBackup", getBackupProto(), CopyBackupMetadata.getDefaultInstance());
     final com.google.cloud.spanner.Backup backup =
-        client.newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID)).build();
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .build();
     when(rpc.copyBackup(BackupId.of(PROJECT_ID, INSTANCE_ID, SOURCE_BK), backup))
         .thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
