@@ -144,7 +144,7 @@ public class BackupInfo {
 
     @Override
     public Builder setExpireTime(Timestamp expireTime) {
-      this.expireTime = Preconditions.checkNotNull(expireTime);
+      this.expireTime = expireTime;
       return this;
     }
 

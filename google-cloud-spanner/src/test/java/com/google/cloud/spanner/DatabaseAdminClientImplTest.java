@@ -595,6 +595,21 @@ public class DatabaseAdminClientImplTest {
   }
 
   @Test
+  public void copyBackupWithNoExpireTime() throws ExecutionException, InterruptedException {
+    OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "copyBackup", getBackupProto(), CopyBackupMetadata.getDefaultInstance());
+    final com.google.cloud.spanner.Backup backup =
+        client.newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID)).build();
+    when(rpc.copyBackup(BackupId.of(PROJECT_ID, INSTANCE_ID, SOURCE_BK), backup))
+        .thenReturn(rawOperationFuture);
+    OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
+        client.copyBackup(INSTANCE_ID, SOURCE_BK, BK_ID, null);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+  }
+
+  @Test
   public void deleteBackup() {
     client.deleteBackup(INSTANCE_ID, BK_ID);
     verify(rpc).deleteBackup(BK_NAME);
