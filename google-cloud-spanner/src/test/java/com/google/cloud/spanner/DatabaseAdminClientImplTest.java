@@ -473,15 +473,23 @@ public class DatabaseAdminClientImplTest {
     assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testCreateBackupNoExpireTime() {
+  @Test
+  public void testCreateBackupNoExpireTime() throws ExecutionException, InterruptedException {
     final com.google.cloud.spanner.Backup requestBackup =
         client
             .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
             .setDatabase(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DB_ID))
             .build();
 
-    client.createBackup(requestBackup);
+    final OperationFuture<Backup, CreateBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "createBackup", getBackupProto(), CreateBackupMetadata.getDefaultInstance());
+    when(rpc.createBackup(requestBackup)).thenReturn(rawOperationFuture);
+
+    final OperationFuture<com.google.cloud.spanner.Backup, CreateBackupMetadata> op =
+        client.createBackup(requestBackup);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -600,9 +608,7 @@ public class DatabaseAdminClientImplTest {
         OperationFutureUtil.immediateOperationFuture(
             "copyBackup", getBackupProto(), CopyBackupMetadata.getDefaultInstance());
     final com.google.cloud.spanner.Backup backup =
-        client
-            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
-            .build();
+        client.newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID)).build();
     when(rpc.copyBackup(BackupId.of(PROJECT_ID, INSTANCE_ID, SOURCE_BK), backup))
         .thenReturn(rawOperationFuture);
     OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =

@@ -110,12 +110,10 @@ public class Database extends DatabaseInfo {
   }
 
   /**
-   * Backs up this database to the location specified by the {@link Backup}. The given {@link
-   * Backup} must have an expire time. The backup must belong to the same instance as this database.
+   * Backs up this database to the location specified by the {@link Backup}. The backup must belong
+   * to the same instance as this database.
    */
   public OperationFuture<Backup, CreateBackupMetadata> backup(Backup backup) {
-    Preconditions.checkArgument(
-        backup.getExpireTime() != null, "The backup does not have an expire time.");
     Preconditions.checkArgument(
         backup.getInstanceId().equals(getId().getInstanceId()),
         "The instance of the backup must be equal to the instance of this database.");

@@ -95,6 +95,17 @@ public class DatabaseTest {
   }
 
   @Test
+  public void backupWithoutExpireTime() {
+    Database db = createDatabase();
+    Backup backup =
+        dbClient
+            .newBackupBuilder(BackupId.of("test-project", "test-instance", "test-backup"))
+            .build();
+    db.backup(backup);
+    verify(dbClient).createBackup(backup.toBuilder().setDatabase(db.getId()).build());
+  }
+
+  @Test
   public void listDatabaseOperations() {
     Database db = createDatabase();
     db.listDatabaseOperations();
