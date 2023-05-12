@@ -129,6 +129,30 @@ class SessionPool {
           ErrorCode.INTERNAL);
 
   /**
+   * If the {@link SessionPoolOptions#getWaitForMinSessions()} duration is greater than zero, waits
+   * for the creation of at least {@link SessionPoolOptions#getMinSessions()} in the pool using the
+   * given duration. If the waiting times out, a {@link SpannerException} with the {@link
+   * ErrorCode#DEADLINE_EXCEEDED} is thrown.
+   */
+  void maybeWaitOnMinSessions() {
+    final long timeoutNanos = options.getWaitForMinSessions().toNanos();
+    if (timeoutNanos <= 0) {
+      return;
+    }
+
+    try {
+      if (!waitOnMinSessionsLatch.await(timeoutNanos, TimeUnit.NANOSECONDS)) {
+        final long timeoutMillis = options.getWaitForMinSessions().toMillis();
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.DEADLINE_EXCEEDED,
+            "Timed out after waiting " + timeoutMillis + "ms for session pool creation");
+      }
+    } catch (InterruptedException e) {
+      throw SpannerExceptionFactory.propagateInterrupt(e);
+    }
+  }
+
+  /**
    * Wrapper around current time so that we can fake it in tests. TODO(user): Replace with Java 8
    * Clock.
    */
@@ -1075,6 +1099,10 @@ class SessionPool {
     private LeakedSessionException() {
       super("Session was checked out from the pool at " + clock.instant());
     }
+
+    private LeakedSessionException(String message) {
+      super(message);
+    }
   }
 
   private enum SessionState {
@@ -1107,7 +1135,9 @@ class SessionPool {
     }
 
     private void markCheckedOut() {
-      this.leakedException = new LeakedSessionException();
+      if (options.isTrackStackTraceOfSessionCheckout()) {
+        this.leakedException = new LeakedSessionException();
+      }
     }
 
     @Override
@@ -1855,6 +1885,8 @@ class SessionPool {
 
   @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
 
+  private final CountDownLatch waitOnMinSessionsLatch;
+
   /**
    * Create a session pool with the given options and for the given database. It will also start
    * eagerly creating sessions if {@link SessionPoolOptions#getMinSessions()} is greater than 0.
@@ -1934,6 +1966,8 @@ class SessionPool {
     this.clock = clock;
     this.poolMaintainer = new PoolMaintainer();
     this.initMetricsCollection(metricRegistry, labelValues);
+    this.waitOnMinSessionsLatch =
+        options.getMinSessions() > 0 ? new CountDownLatch(1) : new CountDownLatch(0);
   }
 
   /**
@@ -2296,6 +2330,16 @@ class SessionPool {
           } else {
             logger.log(Level.WARNING, "Leaked session", session.leakedException);
           }
+        } else {
+          String message =
+              "Leaked session. "
+                  + "Call SessionOptions.Builder#setTrackStackTraceOfSessionCheckout(true) to start "
+                  + "tracking the call stack trace of the thread that checked out the session.";
+          if (options.isFailOnSessionLeak()) {
+            throw new LeakedSessionException(message);
+          } else {
+            logger.log(Level.WARNING, message);
+          }
         }
       }
       for (final PooledSession session : ImmutableList.copyOf(allSessions)) {
@@ -2399,6 +2443,7 @@ class SessionPool {
       PooledSession pooledSession = null;
       boolean closeSession = false;
       synchronized (lock) {
+        int minSessions = options.getMinSessions();
         pooledSession = new PooledSession(session);
         numSessionsBeingCreated--;
         if (closureFuture != null) {
@@ -2406,6 +2451,9 @@ class SessionPool {
         } else {
           Preconditions.checkState(totalSessions() <= options.getMaxSessions() - 1);
           allSessions.add(pooledSession);
+          if (allSessions.size() >= minSessions) {
+            waitOnMinSessionsLatch.countDown();
+          }
           if (options.isAutoDetectDialect() && !detectDialectStarted) {
             // Get the dialect of the underlying database if that has not yet been done. Note that
             // this method will release the session into the pool once it is done.

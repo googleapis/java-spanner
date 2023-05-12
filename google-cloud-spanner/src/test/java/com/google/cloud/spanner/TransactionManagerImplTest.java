@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -217,7 +218,8 @@ public class TransactionManagerImplTest {
                             com.google.protobuf.Timestamp.newBuilder()
                                 .setSeconds(System.currentTimeMillis() * 1000))
                         .build()));
-    when(rpc.beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap()))
+    when(rpc.beginTransactionAsync(
+            Mockito.any(BeginTransactionRequest.class), Mockito.anyMap(), eq(true)))
         .thenAnswer(
             invocation ->
                 ApiFutures.immediateFuture(
@@ -241,7 +243,8 @@ public class TransactionManagerImplTest {
         mgr.commit();
       }
       verify(rpc, times(1))
-          .beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
+          .beginTransactionAsync(
+              Mockito.any(BeginTransactionRequest.class), Mockito.anyMap(), eq(true));
     }
   }
 
@@ -278,7 +281,8 @@ public class TransactionManagerImplTest {
                             com.google.protobuf.Timestamp.newBuilder()
                                 .setSeconds(System.currentTimeMillis() * 1000))
                         .build()));
-    when(rpc.beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap()))
+    when(rpc.beginTransactionAsync(
+            Mockito.any(BeginTransactionRequest.class), Mockito.anyMap(), eq(true)))
         .thenAnswer(
             invocation ->
                 ApiFutures.immediateFuture(
@@ -286,7 +290,7 @@ public class TransactionManagerImplTest {
                         .setId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
                         .build()));
     final AtomicInteger transactionsStarted = new AtomicInteger();
-    when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap()))
+    when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap(), eq(true)))
         .thenAnswer(
             invocation -> {
               ResultSet.Builder builder =
@@ -332,9 +336,10 @@ public class TransactionManagerImplTest {
       }
       // BeginTransaction should not be called, as we are inlining it with the ExecuteSql request.
       verify(rpc, Mockito.never())
-          .beginTransaction(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
+          .beginTransaction(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap(), eq(true));
       // We should have 2 ExecuteSql requests.
-      verify(rpc, times(2)).executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap());
+      verify(rpc, times(2))
+          .executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap(), eq(true));
       // But only 1 with a BeginTransaction.
       assertThat(transactionsStarted.get()).isEqualTo(1);
     }

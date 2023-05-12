@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -100,7 +101,9 @@ public class SessionImplTest {
     Transaction txn = Transaction.newBuilder().setId(ByteString.copyFromUtf8("TEST")).build();
     Mockito.when(
             rpc.beginTransactionAsync(
-                Mockito.any(BeginTransactionRequest.class), Mockito.any(Map.class)))
+                Mockito.any(BeginTransactionRequest.class),
+                Mockito.any(Map.class),
+                Mockito.anyBoolean()))
         .thenReturn(ApiFutures.immediateFuture(txn));
     CommitResponse commitResponse =
         CommitResponse.newBuilder()
@@ -350,7 +353,7 @@ public class SessionImplTest {
   public void prepareClosesOldSingleUseContext() {
     ReadContext ctx = session.singleUse(TimestampBound.strong());
 
-    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options)))
+    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options), eq(false)))
         .thenReturn(Transaction.newBuilder().setId(ByteString.copyFromUtf8("t1")).build());
     session.prepareReadWriteTransaction();
     IllegalStateException e =
@@ -414,7 +417,7 @@ public class SessionImplTest {
   private void mockRead(final PartialResultSet myResultSet) {
     final ArgumentCaptor<SpannerRpc.ResultStreamConsumer> consumer =
         ArgumentCaptor.forClass(SpannerRpc.ResultStreamConsumer.class);
-    Mockito.when(rpc.read(Mockito.any(), consumer.capture(), Mockito.eq(options)))
+    Mockito.when(rpc.read(Mockito.any(), consumer.capture(), Mockito.eq(options), eq(false)))
         .then(
             invocation -> {
               consumer.getValue().onPartialResultSet(myResultSet);
@@ -430,7 +433,8 @@ public class SessionImplTest {
         PartialResultSet.newBuilder()
             .setMetadata(newMetadata(Type.struct(Type.StructField.of("C", Type.string()))))
             .build();
-    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options))).thenReturn(txnMetadata);
+    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options), eq(false)))
+        .thenReturn(txnMetadata);
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
@@ -448,7 +452,8 @@ public class SessionImplTest {
         PartialResultSet.newBuilder()
             .setMetadata(newMetadata(Type.struct(Type.StructField.of("C", Type.string()))))
             .build();
-    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options))).thenReturn(txnMetadata);
+    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options), eq(false)))
+        .thenReturn(txnMetadata);
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());
@@ -467,7 +472,8 @@ public class SessionImplTest {
         PartialResultSet.newBuilder()
             .setMetadata(newMetadata(Type.struct(Type.StructField.of("C", Type.string()))))
             .build();
-    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options))).thenReturn(txnMetadata);
+    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options), eq(false)))
+        .thenReturn(txnMetadata);
     mockRead(resultSet);
 
     ReadOnlyTransaction txn = session.readOnlyTransaction(TimestampBound.strong());

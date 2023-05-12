@@ -194,14 +194,14 @@ public final class BackupProto {
           + "\033ENCRYPTION_TYPE_UNSPECIFIED\020\000\022+\n\'USE_CO"
           + "NFIG_DEFAULT_OR_BACKUP_ENCRYPTION\020\001\022\035\n\031G"
           + "OOGLE_DEFAULT_ENCRYPTION\020\002\022\037\n\033CUSTOMER_M"
-          + "ANAGED_ENCRYPTION\020\003B\377\001\n$com.google.spann"
-          + "er.admin.database.v1B\013BackupProtoP\001ZHgoo"
-          + "gle.golang.org/genproto/googleapis/spann"
-          + "er/admin/database/v1;database\252\002&Google.C"
-          + "loud.Spanner.Admin.Database.V1\312\002&Google\\"
-          + "Cloud\\Spanner\\Admin\\Database\\V1\352\002+Google"
-          + "::Cloud::Spanner::Admin::Database::V1b\006p"
-          + "roto3"
+          + "ANAGED_ENCRYPTION\020\003B\375\001\n$com.google.spann"
+          + "er.admin.database.v1B\013BackupProtoP\001ZFclo"
+          + "ud.google.com/go/spanner/admin/database/"
+          + "apiv1/databasepb;databasepb\252\002&Google.Clo"
+          + "ud.Spanner.Admin.Database.V1\312\002&Google\\Cl"
+          + "oud\\Spanner\\Admin\\Database\\V1\352\002+Google::"
+          + "Cloud::Spanner::Admin::Database::V1b\006pro"
+          + "to3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(

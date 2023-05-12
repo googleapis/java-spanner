@@ -429,4 +429,20 @@ public interface ExecuteSqlRequestOrBuilder
    * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
    */
   com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * If this is for a partitioned query and this field is set to `true`, the
+   * request will be executed via Spanner independent compute resources.
+   * If the field is set to `true` but the request does not set
+   * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
+   * </pre>
+   *
+   * <code>bool data_boost_enabled = 16;</code>
+   *
+   * @return The dataBoostEnabled.
+   */
+  boolean getDataBoostEnabled();
 }

@@ -319,13 +319,41 @@ public interface SpannerRpc extends ServiceRpc {
   ApiFuture<Empty> asyncDeleteSession(String sessionName, @Nullable Map<Option, ?> options)
       throws SpannerException;
 
+  /**
+   * Performs a streaming read.
+   *
+   * @param routeToLeader Set to true to route the request to the leader region, and false to route
+   *     the request to any region. When leader aware routing is enabled, RW/PDML requests are
+   *     preferred to be routed to the leader region, and RO requests (except for
+   *     PartitionRead/PartitionQuery) are preferred to be routed to any region for optimal latency.
+   */
   StreamingCall read(
-      ReadRequest request, ResultStreamConsumer consumer, @Nullable Map<Option, ?> options);
+      ReadRequest request,
+      ResultStreamConsumer consumer,
+      @Nullable Map<Option, ?> options,
+      boolean routeToLeader);
 
-  ResultSet executeQuery(ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
+  /**
+   * Executes a query.
+   *
+   * @param routeToLeader Set to true to route the request to the leader region, and false to route
+   *     the request to any region. When leader aware routing is enabled, RW/PDML requests are
+   *     preferred to be routed to the leader region, and RO requests (except for
+   *     PartitionRead/PartitionQuery) are preferred to be routed to any region for optimal latency.
+   */
+  ResultSet executeQuery(
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader);
 
+  /**
+   * Executes a query asynchronously.
+   *
+   * @param routeToLeader Set to true to route the request to the leader region, and false to route
+   *     the request to any region. When leader aware routing is enabled, RW/PDML requests are
+   *     preferred to be routed to the leader region, and RO requests (except for
+   *     PartitionRead/PartitionQuery) are preferred to be routed to any region for optimal latency.
+   */
   ApiFuture<ResultSet> executeQueryAsync(
-      ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader);
 
   ResultSet executePartitionedDml(ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
 
@@ -334,19 +362,47 @@ public interface SpannerRpc extends ServiceRpc {
   ServerStream<PartialResultSet> executeStreamingPartitionedDml(
       ExecuteSqlRequest request, @Nullable Map<Option, ?> options, Duration timeout);
 
+  /**
+   * Executes a query with streaming result.
+   *
+   * @param routeToLeader Set to true to route the request to the leader region, and false to route
+   *     the request to any region. When leader aware routing is enabled, RW/PDML requests are
+   *     preferred to be routed to the leader region, and RO requests (except for
+   *     PartitionRead/PartitionQuery) are preferred to be routed to any region for optimal latency.
+   */
   StreamingCall executeQuery(
-      ExecuteSqlRequest request, ResultStreamConsumer consumer, @Nullable Map<Option, ?> options);
+      ExecuteSqlRequest request,
+      ResultStreamConsumer consumer,
+      @Nullable Map<Option, ?> options,
+      boolean routeToLeader);
 
   ExecuteBatchDmlResponse executeBatchDml(ExecuteBatchDmlRequest build, Map<Option, ?> options);
 
   ApiFuture<ExecuteBatchDmlResponse> executeBatchDmlAsync(
       ExecuteBatchDmlRequest build, Map<Option, ?> options);
 
-  Transaction beginTransaction(BeginTransactionRequest request, @Nullable Map<Option, ?> options)
+  /**
+   * Begins a transaction.
+   *
+   * @param routeToLeader Set to true to route the request to the leader region, and false to route
+   *     the request to any region. When leader aware routing is enabled, RW/PDML requests are
+   *     preferred to be routed to the leader region, and RO requests (except for
+   *     PartitionRead/PartitionQuery) are preferred to be routed to any region for optimal latency.
+   */
+  Transaction beginTransaction(
+      BeginTransactionRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader)
       throws SpannerException;
 
+  /**
+   * Begins a transaction asynchronously.
+   *
+   * @param routeToLeader Set to true to route the request to the leader region, and false to route
+   *     the request to any region. When leader aware routing is enabled, RW/PDML requests are
+   *     preferred to be routed to the leader region, and RO requests (except for
+   *     PartitionRead/PartitionQuery) are preferred to be routed to any region for optimal latency.
+   */
   ApiFuture<Transaction> beginTransactionAsync(
-      BeginTransactionRequest request, @Nullable Map<Option, ?> options);
+      BeginTransactionRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader);
 
   CommitResponse commit(CommitRequest commitRequest, @Nullable Map<Option, ?> options)
       throws SpannerException;
