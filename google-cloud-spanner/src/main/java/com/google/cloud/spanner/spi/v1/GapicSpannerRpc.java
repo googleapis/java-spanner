@@ -132,6 +132,8 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
@@ -1250,6 +1252,17 @@ public class GapicSpannerRpc implements SpannerRpc {
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getGetDatabaseMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
         () -> get(databaseAdminStub.getDatabaseCallable().futureCall(request, context)));
+  }
+
+  @Override
+  public OperationFuture<Database, UpdateDatabaseMetadata> updateDatabase(
+      Database database, FieldMask updateMask) throws SpannerException {
+    UpdateDatabaseRequest request =
+        UpdateDatabaseRequest.newBuilder().setDatabase(database).setUpdateMask(updateMask).build();
+    GrpcCallContext context =
+        newCallContext(
+            null, database.getName(), request, DatabaseAdminGrpc.getUpdateDatabaseMethod());
+    return databaseAdminStub.updateDatabaseOperationCallable().futureCall(request, context);
   }
 
   @Override
