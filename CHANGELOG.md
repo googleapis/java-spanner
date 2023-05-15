@@ -1,5 +1,29 @@
 # Changelog
 
+## [6.42.0](https://github.com/googleapis/java-spanner/compare/v6.41.0...v6.42.0) (2023-05-15)
+
+
+### Features
+
+* Add support for UpdateDatabase in Cloud Spanner ([#2265](https://github.com/googleapis/java-spanner/issues/2265)) ([2ea06e7](https://github.com/googleapis/java-spanner/commit/2ea06e70a6f22635bcad7b7e4c79d0cf710dc6dc))
+* Add support for UpdateDatabase in Cloud Spanner ([#2429](https://github.com/googleapis/java-spanner/issues/2429)) ([09f20bd](https://github.com/googleapis/java-spanner/commit/09f20bd43913a7a01985fd290964d134612c14eb))
+
+
+### Bug Fixes
+
+* Add error details for INTERNAL error ([#2413](https://github.com/googleapis/java-spanner/issues/2413)) ([ed62aa6](https://github.com/googleapis/java-spanner/commit/ed62aa666ae34cf5e552e19b6b5dc2a8c6609e4e))
+* Use javax.annotation.Nonnull in executor framework ([#2414](https://github.com/googleapis/java-spanner/issues/2414)) ([afcc598](https://github.com/googleapis/java-spanner/commit/afcc598e05c75610db8d0adacd4da79b4c124122))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.18.0 ([#2426](https://github.com/googleapis/java-spanner/issues/2426)) ([05a45f8](https://github.com/googleapis/java-spanner/commit/05a45f81c2c71dd236fa36cc987e78a6aa31b594))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.9.0 ([#2427](https://github.com/googleapis/java-spanner/issues/2427)) ([42dbfe3](https://github.com/googleapis/java-spanner/commit/42dbfe3600b1d482d64c6c4f6865f88db399bae3))
+* Update dependency com.google.cloud:google-cloud-trace to v2.17.0 ([#2428](https://github.com/googleapis/java-spanner/issues/2428)) ([6f7fee8](https://github.com/googleapis/java-spanner/commit/6f7fee81233811f5bc002f212c8972ffc6afbe16))
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.22 ([#2423](https://github.com/googleapis/java-spanner/issues/2423)) ([679bb36](https://github.com/googleapis/java-spanner/commit/679bb366162575c28bab1df9b87d01517ea8d5aa))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.22 ([#2424](https://github.com/googleapis/java-spanner/issues/2424)) ([a72f4ff](https://github.com/googleapis/java-spanner/commit/a72f4ff64cce2e9c746e8f6a9e107cbd72afa67f))
+* Update dependency org.graalvm.sdk:graal-sdk to v22.3.2 ([#2391](https://github.com/googleapis/java-spanner/issues/2391)) ([c082a1f](https://github.com/googleapis/java-spanner/commit/c082a1fccb79cf4c001519eba4a75cef30150541))
+
 ## [6.41.0](https://github.com/googleapis/java-spanner/compare/v6.40.1...v6.41.0) (2023-04-28)
 
 
