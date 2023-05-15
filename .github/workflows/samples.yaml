@@ -23,7 +23,7 @@ jobs:
         java-version: 11
         distribution: zulu
     - name: Compile Spanner
-      run: mvn clean install
+      run: mvn clean install -Dclirr.skip=true
     - uses: actions/setup-java@v3
       with:
         java-version: 8
@@ -44,7 +44,7 @@ jobs:
         java-version: ${{matrix.java}}
         distribution: zulu
     - name: Compile Spanner
-      run: mvn clean install
+      run: mvn clean install -Dclirr.skip=true
     - name: Compile samples
       run: mvn compile
       working-directory: samples
