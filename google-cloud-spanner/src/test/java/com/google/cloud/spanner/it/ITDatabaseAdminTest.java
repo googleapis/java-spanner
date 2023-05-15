@@ -281,6 +281,7 @@ public class ITDatabaseAdminTest {
 
   @Test
   public void updateDatabaseInvalidFieldsToUpdate() throws Exception {
+    assumeFalse("Emulator does not drop database protection", isUsingEmulator());
     String instanceId = testHelper.getInstanceId().getInstance();
     Database database =
         dbAdminClient
@@ -301,6 +302,7 @@ public class ITDatabaseAdminTest {
 
   @Test
   public void dropDatabaseWithProtectionEnabled() throws Exception {
+    assumeFalse("Emulator does not drop database protection", isUsingEmulator());
     String instanceId = testHelper.getInstanceId().getInstance();
     Database database =
         dbAdminClient
