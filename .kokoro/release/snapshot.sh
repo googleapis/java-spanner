@@ -30,4 +30,5 @@ mvn clean deploy -B \
   -DperformRelease=true \
   -Dgpg.executable=gpg \
   -Dgpg.passphrase=${GPG_PASSPHRASE} \
-  -Dgpg.homedir=${GPG_HOMEDIR}
+  -Dgpg.homedir=${GPG_HOMEDIR} \
+  -Dclirr.skip=true
