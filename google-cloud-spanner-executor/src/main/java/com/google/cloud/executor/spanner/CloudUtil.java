@@ -46,7 +46,7 @@ public class CloudUtil {
   // error message causes the trailing headers to exceed this limit.
   private static final int GRPC_MAX_HEADER_LIST_SIZE_BYTES = 10 * 1024 * 1024;
 
-  private static final String TEST_HOST_IN_CERT = "test_cert_2";
+  private static final String TEST_HOST_IN_CERT = "test-cert-2";
 
   public static TransportChannelProvider newChannelProviderHelper(int port) {
     NettyChannelBuilder builder =

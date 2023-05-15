@@ -5,14 +5,14 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-executor</artifactId>
-  <version>6.35.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-executor:current} -->
+  <version>6.41.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-executor:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner Executor</name>
 
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.35.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.41.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
 
   <properties>
@@ -81,7 +81,7 @@
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-spanner-executor-v1</artifactId>
-      <version>1.0.0</version>
+      <version>1.4.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -121,20 +121,13 @@
       <artifactId>commons-io</artifactId>
       <version>2.11.0</version>
     </dependency>
-
-    <dependency>
-      <groupId>org.jetbrains</groupId>
-      <artifactId>annotations</artifactId>
-      <version>RELEASE</version>
-      <scope>compile</scope>
-    </dependency>
   </dependencies>
   <build>
     <finalName>google-spanner-cloud-executor</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.4.2</version>
+        <version>3.6.0</version>
         <configuration>
           <descriptors>
             <descriptor>assembly-descriptor.xml</descriptor>
@@ -158,7 +151,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.0.0-M8</version>
+        <version>3.1.0</version>
       </plugin>
     </plugins>
   </build>

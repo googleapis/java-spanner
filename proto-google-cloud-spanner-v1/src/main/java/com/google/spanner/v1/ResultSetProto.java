@@ -75,12 +75,12 @@ public final class ResultSetProto {
           + "nner.v1.QueryPlan\022,\n\013query_stats\030\002 \001(\0132\027"
           + ".google.protobuf.Struct\022\031\n\017row_count_exa"
           + "ct\030\003 \001(\003H\000\022\037\n\025row_count_lower_bound\030\004 \001("
-          + "\003H\000B\013\n\trow_countB\267\001\n\025com.google.spanner."
-          + "v1B\016ResultSetProtoP\001Z8google.golang.org/"
-          + "genproto/googleapis/spanner/v1;spanner\370\001"
-          + "\001\252\002\027Google.Cloud.Spanner.V1\312\002\027Google\\Clo"
-          + "ud\\Spanner\\V1\352\002\032Google::Cloud::Spanner::"
-          + "V1b\006proto3"
+          + "\003H\000B\013\n\trow_countB\264\001\n\025com.google.spanner."
+          + "v1B\016ResultSetProtoP\001Z5cloud.google.com/g"
+          + "o/spanner/apiv1/spannerpb;spannerpb\370\001\001\252\002"
+          + "\027Google.Cloud.Spanner.V1\312\002\027Google\\Cloud\\"
+          + "Spanner\\V1\352\002\032Google::Cloud::Spanner::V1b"
+          + "\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(

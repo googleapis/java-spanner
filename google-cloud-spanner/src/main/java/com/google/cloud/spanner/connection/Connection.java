@@ -713,6 +713,61 @@ public interface Connection extends AutoCloseable {
    */
   ApiFuture<Void> rollbackAsync();
 
+  /** Returns the current savepoint support for this connection. */
+  SavepointSupport getSavepointSupport();
+
+  /** Sets how savepoints should be supported on this connection. */
+  void setSavepointSupport(SavepointSupport savepointSupport);
+
+  /**
+   * Creates a savepoint with the given name.
+   *
+   * <p>The uniqueness constraints on a savepoint name depends on the database dialect that is used:
+   *
+   * <ul>
+   *   <li>{@link Dialect#GOOGLE_STANDARD_SQL} requires that savepoint names are unique within a
+   *       transaction. The name of a savepoint that has been released or destroyed because the
+   *       transaction has rolled back to a savepoint that was defined before that savepoint can be
+   *       re-used within the transaction.
+   *   <li>{@link Dialect#POSTGRESQL} follows the rules for savepoint names in PostgreSQL. This
+   *       means that multiple savepoints in one transaction can have the same name, but only the
+   *       last savepoint with a given name is visible. See <a
+   *       href="https://www.postgresql.org/docs/current/sql-savepoint.html">PostgreSQL savepoint
+   *       documentation</a> for more information.
+   * </ul>
+   *
+   * @param name the name of the savepoint to create
+   * @throws SpannerException if a savepoint with the same name already exists and the dialect that
+   *     is used is {@link Dialect#GOOGLE_STANDARD_SQL}
+   * @throws SpannerException if there is no transaction on this connection
+   * @throws SpannerException if internal retries have been disabled for this connection
+   */
+  void savepoint(String name);
+
+  /**
+   * Releases the savepoint with the given name. The savepoint and all later savepoints will be
+   * removed from the current transaction and can no longer be used.
+   *
+   * @param name the name of the savepoint to release
+   * @throws SpannerException if no savepoint with the given name exists
+   */
+  void releaseSavepoint(String name);
+
+  /**
+   * Rolls back to the given savepoint. Rolling back to a savepoint undoes all changes and releases
+   * all internal locks that have been taken by the transaction after the savepoint. Rolling back to
+   * a savepoint does not remove the savepoint from the transaction, and it is possible to roll back
+   * to the same savepoint multiple times. All savepoints that have been defined after the given
+   * savepoint are removed from the transaction.
+   *
+   * @param name the name of the savepoint to roll back to.
+   * @throws SpannerException if no savepoint with the given name exists.
+   * @throws AbortedDueToConcurrentModificationException if rolling back to the savepoint failed
+   *     because another transaction has modified the data that has been read or modified by this
+   *     transaction
+   */
+  void rollbackToSavepoint(String name);
+
   /**
    * @return <code>true</code> if this connection has a transaction (that has not necessarily
    *     started). This method will only return false when the {@link Connection} is in autocommit

@@ -19,6 +19,7 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.common.base.Strings;
 import javax.annotation.Nullable;
 
 /**
@@ -41,5 +42,25 @@ class ConnectionPreconditions {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.FAILED_PRECONDITION, String.valueOf(errorMessage));
     }
+  }
+
+  static void checkArgument(boolean expression, String message) {
+    if (!expression) {
+      throw SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, message);
+    }
+  }
+
+  /** Verifies that the given identifier is a valid identifier for the given dialect. */
+  static String checkValidIdentifier(String identifier) {
+    checkArgument(!Strings.isNullOrEmpty(identifier), "Identifier may not be null or empty");
+    checkArgument(
+        Character.isJavaIdentifierStart(identifier.charAt(0)), "Invalid identifier: " + identifier);
+    for (int i = 1; i < identifier.length(); i++) {
+      checkArgument(
+          Character.isJavaIdentifierPart(identifier.charAt(i)),
+          "Invalid identifier: " + identifier);
+    }
+    checkArgument(identifier.length() <= 128, "Max identifier length is 128 characters");
+    return identifier;
   }
 }

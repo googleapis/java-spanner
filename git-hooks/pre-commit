@@ -4,8 +4,5 @@
 
 set -e
 
-# Checks for:
-#   - Formatting errors
-#   - Clirr errors
-mvn com.coveo:fmt-maven-plugin:check clirr:check
-
+# Checks for Formatting errors
+mvn com.coveo:fmt-maven-plugin:check

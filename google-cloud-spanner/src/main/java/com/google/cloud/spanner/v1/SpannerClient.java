@@ -940,6 +940,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDataBoostEnabled(true)
    *           .build();
    *   ResultSet response = spannerClient.executeSql(request);
    * }
@@ -987,6 +988,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDataBoostEnabled(true)
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.executeSqlCallable().futureCall(request);
    *   // Do something.
@@ -1027,6 +1029,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDataBoostEnabled(true)
    *           .build();
    *   ServerStream<PartialResultSet> stream =
    *       spannerClient.executeStreamingSqlCallable().call(request);
@@ -1162,6 +1165,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setResumeToken(ByteString.EMPTY)
    *           .setPartitionToken(ByteString.EMPTY)
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDataBoostEnabled(true)
    *           .build();
    *   ResultSet response = spannerClient.read(request);
    * }
@@ -1210,6 +1214,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setResumeToken(ByteString.EMPTY)
    *           .setPartitionToken(ByteString.EMPTY)
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDataBoostEnabled(true)
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.readCallable().futureCall(request);
    *   // Do something.
@@ -1250,6 +1255,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setResumeToken(ByteString.EMPTY)
    *           .setPartitionToken(ByteString.EMPTY)
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDataBoostEnabled(true)
    *           .build();
    *   ServerStream<PartialResultSet> stream = spannerClient.streamingReadCallable().call(request);
    *   for (PartialResultSet response : stream) {

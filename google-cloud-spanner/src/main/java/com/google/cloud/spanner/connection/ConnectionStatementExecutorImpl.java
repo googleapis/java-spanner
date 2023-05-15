@@ -32,6 +32,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETRY_ABORTS_INTERNALLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETURN_COMMIT_STATS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RPC_PRIORITY;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_SAVEPOINT_SUPPORT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_STATEMENT_TAG;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_STATEMENT_TIMEOUT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_TRANSACTION_MODE;
@@ -48,6 +49,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_RETRY_ABORTS_INTERNALLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_RETURN_COMMIT_STATS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_RPC_PRIORITY;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_SAVEPOINT_SUPPORT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_STATEMENT_TAG;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_STATEMENT_TIMEOUT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_TRANSACTION_ISOLATION_LEVEL;
@@ -452,6 +454,20 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
             ? RequestOptions.Priority.PRIORITY_UNSPECIFIED
             : getConnection().getRPCPriority(),
         SHOW_RPC_PRIORITY);
+  }
+
+  @Override
+  public StatementResult statementSetSavepointSupport(SavepointSupport savepointSupport) {
+    getConnection().setSavepointSupport(savepointSupport);
+    return noResult(SET_SAVEPOINT_SUPPORT);
+  }
+
+  @Override
+  public StatementResult statementShowSavepointSupport() {
+    return resultSet(
+        String.format("%SAVEPOINT_SUPPORT", getNamespace(connection.getDialect())),
+        getConnection().getSavepointSupport(),
+        SHOW_SAVEPOINT_SUPPORT);
   }
 
   @Override
