@@ -76,6 +76,8 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -102,6 +104,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
           .add(Database.getDescriptor())
           .add(Backup.getDescriptor())
           .add(CopyBackupMetadata.getDescriptor())
+          .add(UpdateDatabaseMetadata.getDescriptor())
           .add(UpdateDatabaseDdlMetadata.getDescriptor())
           .build();
 
@@ -213,6 +216,48 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .setDefaultInstance(Database.getDefaultInstance())
                       .setDefaultTypeRegistry(typeRegistry)
                       .build())
+              .build();
+
+  private static final ApiMethodDescriptor<UpdateDatabaseRequest, Operation>
+      updateDatabaseMethodDescriptor =
+          ApiMethodDescriptor.<UpdateDatabaseRequest, Operation>newBuilder()
+              .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/UpdateDatabase")
+              .setHttpMethod("PATCH")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<UpdateDatabaseRequest>newBuilder()
+                      .setPath(
+                          "/v1/{database.name=projects/*/instances/*/databases/*}",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<UpdateDatabaseRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(
+                                fields, "database.name", request.getDatabase().getName());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<UpdateDatabaseRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "updateMask", request.getUpdateMask());
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(
+                          request ->
+                              ProtoRestSerializer.create()
+                                  .toBody("database", request.getDatabase(), true))
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<Operation>newBuilder()
+                      .setDefaultInstance(Operation.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .setOperationSnapshotFactory(
+                  (UpdateDatabaseRequest request, Operation response) ->
+                      HttpJsonOperationSnapshot.create(response))
               .build();
 
   private static final ApiMethodDescriptor<UpdateDatabaseDdlRequest, Operation>
@@ -831,6 +876,9 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
   private final OperationCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
       createDatabaseOperationCallable;
   private final UnaryCallable<GetDatabaseRequest, Database> getDatabaseCallable;
+  private final UnaryCallable<UpdateDatabaseRequest, Operation> updateDatabaseCallable;
+  private final OperationCallable<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+      updateDatabaseOperationCallable;
   private final UnaryCallable<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlCallable;
   private final OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
       updateDatabaseDdlOperationCallable;
@@ -1006,6 +1054,11 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(getDatabaseMethodDescriptor)
             .setTypeRegistry(typeRegistry)
             .build();
+    HttpJsonCallSettings<UpdateDatabaseRequest, Operation> updateDatabaseTransportSettings =
+        HttpJsonCallSettings.<UpdateDatabaseRequest, Operation>newBuilder()
+            .setMethodDescriptor(updateDatabaseMethodDescriptor)
+            .setTypeRegistry(typeRegistry)
+            .build();
     HttpJsonCallSettings<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlTransportSettings =
         HttpJsonCallSettings.<UpdateDatabaseDdlRequest, Operation>newBuilder()
             .setMethodDescriptor(updateDatabaseDdlMethodDescriptor)
@@ -1112,6 +1165,15 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
     this.getDatabaseCallable =
         callableFactory.createUnaryCallable(
             getDatabaseTransportSettings, settings.getDatabaseSettings(), clientContext);
+    this.updateDatabaseCallable =
+        callableFactory.createUnaryCallable(
+            updateDatabaseTransportSettings, settings.updateDatabaseSettings(), clientContext);
+    this.updateDatabaseOperationCallable =
+        callableFactory.createOperationCallable(
+            updateDatabaseTransportSettings,
+            settings.updateDatabaseOperationSettings(),
+            clientContext,
+            httpJsonOperationsStub);
     this.updateDatabaseDdlCallable =
         callableFactory.createUnaryCallable(
             updateDatabaseDdlTransportSettings,
@@ -1223,6 +1285,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
     methodDescriptors.add(listDatabasesMethodDescriptor);
     methodDescriptors.add(createDatabaseMethodDescriptor);
     methodDescriptors.add(getDatabaseMethodDescriptor);
+    methodDescriptors.add(updateDatabaseMethodDescriptor);
     methodDescriptors.add(updateDatabaseDdlMethodDescriptor);
     methodDescriptors.add(dropDatabaseMethodDescriptor);
     methodDescriptors.add(getDatabaseDdlMethodDescriptor);
@@ -1271,6 +1334,17 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
   @Override
   public UnaryCallable<GetDatabaseRequest, Database> getDatabaseCallable() {
     return getDatabaseCallable;
+  }
+
+  @Override
+  public UnaryCallable<UpdateDatabaseRequest, Operation> updateDatabaseCallable() {
+    return updateDatabaseCallable;
+  }
+
+  @Override
+  public OperationCallable<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+      updateDatabaseOperationCallable() {
+    return updateDatabaseOperationCallable;
   }
 
   @Override
