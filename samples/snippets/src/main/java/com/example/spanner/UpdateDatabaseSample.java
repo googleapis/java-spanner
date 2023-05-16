@@ -17,9 +17,14 @@
 package com.example.spanner;
 
 // [START spanner_update_database]
-
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.cloud.spanner.Database;
+import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.DatabaseInfo.DatabaseField;
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
