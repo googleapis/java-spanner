@@ -179,6 +179,52 @@ public final class DatabaseAdminGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.admin.database.v1.UpdateDatabaseRequest,
+          com.google.longrunning.Operation>
+      getUpdateDatabaseMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "UpdateDatabase",
+      requestType = com.google.spanner.admin.database.v1.UpdateDatabaseRequest.class,
+      responseType = com.google.longrunning.Operation.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.admin.database.v1.UpdateDatabaseRequest,
+          com.google.longrunning.Operation>
+      getUpdateDatabaseMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.admin.database.v1.UpdateDatabaseRequest,
+            com.google.longrunning.Operation>
+        getUpdateDatabaseMethod;
+    if ((getUpdateDatabaseMethod = DatabaseAdminGrpc.getUpdateDatabaseMethod) == null) {
+      synchronized (DatabaseAdminGrpc.class) {
+        if ((getUpdateDatabaseMethod = DatabaseAdminGrpc.getUpdateDatabaseMethod) == null) {
+          DatabaseAdminGrpc.getUpdateDatabaseMethod =
+              getUpdateDatabaseMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.admin.database.v1.UpdateDatabaseRequest,
+                          com.google.longrunning.Operation>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "UpdateDatabase"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.database.v1.UpdateDatabaseRequest
+                                  .getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.longrunning.Operation.getDefaultInstance()))
+                      .setSchemaDescriptor(
+                          new DatabaseAdminMethodDescriptorSupplier("UpdateDatabase"))
+                      .build();
+        }
+      }
+    }
+    return getUpdateDatabaseMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<
           com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest,
           com.google.longrunning.Operation>
       getUpdateDatabaseDdlMethod;
@@ -1006,6 +1052,50 @@ public final class DatabaseAdminGrpc {
      *
      *
      * <pre>
+     * Updates a Cloud Spanner database. The returned
+     * [long-running operation][google.longrunning.Operation] can be used to track
+     * the progress of updating the database. If the named database does not
+     * exist, returns `NOT_FOUND`.
+     * While the operation is pending:
+     *   * The database's
+     *     [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+     *     field is set to true.
+     *   * Cancelling the operation is best-effort. If the cancellation succeeds,
+     *     the operation metadata's
+     *     [cancel_time][google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancel_time]
+     *     is set, the updates are reverted, and the operation terminates with a
+     *     `CANCELLED` status.
+     *   * New UpdateDatabase requests will return a `FAILED_PRECONDITION` error
+     *     until the pending operation is done (returns successfully or with
+     *     error).
+     *   * Reading the database via the API continues to give the pre-request
+     *     values.
+     * Upon completion of the returned operation:
+     *   * The new values are in effect and readable via the API.
+     *   * The database's
+     *     [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+     *     field becomes false.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`
+     * and can be used to track the database modification. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateDatabaseMetadata][google.spanner.admin.database.v1.UpdateDatabaseMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Database][google.spanner.admin.database.v1.Database], if successful.
+     * </pre>
+     */
+    default void updateDatabase(
+        com.google.spanner.admin.database.v1.UpdateDatabaseRequest request,
+        io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getUpdateDatabaseMethod(), responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
      * Updates the schema of a Cloud Spanner database by
      * creating/altering/dropping tables, columns, indexes, etc. The returned
      * [long-running operation][google.longrunning.Operation] will have a name of
@@ -1417,6 +1507,52 @@ public final class DatabaseAdminGrpc {
             responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetDatabaseMethod(), getCallOptions()),
+          request,
+          responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Updates a Cloud Spanner database. The returned
+     * [long-running operation][google.longrunning.Operation] can be used to track
+     * the progress of updating the database. If the named database does not
+     * exist, returns `NOT_FOUND`.
+     * While the operation is pending:
+     *   * The database's
+     *     [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+     *     field is set to true.
+     *   * Cancelling the operation is best-effort. If the cancellation succeeds,
+     *     the operation metadata's
+     *     [cancel_time][google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancel_time]
+     *     is set, the updates are reverted, and the operation terminates with a
+     *     `CANCELLED` status.
+     *   * New UpdateDatabase requests will return a `FAILED_PRECONDITION` error
+     *     until the pending operation is done (returns successfully or with
+     *     error).
+     *   * Reading the database via the API continues to give the pre-request
+     *     values.
+     * Upon completion of the returned operation:
+     *   * The new values are in effect and readable via the API.
+     *   * The database's
+     *     [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+     *     field becomes false.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`
+     * and can be used to track the database modification. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateDatabaseMetadata][google.spanner.admin.database.v1.UpdateDatabaseMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Database][google.spanner.admin.database.v1.Database], if successful.
+     * </pre>
+     */
+    public void updateDatabase(
+        com.google.spanner.admin.database.v1.UpdateDatabaseRequest request,
+        io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getUpdateDatabaseMethod(), getCallOptions()),
           request,
           responseObserver);
     }
@@ -1843,6 +1979,49 @@ public final class DatabaseAdminGrpc {
      *
      *
      * <pre>
+     * Updates a Cloud Spanner database. The returned
+     * [long-running operation][google.longrunning.Operation] can be used to track
+     * the progress of updating the database. If the named database does not
+     * exist, returns `NOT_FOUND`.
+     * While the operation is pending:
+     *   * The database's
+     *     [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+     *     field is set to true.
+     *   * Cancelling the operation is best-effort. If the cancellation succeeds,
+     *     the operation metadata's
+     *     [cancel_time][google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancel_time]
+     *     is set, the updates are reverted, and the operation terminates with a
+     *     `CANCELLED` status.
+     *   * New UpdateDatabase requests will return a `FAILED_PRECONDITION` error
+     *     until the pending operation is done (returns successfully or with
+     *     error).
+     *   * Reading the database via the API continues to give the pre-request
+     *     values.
+     * Upon completion of the returned operation:
+     *   * The new values are in effect and readable via the API.
+     *   * The database's
+     *     [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+     *     field becomes false.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`
+     * and can be used to track the database modification. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateDatabaseMetadata][google.spanner.admin.database.v1.UpdateDatabaseMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Database][google.spanner.admin.database.v1.Database], if successful.
+     * </pre>
+     */
+    public com.google.longrunning.Operation updateDatabase(
+        com.google.spanner.admin.database.v1.UpdateDatabaseRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getUpdateDatabaseMethod(), getCallOptions(), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
      * Updates the schema of a Cloud Spanner database by
      * creating/altering/dropping tables, columns, indexes, etc. The returned
      * [long-running operation][google.longrunning.Operation] will have a name of
@@ -2210,6 +2389,49 @@ public final class DatabaseAdminGrpc {
      *
      *
      * <pre>
+     * Updates a Cloud Spanner database. The returned
+     * [long-running operation][google.longrunning.Operation] can be used to track
+     * the progress of updating the database. If the named database does not
+     * exist, returns `NOT_FOUND`.
+     * While the operation is pending:
+     *   * The database's
+     *     [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+     *     field is set to true.
+     *   * Cancelling the operation is best-effort. If the cancellation succeeds,
+     *     the operation metadata's
+     *     [cancel_time][google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancel_time]
+     *     is set, the updates are reverted, and the operation terminates with a
+     *     `CANCELLED` status.
+     *   * New UpdateDatabase requests will return a `FAILED_PRECONDITION` error
+     *     until the pending operation is done (returns successfully or with
+     *     error).
+     *   * Reading the database via the API continues to give the pre-request
+     *     values.
+     * Upon completion of the returned operation:
+     *   * The new values are in effect and readable via the API.
+     *   * The database's
+     *     [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+     *     field becomes false.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`
+     * and can be used to track the database modification. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateDatabaseMetadata][google.spanner.admin.database.v1.UpdateDatabaseMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Database][google.spanner.admin.database.v1.Database], if successful.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
+        updateDatabase(com.google.spanner.admin.database.v1.UpdateDatabaseRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getUpdateDatabaseMethod(), getCallOptions()), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
      * Updates the schema of a Cloud Spanner database by
      * creating/altering/dropping tables, columns, indexes, etc. The returned
      * [long-running operation][google.longrunning.Operation] will have a name of
@@ -2515,22 +2737,23 @@ public final class DatabaseAdminGrpc {
   private static final int METHODID_LIST_DATABASES = 0;
   private static final int METHODID_CREATE_DATABASE = 1;
   private static final int METHODID_GET_DATABASE = 2;
-  private static final int METHODID_UPDATE_DATABASE_DDL = 3;
-  private static final int METHODID_DROP_DATABASE = 4;
-  private static final int METHODID_GET_DATABASE_DDL = 5;
-  private static final int METHODID_SET_IAM_POLICY = 6;
-  private static final int METHODID_GET_IAM_POLICY = 7;
-  private static final int METHODID_TEST_IAM_PERMISSIONS = 8;
-  private static final int METHODID_CREATE_BACKUP = 9;
-  private static final int METHODID_COPY_BACKUP = 10;
-  private static final int METHODID_GET_BACKUP = 11;
-  private static final int METHODID_UPDATE_BACKUP = 12;
-  private static final int METHODID_DELETE_BACKUP = 13;
-  private static final int METHODID_LIST_BACKUPS = 14;
-  private static final int METHODID_RESTORE_DATABASE = 15;
-  private static final int METHODID_LIST_DATABASE_OPERATIONS = 16;
-  private static final int METHODID_LIST_BACKUP_OPERATIONS = 17;
-  private static final int METHODID_LIST_DATABASE_ROLES = 18;
+  private static final int METHODID_UPDATE_DATABASE = 3;
+  private static final int METHODID_UPDATE_DATABASE_DDL = 4;
+  private static final int METHODID_DROP_DATABASE = 5;
+  private static final int METHODID_GET_DATABASE_DDL = 6;
+  private static final int METHODID_SET_IAM_POLICY = 7;
+  private static final int METHODID_GET_IAM_POLICY = 8;
+  private static final int METHODID_TEST_IAM_PERMISSIONS = 9;
+  private static final int METHODID_CREATE_BACKUP = 10;
+  private static final int METHODID_COPY_BACKUP = 11;
+  private static final int METHODID_GET_BACKUP = 12;
+  private static final int METHODID_UPDATE_BACKUP = 13;
+  private static final int METHODID_DELETE_BACKUP = 14;
+  private static final int METHODID_LIST_BACKUPS = 15;
+  private static final int METHODID_RESTORE_DATABASE = 16;
+  private static final int METHODID_LIST_DATABASE_OPERATIONS = 17;
+  private static final int METHODID_LIST_BACKUP_OPERATIONS = 18;
+  private static final int METHODID_LIST_DATABASE_ROLES = 19;
 
   private static final class MethodHandlers<Req, Resp>
       implements io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -2566,6 +2789,11 @@ public final class DatabaseAdminGrpc {
               (com.google.spanner.admin.database.v1.GetDatabaseRequest) request,
               (io.grpc.stub.StreamObserver<com.google.spanner.admin.database.v1.Database>)
                   responseObserver);
+          break;
+        case METHODID_UPDATE_DATABASE:
+          serviceImpl.updateDatabase(
+              (com.google.spanner.admin.database.v1.UpdateDatabaseRequest) request,
+              (io.grpc.stub.StreamObserver<com.google.longrunning.Operation>) responseObserver);
           break;
         case METHODID_UPDATE_DATABASE_DDL:
           serviceImpl.updateDatabaseDdl(
@@ -2697,6 +2925,12 @@ public final class DatabaseAdminGrpc {
                 new MethodHandlers<
                     com.google.spanner.admin.database.v1.GetDatabaseRequest,
                     com.google.spanner.admin.database.v1.Database>(service, METHODID_GET_DATABASE)))
+        .addMethod(
+            getUpdateDatabaseMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.database.v1.UpdateDatabaseRequest,
+                    com.google.longrunning.Operation>(service, METHODID_UPDATE_DATABASE)))
         .addMethod(
             getUpdateDatabaseDdlMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
@@ -2851,6 +3085,7 @@ public final class DatabaseAdminGrpc {
                       .addMethod(getListDatabasesMethod())
                       .addMethod(getCreateDatabaseMethod())
                       .addMethod(getGetDatabaseMethod())
+                      .addMethod(getUpdateDatabaseMethod())
                       .addMethod(getUpdateDatabaseDdlMethod())
                       .addMethod(getDropDatabaseMethod())
                       .addMethod(getGetDatabaseDdlMethod())

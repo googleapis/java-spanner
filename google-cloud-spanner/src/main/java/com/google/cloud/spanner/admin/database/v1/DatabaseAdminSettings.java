@@ -72,6 +72,8 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import java.io.IOException;
 import java.util.List;
 import javax.annotation.Generated;
@@ -135,6 +137,17 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
   /** Returns the object with the settings used for calls to getDatabase. */
   public UnaryCallSettings<GetDatabaseRequest, Database> getDatabaseSettings() {
     return ((DatabaseAdminStubSettings) getStubSettings()).getDatabaseSettings();
+  }
+
+  /** Returns the object with the settings used for calls to updateDatabase. */
+  public UnaryCallSettings<UpdateDatabaseRequest, Operation> updateDatabaseSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).updateDatabaseSettings();
+  }
+
+  /** Returns the object with the settings used for calls to updateDatabase. */
+  public OperationCallSettings<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+      updateDatabaseOperationSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).updateDatabaseOperationSettings();
   }
 
   /** Returns the object with the settings used for calls to updateDatabaseDdl. */
@@ -389,6 +402,17 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
     /** Returns the builder for the settings used for calls to getDatabase. */
     public UnaryCallSettings.Builder<GetDatabaseRequest, Database> getDatabaseSettings() {
       return getStubSettingsBuilder().getDatabaseSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to updateDatabase. */
+    public UnaryCallSettings.Builder<UpdateDatabaseRequest, Operation> updateDatabaseSettings() {
+      return getStubSettingsBuilder().updateDatabaseSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to updateDatabase. */
+    public OperationCallSettings.Builder<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+        updateDatabaseOperationSettings() {
+      return getStubSettingsBuilder().updateDatabaseOperationSettings();
     }
 
     /** Returns the builder for the settings used for calls to updateDatabaseDdl. */

@@ -23,6 +23,7 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.cloud.Policy.DefaultMarshaller;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.DatabaseInfo.DatabaseField;
 import com.google.cloud.spanner.Options.ListOption;
 import com.google.cloud.spanner.SpannerImpl.PageFetcher;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -413,6 +414,27 @@ class DatabaseAdminClientImpl implements DatabaseAdminClient {
   public Database getDatabase(String instanceId, String databaseId) throws SpannerException {
     String dbName = getDatabaseName(instanceId, databaseId);
     return Database.fromProto(rpc.getDatabase(dbName), DatabaseAdminClientImpl.this);
+  }
+
+  @Override
+  public OperationFuture<Database, UpdateDatabaseMetadata> updateDatabase(
+      Database database, DatabaseField... fieldsToUpdate) throws SpannerException {
+    FieldMask fieldMask = DatabaseInfo.DatabaseField.toFieldMask(fieldsToUpdate);
+    OperationFuture<com.google.spanner.admin.database.v1.Database, UpdateDatabaseMetadata>
+        rawOperationFuture = rpc.updateDatabase(database.toProto(), fieldMask);
+    return new OperationFutureImpl<>(
+        rawOperationFuture.getPollingFuture(),
+        rawOperationFuture.getInitialFuture(),
+        snapshot ->
+            Database.fromProto(
+                ProtoOperationTransformers.ResponseTransformer.create(
+                        com.google.spanner.admin.database.v1.Database.class)
+                    .apply(snapshot),
+                DatabaseAdminClientImpl.this),
+        ProtoOperationTransformers.MetadataTransformer.create(UpdateDatabaseMetadata.class),
+        e -> {
+          throw SpannerExceptionFactory.newSpannerException(e);
+        });
   }
 
   @Override

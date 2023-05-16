@@ -67,6 +67,8 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import io.grpc.MethodDescriptor;
 import io.grpc.protobuf.ProtoUtils;
 import java.io.IOException;
@@ -109,6 +111,16 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
           .setRequestMarshaller(ProtoUtils.marshaller(GetDatabaseRequest.getDefaultInstance()))
           .setResponseMarshaller(ProtoUtils.marshaller(Database.getDefaultInstance()))
           .build();
+
+  private static final MethodDescriptor<UpdateDatabaseRequest, Operation>
+      updateDatabaseMethodDescriptor =
+          MethodDescriptor.<UpdateDatabaseRequest, Operation>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/UpdateDatabase")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(UpdateDatabaseRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .build();
 
   private static final MethodDescriptor<UpdateDatabaseDdlRequest, Operation>
       updateDatabaseDdlMethodDescriptor =
@@ -272,6 +284,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
   private final OperationCallable<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
       createDatabaseOperationCallable;
   private final UnaryCallable<GetDatabaseRequest, Database> getDatabaseCallable;
+  private final UnaryCallable<UpdateDatabaseRequest, Operation> updateDatabaseCallable;
+  private final OperationCallable<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+      updateDatabaseOperationCallable;
   private final UnaryCallable<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlCallable;
   private final OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
       updateDatabaseDdlOperationCallable;
@@ -378,6 +393,16 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                 request -> {
                   ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
                   params.put("name", String.valueOf(request.getName()));
+                  return params.build();
+                })
+            .build();
+    GrpcCallSettings<UpdateDatabaseRequest, Operation> updateDatabaseTransportSettings =
+        GrpcCallSettings.<UpdateDatabaseRequest, Operation>newBuilder()
+            .setMethodDescriptor(updateDatabaseMethodDescriptor)
+            .setParamsExtractor(
+                request -> {
+                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
+                  params.put("database.name", String.valueOf(request.getDatabase().getName()));
                   return params.build();
                 })
             .build();
@@ -566,6 +591,15 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
     this.getDatabaseCallable =
         callableFactory.createUnaryCallable(
             getDatabaseTransportSettings, settings.getDatabaseSettings(), clientContext);
+    this.updateDatabaseCallable =
+        callableFactory.createUnaryCallable(
+            updateDatabaseTransportSettings, settings.updateDatabaseSettings(), clientContext);
+    this.updateDatabaseOperationCallable =
+        callableFactory.createOperationCallable(
+            updateDatabaseTransportSettings,
+            settings.updateDatabaseOperationSettings(),
+            clientContext,
+            operationsStub);
     this.updateDatabaseDdlCallable =
         callableFactory.createUnaryCallable(
             updateDatabaseDdlTransportSettings,
@@ -700,6 +734,17 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
   @Override
   public UnaryCallable<GetDatabaseRequest, Database> getDatabaseCallable() {
     return getDatabaseCallable;
+  }
+
+  @Override
+  public UnaryCallable<UpdateDatabaseRequest, Operation> updateDatabaseCallable() {
+    return updateDatabaseCallable;
+  }
+
+  @Override
+  public OperationCallable<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+      updateDatabaseOperationCallable() {
+    return updateDatabaseOperationCallable;
   }
 
   @Override
