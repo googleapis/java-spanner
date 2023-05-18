@@ -164,6 +164,7 @@ public class ConnectionOptions {
   private static final String DEFAULT_MIN_SESSIONS = null;
   private static final String DEFAULT_MAX_SESSIONS = null;
   private static final String DEFAULT_NUM_CHANNELS = null;
+  private static final Boolean DEFAULT_USE_SHARED_SESSIONS = null;
   private static final String DEFAULT_CHANNEL_PROVIDER = null;
   private static final String DEFAULT_DATABASE_ROLE = null;
   private static final String DEFAULT_USER_AGENT = null;
@@ -203,6 +204,8 @@ public class ConnectionOptions {
   public static final String MAX_SESSIONS_PROPERTY_NAME = "maxSessions";
   /** Name of the 'numChannels' connection property. */
   public static final String NUM_CHANNELS_PROPERTY_NAME = "numChannels";
+  /** Name of the 'autocommit' connection property. */
+  public static final String USE_SHARED_SESSIONS_PROPERTY_NAME = "useSharedSessions";
   /** Name of the 'channelProvider' connection property. */
   public static final String CHANNEL_PROVIDER_PROPERTY_NAME = "channelProvider";
   /** Custom user agent string is only for other Google libraries. */
@@ -262,6 +265,9 @@ public class ConnectionOptions {
                   ConnectionProperty.createStringProperty(
                       NUM_CHANNELS_PROPERTY_NAME,
                       "The number of gRPC channels to use to communicate with Cloud Spanner. The default is 4."),
+                  ConnectionProperty.createStringProperty(
+                      USE_SHARED_SESSIONS_PROPERTY_NAME,
+                      "Use shared sessions for read-only operations. The default is true."),
                   ConnectionProperty.createStringProperty(
                       CHANNEL_PROVIDER_PROPERTY_NAME,
                       "The name of the channel provider class. The name must reference an implementation of ExternalChannelProvider. If this property is not set, the connection will use the default grpc channel provider."),
@@ -562,6 +568,7 @@ public class ConnectionOptions {
   private final String channelProvider;
   private final Integer minSessions;
   private final Integer maxSessions;
+  private final Boolean useSharedSessions;
   private final String databaseRole;
   private final String userAgent;
   private final QueryOptions queryOptions;
@@ -653,6 +660,7 @@ public class ConnectionOptions {
         parseIntegerProperty(MAX_SESSIONS_PROPERTY_NAME, parseMaxSessions(builder.uri));
     this.numChannels =
         parseIntegerProperty(NUM_CHANNELS_PROPERTY_NAME, parseNumChannels(builder.uri));
+    this.useSharedSessions = parseUseSharedSessions(builder.uri);
     this.channelProvider = parseChannelProvider(builder.uri);
     this.databaseRole = parseDatabaseRole(this.uri);
 
@@ -669,7 +677,10 @@ public class ConnectionOptions {
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
 
-    if (this.minSessions != null || this.maxSessions != null || !this.trackSessionLeaks) {
+    if (this.minSessions != null
+        || this.maxSessions != null
+        || !this.trackSessionLeaks
+        || this.useSharedSessions != null) {
       SessionPoolOptions.Builder sessionPoolOptionsBuilder =
           builder.sessionPoolOptions == null
               ? SessionPoolOptions.newBuilder()
@@ -681,6 +692,9 @@ public class ConnectionOptions {
       }
       if (this.maxSessions != null) {
         sessionPoolOptionsBuilder.setMaxSessions(this.maxSessions);
+      }
+      if (this.useSharedSessions != null) {
+        sessionPoolOptionsBuilder.setUseSharedSessions(this.useSharedSessions);
       }
       this.sessionPoolOptions = sessionPoolOptionsBuilder.build();
     } else if (builder.sessionPoolOptions != null) {
@@ -818,6 +832,12 @@ public class ConnectionOptions {
   static String parseNumChannels(String uri) {
     String value = parseUriProperty(uri, NUM_CHANNELS_PROPERTY_NAME);
     return value != null ? value : DEFAULT_NUM_CHANNELS;
+  }
+
+  @VisibleForTesting
+  static Boolean parseUseSharedSessions(String uri) {
+    String value = parseUriProperty(uri, USE_SHARED_SESSIONS_PROPERTY_NAME);
+    return value != null ? Boolean.valueOf(value) : DEFAULT_USE_SHARED_SESSIONS;
   }
 
   @VisibleForTesting
@@ -992,6 +1012,10 @@ public class ConnectionOptions {
   /** The number of channels to use for the connection. */
   public Integer getNumChannels() {
     return numChannels;
+  }
+
+  public Boolean isUseSharedSessions() {
+    return useSharedSessions;
   }
 
   /** Calls the getChannelProvider() method from the supplied class. */
