@@ -267,7 +267,7 @@ public class SessionPoolOptions {
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
     private boolean autoDetectDialect = false;
     private Duration waitForMinSessions = Duration.ZERO;
-    private boolean useSharedSessions = true;
+    private boolean useSharedSessions = false;
 
     public Builder() {}
 

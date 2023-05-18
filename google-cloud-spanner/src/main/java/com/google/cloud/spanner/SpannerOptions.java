@@ -93,7 +93,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   // Set the default number of channels to GRPC_GCP_ENABLED_DEFAULT_CHANNELS when gRPC-GCP extension
   // is enabled, to make sure there are sufficient channels available to move the sessions to a
   // different channel if a network connection in a particular channel fails.
-  @VisibleForTesting static final int GRPC_GCP_ENABLED_DEFAULT_CHANNELS = 16;
+  @VisibleForTesting static final int GRPC_GCP_ENABLED_DEFAULT_CHANNELS = 4;
   private final TransportChannelProvider channelProvider;
 
   @SuppressWarnings("rawtypes")
