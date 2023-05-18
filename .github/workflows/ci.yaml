@@ -85,7 +85,7 @@ jobs:
     - uses: actions/setup-java@v3
       with:
         distribution: zulu
-        java-version: ${{'{{matrix.java}}'}}
+        java-version: ${{matrix.java}}
     - run: java -version
     - run: .kokoro/dependencies.sh
   lint:
