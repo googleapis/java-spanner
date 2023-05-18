@@ -53,6 +53,7 @@ public class SessionPoolOptions {
   private final long initialWaitForSessionTimeoutMillis;
   private final boolean autoDetectDialect;
   private final Duration waitForMinSessions;
+  private final boolean useSharedSessions;
 
   private SessionPoolOptions(Builder builder) {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
@@ -73,6 +74,7 @@ public class SessionPoolOptions {
     this.removeInactiveSessionAfter = builder.removeInactiveSessionAfter;
     this.autoDetectDialect = builder.autoDetectDialect;
     this.waitForMinSessions = builder.waitForMinSessions;
+    this.useSharedSessions = builder.useSharedSessions;
   }
 
   @Override
@@ -97,6 +99,7 @@ public class SessionPoolOptions {
         && Objects.equals(this.keepAliveIntervalMinutes, other.keepAliveIntervalMinutes)
         && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter)
         && Objects.equals(this.autoDetectDialect, other.autoDetectDialect)
+        && Objects.equals(this.useSharedSessions, other.useSharedSessions)
         && Objects.equals(this.waitForMinSessions, other.waitForMinSessions);
   }
 
@@ -117,6 +120,7 @@ public class SessionPoolOptions {
         this.keepAliveIntervalMinutes,
         this.removeInactiveSessionAfter,
         this.autoDetectDialect,
+        this.useSharedSessions,
         this.waitForMinSessions);
   }
 
@@ -178,6 +182,10 @@ public class SessionPoolOptions {
 
   public boolean isAutoDetectDialect() {
     return autoDetectDialect;
+  }
+
+  public boolean isUseSharedSessions() {
+    return useSharedSessions;
   }
 
   @VisibleForTesting
@@ -259,6 +267,7 @@ public class SessionPoolOptions {
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
     private boolean autoDetectDialect = false;
     private Duration waitForMinSessions = Duration.ZERO;
+    private boolean useSharedSessions = true;
 
     public Builder() {}
 
@@ -278,6 +287,7 @@ public class SessionPoolOptions {
       this.keepAliveIntervalMinutes = options.keepAliveIntervalMinutes;
       this.removeInactiveSessionAfter = options.removeInactiveSessionAfter;
       this.autoDetectDialect = options.autoDetectDialect;
+      this.useSharedSessions = options.useSharedSessions;
       this.waitForMinSessions = options.waitForMinSessions;
     }
 
@@ -384,6 +394,11 @@ public class SessionPoolOptions {
      */
     public Builder setAutoDetectDialect(boolean autoDetectDialect) {
       this.autoDetectDialect = autoDetectDialect;
+      return this;
+    }
+
+    public Builder setUseSharedSessions(boolean useSharedSessions) {
+      this.useSharedSessions = useSharedSessions;
       return this;
     }
 

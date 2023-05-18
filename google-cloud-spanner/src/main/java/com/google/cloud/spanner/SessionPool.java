@@ -1360,6 +1360,126 @@ class SessionPool {
     }
   }
 
+  static final class SharedSession implements Session {
+    SessionImpl delegate;
+
+    SharedSession(SessionImpl session) {
+      this.delegate = session;
+    }
+
+    @Override
+    public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unsupported operation");
+    }
+
+    @Override
+    public CommitResponse writeWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unsupported operation");
+    }
+
+    @Override
+    public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unsupported operation");
+    }
+
+    @Override
+    public CommitResponse writeAtLeastOnceWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unsupported operation");
+    }
+
+    @Override
+    public ReadContext singleUse() {
+      return delegate.singleUse();
+    }
+
+    @Override
+    public ReadContext singleUse(TimestampBound bound) {
+      return delegate.singleUse(bound);
+    }
+
+    @Override
+    public ReadOnlyTransaction singleUseReadOnlyTransaction() {
+      return delegate.singleUseReadOnlyTransaction();
+    }
+
+    @Override
+    public ReadOnlyTransaction singleUseReadOnlyTransaction(TimestampBound bound) {
+      return delegate.singleUseReadOnlyTransaction(bound);
+    }
+
+    @Override
+    public ReadOnlyTransaction readOnlyTransaction() {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unsupported operation");
+    }
+
+    @Override
+    public ReadOnlyTransaction readOnlyTransaction(TimestampBound bound) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unsupported operation");
+    }
+
+    @Override
+    public TransactionRunner readWriteTransaction(TransactionOption... options) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unsupported operation");
+    }
+
+    @Override
+    public TransactionManager transactionManager(TransactionOption... options) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unsupported operation");
+    }
+
+    @Override
+    public AsyncRunner runAsync(TransactionOption... options) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unsupported operation");
+    }
+
+    @Override
+    public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unsupported operation");
+    }
+
+    @Override
+    public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unsupported operation");
+    }
+
+    @Override
+    public String getName() {
+      return delegate.getName();
+    }
+
+    @Override
+    public void prepareReadWriteTransaction() {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unsupported operation");
+    }
+
+    @Override
+    public void close() {
+      // no-op
+    }
+
+    private static final ApiFuture<Empty> CLOSE_RESULT =
+        ApiFutures.immediateFuture(Empty.getDefaultInstance());
+
+    @Override
+    public ApiFuture<Empty> asyncClose() {
+      return CLOSE_RESULT;
+    }
+  }
+
   final class PooledSession implements Session {
     @VisibleForTesting SessionImpl delegate;
     private volatile Instant lastUseTime;
@@ -1878,10 +1998,17 @@ class SessionPool {
   private final Set<PooledSession> allSessions = new HashSet<>();
 
   @GuardedBy("lock")
+  private final ArrayList<SharedSession> sharedSessions;
+
+  private final CountDownLatch sharedSessionsInitialized;
+
+  @GuardedBy("lock")
   @VisibleForTesting
   final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
 
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
+
+  private final SessionConsumer sharedSessionConsumer = new SharedSessionConsumer();
 
   @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
 
@@ -1968,6 +2095,9 @@ class SessionPool {
     this.initMetricsCollection(metricRegistry, labelValues);
     this.waitOnMinSessionsLatch =
         options.getMinSessions() > 0 ? new CountDownLatch(1) : new CountDownLatch(0);
+    this.sharedSessions = new ArrayList<>(sessionClient.getSpanner().getOptions().getNumChannels());
+    this.sharedSessionsInitialized =
+        new CountDownLatch(sessionClient.getSpanner().getOptions().getNumChannels());
   }
 
   /**
@@ -2061,6 +2191,7 @@ class SessionPool {
       if (options.getMinSessions() > 0) {
         createSessions(options.getMinSessions(), true);
       }
+      createSingleUseSessions(sessionClient.getSpanner().getOptions().getNumChannels());
     }
   }
 
@@ -2120,6 +2251,19 @@ class SessionPool {
     synchronized (lock) {
       return closureFuture == null && resourceNotFoundException == null;
     }
+  }
+
+  Session getSingleUseSession() {
+    return this.options.isUseSharedSessions() ? getSharedSession() : getSession();
+  }
+
+  SharedSession getSharedSession() throws SpannerException {
+    try {
+      sharedSessionsInitialized.await();
+    } catch (InterruptedException interruptedException) {
+      throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
+    }
+    return sharedSessions.get(random.nextInt(sharedSessions.size()));
   }
 
   /**
@@ -2428,6 +2572,34 @@ class SessionPool {
         }
         handleCreateSessionsFailure(newSpannerException(t), sessionCount);
       }
+    }
+  }
+
+  private void createSingleUseSessions(final int sessionCount) {
+    logger.log(Level.FINE, String.format("Creating %d shared sessions", sessionCount));
+    synchronized (lock) {
+      try {
+        sessionClient.asyncBatchCreateSessions(sessionCount, true, sharedSessionConsumer);
+      } catch (Throwable t) {
+        handleCreateSessionsFailure(newSpannerException(t), sessionCount);
+      }
+    }
+  }
+
+  class SharedSessionConsumer implements SessionConsumer {
+
+    @Override
+    public void onSessionReady(SessionImpl session) {
+      SharedSession sharedSession = new SharedSession(session);
+      synchronized (lock) {
+        sharedSessions.add(sharedSession);
+      }
+      sharedSessionsInitialized.countDown();
+    }
+
+    @Override
+    public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
+      // ignore for now
     }
   }
 

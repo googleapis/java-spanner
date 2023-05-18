@@ -171,7 +171,7 @@ abstract class AbstractReadContext
     @GuardedBy("lock")
     @Override
     void beforeReadOrQueryLocked() {
-      super.beforeReadOrQueryLocked();
+      //      super.beforeReadOrQueryLocked();
       checkState(!used, "Cannot use a single-read ReadContext for multiple reads");
       used = true;
     }
