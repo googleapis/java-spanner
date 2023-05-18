@@ -46,7 +46,7 @@ jobs:
       with:
         java-version: 8
         distribution: zulu
-    - run: echo "JAVA8_HOME=${JAVA_HOME}" >> $GITHUB_ENV
+    - run: echo "SUREFIRE_JVM_OPT=-Djvm=${JAVA_HOME}/bin/java" >> $GITHUB_ENV
       shell: bash
     - uses: actions/setup-java@v3
       with:

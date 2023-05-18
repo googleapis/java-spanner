@@ -23,6 +23,12 @@ cd ${scriptDir}/..
 # include common functions
 source ${scriptDir}/common.sh
 
+# units-java8 uses both JDK 11 and JDK 8. GraalVM dependencies require JDK 11 to
+# compile the classes touching GraalVM classes.
+if [ -n "${JAVA11_HOME}" ]; then
+  setJava "${JAVA11_HOME}"
+fi
+
 # Print out Maven & Java version
 mvn -version
 echo ${JOB_TYPE}
@@ -42,6 +48,12 @@ if [[ ! -z "${GOOGLE_APPLICATION_CREDENTIALS}" && "${GOOGLE_APPLICATION_CREDENTI
     export GOOGLE_APPLICATION_CREDENTIALS=$(realpath ${KOKORO_GFILE_DIR}/${GOOGLE_APPLICATION_CREDENTIALS})
 fi
 
+# units-java8 uses both JDK 11 and JDK 8. We ensure the generated class files
+# are compatible with Java 8 when running tests.
+if [ -n "${JAVA8_HOME}" ]; then
+  setJava "${JAVA8_HOME}"
+fi
+
 RETURN_CODE=0
 set +e
 
@@ -51,13 +63,6 @@ test)
     # https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#jvm
     # If we rely on certain things only available in newer JVM than Java 8, this
     # tests detect the usage.
-    SUREFIRE_JVM_OPT=""
-    if [ -n "${JAVA8_HOME}" ]; then
-      SUREFIRE_JVM_OPT="-Djvm=${JAVA8_HOME}/bin/java"
-      echo "To use ${SUREFIRE_JVM_OPT} for unit tests runtime"
-    else
-      echo "No JAVA8_HOME is set. Using JAVA_HOME: ${JAVA_HOME}"
-    fi
     mvn test -B -V \
       -Dclirr.skip=true \
       -Denforcer.skip=true \
