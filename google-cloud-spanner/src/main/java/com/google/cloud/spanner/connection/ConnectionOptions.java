@@ -29,6 +29,7 @@ import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SessionPoolOptions;
+import com.google.cloud.spanner.SessionPoolOptions.ReturnPosition;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -165,6 +166,7 @@ public class ConnectionOptions {
   private static final String DEFAULT_MAX_SESSIONS = null;
   private static final String DEFAULT_NUM_CHANNELS = null;
   private static final Boolean DEFAULT_USE_SHARED_SESSIONS = null;
+  private static final ReturnPosition DEFAULT_SESSION_RETURN_POSITION = null;
   private static final String DEFAULT_CHANNEL_PROVIDER = null;
   private static final String DEFAULT_DATABASE_ROLE = null;
   private static final String DEFAULT_USER_AGENT = null;
@@ -206,6 +208,8 @@ public class ConnectionOptions {
   public static final String NUM_CHANNELS_PROPERTY_NAME = "numChannels";
   /** Name of the 'autocommit' connection property. */
   public static final String USE_SHARED_SESSIONS_PROPERTY_NAME = "useSharedSessions";
+
+  public static final String SESSION_RETURN_POSITION_PROPERTY_NAME = "sessionReturnPosition";
   /** Name of the 'channelProvider' connection property. */
   public static final String CHANNEL_PROVIDER_PROPERTY_NAME = "channelProvider";
   /** Custom user agent string is only for other Google libraries. */
@@ -268,6 +272,9 @@ public class ConnectionOptions {
                   ConnectionProperty.createStringProperty(
                       USE_SHARED_SESSIONS_PROPERTY_NAME,
                       "Use shared sessions for read-only operations. The default is true."),
+                  ConnectionProperty.createStringProperty(
+                      SESSION_RETURN_POSITION_PROPERTY_NAME,
+                      "Return sessions to the pool in this position. The default is FIRST, effectively making the session pool last-in-first-out."),
                   ConnectionProperty.createStringProperty(
                       CHANNEL_PROVIDER_PROPERTY_NAME,
                       "The name of the channel provider class. The name must reference an implementation of ExternalChannelProvider. If this property is not set, the connection will use the default grpc channel provider."),
@@ -569,6 +576,7 @@ public class ConnectionOptions {
   private final Integer minSessions;
   private final Integer maxSessions;
   private final Boolean useSharedSessions;
+  private final ReturnPosition sessionReturnPosition;
   private final String databaseRole;
   private final String userAgent;
   private final QueryOptions queryOptions;
@@ -661,6 +669,7 @@ public class ConnectionOptions {
     this.numChannels =
         parseIntegerProperty(NUM_CHANNELS_PROPERTY_NAME, parseNumChannels(builder.uri));
     this.useSharedSessions = parseUseSharedSessions(builder.uri);
+    this.sessionReturnPosition = parseSessionReturnPosition(builder.uri);
     this.channelProvider = parseChannelProvider(builder.uri);
     this.databaseRole = parseDatabaseRole(this.uri);
 
@@ -680,7 +689,8 @@ public class ConnectionOptions {
     if (this.minSessions != null
         || this.maxSessions != null
         || !this.trackSessionLeaks
-        || this.useSharedSessions != null) {
+        || this.useSharedSessions != null
+        || this.sessionReturnPosition != null) {
       SessionPoolOptions.Builder sessionPoolOptionsBuilder =
           builder.sessionPoolOptions == null
               ? SessionPoolOptions.newBuilder()
@@ -695,6 +705,9 @@ public class ConnectionOptions {
       }
       if (this.useSharedSessions != null) {
         sessionPoolOptionsBuilder.setUseSharedSessions(this.useSharedSessions);
+      }
+      if (this.sessionReturnPosition != null) {
+        sessionPoolOptionsBuilder.setReturnPosition(this.sessionReturnPosition);
       }
       this.sessionPoolOptions = sessionPoolOptionsBuilder.build();
     } else if (builder.sessionPoolOptions != null) {
@@ -838,6 +851,12 @@ public class ConnectionOptions {
   static Boolean parseUseSharedSessions(String uri) {
     String value = parseUriProperty(uri, USE_SHARED_SESSIONS_PROPERTY_NAME);
     return value != null ? Boolean.valueOf(value) : DEFAULT_USE_SHARED_SESSIONS;
+  }
+
+  @VisibleForTesting
+  static ReturnPosition parseSessionReturnPosition(String uri) {
+    String value = parseUriProperty(uri, SESSION_RETURN_POSITION_PROPERTY_NAME);
+    return value != null ? ReturnPosition.valueOf(value) : DEFAULT_SESSION_RETURN_POSITION;
   }
 
   @VisibleForTesting

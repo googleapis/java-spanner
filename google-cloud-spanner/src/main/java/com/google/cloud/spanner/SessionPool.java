@@ -51,6 +51,7 @@ import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
+import com.google.cloud.spanner.SessionPoolOptions.ReturnPosition;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.common.annotations.VisibleForTesting;
@@ -1623,7 +1624,7 @@ class SessionPool {
         if (state != SessionState.CLOSING) {
           state = SessionState.AVAILABLE;
         }
-        releaseSession(this, Position.FIRST);
+        releaseSession(this, options.getReturnPosition());
       }
     }
 
@@ -1663,7 +1664,7 @@ class SessionPool {
               // in the database dialect, and there's nothing sensible that we can do with it here.
               dialect.setException(t);
             } finally {
-              releaseSession(this, Position.FIRST);
+              releaseSession(this, options.getReturnPosition());
             }
           });
     }
@@ -1897,7 +1898,7 @@ class SessionPool {
           logger.log(Level.FINE, "Keeping alive session " + sessionToKeepAlive.getName());
           numSessionsToKeepAlive--;
           sessionToKeepAlive.keepAlive();
-          releaseSession(sessionToKeepAlive, Position.FIRST);
+          releaseSession(sessionToKeepAlive, options.getReturnPosition());
         } catch (SpannerException e) {
           handleException(e, sessionToKeepAlive);
         }
@@ -1913,11 +1914,6 @@ class SessionPool {
         }
       }
     }
-  }
-
-  private enum Position {
-    FIRST,
-    RANDOM
   }
 
   /**
@@ -2206,7 +2202,7 @@ class SessionPool {
     if (isSessionNotFound(e)) {
       invalidateSession(session);
     } else {
-      releaseSession(session, Position.FIRST);
+      releaseSession(session, options.getReturnPosition());
     }
   }
 
@@ -2383,7 +2379,7 @@ class SessionPool {
     }
   }
   /** Releases a session back to the pool. This might cause one of the waiters to be unblocked. */
-  private void releaseSession(PooledSession session, Position position) {
+  private void releaseSession(PooledSession session, ReturnPosition returnPosition) {
     Preconditions.checkNotNull(session);
     synchronized (lock) {
       if (closureFuture != null) {
@@ -2391,15 +2387,18 @@ class SessionPool {
       }
       if (waiters.size() == 0) {
         // No pending waiters
-        switch (position) {
+        switch (returnPosition) {
           case RANDOM:
-          case FIRST:
             if (!sessions.isEmpty()) {
               int pos = ThreadLocalRandom.current().nextInt(sessions.size() + 1);
               sessions.add(pos, session);
               break;
             }
             // fallthrough
+          case LAST:
+            sessions.addLast(session);
+            break;
+          case FIRST:
           default:
             sessions.addFirst(session);
         }
@@ -2636,7 +2635,7 @@ class SessionPool {
             // Release the session to a random position in the pool to prevent the case that a batch
             // of sessions that are affiliated with the same channel are all placed sequentially in
             // the pool.
-            releaseSession(pooledSession, Position.RANDOM);
+            releaseSession(pooledSession, ReturnPosition.RANDOM);
           }
         }
       }

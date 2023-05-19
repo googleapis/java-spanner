@@ -54,6 +54,7 @@ public class SessionPoolOptions {
   private final boolean autoDetectDialect;
   private final Duration waitForMinSessions;
   private final boolean useSharedSessions;
+  private final ReturnPosition returnPosition;
 
   private SessionPoolOptions(Builder builder) {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
@@ -75,6 +76,7 @@ public class SessionPoolOptions {
     this.autoDetectDialect = builder.autoDetectDialect;
     this.waitForMinSessions = builder.waitForMinSessions;
     this.useSharedSessions = builder.useSharedSessions;
+    this.returnPosition = builder.returnPosition;
   }
 
   @Override
@@ -100,6 +102,7 @@ public class SessionPoolOptions {
         && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter)
         && Objects.equals(this.autoDetectDialect, other.autoDetectDialect)
         && Objects.equals(this.useSharedSessions, other.useSharedSessions)
+        && Objects.equals(this.returnPosition, other.returnPosition)
         && Objects.equals(this.waitForMinSessions, other.waitForMinSessions);
   }
 
@@ -121,6 +124,7 @@ public class SessionPoolOptions {
         this.removeInactiveSessionAfter,
         this.autoDetectDialect,
         this.useSharedSessions,
+        this.returnPosition,
         this.waitForMinSessions);
   }
 
@@ -188,6 +192,10 @@ public class SessionPoolOptions {
     return useSharedSessions;
   }
 
+  public ReturnPosition getReturnPosition() {
+    return returnPosition;
+  }
+
   @VisibleForTesting
   long getInitialWaitForSessionTimeoutMillis() {
     return initialWaitForSessionTimeoutMillis;
@@ -231,6 +239,12 @@ public class SessionPoolOptions {
     FAIL
   }
 
+  public enum ReturnPosition {
+    FIRST,
+    LAST,
+    RANDOM
+  }
+
   /** Builder for creating SessionPoolOptions. */
   public static class Builder {
     private boolean minSessionsSet = false;
@@ -268,6 +282,7 @@ public class SessionPoolOptions {
     private boolean autoDetectDialect = false;
     private Duration waitForMinSessions = Duration.ZERO;
     private boolean useSharedSessions = false;
+    private ReturnPosition returnPosition = ReturnPosition.FIRST;
 
     public Builder() {}
 
@@ -288,6 +303,7 @@ public class SessionPoolOptions {
       this.removeInactiveSessionAfter = options.removeInactiveSessionAfter;
       this.autoDetectDialect = options.autoDetectDialect;
       this.useSharedSessions = options.useSharedSessions;
+      this.returnPosition = options.returnPosition;
       this.waitForMinSessions = options.waitForMinSessions;
     }
 
@@ -399,6 +415,11 @@ public class SessionPoolOptions {
 
     public Builder setUseSharedSessions(boolean useSharedSessions) {
       this.useSharedSessions = useSharedSessions;
+      return this;
+    }
+
+    public Builder setReturnPosition(ReturnPosition returnPosition) {
+      this.returnPosition = returnPosition;
       return this;
     }
 
