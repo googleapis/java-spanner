@@ -95,6 +95,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -2392,13 +2393,13 @@ class SessionPool {
         // No pending waiters
         switch (position) {
           case RANDOM:
+          case FIRST:
             if (!sessions.isEmpty()) {
-              int pos = random.nextInt(sessions.size() + 1);
+              int pos = ThreadLocalRandom.current().nextInt(sessions.size() + 1);
               sessions.add(pos, session);
               break;
             }
             // fallthrough
-          case FIRST:
           default:
             sessions.addFirst(session);
         }
