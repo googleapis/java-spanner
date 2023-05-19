@@ -1488,6 +1488,7 @@ class SessionPool {
     private volatile Instant lastUseTime;
     private volatile SpannerException lastException;
     private volatile boolean allowReplacing = true;
+    private ReturnPosition returnPosition = ReturnPosition.RANDOM;
 
     @GuardedBy("lock")
     private SessionState state;
@@ -2388,8 +2389,10 @@ class SessionPool {
       }
       if (waiters.size() == 0) {
         // No pending waiters
-        switch (returnPosition) {
+        switch (session.returnPosition) {
           case RANDOM:
+            // Add it to the head of the pool the next time.
+            session.returnPosition = ReturnPosition.FIRST;
             if (!sessions.isEmpty()) {
               int pos = ThreadLocalRandom.current().nextInt(sessions.size() + 1);
               sessions.add(pos, session);
@@ -2452,7 +2455,7 @@ class SessionPool {
         int channel = (int) (hint % sessionClient.getSpanner().getOptions().getNumChannels());
         System.out.printf("Session channel: %d\n", channel);
       }
-      
+
       if (closureFuture != null) {
         throw new IllegalStateException("Close has already been invoked", this.closedException);
       }
