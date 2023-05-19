@@ -2282,9 +2282,13 @@ class SessionPool {
   }
 
   private boolean isUnbalanced(PooledSession session) {
+    if (sessions.isEmpty()) {
+      return false;
+    }
+
     Long channelHint = (Long) session.delegate.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
     int channel = (int) (channelHint % sessionClient.getSpanner().getOptions().getNumChannels());
-    for (int i = 0; i < Math.max(3, sessions.size()); i++) {
+    for (int i = 0; i < Math.min(3, sessions.size()); i++) {
       PooledSession otherSession = sessions.get(i);
       Long otherChannelHint =
           (Long) otherSession.delegate.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
