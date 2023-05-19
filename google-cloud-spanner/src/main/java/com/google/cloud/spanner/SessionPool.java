@@ -53,6 +53,7 @@ import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
+import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -2244,6 +2245,7 @@ class SessionPool {
       }
     }
   }
+
   /** Releases a session back to the pool. This might cause one of the waiters to be unblocked. */
   private void releaseSession(PooledSession session) {
     Preconditions.checkNotNull(session);
@@ -2253,6 +2255,11 @@ class SessionPool {
       }
       if (waiters.size() == 0) {
         // No pending waiters
+        // Add to a random position if the first 3 sessions all use the same channel as this
+        // session.
+        if (isUnbalanced(session)) {
+          session.releaseToPosition = Position.RANDOM;
+        }
         switch (session.releaseToPosition) {
           case RANDOM:
             // A session should only be added at a random position the first time it is added to the
@@ -2272,6 +2279,22 @@ class SessionPool {
         waiters.poll().put(session);
       }
     }
+  }
+
+  private boolean isUnbalanced(PooledSession session) {
+    Long channelHint = (Long) session.delegate.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
+    int channel = (int) (channelHint % sessionClient.getSpanner().getOptions().getNumChannels());
+    for (int i = 0; i < Math.max(3, sessions.size()); i++) {
+      PooledSession otherSession = sessions.get(i);
+      Long otherChannelHint =
+          (Long) otherSession.delegate.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
+      int otherChannel =
+          (int) (otherChannelHint % sessionClient.getSpanner().getOptions().getNumChannels());
+      if (channel != otherChannel) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private void handleCreateSessionsFailure(SpannerException e, int count) {
