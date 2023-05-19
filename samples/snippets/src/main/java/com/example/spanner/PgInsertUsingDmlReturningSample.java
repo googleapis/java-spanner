@@ -17,6 +17,7 @@
 package com.example.spanner;
 
 // [START spanner_postgresql_insert_dml_returning]
+// [START spanner_postgresql_dml_insert_returning]
 
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
@@ -73,4 +74,5 @@ public class PgInsertUsingDmlReturningSample {
     }
   }
 }
+// [END spanner_postgresql_dml_insert_returning]
 // [END spanner_postgresql_insert_dml_returning]
