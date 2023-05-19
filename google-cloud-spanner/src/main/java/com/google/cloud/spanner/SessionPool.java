@@ -1383,6 +1383,11 @@ class SessionPool {
       this.lastUseTime = clock.instant();
     }
 
+    int getChannel() {
+      Long channelHint = (Long) delegate.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
+      return (int) (channelHint % sessionClient.getSpanner().getOptions().getNumChannels());
+    }
+
     @Override
     public String toString() {
       return getName();
@@ -2285,20 +2290,23 @@ class SessionPool {
     if (sessions.isEmpty()) {
       return false;
     }
+    int numChannels = sessionClient.getSpanner().getOptions().getNumChannels();
+    if (numChannels == 1) {
+      return false;
+    }
 
-    Long channelHint = (Long) session.delegate.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
-    int channel = (int) (channelHint % sessionClient.getSpanner().getOptions().getNumChannels());
-    for (int i = 0; i < Math.min(3, sessions.size()); i++) {
+    int channel = session.getChannel();
+    int count = 0;
+    for (int i = 0; i < Math.min(numChannels, sessions.size()); i++) {
       PooledSession otherSession = sessions.get(i);
-      Long otherChannelHint =
-          (Long) otherSession.delegate.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
-      int otherChannel =
-          (int) (otherChannelHint % sessionClient.getSpanner().getOptions().getNumChannels());
-      if (channel != otherChannel) {
-        return false;
+      if (channel == otherSession.getChannel()) {
+        count++;
+        if (count > 2) {
+          return true;
+        }
       }
     }
-    return true;
+    return false;
   }
 
   private void handleCreateSessionsFailure(SpannerException e, int count) {
