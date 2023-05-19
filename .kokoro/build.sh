@@ -23,8 +23,8 @@ cd ${scriptDir}/..
 # include common functions
 source ${scriptDir}/common.sh
 
-# units-java8 uses both JDK 11 and JDK 8. GraalVM dependencies require JDK 11 to
-# compile the classes touching GraalVM classes.
+# Kokoro integration test uses both JDK 11 and JDK 8. GraalVM dependencies
+# require JDK 11 to compile the classes touching GraalVM classes.
 if [ -n "${JAVA11_HOME}" ]; then
   setJava "${JAVA11_HOME}"
 fi
@@ -48,7 +48,7 @@ if [[ ! -z "${GOOGLE_APPLICATION_CREDENTIALS}" && "${GOOGLE_APPLICATION_CREDENTI
     export GOOGLE_APPLICATION_CREDENTIALS=$(realpath ${KOKORO_GFILE_DIR}/${GOOGLE_APPLICATION_CREDENTIALS})
 fi
 
-# units-java8 uses both JDK 11 and JDK 8. We ensure the generated class files
+# Kokoro integration test uses both JDK 11 and JDK 8. We ensure the generated class files
 # are compatible with Java 8 when running tests.
 if [ -n "${JAVA8_HOME}" ]; then
   setJava "${JAVA8_HOME}"
