@@ -184,9 +184,6 @@ public class SpannerClient implements BackgroundResource {
   protected SpannerClient(SpannerSettings settings) throws IOException {
     this.settings = settings;
     this.stub = ((SpannerStubSettings) settings.getStubSettings()).createStub();
-
-    // This is dummy statement to touch the Version class that is compiled for Java 11
-    System.out.println("org.graalvm.home.Version: " + org.graalvm.home.Version.parse("1.2.3"));
   }
 
   protected SpannerClient(SpannerStub stub) {
