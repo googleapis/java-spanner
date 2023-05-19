@@ -16,7 +16,6 @@
 
 package com.example.spanner;
 
-// [START spanner_postgresql_delete_dml_returning]
 // [START spanner_postgresql_dml_delete_returning]
 
 import com.google.cloud.spanner.DatabaseClient;
@@ -73,4 +72,3 @@ public class PgDeleteUsingDmlReturningSample {
   }
 }
 // [END spanner_postgresql_dml_delete_returning]
-// [END spanner_postgresql_delete_dml_returning]
