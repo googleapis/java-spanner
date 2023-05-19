@@ -1366,6 +1366,13 @@ class SessionPool {
     private volatile SpannerException lastException;
     private volatile boolean allowReplacing = true;
 
+    /**
+     * This ensures that the session is added at a random position in the pool the first time it is
+     * actually added to the pool.
+     */
+    @GuardedBy("lock")
+    private Position releaseToPosition = Position.RANDOM;
+
     @GuardedBy("lock")
     private SessionState state;
 
@@ -1502,7 +1509,7 @@ class SessionPool {
         if (state != SessionState.CLOSING) {
           state = SessionState.AVAILABLE;
         }
-        releaseSession(this, Position.FIRST);
+        releaseSession(this);
       }
     }
 
@@ -1542,7 +1549,7 @@ class SessionPool {
               // in the database dialect, and there's nothing sensible that we can do with it here.
               dialect.setException(t);
             } finally {
-              releaseSession(this, Position.FIRST);
+              releaseSession(this);
             }
           });
     }
@@ -1776,7 +1783,7 @@ class SessionPool {
           logger.log(Level.FINE, "Keeping alive session " + sessionToKeepAlive.getName());
           numSessionsToKeepAlive--;
           sessionToKeepAlive.keepAlive();
-          releaseSession(sessionToKeepAlive, Position.FIRST);
+          releaseSession(sessionToKeepAlive);
         } catch (SpannerException e) {
           handleException(e, sessionToKeepAlive);
         }
@@ -2074,7 +2081,7 @@ class SessionPool {
     if (isSessionNotFound(e)) {
       invalidateSession(session);
     } else {
-      releaseSession(session, Position.FIRST);
+      releaseSession(session);
     }
   }
 
@@ -2238,7 +2245,7 @@ class SessionPool {
     }
   }
   /** Releases a session back to the pool. This might cause one of the waiters to be unblocked. */
-  private void releaseSession(PooledSession session, Position position) {
+  private void releaseSession(PooledSession session) {
     Preconditions.checkNotNull(session);
     synchronized (lock) {
       if (closureFuture != null) {
@@ -2246,8 +2253,11 @@ class SessionPool {
       }
       if (waiters.size() == 0) {
         // No pending waiters
-        switch (position) {
+        switch (session.releaseToPosition) {
           case RANDOM:
+            // A session should only be added at a random position the first time it is added to the
+            // pool. All following releases into the pool should happen at the front of the pool.
+            session.releaseToPosition = Position.FIRST;
             if (!sessions.isEmpty()) {
               int pos = random.nextInt(sessions.size() + 1);
               sessions.add(pos, session);
@@ -2463,7 +2473,7 @@ class SessionPool {
             // Release the session to a random position in the pool to prevent the case that a batch
             // of sessions that are affiliated with the same channel are all placed sequentially in
             // the pool.
-            releaseSession(pooledSession, Position.RANDOM);
+            releaseSession(pooledSession);
           }
         }
       }

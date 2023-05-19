@@ -201,7 +201,14 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Test
   public void poolLifo() {
     setupMockSessionCreation();
+    options =
+        options
+            .toBuilder()
+            .setMinSessions(2)
+            .setWaitForMinSessions(Duration.ofSeconds(10L))
+            .build();
     pool = createPool();
+    pool.maybeWaitOnMinSessions();
     Session session1 = pool.getSession().get();
     Session session2 = pool.getSession().get();
     assertThat(session1).isNotEqualTo(session2);
