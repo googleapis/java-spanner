@@ -16,7 +16,6 @@
 
 package com.example.spanner;
 
-// [START spanner_update_dml_returning]
 // [START spanner_dml_update_returning]
 
 import com.google.cloud.spanner.DatabaseClient;
@@ -75,4 +74,3 @@ public class UpdateUsingDmlReturningSample {
   }
 }
 // [END spanner_dml_update_returning]
-// [END spanner_update_dml_returning]
