@@ -63,6 +63,7 @@ test)
     # https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#jvm
     # If we rely on certain things only available in newer JVM than Java 8, this
     # tests detect the usage.
+    echo "SUREFIRE_JVM_OPT: ${SUREFIRE_JVM_OPT}"
     mvn test -B -V \
       -Dclirr.skip=true \
       -Denforcer.skip=true \
