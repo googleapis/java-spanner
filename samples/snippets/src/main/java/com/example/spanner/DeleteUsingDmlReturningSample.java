@@ -16,7 +16,6 @@
 
 package com.example.spanner;
 
-// [START spanner_delete_dml_returning]
 // [START spanner_dml_delete_returning]
 
 import com.google.cloud.spanner.DatabaseClient;
@@ -73,4 +72,3 @@ public class DeleteUsingDmlReturningSample {
   }
 }
 // [END spanner_dml_delete_returning]
-// [END spanner_delete_dml_returning]
