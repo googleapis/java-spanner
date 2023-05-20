@@ -16,7 +16,6 @@
 
 package com.example.spanner;
 
-// [START spanner_postgresql_update_dml_returning]
 // [START spanner_postgresql_dml_update_returning]
 
 import com.google.cloud.spanner.DatabaseClient;
@@ -75,4 +74,3 @@ public class PgUpdateUsingDmlReturningSample {
   }
 }
 // [END spanner_postgresql_dml_update_returning]
-// [END spanner_postgresql_update_dml_returning]
