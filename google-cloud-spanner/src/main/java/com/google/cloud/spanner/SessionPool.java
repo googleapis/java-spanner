@@ -2262,7 +2262,8 @@ class SessionPool {
         // No pending waiters.
         // Add to a random position if there are already many sessions checked out, or the head of
         // the session pool already contains many sessions with the same channel as this one.
-        if (checkedOutSessions.size() > sessionClient.getSpanner().getOptions().getNumChannels() || isUnbalanced(session)) {
+        if (checkedOutSessions.size() > sessionClient.getSpanner().getOptions().getNumChannels()
+            || isUnbalanced(session)) {
           session.releaseToPosition = Position.RANDOM;
         }
         switch (session.releaseToPosition) {
