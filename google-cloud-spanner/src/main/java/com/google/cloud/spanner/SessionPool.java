@@ -2267,10 +2267,11 @@ class SessionPool {
         }
         switch (session.releaseToPosition) {
           case RANDOM:
-            // A session should only be added at a random position the first time it is added to the
-            // pool. All following releases into the pool should happen at the front of the pool.
-            session.releaseToPosition = Position.FIRST;
             if (!sessions.isEmpty()) {
+              // A session should only be added at a random position the first time it is added to
+              // the pool. All following releases into the pool should happen at the front of the
+              // pool.
+              session.releaseToPosition = Position.FIRST;
               int pos = random.nextInt(sessions.size() + 1);
               sessions.add(pos, session);
               break;
