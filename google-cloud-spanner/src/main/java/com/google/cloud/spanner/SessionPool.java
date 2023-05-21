@@ -1364,6 +1364,8 @@ class SessionPool {
   }
 
   static final class SharedSession implements Session {
+    private static final AtomicInteger SHARED_SESSION_COUNTER = new AtomicInteger(0);
+
     SessionImpl delegate;
 
     SharedSession(SessionImpl session) {
@@ -1471,7 +1473,7 @@ class SessionPool {
 
     @Override
     public void close() {
-      // no-op
+      SHARED_SESSION_COUNTER.decrementAndGet();
     }
 
     private static final ApiFuture<Empty> CLOSE_RESULT =
@@ -2262,7 +2264,8 @@ class SessionPool {
     } catch (InterruptedException interruptedException) {
       throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
     }
-    return sharedSessions.get(random.nextInt(sharedSessions.size()));
+    int index = SharedSession.SHARED_SESSION_COUNTER.getAndIncrement();
+    return sharedSessions.get(index % sharedSessions.size());
   }
 
   /**
