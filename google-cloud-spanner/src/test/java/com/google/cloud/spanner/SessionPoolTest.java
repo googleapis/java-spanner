@@ -50,7 +50,7 @@ import com.google.cloud.spanner.MetricRegistryTestUtils.PointWithFunction;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.Clock;
-import com.google.cloud.spanner.SessionPool.PooledSession;
+import com.google.cloud.spanner.SessionPool.PooledOrSharedSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
@@ -1245,7 +1245,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     new Thread(
             () -> {
               try (PooledSessionFuture future = pool.getSession()) {
-                PooledSession session = future.get();
+                PooledOrSharedSession session = future.get();
                 failed.compareAndSet(false, session == null);
                 Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
               } catch (Throwable e) {

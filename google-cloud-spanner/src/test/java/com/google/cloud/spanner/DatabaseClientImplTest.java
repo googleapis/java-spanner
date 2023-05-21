@@ -173,7 +173,11 @@ public class DatabaseClientImplTest {
             .setDatabaseRole(TEST_DATABASE_ROLE)
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(SessionPoolOptions.newBuilder().setFailOnSessionLeak().build())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setFailOnSessionLeak()
+                    .setUseSharedSessions(true)
+                    .build())
             .build()
             .getService();
     spannerWithEmptySessionPool =
@@ -313,18 +317,26 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testExecuteQueryWithTag() {
+  public void testExecuteQueryWithTag() throws InterruptedException {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    try (ResultSet resultSet =
-        client
-            .singleUse()
-            .executeQuery(SELECT1, Options.tag("app=spanner,env=test,action=query"))) {
-      while (resultSet.next()) {}
+    ExecutorService executor = Executors.newFixedThreadPool(10);
+    for (int n = 0; n < 10; n++) {
+      executor.submit(
+          () -> {
+            try (ResultSet resultSet =
+                client
+                    .singleUse()
+                    .executeQuery(SELECT1, Options.tag("app=spanner,env=test,action=query"))) {
+              while (resultSet.next()) {}
+            }
+          });
     }
+    executor.shutdown();
+    executor.awaitTermination(30L, TimeUnit.SECONDS);
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
-    assertThat(requests).hasSize(1);
+    assertThat(requests).hasSize(10);
     ExecuteSqlRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
     assertThat(request.getRequestOptions().getRequestTag())
