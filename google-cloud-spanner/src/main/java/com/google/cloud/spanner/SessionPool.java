@@ -2327,9 +2327,10 @@ class SessionPool {
       throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
     }
     int index = SharedSession.SHARED_SESSION_COUNTER.getAndIncrement();
+    Span span = Tracing.getTracer().getCurrentSpan();
     synchronized (lock) {
-      SharedSession session = sharedSessions.get(index % sharedSessions.size());
-      Span span = Tracing.getTracer().getCurrentSpan();
+//      SharedSession session = sharedSessions.get(index % sharedSessions.size());
+      SharedSession session = sharedSessions.get(ThreadLocalRandom.current().nextInt(sharedSessions.size()));
       return createPooledSessionFuture(Futures.immediateFuture(session), span);
     }
   }
