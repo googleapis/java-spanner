@@ -54,7 +54,6 @@ import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPoolOptions.ReturnPosition;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
-import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -2453,12 +2452,6 @@ class SessionPool {
   ListenableFuture<Void> closeAsync(ClosedException closedException) {
     ListenableFuture<Void> retFuture = null;
     synchronized (lock) {
-      for (PooledSession session : sessions) {
-        Long hint = (Long) session.delegate.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
-        int channel = (int) (hint % sessionClient.getSpanner().getOptions().getNumChannels());
-        System.out.printf("Session channel: %d\n", channel);
-      }
-
       if (closureFuture != null) {
         throw new IllegalStateException("Close has already been invoked", this.closedException);
       }
