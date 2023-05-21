@@ -2265,7 +2265,9 @@ class SessionPool {
       throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
     }
     int index = SharedSession.SHARED_SESSION_COUNTER.getAndIncrement();
-    return sharedSessions.get(index % sharedSessions.size());
+    synchronized (lock) {
+      return sharedSessions.get(index % sharedSessions.size());
+    }
   }
 
   /**
