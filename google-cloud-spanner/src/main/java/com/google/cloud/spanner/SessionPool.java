@@ -1472,7 +1472,7 @@ class SessionPool {
 
     @Override
     public void close() {
-      SHARED_SESSION_COUNTER.decrementAndGet();
+      asyncClose();
     }
 
     private static final ApiFuture<Empty> CLOSE_RESULT =
@@ -1480,6 +1480,7 @@ class SessionPool {
 
     @Override
     public ApiFuture<Empty> asyncClose() {
+      SHARED_SESSION_COUNTER.decrementAndGet();
       return CLOSE_RESULT;
     }
   }
