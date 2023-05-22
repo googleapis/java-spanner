@@ -997,7 +997,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * Sets the retry settings for retrying administrative requests when the quote of administrative
      * requests per minute has been exceeded.
      */
-    Builder setRetryAdministrativeRequestsSettings(
+    public Builder setRetryAdministrativeRequestsSettings(
         RetrySettings retryAdministrativeRequestsSettings) {
       this.retryAdministrativeRequestsSettings = retryAdministrativeRequestsSettings;
       return this;
