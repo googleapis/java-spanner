@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.42.1](https://github.com/googleapis/java-spanner/compare/v6.42.0...v6.42.1) (2023-05-22)
+
+
+### Dependencies
+
+* Update dependency commons-io:commons-io to v2.12.0 ([#2439](https://github.com/googleapis/java-spanner/issues/2439)) ([d08b226](https://github.com/googleapis/java-spanner/commit/d08b226d5da6272b2de5f66ee1657d03268e396d))
+
 ## [6.42.0](https://github.com/googleapis/java-spanner/compare/v6.41.0...v6.42.0) (2023-05-15)
 
 
