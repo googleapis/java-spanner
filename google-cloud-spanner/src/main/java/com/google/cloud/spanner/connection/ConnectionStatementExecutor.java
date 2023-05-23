@@ -76,6 +76,11 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowReturnCommitStats();
 
+  StatementResult statementSetDelayTransactionStartUntilFirstWrite(
+      Boolean delayTransactionStartUntilFirstWrite);
+
+  StatementResult statementShowDelayTransactionStartUntilFirstWrite();
+
   StatementResult statementSetStatementTag(String tag);
 
   StatementResult statementShowStatementTag();

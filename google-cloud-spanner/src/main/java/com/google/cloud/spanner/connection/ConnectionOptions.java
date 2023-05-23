@@ -172,6 +172,7 @@ public class ConnectionOptions {
   private static final RpcPriority DEFAULT_RPC_PRIORITY = null;
   private static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
   private static final boolean DEFAULT_LENIENT = false;
+  private static final boolean DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE = false;
   private static final boolean DEFAULT_TRACK_SESSION_LEAKS = true;
   private static final boolean DEFAULT_TRACK_CONNECTION_LEAKS = true;
 
@@ -220,6 +221,9 @@ public class ConnectionOptions {
   private static final String DIALECT_PROPERTY_NAME = "dialect";
   /** Name of the 'databaseRole' connection property. */
   public static final String DATABASE_ROLE_PROPERTY_NAME = "databaseRole";
+  /** Name of the 'delay transaction start until first write' property. */
+  public static final String DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE_NAME =
+      "delayTransactionStartUntilFirstWrite";
   /** Name of the 'trackStackTraceOfSessionCheckout' connection property. */
   public static final String TRACK_SESSION_LEAKS_PROPERTY_NAME = "trackSessionLeaks";
   /** Name of the 'trackStackTraceOfConnectionCreation' connection property. */
@@ -294,6 +298,14 @@ public class ConnectionOptions {
                   ConnectionProperty.createStringProperty(
                       DATABASE_ROLE_PROPERTY_NAME,
                       "Sets the database role to use for this connection. The default is privileges assigned to IAM role"),
+                  ConnectionProperty.createBooleanProperty(
+                      DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE_NAME,
+                      "Enabling this option will delay the actual start of a read/write transaction until the first write operation is seen in that transaction. "
+                          + "All reads that happen before the first write in a transaction will instead be executed as if the connection was in auto-commit mode. "
+                          + "Enabling this option will make read/write transactions lose their SERIALIZABLE isolation level. Read operations that are executed after "
+                          + "the first write operation in a read/write transaction will be executed using the read/write transaction. Enabling this mode can reduce locking "
+                          + "and improve performance for applications that can handle the lower transaction isolation semantics.",
+                      DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE),
                   ConnectionProperty.createBooleanProperty(
                       TRACK_SESSION_LEAKS_PROPERTY_NAME,
                       "Capture the call stack of the thread that checked out a session of the session pool. This will "
@@ -568,6 +580,7 @@ public class ConnectionOptions {
   private final boolean returnCommitStats;
   private final boolean autoConfigEmulator;
   private final RpcPriority rpcPriority;
+  private final boolean delayTransactionStartUntilFirstWrite;
   private final boolean trackSessionLeaks;
   private final boolean trackConnectionLeaks;
 
@@ -614,6 +627,7 @@ public class ConnectionOptions {
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
     this.host = determineHost(matcher, autoConfigEmulator, usePlainText);
     this.rpcPriority = parseRPCPriority(this.uri);
+    this.delayTransactionStartUntilFirstWrite = parseDelayTransactionStartUntilFirstWrite(this.uri);
     this.trackSessionLeaks = parseTrackSessionLeaks(this.uri);
     this.trackConnectionLeaks = parseTrackConnectionLeaks(this.uri);
 
@@ -868,6 +882,14 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
+  static boolean parseDelayTransactionStartUntilFirstWrite(String uri) {
+    String value = parseUriProperty(uri, DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE_NAME);
+    return value != null
+        ? Boolean.parseBoolean(value)
+        : DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
+  }
+
+  @VisibleForTesting
   static boolean parseTrackSessionLeaks(String uri) {
     String value = parseUriProperty(uri, TRACK_SESSION_LEAKS_PROPERTY_NAME);
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_TRACK_SESSION_LEAKS;
@@ -1117,6 +1139,14 @@ public class ConnectionOptions {
   /** The {@link RpcPriority} to use for the connection. */
   RpcPriority getRPCPriority() {
     return rpcPriority;
+  }
+
+  /**
+   * Whether connections created by this {@link ConnectionOptions} should delay the actual start of
+   * a read/write transaction until the first write operation.
+   */
+  boolean isDelayTransactionStartUntilFirstWrite() {
+    return delayTransactionStartUntilFirstWrite;
   }
 
   boolean isTrackConnectionLeaks() {

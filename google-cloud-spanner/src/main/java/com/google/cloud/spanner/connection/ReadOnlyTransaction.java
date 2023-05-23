@@ -96,7 +96,7 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  void checkValidTransaction() {
+  void checkValidTransaction(ParsedStatement statement) {
     if (transaction == null) {
       transaction = dbClient.readOnlyTransaction(readOnlyStaleness);
     }

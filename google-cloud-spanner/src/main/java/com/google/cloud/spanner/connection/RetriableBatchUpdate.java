@@ -58,7 +58,7 @@ final class RetriableBatchUpdate implements RetriableStatement {
           .getStatementExecutor()
           .invokeInterceptors(
               RUN_BATCH_STATEMENT, StatementExecutionStep.RETRY_STATEMENT, transaction);
-      newCount = transaction.getReadContext().batchUpdate(statements, options);
+      newCount = transaction.getTransactionContext().batchUpdate(statements, options);
     } catch (AbortedException e) {
       // Just re-throw the AbortedException and let the retry logic determine whether another try
       // should be executed or not.
