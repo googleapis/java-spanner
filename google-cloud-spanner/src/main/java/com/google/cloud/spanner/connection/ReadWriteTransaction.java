@@ -685,6 +685,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       commitResponseFuture.set(
           new CommitResponse(
               Timestamp.fromProto(com.google.protobuf.Timestamp.getDefaultInstance())));
+      state = UnitOfWorkState.COMMITTED;
       res = SettableApiFuture.create();
       ((SettableApiFuture<Void>) res).set(null);
     } else if (retryAbortsInternally) {
