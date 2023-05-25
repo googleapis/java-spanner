@@ -171,7 +171,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     this.savepointSupport = builder.savepointSupport;
     this.transactionRetryListeners = builder.transactionRetryListeners;
     this.transactionOptions = extractOptions(builder);
-    this.txManager = dbClient.transactionManager(this.transactionOptions);
   }
 
   private TransactionOption[] extractOptions(Builder builder) {
@@ -247,6 +246,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         && (!delayTransactionStartUntilFirstWrite
             || (statement != null && statement.isUpdate())
             || (statement == COMMIT_STATEMENT && !mutations.isEmpty()))) {
+      txManager = dbClient.transactionManager(this.transactionOptions);
       canUseSingleUseRead = false;
       txContextFuture =
           executeStatementAsync(
