@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.KeySet;
@@ -28,6 +29,7 @@ import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
@@ -204,6 +206,10 @@ public class ITDelayBeginTransactionTest extends ITAbstractSpannerTest {
 
   @Test
   public void testConcurrentWrites() {
+    assumeFalse(
+        "The emulator does not support concurrent transactions",
+        EmulatorSpannerHelper.isUsingEmulator());
+
     try (ITConnection connection1 = createConnection();
         ITConnection connection2 = createConnection()) {
       // Scan all the rows in the test table using the first connection.
@@ -250,6 +256,10 @@ public class ITDelayBeginTransactionTest extends ITAbstractSpannerTest {
 
   @Test
   public void testConflictingTransactions() {
+    assumeFalse(
+        "The emulator does not support concurrent transactions",
+        EmulatorSpannerHelper.isUsingEmulator());
+
     try (ITConnection connection1 = createConnection();
         ITConnection connection2 = createConnection()) {
       // Insert new rows using both transactions. These are non-conflicting and should therefore be
