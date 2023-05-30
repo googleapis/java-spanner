@@ -49,6 +49,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.Connection.InternalMetadataQuery;
+import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
@@ -137,7 +138,7 @@ public class DdlBatchTest {
   public void testExecuteQuery() {
     DdlBatch batch = createSubject();
     try {
-      batch.executeQueryAsync(mock(ParsedStatement.class), AnalyzeMode.NONE);
+      batch.executeQueryAsync(CallType.SYNC, mock(ParsedStatement.class), AnalyzeMode.NONE);
       fail("expected FAILED_PRECONDITION");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -151,6 +152,7 @@ public class DdlBatchTest {
         IllegalArgumentException.class,
         () ->
             batch.executeDdlAsync(
+                CallType.SYNC,
                 AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
                     .parse(Statement.of("CREATE DATABASE foo"))));
   }
@@ -169,7 +171,7 @@ public class DdlBatchTest {
     DdlBatch batch = createSubject(createDefaultMockDdlClient(), dbClient);
     assertThat(
         get(batch.executeQueryAsync(
-                parsedStatement, AnalyzeMode.NONE, InternalMetadataQuery.INSTANCE))
+                CallType.SYNC, parsedStatement, AnalyzeMode.NONE, InternalMetadataQuery.INSTANCE))
             .hashCode(),
         is(equalTo(resultSet.hashCode())));
   }
@@ -178,7 +180,7 @@ public class DdlBatchTest {
   public void testExecuteUpdate() {
     DdlBatch batch = createSubject();
     try {
-      batch.executeUpdateAsync(mock(ParsedStatement.class));
+      batch.executeUpdateAsync(CallType.SYNC, mock(ParsedStatement.class));
       fail("expected FAILED_PRECONDITION");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -189,7 +191,8 @@ public class DdlBatchTest {
   public void testExecuteBatchUpdate() {
     DdlBatch batch = createSubject();
     try {
-      batch.executeBatchUpdateAsync(Collections.singleton(mock(ParsedStatement.class)));
+      batch.executeBatchUpdateAsync(
+          CallType.SYNC, Collections.singleton(mock(ParsedStatement.class)));
       fail("expected FAILED_PRECONDITION");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -199,7 +202,7 @@ public class DdlBatchTest {
   @Test
   public void testGetCommitTimestamp() {
     DdlBatch batch = createSubject();
-    get(batch.runBatchAsync());
+    get(batch.runBatchAsync(CallType.SYNC));
     try {
       batch.getCommitTimestamp();
       fail("expected FAILED_PRECONDITION");
@@ -211,7 +214,7 @@ public class DdlBatchTest {
   @Test
   public void testGetCommitResponse() {
     DdlBatch batch = createSubject();
-    get(batch.runBatchAsync());
+    get(batch.runBatchAsync(CallType.SYNC));
     try {
       batch.getCommitResponse();
       fail("expected FAILED_PRECONDITION");
@@ -224,7 +227,7 @@ public class DdlBatchTest {
   @Test
   public void testGetReadTimestamp() {
     DdlBatch batch = createSubject();
-    get(batch.runBatchAsync());
+    get(batch.runBatchAsync(CallType.SYNC));
     try {
       batch.getReadTimestamp();
       fail("expected FAILED_PRECONDITION");
@@ -237,7 +240,8 @@ public class DdlBatchTest {
   public void testWriteIterable() {
     DdlBatch batch = createSubject();
     try {
-      batch.writeAsync(Collections.singletonList(Mutation.newInsertBuilder("foo").build()));
+      batch.writeAsync(
+          CallType.SYNC, Collections.singletonList(Mutation.newInsertBuilder("foo").build()));
       fail("expected FAILED_PRECONDITION");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -255,7 +259,7 @@ public class DdlBatchTest {
     DdlBatch batch = createSubject();
     assertThat(batch.getState(), is(UnitOfWorkState.STARTED));
     assertThat(batch.isActive(), is(true));
-    get(batch.runBatchAsync());
+    get(batch.runBatchAsync(CallType.SYNC));
     assertThat(batch.getState(), is(UnitOfWorkState.RAN));
     assertThat(batch.isActive(), is(false));
 
@@ -277,9 +281,9 @@ public class DdlBatchTest {
     when(statement.getStatement()).thenReturn(Statement.of("CREATE TABLE FOO"));
     when(statement.getSqlWithoutComments()).thenReturn("CREATE TABLE FOO");
     when(statement.getType()).thenReturn(StatementType.DDL);
-    batch.executeDdlAsync(statement);
+    batch.executeDdlAsync(CallType.SYNC, statement);
     try {
-      get(batch.runBatchAsync());
+      get(batch.runBatchAsync(CallType.SYNC));
       fail("Missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode(), is(equalTo(ErrorCode.FAILED_PRECONDITION)));
@@ -313,7 +317,7 @@ public class DdlBatchTest {
   public void testRunBatch() {
     DdlClient client = createDefaultMockDdlClient();
     DdlBatch batch = createSubject(client);
-    get(batch.runBatchAsync());
+    get(batch.runBatchAsync(CallType.SYNC));
     assertThat(batch.getState(), is(UnitOfWorkState.RAN));
     verify(client, never()).executeDdl(anyString());
     verify(client, never()).executeDdl(argThat(isEmptyListOfStrings()));
@@ -325,20 +329,20 @@ public class DdlBatchTest {
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
-    batch.executeDdlAsync(statement);
-    get(batch.runBatchAsync());
+    batch.executeDdlAsync(CallType.SYNC, statement);
+    get(batch.runBatchAsync(CallType.SYNC));
     verify(client).executeDdl(argThat(isListOfStringsWithSize(1)));
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
-    batch.executeDdlAsync(statement);
-    batch.executeDdlAsync(statement);
-    get(batch.runBatchAsync());
+    batch.executeDdlAsync(CallType.SYNC, statement);
+    batch.executeDdlAsync(CallType.SYNC, statement);
+    get(batch.runBatchAsync(CallType.SYNC));
     verify(client).executeDdl(argThat(isListOfStringsWithSize(2)));
     assertThat(batch.getState(), is(UnitOfWorkState.RAN));
     boolean exception = false;
     try {
-      get(batch.runBatchAsync());
+      get(batch.runBatchAsync(CallType.SYNC));
     } catch (SpannerException e) {
       if (e.getErrorCode() != ErrorCode.FAILED_PRECONDITION) {
         throw e;
@@ -349,7 +353,7 @@ public class DdlBatchTest {
     assertThat(batch.getState(), is(UnitOfWorkState.RAN));
     exception = false;
     try {
-      batch.executeDdlAsync(statement);
+      batch.executeDdlAsync(CallType.SYNC, statement);
     } catch (SpannerException e) {
       if (e.getErrorCode() != ErrorCode.FAILED_PRECONDITION) {
         throw e;
@@ -359,7 +363,7 @@ public class DdlBatchTest {
     assertThat(exception, is(true));
     exception = false;
     try {
-      batch.executeDdlAsync(statement);
+      batch.executeDdlAsync(CallType.SYNC, statement);
     } catch (SpannerException e) {
       if (e.getErrorCode() != ErrorCode.FAILED_PRECONDITION) {
         throw e;
@@ -370,11 +374,11 @@ public class DdlBatchTest {
 
     client = createDefaultMockDdlClient(true);
     batch = createSubject(client);
-    batch.executeDdlAsync(statement);
-    batch.executeDdlAsync(statement);
+    batch.executeDdlAsync(CallType.SYNC, statement);
+    batch.executeDdlAsync(CallType.SYNC, statement);
     exception = false;
     try {
-      get(batch.runBatchAsync());
+      get(batch.runBatchAsync(CallType.SYNC));
     } catch (SpannerException e) {
       exception = true;
     }
@@ -407,12 +411,14 @@ public class DdlBatchTest {
             .setDatabaseClient(mock(DatabaseClient.class))
             .build();
     batch.executeDdlAsync(
+        CallType.SYNC,
         AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
             .parse(Statement.of("CREATE TABLE FOO")));
     batch.executeDdlAsync(
+        CallType.SYNC,
         AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
             .parse(Statement.of("CREATE TABLE BAR")));
-    long[] updateCounts = get(batch.runBatchAsync());
+    long[] updateCounts = get(batch.runBatchAsync(CallType.SYNC));
     assertThat(updateCounts.length, is(equalTo(2)));
     assertThat(updateCounts[0], is(equalTo(1L)));
     assertThat(updateCounts[1], is(equalTo(1L)));
@@ -443,13 +449,15 @@ public class DdlBatchTest {
             .setDatabaseClient(mock(DatabaseClient.class))
             .build();
     batch.executeDdlAsync(
+        CallType.SYNC,
         AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
             .parse(Statement.of("CREATE TABLE FOO")));
     batch.executeDdlAsync(
+        CallType.SYNC,
         AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
             .parse(Statement.of("CREATE TABLE INVALID_TABLE")));
     try {
-      get(batch.runBatchAsync());
+      get(batch.runBatchAsync(CallType.SYNC));
       fail("missing expected exception");
     } catch (SpannerBatchUpdateException e) {
       assertThat(e.getUpdateCounts().length, is(equalTo(2)));
@@ -483,13 +491,15 @@ public class DdlBatchTest {
             .setDatabaseClient(mock(DatabaseClient.class))
             .build();
     batch.executeDdlAsync(
+        CallType.SYNC,
         AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
             .parse(Statement.of("CREATE TABLE FOO")));
     batch.executeDdlAsync(
+        CallType.SYNC,
         AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
             .parse(Statement.of("CREATE TABLE INVALID_TABLE")));
     try {
-      get(batch.runBatchAsync());
+      get(batch.runBatchAsync(CallType.SYNC));
       fail("missing expected exception");
     } catch (SpannerBatchUpdateException e) {
       assertThat(e.getUpdateCounts().length, is(equalTo(2)));
@@ -514,26 +524,26 @@ public class DdlBatchTest {
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
-    batch.executeDdlAsync(statement);
+    batch.executeDdlAsync(CallType.SYNC, statement);
     batch.abortBatch();
     verify(client, never()).executeDdl(anyList());
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
-    batch.executeDdlAsync(statement);
-    batch.executeDdlAsync(statement);
+    batch.executeDdlAsync(CallType.SYNC, statement);
+    batch.executeDdlAsync(CallType.SYNC, statement);
     batch.abortBatch();
     verify(client, never()).executeDdl(anyList());
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
-    batch.executeDdlAsync(statement);
-    batch.executeDdlAsync(statement);
+    batch.executeDdlAsync(CallType.SYNC, statement);
+    batch.executeDdlAsync(CallType.SYNC, statement);
     batch.abortBatch();
     verify(client, never()).executeDdl(anyList());
     boolean exception = false;
     try {
-      get(batch.runBatchAsync());
+      get(batch.runBatchAsync(CallType.SYNC));
     } catch (SpannerException e) {
       if (e.getErrorCode() != ErrorCode.FAILED_PRECONDITION) {
         throw e;
@@ -553,11 +563,11 @@ public class DdlBatchTest {
 
     DdlClient client = createDefaultMockDdlClient(10000L);
     final DdlBatch batch = createSubject(client);
-    batch.executeDdlAsync(statement);
+    batch.executeDdlAsync(CallType.SYNC, statement);
     Executors.newSingleThreadScheduledExecutor()
         .schedule(batch::cancel, 100, TimeUnit.MILLISECONDS);
     try {
-      get(batch.runBatchAsync());
+      get(batch.runBatchAsync(CallType.SYNC));
       fail("expected CANCELLED");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
@@ -568,7 +578,7 @@ public class DdlBatchTest {
   public void testCommit() {
     DdlBatch batch = createSubject();
     try {
-      batch.commitAsync();
+      batch.commitAsync(CallType.SYNC);
       fail("expected FAILED_PRECONDITION");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -579,7 +589,7 @@ public class DdlBatchTest {
   public void testRollback() {
     DdlBatch batch = createSubject();
     try {
-      batch.rollbackAsync();
+      batch.rollbackAsync(CallType.SYNC);
       fail("expected FAILED_PRECONDITION");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
