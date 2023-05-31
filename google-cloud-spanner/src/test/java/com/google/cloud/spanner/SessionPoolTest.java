@@ -218,13 +218,13 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     session2.close();
     session1.close();
-    
+
     // Check the session out and back in once more to finalize their positions.
     session1 = pool.getSession().get();
     session2 = pool.getSession().get();
     session2.close();
     session1.close();
-    
+
     Session session3 = pool.getSession().get();
     Session session4 = pool.getSession().get();
     assertThat(session3).isEqualTo(session1);

@@ -1385,7 +1385,9 @@ class SessionPool {
 
     int getChannel() {
       Long channelHint = (Long) delegate.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
-      return channelHint == null ? 0 : (int) (channelHint % sessionClient.getSpanner().getOptions().getNumChannels());
+      return channelHint == null
+          ? 0
+          : (int) (channelHint % sessionClient.getSpanner().getOptions().getNumChannels());
     }
 
     @Override
@@ -2268,7 +2270,7 @@ class SessionPool {
       }
       if (waiters.size() == 0) {
         // No pending waiters.
-          // Add to a random position if the head of the session pool already contains many sessions
+        // Add to a random position if the head of the session pool already contains many sessions
         // with the same channel as this one.
         if (isUnbalanced(session)) {
           session.releaseToPosition = Position.RANDOM;

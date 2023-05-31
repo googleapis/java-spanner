@@ -221,7 +221,11 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     }
     pool =
         SessionPool.createPool(
-            builder.build(), new TestExecutorFactory(), mockSpanner.getSessionClient(db), clock, Position.RANDOM);
+            builder.build(),
+            new TestExecutorFactory(),
+            mockSpanner.getSessionClient(db),
+            clock,
+            Position.RANDOM);
     pool.idleSessionRemovedListener =
         pooled -> {
           String name = pooled.getName();

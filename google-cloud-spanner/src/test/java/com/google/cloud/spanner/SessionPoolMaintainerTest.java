@@ -113,7 +113,8 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
   }
 
   private SessionPool createPool() throws Exception {
-    // Allow sessions to be added to the head of the pool in all cases in this test, as it is otherwise impossible to know which session exactly is getting pinged at what point in time.
+    // Allow sessions to be added to the head of the pool in all cases in this test, as it is
+    // otherwise impossible to know which session exactly is getting pinged at what point in time.
     SessionPool pool =
         SessionPool.createPool(
             options, new TestExecutorFactory(), client.getSessionClient(db), clock, Position.FIRST);
