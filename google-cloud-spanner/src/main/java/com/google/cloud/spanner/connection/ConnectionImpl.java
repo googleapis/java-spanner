@@ -44,6 +44,7 @@ import com.google.cloud.spanner.TimestampBound.Mode;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
+import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -782,13 +783,13 @@ class ConnectionImpl implements Connection {
 
   /** Internal interface for ending a transaction (commit/rollback). */
   private interface EndTransactionMethod {
-    ApiFuture<Void> endAsync(UnitOfWork t);
+    ApiFuture<Void> endAsync(CallType callType, UnitOfWork t);
   }
 
   private static final class Commit implements EndTransactionMethod {
     @Override
-    public ApiFuture<Void> endAsync(UnitOfWork t) {
-      return t.commitAsync();
+    public ApiFuture<Void> endAsync(CallType callType, UnitOfWork t) {
+      return t.commitAsync(callType);
     }
   }
 
@@ -796,18 +797,23 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void commit() {
-    get(commitAsync());
+    get(commitAsync(CallType.SYNC));
   }
 
+  @Override
   public ApiFuture<Void> commitAsync() {
+    return commitAsync(CallType.ASYNC);
+  }
+
+  private ApiFuture<Void> commitAsync(CallType callType) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return endCurrentTransactionAsync(commit);
+    return endCurrentTransactionAsync(callType, commit);
   }
 
   private static final class Rollback implements EndTransactionMethod {
     @Override
-    public ApiFuture<Void> endAsync(UnitOfWork t) {
-      return t.rollbackAsync();
+    public ApiFuture<Void> endAsync(CallType callType, UnitOfWork t) {
+      return t.rollbackAsync(callType);
     }
   }
 
@@ -815,15 +821,21 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void rollback() {
-    get(rollbackAsync());
+    get(rollbackAsync(CallType.SYNC));
   }
 
+  @Override
   public ApiFuture<Void> rollbackAsync() {
-    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return endCurrentTransactionAsync(rollback);
+    return rollbackAsync(CallType.ASYNC);
   }
 
-  private ApiFuture<Void> endCurrentTransactionAsync(EndTransactionMethod endTransactionMethod) {
+  private ApiFuture<Void> rollbackAsync(CallType callType) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return endCurrentTransactionAsync(callType, rollback);
+  }
+
+  private ApiFuture<Void> endCurrentTransactionAsync(
+      CallType callType, EndTransactionMethod endTransactionMethod) {
     ConnectionPreconditions.checkState(!isBatchActive(), "This connection has an active batch");
     ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
     ConnectionPreconditions.checkState(
@@ -831,7 +843,7 @@ class ConnectionImpl implements Connection {
     ApiFuture<Void> res;
     try {
       if (isTransactionStarted()) {
-        res = endTransactionMethod.endAsync(getCurrentUnitOfWorkOrStartNewUnitOfWork());
+        res = endTransactionMethod.endAsync(callType, getCurrentUnitOfWorkOrStartNewUnitOfWork());
       } else {
         this.currentUnitOfWork = null;
         res = ApiFutures.immediateFuture(null);
@@ -897,14 +909,17 @@ class ConnectionImpl implements Connection {
             .getClientSideStatement()
             .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments());
       case QUERY:
-        return StatementResultImpl.of(internalExecuteQuery(parsedStatement, AnalyzeMode.NONE));
+        return StatementResultImpl.of(
+            internalExecuteQuery(CallType.SYNC, parsedStatement, AnalyzeMode.NONE));
       case UPDATE:
         if (parsedStatement.hasReturningClause()) {
-          return StatementResultImpl.of(internalExecuteQuery(parsedStatement, AnalyzeMode.NONE));
+          return StatementResultImpl.of(
+              internalExecuteQuery(CallType.SYNC, parsedStatement, AnalyzeMode.NONE));
         }
-        return StatementResultImpl.of(get(internalExecuteUpdateAsync(parsedStatement)));
+        return StatementResultImpl.of(
+            get(internalExecuteUpdateAsync(CallType.SYNC, parsedStatement)));
       case DDL:
-        get(executeDdlAsync(parsedStatement));
+        get(executeDdlAsync(CallType.SYNC, parsedStatement));
         return StatementResultImpl.noResult();
       case UNKNOWN:
       default:
@@ -928,15 +943,16 @@ class ConnectionImpl implements Connection {
             spanner.getAsyncExecutorProvider());
       case QUERY:
         return AsyncStatementResultImpl.of(
-            internalExecuteQueryAsync(parsedStatement, AnalyzeMode.NONE));
+            internalExecuteQueryAsync(CallType.ASYNC, parsedStatement, AnalyzeMode.NONE));
       case UPDATE:
         if (parsedStatement.hasReturningClause()) {
           return AsyncStatementResultImpl.of(
-              internalExecuteQueryAsync(parsedStatement, AnalyzeMode.NONE));
+              internalExecuteQueryAsync(CallType.ASYNC, parsedStatement, AnalyzeMode.NONE));
         }
-        return AsyncStatementResultImpl.of(internalExecuteUpdateAsync(parsedStatement));
+        return AsyncStatementResultImpl.of(
+            internalExecuteUpdateAsync(CallType.ASYNC, parsedStatement));
       case DDL:
-        return AsyncStatementResultImpl.noResult(executeDdlAsync(parsedStatement));
+        return AsyncStatementResultImpl.noResult(executeDdlAsync(CallType.ASYNC, parsedStatement));
       case UNKNOWN:
       default:
     }
@@ -947,18 +963,18 @@ class ConnectionImpl implements Connection {
 
   @Override
   public ResultSet executeQuery(Statement query, QueryOption... options) {
-    return parseAndExecuteQuery(query, AnalyzeMode.NONE, options);
+    return parseAndExecuteQuery(CallType.SYNC, query, AnalyzeMode.NONE, options);
   }
 
   @Override
   public AsyncResultSet executeQueryAsync(Statement query, QueryOption... options) {
-    return parseAndExecuteQueryAsync(query, AnalyzeMode.NONE, options);
+    return parseAndExecuteQueryAsync(CallType.ASYNC, query, AnalyzeMode.NONE, options);
   }
 
   @Override
   public ResultSet analyzeQuery(Statement query, QueryAnalyzeMode queryMode) {
     Preconditions.checkNotNull(queryMode);
-    return parseAndExecuteQuery(query, AnalyzeMode.of(queryMode));
+    return parseAndExecuteQuery(CallType.SYNC, query, AnalyzeMode.of(queryMode));
   }
 
   /**
@@ -966,7 +982,7 @@ class ConnectionImpl implements Connection {
    * statement is not a query.
    */
   private ResultSet parseAndExecuteQuery(
-      Statement query, AnalyzeMode analyzeMode, QueryOption... options) {
+      CallType callType, Statement query, AnalyzeMode analyzeMode, QueryOption... options) {
     Preconditions.checkNotNull(query);
     Preconditions.checkNotNull(analyzeMode);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
@@ -979,7 +995,7 @@ class ConnectionImpl implements Connection {
               .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments())
               .getResultSet();
         case QUERY:
-          return internalExecuteQuery(parsedStatement, analyzeMode, options);
+          return internalExecuteQuery(callType, parsedStatement, analyzeMode, options);
         case UPDATE:
           if (parsedStatement.hasReturningClause()) {
             // Cannot execute DML statement with returning clause in read-only mode or in
@@ -992,7 +1008,7 @@ class ConnectionImpl implements Connection {
                   "DML statement with returning clause cannot be executed in read-only mode: "
                       + parsedStatement.getSqlWithoutComments());
             }
-            return internalExecuteQuery(parsedStatement, analyzeMode, options);
+            return internalExecuteQuery(callType, parsedStatement, analyzeMode, options);
           }
         case DDL:
         case UNKNOWN:
@@ -1006,7 +1022,7 @@ class ConnectionImpl implements Connection {
   }
 
   private AsyncResultSet parseAndExecuteQueryAsync(
-      Statement query, AnalyzeMode analyzeMode, QueryOption... options) {
+      CallType callType, Statement query, AnalyzeMode analyzeMode, QueryOption... options) {
     Preconditions.checkNotNull(query);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
@@ -1021,7 +1037,7 @@ class ConnectionImpl implements Connection {
               spanner.getAsyncExecutorProvider(),
               options);
         case QUERY:
-          return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
+          return internalExecuteQueryAsync(callType, parsedStatement, analyzeMode, options);
         case UPDATE:
           if (parsedStatement.hasReturningClause()) {
             // Cannot execute DML statement with returning clause in read-only mode or in
@@ -1034,7 +1050,7 @@ class ConnectionImpl implements Connection {
                   "DML statement with returning clause cannot be executed in read-only mode: "
                       + parsedStatement.getSqlWithoutComments());
             }
-            return internalExecuteQueryAsync(parsedStatement, analyzeMode, options);
+            return internalExecuteQueryAsync(callType, parsedStatement, analyzeMode, options);
           }
         case DDL:
         case UNKNOWN:
@@ -1062,7 +1078,7 @@ class ConnectionImpl implements Connection {
                     + parsedStatement.getSqlWithoutComments()
                     + ". Please use executeQuery instead.");
           }
-          return get(internalExecuteUpdateAsync(parsedStatement));
+          return get(internalExecuteUpdateAsync(CallType.SYNC, parsedStatement));
         case CLIENT_SIDE:
         case QUERY:
         case DDL:
@@ -1090,7 +1106,7 @@ class ConnectionImpl implements Connection {
                     + parsedStatement.getSqlWithoutComments()
                     + ". Please use executeQueryAsync instead.");
           }
-          return internalExecuteUpdateAsync(parsedStatement);
+          return internalExecuteUpdateAsync(CallType.ASYNC, parsedStatement);
         case CLIENT_SIDE:
         case QUERY:
         case DDL:
@@ -1111,7 +1127,8 @@ class ConnectionImpl implements Connection {
     if (parsedStatement.isUpdate()) {
       switch (parsedStatement.getType()) {
         case UPDATE:
-          return get(internalAnalyzeUpdateAsync(parsedStatement, AnalyzeMode.of(analyzeMode)))
+          return get(internalAnalyzeUpdateAsync(
+                  CallType.SYNC, parsedStatement, AnalyzeMode.of(analyzeMode)))
               .getStats();
         case CLIENT_SIDE:
         case QUERY:
@@ -1134,7 +1151,8 @@ class ConnectionImpl implements Connection {
     switch (parsedStatement.getType()) {
       case UPDATE:
         return get(
-            internalAnalyzeUpdateAsync(parsedStatement, AnalyzeMode.of(analyzeMode), options));
+            internalAnalyzeUpdateAsync(
+                CallType.SYNC, parsedStatement, AnalyzeMode.of(analyzeMode), options));
       case QUERY:
       case CLIENT_SIDE:
       case DDL:
@@ -1169,7 +1187,7 @@ class ConnectionImpl implements Connection {
                   + parsedStatement.getSqlWithoutComments());
       }
     }
-    return get(internalExecuteBatchUpdateAsync(parsedStatements));
+    return get(internalExecuteBatchUpdateAsync(CallType.SYNC, parsedStatements));
   }
 
   @Override
@@ -1195,7 +1213,7 @@ class ConnectionImpl implements Connection {
                   + parsedStatement.getSqlWithoutComments());
       }
     }
-    return internalExecuteBatchUpdateAsync(parsedStatements);
+    return internalExecuteBatchUpdateAsync(CallType.ASYNC, parsedStatements);
   }
 
   private QueryOption[] mergeQueryStatementTag(QueryOption... options) {
@@ -1253,6 +1271,7 @@ class ConnectionImpl implements Connection {
   }
 
   private ResultSet internalExecuteQuery(
+      final CallType callType,
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
@@ -1264,10 +1283,14 @@ class ConnectionImpl implements Connection {
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return get(
         transaction.executeQueryAsync(
-            statement, analyzeMode, mergeQueryRequestOptions(mergeQueryStatementTag(options))));
+            callType,
+            statement,
+            analyzeMode,
+            mergeQueryRequestOptions(mergeQueryStatementTag(options))));
   }
 
   private AsyncResultSet internalExecuteQueryAsync(
+      final CallType callType,
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
@@ -1278,34 +1301,40 @@ class ConnectionImpl implements Connection {
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return ResultSets.toAsyncResultSet(
         transaction.executeQueryAsync(
-            statement, analyzeMode, mergeQueryRequestOptions(mergeQueryStatementTag(options))),
+            callType,
+            statement,
+            analyzeMode,
+            mergeQueryRequestOptions(mergeQueryStatementTag(options))),
         spanner.getAsyncExecutorProvider(),
         options);
   }
 
   private ApiFuture<Long> internalExecuteUpdateAsync(
-      final ParsedStatement update, UpdateOption... options) {
+      final CallType callType, final ParsedStatement update, UpdateOption... options) {
     Preconditions.checkArgument(
         update.getType() == StatementType.UPDATE, "Statement must be an update");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return transaction.executeUpdateAsync(
-        update, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
+        callType, update, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
   }
 
   private ApiFuture<ResultSet> internalAnalyzeUpdateAsync(
-      final ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
+      final CallType callType,
+      final ParsedStatement update,
+      AnalyzeMode analyzeMode,
+      UpdateOption... options) {
     Preconditions.checkArgument(
         update.getType() == StatementType.UPDATE, "Statement must be an update");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return transaction.analyzeUpdateAsync(
-        update, analyzeMode, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
+        callType, update, analyzeMode, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
   }
 
   private ApiFuture<long[]> internalExecuteBatchUpdateAsync(
-      List<ParsedStatement> updates, UpdateOption... options) {
+      CallType callType, List<ParsedStatement> updates, UpdateOption... options) {
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return transaction.executeBatchUpdateAsync(
-        updates, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
+        callType, updates, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
   }
 
   /**
@@ -1395,8 +1424,8 @@ class ConnectionImpl implements Connection {
     this.currentUnitOfWork = transactionStack.pop();
   }
 
-  private ApiFuture<Void> executeDdlAsync(ParsedStatement ddl) {
-    return getCurrentUnitOfWorkOrStartNewUnitOfWork().executeDdlAsync(ddl);
+  private ApiFuture<Void> executeDdlAsync(CallType callType, ParsedStatement ddl) {
+    return getCurrentUnitOfWorkOrStartNewUnitOfWork().executeDdlAsync(callType, ddl);
   }
 
   @Override
@@ -1419,7 +1448,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(mutations);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ConnectionPreconditions.checkState(isAutocommit(), ONLY_ALLOWED_IN_AUTOCOMMIT);
-    return getCurrentUnitOfWorkOrStartNewUnitOfWork().writeAsync(mutations);
+    return getCurrentUnitOfWorkOrStartNewUnitOfWork().writeAsync(CallType.ASYNC, mutations);
   }
 
   @Override
@@ -1432,7 +1461,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(mutations);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ConnectionPreconditions.checkState(!isAutocommit(), NOT_ALLOWED_IN_AUTOCOMMIT);
-    get(getCurrentUnitOfWorkOrStartNewUnitOfWork().writeAsync(mutations));
+    get(getCurrentUnitOfWorkOrStartNewUnitOfWork().writeAsync(CallType.SYNC, mutations));
   }
 
   @Override
@@ -1483,7 +1512,7 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(isBatchActive(), "This connection has no active batch");
     try {
       if (this.currentUnitOfWork != null) {
-        return this.currentUnitOfWork.runBatchAsync();
+        return this.currentUnitOfWork.runBatchAsync(CallType.ASYNC);
       }
       return ApiFutures.immediateFuture(new long[0]);
     } finally {
