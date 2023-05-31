@@ -1372,7 +1372,7 @@ class SessionPool {
      * actually added to the pool.
      */
     @GuardedBy("lock")
-    private Position releaseToPosition = Position.RANDOM;
+    private Position releaseToPosition = initialReleasePosition;
 
     @GuardedBy("lock")
     private SessionState state;
@@ -1385,7 +1385,7 @@ class SessionPool {
 
     int getChannel() {
       Long channelHint = (Long) delegate.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
-      return (int) (channelHint % sessionClient.getSpanner().getOptions().getNumChannels());
+      return channelHint == null ? 0 : (int) (channelHint % sessionClient.getSpanner().getOptions().getNumChannels());
     }
 
     @Override
@@ -1807,7 +1807,7 @@ class SessionPool {
     }
   }
 
-  private enum Position {
+  enum Position {
     FIRST,
     RANDOM
   }
@@ -1840,6 +1840,7 @@ class SessionPool {
 
   final PoolMaintainer poolMaintainer;
   private final Clock clock;
+  private final Position initialReleasePosition;
   private final Object lock = new Object();
   private final Random random = new Random();
 
@@ -1914,6 +1915,7 @@ class SessionPool {
         ((GrpcTransportOptions) spannerOptions.getTransportOptions()).getExecutorFactory(),
         sessionClient,
         new Clock(),
+        Position.RANDOM,
         Metrics.getMetricRegistry(),
         labelValues);
   }
@@ -1922,20 +1924,22 @@ class SessionPool {
       SessionPoolOptions poolOptions,
       ExecutorFactory<ScheduledExecutorService> executorFactory,
       SessionClient sessionClient) {
-    return createPool(poolOptions, executorFactory, sessionClient, new Clock());
+    return createPool(poolOptions, executorFactory, sessionClient, new Clock(), Position.RANDOM);
   }
 
   static SessionPool createPool(
       SessionPoolOptions poolOptions,
       ExecutorFactory<ScheduledExecutorService> executorFactory,
       SessionClient sessionClient,
-      Clock clock) {
+      Clock clock,
+      Position initialReleasePosition) {
     return createPool(
         poolOptions,
         null,
         executorFactory,
         sessionClient,
         clock,
+        initialReleasePosition,
         Metrics.getMetricRegistry(),
         SPANNER_DEFAULT_LABEL_VALUES);
   }
@@ -1946,6 +1950,7 @@ class SessionPool {
       ExecutorFactory<ScheduledExecutorService> executorFactory,
       SessionClient sessionClient,
       Clock clock,
+      Position initialReleasePosition,
       MetricRegistry metricRegistry,
       List<LabelValue> labelValues) {
     SessionPool pool =
@@ -1956,6 +1961,7 @@ class SessionPool {
             executorFactory.get(),
             sessionClient,
             clock,
+            initialReleasePosition,
             metricRegistry,
             labelValues);
     pool.initPool();
@@ -1969,6 +1975,7 @@ class SessionPool {
       ScheduledExecutorService executor,
       SessionClient sessionClient,
       Clock clock,
+      Position initialReleasePosition,
       MetricRegistry metricRegistry,
       List<LabelValue> labelValues) {
     this.options = options;
@@ -1977,6 +1984,7 @@ class SessionPool {
     this.executor = executor;
     this.sessionClient = sessionClient;
     this.clock = clock;
+    this.initialReleasePosition = initialReleasePosition;
     this.poolMaintainer = new PoolMaintainer();
     this.initMetricsCollection(metricRegistry, labelValues);
     this.waitOnMinSessionsLatch =
@@ -2260,10 +2268,9 @@ class SessionPool {
       }
       if (waiters.size() == 0) {
         // No pending waiters.
-        // Add to a random position if there are already many sessions checked out, or the head of
-        // the session pool already contains many sessions with the same channel as this one.
-        if (checkedOutSessions.size() > sessionClient.getSpanner().getOptions().getNumChannels()
-            || isUnbalanced(session)) {
+          // Add to a random position if the head of the session pool already contains many sessions
+        // with the same channel as this one.
+        if (isUnbalanced(session)) {
           session.releaseToPosition = Position.RANDOM;
         }
         switch (session.releaseToPosition) {

@@ -52,6 +52,7 @@ import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
+import com.google.cloud.spanner.SessionPool.Position;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
@@ -123,7 +124,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
   private SessionPool createPool(Clock clock) {
     return SessionPool.createPool(
-        options, new TestExecutorFactory(), client.getSessionClient(db), clock);
+        options, new TestExecutorFactory(), client.getSessionClient(db), clock, Position.RANDOM);
   }
 
   private SessionPool createPool(
@@ -134,6 +135,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         new TestExecutorFactory(),
         client.getSessionClient(db),
         clock,
+        Position.RANDOM,
         metricRegistry,
         labelValues);
   }
@@ -143,6 +145,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     initMocks(this);
     when(client.getOptions()).thenReturn(spannerOptions);
     when(client.getSessionClient(db)).thenReturn(sessionClient);
+    when(sessionClient.getSpanner()).thenReturn(client);
     when(spannerOptions.getNumChannels()).thenReturn(4);
     when(spannerOptions.getDatabaseRole()).thenReturn("role");
     options =
@@ -215,6 +218,13 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     session2.close();
     session1.close();
+    
+    // Check the session out and back in once more to finalize their positions.
+    session1 = pool.getSession().get();
+    session2 = pool.getSession().get();
+    session2.close();
+    session1.close();
+    
     Session session3 = pool.getSession().get();
     Session session4 = pool.getSession().get();
     assertThat(session3).isEqualTo(session1);
@@ -828,6 +838,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       SpannerImpl spanner = mock(SpannerImpl.class);
       SessionClient sessionClient = mock(SessionClient.class);
       when(spanner.getSessionClient(db)).thenReturn(sessionClient);
+      when(sessionClient.getSpanner()).thenReturn(spanner);
 
       doAnswer(
               invocation -> {

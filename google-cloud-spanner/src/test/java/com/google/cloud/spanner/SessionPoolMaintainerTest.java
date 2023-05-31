@@ -26,6 +26,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
+import com.google.cloud.spanner.SessionPool.Position;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,6 +59,7 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     initMocks(this);
     when(client.getOptions()).thenReturn(spannerOptions);
     when(client.getSessionClient(db)).thenReturn(sessionClient);
+    when(sessionClient.getSpanner()).thenReturn(client);
     when(spannerOptions.getNumChannels()).thenReturn(4);
     when(spannerOptions.getDatabaseRole()).thenReturn("role");
     setupMockSessionCreation();
@@ -111,9 +113,10 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
   }
 
   private SessionPool createPool() throws Exception {
+    // Allow sessions to be added to the head of the pool in all cases in this test, as it is otherwise impossible to know which session exactly is getting pinged at what point in time.
     SessionPool pool =
         SessionPool.createPool(
-            options, new TestExecutorFactory(), client.getSessionClient(db), clock);
+            options, new TestExecutorFactory(), client.getSessionClient(db), clock, Position.FIRST);
     pool.idleSessionRemovedListener =
         input -> {
           idledSessions.add(input);

@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
+import com.google.cloud.spanner.SessionPool.Position;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
@@ -91,6 +92,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     when(spannerOptions.getNumChannels()).thenReturn(4);
     when(spannerOptions.getDatabaseRole()).thenReturn("role");
     SessionClient sessionClient = mock(SessionClient.class);
+    when(sessionClient.getSpanner()).thenReturn(mockSpanner);
     when(mockSpanner.getSessionClient(db)).thenReturn(sessionClient);
     when(mockSpanner.getOptions()).thenReturn(spannerOptions);
     doAnswer(
@@ -219,7 +221,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     }
     pool =
         SessionPool.createPool(
-            builder.build(), new TestExecutorFactory(), mockSpanner.getSessionClient(db), clock);
+            builder.build(), new TestExecutorFactory(), mockSpanner.getSessionClient(db), clock, Position.RANDOM);
     pool.idleSessionRemovedListener =
         pooled -> {
           String name = pooled.getName();

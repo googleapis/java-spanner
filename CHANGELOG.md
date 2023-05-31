@@ -1,5 +1,21 @@
 # Changelog
 
+## [6.42.2](https://github.com/googleapis/java-spanner/compare/v6.42.1...v6.42.2) (2023-05-30)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.19.0 ([#2466](https://github.com/googleapis/java-spanner/issues/2466)) ([6de2cf6](https://github.com/googleapis/java-spanner/commit/6de2cf6a2d075b4347d69b9af21ac0cf96413884))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.10.1 ([#2465](https://github.com/googleapis/java-spanner/issues/2465)) ([0a89f49](https://github.com/googleapis/java-spanner/commit/0a89f49cd55311f4cb84a501aa302eab88b46575))
+* Update dependency com.google.cloud:google-cloud-trace to v2.18.0 ([#2467](https://github.com/googleapis/java-spanner/issues/2467)) ([45609ed](https://github.com/googleapis/java-spanner/commit/45609ed65e49147077eaaf3eb90ab0c732eef80b))
+
+## [6.42.1](https://github.com/googleapis/java-spanner/compare/v6.42.0...v6.42.1) (2023-05-22)
+
+
+### Dependencies
+
+* Update dependency commons-io:commons-io to v2.12.0 ([#2439](https://github.com/googleapis/java-spanner/issues/2439)) ([d08b226](https://github.com/googleapis/java-spanner/commit/d08b226d5da6272b2de5f66ee1657d03268e396d))
+
 ## [6.42.0](https://github.com/googleapis/java-spanner/compare/v6.41.0...v6.42.0) (2023-05-15)
 
 
