@@ -28,6 +28,7 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import java.util.Arrays;
 import org.junit.After;
 import org.junit.Test;
@@ -36,6 +37,11 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class ExceptionMockServerTest extends AbstractMockServerTest {
+  private static final Statement UPDATE_STATEMENT =
+      Statement.of("update foo set bar=1 where baz=1");
+  private static final Statement SELECT_STATEMENT = Statement.of("select * from foo");
+  private static final StatusRuntimeException NOT_FOUND_EXCEPTION =
+      Status.INVALID_ARGUMENT.withDescription("Table 'foo' not found").asRuntimeException();
 
   @After
   public void clearRequests() {
@@ -44,15 +50,13 @@ public class ExceptionMockServerTest extends AbstractMockServerTest {
 
   @Test
   public void testUpdateAsyncException() {
-    Statement update = Statement.of("update foo set bar=1 where baz=1");
     mockSpanner.putStatementResult(
-        StatementResult.exception(
-            update,
-            Status.INVALID_ARGUMENT.withDescription("Table 'foo' not found").asRuntimeException()));
+        StatementResult.exception(UPDATE_STATEMENT, NOT_FOUND_EXCEPTION));
 
     try (Connection connection = createConnection()) {
       SpannerException exception =
-          assertThrows(SpannerException.class, () -> get(connection.executeUpdateAsync(update)));
+          assertThrows(
+              SpannerException.class, () -> get(connection.executeUpdateAsync(UPDATE_STATEMENT)));
       assertNotNull(exception.getSuppressed());
       assertEquals(1, exception.getSuppressed().length);
       Throwable suppressed = exception.getSuppressed()[0];
@@ -68,15 +72,12 @@ public class ExceptionMockServerTest extends AbstractMockServerTest {
 
   @Test
   public void testUpdateException() {
-    Statement update = Statement.of("update foo set bar=1 where baz=1");
     mockSpanner.putStatementResult(
-        StatementResult.exception(
-            update,
-            Status.INVALID_ARGUMENT.withDescription("Table 'foo' not found").asRuntimeException()));
+        StatementResult.exception(UPDATE_STATEMENT, NOT_FOUND_EXCEPTION));
 
     try (Connection connection = createConnection()) {
       SpannerException exception =
-          assertThrows(SpannerException.class, () -> connection.executeUpdate(update));
+          assertThrows(SpannerException.class, () -> connection.executeUpdate(UPDATE_STATEMENT));
       assertNotNull(exception.getSuppressed());
       assertEquals(0, exception.getSuppressed().length);
     }
@@ -84,17 +85,14 @@ public class ExceptionMockServerTest extends AbstractMockServerTest {
 
   @Test
   public void testQueryAsyncException() {
-    Statement update = Statement.of("select * from foo");
     mockSpanner.putStatementResult(
-        StatementResult.exception(
-            update,
-            Status.INVALID_ARGUMENT.withDescription("Table 'foo' not found").asRuntimeException()));
+        StatementResult.exception(SELECT_STATEMENT, NOT_FOUND_EXCEPTION));
 
     try (Connection connection = createConnection()) {
       SpannerException exception =
           assertThrows(
               SpannerException.class,
-              () -> connection.executeQueryAsync(update).toList(row -> row));
+              () -> connection.executeQueryAsync(SELECT_STATEMENT).toList(row -> row));
       assertNotNull(exception.getSuppressed());
       assertEquals(1, exception.getSuppressed().length);
       Throwable suppressed = exception.getSuppressed()[0];
@@ -110,15 +108,13 @@ public class ExceptionMockServerTest extends AbstractMockServerTest {
 
   @Test
   public void testQueryException() {
-    Statement update = Statement.of("select * from foo");
     mockSpanner.putStatementResult(
-        StatementResult.exception(
-            update,
-            Status.INVALID_ARGUMENT.withDescription("Table 'foo' not found").asRuntimeException()));
+        StatementResult.exception(SELECT_STATEMENT, NOT_FOUND_EXCEPTION));
 
     try (Connection connection = createConnection()) {
       SpannerException exception =
-          assertThrows(SpannerException.class, () -> connection.executeQuery(update).next());
+          assertThrows(
+              SpannerException.class, () -> connection.executeQuery(SELECT_STATEMENT).next());
       assertNotNull(exception.getSuppressed());
       assertEquals(0, exception.getSuppressed().length);
     }
@@ -126,9 +122,7 @@ public class ExceptionMockServerTest extends AbstractMockServerTest {
 
   @Test
   public void testCommitAsyncException() {
-    mockSpanner.setCommitExecutionTime(
-        SimulatedExecutionTime.ofException(
-            Status.INVALID_ARGUMENT.withDescription("Table 'foo' not found").asRuntimeException()));
+    mockSpanner.setCommitExecutionTime(SimulatedExecutionTime.ofException(NOT_FOUND_EXCEPTION));
 
     try (Connection connection = createConnection()) {
       connection.bufferedWrite(Mutation.newInsertBuilder("foo").set("id").to(1L).build());
@@ -149,9 +143,7 @@ public class ExceptionMockServerTest extends AbstractMockServerTest {
 
   @Test
   public void testCommitException() {
-    mockSpanner.setCommitExecutionTime(
-        SimulatedExecutionTime.ofException(
-            Status.INVALID_ARGUMENT.withDescription("Table 'foo' not found").asRuntimeException()));
+    mockSpanner.setCommitExecutionTime(SimulatedExecutionTime.ofException(NOT_FOUND_EXCEPTION));
 
     try (Connection connection = createConnection()) {
       connection.bufferedWrite(Mutation.newInsertBuilder("foo").set("id").to(1L).build());
