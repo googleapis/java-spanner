@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.42.3](https://github.com/googleapis/java-spanner/compare/v6.42.2...v6.42.3) (2023-05-31)
+
+
+### Performance Improvements
+
+* Only capture the call stack if the call is actually async ([#2471](https://github.com/googleapis/java-spanner/issues/2471)) ([ae9c8ad](https://github.com/googleapis/java-spanner/commit/ae9c8add484bc0f7808571cbcffb7b352d6ed739))
+
 ## [6.42.2](https://github.com/googleapis/java-spanner/compare/v6.42.1...v6.42.2) (2023-05-30)
 
 
