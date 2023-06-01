@@ -2272,7 +2272,7 @@ class SessionPool {
         // No pending waiters.
         // Add to a random position if the head of the session pool already contains many sessions
         // with the same channel as this one.
-        if (isUnbalanced(session)) {
+        if (session.releaseToPosition == Position.FIRST && isUnbalanced(session)) {
           session.releaseToPosition = Position.RANDOM;
         }
         switch (session.releaseToPosition) {
@@ -2306,6 +2306,10 @@ class SessionPool {
       return false;
     }
 
+    // Ideally, the first numChannels sessions in the pool should contain exactly one session for
+    // each channel.
+    // Check if the first numChannels sessions at the head of the pool already contain more than 2
+    // sessions that use the same channel as this one. If so, we randomize.
     int channel = session.getChannel();
     int count = 0;
     for (int i = 0; i < Math.min(numChannels, sessions.size()); i++) {
@@ -2313,6 +2317,19 @@ class SessionPool {
       if (channel == otherSession.getChannel()) {
         count++;
         if (count > 2) {
+          return true;
+        }
+      }
+    }
+    // Ideally, the use of a channel in the checked out sessions is exactly
+    // numCheckedOut / numChannels
+    // We check whether we are more than a factor two away from that perfect distribution.
+    // If we are, then we randomize.
+    int checkedOutThreshold = Math.max(2, 2 * checkedOutSessions.size() / numChannels);
+    for (PooledSessionFuture otherSession : checkedOutSessions) {
+      if (otherSession.isDone() && channel == otherSession.get().getChannel()) {
+        count++;
+        if (count > checkedOutThreshold) {
           return true;
         }
       }
