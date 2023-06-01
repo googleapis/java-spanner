@@ -42,7 +42,7 @@ If you are using Maven without the BOM, add this to your dependencies:
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>6.42.0</version>
+  <version>6.42.2</version>
 </dependency>
 
 ```
@@ -57,13 +57,13 @@ implementation 'com.google.cloud:google-cloud-spanner'
 If you are using Gradle without BOM, add this to your dependencies:
 
 ```Groovy
-implementation 'com.google.cloud:google-cloud-spanner:6.42.1'
+implementation 'com.google.cloud:google-cloud-spanner:6.42.2'
 ```
 
 If you are using SBT, add this to your dependencies:
 
 ```Scala
-libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.42.1"
+libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.42.2"
 ```
 <!-- {x-version-update-end} -->
 

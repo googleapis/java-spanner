@@ -99,21 +99,26 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
   abstract void checkAborted();
 
   /**
-   * Check that the current transaction actually has a valid underlying transaction. If not, the
-   * method will throw a {@link SpannerException}.
+   * Check that the current transaction actually has a valid underlying transaction and creates it
+   * if necessary. If the transaction does not have a valid underlying transaction and/or is not in
+   * a state that allows the creation of a transaction, the method will throw a {@link
+   * SpannerException}.
    */
-  abstract void checkValidTransaction(ParsedStatement statement);
+  abstract void checkOrCreateValidTransaction(ParsedStatement statement, CallType callType);
 
   /** Returns the {@link ReadContext} that can be used for queries on this transaction. */
   abstract ReadContext getReadContext();
 
+  @Override
   public ApiFuture<ResultSet> executeQueryAsync(
+      final CallType callType,
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
     Preconditions.checkArgument(statement.isQuery(), "Statement is not a query");
-    checkValidTransaction(statement);
+    checkOrCreateValidTransaction(statement, callType);
     return executeStatementAsync(
+        callType,
         statement,
         () -> {
           checkAborted();
@@ -133,7 +138,7 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<long[]> runBatchAsync() {
+  public ApiFuture<long[]> runBatchAsync(CallType callType) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Run batch is not supported for transactions");
   }

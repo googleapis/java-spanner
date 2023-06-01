@@ -132,7 +132,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testSingleQuery() {
+  public void testTransactionWithOneQuery() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 
@@ -156,7 +156,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testTwoQueries() {
+  public void testTransactionWithTwoQueries() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 
@@ -180,7 +180,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testSingleDml() {
+  public void testTransactionWithSingleDml() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 
@@ -197,7 +197,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testQueryFollowedByDml() {
+  public void testTransactionWithQueryFollowedByDml() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 
@@ -218,7 +218,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testDmlFollowedByQuery() {
+  public void testTransactionWithDmlFollowedByQuery() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 
@@ -240,7 +240,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testQueryFollowedByBatchDml() {
+  public void testTransactionWithQueryFollowedByBatchDml() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 
@@ -263,7 +263,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testBatchDmlFollowedByQuery() {
+  public void testTransactionWithBatchDmlFollowedByQuery() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 
@@ -287,7 +287,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testQueryFollowedByDmlReturning() {
+  public void testTransactionWithQueryFollowedByDmlReturning() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 
@@ -317,7 +317,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testDmlReturningFollowedByQuery() {
+  public void testTransactionWithDmlReturningFollowedByQuery() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 
@@ -348,7 +348,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testQueryFollowedByMutations() {
+  public void testTransactionWithQueryFollowedByMutations() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 
@@ -368,7 +368,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testMutationsFollowedByQuery() {
+  public void testTransactionWithMutationsFollowedByQuery() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 
@@ -388,7 +388,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testQueryFollowedByDmlAborted() {
+  public void testTransactionWithQueryFollowedByDmlAborted() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 
@@ -421,7 +421,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testDmlFollowedByQueryAborted() {
+  public void testTransactionWithDmlFollowedByQueryAborted() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 
@@ -460,7 +460,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testDmlFollowedByQueryWithFailedRetry() {
+  public void testTransactionWithDmlFollowedByQueryWithFailedRetry() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 
@@ -506,7 +506,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testQueryFollowedByDmlAborted_RetrySucceedsWithModifiedQueryResults() {
+  public void testTransactionWithQueryFollowedByDmlAborted_RetrySucceedsWithModifiedQueryResults() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 
@@ -543,7 +543,7 @@ public class DelayTransactionStartUntilFirstWriteMockServerTest extends Abstract
   }
 
   @Test
-  public void testRollbackToSavepointWithoutRealTransaction() {
+  public void testTransactionWithRollbackToSavepointWithoutRealTransaction() {
     try (Connection connection = createConnection()) {
       connection.setDelayTransactionStartUntilFirstWrite(true);
 

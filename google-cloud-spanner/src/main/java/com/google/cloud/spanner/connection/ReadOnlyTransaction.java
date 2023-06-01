@@ -96,7 +96,7 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  void checkValidTransaction(ParsedStatement statement) {
+  void checkOrCreateValidTransaction(ParsedStatement statement, CallType callType) {
     if (transaction == null) {
       transaction = dbClient.readOnlyTransaction(readOnlyStaleness);
     }
@@ -154,13 +154,14 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<Void> executeDdlAsync(ParsedStatement ddl) {
+  public ApiFuture<Void> executeDdlAsync(CallType callType, ParsedStatement ddl) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "DDL statements are not allowed for read-only transactions");
   }
 
   @Override
-  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options) {
+  public ApiFuture<Long> executeUpdateAsync(
+      CallType callType, ParsedStatement update, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "Update statements are not allowed for read-only transactions");
@@ -168,7 +169,7 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public ApiFuture<ResultSet> analyzeUpdateAsync(
-      ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
+      CallType callType, ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "Analyzing updates is not allowed for read-only transactions");
@@ -176,19 +177,19 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(
-      Iterable<ParsedStatement> updates, UpdateOption... options) {
+      CallType callType, Iterable<ParsedStatement> updates, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Batch updates are not allowed for read-only transactions.");
   }
 
   @Override
-  public ApiFuture<Void> writeAsync(Iterable<Mutation> mutations) {
+  public ApiFuture<Void> writeAsync(CallType callType, Iterable<Mutation> mutations) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Mutations are not allowed for read-only transactions");
   }
 
   @Override
-  public ApiFuture<Void> commitAsync() {
+  public ApiFuture<Void> commitAsync(CallType callType) {
     if (this.transaction != null) {
       this.transaction.close();
     }
@@ -197,7 +198,7 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<Void> rollbackAsync() {
+  public ApiFuture<Void> rollbackAsync(CallType callType) {
     if (this.transaction != null) {
       this.transaction.close();
     }

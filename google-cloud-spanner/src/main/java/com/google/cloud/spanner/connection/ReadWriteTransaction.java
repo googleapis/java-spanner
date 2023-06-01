@@ -237,11 +237,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  void checkValidTransaction(ParsedStatement statement) {
-    checkValidState();
-    if (transactionStarted == null) {
-      transactionStarted = Timestamp.now();
-    }
+  void checkOrCreateValidTransaction(ParsedStatement statement, CallType callType) {
+    checkValidStateAndMarkStarted();
     if (txContextFuture == null
         && (!delayTransactionStartUntilFirstWrite
             || (statement != null && statement.isUpdate())
@@ -250,13 +247,13 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       canUseSingleUseRead = false;
       txContextFuture =
           executeStatementAsync(
-              BEGIN_STATEMENT, txManager::begin, SpannerGrpc.getBeginTransactionMethod());
+              callType, BEGIN_STATEMENT, txManager::begin, SpannerGrpc.getBeginTransactionMethod());
     } else if (txContextFuture == null && delayTransactionStartUntilFirstWrite) {
       canUseSingleUseRead = true;
     }
   }
 
-  private void checkValidState() {
+  private void checkValidStateAndMarkStarted() {
     ConnectionPreconditions.checkState(
         this.state == UnitOfWorkState.STARTED || this.state == UnitOfWorkState.ABORTED,
         "This transaction has status "
@@ -272,6 +269,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
             + "Call Connection#setRetryAbortsInternally(true) or execute `SET RETRY_ABORTS_INTERNALLY=TRUE` to enable "
             + "resuming execution after rolling back to a savepoint.");
     checkTimedOut();
+    if (transactionStarted == null) {
+      transactionStarted = Timestamp.now();
+    }
   }
 
   private void checkTimedOut() {
@@ -385,7 +385,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<Void> executeDdlAsync(ParsedStatement ddl) {
+  public ApiFuture<Void> executeDdlAsync(CallType callType, ParsedStatement ddl) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "DDL-statements are not allowed inside a read/write transaction.");
@@ -400,6 +400,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public ApiFuture<ResultSet> executeQueryAsync(
+      final CallType callType,
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
@@ -407,12 +408,13 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         (statement.getType() == StatementType.QUERY)
             || (statement.getType() == StatementType.UPDATE && statement.hasReturningClause()),
         "Statement must be a query or DML with returning clause");
-    checkValidTransaction(statement);
+    checkOrCreateValidTransaction(statement, callType);
 
     ApiFuture<ResultSet> res;
     if (retryAbortsInternally && txContextFuture != null) {
       res =
           executeStatementAsync(
+              callType,
               statement,
               () -> {
                 checkTimedOut();
@@ -441,7 +443,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               InterceptorsUsage.IGNORE_INTERCEPTORS,
               ImmutableList.of(SpannerGrpc.getExecuteStreamingSqlMethod()));
     } else {
-      res = super.executeQueryAsync(statement, analyzeMode, options);
+      res = super.executeQueryAsync(callType, statement, analyzeMode, options);
     }
     ApiFutures.addCallback(
         res,
@@ -462,18 +464,18 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public ApiFuture<ResultSet> analyzeUpdateAsync(
-      ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
+      CallType callType, ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     return ApiFutures.transform(
-        internalExecuteUpdateAsync(update, analyzeMode, options),
+        internalExecuteUpdateAsync(callType, update, analyzeMode, options),
         Tuple::y,
         MoreExecutors.directExecutor());
   }
 
   @Override
   public ApiFuture<Long> executeUpdateAsync(
-      final ParsedStatement update, final UpdateOption... options) {
+      CallType callType, final ParsedStatement update, final UpdateOption... options) {
     return ApiFutures.transform(
-        internalExecuteUpdateAsync(update, AnalyzeMode.NONE, options),
+        internalExecuteUpdateAsync(callType, update, AnalyzeMode.NONE, options),
         Tuple::x,
         MoreExecutors.directExecutor());
   }
@@ -491,14 +493,15 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
    * mode.
    */
   private ApiFuture<Tuple<Long, ResultSet>> internalExecuteUpdateAsync(
-      ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
+      CallType callType, ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "The statement is not an update statement");
-    checkValidTransaction(update);
+    checkOrCreateValidTransaction(update, callType);
     ApiFuture<Tuple<Long, ResultSet>> res;
     if (retryAbortsInternally && txContextFuture != null) {
       res =
           executeStatementAsync(
+              callType,
               update,
               () -> {
                 checkTimedOut();
@@ -544,6 +547,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     } else {
       res =
           executeStatementAsync(
+              callType,
               update,
               () -> {
                 checkTimedOut();
@@ -579,7 +583,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(
-      Iterable<ParsedStatement> updates, final UpdateOption... options) {
+      CallType callType, Iterable<ParsedStatement> updates, final UpdateOption... options) {
     Preconditions.checkNotNull(updates);
     final List<Statement> updateStatements = new LinkedList<>();
     for (ParsedStatement update : updates) {
@@ -588,12 +592,13 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           "Statement is not an update statement: " + update.getSqlWithoutComments());
       updateStatements.add(update.getStatement());
     }
-    checkValidTransaction(Iterables.getFirst(updates, null));
+    checkOrCreateValidTransaction(Iterables.getFirst(updates, null), callType);
 
     ApiFuture<long[]> res;
     if (retryAbortsInternally) {
       res =
           executeStatementAsync(
+              callType,
               RUN_BATCH_STATEMENT,
               () -> {
                 checkTimedOut();
@@ -623,6 +628,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     } else {
       res =
           executeStatementAsync(
+              callType,
               RUN_BATCH_STATEMENT,
               () -> {
                 checkTimedOut();
@@ -649,10 +655,12 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<Void> writeAsync(Iterable<Mutation> mutations) {
+  public ApiFuture<Void> writeAsync(CallType callType, Iterable<Mutation> mutations) {
     Preconditions.checkNotNull(mutations);
-    // We actually don't need a transaction yet, as mutations are buffered until commit.
-    checkValidTransaction(null);
+    // We actually don't need an underlying transaction yet, as mutations are buffered until commit.
+    // But we do need to verify that this transaction is valid, and to mark the start of the
+    // transaction.
+    checkValidStateAndMarkStarted();
     for (Mutation mutation : mutations) {
       this.mutations.add(checkNotNull(mutation));
     }
@@ -673,8 +681,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       };
 
   @Override
-  public ApiFuture<Void> commitAsync() {
-    checkValidTransaction(COMMIT_STATEMENT);
+  public ApiFuture<Void> commitAsync(CallType callType) {
+    checkOrCreateValidTransaction(COMMIT_STATEMENT, callType);
     state = UnitOfWorkState.COMMITTING;
     commitResponseFuture = SettableApiFuture.create();
     ApiFuture<Void> res;
@@ -691,6 +699,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     } else if (retryAbortsInternally) {
       res =
           executeStatementAsync(
+              callType,
               COMMIT_STATEMENT,
               () -> {
                 checkTimedOut();
@@ -720,6 +729,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     } else {
       res =
           executeStatementAsync(
+              callType,
               COMMIT_STATEMENT,
               () -> {
                 checkTimedOut();
@@ -993,11 +1003,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       };
 
   @Override
-  public ApiFuture<Void> rollbackAsync() {
-    return rollbackAsync(true);
+  public ApiFuture<Void> rollbackAsync(CallType callType) {
+    return rollbackAsync(callType, true);
   }
 
-  private ApiFuture<Void> rollbackAsync(boolean updateStatus) {
+  private ApiFuture<Void> rollbackAsync(CallType callType, boolean updateStatus) {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED || state == UnitOfWorkState.ABORTED,
         "This transaction has status " + state.name());
@@ -1006,7 +1016,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     }
     if (txContextFuture != null && state != UnitOfWorkState.ABORTED) {
       return executeStatementAsync(
-          ROLLBACK_STATEMENT, rollbackCallable, SpannerGrpc.getRollbackMethod());
+          callType, ROLLBACK_STATEMENT, rollbackCallable, SpannerGrpc.getRollbackMethod());
     } else {
       return ApiFutures.immediateFuture(null);
     }
@@ -1045,7 +1055,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   @Override
   void rollbackToSavepoint(Savepoint savepoint) {
-    get(rollbackAsync(false));
+    get(rollbackAsync(CallType.SYNC, false));
     // Mark the state of the transaction as rolled back to a savepoint. This will ensure that the
     // transaction will retry the next time a statement is actually executed.
     this.rolledBackToSavepointException =
