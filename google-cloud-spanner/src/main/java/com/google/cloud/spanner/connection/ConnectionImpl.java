@@ -193,6 +193,7 @@ class ConnectionImpl implements Connection {
   private boolean autocommit;
   private boolean readOnly;
   private boolean returnCommitStats;
+  private boolean delayTransactionStartUntilFirstWrite;
 
   private UnitOfWork currentUnitOfWork = null;
   /**
@@ -239,6 +240,7 @@ class ConnectionImpl implements Connection {
     this.queryOptions = this.queryOptions.toBuilder().mergeFrom(options.getQueryOptions()).build();
     this.rpcPriority = options.getRPCPriority();
     this.returnCommitStats = options.isReturnCommitStats();
+    this.delayTransactionStartUntilFirstWrite = options.isDelayTransactionStartUntilFirstWrite();
     this.ddlClient = createDdlClient();
     setDefaultTransactionOptions();
   }
@@ -742,6 +744,22 @@ class ConnectionImpl implements Connection {
   public boolean isReturnCommitStats() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     return this.returnCommitStats;
+  }
+
+  @Override
+  public void setDelayTransactionStartUntilFirstWrite(
+      boolean delayTransactionStartUntilFirstWrite) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(),
+        "Cannot set DelayTransactionStartUntilFirstWrite while a transaction is active");
+    this.delayTransactionStartUntilFirstWrite = delayTransactionStartUntilFirstWrite;
+  }
+
+  @Override
+  public boolean isDelayTransactionStartUntilFirstWrite() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.delayTransactionStartUntilFirstWrite;
   }
 
   /** Resets this connection to its default transaction options. */
@@ -1376,6 +1394,7 @@ class ConnectionImpl implements Connection {
         case READ_WRITE_TRANSACTION:
           return ReadWriteTransaction.newBuilder()
               .setDatabaseClient(dbClient)
+              .setDelayTransactionStartUntilFirstWrite(delayTransactionStartUntilFirstWrite)
               .setRetryAbortsInternally(retryAbortsInternally)
               .setSavepointSupport(savepointSupport)
               .setReturnCommitStats(returnCommitStats)

@@ -57,7 +57,7 @@ final class FailedBatchUpdate implements RetriableStatement {
         .invokeInterceptors(
             RUN_BATCH_STATEMENT, StatementExecutionStep.RETRY_STATEMENT, transaction);
     try {
-      transaction.getReadContext().batchUpdate(statements);
+      transaction.getTransactionContext().batchUpdate(statements);
     } catch (AbortedException e) {
       // Propagate abort to force a new retry.
       throw e;

@@ -99,10 +99,12 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
   abstract void checkAborted();
 
   /**
-   * Check that the current transaction actually has a valid underlying transaction. If not, the
-   * method will throw a {@link SpannerException}.
+   * Check that the current transaction actually has a valid underlying transaction and creates it
+   * if necessary. If the transaction does not have a valid underlying transaction and/or is not in
+   * a state that allows the creation of a transaction, the method will throw a {@link
+   * SpannerException}.
    */
-  abstract void checkValidTransaction(CallType callType);
+  abstract void checkOrCreateValidTransaction(ParsedStatement statement, CallType callType);
 
   /** Returns the {@link ReadContext} that can be used for queries on this transaction. */
   abstract ReadContext getReadContext();
@@ -114,7 +116,7 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
     Preconditions.checkArgument(statement.isQuery(), "Statement is not a query");
-    checkValidTransaction(callType);
+    checkOrCreateValidTransaction(statement, callType);
     return executeStatementAsync(
         callType,
         statement,
