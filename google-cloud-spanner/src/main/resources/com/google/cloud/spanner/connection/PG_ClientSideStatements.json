@@ -224,13 +224,16 @@
       "examplePrerequisiteStatements": ["begin transaction"]
     },
     {
-      "name": "ROLLBACK [TRANSACTION | WORK] [AND NO CHAIN]",
+      "name": "{ROLLBACK | ABORT} [TRANSACTION | WORK] [AND NO CHAIN]",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "NO_RESULT",
       "statementType": "ROLLBACK",
-      "regex": "(?is)\\A\\s*(?:rollback)(?:\\s+transaction|\\s+work)?(?:\\s+and\\s+no\\s+chain)?\\s*\\z",
+      "regex": "(?is)\\A\\s*(?:rollback|abort)(?:\\s+transaction|\\s+work)?(?:\\s+and\\s+no\\s+chain)?\\s*\\z",
       "method": "statementRollback",
-      "exampleStatements": ["rollback", "rollback transaction", "rollback work", "rollback and no chain", "rollback transaction and no chain", "rollback work and no chain"],
+      "exampleStatements": [
+        "rollback", "rollback transaction", "rollback work", "rollback and no chain", "rollback transaction and no chain", "rollback work and no chain",
+        "abort", "abort transaction", "abort work", "abort and no chain", "abort transaction and no chain", "abort work and no chain"
+      ],
       "examplePrerequisiteStatements": ["begin transaction"]
     },
     {
