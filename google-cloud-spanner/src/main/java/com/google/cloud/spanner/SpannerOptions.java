@@ -994,12 +994,25 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Disables automatic retries of administrative requests that fail if the <a
+     * href="https://cloud.google.com/spanner/quotas#administrative_limits">https://cloud.google.com/spanner/quotas#administrative_limits</a>
+     * have been exceeded. You should disable these retries if you intend to handle these errors in
+     * your application.
+     */
+    public Builder disableAdministrativeRequestRetries() {
+      this.retryAdministrativeRequestsSettings =
+          this.retryAdministrativeRequestsSettings.toBuilder().setMaxAttempts(1).build();
+      return this;
+    }
+
+    /**
      * Sets the retry settings for retrying administrative requests when the quote of administrative
      * requests per minute has been exceeded.
      */
     Builder setRetryAdministrativeRequestsSettings(
         RetrySettings retryAdministrativeRequestsSettings) {
-      this.retryAdministrativeRequestsSettings = retryAdministrativeRequestsSettings;
+      this.retryAdministrativeRequestsSettings =
+          Preconditions.checkNotNull(retryAdministrativeRequestsSettings);
       return this;
     }
 
