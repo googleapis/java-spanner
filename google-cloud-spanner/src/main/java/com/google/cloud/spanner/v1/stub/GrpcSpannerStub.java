@@ -30,6 +30,8 @@ import com.google.longrunning.stub.GrpcOperationsStub;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -156,6 +158,15 @@ public class GrpcSpannerStub extends SpannerStub {
               .setResponseMarshaller(ProtoUtils.marshaller(PartialResultSet.getDefaultInstance()))
               .build();
 
+  private static final MethodDescriptor<BatchWriteRequest, BatchWriteResponse>
+      batchWriteMethodDescriptor =
+          MethodDescriptor.<BatchWriteRequest, BatchWriteResponse>newBuilder()
+              .setType(MethodDescriptor.MethodType.SERVER_STREAMING)
+              .setFullMethodName("google.spanner.v1.Spanner/BatchWrite")
+              .setRequestMarshaller(ProtoUtils.marshaller(BatchWriteRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(BatchWriteResponse.getDefaultInstance()))
+              .build();
+
   private static final MethodDescriptor<BeginTransactionRequest, Transaction>
       beginTransactionMethodDescriptor =
           MethodDescriptor.<BeginTransactionRequest, Transaction>newBuilder()
@@ -217,6 +228,7 @@ public class GrpcSpannerStub extends SpannerStub {
       executeBatchDmlCallable;
   private final UnaryCallable<ReadRequest, ResultSet> readCallable;
   private final ServerStreamingCallable<ReadRequest, PartialResultSet> streamingReadCallable;
+  private final ServerStreamingCallable<BatchWriteRequest, BatchWriteResponse> batchWriteCallable;
   private final UnaryCallable<BeginTransactionRequest, Transaction> beginTransactionCallable;
   private final UnaryCallable<CommitRequest, CommitResponse> commitCallable;
   private final UnaryCallable<RollbackRequest, Empty> rollbackCallable;
@@ -364,6 +376,16 @@ public class GrpcSpannerStub extends SpannerStub {
                   return params.build();
                 })
             .build();
+    GrpcCallSettings<BatchWriteRequest, BatchWriteResponse> batchWriteTransportSettings =
+        GrpcCallSettings.<BatchWriteRequest, BatchWriteResponse>newBuilder()
+            .setMethodDescriptor(batchWriteMethodDescriptor)
+            .setParamsExtractor(
+                request -> {
+                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
+                  params.put("session", String.valueOf(request.getSession()));
+                  return params.build();
+                })
+            .build();
     GrpcCallSettings<BeginTransactionRequest, Transaction> beginTransactionTransportSettings =
         GrpcCallSettings.<BeginTransactionRequest, Transaction>newBuilder()
             .setMethodDescriptor(beginTransactionMethodDescriptor)
@@ -452,6 +474,9 @@ public class GrpcSpannerStub extends SpannerStub {
     this.streamingReadCallable =
         callableFactory.createServerStreamingCallable(
             streamingReadTransportSettings, settings.streamingReadSettings(), clientContext);
+    this.batchWriteCallable =
+        callableFactory.createServerStreamingCallable(
+            batchWriteTransportSettings, settings.batchWriteSettings(), clientContext);
     this.beginTransactionCallable =
         callableFactory.createUnaryCallable(
             beginTransactionTransportSettings, settings.beginTransactionSettings(), clientContext);
@@ -531,6 +556,11 @@ public class GrpcSpannerStub extends SpannerStub {
   @Override
   public ServerStreamingCallable<ReadRequest, PartialResultSet> streamingReadCallable() {
     return streamingReadCallable;
+  }
+
+  @Override
+  public ServerStreamingCallable<BatchWriteRequest, BatchWriteResponse> batchWriteCallable() {
+    return batchWriteCallable;
   }
 
   @Override

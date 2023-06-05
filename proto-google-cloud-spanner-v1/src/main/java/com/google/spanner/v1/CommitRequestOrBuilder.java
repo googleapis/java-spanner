@@ -247,5 +247,5 @@ public interface CommitRequestOrBuilder
    */
   com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder();
 
-  public com.google.spanner.v1.CommitRequest.TransactionCase getTransactionCase();
+  com.google.spanner.v1.CommitRequest.TransactionCase getTransactionCase();
 }

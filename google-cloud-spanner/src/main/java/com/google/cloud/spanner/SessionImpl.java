@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.SettableApiFuture;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
@@ -35,6 +36,8 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.RequestOptions;
@@ -187,6 +190,45 @@ class SessionImpl implements Session {
       com.google.spanner.v1.CommitResponse response =
           spanner.getRpc().commit(requestBuilder.build(), this.options);
       return new CommitResponse(response);
+    } catch (RuntimeException e) {
+      TraceUtil.setWithFailure(span, e);
+      throw e;
+    } finally {
+      span.end(TraceUtil.END_SPAN_OPTIONS);
+    }
+  }
+
+  @Override
+  public ServerStream<BatchWriteResponse> batchWriteAtleastOnce(Iterable<Mutation> mutations)
+      throws SpannerException {
+    return batchWriteAtleastOnceWithOptions(mutations);
+  }
+
+  @Override
+  public ServerStream<BatchWriteResponse> batchWriteAtleastOnceWithOptions(
+      Iterable<Mutation> mutations, TransactionOption... transactionOptions)
+      throws SpannerException {
+    setActive(null);
+    Options batchWriteRequestOptions = Options.fromTransactionOptions(transactionOptions);
+    List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
+    Mutation.toProto(mutations, mutationsProto);
+    final BatchWriteRequest.Builder requestBuilder =
+        BatchWriteRequest.newBuilder().setSession(name).addAllMutations(mutationsProto);
+    if (batchWriteRequestOptions.hasPriority() || batchWriteRequestOptions.hasTag()) {
+      RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
+      if (batchWriteRequestOptions.hasPriority()) {
+        requestOptionsBuilder.setPriority(batchWriteRequestOptions.priority());
+      }
+      if (batchWriteRequestOptions.hasTag()) {
+        requestOptionsBuilder.setTransactionTag(batchWriteRequestOptions.tag());
+      }
+      requestBuilder.setRequestOptions(requestOptionsBuilder.build());
+    }
+    Span span = tracer.spanBuilder(SpannerImpl.BATCH_WRITE).startSpan();
+    try (Scope s = tracer.withSpan(span)) {
+      ServerStream<BatchWriteResponse> response =
+          spanner.getRpc().batchWriteAtleastOnce(requestBuilder.build(), this.options);
+      return response;
     } catch (RuntimeException e) {
       TraceUtil.setWithFailure(span, e);
       throw e;

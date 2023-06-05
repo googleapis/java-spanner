@@ -43,6 +43,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
@@ -67,6 +68,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.Empty;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.ResultSetStats;
 import io.opencensus.common.Scope;
 import io.opencensus.metrics.DerivedLongCumulative;
@@ -1171,6 +1173,22 @@ class SessionPool {
     }
 
     @Override
+    public ServerStream<BatchWriteResponse> batchWriteAtleastOnce(Iterable<Mutation> mutations)
+        throws SpannerException {
+      return batchWriteAtleastOnceWithOptions(mutations);
+    }
+
+    @Override
+    public ServerStream<BatchWriteResponse> batchWriteAtleastOnceWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      try {
+        return get().batchWriteAtleastOnceWithOptions(mutations, options);
+      } finally {
+        close();
+      }
+    }
+
+    @Override
     public ReadContext singleUse() {
       try {
         return new AutoClosingReadContext<>(
@@ -1412,6 +1430,23 @@ class SessionPool {
       try {
         markUsed();
         return delegate.writeAtLeastOnceWithOptions(mutations, options);
+      } catch (SpannerException e) {
+        throw lastException = e;
+      }
+    }
+
+    @Override
+    public ServerStream<BatchWriteResponse> batchWriteAtleastOnce(Iterable<Mutation> mutations)
+        throws SpannerException {
+      return batchWriteAtleastOnceWithOptions(mutations);
+    }
+
+    @Override
+    public ServerStream<BatchWriteResponse> batchWriteAtleastOnceWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      try {
+        markUsed();
+        return delegate.batchWriteAtleastOnceWithOptions(mutations, options);
       } catch (SpannerException e) {
         throw lastException = e;
       }

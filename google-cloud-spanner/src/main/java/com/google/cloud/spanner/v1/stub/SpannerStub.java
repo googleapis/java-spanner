@@ -24,6 +24,8 @@ import com.google.api.gax.rpc.UnaryCallable;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -99,6 +101,10 @@ public abstract class SpannerStub implements BackgroundResource {
 
   public ServerStreamingCallable<ReadRequest, PartialResultSet> streamingReadCallable() {
     throw new UnsupportedOperationException("Not implemented: streamingReadCallable()");
+  }
+
+  public ServerStreamingCallable<BatchWriteRequest, BatchWriteResponse> batchWriteCallable() {
+    throw new UnsupportedOperationException("Not implemented: batchWriteCallable()");
   }
 
   public UnaryCallable<BeginTransactionRequest, Transaction> beginTransactionCallable() {

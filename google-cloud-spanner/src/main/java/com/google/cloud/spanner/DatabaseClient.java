@@ -16,10 +16,12 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.spanner.v1.BatchWriteResponse;
 
 /**
  * Interface for all the APIs that are used to read/write data into a Cloud Spanner database. An
@@ -189,6 +191,12 @@ public interface DatabaseClient {
    * @return a response with the timestamp at which the write was committed
    */
   CommitResponse writeAtLeastOnceWithOptions(
+      Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException;
+
+  ServerStream<BatchWriteResponse> batchWriteAtleastOnce(Iterable<Mutation> mutations)
+      throws SpannerException;
+
+  ServerStream<BatchWriteResponse> batchWriteAtleastOnceWithOptions(
       Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException;
 
   /**

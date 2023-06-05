@@ -156,6 +156,8 @@ import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -1658,6 +1660,14 @@ public class GapicSpannerRpc implements SpannerRpc {
     // Override any timeout settings that might have been set on the call context.
     context = context.withTimeout(timeout).withStreamWaitTimeout(timeout);
     return partitionedDmlStub.executeStreamingSqlCallable().call(request, context);
+  }
+
+  @Override
+  public ServerStream<BatchWriteResponse> batchWriteAtleastOnce(
+      BatchWriteRequest request, @Nullable Map<Option, ?> options) {
+    GrpcCallContext context =
+        newCallContext(options, request.getSession(), request, SpannerGrpc.getBatchWriteMethod());
+    return spannerStub.batchWriteCallable().call(request, context);
   }
 
   @Override

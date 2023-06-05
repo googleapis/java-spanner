@@ -51,6 +51,8 @@ import com.google.common.collect.Lists;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -136,6 +138,8 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
       executeBatchDmlSettings;
   private final UnaryCallSettings<ReadRequest, ResultSet> readSettings;
   private final ServerStreamingCallSettings<ReadRequest, PartialResultSet> streamingReadSettings;
+  private final ServerStreamingCallSettings<BatchWriteRequest, BatchWriteResponse>
+      batchWriteSettings;
   private final UnaryCallSettings<BeginTransactionRequest, Transaction> beginTransactionSettings;
   private final UnaryCallSettings<CommitRequest, CommitResponse> commitSettings;
   private final UnaryCallSettings<RollbackRequest, Empty> rollbackSettings;
@@ -247,6 +251,11 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
   /** Returns the object with the settings used for calls to streamingRead. */
   public ServerStreamingCallSettings<ReadRequest, PartialResultSet> streamingReadSettings() {
     return streamingReadSettings;
+  }
+
+  /** Returns the object with the settings used for calls to batchWrite. */
+  public ServerStreamingCallSettings<BatchWriteRequest, BatchWriteResponse> batchWriteSettings() {
+    return batchWriteSettings;
   }
 
   /** Returns the object with the settings used for calls to beginTransaction. */
@@ -388,6 +397,7 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     executeBatchDmlSettings = settingsBuilder.executeBatchDmlSettings().build();
     readSettings = settingsBuilder.readSettings().build();
     streamingReadSettings = settingsBuilder.streamingReadSettings().build();
+    batchWriteSettings = settingsBuilder.batchWriteSettings().build();
     beginTransactionSettings = settingsBuilder.beginTransactionSettings().build();
     commitSettings = settingsBuilder.commitSettings().build();
     rollbackSettings = settingsBuilder.rollbackSettings().build();
@@ -414,6 +424,8 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     private final UnaryCallSettings.Builder<ReadRequest, ResultSet> readSettings;
     private final ServerStreamingCallSettings.Builder<ReadRequest, PartialResultSet>
         streamingReadSettings;
+    private final ServerStreamingCallSettings.Builder<BatchWriteRequest, BatchWriteResponse>
+        batchWriteSettings;
     private final UnaryCallSettings.Builder<BeginTransactionRequest, Transaction>
         beginTransactionSettings;
     private final UnaryCallSettings.Builder<CommitRequest, CommitResponse> commitSettings;
@@ -439,6 +451,7 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
           ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList(StatusCode.Code.UNAVAILABLE)));
       definitions.put(
           "no_retry_0_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
+      definitions.put("no_retry_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
       RETRYABLE_CODE_DEFINITIONS = definitions.build();
     }
 
@@ -488,6 +501,8 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
               .setTotalTimeout(Duration.ofMillis(3600000L))
               .build();
       definitions.put("no_retry_0_params", settings);
+      settings = RetrySettings.newBuilder().setRpcTimeoutMultiplier(1.0).build();
+      definitions.put("no_retry_params", settings);
       RETRY_PARAM_DEFINITIONS = definitions.build();
     }
 
@@ -508,6 +523,7 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
       executeBatchDmlSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       readSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       streamingReadSettings = ServerStreamingCallSettings.newBuilder();
+      batchWriteSettings = ServerStreamingCallSettings.newBuilder();
       beginTransactionSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       commitSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       rollbackSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
@@ -545,6 +561,7 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
       executeBatchDmlSettings = settings.executeBatchDmlSettings.toBuilder();
       readSettings = settings.readSettings.toBuilder();
       streamingReadSettings = settings.streamingReadSettings.toBuilder();
+      batchWriteSettings = settings.batchWriteSettings.toBuilder();
       beginTransactionSettings = settings.beginTransactionSettings.toBuilder();
       commitSettings = settings.commitSettings.toBuilder();
       rollbackSettings = settings.rollbackSettings.toBuilder();
@@ -646,6 +663,11 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_0_params"));
 
       builder
+          .batchWriteSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"));
+
+      builder
           .beginTransactionSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
@@ -742,6 +764,12 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     public ServerStreamingCallSettings.Builder<ReadRequest, PartialResultSet>
         streamingReadSettings() {
       return streamingReadSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to batchWrite. */
+    public ServerStreamingCallSettings.Builder<BatchWriteRequest, BatchWriteResponse>
+        batchWriteSettings() {
+      return batchWriteSettings;
     }
 
     /** Returns the builder for the settings used for calls to beginTransaction. */

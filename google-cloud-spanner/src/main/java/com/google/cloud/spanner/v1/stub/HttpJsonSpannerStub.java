@@ -35,6 +35,8 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.TypeRegistry;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -434,6 +436,43 @@ public class HttpJsonSpannerStub extends SpannerStub {
                       .build())
               .build();
 
+  private static final ApiMethodDescriptor<BatchWriteRequest, BatchWriteResponse>
+      batchWriteMethodDescriptor =
+          ApiMethodDescriptor.<BatchWriteRequest, BatchWriteResponse>newBuilder()
+              .setFullMethodName("google.spanner.v1.Spanner/BatchWrite")
+              .setHttpMethod("POST")
+              .setType(ApiMethodDescriptor.MethodType.SERVER_STREAMING)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<BatchWriteRequest>newBuilder()
+                      .setPath(
+                          "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:batchWrite",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<BatchWriteRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "session", request.getSession());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<BatchWriteRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(
+                          request ->
+                              ProtoRestSerializer.create()
+                                  .toBody("*", request.toBuilder().clearSession().build(), true))
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<BatchWriteResponse>newBuilder()
+                      .setDefaultInstance(BatchWriteResponse.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .build();
+
   private static final ApiMethodDescriptor<BeginTransactionRequest, Transaction>
       beginTransactionMethodDescriptor =
           ApiMethodDescriptor.<BeginTransactionRequest, Transaction>newBuilder()
@@ -632,6 +671,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
       executeBatchDmlCallable;
   private final UnaryCallable<ReadRequest, ResultSet> readCallable;
   private final ServerStreamingCallable<ReadRequest, PartialResultSet> streamingReadCallable;
+  private final ServerStreamingCallable<BatchWriteRequest, BatchWriteResponse> batchWriteCallable;
   private final UnaryCallable<BeginTransactionRequest, Transaction> beginTransactionCallable;
   private final UnaryCallable<CommitRequest, CommitResponse> commitCallable;
   private final UnaryCallable<RollbackRequest, Empty> rollbackCallable;
@@ -730,6 +770,11 @@ public class HttpJsonSpannerStub extends SpannerStub {
             .setMethodDescriptor(streamingReadMethodDescriptor)
             .setTypeRegistry(typeRegistry)
             .build();
+    HttpJsonCallSettings<BatchWriteRequest, BatchWriteResponse> batchWriteTransportSettings =
+        HttpJsonCallSettings.<BatchWriteRequest, BatchWriteResponse>newBuilder()
+            .setMethodDescriptor(batchWriteMethodDescriptor)
+            .setTypeRegistry(typeRegistry)
+            .build();
     HttpJsonCallSettings<BeginTransactionRequest, Transaction> beginTransactionTransportSettings =
         HttpJsonCallSettings.<BeginTransactionRequest, Transaction>newBuilder()
             .setMethodDescriptor(beginTransactionMethodDescriptor)
@@ -793,6 +838,9 @@ public class HttpJsonSpannerStub extends SpannerStub {
     this.streamingReadCallable =
         callableFactory.createServerStreamingCallable(
             streamingReadTransportSettings, settings.streamingReadSettings(), clientContext);
+    this.batchWriteCallable =
+        callableFactory.createServerStreamingCallable(
+            batchWriteTransportSettings, settings.batchWriteSettings(), clientContext);
     this.beginTransactionCallable =
         callableFactory.createUnaryCallable(
             beginTransactionTransportSettings, settings.beginTransactionSettings(), clientContext);
@@ -826,6 +874,7 @@ public class HttpJsonSpannerStub extends SpannerStub {
     methodDescriptors.add(executeBatchDmlMethodDescriptor);
     methodDescriptors.add(readMethodDescriptor);
     methodDescriptors.add(streamingReadMethodDescriptor);
+    methodDescriptors.add(batchWriteMethodDescriptor);
     methodDescriptors.add(beginTransactionMethodDescriptor);
     methodDescriptors.add(commitMethodDescriptor);
     methodDescriptors.add(rollbackMethodDescriptor);
@@ -889,6 +938,11 @@ public class HttpJsonSpannerStub extends SpannerStub {
   @Override
   public ServerStreamingCallable<ReadRequest, PartialResultSet> streamingReadCallable() {
     return streamingReadCallable;
+  }
+
+  @Override
+  public ServerStreamingCallable<BatchWriteRequest, BatchWriteResponse> batchWriteCallable() {
+    return batchWriteCallable;
   }
 
   @Override

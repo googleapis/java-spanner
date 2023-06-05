@@ -47,11 +47,6 @@ public final class QueryPlan extends com.google.protobuf.GeneratedMessageV3
     return new QueryPlan();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.QueryPlanProto
         .internal_static_google_spanner_v1_QueryPlan_descriptor;

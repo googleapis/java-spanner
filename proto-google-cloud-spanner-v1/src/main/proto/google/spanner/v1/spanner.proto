@@ -200,6 +200,20 @@ service Spanner {
     };
   }
 
+  // Batches the supplied mutations in a collection of efficient transactions.
+  // The mutations are applied non-atomically in an unspecified order and
+  // thus, they must be independent of each other. Partial failure is possible,
+  // i.e., some mutations may have been applied successfully, while some may
+  // have failed. The results of individual batches are streamed into the
+  // response as and when the batches are applied.
+  rpc BatchWrite(BatchWriteRequest) returns (stream BatchWriteResponse) {
+    option (google.api.http) = {
+      post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:batchWrite"
+      body: "*"
+    };
+    option (google.api.method_signature) = "session,mutations";
+  }
+
   // Begins a new transaction. This step can often be skipped:
   // [Read][google.spanner.v1.Spanner.Read], [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] and
   // [Commit][google.spanner.v1.Spanner.Commit] can begin a new transaction as a
@@ -302,6 +316,37 @@ message CreateSessionRequest {
 
   // Required. The session to create.
   Session session = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// The request for [BatchWrite][Spanner.BatchWrite].
+message BatchWriteRequest {
+  // The session in which the batch request is to be run.
+  string session = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "spanner.googleapis.com/Session"
+  ];
+
+  // The mutations to be applied non-atomically.
+  repeated Mutation mutations = 2 [
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  // Common options for this request.
+  RequestOptions request_options = 3;
+}
+
+// The result of applying a batch of mutations.
+message BatchWriteResponse {
+  // The mutations applied in this batch. The values index into the `mutations`
+  // field in the corresponding BatchWriteRequest.
+  repeated int32 indexes = 1;
+
+  // An `OK` status indicates success. Any other status indicates a failure.
+  google.rpc.Status status = 2;
+
+  // The commit timestamp of the transaction that applied this batch.
+  // Present if `status` is `OK`, absent otherwise.
+  google.protobuf.Timestamp commit_timestamp = 3;
 }
 
 // The request for [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].

@@ -22,44 +22,45 @@ package com.google.spanner.v1;
  *
  *
  * <pre>
- * The request for [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
+ * The request for [BatchWrite][Spanner.BatchWrite].
  * </pre>
  *
- * Protobuf type {@code google.spanner.v1.BeginTransactionRequest}
+ * Protobuf type {@code google.spanner.v1.BatchWriteRequest}
  */
-public final class BeginTransactionRequest extends com.google.protobuf.GeneratedMessageV3
+public final class BatchWriteRequest extends com.google.protobuf.GeneratedMessageV3
     implements
-    // @@protoc_insertion_point(message_implements:google.spanner.v1.BeginTransactionRequest)
-    BeginTransactionRequestOrBuilder {
+    // @@protoc_insertion_point(message_implements:google.spanner.v1.BatchWriteRequest)
+    BatchWriteRequestOrBuilder {
   private static final long serialVersionUID = 0L;
-  // Use BeginTransactionRequest.newBuilder() to construct.
-  private BeginTransactionRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+  // Use BatchWriteRequest.newBuilder() to construct.
+  private BatchWriteRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
 
-  private BeginTransactionRequest() {
+  private BatchWriteRequest() {
     session_ = "";
+    mutations_ = java.util.Collections.emptyList();
   }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
-    return new BeginTransactionRequest();
+    return new BatchWriteRequest();
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
-        .internal_static_google_spanner_v1_BeginTransactionRequest_descriptor;
+        .internal_static_google_spanner_v1_BatchWriteRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
     return com.google.spanner.v1.SpannerProto
-        .internal_static_google_spanner_v1_BeginTransactionRequest_fieldAccessorTable
+        .internal_static_google_spanner_v1_BatchWriteRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            com.google.spanner.v1.BeginTransactionRequest.class,
-            com.google.spanner.v1.BeginTransactionRequest.Builder.class);
+            com.google.spanner.v1.BatchWriteRequest.class,
+            com.google.spanner.v1.BatchWriteRequest.Builder.class);
   }
 
   public static final int SESSION_FIELD_NUMBER = 1;
@@ -70,7 +71,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
    *
    *
    * <pre>
-   * Required. The session in which the transaction runs.
+   * The session in which the batch request is to be run.
    * </pre>
    *
    * <code>
@@ -95,7 +96,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
    *
    *
    * <pre>
-   * Required. The session in which the transaction runs.
+   * The session in which the batch request is to be run.
    * </pre>
    *
    * <code>
@@ -117,60 +118,85 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     }
   }
 
-  public static final int OPTIONS_FIELD_NUMBER = 2;
-  private com.google.spanner.v1.TransactionOptions options_;
+  public static final int MUTATIONS_FIELD_NUMBER = 2;
+
+  @SuppressWarnings("serial")
+  private java.util.List<com.google.spanner.v1.Mutation> mutations_;
   /**
    *
    *
    * <pre>
-   * Required. Options for the new transaction.
+   * The mutations to be applied non-atomically.
    * </pre>
    *
    * <code>
-   * .google.spanner.v1.TransactionOptions options = 2 [(.google.api.field_behavior) = REQUIRED];
+   * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
    * </code>
-   *
-   * @return Whether the options field is set.
    */
   @java.lang.Override
-  public boolean hasOptions() {
-    return options_ != null;
+  public java.util.List<com.google.spanner.v1.Mutation> getMutationsList() {
+    return mutations_;
   }
   /**
    *
    *
    * <pre>
-   * Required. Options for the new transaction.
+   * The mutations to be applied non-atomically.
    * </pre>
    *
    * <code>
-   * .google.spanner.v1.TransactionOptions options = 2 [(.google.api.field_behavior) = REQUIRED];
+   * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
    * </code>
-   *
-   * @return The options.
    */
   @java.lang.Override
-  public com.google.spanner.v1.TransactionOptions getOptions() {
-    return options_ == null
-        ? com.google.spanner.v1.TransactionOptions.getDefaultInstance()
-        : options_;
+  public java.util.List<? extends com.google.spanner.v1.MutationOrBuilder>
+      getMutationsOrBuilderList() {
+    return mutations_;
   }
   /**
    *
    *
    * <pre>
-   * Required. Options for the new transaction.
+   * The mutations to be applied non-atomically.
    * </pre>
    *
    * <code>
-   * .google.spanner.v1.TransactionOptions options = 2 [(.google.api.field_behavior) = REQUIRED];
+   * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
    * </code>
    */
   @java.lang.Override
-  public com.google.spanner.v1.TransactionOptionsOrBuilder getOptionsOrBuilder() {
-    return options_ == null
-        ? com.google.spanner.v1.TransactionOptions.getDefaultInstance()
-        : options_;
+  public int getMutationsCount() {
+    return mutations_.size();
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The mutations to be applied non-atomically.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.Mutation getMutations(int index) {
+    return mutations_.get(index);
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The mutations to be applied non-atomically.
+   * </pre>
+   *
+   * <code>
+   * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.MutationOrBuilder getMutationsOrBuilder(int index) {
+    return mutations_.get(index);
   }
 
   public static final int REQUEST_OPTIONS_FIELD_NUMBER = 3;
@@ -180,10 +206,6 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
    *
    * <pre>
    * Common options for this request.
-   * Priority is ignored for this request. Setting the priority in this
-   * request_options struct will not do anything. To set the priority for a
-   * transaction, set it on the reads and writes that are part of this
-   * transaction instead.
    * </pre>
    *
    * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
@@ -199,10 +221,6 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
    *
    * <pre>
    * Common options for this request.
-   * Priority is ignored for this request. Setting the priority in this
-   * request_options struct will not do anything. To set the priority for a
-   * transaction, set it on the reads and writes that are part of this
-   * transaction instead.
    * </pre>
    *
    * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
@@ -220,10 +238,6 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
    *
    * <pre>
    * Common options for this request.
-   * Priority is ignored for this request. Setting the priority in this
-   * request_options struct will not do anything. To set the priority for a
-   * transaction, set it on the reads and writes that are part of this
-   * transaction instead.
    * </pre>
    *
    * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
@@ -252,8 +266,8 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(session_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, session_);
     }
-    if (options_ != null) {
-      output.writeMessage(2, getOptions());
+    for (int i = 0; i < mutations_.size(); i++) {
+      output.writeMessage(2, mutations_.get(i));
     }
     if (requestOptions_ != null) {
       output.writeMessage(3, getRequestOptions());
@@ -270,8 +284,8 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(session_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, session_);
     }
-    if (options_ != null) {
-      size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getOptions());
+    for (int i = 0; i < mutations_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, mutations_.get(i));
     }
     if (requestOptions_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(3, getRequestOptions());
@@ -286,17 +300,13 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof com.google.spanner.v1.BeginTransactionRequest)) {
+    if (!(obj instanceof com.google.spanner.v1.BatchWriteRequest)) {
       return super.equals(obj);
     }
-    com.google.spanner.v1.BeginTransactionRequest other =
-        (com.google.spanner.v1.BeginTransactionRequest) obj;
+    com.google.spanner.v1.BatchWriteRequest other = (com.google.spanner.v1.BatchWriteRequest) obj;
 
     if (!getSession().equals(other.getSession())) return false;
-    if (hasOptions() != other.hasOptions()) return false;
-    if (hasOptions()) {
-      if (!getOptions().equals(other.getOptions())) return false;
-    }
+    if (!getMutationsList().equals(other.getMutationsList())) return false;
     if (hasRequestOptions() != other.hasRequestOptions()) return false;
     if (hasRequestOptions()) {
       if (!getRequestOptions().equals(other.getRequestOptions())) return false;
@@ -314,9 +324,9 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + SESSION_FIELD_NUMBER;
     hash = (53 * hash) + getSession().hashCode();
-    if (hasOptions()) {
-      hash = (37 * hash) + OPTIONS_FIELD_NUMBER;
-      hash = (53 * hash) + getOptions().hashCode();
+    if (getMutationsCount() > 0) {
+      hash = (37 * hash) + MUTATIONS_FIELD_NUMBER;
+      hash = (53 * hash) + getMutationsList().hashCode();
     }
     if (hasRequestOptions()) {
       hash = (37 * hash) + REQUEST_OPTIONS_FIELD_NUMBER;
@@ -327,71 +337,71 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     return hash;
   }
 
-  public static com.google.spanner.v1.BeginTransactionRequest parseFrom(java.nio.ByteBuffer data)
+  public static com.google.spanner.v1.BatchWriteRequest parseFrom(java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.v1.BeginTransactionRequest parseFrom(
+  public static com.google.spanner.v1.BatchWriteRequest parseFrom(
       java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.v1.BeginTransactionRequest parseFrom(
+  public static com.google.spanner.v1.BatchWriteRequest parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.v1.BeginTransactionRequest parseFrom(
+  public static com.google.spanner.v1.BatchWriteRequest parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.v1.BeginTransactionRequest parseFrom(byte[] data)
+  public static com.google.spanner.v1.BatchWriteRequest parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.v1.BeginTransactionRequest parseFrom(
+  public static com.google.spanner.v1.BatchWriteRequest parseFrom(
       byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.v1.BeginTransactionRequest parseFrom(java.io.InputStream input)
+  public static com.google.spanner.v1.BatchWriteRequest parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.v1.BeginTransactionRequest parseFrom(
+  public static com.google.spanner.v1.BatchWriteRequest parseFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.v1.BeginTransactionRequest parseDelimitedFrom(
+  public static com.google.spanner.v1.BatchWriteRequest parseDelimitedFrom(
       java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.v1.BeginTransactionRequest parseDelimitedFrom(
+  public static com.google.spanner.v1.BatchWriteRequest parseDelimitedFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.v1.BeginTransactionRequest parseFrom(
+  public static com.google.spanner.v1.BatchWriteRequest parseFrom(
       com.google.protobuf.CodedInputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.v1.BeginTransactionRequest parseFrom(
+  public static com.google.spanner.v1.BatchWriteRequest parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -408,7 +418,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     return DEFAULT_INSTANCE.toBuilder();
   }
 
-  public static Builder newBuilder(com.google.spanner.v1.BeginTransactionRequest prototype) {
+  public static Builder newBuilder(com.google.spanner.v1.BatchWriteRequest prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
 
@@ -426,31 +436,31 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
    *
    *
    * <pre>
-   * The request for [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
+   * The request for [BatchWrite][Spanner.BatchWrite].
    * </pre>
    *
-   * Protobuf type {@code google.spanner.v1.BeginTransactionRequest}
+   * Protobuf type {@code google.spanner.v1.BatchWriteRequest}
    */
   public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
       implements
-      // @@protoc_insertion_point(builder_implements:google.spanner.v1.BeginTransactionRequest)
-      com.google.spanner.v1.BeginTransactionRequestOrBuilder {
+      // @@protoc_insertion_point(builder_implements:google.spanner.v1.BatchWriteRequest)
+      com.google.spanner.v1.BatchWriteRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
       return com.google.spanner.v1.SpannerProto
-          .internal_static_google_spanner_v1_BeginTransactionRequest_descriptor;
+          .internal_static_google_spanner_v1_BatchWriteRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return com.google.spanner.v1.SpannerProto
-          .internal_static_google_spanner_v1_BeginTransactionRequest_fieldAccessorTable
+          .internal_static_google_spanner_v1_BatchWriteRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.google.spanner.v1.BeginTransactionRequest.class,
-              com.google.spanner.v1.BeginTransactionRequest.Builder.class);
+              com.google.spanner.v1.BatchWriteRequest.class,
+              com.google.spanner.v1.BatchWriteRequest.Builder.class);
     }
 
-    // Construct using com.google.spanner.v1.BeginTransactionRequest.newBuilder()
+    // Construct using com.google.spanner.v1.BatchWriteRequest.newBuilder()
     private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
@@ -462,11 +472,13 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
       super.clear();
       bitField0_ = 0;
       session_ = "";
-      options_ = null;
-      if (optionsBuilder_ != null) {
-        optionsBuilder_.dispose();
-        optionsBuilder_ = null;
+      if (mutationsBuilder_ == null) {
+        mutations_ = java.util.Collections.emptyList();
+      } else {
+        mutations_ = null;
+        mutationsBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000002);
       requestOptions_ = null;
       if (requestOptionsBuilder_ != null) {
         requestOptionsBuilder_.dispose();
@@ -478,17 +490,17 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
       return com.google.spanner.v1.SpannerProto
-          .internal_static_google_spanner_v1_BeginTransactionRequest_descriptor;
+          .internal_static_google_spanner_v1_BatchWriteRequest_descriptor;
     }
 
     @java.lang.Override
-    public com.google.spanner.v1.BeginTransactionRequest getDefaultInstanceForType() {
-      return com.google.spanner.v1.BeginTransactionRequest.getDefaultInstance();
+    public com.google.spanner.v1.BatchWriteRequest getDefaultInstanceForType() {
+      return com.google.spanner.v1.BatchWriteRequest.getDefaultInstance();
     }
 
     @java.lang.Override
-    public com.google.spanner.v1.BeginTransactionRequest build() {
-      com.google.spanner.v1.BeginTransactionRequest result = buildPartial();
+    public com.google.spanner.v1.BatchWriteRequest build() {
+      com.google.spanner.v1.BatchWriteRequest result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -496,9 +508,10 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     }
 
     @java.lang.Override
-    public com.google.spanner.v1.BeginTransactionRequest buildPartial() {
-      com.google.spanner.v1.BeginTransactionRequest result =
-          new com.google.spanner.v1.BeginTransactionRequest(this);
+    public com.google.spanner.v1.BatchWriteRequest buildPartial() {
+      com.google.spanner.v1.BatchWriteRequest result =
+          new com.google.spanner.v1.BatchWriteRequest(this);
+      buildPartialRepeatedFields(result);
       if (bitField0_ != 0) {
         buildPartial0(result);
       }
@@ -506,13 +519,22 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
       return result;
     }
 
-    private void buildPartial0(com.google.spanner.v1.BeginTransactionRequest result) {
+    private void buildPartialRepeatedFields(com.google.spanner.v1.BatchWriteRequest result) {
+      if (mutationsBuilder_ == null) {
+        if (((bitField0_ & 0x00000002) != 0)) {
+          mutations_ = java.util.Collections.unmodifiableList(mutations_);
+          bitField0_ = (bitField0_ & ~0x00000002);
+        }
+        result.mutations_ = mutations_;
+      } else {
+        result.mutations_ = mutationsBuilder_.build();
+      }
+    }
+
+    private void buildPartial0(com.google.spanner.v1.BatchWriteRequest result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000001) != 0)) {
         result.session_ = session_;
-      }
-      if (((from_bitField0_ & 0x00000002) != 0)) {
-        result.options_ = optionsBuilder_ == null ? options_ : optionsBuilder_.build();
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
         result.requestOptions_ =
@@ -555,23 +577,47 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof com.google.spanner.v1.BeginTransactionRequest) {
-        return mergeFrom((com.google.spanner.v1.BeginTransactionRequest) other);
+      if (other instanceof com.google.spanner.v1.BatchWriteRequest) {
+        return mergeFrom((com.google.spanner.v1.BatchWriteRequest) other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(com.google.spanner.v1.BeginTransactionRequest other) {
-      if (other == com.google.spanner.v1.BeginTransactionRequest.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.google.spanner.v1.BatchWriteRequest other) {
+      if (other == com.google.spanner.v1.BatchWriteRequest.getDefaultInstance()) return this;
       if (!other.getSession().isEmpty()) {
         session_ = other.session_;
         bitField0_ |= 0x00000001;
         onChanged();
       }
-      if (other.hasOptions()) {
-        mergeOptions(other.getOptions());
+      if (mutationsBuilder_ == null) {
+        if (!other.mutations_.isEmpty()) {
+          if (mutations_.isEmpty()) {
+            mutations_ = other.mutations_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            ensureMutationsIsMutable();
+            mutations_.addAll(other.mutations_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.mutations_.isEmpty()) {
+          if (mutationsBuilder_.isEmpty()) {
+            mutationsBuilder_.dispose();
+            mutationsBuilder_ = null;
+            mutations_ = other.mutations_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+            mutationsBuilder_ =
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
+                    ? getMutationsFieldBuilder()
+                    : null;
+          } else {
+            mutationsBuilder_.addAllMessages(other.mutations_);
+          }
+        }
       }
       if (other.hasRequestOptions()) {
         mergeRequestOptions(other.getRequestOptions());
@@ -610,8 +656,14 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
               } // case 10
             case 18:
               {
-                input.readMessage(getOptionsFieldBuilder().getBuilder(), extensionRegistry);
-                bitField0_ |= 0x00000002;
+                com.google.spanner.v1.Mutation m =
+                    input.readMessage(com.google.spanner.v1.Mutation.parser(), extensionRegistry);
+                if (mutationsBuilder_ == null) {
+                  ensureMutationsIsMutable();
+                  mutations_.add(m);
+                } else {
+                  mutationsBuilder_.addMessage(m);
+                }
                 break;
               } // case 18
             case 26:
@@ -644,7 +696,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * Required. The session in which the transaction runs.
+     * The session in which the batch request is to be run.
      * </pre>
      *
      * <code>
@@ -668,7 +720,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * Required. The session in which the transaction runs.
+     * The session in which the batch request is to be run.
      * </pre>
      *
      * <code>
@@ -692,7 +744,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * Required. The session in which the transaction runs.
+     * The session in which the batch request is to be run.
      * </pre>
      *
      * <code>
@@ -715,7 +767,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * Required. The session in which the transaction runs.
+     * The session in which the batch request is to be run.
      * </pre>
      *
      * <code>
@@ -734,7 +786,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * Required. The session in which the transaction runs.
+     * The session in which the batch request is to be run.
      * </pre>
      *
      * <code>
@@ -755,205 +807,386 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
       return this;
     }
 
-    private com.google.spanner.v1.TransactionOptions options_;
-    private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.TransactionOptions,
-            com.google.spanner.v1.TransactionOptions.Builder,
-            com.google.spanner.v1.TransactionOptionsOrBuilder>
-        optionsBuilder_;
-    /**
-     *
-     *
-     * <pre>
-     * Required. Options for the new transaction.
-     * </pre>
-     *
-     * <code>
-     * .google.spanner.v1.TransactionOptions options = 2 [(.google.api.field_behavior) = REQUIRED];
-     * </code>
-     *
-     * @return Whether the options field is set.
-     */
-    public boolean hasOptions() {
-      return ((bitField0_ & 0x00000002) != 0);
+    private java.util.List<com.google.spanner.v1.Mutation> mutations_ =
+        java.util.Collections.emptyList();
+
+    private void ensureMutationsIsMutable() {
+      if (!((bitField0_ & 0x00000002) != 0)) {
+        mutations_ = new java.util.ArrayList<com.google.spanner.v1.Mutation>(mutations_);
+        bitField0_ |= 0x00000002;
+      }
     }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.v1.Mutation,
+            com.google.spanner.v1.Mutation.Builder,
+            com.google.spanner.v1.MutationOrBuilder>
+        mutationsBuilder_;
+
     /**
      *
      *
      * <pre>
-     * Required. Options for the new transaction.
+     * The mutations to be applied non-atomically.
      * </pre>
      *
      * <code>
-     * .google.spanner.v1.TransactionOptions options = 2 [(.google.api.field_behavior) = REQUIRED];
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
      * </code>
-     *
-     * @return The options.
      */
-    public com.google.spanner.v1.TransactionOptions getOptions() {
-      if (optionsBuilder_ == null) {
-        return options_ == null
-            ? com.google.spanner.v1.TransactionOptions.getDefaultInstance()
-            : options_;
+    public java.util.List<com.google.spanner.v1.Mutation> getMutationsList() {
+      if (mutationsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(mutations_);
       } else {
-        return optionsBuilder_.getMessage();
+        return mutationsBuilder_.getMessageList();
       }
     }
     /**
      *
      *
      * <pre>
-     * Required. Options for the new transaction.
+     * The mutations to be applied non-atomically.
      * </pre>
      *
      * <code>
-     * .google.spanner.v1.TransactionOptions options = 2 [(.google.api.field_behavior) = REQUIRED];
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
      * </code>
      */
-    public Builder setOptions(com.google.spanner.v1.TransactionOptions value) {
-      if (optionsBuilder_ == null) {
+    public int getMutationsCount() {
+      if (mutationsBuilder_ == null) {
+        return mutations_.size();
+      } else {
+        return mutationsBuilder_.getCount();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The mutations to be applied non-atomically.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     */
+    public com.google.spanner.v1.Mutation getMutations(int index) {
+      if (mutationsBuilder_ == null) {
+        return mutations_.get(index);
+      } else {
+        return mutationsBuilder_.getMessage(index);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The mutations to be applied non-atomically.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     */
+    public Builder setMutations(int index, com.google.spanner.v1.Mutation value) {
+      if (mutationsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        options_ = value;
+        ensureMutationsIsMutable();
+        mutations_.set(index, value);
+        onChanged();
       } else {
-        optionsBuilder_.setMessage(value);
+        mutationsBuilder_.setMessage(index, value);
       }
-      bitField0_ |= 0x00000002;
-      onChanged();
       return this;
     }
     /**
      *
      *
      * <pre>
-     * Required. Options for the new transaction.
+     * The mutations to be applied non-atomically.
      * </pre>
      *
      * <code>
-     * .google.spanner.v1.TransactionOptions options = 2 [(.google.api.field_behavior) = REQUIRED];
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
      * </code>
      */
-    public Builder setOptions(com.google.spanner.v1.TransactionOptions.Builder builderForValue) {
-      if (optionsBuilder_ == null) {
-        options_ = builderForValue.build();
+    public Builder setMutations(int index, com.google.spanner.v1.Mutation.Builder builderForValue) {
+      if (mutationsBuilder_ == null) {
+        ensureMutationsIsMutable();
+        mutations_.set(index, builderForValue.build());
+        onChanged();
       } else {
-        optionsBuilder_.setMessage(builderForValue.build());
+        mutationsBuilder_.setMessage(index, builderForValue.build());
       }
-      bitField0_ |= 0x00000002;
-      onChanged();
       return this;
     }
     /**
      *
      *
      * <pre>
-     * Required. Options for the new transaction.
+     * The mutations to be applied non-atomically.
      * </pre>
      *
      * <code>
-     * .google.spanner.v1.TransactionOptions options = 2 [(.google.api.field_behavior) = REQUIRED];
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
      * </code>
      */
-    public Builder mergeOptions(com.google.spanner.v1.TransactionOptions value) {
-      if (optionsBuilder_ == null) {
-        if (((bitField0_ & 0x00000002) != 0)
-            && options_ != null
-            && options_ != com.google.spanner.v1.TransactionOptions.getDefaultInstance()) {
-          getOptionsBuilder().mergeFrom(value);
-        } else {
-          options_ = value;
+    public Builder addMutations(com.google.spanner.v1.Mutation value) {
+      if (mutationsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
         }
+        ensureMutationsIsMutable();
+        mutations_.add(value);
+        onChanged();
       } else {
-        optionsBuilder_.mergeFrom(value);
+        mutationsBuilder_.addMessage(value);
       }
-      bitField0_ |= 0x00000002;
-      onChanged();
       return this;
     }
     /**
      *
      *
      * <pre>
-     * Required. Options for the new transaction.
+     * The mutations to be applied non-atomically.
      * </pre>
      *
      * <code>
-     * .google.spanner.v1.TransactionOptions options = 2 [(.google.api.field_behavior) = REQUIRED];
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
      * </code>
      */
-    public Builder clearOptions() {
-      bitField0_ = (bitField0_ & ~0x00000002);
-      options_ = null;
-      if (optionsBuilder_ != null) {
-        optionsBuilder_.dispose();
-        optionsBuilder_ = null;
+    public Builder addMutations(int index, com.google.spanner.v1.Mutation value) {
+      if (mutationsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureMutationsIsMutable();
+        mutations_.add(index, value);
+        onChanged();
+      } else {
+        mutationsBuilder_.addMessage(index, value);
       }
-      onChanged();
       return this;
     }
     /**
      *
      *
      * <pre>
-     * Required. Options for the new transaction.
+     * The mutations to be applied non-atomically.
      * </pre>
      *
      * <code>
-     * .google.spanner.v1.TransactionOptions options = 2 [(.google.api.field_behavior) = REQUIRED];
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
      * </code>
      */
-    public com.google.spanner.v1.TransactionOptions.Builder getOptionsBuilder() {
-      bitField0_ |= 0x00000002;
-      onChanged();
-      return getOptionsFieldBuilder().getBuilder();
-    }
-    /**
-     *
-     *
-     * <pre>
-     * Required. Options for the new transaction.
-     * </pre>
-     *
-     * <code>
-     * .google.spanner.v1.TransactionOptions options = 2 [(.google.api.field_behavior) = REQUIRED];
-     * </code>
-     */
-    public com.google.spanner.v1.TransactionOptionsOrBuilder getOptionsOrBuilder() {
-      if (optionsBuilder_ != null) {
-        return optionsBuilder_.getMessageOrBuilder();
+    public Builder addMutations(com.google.spanner.v1.Mutation.Builder builderForValue) {
+      if (mutationsBuilder_ == null) {
+        ensureMutationsIsMutable();
+        mutations_.add(builderForValue.build());
+        onChanged();
       } else {
-        return options_ == null
-            ? com.google.spanner.v1.TransactionOptions.getDefaultInstance()
-            : options_;
+        mutationsBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The mutations to be applied non-atomically.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     */
+    public Builder addMutations(int index, com.google.spanner.v1.Mutation.Builder builderForValue) {
+      if (mutationsBuilder_ == null) {
+        ensureMutationsIsMutable();
+        mutations_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        mutationsBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The mutations to be applied non-atomically.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     */
+    public Builder addAllMutations(
+        java.lang.Iterable<? extends com.google.spanner.v1.Mutation> values) {
+      if (mutationsBuilder_ == null) {
+        ensureMutationsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(values, mutations_);
+        onChanged();
+      } else {
+        mutationsBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The mutations to be applied non-atomically.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     */
+    public Builder clearMutations() {
+      if (mutationsBuilder_ == null) {
+        mutations_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+      } else {
+        mutationsBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The mutations to be applied non-atomically.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     */
+    public Builder removeMutations(int index) {
+      if (mutationsBuilder_ == null) {
+        ensureMutationsIsMutable();
+        mutations_.remove(index);
+        onChanged();
+      } else {
+        mutationsBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The mutations to be applied non-atomically.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     */
+    public com.google.spanner.v1.Mutation.Builder getMutationsBuilder(int index) {
+      return getMutationsFieldBuilder().getBuilder(index);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The mutations to be applied non-atomically.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     */
+    public com.google.spanner.v1.MutationOrBuilder getMutationsOrBuilder(int index) {
+      if (mutationsBuilder_ == null) {
+        return mutations_.get(index);
+      } else {
+        return mutationsBuilder_.getMessageOrBuilder(index);
       }
     }
     /**
      *
      *
      * <pre>
-     * Required. Options for the new transaction.
+     * The mutations to be applied non-atomically.
      * </pre>
      *
      * <code>
-     * .google.spanner.v1.TransactionOptions options = 2 [(.google.api.field_behavior) = REQUIRED];
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
      * </code>
      */
-    private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.v1.TransactionOptions,
-            com.google.spanner.v1.TransactionOptions.Builder,
-            com.google.spanner.v1.TransactionOptionsOrBuilder>
-        getOptionsFieldBuilder() {
-      if (optionsBuilder_ == null) {
-        optionsBuilder_ =
-            new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.spanner.v1.TransactionOptions,
-                com.google.spanner.v1.TransactionOptions.Builder,
-                com.google.spanner.v1.TransactionOptionsOrBuilder>(
-                getOptions(), getParentForChildren(), isClean());
-        options_ = null;
+    public java.util.List<? extends com.google.spanner.v1.MutationOrBuilder>
+        getMutationsOrBuilderList() {
+      if (mutationsBuilder_ != null) {
+        return mutationsBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(mutations_);
       }
-      return optionsBuilder_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The mutations to be applied non-atomically.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     */
+    public com.google.spanner.v1.Mutation.Builder addMutationsBuilder() {
+      return getMutationsFieldBuilder()
+          .addBuilder(com.google.spanner.v1.Mutation.getDefaultInstance());
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The mutations to be applied non-atomically.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     */
+    public com.google.spanner.v1.Mutation.Builder addMutationsBuilder(int index) {
+      return getMutationsFieldBuilder()
+          .addBuilder(index, com.google.spanner.v1.Mutation.getDefaultInstance());
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The mutations to be applied non-atomically.
+     * </pre>
+     *
+     * <code>
+     * repeated .google.spanner.v1.Mutation mutations = 2 [(.google.api.field_behavior) = REQUIRED];
+     * </code>
+     */
+    public java.util.List<com.google.spanner.v1.Mutation.Builder> getMutationsBuilderList() {
+      return getMutationsFieldBuilder().getBuilderList();
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.v1.Mutation,
+            com.google.spanner.v1.Mutation.Builder,
+            com.google.spanner.v1.MutationOrBuilder>
+        getMutationsFieldBuilder() {
+      if (mutationsBuilder_ == null) {
+        mutationsBuilder_ =
+            new com.google.protobuf.RepeatedFieldBuilderV3<
+                com.google.spanner.v1.Mutation,
+                com.google.spanner.v1.Mutation.Builder,
+                com.google.spanner.v1.MutationOrBuilder>(
+                mutations_, ((bitField0_ & 0x00000002) != 0), getParentForChildren(), isClean());
+        mutations_ = null;
+      }
+      return mutationsBuilder_;
     }
 
     private com.google.spanner.v1.RequestOptions requestOptions_;
@@ -967,10 +1200,6 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      *
      * <pre>
      * Common options for this request.
-     * Priority is ignored for this request. Setting the priority in this
-     * request_options struct will not do anything. To set the priority for a
-     * transaction, set it on the reads and writes that are part of this
-     * transaction instead.
      * </pre>
      *
      * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
@@ -985,10 +1214,6 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      *
      * <pre>
      * Common options for this request.
-     * Priority is ignored for this request. Setting the priority in this
-     * request_options struct will not do anything. To set the priority for a
-     * transaction, set it on the reads and writes that are part of this
-     * transaction instead.
      * </pre>
      *
      * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
@@ -1009,10 +1234,6 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      *
      * <pre>
      * Common options for this request.
-     * Priority is ignored for this request. Setting the priority in this
-     * request_options struct will not do anything. To set the priority for a
-     * transaction, set it on the reads and writes that are part of this
-     * transaction instead.
      * </pre>
      *
      * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
@@ -1035,10 +1256,6 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      *
      * <pre>
      * Common options for this request.
-     * Priority is ignored for this request. Setting the priority in this
-     * request_options struct will not do anything. To set the priority for a
-     * transaction, set it on the reads and writes that are part of this
-     * transaction instead.
      * </pre>
      *
      * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
@@ -1058,10 +1275,6 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      *
      * <pre>
      * Common options for this request.
-     * Priority is ignored for this request. Setting the priority in this
-     * request_options struct will not do anything. To set the priority for a
-     * transaction, set it on the reads and writes that are part of this
-     * transaction instead.
      * </pre>
      *
      * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
@@ -1087,10 +1300,6 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      *
      * <pre>
      * Common options for this request.
-     * Priority is ignored for this request. Setting the priority in this
-     * request_options struct will not do anything. To set the priority for a
-     * transaction, set it on the reads and writes that are part of this
-     * transaction instead.
      * </pre>
      *
      * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
@@ -1110,10 +1319,6 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      *
      * <pre>
      * Common options for this request.
-     * Priority is ignored for this request. Setting the priority in this
-     * request_options struct will not do anything. To set the priority for a
-     * transaction, set it on the reads and writes that are part of this
-     * transaction instead.
      * </pre>
      *
      * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
@@ -1128,10 +1333,6 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      *
      * <pre>
      * Common options for this request.
-     * Priority is ignored for this request. Setting the priority in this
-     * request_options struct will not do anything. To set the priority for a
-     * transaction, set it on the reads and writes that are part of this
-     * transaction instead.
      * </pre>
      *
      * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
@@ -1150,10 +1351,6 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      *
      * <pre>
      * Common options for this request.
-     * Priority is ignored for this request. Setting the priority in this
-     * request_options struct will not do anything. To set the priority for a
-     * transaction, set it on the reads and writes that are part of this
-     * transaction instead.
      * </pre>
      *
      * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
@@ -1186,24 +1383,24 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
       return super.mergeUnknownFields(unknownFields);
     }
 
-    // @@protoc_insertion_point(builder_scope:google.spanner.v1.BeginTransactionRequest)
+    // @@protoc_insertion_point(builder_scope:google.spanner.v1.BatchWriteRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:google.spanner.v1.BeginTransactionRequest)
-  private static final com.google.spanner.v1.BeginTransactionRequest DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:google.spanner.v1.BatchWriteRequest)
+  private static final com.google.spanner.v1.BatchWriteRequest DEFAULT_INSTANCE;
 
   static {
-    DEFAULT_INSTANCE = new com.google.spanner.v1.BeginTransactionRequest();
+    DEFAULT_INSTANCE = new com.google.spanner.v1.BatchWriteRequest();
   }
 
-  public static com.google.spanner.v1.BeginTransactionRequest getDefaultInstance() {
+  public static com.google.spanner.v1.BatchWriteRequest getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<BeginTransactionRequest> PARSER =
-      new com.google.protobuf.AbstractParser<BeginTransactionRequest>() {
+  private static final com.google.protobuf.Parser<BatchWriteRequest> PARSER =
+      new com.google.protobuf.AbstractParser<BatchWriteRequest>() {
         @java.lang.Override
-        public BeginTransactionRequest parsePartialFrom(
+        public BatchWriteRequest parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1222,17 +1419,17 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
         }
       };
 
-  public static com.google.protobuf.Parser<BeginTransactionRequest> parser() {
+  public static com.google.protobuf.Parser<BatchWriteRequest> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<BeginTransactionRequest> getParserForType() {
+  public com.google.protobuf.Parser<BatchWriteRequest> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.spanner.v1.BeginTransactionRequest getDefaultInstanceForType() {
+  public com.google.spanner.v1.BatchWriteRequest getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 }
