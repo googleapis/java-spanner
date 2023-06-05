@@ -42,6 +42,8 @@ import com.google.rpc.ResourceInfo;
 import com.google.rpc.RetryInfo;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -595,6 +597,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private ConcurrentMap<ByteString, Instant> transactionLastUsed = new ConcurrentHashMap<>();
   private int maxNumSessionsInOneBatch = 100;
   private int maxTotalSessions = Integer.MAX_VALUE;
+  private Iterable<BatchWriteResponse> batchWriteResult = new ArrayList<>();
   private AtomicInteger numSessionsCreated = new AtomicInteger();
 
   private SimulatedExecutionTime beginTransactionExecutionTime = NO_EXECUTION_TIME;
@@ -674,6 +677,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     synchronized (lock) {
       partialStatementResults.put(result.statement.getSql(), result);
     }
+  }
+
+  public void putBatchWriteResult(final Iterable<BatchWriteResponse> responses) {
+    this.batchWriteResult = responses;
   }
 
   private StatementResult getResult(Statement statement) {
@@ -1956,6 +1963,29 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
+  @Override
+  public void batchWrite(
+      BatchWriteRequest request, StreamObserver<BatchWriteResponse> responseObserver) {
+    requests.add(request);
+    Preconditions.checkNotNull(request.getSession());
+    Session session = sessions.get(request.getSession());
+    if (session == null) {
+      setSessionNotFound(request.getSession(), responseObserver);
+      return;
+    }
+    sessionLastUsed.put(session.getName(), Instant.now());
+    try {
+      for (BatchWriteResponse response : batchWriteResult) {
+        responseObserver.onNext(response);
+      }
+      responseObserver.onCompleted();
+    } catch (StatusRuntimeException t) {
+      responseObserver.onError(t);
+    } catch (Throwable t) {
+      responseObserver.onError(Status.INTERNAL.asRuntimeException());
+    }
+  }
+
   private void commitTransaction(ByteString transactionId) {
     transactions.remove(transactionId);
     isPartitionedDmlTransaction.remove(transactionId);
@@ -2183,6 +2213,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     transactionCounters = new ConcurrentHashMap<>();
     partitionTokens = new ConcurrentHashMap<>();
     transactionLastUsed = new ConcurrentHashMap<>();
+    batchWriteResult = new ArrayList<>();
 
     numSessionsCreated.set(0);
     stickyGlobalExceptions = false;

@@ -38,6 +38,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.ByteArray;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
@@ -61,6 +62,8 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
@@ -310,6 +313,66 @@ public class DatabaseClientImplTest {
     assertNotNull(commit.getRequestOptions());
     assertThat(commit.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
     assertThat(commit.getRequestOptions().getRequestTag()).isEmpty();
+  }
+
+  @Test
+  public void testBatchWriteAtLeastOnce() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Iterable<Mutation> mutations =
+        ImmutableList.of(
+            Mutation.newInsertBuilder("FOO1").set("ID").to(1L).set("NAME").to("Bar1").build(),
+            Mutation.newInsertBuilder("FOO2").set("ID").to(2L).set("NAME").to("Bar2").build(),
+            Mutation.newInsertBuilder("FOO3").set("ID").to(3L).set("NAME").to("Bar3").build(),
+            Mutation.newInsertBuilder("FOO4").set("ID").to(4L).set("NAME").to("Bar4").build());
+
+    mockSpanner.putBatchWriteResult(
+        ImmutableList.of(
+            BatchWriteResponse.newBuilder()
+                .addAllIndexes(ImmutableList.of(0, 1))
+                .setStatus(com.google.rpc.Status.newBuilder().setCode(com.google.rpc.Code.OK_VALUE))
+                .build(),
+            BatchWriteResponse.newBuilder()
+                .addAllIndexes(ImmutableList.of(2, 3))
+                .setStatus(com.google.rpc.Status.newBuilder().setCode(com.google.rpc.Code.OK_VALUE))
+                .build()));
+
+    ServerStream<BatchWriteResponse> responseStream = client.batchWriteAtleastOnce(mutations);
+    assertNotNull(responseStream);
+    List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
+    assertEquals(requests.size(), 1);
+    BatchWriteRequest request = requests.get(0);
+    assertEquals(request.getMutationsCount(), 4);
+    assertEquals(request.getRequestOptions().getPriority(), Priority.PRIORITY_UNSPECIFIED);
+    int idx = 0;
+    for (BatchWriteResponse response : responseStream) {
+      assertEquals(
+          response.getStatus(),
+          com.google.rpc.Status.newBuilder().setCode(com.google.rpc.Code.OK_VALUE).build());
+      assertEquals(response.getIndexesList(), ImmutableList.of(idx, idx + 1));
+      idx += 2;
+    }
+  }
+
+  @Test
+  public void testBatchWriteAtLeastOnceWithOptions() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.batchWriteAtleastOnceWithOptions(
+        Collections.singletonList(
+            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
+        Options.priority(RpcPriority.LOW));
+
+    List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
+    assertEquals(requests.size(), 1);
+    BatchWriteRequest request = requests.get(0);
+    assertNotNull(request.getRequestOptions());
+    assertEquals(Priority.PRIORITY_LOW, request.getRequestOptions().getPriority());
+  }
+
+  @Test
+  public void batchWriteAtLeastOnceWithTagOptions() {
+    // TODO: based on if tags are allowed in batchWrite, add this test.
   }
 
   @Test
