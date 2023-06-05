@@ -86,6 +86,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -131,6 +132,8 @@ public class DatabaseClientImplTest {
   private static final Statement INVALID_UPDATE_STATEMENT =
       Statement.of("UPDATE NON_EXISTENT_TABLE SET BAR=1 WHERE BAZ=2");
   private static final long UPDATE_COUNT = 1L;
+  private static final com.google.rpc.Status STATUS_OK =
+      com.google.rpc.Status.newBuilder().setCode(com.google.rpc.Code.OK_VALUE).build();
   private Spanner spanner;
   private Spanner spannerWithEmptySessionPool;
   private static ExecutorService executor;
@@ -326,15 +329,23 @@ public class DatabaseClientImplTest {
             Mutation.newInsertBuilder("FOO3").set("ID").to(3L).set("NAME").to("Bar3").build(),
             Mutation.newInsertBuilder("FOO4").set("ID").to(4L).set("NAME").to("Bar4").build());
 
+    Instant time = Instant.now();
+    com.google.protobuf.Timestamp ts =
+        com.google.protobuf.Timestamp.newBuilder()
+            .setSeconds(time.getEpochSecond())
+            .setNanos(time.getNano())
+            .build();
     mockSpanner.putBatchWriteResult(
         ImmutableList.of(
             BatchWriteResponse.newBuilder()
                 .addAllIndexes(ImmutableList.of(0, 1))
-                .setStatus(com.google.rpc.Status.newBuilder().setCode(com.google.rpc.Code.OK_VALUE))
+                .setStatus(STATUS_OK)
+                .setCommitTimestamp(ts)
                 .build(),
             BatchWriteResponse.newBuilder()
                 .addAllIndexes(ImmutableList.of(2, 3))
-                .setStatus(com.google.rpc.Status.newBuilder().setCode(com.google.rpc.Code.OK_VALUE))
+                .setStatus(STATUS_OK)
+                .setCommitTimestamp(ts)
                 .build()));
 
     ServerStream<BatchWriteResponse> responseStream = client.batchWriteAtleastOnce(mutations);
@@ -350,6 +361,7 @@ public class DatabaseClientImplTest {
           response.getStatus(),
           com.google.rpc.Status.newBuilder().setCode(com.google.rpc.Code.OK_VALUE).build());
       assertEquals(response.getIndexesList(), ImmutableList.of(idx, idx + 1));
+      assertEquals(response.getCommitTimestamp(), ts);
       idx += 2;
     }
   }
