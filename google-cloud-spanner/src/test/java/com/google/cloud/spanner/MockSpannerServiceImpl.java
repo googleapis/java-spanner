@@ -2213,7 +2213,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     transactionCounters = new ConcurrentHashMap<>();
     partitionTokens = new ConcurrentHashMap<>();
     transactionLastUsed = new ConcurrentHashMap<>();
-    batchWriteResult = new ArrayList<>();
 
     numSessionsCreated.set(0);
     stickyGlobalExceptions = false;

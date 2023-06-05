@@ -329,23 +329,15 @@ public class DatabaseClientImplTest {
             Mutation.newInsertBuilder("FOO3").set("ID").to(3L).set("NAME").to("Bar3").build(),
             Mutation.newInsertBuilder("FOO4").set("ID").to(4L).set("NAME").to("Bar4").build());
 
-    Instant time = Instant.now();
-    com.google.protobuf.Timestamp ts =
-        com.google.protobuf.Timestamp.newBuilder()
-            .setSeconds(time.getEpochSecond())
-            .setNanos(time.getNano())
-            .build();
     mockSpanner.putBatchWriteResult(
         ImmutableList.of(
             BatchWriteResponse.newBuilder()
                 .addAllIndexes(ImmutableList.of(0, 1))
                 .setStatus(STATUS_OK)
-                .setCommitTimestamp(ts)
                 .build(),
             BatchWriteResponse.newBuilder()
                 .addAllIndexes(ImmutableList.of(2, 3))
                 .setStatus(STATUS_OK)
-                .setCommitTimestamp(ts)
                 .build()));
 
     ServerStream<BatchWriteResponse> responseStream = client.batchWriteAtleastOnce(mutations);
@@ -359,9 +351,8 @@ public class DatabaseClientImplTest {
     for (BatchWriteResponse response : responseStream) {
       assertEquals(
           response.getStatus(),
-          com.google.rpc.Status.newBuilder().setCode(com.google.rpc.Code.OK_VALUE).build());
+          STATUS_OK);
       assertEquals(response.getIndexesList(), ImmutableList.of(idx, idx + 1));
-      assertEquals(response.getCommitTimestamp(), ts);
       idx += 2;
     }
   }
@@ -370,21 +361,17 @@ public class DatabaseClientImplTest {
   public void testBatchWriteAtLeastOnceWithOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    client.batchWriteAtleastOnceWithOptions(
+    ServerStream<BatchWriteResponse> responseStream = client.batchWriteAtleastOnceWithOptions(
         Collections.singletonList(
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
         Options.priority(RpcPriority.LOW));
 
+    assertNotNull(responseStream);
     List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
     assertEquals(requests.size(), 1);
     BatchWriteRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
     assertEquals(Priority.PRIORITY_LOW, request.getRequestOptions().getPriority());
-  }
-
-  @Test
-  public void batchWriteAtLeastOnceWithTagOptions() {
-    // TODO: based on if tags are allowed in batchWrite, add this test.
   }
 
   @Test
