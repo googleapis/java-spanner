@@ -259,7 +259,7 @@ public class SessionPoolOptions {
     private Duration interval;
 
     /**
-     * Long-running transactions would be cleaned up if utilisation is greater than the below value.
+     * Long-running transactions will be cleaned up if utilisation is greater than the below value.
      */
     private double usedSessionsRatioThreshold;
 
