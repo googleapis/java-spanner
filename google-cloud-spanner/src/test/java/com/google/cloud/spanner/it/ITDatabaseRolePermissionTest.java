@@ -139,7 +139,7 @@ public class ITDatabaseRolePermissionTest {
         .updateDatabaseDdl(
             instanceId.getInstance(),
             databaseId,
-            Arrays.asList(revokeSelectOnTableFromParent),
+            ImmutableList.of(revokeSelectOnTableFromParent),
             null)
         .get(5, TimeUnit.MINUTES);
 
