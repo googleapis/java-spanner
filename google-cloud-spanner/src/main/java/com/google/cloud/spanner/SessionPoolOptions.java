@@ -536,7 +536,7 @@ public class SessionPoolOptions {
      *
      * @return this builder for chaining
      */
-    public Builder setCloseIfInactiveTransactions() {
+    public Builder setCloseLongRunningSessions() {
       this.actionOnInactiveTransaction = ActionOnInactiveTransaction.CLOSE;
       return this;
     }
