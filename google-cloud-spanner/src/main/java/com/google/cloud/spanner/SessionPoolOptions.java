@@ -532,8 +532,7 @@ public class SessionPoolOptions {
      * configuration. The option would also produce necessary warning logs through which it can be
      * debugged as to what resources were released due to this option.
      *
-     * <p>If we require to print just the logs and not release any resources, consider using the
-     * option {@link Builder#setWarnIfInactiveTransactions()} instead of this.
+     * <p>Use the option {@link Builder#setWarnIfInactiveTransactions()} if you only want to log warnings about long-running sessions.
      *
      * @return this builder for chaining
      */
