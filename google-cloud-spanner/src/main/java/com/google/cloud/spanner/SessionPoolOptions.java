@@ -309,7 +309,7 @@ public class SessionPoolOptions {
     }
 
     static class Builder {
-      private Duration recurrenceDuration = Duration.ofMinutes(2);
+      private Duration executionFrequency = Duration.ofMinutes(2);
       private double usedSessionsRatioThreshold = 0.95;
       private Duration executionTimeThreshold = Duration.ofMinutes(60L);
 
@@ -332,7 +332,7 @@ public class SessionPoolOptions {
       }
 
       @VisibleForTesting
-      InactiveTransactionRemovalOptions.Builder setRecurrenceDuration(
+      InactiveTransactionRemovalOptions.Builder setExecutionFrequency(
           final Duration recurrenceDuration) {
         this.recurrenceDuration = recurrenceDuration;
         return this;
