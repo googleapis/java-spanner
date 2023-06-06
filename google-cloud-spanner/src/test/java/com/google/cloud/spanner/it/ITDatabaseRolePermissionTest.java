@@ -156,7 +156,10 @@ public class ITDatabaseRolePermissionTest {
     final String dropRoleParent = String.format("DROP ROLE %s", dbRoleParent);
     dbAdminClient
         .updateDatabaseDdl(
-            instanceId.getInstance(), databaseId, ImmutableList.of(dropTableT, dropRoleParent), null)
+            instanceId.getInstance(),
+            databaseId,
+            ImmutableList.of(dropTableT, dropRoleParent),
+            null)
         .get(5, TimeUnit.MINUTES);
     databasesToDrop.add(createdDatabase.getId());
   }
