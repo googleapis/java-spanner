@@ -1839,7 +1839,7 @@ class SessionPool {
           final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
               options.getInactiveTransactionRemovalOptions();
           final Instant minExecutionTime =
-              lastExecutionTime.plus(inactiveTransactionRemovalOptions.getInterval());
+              lastExecutionTime.plus(inactiveTransactionRemovalOptions.getExecutionFrequency());
           if (currentTime.isBefore(minExecutionTime)) {
             return;
           }

@@ -204,7 +204,7 @@ public class DatabaseClientImplTest {
         InactiveTransactionRemovalOptions.newBuilder()
             .setExecutionTimeThreshold(
                 Duration.ofMillis(5L)) // anything more than 5s will be long-running
-            .setRecurrenceDuration(Duration.ofSeconds(15L))
+            .setExecutionFrequency(Duration.ofSeconds(15L))
             .build();
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptions.newBuilder()
@@ -261,7 +261,7 @@ public class DatabaseClientImplTest {
         InactiveTransactionRemovalOptions.newBuilder()
             .setExecutionTimeThreshold(
                 Duration.ofMillis(5L)) // anything more than 5s will be long-running
-            .setRecurrenceDuration(Duration.ofSeconds(15L))
+            .setExecutionFrequency(Duration.ofSeconds(15L))
             .build();
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptions.newBuilder()
@@ -304,7 +304,7 @@ public class DatabaseClientImplTest {
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
             .setExecutionTimeThreshold(Duration.ofMillis(1L))
-            .setRecurrenceDuration(Duration.ofSeconds(15L))
+            .setExecutionFrequency(Duration.ofSeconds(15L))
             .build();
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptions.newBuilder()

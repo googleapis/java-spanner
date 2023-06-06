@@ -252,10 +252,10 @@ public class SessionPoolOptions {
   /** Configuration options for task to clean up long-running transactions. */
   static class InactiveTransactionRemovalOptions {
     /**
-     * Recurrence duration for closing long-running transactions. Between two consecutive task
-     * executions, it's ensured that the duration is greater or equal to this duration.
+     * Frequency for closing long-running transactions. Between two consecutive task executions,
+     * it's ensured that the duration is greater or equal to this duration.
      */
-    private Duration interval;
+    private Duration executionFrequency;
 
     /**
      * Long-running transactions will be cleaned up if utilisation is greater than the below value.
@@ -270,7 +270,7 @@ public class SessionPoolOptions {
 
     InactiveTransactionRemovalOptions(final Builder builder) {
       this.executionTimeThreshold = builder.executionTimeThreshold;
-      this.interval = builder.recurrenceDuration;
+      this.executionFrequency = builder.executionFrequency;
       this.usedSessionsRatioThreshold = builder.usedSessionsRatioThreshold;
     }
 
@@ -281,18 +281,18 @@ public class SessionPoolOptions {
       }
       InactiveTransactionRemovalOptions other = (InactiveTransactionRemovalOptions) o;
       return Objects.equals(this.executionTimeThreshold, other.executionTimeThreshold)
-          && Objects.equals(this.interval, other.interval)
+          && Objects.equals(this.executionFrequency, other.executionFrequency)
           && Objects.equals(this.usedSessionsRatioThreshold, other.usedSessionsRatioThreshold);
     }
 
     @Override
     public int hashCode() {
       return Objects.hash(
-          this.executionTimeThreshold, this.interval, this.usedSessionsRatioThreshold);
+          this.executionTimeThreshold, this.executionFrequency, this.usedSessionsRatioThreshold);
     }
 
-    Duration getInterval() {
-      return interval;
+    Duration getExecutionFrequency() {
+      return executionFrequency;
     }
 
     double getUsedSessionsRatioThreshold() {
@@ -321,9 +321,9 @@ public class SessionPoolOptions {
 
       private void validate() {
         Preconditions.checkArgument(
-            recurrenceDuration.toMillis() > 0,
-            "Recurrence duration %s should be positive",
-            recurrenceDuration.toMillis());
+            executionFrequency.toMillis() > 0,
+            "Execution frequency %s should be positive",
+            executionFrequency.toMillis());
         Preconditions.checkArgument(
             executionTimeThreshold.toMillis() > 0,
             "Execution Time Threshold duration %s should be positive",
@@ -332,8 +332,8 @@ public class SessionPoolOptions {
 
       @VisibleForTesting
       InactiveTransactionRemovalOptions.Builder setExecutionFrequency(
-          final Duration recurrenceDuration) {
-        this.recurrenceDuration = recurrenceDuration;
+          final Duration executionFrequency) {
+        this.executionFrequency = executionFrequency;
         return this;
       }
 
