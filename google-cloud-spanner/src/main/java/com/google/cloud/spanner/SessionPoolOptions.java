@@ -254,7 +254,7 @@ public class SessionPoolOptions {
   static class InactiveTransactionRemovalOptions {
     /**
      * Recurrence duration for closing long-running transactions. Between two consecutive task
-     * executions, its ensured that the duration is grater or equal to this duration.
+     * executions, it's ensured that the duration is greater or equal to this duration.
      */
     private Duration interval;
 
