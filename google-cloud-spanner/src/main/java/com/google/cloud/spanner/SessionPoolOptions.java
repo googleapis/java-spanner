@@ -51,7 +51,6 @@ public class SessionPoolOptions {
   private final ActionOnSessionLeak actionOnSessionLeak;
   private final boolean trackStackTraceOfSessionCheckout;
   private final ActionOnInactiveTransaction actionOnInactiveTransaction;
-
   private final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions;
   private final long initialWaitForSessionTimeoutMillis;
   private final boolean autoDetectDialect;
@@ -269,7 +268,7 @@ public class SessionPoolOptions {
      */
     private Duration executionTimeThreshold;
 
-    public InactiveTransactionRemovalOptions(final Builder builder) {
+    InactiveTransactionRemovalOptions(final Builder builder) {
       this.executionTimeThreshold = builder.executionTimeThreshold;
       this.interval = builder.recurrenceDuration;
       this.usedSessionsRatioThreshold = builder.usedSessionsRatioThreshold;
@@ -304,7 +303,7 @@ public class SessionPoolOptions {
       return executionTimeThreshold;
     }
 
-    public static InactiveTransactionRemovalOptions.Builder newBuilder() {
+    static InactiveTransactionRemovalOptions.Builder newBuilder() {
       return new Builder();
     }
 
@@ -315,7 +314,7 @@ public class SessionPoolOptions {
 
       public Builder() {}
 
-      public InactiveTransactionRemovalOptions build() {
+      InactiveTransactionRemovalOptions build() {
         validate();
         return new InactiveTransactionRemovalOptions(this);
       }
@@ -532,7 +531,8 @@ public class SessionPoolOptions {
      * configuration. The option would also produce necessary warning logs through which it can be
      * debugged as to what resources were released due to this option.
      *
-     * <p>Use the option {@link Builder#setWarnIfInactiveTransactions()} if you only want to log warnings about long-running sessions.
+     * <p>Use the option {@link Builder#setWarnIfInactiveTransactions()} if you only want to log
+     * warnings about long-running sessions.
      *
      * @return this builder for chaining
      */

@@ -1667,8 +1667,8 @@ class SessionPool {
    *   <li>Keeps alive sessions that have not been used for a user configured time in order to keep
    *       MinSessions sessions alive in the pool at any time. The keep-alive traffic is smeared out
    *       over a window of 10 minutes to avoid bursty traffic.
-   *   <li>Returns unexpected long running transactions to the pool. Only certain transaction
-   *       types (for ex - Partitioned DML / Batch Reads) can be long running. This tasks checks the
+   *   <li>Returns unexpected long running transactions to the pool. Only certain transaction types
+   *       (for ex - Partitioned DML / Batch Reads) can be long running. This tasks checks the
    *       sessions which have been executing for a longer than usual duration (60 minutes) and
    *       returns such sessions back to the pool.
    * </ul>
@@ -1695,7 +1695,7 @@ class SessionPool {
      * every 2 minutes, then we need to keep a track of when was the last time that this task
      * executed and makes sure we only execute it every 2 minutes and not every 10 seconds.
      */
-    @VisibleForTesting public volatile Instant lastExecutionTime;
+    @VisibleForTesting volatile Instant lastExecutionTime;
 
     boolean closed = false;
 
@@ -2112,7 +2112,9 @@ class SessionPool {
   double getRatioOfSessionsInUse() {
     synchronized (lock) {
       final int maxSessions = options.getMaxSessions();
-      if (maxSessions == 0) return 0;
+      if (maxSessions == 0) {
+        return 0;
+      }
       return (double) numSessionsInUse / maxSessions;
     }
   }
