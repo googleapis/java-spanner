@@ -1667,7 +1667,7 @@ class SessionPool {
    *   <li>Keeps alive sessions that have not been used for a user configured time in order to keep
    *       MinSessions sessions alive in the pool at any time. The keep-alive traffic is smeared out
    *       over a window of 10 minutes to avoid bursty traffic.
-   *   <li>Removes unexpected long running transactions from the pool. Only certain transaction
+   *   <li>Returns unexpected long running transactions to the pool. Only certain transaction
    *       types (for ex - Partitioned DML / Batch Reads) can be long running. This tasks checks the
    *       sessions which have been executing for a longer than usual duration (60 minutes) and
    *       returns such sessions back to the pool.
