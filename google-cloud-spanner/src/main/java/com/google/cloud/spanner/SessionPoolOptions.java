@@ -528,7 +528,7 @@ public class SessionPoolOptions {
 
     /**
      * If there are inactive transactions, release the resources consumed by such transactions. A
-     * transaction is classified as in-active if it executes for more than a system defined
+     * transaction is classified as inactive if it executes for more than a system defined
      * configuration. The option would also produce necessary warning logs through which it can be
      * debugged as to what resources were released due to this option.
      *
