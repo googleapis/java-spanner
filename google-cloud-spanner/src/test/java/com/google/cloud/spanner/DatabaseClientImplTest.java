@@ -202,7 +202,7 @@ public class DatabaseClientImplTest {
   public void testPoolMaintainer_whenInactiveTransactions_removeSessionsFromPool() {
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
-            .setExecutionTimeThreshold(
+            .setIdleTimeThreshold(
                 Duration.ofMillis(5L)) // anything more than 5s will be long-running
             .setExecutionFrequency(Duration.ofSeconds(15L))
             .build();
@@ -259,7 +259,7 @@ public class DatabaseClientImplTest {
   public void testPoolMaintainer_whenLongRunningPartitionedUpdateRequest_takeNoAction() {
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
-            .setExecutionTimeThreshold(
+            .setIdleTimeThreshold(
                 Duration.ofMillis(5L)) // anything more than 5s will be long-running
             .setExecutionFrequency(Duration.ofSeconds(15L))
             .build();
@@ -303,7 +303,7 @@ public class DatabaseClientImplTest {
   public void testPoolMaintainer_whenLongRunningBathReadOnlyTransactionRequest_takeNoAction() {
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
-            .setExecutionTimeThreshold(Duration.ofMillis(1L))
+            .setIdleTimeThreshold(Duration.ofMillis(1L))
             .setExecutionFrequency(Duration.ofSeconds(15L))
             .build();
     SessionPoolOptions sessionPoolOptions =

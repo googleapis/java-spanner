@@ -1869,7 +1869,7 @@ class SessionPool {
             final Duration durationFromLastUse = Duration.between(session.lastUseTime, currentTime);
             if (!session.isLongRunning
                 && durationFromLastUse.toMillis()
-                    > inactiveTransactionRemovalOptions.getExecutionTimeThreshold().toMillis()) {
+                    > inactiveTransactionRemovalOptions.getIdleTimeThreshold().toMillis()) {
               logger.log(
                   Level.WARNING, "Removing long running session", sessionFuture.leakedException);
               numLeakedSessionsRemoved++;

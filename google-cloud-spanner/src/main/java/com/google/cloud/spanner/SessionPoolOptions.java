@@ -252,7 +252,7 @@ public class SessionPoolOptions {
   /** Configuration options for task to clean up long-running transactions. */
   static class InactiveTransactionRemovalOptions {
     /**
-     * Frequency for closing long-running transactions. Between two consecutive task executions,
+     * Frequency for closing inactive transactions. Between two consecutive task executions,
      * it's ensured that the duration is greater or equal to this duration.
      */
     private Duration executionFrequency;
@@ -263,13 +263,13 @@ public class SessionPoolOptions {
     private double usedSessionsRatioThreshold;
 
     /**
-     * A transaction is considered to be long-running if it executes for a duration greater than the
-     * below value.
+     * A transaction is considered to be idle if it has not been used for a
+     * duration greater than the below value.
      */
-    private Duration executionTimeThreshold;
+    private Duration idleTimeThreshold;
 
     InactiveTransactionRemovalOptions(final Builder builder) {
-      this.executionTimeThreshold = builder.executionTimeThreshold;
+      this.idleTimeThreshold = builder.idleTimeThreshold;
       this.executionFrequency = builder.executionFrequency;
       this.usedSessionsRatioThreshold = builder.usedSessionsRatioThreshold;
     }
@@ -280,7 +280,7 @@ public class SessionPoolOptions {
         return false;
       }
       InactiveTransactionRemovalOptions other = (InactiveTransactionRemovalOptions) o;
-      return Objects.equals(this.executionTimeThreshold, other.executionTimeThreshold)
+      return Objects.equals(this.idleTimeThreshold, other.idleTimeThreshold)
           && Objects.equals(this.executionFrequency, other.executionFrequency)
           && Objects.equals(this.usedSessionsRatioThreshold, other.usedSessionsRatioThreshold);
     }
@@ -288,7 +288,7 @@ public class SessionPoolOptions {
     @Override
     public int hashCode() {
       return Objects.hash(
-          this.executionTimeThreshold, this.executionFrequency, this.usedSessionsRatioThreshold);
+          this.idleTimeThreshold, this.executionFrequency, this.usedSessionsRatioThreshold);
     }
 
     Duration getExecutionFrequency() {
@@ -299,8 +299,8 @@ public class SessionPoolOptions {
       return usedSessionsRatioThreshold;
     }
 
-    Duration getExecutionTimeThreshold() {
-      return executionTimeThreshold;
+    Duration getIdleTimeThreshold() {
+      return idleTimeThreshold;
     }
 
     static InactiveTransactionRemovalOptions.Builder newBuilder() {
@@ -310,7 +310,7 @@ public class SessionPoolOptions {
     static class Builder {
       private Duration executionFrequency = Duration.ofMinutes(2);
       private double usedSessionsRatioThreshold = 0.95;
-      private Duration executionTimeThreshold = Duration.ofMinutes(60L);
+      private Duration idleTimeThreshold = Duration.ofMinutes(60L);
 
       public Builder() {}
 
@@ -325,9 +325,9 @@ public class SessionPoolOptions {
             "Execution frequency %s should be positive",
             executionFrequency.toMillis());
         Preconditions.checkArgument(
-            executionTimeThreshold.toMillis() > 0,
-            "Execution Time Threshold duration %s should be positive",
-            executionTimeThreshold.toMillis());
+            idleTimeThreshold.toMillis() > 0,
+            "Idle Time Threshold duration %s should be positive",
+            idleTimeThreshold.toMillis());
       }
 
       @VisibleForTesting
@@ -345,9 +345,9 @@ public class SessionPoolOptions {
       }
 
       @VisibleForTesting
-      InactiveTransactionRemovalOptions.Builder setExecutionTimeThreshold(
-          final Duration executionTimeThreshold) {
-        this.executionTimeThreshold = executionTimeThreshold;
+      InactiveTransactionRemovalOptions.Builder setIdleTimeThreshold(
+          final Duration idleTimeThreshold) {
+        this.idleTimeThreshold = idleTimeThreshold;
         return this;
       }
     }
