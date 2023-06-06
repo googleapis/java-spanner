@@ -1872,7 +1872,7 @@ class SessionPool {
                     > inactiveTransactionRemovalOptions.getExecutionTimeThreshold().toMillis()) {
               logger.log(
                   Level.WARNING, "Removing long running session", sessionFuture.leakedException);
-              numInactiveSessionsRemoved++;
+              numLeakedSessionsRemoved++;
               if (options.closeInactiveTransactions() && session.state != SessionState.CLOSING) {
                 removeFromPool(session);
                 iterator.remove();
@@ -1963,7 +1963,7 @@ class SessionPool {
   private long numIdleSessionsRemoved = 0;
 
   @GuardedBy("lock")
-  private long numInactiveSessionsRemoved = 0;
+  private long numLeakedSessionsRemoved = 0;
 
   private AtomicLong numWaiterTimeouts = new AtomicLong();
 
@@ -2138,9 +2138,9 @@ class SessionPool {
   }
 
   @VisibleForTesting
-  long numInactiveSessionsRemoved() {
+  long numLeakedSessionsRemoved() {
     synchronized (lock) {
-      return numInactiveSessionsRemoved;
+      return numLeakedSessionsRemoved;
     }
   }
 

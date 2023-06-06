@@ -249,7 +249,7 @@ public class DatabaseClientImplTest {
     Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
     assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(1);
-    assertThat(client.pool.numInactiveSessionsRemoved()).isEqualTo(1);
+    assertThat(client.pool.numLeakedSessionsRemoved()).isEqualTo(1);
     assertNotEquals(
         endExecutionTime,
         initialExecutionTime); // if session clean up task runs then these timings won't match
@@ -293,7 +293,7 @@ public class DatabaseClientImplTest {
     Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
     assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(1);
-    assertThat(client.pool.numInactiveSessionsRemoved()).isEqualTo(0);
+    assertThat(client.pool.numLeakedSessionsRemoved()).isEqualTo(0);
     assertNotEquals(
         endExecutionTime,
         initialExecutionTime); // if session clean up task runs then these timings won't match
