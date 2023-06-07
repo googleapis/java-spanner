@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.43.0](https://github.com/googleapis/java-spanner/compare/v6.42.3...v6.43.0) (2023-06-07)
+
+
+### Features
+
+* Delay transaction start option ([#2462](https://github.com/googleapis/java-spanner/issues/2462)) ([f1cbd16](https://github.com/googleapis/java-spanner/commit/f1cbd168a7e5f48206cdfc2d782835cf7ccb8b0d))
+* Make administrative request retries optional ([#2476](https://github.com/googleapis/java-spanner/issues/2476)) ([ee6548c](https://github.com/googleapis/java-spanner/commit/ee6548cfa511d6efc99f508290ed0b1ce025a4cc))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.11.0 ([#2486](https://github.com/googleapis/java-spanner/issues/2486)) ([82400d5](https://github.com/googleapis/java-spanner/commit/82400d5576c3ffe08ff6bb94d8b1a307e2f41662))
+
 ## [6.42.3](https://github.com/googleapis/java-spanner/compare/v6.42.2...v6.42.3) (2023-05-31)
 
 
