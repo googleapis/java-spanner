@@ -72,7 +72,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-  internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
     return com.google.spanner.admin.database.v1.SpannerDatabaseAdminProto
         .internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
@@ -552,7 +552,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-    internalGetFieldAccessorTable() {
+        internalGetFieldAccessorTable() {
       return com.google.spanner.admin.database.v1.SpannerDatabaseAdminProto
           .internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -586,7 +586,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
 
     @java.lang.Override
     public com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest
-    getDefaultInstanceForType() {
+        getDefaultInstanceForType() {
       return com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest.getDefaultInstance();
     }
 
@@ -692,37 +692,37 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
               done = true;
               break;
             case 10:
-            {
-              database_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000001;
-              break;
-            } // case 10
+              {
+                database_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
             case 18:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-              ensureStatementsIsMutable();
-              statements_.add(s);
-              break;
-            } // case 18
+              {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureStatementsIsMutable();
+                statements_.add(s);
+                break;
+              } // case 18
             case 26:
-            {
-              operationId_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000004;
-              break;
-            } // case 26
+              {
+                operationId_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
             case 34:
-            {
-              protoDescriptors_ = input.readBytes();
-              bitField0_ |= 0x00000008;
-              break;
-            } // case 34
+              {
+                protoDescriptors_ = input.readBytes();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
             default:
-            {
-              if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                done = true; // was an endgroup tag
-              }
-              break;
-            } // default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
           } // switch (tag)
         } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {

@@ -2289,7 +2289,10 @@ public abstract class Value implements Serializable {
             protoMessagesList.add(null);
           } else {
             protoMessagesList.add(
-                (T) m.toBuilder().mergeFrom(protoMessageBytes.getByteArray().toByteArray()).build());
+                (T)
+                    m.toBuilder()
+                        .mergeFrom(protoMessageBytes.getByteArray().toByteArray())
+                        .build());
           }
         }
         return protoMessagesList;

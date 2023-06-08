@@ -41,8 +41,8 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
-import com.google.protobuf.ProtocolMessageEnum;
 import com.google.protobuf.NullValue;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.google.protobuf.Value.KindCase;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -955,7 +955,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             protoMessagesList.add(null);
           } else {
             protoMessagesList.add(
-                (T) message.toBuilder().mergeFrom(protoMessageBytes.getByteArray().toByteArray()).build());
+                (T)
+                    message
+                        .toBuilder()
+                        .mergeFrom(protoMessageBytes.getByteArray().toByteArray())
+                        .build());
           }
         }
         return protoMessagesList;
