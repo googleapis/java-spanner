@@ -221,6 +221,8 @@ public class DatabaseAdminClientHttpJsonTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -280,6 +282,8 @@ public class DatabaseAdminClientHttpJsonTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -339,6 +343,8 @@ public class DatabaseAdminClientHttpJsonTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -391,6 +397,8 @@ public class DatabaseAdminClientHttpJsonTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -427,6 +435,93 @@ public class DatabaseAdminClientHttpJsonTest {
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception.
+    }
+  }
+
+  @Test
+  public void updateDatabaseTest() throws Exception {
+    Database expectedResponse =
+        Database.newBuilder()
+            .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+            .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
+            .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
+            .setEarliestVersionTime(Timestamp.newBuilder().build())
+            .setDefaultLeader("defaultLeader759009962")
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
+            .build();
+    Operation resultOperation =
+        Operation.newBuilder()
+            .setName("updateDatabaseTest")
+            .setDone(true)
+            .setResponse(Any.pack(expectedResponse))
+            .build();
+    mockService.addResponse(resultOperation);
+
+    Database database =
+        Database.newBuilder()
+            .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+            .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
+            .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
+            .setEarliestVersionTime(Timestamp.newBuilder().build())
+            .setDefaultLeader("defaultLeader759009962")
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
+            .build();
+    FieldMask updateMask = FieldMask.newBuilder().build();
+
+    Database actualResponse = client.updateDatabaseAsync(database, updateMask).get();
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<String> actualRequests = mockService.getRequestPaths();
+    Assert.assertEquals(1, actualRequests.size());
+
+    String apiClientHeaderKey =
+        mockService
+            .getRequestHeaders()
+            .get(ApiClientHeaderProvider.getDefaultApiClientHeaderKey())
+            .iterator()
+            .next();
+    Assert.assertTrue(
+        GaxHttpJsonProperties.getDefaultApiClientHeaderPattern()
+            .matcher(apiClientHeaderKey)
+            .matches());
+  }
+
+  @Test
+  public void updateDatabaseExceptionTest() throws Exception {
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
+
+    try {
+      Database database =
+          Database.newBuilder()
+              .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+              .setCreateTime(Timestamp.newBuilder().build())
+              .setRestoreInfo(RestoreInfo.newBuilder().build())
+              .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+              .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
+              .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
+              .setEarliestVersionTime(Timestamp.newBuilder().build())
+              .setDefaultLeader("defaultLeader759009962")
+              .setDatabaseDialect(DatabaseDialect.forNumber(0))
+              .setEnableDropProtection(true)
+              .setReconciling(true)
+              .build();
+      FieldMask updateMask = FieldMask.newBuilder().build();
+      client.updateDatabaseAsync(database, updateMask).get();
+      Assert.fail("No exception raised");
+    } catch (ExecutionException e) {
     }
   }
 
@@ -1747,6 +1842,8 @@ public class DatabaseAdminClientHttpJsonTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1808,6 +1905,8 @@ public class DatabaseAdminClientHttpJsonTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1869,6 +1968,8 @@ public class DatabaseAdminClientHttpJsonTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1930,6 +2031,8 @@ public class DatabaseAdminClientHttpJsonTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()

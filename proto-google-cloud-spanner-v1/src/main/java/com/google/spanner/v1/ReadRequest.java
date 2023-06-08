@@ -74,7 +74,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int SESSION_FIELD_NUMBER = 1;
-  private volatile java.lang.Object session_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object session_ = "";
   /**
    *
    *
@@ -174,11 +176,15 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.v1.TransactionSelectorOrBuilder getTransactionOrBuilder() {
-    return getTransaction();
+    return transaction_ == null
+        ? com.google.spanner.v1.TransactionSelector.getDefaultInstance()
+        : transaction_;
   }
 
   public static final int TABLE_FIELD_NUMBER = 3;
-  private volatile java.lang.Object table_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object table_ = "";
   /**
    *
    *
@@ -227,7 +233,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int INDEX_FIELD_NUMBER = 4;
-  private volatile java.lang.Object index_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object index_ = "";
   /**
    *
    *
@@ -280,6 +288,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int COLUMNS_FIELD_NUMBER = 5;
+
+  @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringList columns_;
   /**
    *
@@ -414,11 +424,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.v1.KeySetOrBuilder getKeySetOrBuilder() {
-    return getKeySet();
+    return keySet_ == null ? com.google.spanner.v1.KeySet.getDefaultInstance() : keySet_;
   }
 
   public static final int LIMIT_FIELD_NUMBER = 8;
-  private long limit_;
+  private long limit_ = 0L;
   /**
    *
    *
@@ -438,7 +448,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int RESUME_TOKEN_FIELD_NUMBER = 9;
-  private com.google.protobuf.ByteString resumeToken_;
+  private com.google.protobuf.ByteString resumeToken_ = com.google.protobuf.ByteString.EMPTY;
   /**
    *
    *
@@ -461,7 +471,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int PARTITION_TOKEN_FIELD_NUMBER = 10;
-  private com.google.protobuf.ByteString partitionToken_;
+  private com.google.protobuf.ByteString partitionToken_ = com.google.protobuf.ByteString.EMPTY;
   /**
    *
    *
@@ -526,7 +536,30 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder() {
-    return getRequestOptions();
+    return requestOptions_ == null
+        ? com.google.spanner.v1.RequestOptions.getDefaultInstance()
+        : requestOptions_;
+  }
+
+  public static final int DATA_BOOST_ENABLED_FIELD_NUMBER = 15;
+  private boolean dataBoostEnabled_ = false;
+  /**
+   *
+   *
+   * <pre>
+   * If this is for a partitioned read and this field is set to `true`, the
+   * request will be executed via Spanner independent compute resources.
+   * If the field is set to `true` but the request does not set
+   * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
+   * </pre>
+   *
+   * <code>bool data_boost_enabled = 15;</code>
+   *
+   * @return The dataBoostEnabled.
+   */
+  @java.lang.Override
+  public boolean getDataBoostEnabled() {
+    return dataBoostEnabled_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -573,6 +606,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     if (requestOptions_ != null) {
       output.writeMessage(11, getRequestOptions());
     }
+    if (dataBoostEnabled_ != false) {
+      output.writeBool(15, dataBoostEnabled_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -617,6 +653,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     if (requestOptions_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(11, getRequestOptions());
     }
+    if (dataBoostEnabled_ != false) {
+      size += com.google.protobuf.CodedOutputStream.computeBoolSize(15, dataBoostEnabled_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -651,6 +690,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     if (hasRequestOptions()) {
       if (!getRequestOptions().equals(other.getRequestOptions())) return false;
     }
+    if (getDataBoostEnabled() != other.getDataBoostEnabled()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -690,6 +730,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       hash = (37 * hash) + REQUEST_OPTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getRequestOptions().hashCode();
     }
+    hash = (37 * hash) + DATA_BOOST_ENABLED_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getDataBoostEnabled());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -828,38 +870,31 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       session_ = "";
-
-      if (transactionBuilder_ == null) {
-        transaction_ = null;
-      } else {
-        transaction_ = null;
+      transaction_ = null;
+      if (transactionBuilder_ != null) {
+        transactionBuilder_.dispose();
         transactionBuilder_ = null;
       }
       table_ = "";
-
       index_ = "";
-
       columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000001);
-      if (keySetBuilder_ == null) {
-        keySet_ = null;
-      } else {
-        keySet_ = null;
+      bitField0_ = (bitField0_ & ~0x00000010);
+      keySet_ = null;
+      if (keySetBuilder_ != null) {
+        keySetBuilder_.dispose();
         keySetBuilder_ = null;
       }
       limit_ = 0L;
-
       resumeToken_ = com.google.protobuf.ByteString.EMPTY;
-
       partitionToken_ = com.google.protobuf.ByteString.EMPTY;
-
-      if (requestOptionsBuilder_ == null) {
-        requestOptions_ = null;
-      } else {
-        requestOptions_ = null;
+      requestOptions_ = null;
+      if (requestOptionsBuilder_ != null) {
+        requestOptionsBuilder_.dispose();
         requestOptionsBuilder_ = null;
       }
+      dataBoostEnabled_ = false;
       return this;
     }
 
@@ -886,35 +921,56 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.ReadRequest buildPartial() {
       com.google.spanner.v1.ReadRequest result = new com.google.spanner.v1.ReadRequest(this);
-      int from_bitField0_ = bitField0_;
-      result.session_ = session_;
-      if (transactionBuilder_ == null) {
-        result.transaction_ = transaction_;
-      } else {
-        result.transaction_ = transactionBuilder_.build();
-      }
-      result.table_ = table_;
-      result.index_ = index_;
-      if (((bitField0_ & 0x00000001) != 0)) {
-        columns_ = columns_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000001);
-      }
-      result.columns_ = columns_;
-      if (keySetBuilder_ == null) {
-        result.keySet_ = keySet_;
-      } else {
-        result.keySet_ = keySetBuilder_.build();
-      }
-      result.limit_ = limit_;
-      result.resumeToken_ = resumeToken_;
-      result.partitionToken_ = partitionToken_;
-      if (requestOptionsBuilder_ == null) {
-        result.requestOptions_ = requestOptions_;
-      } else {
-        result.requestOptions_ = requestOptionsBuilder_.build();
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartialRepeatedFields(com.google.spanner.v1.ReadRequest result) {
+      if (((bitField0_ & 0x00000010) != 0)) {
+        columns_ = columns_.getUnmodifiableView();
+        bitField0_ = (bitField0_ & ~0x00000010);
+      }
+      result.columns_ = columns_;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.ReadRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.session_ = session_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.transaction_ =
+            transactionBuilder_ == null ? transaction_ : transactionBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.table_ = table_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.index_ = index_;
+      }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.keySet_ = keySetBuilder_ == null ? keySet_ : keySetBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000040) != 0)) {
+        result.limit_ = limit_;
+      }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.resumeToken_ = resumeToken_;
+      }
+      if (((from_bitField0_ & 0x00000100) != 0)) {
+        result.partitionToken_ = partitionToken_;
+      }
+      if (((from_bitField0_ & 0x00000200) != 0)) {
+        result.requestOptions_ =
+            requestOptionsBuilder_ == null ? requestOptions_ : requestOptionsBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000400) != 0)) {
+        result.dataBoostEnabled_ = dataBoostEnabled_;
+      }
     }
 
     @java.lang.Override
@@ -964,6 +1020,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       if (other == com.google.spanner.v1.ReadRequest.getDefaultInstance()) return this;
       if (!other.getSession().isEmpty()) {
         session_ = other.session_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (other.hasTransaction()) {
@@ -971,16 +1028,18 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       }
       if (!other.getTable().isEmpty()) {
         table_ = other.table_;
+        bitField0_ |= 0x00000004;
         onChanged();
       }
       if (!other.getIndex().isEmpty()) {
         index_ = other.index_;
+        bitField0_ |= 0x00000008;
         onChanged();
       }
       if (!other.columns_.isEmpty()) {
         if (columns_.isEmpty()) {
           columns_ = other.columns_;
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000010);
         } else {
           ensureColumnsIsMutable();
           columns_.addAll(other.columns_);
@@ -1001,6 +1060,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       }
       if (other.hasRequestOptions()) {
         mergeRequestOptions(other.getRequestOptions());
+      }
+      if (other.getDataBoostEnabled() != false) {
+        setDataBoostEnabled(other.getDataBoostEnabled());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -1031,25 +1093,25 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
             case 10:
               {
                 session_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 input.readMessage(getTransactionFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             case 26:
               {
                 table_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 26
             case 34:
               {
                 index_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000008;
                 break;
               } // case 34
             case 42:
@@ -1062,33 +1124,39 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
             case 50:
               {
                 input.readMessage(getKeySetFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000020;
                 break;
               } // case 50
             case 64:
               {
                 limit_ = input.readInt64();
-
+                bitField0_ |= 0x00000040;
                 break;
               } // case 64
             case 74:
               {
                 resumeToken_ = input.readBytes();
-
+                bitField0_ |= 0x00000080;
                 break;
               } // case 74
             case 82:
               {
                 partitionToken_ = input.readBytes();
-
+                bitField0_ |= 0x00000100;
                 break;
               } // case 82
             case 90:
               {
                 input.readMessage(getRequestOptionsFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000200;
                 break;
               } // case 90
+            case 120:
+              {
+                dataBoostEnabled_ = input.readBool();
+                bitField0_ |= 0x00000400;
+                break;
+              } // case 120
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -1175,8 +1243,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       session_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1194,8 +1262,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearSession() {
-
       session_ = getDefaultInstance().getSession();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -1218,8 +1286,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       session_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1243,7 +1311,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the transaction field is set.
      */
     public boolean hasTransaction() {
-      return transactionBuilder_ != null || transaction_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -1282,11 +1350,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         transaction_ = value;
-        onChanged();
       } else {
         transactionBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1303,11 +1371,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         com.google.spanner.v1.TransactionSelector.Builder builderForValue) {
       if (transactionBuilder_ == null) {
         transaction_ = builderForValue.build();
-        onChanged();
       } else {
         transactionBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1322,19 +1390,18 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeTransaction(com.google.spanner.v1.TransactionSelector value) {
       if (transactionBuilder_ == null) {
-        if (transaction_ != null) {
-          transaction_ =
-              com.google.spanner.v1.TransactionSelector.newBuilder(transaction_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && transaction_ != null
+            && transaction_ != com.google.spanner.v1.TransactionSelector.getDefaultInstance()) {
+          getTransactionBuilder().mergeFrom(value);
         } else {
           transaction_ = value;
         }
-        onChanged();
       } else {
         transactionBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1348,14 +1415,13 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
      */
     public Builder clearTransaction() {
-      if (transactionBuilder_ == null) {
-        transaction_ = null;
-        onChanged();
-      } else {
-        transaction_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      transaction_ = null;
+      if (transactionBuilder_ != null) {
+        transactionBuilder_.dispose();
         transactionBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1369,7 +1435,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
      */
     public com.google.spanner.v1.TransactionSelector.Builder getTransactionBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getTransactionFieldBuilder().getBuilder();
     }
@@ -1480,8 +1546,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       table_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1497,8 +1563,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearTable() {
-
       table_ = getDefaultInstance().getTable();
+      bitField0_ = (bitField0_ & ~0x00000004);
       onChanged();
       return this;
     }
@@ -1519,8 +1585,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       table_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1592,8 +1658,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       index_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -1611,8 +1677,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearIndex() {
-
       index_ = getDefaultInstance().getIndex();
+      bitField0_ = (bitField0_ & ~0x00000008);
       onChanged();
       return this;
     }
@@ -1635,8 +1701,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       index_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -1645,9 +1711,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.LazyStringArrayList.EMPTY;
 
     private void ensureColumnsIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
+      if (!((bitField0_ & 0x00000010) != 0)) {
         columns_ = new com.google.protobuf.LazyStringArrayList(columns_);
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000010;
       }
     }
     /**
@@ -1790,7 +1856,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder clearColumns() {
       columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000001);
+      bitField0_ = (bitField0_ & ~0x00000010);
       onChanged();
       return this;
     }
@@ -1845,7 +1911,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the keySet field is set.
      */
     public boolean hasKeySet() {
-      return keySetBuilder_ != null || keySet_ != null;
+      return ((bitField0_ & 0x00000020) != 0);
     }
     /**
      *
@@ -1898,11 +1964,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         keySet_ = value;
-        onChanged();
       } else {
         keySetBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000020;
+      onChanged();
       return this;
     }
     /**
@@ -1926,11 +1992,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public Builder setKeySet(com.google.spanner.v1.KeySet.Builder builderForValue) {
       if (keySetBuilder_ == null) {
         keySet_ = builderForValue.build();
-        onChanged();
       } else {
         keySetBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000020;
+      onChanged();
       return this;
     }
     /**
@@ -1953,17 +2019,18 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeKeySet(com.google.spanner.v1.KeySet value) {
       if (keySetBuilder_ == null) {
-        if (keySet_ != null) {
-          keySet_ =
-              com.google.spanner.v1.KeySet.newBuilder(keySet_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000020) != 0)
+            && keySet_ != null
+            && keySet_ != com.google.spanner.v1.KeySet.getDefaultInstance()) {
+          getKeySetBuilder().mergeFrom(value);
         } else {
           keySet_ = value;
         }
-        onChanged();
       } else {
         keySetBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000020;
+      onChanged();
       return this;
     }
     /**
@@ -1985,14 +2052,13 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.KeySet key_set = 6 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearKeySet() {
-      if (keySetBuilder_ == null) {
-        keySet_ = null;
-        onChanged();
-      } else {
-        keySet_ = null;
+      bitField0_ = (bitField0_ & ~0x00000020);
+      keySet_ = null;
+      if (keySetBuilder_ != null) {
+        keySetBuilder_.dispose();
         keySetBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -2014,7 +2080,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.KeySet key_set = 6 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public com.google.spanner.v1.KeySet.Builder getKeySetBuilder() {
-
+      bitField0_ |= 0x00000020;
       onChanged();
       return getKeySetFieldBuilder().getBuilder();
     }
@@ -2113,6 +2179,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public Builder setLimit(long value) {
 
       limit_ = value;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -2130,7 +2197,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearLimit() {
-
+      bitField0_ = (bitField0_ & ~0x00000040);
       limit_ = 0L;
       onChanged();
       return this;
@@ -2178,8 +2245,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       resumeToken_ = value;
+      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -2200,7 +2267,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearResumeToken() {
-
+      bitField0_ = (bitField0_ & ~0x00000080);
       resumeToken_ = getDefaultInstance().getResumeToken();
       onChanged();
       return this;
@@ -2244,8 +2311,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       partitionToken_ = value;
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }
@@ -2264,7 +2331,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearPartitionToken() {
-
+      bitField0_ = (bitField0_ & ~0x00000100);
       partitionToken_ = getDefaultInstance().getPartitionToken();
       onChanged();
       return this;
@@ -2288,7 +2355,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the requestOptions field is set.
      */
     public boolean hasRequestOptions() {
-      return requestOptionsBuilder_ != null || requestOptions_ != null;
+      return ((bitField0_ & 0x00000200) != 0);
     }
     /**
      *
@@ -2325,11 +2392,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         requestOptions_ = value;
-        onChanged();
       } else {
         requestOptionsBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000200;
+      onChanged();
       return this;
     }
     /**
@@ -2344,11 +2411,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public Builder setRequestOptions(com.google.spanner.v1.RequestOptions.Builder builderForValue) {
       if (requestOptionsBuilder_ == null) {
         requestOptions_ = builderForValue.build();
-        onChanged();
       } else {
         requestOptionsBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000200;
+      onChanged();
       return this;
     }
     /**
@@ -2362,19 +2429,18 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeRequestOptions(com.google.spanner.v1.RequestOptions value) {
       if (requestOptionsBuilder_ == null) {
-        if (requestOptions_ != null) {
-          requestOptions_ =
-              com.google.spanner.v1.RequestOptions.newBuilder(requestOptions_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000200) != 0)
+            && requestOptions_ != null
+            && requestOptions_ != com.google.spanner.v1.RequestOptions.getDefaultInstance()) {
+          getRequestOptionsBuilder().mergeFrom(value);
         } else {
           requestOptions_ = value;
         }
-        onChanged();
       } else {
         requestOptionsBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000200;
+      onChanged();
       return this;
     }
     /**
@@ -2387,14 +2453,13 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
      */
     public Builder clearRequestOptions() {
-      if (requestOptionsBuilder_ == null) {
-        requestOptions_ = null;
-        onChanged();
-      } else {
-        requestOptions_ = null;
+      bitField0_ = (bitField0_ & ~0x00000200);
+      requestOptions_ = null;
+      if (requestOptionsBuilder_ != null) {
+        requestOptionsBuilder_.dispose();
         requestOptionsBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -2407,7 +2472,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
      */
     public com.google.spanner.v1.RequestOptions.Builder getRequestOptionsBuilder() {
-
+      bitField0_ |= 0x00000200;
       onChanged();
       return getRequestOptionsFieldBuilder().getBuilder();
     }
@@ -2453,6 +2518,68 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         requestOptions_ = null;
       }
       return requestOptionsBuilder_;
+    }
+
+    private boolean dataBoostEnabled_;
+    /**
+     *
+     *
+     * <pre>
+     * If this is for a partitioned read and this field is set to `true`, the
+     * request will be executed via Spanner independent compute resources.
+     * If the field is set to `true` but the request does not set
+     * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>bool data_boost_enabled = 15;</code>
+     *
+     * @return The dataBoostEnabled.
+     */
+    @java.lang.Override
+    public boolean getDataBoostEnabled() {
+      return dataBoostEnabled_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * If this is for a partitioned read and this field is set to `true`, the
+     * request will be executed via Spanner independent compute resources.
+     * If the field is set to `true` but the request does not set
+     * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>bool data_boost_enabled = 15;</code>
+     *
+     * @param value The dataBoostEnabled to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDataBoostEnabled(boolean value) {
+
+      dataBoostEnabled_ = value;
+      bitField0_ |= 0x00000400;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * If this is for a partitioned read and this field is set to `true`, the
+     * request will be executed via Spanner independent compute resources.
+     * If the field is set to `true` but the request does not set
+     * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>bool data_boost_enabled = 15;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearDataBoostEnabled() {
+      bitField0_ = (bitField0_ & ~0x00000400);
+      dataBoostEnabled_ = false;
+      onChanged();
+      return this;
     }
 
     @java.lang.Override

@@ -26,7 +26,9 @@ import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
@@ -46,17 +48,28 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 /** Integration tests for Role Permissions using {@link com.google.cloud.spanner.DatabaseRole}. */
 @Category(ParallelIntegrationTest.class)
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class ITDatabaseRolePermissionTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static DatabaseAdminClient dbAdminClient;
   private static RemoteSpannerHelper testHelper;
 
   private static List<DatabaseId> databasesToDrop;
+
+  @Parameter public DialectTestParameter dialect;
+
+  @Parameters(name = "Dialect = {0}")
+  public static List<DialectTestParameter> data() {
+    return ImmutableList.of(
+        new DialectTestParameter(Dialect.GOOGLE_STANDARD_SQL),
+        new DialectTestParameter(Dialect.POSTGRESQL));
+  }
 
   @BeforeClass
   public static void setUp() {
@@ -84,23 +97,23 @@ public class ITDatabaseRolePermissionTest {
     // Create database with table and role permission.
     final String dbRoleParent = "parent";
     final String databaseId = testHelper.getUniqueDatabaseId();
-    final String instanceId = testHelper.getInstanceId().getInstance();
+    final InstanceId instanceId = testHelper.getInstanceId();
 
-    final String createTableT = "CREATE TABLE T (\n" + "  K STRING(MAX),\n" + ") PRIMARY KEY(K)";
+    final String createTableT = getCreateTableStatement();
     final String createRoleParent = String.format("CREATE ROLE %s", dbRoleParent);
     final String grantSelectOnTableToParent =
-        String.format("GRANT SELECT ON TABLE T TO ROLE %s", dbRoleParent);
-
+        dialect.dialect == Dialect.POSTGRESQL
+            ? String.format("GRANT SELECT ON TABLE T TO %s", dbRoleParent)
+            : String.format("GRANT SELECT ON TABLE T TO ROLE %s", dbRoleParent);
     final Database createdDatabase =
-        dbAdminClient
-            .createDatabase(
-                instanceId,
-                databaseId,
-                ImmutableList.of(createTableT, createRoleParent, grantSelectOnTableToParent))
-            .get(5, TimeUnit.MINUTES);
+        createAndUpdateDatabase(
+            instanceId,
+            databaseId,
+            ImmutableList.of(createTableT, createRoleParent, grantSelectOnTableToParent));
 
     // Connect to db with dbRoleParent.
-    SpannerOptions options = SpannerOptions.newBuilder().setDatabaseRole(dbRoleParent).build();
+    SpannerOptions options =
+        testHelper.getOptions().toBuilder().setDatabaseRole(dbRoleParent).build();
 
     Spanner spanner = options.getService();
     DatabaseClient dbClient = spanner.getDatabaseClient(createdDatabase.getId());
@@ -118,11 +131,16 @@ public class ITDatabaseRolePermissionTest {
 
     // Revoke select Permission for dbRoleParent.
     final String revokeSelectOnTableFromParent =
-        String.format("REVOKE SELECT ON TABLE T FROM ROLE %s", dbRoleParent);
+        dialect.dialect == Dialect.POSTGRESQL
+            ? String.format("REVOKE SELECT ON TABLE T FROM %s", dbRoleParent)
+            : String.format("REVOKE SELECT ON TABLE T FROM ROLE %s", dbRoleParent);
 
     dbAdminClient
         .updateDatabaseDdl(
-            instanceId, databaseId, Arrays.asList(revokeSelectOnTableFromParent), null)
+            instanceId.getInstance(),
+            databaseId,
+            ImmutableList.of(revokeSelectOnTableFromParent),
+            null)
         .get(5, TimeUnit.MINUTES);
 
     // Test SELECT permissions to role dbRoleParent on table T.
@@ -137,7 +155,11 @@ public class ITDatabaseRolePermissionTest {
     final String dropTableT = "DROP TABLE T";
     final String dropRoleParent = String.format("DROP ROLE %s", dbRoleParent);
     dbAdminClient
-        .updateDatabaseDdl(instanceId, databaseId, Arrays.asList(dropTableT, dropRoleParent), null)
+        .updateDatabaseDdl(
+            instanceId.getInstance(),
+            databaseId,
+            ImmutableList.of(dropTableT, dropRoleParent),
+            null)
         .get(5, TimeUnit.MINUTES);
     databasesToDrop.add(createdDatabase.getId());
   }
@@ -146,19 +168,18 @@ public class ITDatabaseRolePermissionTest {
   public void roleWithNoPermissions() throws Exception {
     final String dbRoleOrphan = testHelper.getUniqueDatabaseRole();
     final String databaseId = testHelper.getUniqueDatabaseId();
-    final String instanceId = testHelper.getInstanceId().getInstance();
+    final InstanceId instanceId = testHelper.getInstanceId();
 
-    final String createTableT = "CREATE TABLE T (\n" + "  K STRING(MAX),\n" + ") PRIMARY KEY(K)";
+    final String createTableT = getCreateTableStatement();
     final String createRoleOrphan = String.format("CREATE ROLE %s", dbRoleOrphan);
 
     final Database createdDatabase =
-        dbAdminClient
-            .createDatabase(
-                instanceId, databaseId, ImmutableList.of(createTableT, createRoleOrphan))
-            .get(5, TimeUnit.MINUTES);
+        createAndUpdateDatabase(
+            instanceId, databaseId, ImmutableList.of(createTableT, createRoleOrphan));
 
     // Connect to db with dbRoleOrphan
-    SpannerOptions options = SpannerOptions.newBuilder().setDatabaseRole(dbRoleOrphan).build();
+    SpannerOptions options =
+        testHelper.getOptions().toBuilder().setDatabaseRole(dbRoleOrphan).build();
 
     Spanner spanner = options.getService();
     DatabaseClient dbClient = spanner.getDatabaseClient(createdDatabase.getId());
@@ -175,8 +196,48 @@ public class ITDatabaseRolePermissionTest {
     final String dropTableT = "DROP TABLE T";
     final String dropRoleParent = String.format("DROP ROLE %s", dbRoleOrphan);
     dbAdminClient
-        .updateDatabaseDdl(instanceId, databaseId, Arrays.asList(dropTableT, dropRoleParent), null)
+        .updateDatabaseDdl(
+            instanceId.getInstance(), databaseId, Arrays.asList(dropTableT, dropRoleParent), null)
         .get(5, TimeUnit.MINUTES);
     databasesToDrop.add(createdDatabase.getId());
+  }
+
+  private Database createAndUpdateDatabase(
+      final InstanceId instanceId, final String databaseId, final List<String> statements)
+      throws Exception {
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      // DDL statements other than <CREATE DATABASE> are not allowed in database creation request
+      // for PostgreSQL-enabled databases.
+      final Database database =
+          dbAdminClient
+              .createDatabase(
+                  dbAdminClient
+                      .newDatabaseBuilder(DatabaseId.of(instanceId, databaseId))
+                      .setDialect(dialect.dialect)
+                      .build(),
+                  ImmutableList.of())
+              .get(5, TimeUnit.MINUTES);
+      dbAdminClient
+          .updateDatabaseDdl(instanceId.getInstance(), databaseId, statements, null)
+          .get(5, TimeUnit.MINUTES);
+      return database;
+    } else {
+      return dbAdminClient
+          .createDatabase(
+              dbAdminClient
+                  .newDatabaseBuilder(DatabaseId.of(instanceId, databaseId))
+                  .setDialect(dialect.dialect)
+                  .build(),
+              statements)
+          .get(5, TimeUnit.MINUTES);
+    }
+  }
+
+  private String getCreateTableStatement() {
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      return "CREATE TABLE T (" + "  \"K\"    VARCHAR PRIMARY KEY" + ")";
+    } else {
+      return "CREATE TABLE T (" + "  K    STRING(MAX)" + ") PRIMARY KEY (K)";
+    }
   }
 }

@@ -30,6 +30,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 /**
@@ -72,7 +73,8 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
     return new Builder();
   }
 
-  private ReadOnlyTransaction(Builder builder) {
+  @VisibleForTesting
+  ReadOnlyTransaction(Builder builder) {
     super(builder);
     this.dbClient = builder.dbClient;
     this.readOnlyStaleness = builder.readOnlyStaleness;
@@ -94,7 +96,7 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  void checkValidTransaction() {
+  void checkOrCreateValidTransaction(ParsedStatement statement, CallType callType) {
     if (transaction == null) {
       transaction = dbClient.readOnlyTransaction(readOnlyStaleness);
     }
@@ -152,13 +154,14 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<Void> executeDdlAsync(ParsedStatement ddl) {
+  public ApiFuture<Void> executeDdlAsync(CallType callType, ParsedStatement ddl) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "DDL statements are not allowed for read-only transactions");
   }
 
   @Override
-  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options) {
+  public ApiFuture<Long> executeUpdateAsync(
+      CallType callType, ParsedStatement update, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "Update statements are not allowed for read-only transactions");
@@ -166,7 +169,7 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public ApiFuture<ResultSet> analyzeUpdateAsync(
-      ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
+      CallType callType, ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "Analyzing updates is not allowed for read-only transactions");
@@ -174,19 +177,19 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(
-      Iterable<ParsedStatement> updates, UpdateOption... options) {
+      CallType callType, Iterable<ParsedStatement> updates, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Batch updates are not allowed for read-only transactions.");
   }
 
   @Override
-  public ApiFuture<Void> writeAsync(Iterable<Mutation> mutations) {
+  public ApiFuture<Void> writeAsync(CallType callType, Iterable<Mutation> mutations) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Mutations are not allowed for read-only transactions");
   }
 
   @Override
-  public ApiFuture<Void> commitAsync() {
+  public ApiFuture<Void> commitAsync(CallType callType) {
     if (this.transaction != null) {
       this.transaction.close();
     }
@@ -195,11 +198,26 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<Void> rollbackAsync() {
+  public ApiFuture<Void> rollbackAsync(CallType callType) {
     if (this.transaction != null) {
       this.transaction.close();
     }
     this.state = UnitOfWorkState.ROLLED_BACK;
     return ApiFutures.immediateFuture(null);
+  }
+
+  @Override
+  String getUnitOfWorkName() {
+    return "read-only transaction";
+  }
+
+  Savepoint savepoint(String name) {
+    // Read-only transactions do not keep track of the executed statements as they also do not take
+    // any locks. There is therefore no savepoint positions that must be rolled back to.
+    return Savepoint.of(name);
+  }
+
+  void rollbackToSavepoint(Savepoint savepoint) {
+    // no-op for read-only transactions
   }
 }

@@ -68,7 +68,9 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
   }
 
   public static final int DATABASE_FIELD_NUMBER = 1;
-  private volatile java.lang.Object database_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object database_ = "";
   /**
    *
    *
@@ -163,7 +165,7 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
    */
   @java.lang.Override
   public com.google.spanner.v1.SessionOrBuilder getSessionOrBuilder() {
-    return getSession();
+    return session_ == null ? com.google.spanner.v1.Session.getDefaultInstance() : session_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -377,12 +379,11 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       database_ = "";
-
-      if (sessionBuilder_ == null) {
-        session_ = null;
-      } else {
-        session_ = null;
+      session_ = null;
+      if (sessionBuilder_ != null) {
+        sessionBuilder_.dispose();
         sessionBuilder_ = null;
       }
       return this;
@@ -412,14 +413,21 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
     public com.google.spanner.v1.CreateSessionRequest buildPartial() {
       com.google.spanner.v1.CreateSessionRequest result =
           new com.google.spanner.v1.CreateSessionRequest(this);
-      result.database_ = database_;
-      if (sessionBuilder_ == null) {
-        result.session_ = session_;
-      } else {
-        result.session_ = sessionBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.CreateSessionRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.database_ = database_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.session_ = sessionBuilder_ == null ? session_ : sessionBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -469,6 +477,7 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
       if (other == com.google.spanner.v1.CreateSessionRequest.getDefaultInstance()) return this;
       if (!other.getDatabase().isEmpty()) {
         database_ = other.database_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (other.hasSession()) {
@@ -503,13 +512,13 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
             case 10:
               {
                 database_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 input.readMessage(getSessionFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             default:
@@ -528,6 +537,8 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private java.lang.Object database_ = "";
     /**
@@ -596,8 +607,8 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
       if (value == null) {
         throw new NullPointerException();
       }
-
       database_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -615,8 +626,8 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
      * @return This builder for chaining.
      */
     public Builder clearDatabase() {
-
       database_ = getDefaultInstance().getDatabase();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -639,8 +650,8 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       database_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -664,7 +675,7 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
      * @return Whether the session field is set.
      */
     public boolean hasSession() {
-      return sessionBuilder_ != null || session_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -701,11 +712,11 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
           throw new NullPointerException();
         }
         session_ = value;
-        onChanged();
       } else {
         sessionBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -721,11 +732,11 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
     public Builder setSession(com.google.spanner.v1.Session.Builder builderForValue) {
       if (sessionBuilder_ == null) {
         session_ = builderForValue.build();
-        onChanged();
       } else {
         sessionBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -740,17 +751,18 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
      */
     public Builder mergeSession(com.google.spanner.v1.Session value) {
       if (sessionBuilder_ == null) {
-        if (session_ != null) {
-          session_ =
-              com.google.spanner.v1.Session.newBuilder(session_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && session_ != null
+            && session_ != com.google.spanner.v1.Session.getDefaultInstance()) {
+          getSessionBuilder().mergeFrom(value);
         } else {
           session_ = value;
         }
-        onChanged();
       } else {
         sessionBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -764,14 +776,13 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
      * </code>
      */
     public Builder clearSession() {
-      if (sessionBuilder_ == null) {
-        session_ = null;
-        onChanged();
-      } else {
-        session_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      session_ = null;
+      if (sessionBuilder_ != null) {
+        sessionBuilder_.dispose();
         sessionBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -785,7 +796,7 @@ public final class CreateSessionRequest extends com.google.protobuf.GeneratedMes
      * </code>
      */
     public com.google.spanner.v1.Session.Builder getSessionBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getSessionFieldBuilder().getBuilder();
     }

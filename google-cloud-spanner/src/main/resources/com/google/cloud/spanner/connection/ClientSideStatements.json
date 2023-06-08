@@ -141,6 +141,24 @@
 		"exampleStatements": ["show variable rpc_priority"]
 	},
 	{
+		"name": "SHOW VARIABLE SAVEPOINT_SUPPORT",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_SAVEPOINT_SUPPORT",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+savepoint_support\\s*\\z",
+		"method": "statementShowSavepointSupport",
+		"exampleStatements": ["show variable savepoint_support"]
+	},
+	{
+		"name": "SHOW VARIABLE DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+delay_transaction_start_until_first_write\\s*\\z",
+		"method": "statementShowDelayTransactionStartUntilFirstWrite",
+		"exampleStatements": ["show variable delay_transaction_start_until_first_write"]
+	},
+	{
 	  "name": "BEGIN TRANSACTION",
 	  "executorName": "ClientSideStatementNoParamExecutor",
 	  "resultType": "NO_RESULT",
@@ -422,6 +440,39 @@
 			"separator": "=",
 			"allowedValues": "'(HIGH|MEDIUM|LOW|NULL)'",
 			"converterName": "ClientSideStatementValueConverters$RpcPriorityConverter"
+		}
+	},
+	{
+		"name": "SET SAVEPOINT_SUPPORT = 'ENABLED'|'FAIL_AFTER_ROLLBACK'|'DISABLED'",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_SAVEPOINT_SUPPORT",
+		"regex": "(?is)\\A\\s*set\\s+savepoint_support\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetSavepointSupport",
+		"exampleStatements": [
+			"set savepoint_support='ENABLED'",
+			"set savepoint_support='FAIL_AFTER_ROLLBACK'",
+			"set savepoint_support='DISABLED'"],
+		"setStatement": {
+			"propertyName": "SAVEPOINT_SUPPORT",
+			"separator": "=",
+			"allowedValues": "'(ENABLED|FAIL_AFTER_ROLLBACK|DISABLED)'",
+			"converterName": "ClientSideStatementValueConverters$SavepointSupportConverter"
+		}
+	},
+	{
+		"name": "SET DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE = TRUE|FALSE",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE",
+		"regex": "(?is)\\A\\s*set\\s+delay_transaction_start_until_first_write\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetDelayTransactionStartUntilFirstWrite",
+		"exampleStatements": ["set delay_transaction_start_until_first_write = true", "set delay_transaction_start_until_first_write = false"],
+		"setStatement": {
+			"propertyName": "DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE",
+			"separator": "=",
+			"allowedValues": "(TRUE|FALSE)",
+			"converterName": "ClientSideStatementValueConverters$BooleanConverter"
 		}
 	}
 	]

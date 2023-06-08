@@ -91,7 +91,8 @@ public final class BatchClientImplTest {
     com.google.protobuf.Timestamp timestamp = Timestamps.parse(TIMESTAMP);
     Transaction txnMetadata =
         Transaction.newBuilder().setId(TXN_ID).setReadTimestamp(timestamp).build();
-    when(gapicRpc.beginTransaction(Mockito.any(), optionsCaptor.capture())).thenReturn(txnMetadata);
+    when(gapicRpc.beginTransaction(Mockito.any(), optionsCaptor.capture(), eq(false)))
+        .thenReturn(txnMetadata);
 
     BatchReadOnlyTransaction batchTxn = client.batchReadOnlyTransaction(TimestampBound.strong());
     assertThat(batchTxn.getBatchTransactionId().getSessionId()).isEqualTo(SESSION_NAME);

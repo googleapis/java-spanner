@@ -49,8 +49,10 @@ public class SessionPoolOptions {
   private final Duration removeInactiveSessionAfter;
   private final ActionOnSessionNotFound actionOnSessionNotFound;
   private final ActionOnSessionLeak actionOnSessionLeak;
+  private final boolean trackStackTraceOfSessionCheckout;
   private final long initialWaitForSessionTimeoutMillis;
   private final boolean autoDetectDialect;
+  private final Duration waitForMinSessions;
 
   private SessionPoolOptions(Builder builder) {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
@@ -64,11 +66,13 @@ public class SessionPoolOptions {
     this.actionOnExhaustion = builder.actionOnExhaustion;
     this.actionOnSessionNotFound = builder.actionOnSessionNotFound;
     this.actionOnSessionLeak = builder.actionOnSessionLeak;
+    this.trackStackTraceOfSessionCheckout = builder.trackStackTraceOfSessionCheckout;
     this.initialWaitForSessionTimeoutMillis = builder.initialWaitForSessionTimeoutMillis;
     this.loopFrequency = builder.loopFrequency;
     this.keepAliveIntervalMinutes = builder.keepAliveIntervalMinutes;
     this.removeInactiveSessionAfter = builder.removeInactiveSessionAfter;
     this.autoDetectDialect = builder.autoDetectDialect;
+    this.waitForMinSessions = builder.waitForMinSessions;
   }
 
   @Override
@@ -86,11 +90,14 @@ public class SessionPoolOptions {
         && Objects.equals(this.actionOnSessionNotFound, other.actionOnSessionNotFound)
         && Objects.equals(this.actionOnSessionLeak, other.actionOnSessionLeak)
         && Objects.equals(
+            this.trackStackTraceOfSessionCheckout, other.trackStackTraceOfSessionCheckout)
+        && Objects.equals(
             this.initialWaitForSessionTimeoutMillis, other.initialWaitForSessionTimeoutMillis)
         && Objects.equals(this.loopFrequency, other.loopFrequency)
         && Objects.equals(this.keepAliveIntervalMinutes, other.keepAliveIntervalMinutes)
         && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter)
-        && Objects.equals(this.autoDetectDialect, other.autoDetectDialect);
+        && Objects.equals(this.autoDetectDialect, other.autoDetectDialect)
+        && Objects.equals(this.waitForMinSessions, other.waitForMinSessions);
   }
 
   @Override
@@ -104,11 +111,13 @@ public class SessionPoolOptions {
         this.actionOnExhaustion,
         this.actionOnSessionNotFound,
         this.actionOnSessionLeak,
+        this.trackStackTraceOfSessionCheckout,
         this.initialWaitForSessionTimeoutMillis,
         this.loopFrequency,
         this.keepAliveIntervalMinutes,
         this.removeInactiveSessionAfter,
-        this.autoDetectDialect);
+        this.autoDetectDialect,
+        this.waitForMinSessions);
   }
 
   public Builder toBuilder() {
@@ -186,6 +195,15 @@ public class SessionPoolOptions {
     return actionOnSessionLeak == ActionOnSessionLeak.FAIL;
   }
 
+  public boolean isTrackStackTraceOfSessionCheckout() {
+    return trackStackTraceOfSessionCheckout;
+  }
+
+  @VisibleForTesting
+  Duration getWaitForMinSessions() {
+    return waitForMinSessions;
+  }
+
   public static Builder newBuilder() {
     return new Builder();
   }
@@ -225,10 +243,22 @@ public class SessionPoolOptions {
     private long initialWaitForSessionTimeoutMillis = 30_000L;
     private ActionOnSessionNotFound actionOnSessionNotFound = ActionOnSessionNotFound.RETRY;
     private ActionOnSessionLeak actionOnSessionLeak = ActionOnSessionLeak.WARN;
+    /**
+     * Capture the call stack of the thread that checked out a session of the pool. This will
+     * pre-create a {@link com.google.cloud.spanner.SessionPool.LeakedSessionException} already when
+     * a session is checked out. This can be disabled by users, for example if their monitoring
+     * systems log the pre-created exception. If disabled, the {@link
+     * com.google.cloud.spanner.SessionPool.LeakedSessionException} will only be created when an
+     * actual session leak is detected. The stack trace of the exception will in that case not
+     * contain the call stack of when the session was checked out.
+     */
+    private boolean trackStackTraceOfSessionCheckout = true;
+
     private long loopFrequency = 10 * 1000L;
     private int keepAliveIntervalMinutes = 30;
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
     private boolean autoDetectDialect = false;
+    private Duration waitForMinSessions = Duration.ZERO;
 
     public Builder() {}
 
@@ -243,10 +273,12 @@ public class SessionPoolOptions {
       this.initialWaitForSessionTimeoutMillis = options.initialWaitForSessionTimeoutMillis;
       this.actionOnSessionNotFound = options.actionOnSessionNotFound;
       this.actionOnSessionLeak = options.actionOnSessionLeak;
+      this.trackStackTraceOfSessionCheckout = options.trackStackTraceOfSessionCheckout;
       this.loopFrequency = options.loopFrequency;
       this.keepAliveIntervalMinutes = options.keepAliveIntervalMinutes;
       this.removeInactiveSessionAfter = options.removeInactiveSessionAfter;
       this.autoDetectDialect = options.autoDetectDialect;
+      this.waitForMinSessions = options.waitForMinSessions;
     }
 
     /**
@@ -383,6 +415,21 @@ public class SessionPoolOptions {
     }
 
     /**
+     * Sets whether the session pool should capture the call stack trace when a session is checked
+     * out of the pool. This will internally prepare a {@link
+     * com.google.cloud.spanner.SessionPool.LeakedSessionException} that will only be thrown if the
+     * session is actually leaked. This makes it easier to debug session leaks, as the stack trace
+     * of the thread that checked out the session will be available in the exception.
+     *
+     * <p>Some monitoring tools might log these exceptions even though they are not thrown. This
+     * option can be used to suppress the creation and logging of these exceptions.
+     */
+    public Builder setTrackStackTraceOfSessionCheckout(boolean trackStackTraceOfSessionCheckout) {
+      this.trackStackTraceOfSessionCheckout = trackStackTraceOfSessionCheckout;
+      return this;
+    }
+
+    /**
      * @deprecated This configuration value is no longer in use. The session pool does not prepare
      *     any sessions for read/write transactions. Instead, a transaction will automatically be
      *     started by the first statement that is executed by a transaction by including a
@@ -391,6 +438,21 @@ public class SessionPoolOptions {
      */
     public Builder setWriteSessionsFraction(float writeSessionsFraction) {
       this.writeSessionsFraction = writeSessionsFraction;
+      return this;
+    }
+
+    /**
+     * If greater than zero, waits for the session pool to have at least {@link
+     * SessionPoolOptions#minSessions} before returning the database client to the caller. Note that
+     * this check is only done during the session pool creation. This is usually done asynchronously
+     * in order to provide the client back to the caller as soon as possible. We don't recommend
+     * using this option unless you are executing benchmarks and want to guarantee the session pool
+     * has min sessions in the pool before continuing.
+     *
+     * <p>Defaults to zero (initialization is done asynchronously).
+     */
+    public Builder setWaitForMinSessions(Duration waitForMinSessions) {
+      this.waitForMinSessions = waitForMinSessions;
       return this;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,14 @@ public final class SpannerDatabaseAdminProto {
       internal_static_google_spanner_admin_database_v1_GetDatabaseRequest_descriptor;
   static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_google_spanner_admin_database_v1_GetDatabaseRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_admin_database_v1_UpdateDatabaseRequest_descriptor;
+  static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_google_spanner_admin_database_v1_UpdateDatabaseRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_admin_database_v1_UpdateDatabaseMetadata_descriptor;
+  static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_google_spanner_admin_database_v1_UpdateDatabaseMetadata_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
       internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlRequest_descriptor;
   static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -120,265 +128,285 @@ public final class SpannerDatabaseAdminProto {
 
   static {
     java.lang.String[] descriptorData = {
-      "\n=google/spanner/admin/database/v1/spann"
-          + "er_database_admin.proto\022 google.spanner."
-          + "admin.database.v1\032\034google/api/annotation"
-          + "s.proto\032\027google/api/client.proto\032\037google"
-          + "/api/field_behavior.proto\032\031google/api/re"
-          + "source.proto\032\036google/iam/v1/iam_policy.p"
-          + "roto\032\032google/iam/v1/policy.proto\032#google"
-          + "/longrunning/operations.proto\032\033google/pr"
-          + "otobuf/empty.proto\032\037google/protobuf/time"
-          + "stamp.proto\032-google/spanner/admin/databa"
-          + "se/v1/backup.proto\032-google/spanner/admin"
-          + "/database/v1/common.proto\"\253\001\n\013RestoreInf"
-          + "o\022H\n\013source_type\030\001 \001(\01623.google.spanner."
-          + "admin.database.v1.RestoreSourceType\022C\n\013b"
-          + "ackup_info\030\002 \001(\0132,.google.spanner.admin."
-          + "database.v1.BackupInfoH\000B\r\n\013source_info\""
-          + "\220\006\n\010Database\022\021\n\004name\030\001 \001(\tB\003\340A\002\022D\n\005state"
-          + "\030\002 \001(\01620.google.spanner.admin.database.v"
-          + "1.Database.StateB\003\340A\003\0224\n\013create_time\030\003 \001"
-          + "(\0132\032.google.protobuf.TimestampB\003\340A\003\022H\n\014r"
-          + "estore_info\030\004 \001(\0132-.google.spanner.admin"
-          + ".database.v1.RestoreInfoB\003\340A\003\022R\n\021encrypt"
-          + "ion_config\030\005 \001(\01322.google.spanner.admin."
-          + "database.v1.EncryptionConfigB\003\340A\003\022N\n\017enc"
-          + "ryption_info\030\010 \003(\01320.google.spanner.admi"
-          + "n.database.v1.EncryptionInfoB\003\340A\003\022%\n\030ver"
-          + "sion_retention_period\030\006 \001(\tB\003\340A\003\022>\n\025earl"
-          + "iest_version_time\030\007 \001(\0132\032.google.protobu"
-          + "f.TimestampB\003\340A\003\022\033\n\016default_leader\030\t \001(\t"
-          + "B\003\340A\003\022P\n\020database_dialect\030\n \001(\01621.google"
-          + ".spanner.admin.database.v1.DatabaseDiale"
-          + "ctB\003\340A\003\"M\n\005State\022\025\n\021STATE_UNSPECIFIED\020\000\022"
-          + "\014\n\010CREATING\020\001\022\t\n\005READY\020\002\022\024\n\020READY_OPTIMI"
-          + "ZING\020\003:b\352A_\n\037spanner.googleapis.com/Data"
-          + "base\022<projects/{project}/instances/{inst"
-          + "ance}/databases/{database}\"v\n\024ListDataba"
-          + "sesRequest\0227\n\006parent\030\001 \001(\tB\'\340A\002\372A!\n\037span"
-          + "ner.googleapis.com/Instance\022\021\n\tpage_size"
-          + "\030\003 \001(\005\022\022\n\npage_token\030\004 \001(\t\"o\n\025ListDataba"
-          + "sesResponse\022=\n\tdatabases\030\001 \003(\0132*.google."
-          + "spanner.admin.database.v1.Database\022\027\n\017ne"
-          + "xt_page_token\030\002 \001(\t\"\324\002\n\025CreateDatabaseRe"
-          + "quest\0227\n\006parent\030\001 \001(\tB\'\340A\002\372A!\n\037spanner.g"
-          + "oogleapis.com/Instance\022\035\n\020create_stateme"
-          + "nt\030\002 \001(\tB\003\340A\002\022\035\n\020extra_statements\030\003 \003(\tB"
-          + "\003\340A\001\022R\n\021encryption_config\030\004 \001(\01322.google"
-          + ".spanner.admin.database.v1.EncryptionCon"
-          + "figB\003\340A\001\022P\n\020database_dialect\030\005 \001(\01621.goo"
-          + "gle.spanner.admin.database.v1.DatabaseDi"
-          + "alectB\003\340A\001\022\036\n\021proto_descriptors\030\006 \001(\014B\003\340"
-          + "A\001\"P\n\026CreateDatabaseMetadata\0226\n\010database"
-          + "\030\001 \001(\tB$\372A!\n\037spanner.googleapis.com/Data"
-          + "base\"K\n\022GetDatabaseRequest\0225\n\004name\030\001 \001(\t"
-          + "B\'\340A\002\372A!\n\037spanner.googleapis.com/Databas"
-          + "e\"\244\001\n\030UpdateDatabaseDdlRequest\0229\n\010databa"
-          + "se\030\001 \001(\tB\'\340A\002\372A!\n\037spanner.googleapis.com"
-          + "/Database\022\027\n\nstatements\030\002 \003(\tB\003\340A\002\022\024\n\014op"
-          + "eration_id\030\003 \001(\t\022\036\n\021proto_descriptors\030\004 "
-          + "\001(\014B\003\340A\001\"\375\001\n\031UpdateDatabaseDdlMetadata\0226"
-          + "\n\010database\030\001 \001(\tB$\372A!\n\037spanner.googleapi"
-          + "s.com/Database\022\022\n\nstatements\030\002 \003(\t\0225\n\021co"
-          + "mmit_timestamps\030\003 \003(\0132\032.google.protobuf."
-          + "Timestamp\022\026\n\tthrottled\030\004 \001(\010B\003\340A\003\022E\n\010pro"
-          + "gress\030\005 \003(\01323.google.spanner.admin.datab"
-          + "ase.v1.OperationProgress\"P\n\023DropDatabase"
-          + "Request\0229\n\010database\030\001 \001(\tB\'\340A\002\372A!\n\037spann"
-          + "er.googleapis.com/Database\"R\n\025GetDatabas"
-          + "eDdlRequest\0229\n\010database\030\001 \001(\tB\'\340A\002\372A!\n\037s"
-          + "panner.googleapis.com/Database\"G\n\026GetDat"
-          + "abaseDdlResponse\022\022\n\nstatements\030\001 \003(\t\022\031\n\021"
-          + "proto_descriptors\030\002 \001(\014\"\217\001\n\035ListDatabase"
-          + "OperationsRequest\0227\n\006parent\030\001 \001(\tB\'\340A\002\372A"
-          + "!\n\037spanner.googleapis.com/Instance\022\016\n\006fi"
-          + "lter\030\002 \001(\t\022\021\n\tpage_size\030\003 \001(\005\022\022\n\npage_to"
-          + "ken\030\004 \001(\t\"l\n\036ListDatabaseOperationsRespo"
-          + "nse\0221\n\noperations\030\001 \003(\0132\035.google.longrun"
-          + "ning.Operation\022\027\n\017next_page_token\030\002 \001(\t\""
-          + "\216\002\n\026RestoreDatabaseRequest\0227\n\006parent\030\001 \001"
-          + "(\tB\'\340A\002\372A!\n\037spanner.googleapis.com/Insta"
-          + "nce\022\030\n\013database_id\030\002 \001(\tB\003\340A\002\0224\n\006backup\030"
-          + "\003 \001(\tB\"\372A\037\n\035spanner.googleapis.com/Backu"
-          + "pH\000\022a\n\021encryption_config\030\004 \001(\0132A.google."
-          + "spanner.admin.database.v1.RestoreDatabas"
-          + "eEncryptionConfigB\003\340A\001B\010\n\006source\"\363\002\n\037Res"
-          + "toreDatabaseEncryptionConfig\022n\n\017encrypti"
-          + "on_type\030\001 \001(\0162P.google.spanner.admin.dat"
-          + "abase.v1.RestoreDatabaseEncryptionConfig"
-          + ".EncryptionTypeB\003\340A\002\022?\n\014kms_key_name\030\002 \001"
-          + "(\tB)\340A\001\372A#\n!cloudkms.googleapis.com/Cryp"
-          + "toKey\"\236\001\n\016EncryptionType\022\037\n\033ENCRYPTION_T"
-          + "YPE_UNSPECIFIED\020\000\022+\n\'USE_CONFIG_DEFAULT_"
-          + "OR_BACKUP_ENCRYPTION\020\001\022\035\n\031GOOGLE_DEFAULT"
-          + "_ENCRYPTION\020\002\022\037\n\033CUSTOMER_MANAGED_ENCRYP"
-          + "TION\020\003\"\215\003\n\027RestoreDatabaseMetadata\0222\n\004na"
-          + "me\030\001 \001(\tB$\372A!\n\037spanner.googleapis.com/Da"
-          + "tabase\022H\n\013source_type\030\002 \001(\01623.google.spa"
-          + "nner.admin.database.v1.RestoreSourceType"
-          + "\022C\n\013backup_info\030\003 \001(\0132,.google.spanner.a"
-          + "dmin.database.v1.BackupInfoH\000\022E\n\010progres"
-          + "s\030\004 \001(\01323.google.spanner.admin.database."
-          + "v1.OperationProgress\022/\n\013cancel_time\030\005 \001("
-          + "\0132\032.google.protobuf.Timestamp\022(\n optimiz"
-          + "e_database_operation_name\030\006 \001(\tB\r\n\013sourc"
-          + "e_info\"\235\001\n OptimizeRestoredDatabaseMetad"
-          + "ata\0222\n\004name\030\001 \001(\tB$\372A!\n\037spanner.googleap"
-          + "is.com/Database\022E\n\010progress\030\002 \001(\01323.goog"
-          + "le.spanner.admin.database.v1.OperationPr"
-          + "ogress\"\236\001\n\014DatabaseRole\022\021\n\004name\030\001 \001(\tB\003\340"
-          + "A\002:{\352Ax\n#spanner.googleapis.com/Database"
-          + "Role\022Qprojects/{project}/instances/{inst"
-          + "ance}/databases/{database}/databaseRoles"
-          + "/{role}\"z\n\030ListDatabaseRolesRequest\0227\n\006p"
-          + "arent\030\001 \001(\tB\'\340A\002\372A!\n\037spanner.googleapis."
-          + "com/Database\022\021\n\tpage_size\030\002 \001(\005\022\022\n\npage_"
-          + "token\030\003 \001(\t\"|\n\031ListDatabaseRolesResponse"
-          + "\022F\n\016database_roles\030\001 \003(\0132..google.spanne"
-          + "r.admin.database.v1.DatabaseRole\022\027\n\017next"
-          + "_page_token\030\002 \001(\t*5\n\021RestoreSourceType\022\024"
-          + "\n\020TYPE_UNSPECIFIED\020\000\022\n\n\006BACKUP\020\0012\374#\n\rDat"
-          + "abaseAdmin\022\300\001\n\rListDatabases\0226.google.sp"
-          + "anner.admin.database.v1.ListDatabasesReq"
-          + "uest\0327.google.spanner.admin.database.v1."
-          + "ListDatabasesResponse\">\202\323\344\223\002/\022-/v1/{pare"
-          + "nt=projects/*/instances/*}/databases\332A\006p"
-          + "arent\022\244\002\n\016CreateDatabase\0227.google.spanne"
-          + "r.admin.database.v1.CreateDatabaseReques"
-          + "t\032\035.google.longrunning.Operation\"\271\001\202\323\344\223\002"
-          + "2\"-/v1/{parent=projects/*/instances/*}/d"
-          + "atabases:\001*\332A\027parent,create_statement\312Ad"
-          + "\n)google.spanner.admin.database.v1.Datab"
-          + "ase\0227google.spanner.admin.database.v1.Cr"
-          + "eateDatabaseMetadata\022\255\001\n\013GetDatabase\0224.g"
-          + "oogle.spanner.admin.database.v1.GetDatab"
-          + "aseRequest\032*.google.spanner.admin.databa"
-          + "se.v1.Database\"<\202\323\344\223\002/\022-/v1/{name=projec"
-          + "ts/*/instances/*/databases/*}\332A\004name\022\235\002\n"
-          + "\021UpdateDatabaseDdl\022:.google.spanner.admi"
-          + "n.database.v1.UpdateDatabaseDdlRequest\032\035"
-          + ".google.longrunning.Operation\"\254\001\202\323\344\223\002:25"
-          + "/v1/{database=projects/*/instances/*/dat"
-          + "abases/*}/ddl:\001*\332A\023database,statements\312A"
-          + "S\n\025google.protobuf.Empty\022:google.spanner"
-          + ".admin.database.v1.UpdateDatabaseDdlMeta"
-          + "data\022\243\001\n\014DropDatabase\0225.google.spanner.a"
-          + "dmin.database.v1.DropDatabaseRequest\032\026.g"
-          + "oogle.protobuf.Empty\"D\202\323\344\223\0023*1/v1/{datab"
-          + "ase=projects/*/instances/*/databases/*}\332"
-          + "A\010database\022\315\001\n\016GetDatabaseDdl\0227.google.s"
-          + "panner.admin.database.v1.GetDatabaseDdlR"
-          + "equest\0328.google.spanner.admin.database.v"
-          + "1.GetDatabaseDdlResponse\"H\202\323\344\223\0027\0225/v1/{d"
-          + "atabase=projects/*/instances/*/databases"
-          + "/*}/ddl\332A\010database\022\353\001\n\014SetIamPolicy\022\".go"
-          + "ogle.iam.v1.SetIamPolicyRequest\032\025.google"
-          + ".iam.v1.Policy\"\237\001\202\323\344\223\002\206\001\">/v1/{resource="
-          + "projects/*/instances/*/databases/*}:setI"
-          + "amPolicy:\001*ZA\"</v1/{resource=projects/*/"
-          + "instances/*/backups/*}:setIamPolicy:\001*\332A"
-          + "\017resource,policy\022\344\001\n\014GetIamPolicy\022\".goog"
-          + "le.iam.v1.GetIamPolicyRequest\032\025.google.i"
-          + "am.v1.Policy\"\230\001\202\323\344\223\002\206\001\">/v1/{resource=pr"
-          + "ojects/*/instances/*/databases/*}:getIam"
-          + "Policy:\001*ZA\"</v1/{resource=projects/*/in"
-          + "stances/*/backups/*}:getIamPolicy:\001*\332A\010r"
-          + "esource\022\367\002\n\022TestIamPermissions\022(.google."
-          + "iam.v1.TestIamPermissionsRequest\032).googl"
-          + "e.iam.v1.TestIamPermissionsResponse\"\213\002\202\323"
-          + "\344\223\002\355\001\"D/v1/{resource=projects/*/instance"
-          + "s/*/databases/*}:testIamPermissions:\001*ZG"
-          + "\"B/v1/{resource=projects/*/instances/*/b"
-          + "ackups/*}:testIamPermissions:\001*ZY\"T/v1/{"
-          + "resource=projects/*/instances/*/database"
-          + "s/*/databaseRoles/*}:testIamPermissions:"
-          + "\001*\332A\024resource,permissions\022\237\002\n\014CreateBack"
-          + "up\0225.google.spanner.admin.database.v1.Cr"
-          + "eateBackupRequest\032\035.google.longrunning.O"
-          + "peration\"\270\001\202\323\344\223\0025\"+/v1/{parent=projects/"
-          + "*/instances/*}/backups:\006backup\332A\027parent,"
-          + "backup,backup_id\312A`\n\'google.spanner.admi"
-          + "n.database.v1.Backup\0225google.spanner.adm"
-          + "in.database.v1.CreateBackupMetadata\022\254\002\n\n"
-          + "CopyBackup\0223.google.spanner.admin.databa"
-          + "se.v1.CopyBackupRequest\032\035.google.longrun"
-          + "ning.Operation\"\311\001\202\323\344\223\0025\"0/v1/{parent=pro"
-          + "jects/*/instances/*}/backups:copy:\001*\332A*p"
-          + "arent,backup_id,source_backup,expire_tim"
-          + "e\312A^\n\'google.spanner.admin.database.v1.B"
-          + "ackup\0223google.spanner.admin.database.v1."
-          + "CopyBackupMetadata\022\245\001\n\tGetBackup\0222.googl"
-          + "e.spanner.admin.database.v1.GetBackupReq"
-          + "uest\032(.google.spanner.admin.database.v1."
-          + "Backup\":\202\323\344\223\002-\022+/v1/{name=projects/*/ins"
-          + "tances/*/backups/*}\332A\004name\022\310\001\n\014UpdateBac"
-          + "kup\0225.google.spanner.admin.database.v1.U"
-          + "pdateBackupRequest\032(.google.spanner.admi"
-          + "n.database.v1.Backup\"W\202\323\344\223\002<22/v1/{backu"
-          + "p.name=projects/*/instances/*/backups/*}"
-          + ":\006backup\332A\022backup,update_mask\022\231\001\n\014Delete"
-          + "Backup\0225.google.spanner.admin.database.v"
-          + "1.DeleteBackupRequest\032\026.google.protobuf."
-          + "Empty\":\202\323\344\223\002-*+/v1/{name=projects/*/inst"
-          + "ances/*/backups/*}\332A\004name\022\270\001\n\013ListBackup"
-          + "s\0224.google.spanner.admin.database.v1.Lis"
-          + "tBackupsRequest\0325.google.spanner.admin.d"
-          + "atabase.v1.ListBackupsResponse\"<\202\323\344\223\002-\022+"
-          + "/v1/{parent=projects/*/instances/*}/back"
-          + "ups\332A\006parent\022\261\002\n\017RestoreDatabase\0228.googl"
-          + "e.spanner.admin.database.v1.RestoreDatab"
-          + "aseRequest\032\035.google.longrunning.Operatio"
-          + "n\"\304\001\202\323\344\223\002:\"5/v1/{parent=projects/*/insta"
-          + "nces/*}/databases:restore:\001*\332A\031parent,da"
-          + "tabase_id,backup\312Ae\n)google.spanner.admi"
-          + "n.database.v1.Database\0228google.spanner.a"
-          + "dmin.database.v1.RestoreDatabaseMetadata"
-          + "\022\344\001\n\026ListDatabaseOperations\022?.google.spa"
-          + "nner.admin.database.v1.ListDatabaseOpera"
-          + "tionsRequest\032@.google.spanner.admin.data"
-          + "base.v1.ListDatabaseOperationsResponse\"G"
-          + "\202\323\344\223\0028\0226/v1/{parent=projects/*/instances"
-          + "/*}/databaseOperations\332A\006parent\022\334\001\n\024List"
-          + "BackupOperations\022=.google.spanner.admin."
-          + "database.v1.ListBackupOperationsRequest\032"
-          + ">.google.spanner.admin.database.v1.ListB"
-          + "ackupOperationsResponse\"E\202\323\344\223\0026\0224/v1/{pa"
-          + "rent=projects/*/instances/*}/backupOpera"
-          + "tions\332A\006parent\022\334\001\n\021ListDatabaseRoles\022:.g"
-          + "oogle.spanner.admin.database.v1.ListData"
-          + "baseRolesRequest\032;.google.spanner.admin."
-          + "database.v1.ListDatabaseRolesResponse\"N\202"
-          + "\323\344\223\002?\022=/v1/{parent=projects/*/instances/"
-          + "*/databases/*}/databaseRoles\332A\006parent\032x\312"
-          + "A\026spanner.googleapis.com\322A\\https://www.g"
-          + "oogleapis.com/auth/cloud-platform,https:"
-          + "//www.googleapis.com/auth/spanner.adminB"
-          + "\332\002\n$com.google.spanner.admin.database.v1"
-          + "B\031SpannerDatabaseAdminProtoP\001ZHgoogle.go"
-          + "lang.org/genproto/googleapis/spanner/adm"
-          + "in/database/v1;database\252\002&Google.Cloud.S"
-          + "panner.Admin.Database.V1\312\002&Google\\Cloud\\"
-          + "Spanner\\Admin\\Database\\V1\352\002+Google::Clou"
-          + "d::Spanner::Admin::Database::V1\352AJ\n\037span"
-          + "ner.googleapis.com/Instance\022\'projects/{p"
-          + "roject}/instances/{instance}b\006proto3"
+        "\n=google/spanner/admin/database/v1/spann"
+            + "er_database_admin.proto\022 google.spanner."
+            + "admin.database.v1\032\034google/api/annotation"
+            + "s.proto\032\027google/api/client.proto\032\037google"
+            + "/api/field_behavior.proto\032\031google/api/re"
+            + "source.proto\032\036google/iam/v1/iam_policy.p"
+            + "roto\032\032google/iam/v1/policy.proto\032#google"
+            + "/longrunning/operations.proto\032\033google/pr"
+            + "otobuf/empty.proto\032 google/protobuf/fiel"
+            + "d_mask.proto\032\037google/protobuf/timestamp."
+            + "proto\032-google/spanner/admin/database/v1/"
+            + "backup.proto\032-google/spanner/admin/datab"
+            + "ase/v1/common.proto\"\253\001\n\013RestoreInfo\022H\n\013s"
+            + "ource_type\030\001 \001(\01623.google.spanner.admin."
+            + "database.v1.RestoreSourceType\022C\n\013backup_"
+            + "info\030\002 \001(\0132,.google.spanner.admin.databa"
+            + "se.v1.BackupInfoH\000B\r\n\013source_info\"\325\006\n\010Da"
+            + "tabase\022\022\n\004name\030\001 \001(\tB\004\342A\001\002\022E\n\005state\030\002 \001("
+            + "\01620.google.spanner.admin.database.v1.Dat"
+            + "abase.StateB\004\342A\001\003\0225\n\013create_time\030\003 \001(\0132\032"
+            + ".google.protobuf.TimestampB\004\342A\001\003\022I\n\014rest"
+            + "ore_info\030\004 \001(\0132-.google.spanner.admin.da"
+            + "tabase.v1.RestoreInfoB\004\342A\001\003\022S\n\021encryptio"
+            + "n_config\030\005 \001(\01322.google.spanner.admin.da"
+            + "tabase.v1.EncryptionConfigB\004\342A\001\003\022O\n\017encr"
+            + "yption_info\030\010 \003(\01320.google.spanner.admin"
+            + ".database.v1.EncryptionInfoB\004\342A\001\003\022&\n\030ver"
+            + "sion_retention_period\030\006 \001(\tB\004\342A\001\003\022?\n\025ear"
+            + "liest_version_time\030\007 \001(\0132\032.google.protob"
+            + "uf.TimestampB\004\342A\001\003\022\034\n\016default_leader\030\t \001"
+            + "(\tB\004\342A\001\003\022Q\n\020database_dialect\030\n \001(\01621.goo"
+            + "gle.spanner.admin.database.v1.DatabaseDi"
+            + "alectB\004\342A\001\003\022\036\n\026enable_drop_protection\030\013 "
+            + "\001(\010\022\031\n\013reconciling\030\014 \001(\010B\004\342A\001\003\"M\n\005State\022"
+            + "\025\n\021STATE_UNSPECIFIED\020\000\022\014\n\010CREATING\020\001\022\t\n\005"
+            + "READY\020\002\022\024\n\020READY_OPTIMIZING\020\003:b\352A_\n\037span"
+            + "ner.googleapis.com/Database\022<projects/{p"
+            + "roject}/instances/{instance}/databases/{"
+            + "database}\"w\n\024ListDatabasesRequest\0228\n\006par"
+            + "ent\030\001 \001(\tB(\342A\001\002\372A!\n\037spanner.googleapis.c"
+            + "om/Instance\022\021\n\tpage_size\030\003 \001(\005\022\022\n\npage_t"
+            + "oken\030\004 \001(\t\"o\n\025ListDatabasesResponse\022=\n\td"
+            + "atabases\030\001 \003(\0132*.google.spanner.admin.da"
+            + "tabase.v1.Database\022\027\n\017next_page_token\030\002 "
+            + "\001(\t\"\332\002\n\025CreateDatabaseRequest\0228\n\006parent\030"
+            + "\001 \001(\tB(\342A\001\002\372A!\n\037spanner.googleapis.com/I"
+            + "nstance\022\036\n\020create_statement\030\002 \001(\tB\004\342A\001\002\022"
+            + "\036\n\020extra_statements\030\003 \003(\tB\004\342A\001\001\022S\n\021encry"
+            + "ption_config\030\004 \001(\01322.google.spanner.admi"
+            + "n.database.v1.EncryptionConfigB\004\342A\001\001\022Q\n\020"
+            + "database_dialect\030\005 \001(\01621.google.spanner."
+            + "admin.database.v1.DatabaseDialectB\004\342A\001\001\022"
+            + "\037\n\021proto_descriptors\030\006 \001(\014B\004\342A\001\001\"P\n\026Crea"
+            + "teDatabaseMetadata\0226\n\010database\030\001 \001(\tB$\372A"
+            + "!\n\037spanner.googleapis.com/Database\"L\n\022Ge"
+            + "tDatabaseRequest\0226\n\004name\030\001 \001(\tB(\342A\001\002\372A!\n"
+            + "\037spanner.googleapis.com/Database\"\222\001\n\025Upd"
+            + "ateDatabaseRequest\022B\n\010database\030\001 \001(\0132*.g"
+            + "oogle.spanner.admin.database.v1.Database"
+            + "B\004\342A\001\002\0225\n\013update_mask\030\002 \001(\0132\032.google.pro"
+            + "tobuf.FieldMaskB\004\342A\001\002\"\332\001\n\026UpdateDatabase"
+            + "Metadata\022H\n\007request\030\001 \001(\01327.google.spann"
+            + "er.admin.database.v1.UpdateDatabaseReque"
+            + "st\022E\n\010progress\030\002 \001(\01323.google.spanner.ad"
+            + "min.database.v1.OperationProgress\022/\n\013can"
+            + "cel_time\030\003 \001(\0132\032.google.protobuf.Timesta"
+            + "mp\"\247\001\n\030UpdateDatabaseDdlRequest\022:\n\010datab"
+            + "ase\030\001 \001(\tB(\342A\001\002\372A!\n\037spanner.googleapis.c"
+            + "om/Database\022\030\n\nstatements\030\002 \003(\tB\004\342A\001\002\022\024\n"
+            + "\014operation_id\030\003 \001(\t\022\037\n\021proto_descriptors"
+            + "\030\004 \001(\014B\004\342A\001\001\"\376\001\n\031UpdateDatabaseDdlMetada"
+            + "ta\0226\n\010database\030\001 \001(\tB$\372A!\n\037spanner.googl"
+            + "eapis.com/Database\022\022\n\nstatements\030\002 \003(\t\0225"
+            + "\n\021commit_timestamps\030\003 \003(\0132\032.google.proto"
+            + "buf.Timestamp\022\027\n\tthrottled\030\004 \001(\010B\004\342A\001\003\022E"
+            + "\n\010progress\030\005 \003(\01323.google.spanner.admin."
+            + "database.v1.OperationProgress\"Q\n\023DropDat"
+            + "abaseRequest\022:\n\010database\030\001 \001(\tB(\342A\001\002\372A!\n"
+            + "\037spanner.googleapis.com/Database\"S\n\025GetD"
+            + "atabaseDdlRequest\022:\n\010database\030\001 \001(\tB(\342A\001"
+            + "\002\372A!\n\037spanner.googleapis.com/Database\"G\n"
+            + "\026GetDatabaseDdlResponse\022\022\n\nstatements\030\001 "
+            + "\003(\t\022\031\n\021proto_descriptors\030\002 \001(\014\"\220\001\n\035ListD"
+            + "atabaseOperationsRequest\0228\n\006parent\030\001 \001(\t"
+            + "B(\342A\001\002\372A!\n\037spanner.googleapis.com/Instan"
+            + "ce\022\016\n\006filter\030\002 \001(\t\022\021\n\tpage_size\030\003 \001(\005\022\022\n"
+            + "\npage_token\030\004 \001(\t\"l\n\036ListDatabaseOperati"
+            + "onsResponse\0221\n\noperations\030\001 \003(\0132\035.google"
+            + ".longrunning.Operation\022\027\n\017next_page_toke"
+            + "n\030\002 \001(\t\"\221\002\n\026RestoreDatabaseRequest\0228\n\006pa"
+            + "rent\030\001 \001(\tB(\342A\001\002\372A!\n\037spanner.googleapis."
+            + "com/Instance\022\031\n\013database_id\030\002 \001(\tB\004\342A\001\002\022"
+            + "4\n\006backup\030\003 \001(\tB\"\372A\037\n\035spanner.googleapis"
+            + ".com/BackupH\000\022b\n\021encryption_config\030\004 \001(\013"
+            + "2A.google.spanner.admin.database.v1.Rest"
+            + "oreDatabaseEncryptionConfigB\004\342A\001\001B\010\n\006sou"
+            + "rce\"\365\002\n\037RestoreDatabaseEncryptionConfig\022"
+            + "o\n\017encryption_type\030\001 \001(\0162P.google.spanne"
+            + "r.admin.database.v1.RestoreDatabaseEncry"
+            + "ptionConfig.EncryptionTypeB\004\342A\001\002\022@\n\014kms_"
+            + "key_name\030\002 \001(\tB*\342A\001\001\372A#\n!cloudkms.google"
+            + "apis.com/CryptoKey\"\236\001\n\016EncryptionType\022\037\n"
+            + "\033ENCRYPTION_TYPE_UNSPECIFIED\020\000\022+\n\'USE_CO"
+            + "NFIG_DEFAULT_OR_BACKUP_ENCRYPTION\020\001\022\035\n\031G"
+            + "OOGLE_DEFAULT_ENCRYPTION\020\002\022\037\n\033CUSTOMER_M"
+            + "ANAGED_ENCRYPTION\020\003\"\215\003\n\027RestoreDatabaseM"
+            + "etadata\0222\n\004name\030\001 \001(\tB$\372A!\n\037spanner.goog"
+            + "leapis.com/Database\022H\n\013source_type\030\002 \001(\016"
+            + "23.google.spanner.admin.database.v1.Rest"
+            + "oreSourceType\022C\n\013backup_info\030\003 \001(\0132,.goo"
+            + "gle.spanner.admin.database.v1.BackupInfo"
+            + "H\000\022E\n\010progress\030\004 \001(\01323.google.spanner.ad"
+            + "min.database.v1.OperationProgress\022/\n\013can"
+            + "cel_time\030\005 \001(\0132\032.google.protobuf.Timesta"
+            + "mp\022(\n optimize_database_operation_name\030\006"
+            + " \001(\tB\r\n\013source_info\"\235\001\n OptimizeRestored"
+            + "DatabaseMetadata\0222\n\004name\030\001 \001(\tB$\372A!\n\037spa"
+            + "nner.googleapis.com/Database\022E\n\010progress"
+            + "\030\002 \001(\01323.google.spanner.admin.database.v"
+            + "1.OperationProgress\"\237\001\n\014DatabaseRole\022\022\n\004"
+            + "name\030\001 \001(\tB\004\342A\001\002:{\352Ax\n#spanner.googleapi"
+            + "s.com/DatabaseRole\022Qprojects/{project}/i"
+            + "nstances/{instance}/databases/{database}"
+            + "/databaseRoles/{role}\"{\n\030ListDatabaseRol"
+            + "esRequest\0228\n\006parent\030\001 \001(\tB(\342A\001\002\372A!\n\037span"
+            + "ner.googleapis.com/Database\022\021\n\tpage_size"
+            + "\030\002 \001(\005\022\022\n\npage_token\030\003 \001(\t\"|\n\031ListDataba"
+            + "seRolesResponse\022F\n\016database_roles\030\001 \003(\0132"
+            + "..google.spanner.admin.database.v1.Datab"
+            + "aseRole\022\027\n\017next_page_token\030\002 \001(\t*5\n\021Rest"
+            + "oreSourceType\022\024\n\020TYPE_UNSPECIFIED\020\000\022\n\n\006B"
+            + "ACKUP\020\0012\356%\n\rDatabaseAdmin\022\300\001\n\rListDataba"
+            + "ses\0226.google.spanner.admin.database.v1.L"
+            + "istDatabasesRequest\0327.google.spanner.adm"
+            + "in.database.v1.ListDatabasesResponse\">\332A"
+            + "\006parent\202\323\344\223\002/\022-/v1/{parent=projects/*/in"
+            + "stances/*}/databases\022\244\002\n\016CreateDatabase\022"
+            + "7.google.spanner.admin.database.v1.Creat"
+            + "eDatabaseRequest\032\035.google.longrunning.Op"
+            + "eration\"\271\001\312Ad\n)google.spanner.admin.data"
+            + "base.v1.Database\0227google.spanner.admin.d"
+            + "atabase.v1.CreateDatabaseMetadata\332A\027pare"
+            + "nt,create_statement\202\323\344\223\0022\"-/v1/{parent=p"
+            + "rojects/*/instances/*}/databases:\001*\022\255\001\n\013"
+            + "GetDatabase\0224.google.spanner.admin.datab"
+            + "ase.v1.GetDatabaseRequest\032*.google.spann"
+            + "er.admin.database.v1.Database\"<\332A\004name\202\323"
+            + "\344\223\002/\022-/v1/{name=projects/*/instances/*/d"
+            + "atabases/*}\022\357\001\n\016UpdateDatabase\0227.google."
+            + "spanner.admin.database.v1.UpdateDatabase"
+            + "Request\032\035.google.longrunning.Operation\"\204"
+            + "\001\312A\"\n\010Database\022\026UpdateDatabaseMetadata\332A"
+            + "\024database,update_mask\202\323\344\223\002B26/v1/{databa"
+            + "se.name=projects/*/instances/*/databases"
+            + "/*}:\010database\022\235\002\n\021UpdateDatabaseDdl\022:.go"
+            + "ogle.spanner.admin.database.v1.UpdateDat"
+            + "abaseDdlRequest\032\035.google.longrunning.Ope"
+            + "ration\"\254\001\312AS\n\025google.protobuf.Empty\022:goo"
+            + "gle.spanner.admin.database.v1.UpdateData"
+            + "baseDdlMetadata\332A\023database,statements\202\323\344"
+            + "\223\002:25/v1/{database=projects/*/instances/"
+            + "*/databases/*}/ddl:\001*\022\243\001\n\014DropDatabase\0225"
+            + ".google.spanner.admin.database.v1.DropDa"
+            + "tabaseRequest\032\026.google.protobuf.Empty\"D\332"
+            + "A\010database\202\323\344\223\0023*1/v1/{database=projects"
+            + "/*/instances/*/databases/*}\022\315\001\n\016GetDatab"
+            + "aseDdl\0227.google.spanner.admin.database.v"
+            + "1.GetDatabaseDdlRequest\0328.google.spanner"
+            + ".admin.database.v1.GetDatabaseDdlRespons"
+            + "e\"H\332A\010database\202\323\344\223\0027\0225/v1/{database=proj"
+            + "ects/*/instances/*/databases/*}/ddl\022\353\001\n\014"
+            + "SetIamPolicy\022\".google.iam.v1.SetIamPolic"
+            + "yRequest\032\025.google.iam.v1.Policy\"\237\001\332A\017res"
+            + "ource,policy\202\323\344\223\002\206\001\">/v1/{resource=proje"
+            + "cts/*/instances/*/databases/*}:setIamPol"
+            + "icy:\001*ZA\"</v1/{resource=projects/*/insta"
+            + "nces/*/backups/*}:setIamPolicy:\001*\022\344\001\n\014Ge"
+            + "tIamPolicy\022\".google.iam.v1.GetIamPolicyR"
+            + "equest\032\025.google.iam.v1.Policy\"\230\001\332A\010resou"
+            + "rce\202\323\344\223\002\206\001\">/v1/{resource=projects/*/ins"
+            + "tances/*/databases/*}:getIamPolicy:\001*ZA\""
+            + "</v1/{resource=projects/*/instances/*/ba"
+            + "ckups/*}:getIamPolicy:\001*\022\367\002\n\022TestIamPerm"
+            + "issions\022(.google.iam.v1.TestIamPermissio"
+            + "nsRequest\032).google.iam.v1.TestIamPermiss"
+            + "ionsResponse\"\213\002\332A\024resource,permissions\202\323"
+            + "\344\223\002\355\001\"D/v1/{resource=projects/*/instance"
+            + "s/*/databases/*}:testIamPermissions:\001*ZG"
+            + "\"B/v1/{resource=projects/*/instances/*/b"
+            + "ackups/*}:testIamPermissions:\001*ZY\"T/v1/{"
+            + "resource=projects/*/instances/*/database"
+            + "s/*/databaseRoles/*}:testIamPermissions:"
+            + "\001*\022\237\002\n\014CreateBackup\0225.google.spanner.adm"
+            + "in.database.v1.CreateBackupRequest\032\035.goo"
+            + "gle.longrunning.Operation\"\270\001\312A`\n\'google."
+            + "spanner.admin.database.v1.Backup\0225google"
+            + ".spanner.admin.database.v1.CreateBackupM"
+            + "etadata\332A\027parent,backup,backup_id\202\323\344\223\0025\""
+            + "+/v1/{parent=projects/*/instances/*}/bac"
+            + "kups:\006backup\022\254\002\n\nCopyBackup\0223.google.spa"
+            + "nner.admin.database.v1.CopyBackupRequest"
+            + "\032\035.google.longrunning.Operation\"\311\001\312A^\n\'g"
+            + "oogle.spanner.admin.database.v1.Backup\0223"
+            + "google.spanner.admin.database.v1.CopyBac"
+            + "kupMetadata\332A*parent,backup_id,source_ba"
+            + "ckup,expire_time\202\323\344\223\0025\"0/v1/{parent=proj"
+            + "ects/*/instances/*}/backups:copy:\001*\022\245\001\n\t"
+            + "GetBackup\0222.google.spanner.admin.databas"
+            + "e.v1.GetBackupRequest\032(.google.spanner.a"
+            + "dmin.database.v1.Backup\":\332A\004name\202\323\344\223\002-\022+"
+            + "/v1/{name=projects/*/instances/*/backups"
+            + "/*}\022\310\001\n\014UpdateBackup\0225.google.spanner.ad"
+            + "min.database.v1.UpdateBackupRequest\032(.go"
+            + "ogle.spanner.admin.database.v1.Backup\"W\332"
+            + "A\022backup,update_mask\202\323\344\223\002<22/v1/{backup."
+            + "name=projects/*/instances/*/backups/*}:\006"
+            + "backup\022\231\001\n\014DeleteBackup\0225.google.spanner"
+            + ".admin.database.v1.DeleteBackupRequest\032\026"
+            + ".google.protobuf.Empty\":\332A\004name\202\323\344\223\002-*+/"
+            + "v1/{name=projects/*/instances/*/backups/"
+            + "*}\022\270\001\n\013ListBackups\0224.google.spanner.admi"
+            + "n.database.v1.ListBackupsRequest\0325.googl"
+            + "e.spanner.admin.database.v1.ListBackupsR"
+            + "esponse\"<\332A\006parent\202\323\344\223\002-\022+/v1/{parent=pr"
+            + "ojects/*/instances/*}/backups\022\261\002\n\017Restor"
+            + "eDatabase\0228.google.spanner.admin.databas"
+            + "e.v1.RestoreDatabaseRequest\032\035.google.lon"
+            + "grunning.Operation\"\304\001\312Ae\n)google.spanner"
+            + ".admin.database.v1.Database\0228google.span"
+            + "ner.admin.database.v1.RestoreDatabaseMet"
+            + "adata\332A\031parent,database_id,backup\202\323\344\223\002:\""
+            + "5/v1/{parent=projects/*/instances/*}/dat"
+            + "abases:restore:\001*\022\344\001\n\026ListDatabaseOperat"
+            + "ions\022?.google.spanner.admin.database.v1."
+            + "ListDatabaseOperationsRequest\032@.google.s"
+            + "panner.admin.database.v1.ListDatabaseOpe"
+            + "rationsResponse\"G\332A\006parent\202\323\344\223\0028\0226/v1/{p"
+            + "arent=projects/*/instances/*}/databaseOp"
+            + "erations\022\334\001\n\024ListBackupOperations\022=.goog"
+            + "le.spanner.admin.database.v1.ListBackupO"
+            + "perationsRequest\032>.google.spanner.admin."
+            + "database.v1.ListBackupOperationsResponse"
+            + "\"E\332A\006parent\202\323\344\223\0026\0224/v1/{parent=projects/"
+            + "*/instances/*}/backupOperations\022\334\001\n\021List"
+            + "DatabaseRoles\022:.google.spanner.admin.dat"
+            + "abase.v1.ListDatabaseRolesRequest\032;.goog"
+            + "le.spanner.admin.database.v1.ListDatabas"
+            + "eRolesResponse\"N\332A\006parent\202\323\344\223\002?\022=/v1/{pa"
+            + "rent=projects/*/instances/*/databases/*}"
+            + "/databaseRoles\032x\312A\026spanner.googleapis.co"
+            + "m\322A\\https://www.googleapis.com/auth/clou"
+            + "d-platform,https://www.googleapis.com/au"
+            + "th/spanner.adminB\330\002\n$com.google.spanner."
+            + "admin.database.v1B\031SpannerDatabaseAdminP"
+            + "rotoP\001ZFcloud.google.com/go/spanner/admi"
+            + "n/database/apiv1/databasepb;databasepb\252\002"
+            + "&Google.Cloud.Spanner.Admin.Database.V1\312"
+            + "\002&Google\\Cloud\\Spanner\\Admin\\Database\\V1"
+            + "\352\002+Google::Cloud::Spanner::Admin::Databa"
+            + "se::V1\352AJ\n\037spanner.googleapis.com/Instan"
+            + "ce\022\'projects/{project}/instances/{instan"
+            + "ce}b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
             descriptorData,
             new com.google.protobuf.Descriptors.FileDescriptor[] {
-              com.google.api.AnnotationsProto.getDescriptor(),
-              com.google.api.ClientProto.getDescriptor(),
-              com.google.api.FieldBehaviorProto.getDescriptor(),
-              com.google.api.ResourceProto.getDescriptor(),
-              com.google.iam.v1.IamPolicyProto.getDescriptor(),
-              com.google.iam.v1.PolicyProto.getDescriptor(),
-              com.google.longrunning.OperationsProto.getDescriptor(),
-              com.google.protobuf.EmptyProto.getDescriptor(),
-              com.google.protobuf.TimestampProto.getDescriptor(),
-              com.google.spanner.admin.database.v1.BackupProto.getDescriptor(),
-              com.google.spanner.admin.database.v1.CommonProto.getDescriptor(),
+                com.google.api.AnnotationsProto.getDescriptor(),
+                com.google.api.ClientProto.getDescriptor(),
+                com.google.api.FieldBehaviorProto.getDescriptor(),
+                com.google.api.ResourceProto.getDescriptor(),
+                com.google.iam.v1.IamPolicyProto.getDescriptor(),
+                com.google.iam.v1.PolicyProto.getDescriptor(),
+                com.google.longrunning.OperationsProto.getDescriptor(),
+                com.google.protobuf.EmptyProto.getDescriptor(),
+                com.google.protobuf.FieldMaskProto.getDescriptor(),
+                com.google.protobuf.TimestampProto.getDescriptor(),
+                com.google.spanner.admin.database.v1.BackupProto.getDescriptor(),
+                com.google.spanner.admin.database.v1.CommonProto.getDescriptor(),
             });
     internal_static_google_spanner_admin_database_v1_RestoreInfo_descriptor =
         getDescriptor().getMessageTypes().get(0);
@@ -386,7 +414,7 @@ public final class SpannerDatabaseAdminProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_RestoreInfo_descriptor,
             new java.lang.String[] {
-              "SourceType", "BackupInfo", "SourceInfo",
+                "SourceType", "BackupInfo", "SourceInfo",
             });
     internal_static_google_spanner_admin_database_v1_Database_descriptor =
         getDescriptor().getMessageTypes().get(1);
@@ -394,16 +422,18 @@ public final class SpannerDatabaseAdminProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_Database_descriptor,
             new java.lang.String[] {
-              "Name",
-              "State",
-              "CreateTime",
-              "RestoreInfo",
-              "EncryptionConfig",
-              "EncryptionInfo",
-              "VersionRetentionPeriod",
-              "EarliestVersionTime",
-              "DefaultLeader",
-              "DatabaseDialect",
+                "Name",
+                "State",
+                "CreateTime",
+                "RestoreInfo",
+                "EncryptionConfig",
+                "EncryptionInfo",
+                "VersionRetentionPeriod",
+                "EarliestVersionTime",
+                "DefaultLeader",
+                "DatabaseDialect",
+                "EnableDropProtection",
+                "Reconciling",
             });
     internal_static_google_spanner_admin_database_v1_ListDatabasesRequest_descriptor =
         getDescriptor().getMessageTypes().get(2);
@@ -411,7 +441,7 @@ public final class SpannerDatabaseAdminProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_ListDatabasesRequest_descriptor,
             new java.lang.String[] {
-              "Parent", "PageSize", "PageToken",
+                "Parent", "PageSize", "PageToken",
             });
     internal_static_google_spanner_admin_database_v1_ListDatabasesResponse_descriptor =
         getDescriptor().getMessageTypes().get(3);
@@ -419,7 +449,7 @@ public final class SpannerDatabaseAdminProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_ListDatabasesResponse_descriptor,
             new java.lang.String[] {
-              "Databases", "NextPageToken",
+                "Databases", "NextPageToken",
             });
     internal_static_google_spanner_admin_database_v1_CreateDatabaseRequest_descriptor =
         getDescriptor().getMessageTypes().get(4);
@@ -427,12 +457,12 @@ public final class SpannerDatabaseAdminProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_CreateDatabaseRequest_descriptor,
             new java.lang.String[] {
-              "Parent",
-              "CreateStatement",
-              "ExtraStatements",
-              "EncryptionConfig",
-              "DatabaseDialect",
-              "ProtoDescriptors",
+                "Parent",
+                "CreateStatement",
+                "ExtraStatements",
+                "EncryptionConfig",
+                "DatabaseDialect",
+                "ProtoDescriptors",
             });
     internal_static_google_spanner_admin_database_v1_CreateDatabaseMetadata_descriptor =
         getDescriptor().getMessageTypes().get(5);
@@ -440,7 +470,7 @@ public final class SpannerDatabaseAdminProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_CreateDatabaseMetadata_descriptor,
             new java.lang.String[] {
-              "Database",
+                "Database",
             });
     internal_static_google_spanner_admin_database_v1_GetDatabaseRequest_descriptor =
         getDescriptor().getMessageTypes().get(6);
@@ -448,125 +478,141 @@ public final class SpannerDatabaseAdminProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_GetDatabaseRequest_descriptor,
             new java.lang.String[] {
-              "Name",
+                "Name",
+            });
+    internal_static_google_spanner_admin_database_v1_UpdateDatabaseRequest_descriptor =
+        getDescriptor().getMessageTypes().get(7);
+    internal_static_google_spanner_admin_database_v1_UpdateDatabaseRequest_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+            internal_static_google_spanner_admin_database_v1_UpdateDatabaseRequest_descriptor,
+            new java.lang.String[] {
+                "Database", "UpdateMask",
+            });
+    internal_static_google_spanner_admin_database_v1_UpdateDatabaseMetadata_descriptor =
+        getDescriptor().getMessageTypes().get(8);
+    internal_static_google_spanner_admin_database_v1_UpdateDatabaseMetadata_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+            internal_static_google_spanner_admin_database_v1_UpdateDatabaseMetadata_descriptor,
+            new java.lang.String[] {
+                "Request", "Progress", "CancelTime",
             });
     internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlRequest_descriptor =
-        getDescriptor().getMessageTypes().get(7);
+        getDescriptor().getMessageTypes().get(9);
     internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlRequest_descriptor,
             new java.lang.String[] {
-              "Database", "Statements", "OperationId", "ProtoDescriptors",
+                "Database", "Statements", "OperationId", "ProtoDescriptors",
             });
     internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlMetadata_descriptor =
-        getDescriptor().getMessageTypes().get(8);
+        getDescriptor().getMessageTypes().get(10);
     internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlMetadata_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlMetadata_descriptor,
             new java.lang.String[] {
-              "Database", "Statements", "CommitTimestamps", "Throttled", "Progress",
+                "Database", "Statements", "CommitTimestamps", "Throttled", "Progress",
             });
     internal_static_google_spanner_admin_database_v1_DropDatabaseRequest_descriptor =
-        getDescriptor().getMessageTypes().get(9);
+        getDescriptor().getMessageTypes().get(11);
     internal_static_google_spanner_admin_database_v1_DropDatabaseRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_DropDatabaseRequest_descriptor,
             new java.lang.String[] {
-              "Database",
+                "Database",
             });
     internal_static_google_spanner_admin_database_v1_GetDatabaseDdlRequest_descriptor =
-        getDescriptor().getMessageTypes().get(10);
+        getDescriptor().getMessageTypes().get(12);
     internal_static_google_spanner_admin_database_v1_GetDatabaseDdlRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_GetDatabaseDdlRequest_descriptor,
             new java.lang.String[] {
-              "Database",
+                "Database",
             });
     internal_static_google_spanner_admin_database_v1_GetDatabaseDdlResponse_descriptor =
-        getDescriptor().getMessageTypes().get(11);
+        getDescriptor().getMessageTypes().get(13);
     internal_static_google_spanner_admin_database_v1_GetDatabaseDdlResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_GetDatabaseDdlResponse_descriptor,
             new java.lang.String[] {
-              "Statements", "ProtoDescriptors",
+                "Statements", "ProtoDescriptors",
             });
     internal_static_google_spanner_admin_database_v1_ListDatabaseOperationsRequest_descriptor =
-        getDescriptor().getMessageTypes().get(12);
+        getDescriptor().getMessageTypes().get(14);
     internal_static_google_spanner_admin_database_v1_ListDatabaseOperationsRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_ListDatabaseOperationsRequest_descriptor,
             new java.lang.String[] {
-              "Parent", "Filter", "PageSize", "PageToken",
+                "Parent", "Filter", "PageSize", "PageToken",
             });
     internal_static_google_spanner_admin_database_v1_ListDatabaseOperationsResponse_descriptor =
-        getDescriptor().getMessageTypes().get(13);
+        getDescriptor().getMessageTypes().get(15);
     internal_static_google_spanner_admin_database_v1_ListDatabaseOperationsResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_ListDatabaseOperationsResponse_descriptor,
             new java.lang.String[] {
-              "Operations", "NextPageToken",
+                "Operations", "NextPageToken",
             });
     internal_static_google_spanner_admin_database_v1_RestoreDatabaseRequest_descriptor =
-        getDescriptor().getMessageTypes().get(14);
+        getDescriptor().getMessageTypes().get(16);
     internal_static_google_spanner_admin_database_v1_RestoreDatabaseRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_RestoreDatabaseRequest_descriptor,
             new java.lang.String[] {
-              "Parent", "DatabaseId", "Backup", "EncryptionConfig", "Source",
+                "Parent", "DatabaseId", "Backup", "EncryptionConfig", "Source",
             });
     internal_static_google_spanner_admin_database_v1_RestoreDatabaseEncryptionConfig_descriptor =
-        getDescriptor().getMessageTypes().get(15);
+        getDescriptor().getMessageTypes().get(17);
     internal_static_google_spanner_admin_database_v1_RestoreDatabaseEncryptionConfig_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_RestoreDatabaseEncryptionConfig_descriptor,
             new java.lang.String[] {
-              "EncryptionType", "KmsKeyName",
+                "EncryptionType", "KmsKeyName",
             });
     internal_static_google_spanner_admin_database_v1_RestoreDatabaseMetadata_descriptor =
-        getDescriptor().getMessageTypes().get(16);
+        getDescriptor().getMessageTypes().get(18);
     internal_static_google_spanner_admin_database_v1_RestoreDatabaseMetadata_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_RestoreDatabaseMetadata_descriptor,
             new java.lang.String[] {
-              "Name",
-              "SourceType",
-              "BackupInfo",
-              "Progress",
-              "CancelTime",
-              "OptimizeDatabaseOperationName",
-              "SourceInfo",
+                "Name",
+                "SourceType",
+                "BackupInfo",
+                "Progress",
+                "CancelTime",
+                "OptimizeDatabaseOperationName",
+                "SourceInfo",
             });
     internal_static_google_spanner_admin_database_v1_OptimizeRestoredDatabaseMetadata_descriptor =
-        getDescriptor().getMessageTypes().get(17);
+        getDescriptor().getMessageTypes().get(19);
     internal_static_google_spanner_admin_database_v1_OptimizeRestoredDatabaseMetadata_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_OptimizeRestoredDatabaseMetadata_descriptor,
             new java.lang.String[] {
-              "Name", "Progress",
+                "Name", "Progress",
             });
     internal_static_google_spanner_admin_database_v1_DatabaseRole_descriptor =
-        getDescriptor().getMessageTypes().get(18);
+        getDescriptor().getMessageTypes().get(20);
     internal_static_google_spanner_admin_database_v1_DatabaseRole_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_DatabaseRole_descriptor,
             new java.lang.String[] {
-              "Name",
+                "Name",
             });
     internal_static_google_spanner_admin_database_v1_ListDatabaseRolesRequest_descriptor =
-        getDescriptor().getMessageTypes().get(19);
+        getDescriptor().getMessageTypes().get(21);
     internal_static_google_spanner_admin_database_v1_ListDatabaseRolesRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_ListDatabaseRolesRequest_descriptor,
             new java.lang.String[] {
-              "Parent", "PageSize", "PageToken",
+                "Parent", "PageSize", "PageToken",
             });
     internal_static_google_spanner_admin_database_v1_ListDatabaseRolesResponse_descriptor =
-        getDescriptor().getMessageTypes().get(20);
+        getDescriptor().getMessageTypes().get(22);
     internal_static_google_spanner_admin_database_v1_ListDatabaseRolesResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_ListDatabaseRolesResponse_descriptor,
             new java.lang.String[] {
-              "DatabaseRoles", "NextPageToken",
+                "DatabaseRoles", "NextPageToken",
             });
     com.google.protobuf.ExtensionRegistry registry =
         com.google.protobuf.ExtensionRegistry.newInstance();
@@ -589,6 +635,7 @@ public final class SpannerDatabaseAdminProto {
     com.google.iam.v1.PolicyProto.getDescriptor();
     com.google.longrunning.OperationsProto.getDescriptor();
     com.google.protobuf.EmptyProto.getDescriptor();
+    com.google.protobuf.FieldMaskProto.getDescriptor();
     com.google.protobuf.TimestampProto.getDescriptor();
     com.google.spanner.admin.database.v1.BackupProto.getDescriptor();
     com.google.spanner.admin.database.v1.CommonProto.getDescriptor();

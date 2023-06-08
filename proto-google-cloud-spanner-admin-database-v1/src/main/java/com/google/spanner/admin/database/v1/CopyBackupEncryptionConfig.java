@@ -259,7 +259,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
   }
 
   public static final int ENCRYPTION_TYPE_FIELD_NUMBER = 1;
-  private int encryptionType_;
+  private int encryptionType_ = 0;
   /**
    *
    *
@@ -293,9 +293,8 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
   @java.lang.Override
   public com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType
       getEncryptionType() {
-    @SuppressWarnings("deprecation")
     com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType result =
-        com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType.valueOf(
+        com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType.forNumber(
             encryptionType_);
     return result == null
         ? com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType
@@ -304,7 +303,9 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
   }
 
   public static final int KMS_KEY_NAME_FIELD_NUMBER = 2;
-  private volatile java.lang.Object kmsKeyName_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object kmsKeyName_ = "";
   /**
    *
    *
@@ -577,10 +578,9 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       encryptionType_ = 0;
-
       kmsKeyName_ = "";
-
       return this;
     }
 
@@ -609,10 +609,22 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     public com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig buildPartial() {
       com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig result =
           new com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig(this);
-      result.encryptionType_ = encryptionType_;
-      result.kmsKeyName_ = kmsKeyName_;
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(
+        com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.encryptionType_ = encryptionType_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.kmsKeyName_ = kmsKeyName_;
+      }
     }
 
     @java.lang.Override
@@ -668,6 +680,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       }
       if (!other.getKmsKeyName().isEmpty()) {
         kmsKeyName_ = other.kmsKeyName_;
+        bitField0_ |= 0x00000002;
         onChanged();
       }
       this.mergeUnknownFields(other.getUnknownFields());
@@ -699,13 +712,13 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
             case 8:
               {
                 encryptionType_ = input.readEnum();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 8
             case 18:
               {
                 kmsKeyName_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             default:
@@ -724,6 +737,8 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private int encryptionType_ = 0;
     /**
@@ -758,8 +773,8 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
      * @return This builder for chaining.
      */
     public Builder setEncryptionTypeValue(int value) {
-
       encryptionType_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -779,9 +794,8 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
     @java.lang.Override
     public com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType
         getEncryptionType() {
-      @SuppressWarnings("deprecation")
       com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType result =
-          com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType.valueOf(
+          com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType.forNumber(
               encryptionType_);
       return result == null
           ? com.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType
@@ -807,7 +821,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       if (value == null) {
         throw new NullPointerException();
       }
-
+      bitField0_ |= 0x00000001;
       encryptionType_ = value.getNumber();
       onChanged();
       return this;
@@ -826,7 +840,7 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
      * @return This builder for chaining.
      */
     public Builder clearEncryptionType() {
-
+      bitField0_ = (bitField0_ & ~0x00000001);
       encryptionType_ = 0;
       onChanged();
       return this;
@@ -911,8 +925,8 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
       if (value == null) {
         throw new NullPointerException();
       }
-
       kmsKeyName_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -934,8 +948,8 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
      * @return This builder for chaining.
      */
     public Builder clearKmsKeyName() {
-
       kmsKeyName_ = getDefaultInstance().getKmsKeyName();
+      bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
@@ -962,8 +976,8 @@ public final class CopyBackupEncryptionConfig extends com.google.protobuf.Genera
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       kmsKeyName_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }

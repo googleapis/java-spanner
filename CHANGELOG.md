@@ -1,5 +1,252 @@
 # Changelog
 
+## [6.43.0](https://github.com/googleapis/java-spanner/compare/v6.42.3...v6.43.0) (2023-06-07)
+
+
+### Features
+
+* Delay transaction start option ([#2462](https://github.com/googleapis/java-spanner/issues/2462)) ([f1cbd16](https://github.com/googleapis/java-spanner/commit/f1cbd168a7e5f48206cdfc2d782835cf7ccb8b0d))
+* Make administrative request retries optional ([#2476](https://github.com/googleapis/java-spanner/issues/2476)) ([ee6548c](https://github.com/googleapis/java-spanner/commit/ee6548cfa511d6efc99f508290ed0b1ce025a4cc))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.11.0 ([#2486](https://github.com/googleapis/java-spanner/issues/2486)) ([82400d5](https://github.com/googleapis/java-spanner/commit/82400d5576c3ffe08ff6bb94d8b1a307e2f41662))
+
+## [6.42.3](https://github.com/googleapis/java-spanner/compare/v6.42.2...v6.42.3) (2023-05-31)
+
+
+### Performance Improvements
+
+* Only capture the call stack if the call is actually async ([#2471](https://github.com/googleapis/java-spanner/issues/2471)) ([ae9c8ad](https://github.com/googleapis/java-spanner/commit/ae9c8add484bc0f7808571cbcffb7b352d6ed739))
+
+## [6.42.2](https://github.com/googleapis/java-spanner/compare/v6.42.1...v6.42.2) (2023-05-30)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.19.0 ([#2466](https://github.com/googleapis/java-spanner/issues/2466)) ([6de2cf6](https://github.com/googleapis/java-spanner/commit/6de2cf6a2d075b4347d69b9af21ac0cf96413884))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.10.1 ([#2465](https://github.com/googleapis/java-spanner/issues/2465)) ([0a89f49](https://github.com/googleapis/java-spanner/commit/0a89f49cd55311f4cb84a501aa302eab88b46575))
+* Update dependency com.google.cloud:google-cloud-trace to v2.18.0 ([#2467](https://github.com/googleapis/java-spanner/issues/2467)) ([45609ed](https://github.com/googleapis/java-spanner/commit/45609ed65e49147077eaaf3eb90ab0c732eef80b))
+
+## [6.42.1](https://github.com/googleapis/java-spanner/compare/v6.42.0...v6.42.1) (2023-05-22)
+
+
+### Dependencies
+
+* Update dependency commons-io:commons-io to v2.12.0 ([#2439](https://github.com/googleapis/java-spanner/issues/2439)) ([d08b226](https://github.com/googleapis/java-spanner/commit/d08b226d5da6272b2de5f66ee1657d03268e396d))
+
+## [6.42.0](https://github.com/googleapis/java-spanner/compare/v6.41.0...v6.42.0) (2023-05-15)
+
+
+### Features
+
+* Add support for UpdateDatabase in Cloud Spanner ([#2265](https://github.com/googleapis/java-spanner/issues/2265)) ([2ea06e7](https://github.com/googleapis/java-spanner/commit/2ea06e70a6f22635bcad7b7e4c79d0cf710dc6dc))
+* Add support for UpdateDatabase in Cloud Spanner ([#2429](https://github.com/googleapis/java-spanner/issues/2429)) ([09f20bd](https://github.com/googleapis/java-spanner/commit/09f20bd43913a7a01985fd290964d134612c14eb))
+
+
+### Bug Fixes
+
+* Add error details for INTERNAL error ([#2413](https://github.com/googleapis/java-spanner/issues/2413)) ([ed62aa6](https://github.com/googleapis/java-spanner/commit/ed62aa666ae34cf5e552e19b6b5dc2a8c6609e4e))
+* Use javax.annotation.Nonnull in executor framework ([#2414](https://github.com/googleapis/java-spanner/issues/2414)) ([afcc598](https://github.com/googleapis/java-spanner/commit/afcc598e05c75610db8d0adacd4da79b4c124122))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.18.0 ([#2426](https://github.com/googleapis/java-spanner/issues/2426)) ([05a45f8](https://github.com/googleapis/java-spanner/commit/05a45f81c2c71dd236fa36cc987e78a6aa31b594))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.9.0 ([#2427](https://github.com/googleapis/java-spanner/issues/2427)) ([42dbfe3](https://github.com/googleapis/java-spanner/commit/42dbfe3600b1d482d64c6c4f6865f88db399bae3))
+* Update dependency com.google.cloud:google-cloud-trace to v2.17.0 ([#2428](https://github.com/googleapis/java-spanner/issues/2428)) ([6f7fee8](https://github.com/googleapis/java-spanner/commit/6f7fee81233811f5bc002f212c8972ffc6afbe16))
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.22 ([#2423](https://github.com/googleapis/java-spanner/issues/2423)) ([679bb36](https://github.com/googleapis/java-spanner/commit/679bb366162575c28bab1df9b87d01517ea8d5aa))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.22 ([#2424](https://github.com/googleapis/java-spanner/issues/2424)) ([a72f4ff](https://github.com/googleapis/java-spanner/commit/a72f4ff64cce2e9c746e8f6a9e107cbd72afa67f))
+* Update dependency org.graalvm.sdk:graal-sdk to v22.3.2 ([#2391](https://github.com/googleapis/java-spanner/issues/2391)) ([c082a1f](https://github.com/googleapis/java-spanner/commit/c082a1fccb79cf4c001519eba4a75cef30150541))
+
+## [6.41.0](https://github.com/googleapis/java-spanner/compare/v6.40.1...v6.41.0) (2023-04-28)
+
+
+### Features
+
+* Add TransactionExecutionOptions support to executor. ([#2396](https://github.com/googleapis/java-spanner/issues/2396)) ([8327f21](https://github.com/googleapis/java-spanner/commit/8327f210df86bf681ffed6a78ccc9e8fd899c967))
+* Leader Aware Routing ([#2214](https://github.com/googleapis/java-spanner/issues/2214)) ([9695ace](https://github.com/googleapis/java-spanner/commit/9695acee9195b50e525d87700e86d701b1d9eed2))
+* Make leak detection configurable for connections ([#2405](https://github.com/googleapis/java-spanner/issues/2405)) ([85213c8](https://github.com/googleapis/java-spanner/commit/85213c8764fcb7fb12df49baaac9bd00e095f269))
+
+
+### Dependencies
+
+* Update dependency com.google.api.grpc:proto-google-cloud-spanner-executor-v1 to v1.4.0 ([#2395](https://github.com/googleapis/java-spanner/issues/2395)) ([02dc53c](https://github.com/googleapis/java-spanner/commit/02dc53c097bae3f20d7915fecc9c236c4a5f91f9))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.17.0 ([#2406](https://github.com/googleapis/java-spanner/issues/2406)) ([d46097f](https://github.com/googleapis/java-spanner/commit/d46097f9f17d9009d211c8c0f16b3e084f8fdbad))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.8.0 ([#2400](https://github.com/googleapis/java-spanner/issues/2400)) ([b815cb8](https://github.com/googleapis/java-spanner/commit/b815cb88ff29fb5b9a5d7998e765548244f287c1))
+* Update dependency com.google.cloud:google-cloud-trace to v2.16.0 ([#2407](https://github.com/googleapis/java-spanner/issues/2407)) ([7993be2](https://github.com/googleapis/java-spanner/commit/7993be25e9f380071cded2fa4c2bf630d760a53e))
+* Update dependency org.junit.vintage:junit-vintage-engine to v5.9.3 ([#2401](https://github.com/googleapis/java-spanner/issues/2401)) ([8aa7a1d](https://github.com/googleapis/java-spanner/commit/8aa7a1dbbf484446ae8eed3cb27d16fc65e6de83))
+
+## [6.40.1](https://github.com/googleapis/java-spanner/compare/v6.40.0...v6.40.1) (2023-04-17)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.16.0 ([#2383](https://github.com/googleapis/java-spanner/issues/2383)) ([5d5c33a](https://github.com/googleapis/java-spanner/commit/5d5c33ae7c01e10112c72777f202187a50b55ac3))
+* Update dependency com.google.cloud:google-cloud-trace to v2.15.0 ([#2384](https://github.com/googleapis/java-spanner/issues/2384)) ([6b4ce1f](https://github.com/googleapis/java-spanner/commit/6b4ce1fc7ffd837fab6250e36269589d95f5b8c6))
+
+## [6.40.0](https://github.com/googleapis/java-spanner/compare/v6.39.0...v6.40.0) (2023-04-14)
+
+
+### Features
+
+* Savepoints ([#2278](https://github.com/googleapis/java-spanner/issues/2278)) ([b02f584](https://github.com/googleapis/java-spanner/commit/b02f58435b97346cc8e08a96635affe8383981bb))
+
+
+### Performance Improvements
+
+* Remove custom transport executor ([#2366](https://github.com/googleapis/java-spanner/issues/2366)) ([e27dbe5](https://github.com/googleapis/java-spanner/commit/e27dbe5f58229dab208eeeed44d53e741700c814))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.7.0 ([#2377](https://github.com/googleapis/java-spanner/issues/2377)) ([40402af](https://github.com/googleapis/java-spanner/commit/40402af54f94f16619d018e252181db29ae6855e))
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.21 ([#2379](https://github.com/googleapis/java-spanner/issues/2379)) ([ae7262d](https://github.com/googleapis/java-spanner/commit/ae7262d37391c0ec2fee1dcbb24899e4fa16ae17))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.21 ([#2380](https://github.com/googleapis/java-spanner/issues/2380)) ([0cb159e](https://github.com/googleapis/java-spanner/commit/0cb159efc97f02b42f064244e3812a0fd3d82db6))
+
+## [6.39.0](https://github.com/googleapis/java-spanner/compare/v6.38.2...v6.39.0) (2023-04-11)
+
+
+### Features
+
+* Capture stack trace for session checkout is now optional ([#2350](https://github.com/googleapis/java-spanner/issues/2350)) ([6b6427a](https://github.com/googleapis/java-spanner/commit/6b6427a25af25fde944dfc1dd4bf6a6463682caf))
+
+## [6.38.2](https://github.com/googleapis/java-spanner/compare/v6.38.1...v6.38.2) (2023-04-01)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.15.0 ([#2356](https://github.com/googleapis/java-spanner/issues/2356)) ([e4c001a](https://github.com/googleapis/java-spanner/commit/e4c001a2a78af756213fb28e01c571721e105262))
+* Update dependency com.google.cloud:google-cloud-trace to v2.14.0 ([#2357](https://github.com/googleapis/java-spanner/issues/2357)) ([dbb8e66](https://github.com/googleapis/java-spanner/commit/dbb8e669d855c08f48c15c9eafec03a85fa08bca))
+
+## [6.38.1](https://github.com/googleapis/java-spanner/compare/v6.38.0...v6.38.1) (2023-03-29)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.6.0 ([#2352](https://github.com/googleapis/java-spanner/issues/2352)) ([19175ce](https://github.com/googleapis/java-spanner/commit/19175ce22777ac68f8c825a438c0a2503234aa42))
+
+## [6.38.0](https://github.com/googleapis/java-spanner/compare/v6.37.0...v6.38.0) (2023-03-20)
+
+
+### Features
+
+* Add option to wait on session pool creation ([#2329](https://github.com/googleapis/java-spanner/issues/2329)) ([ff17244](https://github.com/googleapis/java-spanner/commit/ff17244ee918fa17c96488a0f7081728cda7b342))
+* Add PartitionedUpdate support to executor ([#2228](https://github.com/googleapis/java-spanner/issues/2228)) ([2c8ecf6](https://github.com/googleapis/java-spanner/commit/2c8ecf6fee591df95ee4abfa230c3fcf0c34c589))
+* Adding support for databoost enabled in PartitionedRead and PartitionedQuery ([#2316](https://github.com/googleapis/java-spanner/issues/2316)) ([f39e4a3](https://github.com/googleapis/java-spanner/commit/f39e4a383cbe720b9814077317940fa3452e2f96))
+
+
+### Bug Fixes
+
+* Correcting the proto field Id for field data_boost_enabled ([#2328](https://github.com/googleapis/java-spanner/issues/2328)) ([6159d7e](https://github.com/googleapis/java-spanner/commit/6159d7ec49b17f6bc40e1b8c93d1e64198c59dcf))
+* Update executeCloudBatchDmlUpdates. ([#2326](https://github.com/googleapis/java-spanner/issues/2326)) ([27ef53c](https://github.com/googleapis/java-spanner/commit/27ef53c8447bd51a56fdfe6b2b206afe234fad80))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.14.0 ([#2333](https://github.com/googleapis/java-spanner/issues/2333)) ([9c81109](https://github.com/googleapis/java-spanner/commit/9c81109e452d6bae2598cf6cf541a09423a8ed6e))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.5.0 ([#2335](https://github.com/googleapis/java-spanner/issues/2335)) ([5eac2be](https://github.com/googleapis/java-spanner/commit/5eac2beb2ce5eebb61e70428e2ac2e11593fc986))
+* Update dependency com.google.cloud:google-cloud-trace to v2.13.0 ([#2334](https://github.com/googleapis/java-spanner/issues/2334)) ([c461ba0](https://github.com/googleapis/java-spanner/commit/c461ba0b1a145cc3e9bee805ec6ad827376e5168))
+
+## [6.37.0](https://github.com/googleapis/java-spanner/compare/v6.36.1...v6.37.0) (2023-03-03)
+
+
+### Features
+
+* Adding new fields for Serverless analytics ([#2315](https://github.com/googleapis/java-spanner/issues/2315)) ([ce9cd74](https://github.com/googleapis/java-spanner/commit/ce9cd7469e2fed15711a8dffe944934cdaa45ce8))
+
+
+### Bug Fixes
+
+* Update test certificate name. ([#2300](https://github.com/googleapis/java-spanner/issues/2300)) ([18e76d6](https://github.com/googleapis/java-spanner/commit/18e76d6636c530c9cfc0ac872d72e321e75c990e))
+
+
+### Dependencies
+
+* Update dependency com.google.api.grpc:proto-google-cloud-spanner-executor-v1 to v1.3.0 ([#2306](https://github.com/googleapis/java-spanner/issues/2306)) ([8372250](https://github.com/googleapis/java-spanner/commit/8372250e0aaae68b0d610d59c1ee88c4dc0d9e8b))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.13.0 ([#2311](https://github.com/googleapis/java-spanner/issues/2311)) ([6ba613b](https://github.com/googleapis/java-spanner/commit/6ba613b44598e48699aca320683e65572a730fc7))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.4.0 ([#2312](https://github.com/googleapis/java-spanner/issues/2312)) ([266c49c](https://github.com/googleapis/java-spanner/commit/266c49cc58beaa935a328599a3e75d3b1fb4988d))
+* Update dependency com.google.cloud:google-cloud-trace to v2.12.0 ([#2313](https://github.com/googleapis/java-spanner/issues/2313)) ([e5f76c6](https://github.com/googleapis/java-spanner/commit/e5f76c6598887b616d371b4d0b3551e236e080f8))
+* Update dependency org.json:json to v20230227 ([#2310](https://github.com/googleapis/java-spanner/issues/2310)) ([badcc14](https://github.com/googleapis/java-spanner/commit/badcc14182244929042412f97e5a7e05799eea22))
+
+## [6.36.1](https://github.com/googleapis/java-spanner/compare/v6.36.0...v6.36.1) (2023-02-21)
+
+
+### Bug Fixes
+
+* Prevent illegal negative timeout values into thread sleep() method while retrying exceptions in unit tests. ([#2268](https://github.com/googleapis/java-spanner/issues/2268)) ([ce66098](https://github.com/googleapis/java-spanner/commit/ce66098c7139ea13d5ea91cf6fbceb5c732b392d))
+
+
+### Dependencies
+
+* Update dependency com.google.api.grpc:proto-google-cloud-spanner-executor-v1 to v1.2.0 ([#2256](https://github.com/googleapis/java-spanner/issues/2256)) ([f0ca86a](https://github.com/googleapis/java-spanner/commit/f0ca86a0858bde84cc38f1ad8fae5f3c4f4f3395))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.12.0 ([#2284](https://github.com/googleapis/java-spanner/issues/2284)) ([0be701a](https://github.com/googleapis/java-spanner/commit/0be701a8b59277f2cfb990a88e4f1dafcbafdd97))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.3.0 ([#2285](https://github.com/googleapis/java-spanner/issues/2285)) ([bb5d5c6](https://github.com/googleapis/java-spanner/commit/bb5d5c66e78812b943a85e0fd888e7021c11bde1))
+* Update dependency com.google.cloud:google-cloud-trace to v2.11.0 ([#2286](https://github.com/googleapis/java-spanner/issues/2286)) ([3c80932](https://github.com/googleapis/java-spanner/commit/3c80932d577de0ea108e695d0a4e542fbfc01deb))
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.20 ([#2280](https://github.com/googleapis/java-spanner/issues/2280)) ([685d1ea](https://github.com/googleapis/java-spanner/commit/685d1ea1c3bf59cd71093a68c260276c605d835f))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.20 ([#2281](https://github.com/googleapis/java-spanner/issues/2281)) ([f2aabc2](https://github.com/googleapis/java-spanner/commit/f2aabc24770d1b9c505dfc96b39fe81c6a0ad5a5))
+
+## [6.36.0](https://github.com/googleapis/java-spanner/compare/v6.35.2...v6.36.0) (2023-02-08)
+
+
+### Features
+
+* Support UNRECOGNIZED types + decode BYTES columns lazily ([#2219](https://github.com/googleapis/java-spanner/issues/2219)) ([fc721c4](https://github.com/googleapis/java-spanner/commit/fc721c4d30de6ed9e5bc4fbbe0e1e7b79a5c7490))
+
+
+### Bug Fixes
+
+* **java:** Skip fixing poms for special modules ([#1744](https://github.com/googleapis/java-spanner/issues/1744)) ([#2244](https://github.com/googleapis/java-spanner/issues/2244)) ([e7f4b40](https://github.com/googleapis/java-spanner/commit/e7f4b4016f8c4c7e4fac0b822f5af2cffd181134))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.11.0 ([#2262](https://github.com/googleapis/java-spanner/issues/2262)) ([d566613](https://github.com/googleapis/java-spanner/commit/d566613442217bdfc69caea7242464fba2647519))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.2.0 ([#2264](https://github.com/googleapis/java-spanner/issues/2264)) ([b5fdbc0](https://github.com/googleapis/java-spanner/commit/b5fdbc0accdaaf1f63c62c1837d72bb378dc8f43))
+* Update dependency com.google.cloud:google-cloud-trace to v2.10.0 ([#2263](https://github.com/googleapis/java-spanner/issues/2263)) ([96f0c81](https://github.com/googleapis/java-spanner/commit/96f0c8181aeb8ca75647a783d8b163f371ad937e))
+
+## [6.35.2](https://github.com/googleapis/java-spanner/compare/v6.35.1...v6.35.2) (2023-01-24)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.10.0 ([#2249](https://github.com/googleapis/java-spanner/issues/2249)) ([d18780e](https://github.com/googleapis/java-spanner/commit/d18780ec0278fc49495939647fe6a2f9e0b4f94e))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.1.2 ([#2246](https://github.com/googleapis/java-spanner/issues/2246)) ([1adaf7c](https://github.com/googleapis/java-spanner/commit/1adaf7cae629ba7b9903d6512adc7b13b6d1208e))
+* Update dependency com.google.cloud:google-cloud-trace to v2.9.0 ([#2250](https://github.com/googleapis/java-spanner/issues/2250)) ([3cd5ab0](https://github.com/googleapis/java-spanner/commit/3cd5ab05e1fd24090fd58c2320b6875135e49b69))
+
+## [6.35.1](https://github.com/googleapis/java-spanner/compare/v6.35.0...v6.35.1) (2023-01-18)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.9.0 ([#2230](https://github.com/googleapis/java-spanner/issues/2230)) ([717f70f](https://github.com/googleapis/java-spanner/commit/717f70f76f915e15a7283b32a83a6f4ac64fc931))
+* Update dependency com.google.cloud:google-cloud-trace to v2.8.0 ([#2231](https://github.com/googleapis/java-spanner/issues/2231)) ([557ea16](https://github.com/googleapis/java-spanner/commit/557ea164ebf948cd78f937c6996fd21e9618d3ae))
+* Update dependency org.graalvm.sdk:graal-sdk to v22.3.1 ([#2238](https://github.com/googleapis/java-spanner/issues/2238)) ([d5f5237](https://github.com/googleapis/java-spanner/commit/d5f52375394ef617f4fcb823937a374930f941e7))
+* Update dependency org.junit.vintage:junit-vintage-engine to v5.9.2 ([#2223](https://github.com/googleapis/java-spanner/issues/2223)) ([3278f91](https://github.com/googleapis/java-spanner/commit/3278f9167b1b2688ed090a7dfd5874e88b8945a5))
+
+## [6.35.0](https://github.com/googleapis/java-spanner/compare/v6.34.1...v6.35.0) (2023-01-12)
+
+
+### Features
+
+* Add support for new cloud client test framework in google-cloud-spanner-executor ([#2217](https://github.com/googleapis/java-spanner/issues/2217)) ([d75ebc1](https://github.com/googleapis/java-spanner/commit/d75ebc1387de7ba0e0a32dfcdd564392d43ff555))
+* **spanner:** Add samples for fine grained access control ([#2172](https://github.com/googleapis/java-spanner/issues/2172)) ([77969e3](https://github.com/googleapis/java-spanner/commit/77969e35feee4dee3460fcdc45227e9a9d924d74))
+
+
+### Bug Fixes
+
+* Retry on RST_STREAM internal error ([#2111](https://github.com/googleapis/java-spanner/issues/2111)) ([d5372e6](https://github.com/googleapis/java-spanner/commit/d5372e662624831abc694d81acecf797d32d86e3))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.8.0 ([#2192](https://github.com/googleapis/java-spanner/issues/2192)) ([fe7e755](https://github.com/googleapis/java-spanner/commit/fe7e755a798b584bf79d16d1f419b1ca7f957172))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.1.1 ([#2222](https://github.com/googleapis/java-spanner/issues/2222)) ([7d3bcca](https://github.com/googleapis/java-spanner/commit/7d3bcca4e5846d823106f724fef42d2ef3a1c822))
+* Update dependency com.google.cloud:google-cloud-trace to v2.7.0 ([#2193](https://github.com/googleapis/java-spanner/issues/2193)) ([da2b924](https://github.com/googleapis/java-spanner/commit/da2b924e037dd366d171c481c6db799de7cacc22))
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.19 ([#2180](https://github.com/googleapis/java-spanner/issues/2180)) ([43b54e9](https://github.com/googleapis/java-spanner/commit/43b54e92b4df3ec6474b8ba7fef61b5b613e6ab0))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.19 ([#2181](https://github.com/googleapis/java-spanner/issues/2181)) ([b42eb38](https://github.com/googleapis/java-spanner/commit/b42eb3866e1fd74f9a9ad2a9dc3d100ac0893f38))
+
 ## [6.34.1](https://github.com/googleapis/java-spanner/compare/v6.34.0...v6.34.1) (2022-12-13)
 
 

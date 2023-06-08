@@ -236,7 +236,7 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int ENCRYPTION_TYPE_FIELD_NUMBER = 3;
-  private int encryptionType_;
+  private int encryptionType_ = 0;
   /**
    *
    *
@@ -269,9 +269,8 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.admin.database.v1.EncryptionInfo.Type getEncryptionType() {
-    @SuppressWarnings("deprecation")
     com.google.spanner.admin.database.v1.EncryptionInfo.Type result =
-        com.google.spanner.admin.database.v1.EncryptionInfo.Type.valueOf(encryptionType_);
+        com.google.spanner.admin.database.v1.EncryptionInfo.Type.forNumber(encryptionType_);
     return result == null
         ? com.google.spanner.admin.database.v1.EncryptionInfo.Type.UNRECOGNIZED
         : result;
@@ -331,11 +330,15 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.rpc.StatusOrBuilder getEncryptionStatusOrBuilder() {
-    return getEncryptionStatus();
+    return encryptionStatus_ == null
+        ? com.google.rpc.Status.getDefaultInstance()
+        : encryptionStatus_;
   }
 
   public static final int KMS_KEY_VERSION_FIELD_NUMBER = 2;
-  private volatile java.lang.Object kmsKeyVersion_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object kmsKeyVersion_ = "";
   /**
    *
    *
@@ -611,16 +614,14 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       encryptionType_ = 0;
-
-      if (encryptionStatusBuilder_ == null) {
-        encryptionStatus_ = null;
-      } else {
-        encryptionStatus_ = null;
+      encryptionStatus_ = null;
+      if (encryptionStatusBuilder_ != null) {
+        encryptionStatusBuilder_.dispose();
         encryptionStatusBuilder_ = null;
       }
       kmsKeyVersion_ = "";
-
       return this;
     }
 
@@ -648,15 +649,25 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.admin.database.v1.EncryptionInfo buildPartial() {
       com.google.spanner.admin.database.v1.EncryptionInfo result =
           new com.google.spanner.admin.database.v1.EncryptionInfo(this);
-      result.encryptionType_ = encryptionType_;
-      if (encryptionStatusBuilder_ == null) {
-        result.encryptionStatus_ = encryptionStatus_;
-      } else {
-        result.encryptionStatus_ = encryptionStatusBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      result.kmsKeyVersion_ = kmsKeyVersion_;
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.database.v1.EncryptionInfo result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.encryptionType_ = encryptionType_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.encryptionStatus_ =
+            encryptionStatusBuilder_ == null ? encryptionStatus_ : encryptionStatusBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.kmsKeyVersion_ = kmsKeyVersion_;
+      }
     }
 
     @java.lang.Override
@@ -713,6 +724,7 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
       }
       if (!other.getKmsKeyVersion().isEmpty()) {
         kmsKeyVersion_ = other.kmsKeyVersion_;
+        bitField0_ |= 0x00000004;
         onChanged();
       }
       this.mergeUnknownFields(other.getUnknownFields());
@@ -744,20 +756,20 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
             case 18:
               {
                 kmsKeyVersion_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 18
             case 24:
               {
                 encryptionType_ = input.readEnum();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 24
             case 34:
               {
                 input.readMessage(
                     getEncryptionStatusFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 34
             default:
@@ -776,6 +788,8 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private int encryptionType_ = 0;
     /**
@@ -810,8 +824,8 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setEncryptionTypeValue(int value) {
-
       encryptionType_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -830,9 +844,8 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
      */
     @java.lang.Override
     public com.google.spanner.admin.database.v1.EncryptionInfo.Type getEncryptionType() {
-      @SuppressWarnings("deprecation")
       com.google.spanner.admin.database.v1.EncryptionInfo.Type result =
-          com.google.spanner.admin.database.v1.EncryptionInfo.Type.valueOf(encryptionType_);
+          com.google.spanner.admin.database.v1.EncryptionInfo.Type.forNumber(encryptionType_);
       return result == null
           ? com.google.spanner.admin.database.v1.EncryptionInfo.Type.UNRECOGNIZED
           : result;
@@ -856,7 +869,7 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
+      bitField0_ |= 0x00000001;
       encryptionType_ = value.getNumber();
       onChanged();
       return this;
@@ -875,7 +888,7 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearEncryptionType() {
-
+      bitField0_ = (bitField0_ & ~0x00000001);
       encryptionType_ = 0;
       onChanged();
       return this;
@@ -900,7 +913,7 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the encryptionStatus field is set.
      */
     public boolean hasEncryptionStatus() {
-      return encryptionStatusBuilder_ != null || encryptionStatus_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -943,11 +956,11 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         encryptionStatus_ = value;
-        onChanged();
       } else {
         encryptionStatusBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -965,11 +978,11 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
     public Builder setEncryptionStatus(com.google.rpc.Status.Builder builderForValue) {
       if (encryptionStatusBuilder_ == null) {
         encryptionStatus_ = builderForValue.build();
-        onChanged();
       } else {
         encryptionStatusBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -986,17 +999,18 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeEncryptionStatus(com.google.rpc.Status value) {
       if (encryptionStatusBuilder_ == null) {
-        if (encryptionStatus_ != null) {
-          encryptionStatus_ =
-              com.google.rpc.Status.newBuilder(encryptionStatus_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && encryptionStatus_ != null
+            && encryptionStatus_ != com.google.rpc.Status.getDefaultInstance()) {
+          getEncryptionStatusBuilder().mergeFrom(value);
         } else {
           encryptionStatus_ = value;
         }
-        onChanged();
       } else {
         encryptionStatusBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1012,14 +1026,13 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public Builder clearEncryptionStatus() {
-      if (encryptionStatusBuilder_ == null) {
-        encryptionStatus_ = null;
-        onChanged();
-      } else {
-        encryptionStatus_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      encryptionStatus_ = null;
+      if (encryptionStatusBuilder_ != null) {
+        encryptionStatusBuilder_.dispose();
         encryptionStatusBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1035,7 +1048,7 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public com.google.rpc.Status.Builder getEncryptionStatusBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getEncryptionStatusFieldBuilder().getBuilder();
     }
@@ -1157,8 +1170,8 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       kmsKeyVersion_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1177,8 +1190,8 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearKmsKeyVersion() {
-
       kmsKeyVersion_ = getDefaultInstance().getKmsKeyVersion();
+      bitField0_ = (bitField0_ & ~0x00000004);
       onChanged();
       return this;
     }
@@ -1202,8 +1215,8 @@ public final class EncryptionInfo extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       kmsKeyVersion_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }

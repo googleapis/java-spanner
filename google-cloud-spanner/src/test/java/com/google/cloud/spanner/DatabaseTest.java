@@ -76,6 +76,10 @@ public class DatabaseTest {
   private static final String PROTO_DESCRIPTORS_RESOURCE_PATH =
       "com/google/cloud/spanner/descriptors.pb";
 
+  private static final boolean DROP_PROTECTION_ENABLED = true;
+
+  private static final boolean RECONCILING = true;
+
   @Mock DatabaseAdminClient dbClient;
 
   @Before
@@ -131,6 +135,22 @@ public class DatabaseTest {
         EncryptionConfigs.customerManagedEncryption(KMS_KEY_NAME), database.getEncryptionConfig());
     assertEquals(DEFAULT_LEADER, database.getDefaultLeader());
     assertEquals(Dialect.GOOGLE_STANDARD_SQL, database.getDialect());
+    assertEquals(DROP_PROTECTION_ENABLED, database.isDropProtectionEnabled());
+    assertEquals(RECONCILING, database.getReconciling());
+  }
+
+  @Test
+  public void testToProto() {
+    final com.google.spanner.admin.database.v1.Database database = createDatabase().toProto();
+    assertEquals(NAME, database.getName());
+    assertEquals(com.google.spanner.admin.database.v1.Database.State.CREATING, database.getState());
+    assertEquals(VERSION_RETENTION_PERIOD, database.getVersionRetentionPeriod());
+    assertEquals(EARLIEST_VERSION_TIME.toProto(), database.getEarliestVersionTime());
+    assertEquals(ENCRYPTION_CONFIG, database.getEncryptionConfig());
+    assertEquals(DEFAULT_LEADER, database.getDefaultLeader());
+    assertEquals(DEFAULT_DIALECT, database.getDatabaseDialect());
+    assertEquals(DROP_PROTECTION_ENABLED, database.getEnableDropProtection());
+    assertEquals(RECONCILING, database.getReconciling());
   }
 
   @Test
@@ -289,6 +309,8 @@ public class DatabaseTest {
         .addAllEncryptionInfo(ENCRYPTION_INFOS)
         .setDefaultLeader(DEFAULT_LEADER)
         .setDatabaseDialect(DEFAULT_DIALECT)
+        .setEnableDropProtection(DROP_PROTECTION_ENABLED)
+        .setReconciling(RECONCILING)
         .build();
   }
 }

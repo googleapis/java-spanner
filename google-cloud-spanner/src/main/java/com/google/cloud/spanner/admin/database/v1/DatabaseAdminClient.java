@@ -74,6 +74,8 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -726,6 +728,235 @@ public class DatabaseAdminClient implements BackgroundResource {
    */
   public final UnaryCallable<GetDatabaseRequest, Database> getDatabaseCallable() {
     return stub.getDatabaseCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates a Cloud Spanner database. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of updating the
+   * database. If the named database does not exist, returns `NOT_FOUND`.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; The database's [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+   * field is set to true. &#42; Cancelling the operation is best-effort. If the cancellation
+   * succeeds, the operation metadata's
+   * [cancel_time][google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancel_time] is set, the
+   * updates are reverted, and the operation terminates with a `CANCELLED` status. &#42; New
+   * UpdateDatabase requests will return a `FAILED_PRECONDITION` error until the pending operation
+   * is done (returns successfully or with error). &#42; Reading the database via the API continues
+   * to give the pre-request values.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; The new values are in effect and readable via the API. &#42; The database's
+   * [reconciling][google.spanner.admin.database.v1.Database.reconciling] field becomes false.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track the database modification. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateDatabaseMetadata][google.spanner.admin.database.v1.UpdateDatabaseMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Database][google.spanner.admin.database.v1.Database], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   Database database = Database.newBuilder().build();
+   *   FieldMask updateMask = FieldMask.newBuilder().build();
+   *   Database response = databaseAdminClient.updateDatabaseAsync(database, updateMask).get();
+   * }
+   * }</pre>
+   *
+   * @param database Required. The database to update. The `name` field of the database is of the
+   *     form `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
+   * @param updateMask Required. The list of fields to update. Currently, only
+   *     `enable_drop_protection` field can be updated.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<Database, UpdateDatabaseMetadata> updateDatabaseAsync(
+      Database database, FieldMask updateMask) {
+    UpdateDatabaseRequest request =
+        UpdateDatabaseRequest.newBuilder().setDatabase(database).setUpdateMask(updateMask).build();
+    return updateDatabaseAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates a Cloud Spanner database. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of updating the
+   * database. If the named database does not exist, returns `NOT_FOUND`.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; The database's [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+   * field is set to true. &#42; Cancelling the operation is best-effort. If the cancellation
+   * succeeds, the operation metadata's
+   * [cancel_time][google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancel_time] is set, the
+   * updates are reverted, and the operation terminates with a `CANCELLED` status. &#42; New
+   * UpdateDatabase requests will return a `FAILED_PRECONDITION` error until the pending operation
+   * is done (returns successfully or with error). &#42; Reading the database via the API continues
+   * to give the pre-request values.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; The new values are in effect and readable via the API. &#42; The database's
+   * [reconciling][google.spanner.admin.database.v1.Database.reconciling] field becomes false.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track the database modification. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateDatabaseMetadata][google.spanner.admin.database.v1.UpdateDatabaseMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Database][google.spanner.admin.database.v1.Database], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   UpdateDatabaseRequest request =
+   *       UpdateDatabaseRequest.newBuilder()
+   *           .setDatabase(Database.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   Database response = databaseAdminClient.updateDatabaseAsync(request).get();
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<Database, UpdateDatabaseMetadata> updateDatabaseAsync(
+      UpdateDatabaseRequest request) {
+    return updateDatabaseOperationCallable().futureCall(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates a Cloud Spanner database. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of updating the
+   * database. If the named database does not exist, returns `NOT_FOUND`.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; The database's [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+   * field is set to true. &#42; Cancelling the operation is best-effort. If the cancellation
+   * succeeds, the operation metadata's
+   * [cancel_time][google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancel_time] is set, the
+   * updates are reverted, and the operation terminates with a `CANCELLED` status. &#42; New
+   * UpdateDatabase requests will return a `FAILED_PRECONDITION` error until the pending operation
+   * is done (returns successfully or with error). &#42; Reading the database via the API continues
+   * to give the pre-request values.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; The new values are in effect and readable via the API. &#42; The database's
+   * [reconciling][google.spanner.admin.database.v1.Database.reconciling] field becomes false.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track the database modification. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateDatabaseMetadata][google.spanner.admin.database.v1.UpdateDatabaseMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Database][google.spanner.admin.database.v1.Database], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   UpdateDatabaseRequest request =
+   *       UpdateDatabaseRequest.newBuilder()
+   *           .setDatabase(Database.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   OperationFuture<Database, UpdateDatabaseMetadata> future =
+   *       databaseAdminClient.updateDatabaseOperationCallable().futureCall(request);
+   *   // Do something.
+   *   Database response = future.get();
+   * }
+   * }</pre>
+   */
+  public final OperationCallable<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+      updateDatabaseOperationCallable() {
+    return stub.updateDatabaseOperationCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates a Cloud Spanner database. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of updating the
+   * database. If the named database does not exist, returns `NOT_FOUND`.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; The database's [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+   * field is set to true. &#42; Cancelling the operation is best-effort. If the cancellation
+   * succeeds, the operation metadata's
+   * [cancel_time][google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancel_time] is set, the
+   * updates are reverted, and the operation terminates with a `CANCELLED` status. &#42; New
+   * UpdateDatabase requests will return a `FAILED_PRECONDITION` error until the pending operation
+   * is done (returns successfully or with error). &#42; Reading the database via the API continues
+   * to give the pre-request values.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; The new values are in effect and readable via the API. &#42; The database's
+   * [reconciling][google.spanner.admin.database.v1.Database.reconciling] field becomes false.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track the database modification. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateDatabaseMetadata][google.spanner.admin.database.v1.UpdateDatabaseMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Database][google.spanner.admin.database.v1.Database], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   UpdateDatabaseRequest request =
+   *       UpdateDatabaseRequest.newBuilder()
+   *           .setDatabase(Database.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       databaseAdminClient.updateDatabaseCallable().futureCall(request);
+   *   // Do something.
+   *   Operation response = future.get();
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<UpdateDatabaseRequest, Operation> updateDatabaseCallable() {
+    return stub.updateDatabaseCallable();
   }
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.

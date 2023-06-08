@@ -23,7 +23,6 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
 import com.google.api.core.NanoClock;
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.GaxGrpcProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
@@ -134,6 +133,8 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
@@ -186,7 +187,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -201,8 +201,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -212,53 +210,6 @@ import org.threeten.bp.Duration;
 /** Implementation of Cloud Spanner remote calls using Gapic libraries. */
 @InternalApi
 public class GapicSpannerRpc implements SpannerRpc {
-
-  /**
-   * {@link ExecutorProvider} that keeps track of the executors that are created and shuts these
-   * down when the {@link SpannerRpc} is closed.
-   */
-  private static final class ManagedInstantiatingExecutorProvider implements ExecutorProvider {
-
-    // 4 Gapic clients * 4 channels per client.
-    private static final int DEFAULT_MIN_THREAD_COUNT = 16;
-    private final List<ScheduledExecutorService> executors = new LinkedList<>();
-    private final ThreadFactory threadFactory;
-
-    private ManagedInstantiatingExecutorProvider(ThreadFactory threadFactory) {
-      this.threadFactory = threadFactory;
-    }
-
-    @Override
-    public boolean shouldAutoClose() {
-      return false;
-    }
-
-    @Override
-    public ScheduledExecutorService getExecutor() {
-      int numCpus = Runtime.getRuntime().availableProcessors();
-      int numThreads = Math.max(DEFAULT_MIN_THREAD_COUNT, numCpus);
-      ScheduledExecutorService executor =
-          new ScheduledThreadPoolExecutor(numThreads, threadFactory);
-      synchronized (this) {
-        executors.add(executor);
-      }
-      return executor;
-    }
-
-    /** Shuts down all executors that have been created by this {@link ExecutorProvider}. */
-    private synchronized void shutdown() {
-      for (ScheduledExecutorService executor : executors) {
-        executor.shutdown();
-      }
-    }
-
-    private void awaitTermination() throws InterruptedException {
-      for (ScheduledExecutorService executor : executors) {
-        executor.awaitTermination(10L, TimeUnit.SECONDS);
-      }
-    }
-  }
-
   private static final PathTemplate PROJECT_NAME_TEMPLATE =
       PathTemplate.create("projects/{project}");
   private static final PathTemplate OPERATION_NAME_TEMPLATE =
@@ -278,7 +229,6 @@ public class GapicSpannerRpc implements SpannerRpc {
       CLIENT_LIBRARY_LANGUAGE + "/" + GaxProperties.getLibraryVersion(GapicSpannerRpc.class);
   private static final String API_FILE = "grpc-gcp-apiconfig.json";
 
-  private final ManagedInstantiatingExecutorProvider executorProvider;
   private boolean rpcIsClosed;
   private final SpannerStub spannerStub;
   private final SpannerStub partitionedDmlStub;
@@ -305,6 +255,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final double ADMINISTRATIVE_REQUESTS_RATE_LIMIT = 1.0D;
   private static final ConcurrentMap<String, RateLimiter> ADMINISTRATIVE_REQUESTS_RATE_LIMITERS =
       new ConcurrentHashMap<>();
+  private final boolean leaderAwareRoutingEnabled;
 
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
@@ -355,15 +306,9 @@ public class GapicSpannerRpc implements SpannerRpc {
             internalHeaderProviderBuilder.getResourceHeaderKey());
     this.callCredentialsProvider = options.getCallCredentialsProvider();
     this.compressorName = options.getCompressorName();
+    this.leaderAwareRoutingEnabled = options.isLeaderAwareRoutingEnabled();
 
     if (initializeStubs) {
-      // Create a managed executor provider.
-      this.executorProvider =
-          new ManagedInstantiatingExecutorProvider(
-              new ThreadFactoryBuilder()
-                  .setDaemon(true)
-                  .setNameFormat(options.getTransportChannelExecutorThreadNameFormat())
-                  .build());
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
       // with information gathered from SpannerOptions if none is provided
       InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder =
@@ -373,11 +318,6 @@ public class GapicSpannerRpc implements SpannerRpc {
               .setMaxInboundMessageSize(MAX_MESSAGE_SIZE)
               .setMaxInboundMetadataSize(MAX_METADATA_SIZE)
               .setPoolSize(options.getNumChannels())
-
-              // Before updating this method to setExecutor, please verify with a code owner on
-              // the lowest version of gax-grpc that needs to be supported. Currently v1.47.17,
-              // which doesn't support the setExecutor variant.
-              .setExecutorProvider(executorProvider)
 
               // Set a keepalive time of 120 seconds to help long running
               // commit GRPC calls succeed
@@ -537,7 +477,6 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.databaseAdminStubSettings = null;
       this.spannerWatchdog = null;
       this.partitionedDmlRetrySettings = null;
-      this.executorProvider = null;
     }
   }
 
@@ -1327,6 +1266,17 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public OperationFuture<Database, UpdateDatabaseMetadata> updateDatabase(
+      Database database, FieldMask updateMask) throws SpannerException {
+    UpdateDatabaseRequest request =
+        UpdateDatabaseRequest.newBuilder().setDatabase(database).setUpdateMask(updateMask).build();
+    GrpcCallContext context =
+        newCallContext(
+            null, database.getName(), request, DatabaseAdminGrpc.getUpdateDatabaseMethod());
+    return databaseAdminStub.updateDatabaseOperationCallable().futureCall(request, context);
+  }
+
+  @Override
   public GetDatabaseDdlResponse getDatabaseDdl(String databaseName) throws SpannerException {
     acquireAdministrativeRequestsRateLimiter();
     final GetDatabaseDdlRequest request =
@@ -1601,7 +1551,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     requestBuilder.setSessionTemplate(sessionBuilder);
     BatchCreateSessionsRequest request = requestBuilder.build();
     GrpcCallContext context =
-        newCallContext(options, databaseName, request, SpannerGrpc.getBatchCreateSessionsMethod());
+        newCallContext(
+            options, databaseName, request, SpannerGrpc.getBatchCreateSessionsMethod(), true);
     return get(spannerStub.batchCreateSessionsCallable().futureCall(request, context))
         .getSessionList();
   }
@@ -1625,7 +1576,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     requestBuilder.setSession(sessionBuilder);
     CreateSessionRequest request = requestBuilder.build();
     GrpcCallContext context =
-        newCallContext(options, databaseName, request, SpannerGrpc.getCreateSessionMethod());
+        newCallContext(options, databaseName, request, SpannerGrpc.getCreateSessionMethod(), true);
     return get(spannerStub.createSessionCallable().futureCall(request, context));
   }
 
@@ -1645,9 +1596,13 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public StreamingCall read(
-      ReadRequest request, ResultStreamConsumer consumer, @Nullable Map<Option, ?> options) {
+      ReadRequest request,
+      ResultStreamConsumer consumer,
+      @Nullable Map<Option, ?> options,
+      boolean routeToLeader) {
     GrpcCallContext context =
-        newCallContext(options, request.getSession(), request, SpannerGrpc.getReadMethod());
+        newCallContext(
+            options, request.getSession(), request, SpannerGrpc.getReadMethod(), routeToLeader);
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
     spannerStub.streamingReadCallable().call(request, responseObserver, context);
     final StreamController controller = responseObserver.getController();
@@ -1667,15 +1622,21 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public ResultSet executeQuery(ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
-    return get(executeQueryAsync(request, options));
+  public ResultSet executeQuery(
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader) {
+    return get(executeQueryAsync(request, options, routeToLeader));
   }
 
   @Override
   public ApiFuture<ResultSet> executeQueryAsync(
-      ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader) {
     GrpcCallContext context =
-        newCallContext(options, request.getSession(), request, SpannerGrpc.getExecuteSqlMethod());
+        newCallContext(
+            options,
+            request.getSession(),
+            request,
+            SpannerGrpc.getExecuteSqlMethod(),
+            routeToLeader);
     return spannerStub.executeSqlCallable().futureCall(request, context);
   }
 
@@ -1683,7 +1644,8 @@ public class GapicSpannerRpc implements SpannerRpc {
   public ResultSet executePartitionedDml(
       ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context =
-        newCallContext(options, request.getSession(), request, SpannerGrpc.getExecuteSqlMethod());
+        newCallContext(
+            options, request.getSession(), request, SpannerGrpc.getExecuteSqlMethod(), true);
     return get(partitionedDmlStub.executeSqlCallable().futureCall(request, context));
   }
 
@@ -1697,7 +1659,11 @@ public class GapicSpannerRpc implements SpannerRpc {
       ExecuteSqlRequest request, Map<Option, ?> options, Duration timeout) {
     GrpcCallContext context =
         newCallContext(
-            options, request.getSession(), request, SpannerGrpc.getExecuteStreamingSqlMethod());
+            options,
+            request.getSession(),
+            request,
+            SpannerGrpc.getExecuteStreamingSqlMethod(),
+            true);
     // Override any timeout settings that might have been set on the call context.
     context = context.withTimeout(timeout).withStreamWaitTimeout(timeout);
     return partitionedDmlStub.executeStreamingSqlCallable().call(request, context);
@@ -1705,10 +1671,17 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public StreamingCall executeQuery(
-      ExecuteSqlRequest request, ResultStreamConsumer consumer, @Nullable Map<Option, ?> options) {
+      ExecuteSqlRequest request,
+      ResultStreamConsumer consumer,
+      @Nullable Map<Option, ?> options,
+      boolean routeToLeader) {
     GrpcCallContext context =
         newCallContext(
-            options, request.getSession(), request, SpannerGrpc.getExecuteStreamingSqlMethod());
+            options,
+            request.getSession(),
+            request,
+            SpannerGrpc.getExecuteStreamingSqlMethod(),
+            routeToLeader);
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
     spannerStub.executeStreamingSqlCallable().call(request, responseObserver, context);
     final StreamController controller = responseObserver.getController();
@@ -1738,30 +1711,35 @@ public class GapicSpannerRpc implements SpannerRpc {
       ExecuteBatchDmlRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context =
         newCallContext(
-            options, request.getSession(), request, SpannerGrpc.getExecuteBatchDmlMethod());
+            options, request.getSession(), request, SpannerGrpc.getExecuteBatchDmlMethod(), true);
     return spannerStub.executeBatchDmlCallable().futureCall(request, context);
   }
 
   @Override
   public ApiFuture<Transaction> beginTransactionAsync(
-      BeginTransactionRequest request, @Nullable Map<Option, ?> options) {
+      BeginTransactionRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader) {
     GrpcCallContext context =
         newCallContext(
-            options, request.getSession(), request, SpannerGrpc.getBeginTransactionMethod());
+            options,
+            request.getSession(),
+            request,
+            SpannerGrpc.getBeginTransactionMethod(),
+            routeToLeader);
     return spannerStub.beginTransactionCallable().futureCall(request, context);
   }
 
   @Override
   public Transaction beginTransaction(
-      BeginTransactionRequest request, @Nullable Map<Option, ?> options) throws SpannerException {
-    return get(beginTransactionAsync(request, options));
+      BeginTransactionRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader)
+      throws SpannerException {
+    return get(beginTransactionAsync(request, options, routeToLeader));
   }
 
   @Override
   public ApiFuture<CommitResponse> commitAsync(
       CommitRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context =
-        newCallContext(options, request.getSession(), request, SpannerGrpc.getCommitMethod());
+        newCallContext(options, request.getSession(), request, SpannerGrpc.getCommitMethod(), true);
     return spannerStub.commitCallable().futureCall(request, context);
   }
 
@@ -1774,7 +1752,8 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public ApiFuture<Empty> rollbackAsync(RollbackRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context =
-        newCallContext(options, request.getSession(), request, SpannerGrpc.getRollbackMethod());
+        newCallContext(
+            options, request.getSession(), request, SpannerGrpc.getRollbackMethod(), true);
     return spannerStub.rollbackCallable().futureCall(request, context);
   }
 
@@ -1789,7 +1768,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       PartitionQueryRequest request, @Nullable Map<Option, ?> options) throws SpannerException {
     GrpcCallContext context =
         newCallContext(
-            options, request.getSession(), request, SpannerGrpc.getPartitionQueryMethod());
+            options, request.getSession(), request, SpannerGrpc.getPartitionQueryMethod(), true);
     return get(spannerStub.partitionQueryCallable().futureCall(request, context));
   }
 
@@ -1798,7 +1777,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       PartitionReadRequest request, @Nullable Map<Option, ?> options) throws SpannerException {
     GrpcCallContext context =
         newCallContext(
-            options, request.getSession(), request, SpannerGrpc.getPartitionReadMethod());
+            options, request.getSession(), request, SpannerGrpc.getPartitionReadMethod(), true);
     return get(spannerStub.partitionReadCallable().futureCall(request, context));
   }
 
@@ -1907,6 +1886,16 @@ public class GapicSpannerRpc implements SpannerRpc {
       String resource,
       ReqT request,
       MethodDescriptor<ReqT, RespT> method) {
+    return newCallContext(options, resource, request, method, false);
+  }
+
+  @VisibleForTesting
+  <ReqT, RespT> GrpcCallContext newCallContext(
+      @Nullable Map<Option, ?> options,
+      String resource,
+      ReqT request,
+      MethodDescriptor<ReqT, RespT> method,
+      boolean routeToLeader) {
     GrpcCallContext context = GrpcCallContext.createDefault();
     if (options != null) {
       context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
@@ -1916,6 +1905,9 @@ public class GapicSpannerRpc implements SpannerRpc {
       context = context.withCallOptions(context.getCallOptions().withCompression(compressorName));
     }
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
+    if (routeToLeader && leaderAwareRoutingEnabled) {
+      context = context.withExtraHeaders(metadataProvider.newRouteToLeaderHeader());
+    }
     if (callCredentialsProvider != null) {
       CallCredentials callCredentials = callCredentialsProvider.getCallCredentials();
       if (callCredentials != null) {
@@ -1941,7 +1933,6 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.instanceAdminStub.close();
       this.databaseAdminStub.close();
       this.spannerWatchdog.shutdown();
-      this.executorProvider.shutdown();
 
       try {
         this.spannerStub.awaitTermination(10L, TimeUnit.SECONDS);
@@ -1949,7 +1940,6 @@ public class GapicSpannerRpc implements SpannerRpc {
         this.instanceAdminStub.awaitTermination(10L, TimeUnit.SECONDS);
         this.databaseAdminStub.awaitTermination(10L, TimeUnit.SECONDS);
         this.spannerWatchdog.awaitTermination(10L, TimeUnit.SECONDS);
-        this.executorProvider.awaitTermination();
       } catch (InterruptedException e) {
         throw SpannerExceptionFactory.propagateInterrupt(e);
       }
@@ -1963,7 +1953,6 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.instanceAdminStub.close();
     this.databaseAdminStub.close();
     this.spannerWatchdog.shutdown();
-    this.executorProvider.shutdown();
 
     this.spannerStub.shutdownNow();
     this.partitionedDmlStub.shutdownNow();

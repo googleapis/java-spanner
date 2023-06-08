@@ -19,12 +19,17 @@ package com.google.cloud.spanner.spi.v1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import com.google.api.gax.core.GaxProperties;
+import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.rpc.ApiCallContext;
+import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
@@ -42,8 +47,10 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc.AdminRequestsLimitExceededRetryAlgorithm;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
 import com.google.rpc.ErrorInfo;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -136,6 +143,7 @@ public class GapicSpannerRpcTest {
   private static Metadata lastSeenHeaders;
   private static String defaultUserAgent;
   private static Spanner spanner;
+  private static boolean isRouteToLeader;
 
   @Parameter public Dialect dialect;
 
@@ -173,6 +181,17 @@ public class GapicSpannerRpcTest {
                     String auth =
                         headers.get(Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER));
                     assertThat(auth).isEqualTo("Bearer " + VARIABLE_OAUTH_TOKEN);
+                    if (call.getMethodDescriptor()
+                            .equals(SpannerGrpc.getExecuteStreamingSqlMethod())
+                        || call.getMethodDescriptor().equals(SpannerGrpc.getExecuteSqlMethod())) {
+                      String routeToLeaderHeader =
+                          headers.get(
+                              Key.of(
+                                  "x-goog-spanner-route-to-leader",
+                                  Metadata.ASCII_STRING_MARSHALLER));
+                      isRouteToLeader =
+                          (routeToLeaderHeader != null && routeToLeaderHeader.equals("true"));
+                    }
                     return Contexts.interceptCall(Context.current(), call, headers, next);
                   }
                 })
@@ -194,6 +213,7 @@ public class GapicSpannerRpcTest {
       server.shutdown();
       server.awaitTermination();
     }
+    isRouteToLeader = false;
   }
 
   @Test
@@ -207,15 +227,14 @@ public class GapicSpannerRpcTest {
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
     // GoogleAuthLibraryCallCredentials doesn't implement equals, so we can only check for the
     // existence.
-    assertThat(
-            rpc.newCallContext(
-                    optionsMap,
-                    "/some/resource",
-                    GetSessionRequest.getDefaultInstance(),
-                    SpannerGrpc.getGetSessionMethod())
-                .getCallOptions()
-                .getCredentials())
-        .isNotNull();
+    assertNotNull(
+        rpc.newCallContext(
+                optionsMap,
+                "/some/resource",
+                GetSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getGetSessionMethod())
+            .getCallOptions()
+            .getCredentials());
     rpc.shutdown();
   }
 
@@ -228,15 +247,14 @@ public class GapicSpannerRpcTest {
             .setCallCredentialsProvider(() -> null)
             .build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
-    assertThat(
-            rpc.newCallContext(
-                    optionsMap,
-                    "/some/resource",
-                    GetSessionRequest.getDefaultInstance(),
-                    SpannerGrpc.getGetSessionMethod())
-                .getCallOptions()
-                .getCredentials())
-        .isNull();
+    assertNull(
+        rpc.newCallContext(
+                optionsMap,
+                "/some/resource",
+                GetSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getGetSessionMethod())
+            .getCallOptions()
+            .getCredentials());
     rpc.shutdown();
   }
 
@@ -248,15 +266,14 @@ public class GapicSpannerRpcTest {
             .setCredentials(STATIC_CREDENTIALS)
             .build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
-    assertThat(
-            rpc.newCallContext(
-                    optionsMap,
-                    "/some/resource",
-                    GetSessionRequest.getDefaultInstance(),
-                    SpannerGrpc.getGetSessionMethod())
-                .getCallOptions()
-                .getCredentials())
-        .isNull();
+    assertNull(
+        rpc.newCallContext(
+                optionsMap,
+                "/some/resource",
+                GetSessionRequest.getDefaultInstance(),
+                SpannerGrpc.getGetSessionMethod())
+            .getCallOptions()
+            .getCredentials());
     rpc.shutdown();
   }
 
@@ -374,7 +391,66 @@ public class GapicSpannerRpcTest {
   public void testNewCallContextWithNullRequestAndNullMethod() {
     SpannerOptions options = SpannerOptions.newBuilder().setProjectId("some-project").build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
-    assertThat(rpc.newCallContext(optionsMap, "/some/resource", null, null)).isNotNull();
+    assertNotNull(rpc.newCallContext(optionsMap, "/some/resource", null, null));
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testNewCallContextWithRouteToLeaderHeader() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setProjectId("some-project").enableLeaderAwareRouting().build();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    GrpcCallContext callContext =
+        rpc.newCallContext(
+            optionsMap,
+            "/some/resource",
+            ExecuteSqlRequest.getDefaultInstance(),
+            SpannerGrpc.getExecuteSqlMethod(),
+            true);
+    assertNotNull(callContext);
+    assertEquals(
+        ImmutableList.of("true"),
+        callContext.getExtraHeaders().get("x-goog-spanner-route-to-leader"));
+    assertEquals(
+        ImmutableList.of("projects/some-project"),
+        callContext.getExtraHeaders().get(ApiClientHeaderProvider.getDefaultResourceHeaderKey()));
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testNewCallContextWithoutRouteToLeaderHeader() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder().enableLeaderAwareRouting().setProjectId("some-project").build();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    GrpcCallContext callContext =
+        rpc.newCallContext(
+            optionsMap,
+            "/some/resource",
+            ExecuteSqlRequest.getDefaultInstance(),
+            SpannerGrpc.getExecuteSqlMethod(),
+            false);
+    assertNotNull(callContext);
+    assertNull(callContext.getExtraHeaders().get("x-goog-spanner-route-to-leader"));
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testNewCallContextWithRouteToLeaderHeaderAndLarDisabled() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .disableLeaderAwareRouting()
+            .build();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    GrpcCallContext callContext =
+        rpc.newCallContext(
+            optionsMap,
+            "/some/resource",
+            ExecuteSqlRequest.getDefaultInstance(),
+            SpannerGrpc.getExecuteSqlMethod(),
+            true);
+    assertNotNull(callContext);
+    assertNull(callContext.getExtraHeaders().get("x-goog-spanner-route-to-leader"));
     rpc.shutdown();
   }
 
@@ -447,6 +523,56 @@ public class GapicSpannerRpcTest {
             .contains("test-agent " + defaultUserAgent);
       }
     }
+  }
+
+  @Test
+  public void testRouteToLeaderHeaderForReadOnly() {
+    final SpannerOptions options =
+        createSpannerOptions().toBuilder().enableLeaderAwareRouting().build();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+      try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+        rs.next();
+      }
+
+      assertFalse(isRouteToLeader);
+    }
+  }
+
+  @Test
+  public void testRouteToLeaderHeaderForReadWrite() {
+    final SpannerOptions options =
+        createSpannerOptions().toBuilder().enableLeaderAwareRouting().build();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      TransactionRunner runner = databaseClient.readWriteTransaction();
+      runner.run(
+          transaction -> {
+            transaction.executeUpdate(UPDATE_FOO_STATEMENT);
+            return null;
+          });
+    }
+    assertTrue(isRouteToLeader);
+  }
+
+  @Test
+  public void testRouteToLeaderHeaderWithLeaderAwareRoutingDisabled() {
+    final SpannerOptions options =
+        createSpannerOptions().toBuilder().disableLeaderAwareRouting().build();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      TransactionRunner runner = databaseClient.readWriteTransaction();
+      runner.run(
+          transaction -> {
+            transaction.executeUpdate(UPDATE_FOO_STATEMENT);
+            return null;
+          });
+    }
+    assertFalse(isRouteToLeader);
   }
 
   private SpannerOptions createSpannerOptions() {

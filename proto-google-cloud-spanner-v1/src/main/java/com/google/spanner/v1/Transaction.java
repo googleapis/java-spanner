@@ -68,7 +68,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int ID_FIELD_NUMBER = 1;
-  private com.google.protobuf.ByteString id_;
+  private com.google.protobuf.ByteString id_ = com.google.protobuf.ByteString.EMPTY;
   /**
    *
    *
@@ -148,7 +148,9 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getReadTimestampOrBuilder() {
-    return getReadTimestamp();
+    return readTimestamp_ == null
+        ? com.google.protobuf.Timestamp.getDefaultInstance()
+        : readTimestamp_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -360,12 +362,11 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       id_ = com.google.protobuf.ByteString.EMPTY;
-
-      if (readTimestampBuilder_ == null) {
-        readTimestamp_ = null;
-      } else {
-        readTimestamp_ = null;
+      readTimestamp_ = null;
+      if (readTimestampBuilder_ != null) {
+        readTimestampBuilder_.dispose();
         readTimestampBuilder_ = null;
       }
       return this;
@@ -394,14 +395,22 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.Transaction buildPartial() {
       com.google.spanner.v1.Transaction result = new com.google.spanner.v1.Transaction(this);
-      result.id_ = id_;
-      if (readTimestampBuilder_ == null) {
-        result.readTimestamp_ = readTimestamp_;
-      } else {
-        result.readTimestamp_ = readTimestampBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.Transaction result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.id_ = id_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.readTimestamp_ =
+            readTimestampBuilder_ == null ? readTimestamp_ : readTimestampBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -484,13 +493,13 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
             case 10:
               {
                 id_ = input.readBytes();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
             case 18:
               {
                 input.readMessage(getReadTimestampFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             default:
@@ -509,6 +518,8 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private com.google.protobuf.ByteString id_ = com.google.protobuf.ByteString.EMPTY;
     /**
@@ -554,8 +565,8 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       id_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -577,7 +588,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearId() {
-
+      bitField0_ = (bitField0_ & ~0x00000001);
       id_ = getDefaultInstance().getId();
       onChanged();
       return this;
@@ -605,7 +616,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the readTimestamp field is set.
      */
     public boolean hasReadTimestamp() {
-      return readTimestampBuilder_ != null || readTimestamp_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -650,11 +661,11 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         readTimestamp_ = value;
-        onChanged();
       } else {
         readTimestampBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -673,11 +684,11 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     public Builder setReadTimestamp(com.google.protobuf.Timestamp.Builder builderForValue) {
       if (readTimestampBuilder_ == null) {
         readTimestamp_ = builderForValue.build();
-        onChanged();
       } else {
         readTimestampBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -695,19 +706,18 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeReadTimestamp(com.google.protobuf.Timestamp value) {
       if (readTimestampBuilder_ == null) {
-        if (readTimestamp_ != null) {
-          readTimestamp_ =
-              com.google.protobuf.Timestamp.newBuilder(readTimestamp_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && readTimestamp_ != null
+            && readTimestamp_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getReadTimestampBuilder().mergeFrom(value);
         } else {
           readTimestamp_ = value;
         }
-        onChanged();
       } else {
         readTimestampBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -724,14 +734,13 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.protobuf.Timestamp read_timestamp = 2;</code>
      */
     public Builder clearReadTimestamp() {
-      if (readTimestampBuilder_ == null) {
-        readTimestamp_ = null;
-        onChanged();
-      } else {
-        readTimestamp_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      readTimestamp_ = null;
+      if (readTimestampBuilder_ != null) {
+        readTimestampBuilder_.dispose();
         readTimestampBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -748,7 +757,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.protobuf.Timestamp read_timestamp = 2;</code>
      */
     public com.google.protobuf.Timestamp.Builder getReadTimestampBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getReadTimestampFieldBuilder().getBuilder();
     }

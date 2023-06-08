@@ -16,18 +16,45 @@
 
 package com.google.cloud.spanner;
 
+import com.google.cloud.FieldSelector;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.ByteString;
 import java.io.IOException;
 import java.io.InputStream;
+import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.database.v1.Database.State;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Represents a Cloud Spanner database. */
 public class DatabaseInfo {
+
+  /** Represent an updatable field in a Cloud Spanner database. */
+  public enum DatabaseField implements FieldSelector {
+    DROP_PROTECTION("enable_drop_protection");
+
+    private final String selector;
+
+    DatabaseField(String selector) {
+      this.selector = selector;
+    }
+
+    @Override
+    public String getSelector() {
+      return selector;
+    }
+
+    static FieldMask toFieldMask(DatabaseInfo.DatabaseField... fields) {
+      FieldMask.Builder builder = FieldMask.newBuilder();
+      for (DatabaseInfo.DatabaseField field : fields) {
+        builder.addPaths(field.getSelector());
+      }
+      return builder.build();
+    }
+  }
 
   public abstract static class Builder {
     abstract Builder setState(State state);
@@ -59,6 +86,18 @@ public class DatabaseInfo {
     }
 
     public Builder setDialect(Dialect dialect) {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
+
+    public Builder enableDropProtection() {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
+
+    public Builder disableDropProtection() {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
+
+    protected Builder setReconciling(boolean reconciling) {
       throw new UnsupportedOperationException("Unimplemented");
     }
 
@@ -106,6 +145,8 @@ public class DatabaseInfo {
     private CustomerManagedEncryption encryptionConfig;
     private String defaultLeader;
     private Dialect dialect = Dialect.GOOGLE_STANDARD_SQL;
+    private boolean dropProtectionEnabled;
+    private boolean reconciling;
     private ByteString protoDescriptors;
     private com.google.spanner.admin.database.v1.Database proto;
 
@@ -176,6 +217,24 @@ public class DatabaseInfo {
     }
 
     @Override
+    public Builder enableDropProtection() {
+      this.dropProtectionEnabled = true;
+      return this;
+    }
+
+    @Override
+    public Builder disableDropProtection() {
+      this.dropProtectionEnabled = false;
+      return this;
+    }
+
+    @Override
+    protected Builder setReconciling(boolean reconciling) {
+      this.reconciling = reconciling;
+      return this;
+    }
+
+    @Override
     public Builder setProtoDescriptors(@Nonnull byte[] protoDescriptors) {
       Preconditions.checkNotNull(protoDescriptors);
       this.protoDescriptors = ByteString.copyFrom(protoDescriptors);
@@ -199,13 +258,35 @@ public class DatabaseInfo {
   /** State of the database. */
   public enum State {
     // Not specified.
-    UNSPECIFIED,
+    UNSPECIFIED {
+      @Override
+      public com.google.spanner.admin.database.v1.Database.State toProto() {
+        return com.google.spanner.admin.database.v1.Database.State.STATE_UNSPECIFIED;
+      }
+    },
     // The database is still being created and is not ready to use.
-    CREATING,
+    CREATING {
+      @Override
+      public com.google.spanner.admin.database.v1.Database.State toProto() {
+        return com.google.spanner.admin.database.v1.Database.State.CREATING;
+      }
+    },
     // The database is fully created and ready to use.
-    READY,
+    READY {
+      @Override
+      public com.google.spanner.admin.database.v1.Database.State toProto() {
+        return com.google.spanner.admin.database.v1.Database.State.READY;
+      }
+    },
     // The database has restored and is being optimized for use.
-    READY_OPTIMIZING
+    READY_OPTIMIZING {
+      @Override
+      public com.google.spanner.admin.database.v1.Database.State toProto() {
+        return com.google.spanner.admin.database.v1.Database.State.READY_OPTIMIZING;
+      }
+    };
+
+    public abstract com.google.spanner.admin.database.v1.Database.State toProto();
   }
 
   private final DatabaseId id;
@@ -217,6 +298,9 @@ public class DatabaseInfo {
   private final CustomerManagedEncryption encryptionConfig;
   private final String defaultLeader;
   private final Dialect dialect;
+  private final boolean dropProtectionEnabled;
+  private final boolean reconciling;
+
   private final ByteString protoDescriptors;
   private final com.google.spanner.admin.database.v1.Database proto;
 
@@ -230,6 +314,8 @@ public class DatabaseInfo {
     this.encryptionConfig = null;
     this.defaultLeader = null;
     this.dialect = null;
+    this.dropProtectionEnabled = false;
+    this.reconciling = false;
     this.protoDescriptors = null;
     this.proto = null;
   }
@@ -244,6 +330,8 @@ public class DatabaseInfo {
     this.encryptionConfig = builder.encryptionConfig;
     this.defaultLeader = builder.defaultLeader;
     this.dialect = builder.dialect;
+    this.dropProtectionEnabled = builder.dropProtectionEnabled;
+    this.reconciling = builder.reconciling;
     this.protoDescriptors = builder.protoDescriptors;
     this.proto = builder.proto;
   }
@@ -313,6 +401,14 @@ public class DatabaseInfo {
     return dialect;
   }
 
+  public boolean isDropProtectionEnabled() {
+    return dropProtectionEnabled;
+  }
+
+  public boolean getReconciling() {
+    return reconciling;
+  }
+
   public ByteString getProtoDescriptors() {
     return protoDescriptors;
   }
@@ -340,6 +436,8 @@ public class DatabaseInfo {
         && Objects.equals(encryptionConfig, that.encryptionConfig)
         && Objects.equals(defaultLeader, that.defaultLeader)
         && Objects.equals(dialect, that.dialect)
+        && Objects.equals(dropProtectionEnabled, that.dropProtectionEnabled)
+        && Objects.equals(reconciling, that.reconciling)
         && Objects.equals(protoDescriptors, that.protoDescriptors);
   }
 
@@ -355,13 +453,15 @@ public class DatabaseInfo {
         encryptionConfig,
         defaultLeader,
         dialect,
+        dropProtectionEnabled,
+        reconciling,
         protoDescriptors);
   }
 
   @Override
   public String toString() {
     return String.format(
-        "Database[%s, %s, %s, %s, %s, %s, %s, %s, %s, %s]",
+        "Database[%s, %s, %s, %s, %s, %s, %s, %s, %s %s %s %s]",
         id.getName(),
         state,
         createTime,
@@ -371,6 +471,8 @@ public class DatabaseInfo {
         encryptionConfig,
         defaultLeader,
         dialect,
+        dropProtectionEnabled,
+        reconciling,
         protoDescriptors);
   }
 }

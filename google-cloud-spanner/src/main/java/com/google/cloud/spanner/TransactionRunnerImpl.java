@@ -198,6 +198,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       this.finishedAsyncOperations.set(null);
     }
 
+    @Override
+    protected boolean isRouteToLeader() {
+      return true;
+    }
+
     private void increaseAsyncOperations() {
       synchronized (lock) {
         if (runningAsyncOperations == 0) {
@@ -255,7 +260,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     private void createTxnAsync(final SettableApiFuture<Void> res) {
       span.addAnnotation("Creating Transaction");
-      final ApiFuture<ByteString> fut = session.beginTransactionAsync();
+      final ApiFuture<ByteString> fut = session.beginTransactionAsync(options, isRouteToLeader());
       fut.addListener(
           () -> {
             try {
@@ -493,9 +498,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           }
           if (tx == null) {
             return TransactionSelector.newBuilder()
-                .setBegin(
-                    TransactionOptions.newBuilder()
-                        .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()))
+                .setBegin(SessionImpl.createReadWriteTransactionOptions(options))
                 .build();
           } else {
             // Wait for the transaction to come available. The tx.get() call will fail with an
@@ -719,7 +722,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               /* withTransactionSelector = */ true);
       try {
         com.google.spanner.v1.ResultSet resultSet =
-            rpc.executeQuery(builder.build(), session.getOptions());
+            rpc.executeQuery(builder.build(), session.getOptions(), isRouteToLeader());
         if (resultSet.getMetadata().hasTransaction()) {
           onTransactionMetadata(
               resultSet.getMetadata().getTransaction(), builder.getTransaction().hasBegin());
@@ -749,7 +752,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         // Register the update as an async operation that must finish before the transaction may
         // commit.
         increaseAsyncOperations();
-        resultSet = rpc.executeQueryAsync(builder.build(), session.getOptions());
+        resultSet = rpc.executeQueryAsync(builder.build(), session.getOptions(), isRouteToLeader());
       } catch (Throwable t) {
         decreaseAsyncOperations();
         throw t;

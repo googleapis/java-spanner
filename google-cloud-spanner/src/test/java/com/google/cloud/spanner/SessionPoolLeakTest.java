@@ -25,6 +25,15 @@ import static org.junit.Assert.assertThrows;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
+import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.SessionPool.LeakedSessionException;
+import com.google.protobuf.ListValue;
+import com.google.protobuf.Value;
+import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.StructType;
+import com.google.spanner.v1.StructType.Field;
+import com.google.spanner.v1.Type;
+import com.google.spanner.v1.TypeCode;
 import io.grpc.Server;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -92,6 +101,66 @@ public class SessionPoolLeakTest {
   @After
   public void tearDown() {
     spanner.close();
+  }
+
+  @Test
+  public void testIgnoreLeakedSession() {
+    for (boolean trackStackTraceofSessionCheckout : new boolean[] {true, false}) {
+      SpannerOptions.Builder builder =
+          SpannerOptions.newBuilder()
+              .setProjectId("[PROJECT]")
+              .setChannelProvider(channelProvider)
+              .setCredentials(NoCredentials.getInstance());
+      builder.setSessionPoolOption(
+          SessionPoolOptions.newBuilder()
+              .setMinSessions(0)
+              .setMaxSessions(2)
+              .setIncStep(1)
+              .setFailOnSessionLeak()
+              .setTrackStackTraceOfSessionCheckout(trackStackTraceofSessionCheckout)
+              .build());
+      Spanner spanner = builder.build().getService();
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      mockSpanner.putStatementResult(
+          StatementResult.query(
+              Statement.of("SELECT 1"),
+              com.google.spanner.v1.ResultSet.newBuilder()
+                  .setMetadata(
+                      ResultSetMetadata.newBuilder()
+                          .setRowType(
+                              StructType.newBuilder()
+                                  .addFields(
+                                      Field.newBuilder()
+                                          .setName("c")
+                                          .setType(
+                                              Type.newBuilder().setCode(TypeCode.INT64).build())
+                                          .build())
+                                  .build())
+                          .build())
+                  .addRows(
+                      ListValue.newBuilder()
+                          .addValues(Value.newBuilder().setStringValue("1").build())
+                          .build())
+                  .build()));
+
+      // Start a read-only transaction without closing it before closing the Spanner instance.
+      // This will cause a session leak.
+      ReadOnlyTransaction transaction = client.readOnlyTransaction();
+      try (ResultSet resultSet = transaction.executeQuery(Statement.of("SELECT 1"))) {
+        while (resultSet.next()) {
+          // ignore
+        }
+      }
+      LeakedSessionException exception = assertThrows(LeakedSessionException.class, spanner::close);
+      // The top of the stack trace will be "markCheckedOut" if we keep track of the point where the
+      // session was checked out, while it will be "closeAsync" if we don't. In the latter case, we
+      // get the stack trace of the method that tries to close the Spanner instance, while in the
+      // former the stack trace will contain the method that checked out the session.
+      assertEquals(
+          trackStackTraceofSessionCheckout ? "markCheckedOut" : "closeAsync",
+          exception.getStackTrace()[0].getMethodName());
+    }
   }
 
   @Test

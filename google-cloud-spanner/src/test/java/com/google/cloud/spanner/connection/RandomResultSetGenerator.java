@@ -44,7 +44,7 @@ import java.util.Random;
  * of Cloud Spanner filled with random data.
  */
 public class RandomResultSetGenerator {
-  private static Type[] generateTypes(Dialect dialect) {
+  public static Type[] generateAllTypes(Dialect dialect) {
     List<Type> types =
         new ArrayList<Type>(
             Arrays.asList(
@@ -114,7 +114,8 @@ public class RandomResultSetGenerator {
                     .setArrayElementType(Type.newBuilder().setCode(TypeCode.TIMESTAMP))
                     .build()));
 
-    appendProtoTypes(types, dialect);
+    // TODO(harsha): add test corresponding to this in testGetAllTypesAsString()
+    // appendProtoTypes(types, dialect);
     Type[] typeArray = new Type[types.size()];
     typeArray = types.toArray(typeArray);
     return typeArray;
@@ -144,7 +145,7 @@ public class RandomResultSetGenerator {
     }
   }
 
-  private static ResultSetMetadata generateMetadata(Type[] types) {
+  public static ResultSetMetadata generateAllTypesMetadata(Type[] types) {
     StructType.Builder rowTypeBuilder = StructType.newBuilder();
     for (int col = 0; col < types.length; col++) {
       rowTypeBuilder.addFields(Field.newBuilder().setName("COL" + col).setType(types[col])).build();
@@ -167,8 +168,8 @@ public class RandomResultSetGenerator {
   public RandomResultSetGenerator(int rowCount, Dialect dialect) {
     this.rowCount = rowCount;
     this.dialect = dialect;
-    this.types = generateTypes(dialect);
-    this.metadata = generateMetadata(types);
+    this.types = generateAllTypes(dialect);
+    this.metadata = generateAllTypesMetadata(types);
   }
 
   public ResultSet generate() {

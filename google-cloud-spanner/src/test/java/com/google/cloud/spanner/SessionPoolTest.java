@@ -94,6 +94,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.threeten.bp.Duration;
 
 /** Tests for SessionPool that mock out the underlying stub. */
 @RunWith(Parameterized.class)
@@ -762,9 +763,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(rpc.asyncDeleteSession(Mockito.anyString(), Mockito.anyMap()))
           .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
       when(rpc.executeQuery(
-              any(ExecuteSqlRequest.class), any(ResultStreamConsumer.class), any(Map.class)))
+              any(ExecuteSqlRequest.class),
+              any(ResultStreamConsumer.class),
+              any(Map.class),
+              eq(true)))
           .thenReturn(closedStreamingCall);
-      when(rpc.executeQuery(any(ExecuteSqlRequest.class), any(Map.class)))
+      when(rpc.executeQuery(any(ExecuteSqlRequest.class), any(Map.class), eq(true)))
           .thenThrow(sessionNotFound);
       when(rpc.executeBatchDml(any(ExecuteBatchDmlRequest.class), any(Map.class)))
           .thenThrow(sessionNotFound);
@@ -785,7 +789,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
       when(closedSession.newTransaction(Options.fromTransactionOptions()))
           .thenReturn(closedTransactionContext);
-      when(closedSession.beginTransactionAsync()).thenThrow(sessionNotFound);
+      when(closedSession.beginTransactionAsync(any(), eq(true))).thenThrow(sessionNotFound);
       TransactionRunnerImpl closedTransactionRunner = new TransactionRunnerImpl(closedSession);
       closedTransactionRunner.setSpan(mock(Span.class));
       when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
@@ -798,7 +802,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       final TransactionContextImpl openTransactionContext = mock(TransactionContextImpl.class);
       when(openSession.newTransaction(Options.fromTransactionOptions()))
           .thenReturn(openTransactionContext);
-      when(openSession.beginTransactionAsync())
+      when(openSession.beginTransactionAsync(any(), eq(true)))
           .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
       TransactionRunnerImpl openTransactionRunner = new TransactionRunnerImpl(openSession);
       openTransactionRunner.setSpan(mock(Span.class));
@@ -1186,6 +1190,47 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     setupMockSessionCreation();
     pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
     assertEquals(TEST_DATABASE_ROLE, pool.getDatabaseRole());
+  }
+
+  @Test
+  public void testWaitOnMinSessionsWhenSessionsAreCreatedBeforeTimeout() {
+    doAnswer(
+            invocation ->
+                executor.submit(
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgument(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(mockSession());
+                    }))
+        .when(sessionClient)
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(minSessions)
+            .setMaxSessions(minSessions + 1)
+            .setWaitForMinSessions(Duration.ofSeconds(5))
+            .build();
+    pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
+    pool.maybeWaitOnMinSessions();
+    assertTrue(pool.getNumberOfSessionsInPool() >= minSessions);
+  }
+
+  @Test(expected = SpannerException.class)
+  public void testWaitOnMinSessionsThrowsExceptionWhenTimeoutIsReached() {
+    // Does not call onSessionReady, so session pool is never populated
+    doAnswer(invocation -> null)
+        .when(sessionClient)
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(minSessions + 1)
+            .setMaxSessions(minSessions + 1)
+            .setWaitForMinSessions(Duration.ofMillis(100))
+            .build();
+    pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
+    pool.maybeWaitOnMinSessions();
   }
 
   private void mockKeepAlive(Session session) {

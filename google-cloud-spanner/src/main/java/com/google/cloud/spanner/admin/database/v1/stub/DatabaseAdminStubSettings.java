@@ -92,6 +92,8 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import java.io.IOException;
 import java.util.List;
 import javax.annotation.Generated;
@@ -125,7 +127,10 @@ import org.threeten.bp.Duration;
  * databaseAdminSettingsBuilder
  *     .getDatabaseSettings()
  *     .setRetrySettings(
- *         databaseAdminSettingsBuilder.getDatabaseSettings().getRetrySettings().toBuilder()
+ *         databaseAdminSettingsBuilder
+ *             .getDatabaseSettings()
+ *             .getRetrySettings()
+ *             .toBuilder()
  *             .setTotalTimeout(Duration.ofSeconds(30))
  *             .build());
  * DatabaseAdminStubSettings databaseAdminSettings = databaseAdminSettingsBuilder.build();
@@ -147,6 +152,9 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
   private final OperationCallSettings<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
       createDatabaseOperationSettings;
   private final UnaryCallSettings<GetDatabaseRequest, Database> getDatabaseSettings;
+  private final UnaryCallSettings<UpdateDatabaseRequest, Operation> updateDatabaseSettings;
+  private final OperationCallSettings<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+      updateDatabaseOperationSettings;
   private final UnaryCallSettings<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlSettings;
   private final OperationCallSettings<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
       updateDatabaseDdlOperationSettings;
@@ -503,6 +511,17 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     return getDatabaseSettings;
   }
 
+  /** Returns the object with the settings used for calls to updateDatabase. */
+  public UnaryCallSettings<UpdateDatabaseRequest, Operation> updateDatabaseSettings() {
+    return updateDatabaseSettings;
+  }
+
+  /** Returns the object with the settings used for calls to updateDatabase. */
+  public OperationCallSettings<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+      updateDatabaseOperationSettings() {
+    return updateDatabaseOperationSettings;
+  }
+
   /** Returns the object with the settings used for calls to updateDatabaseDdl. */
   public UnaryCallSettings<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlSettings() {
     return updateDatabaseDdlSettings;
@@ -729,6 +748,8 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     createDatabaseSettings = settingsBuilder.createDatabaseSettings().build();
     createDatabaseOperationSettings = settingsBuilder.createDatabaseOperationSettings().build();
     getDatabaseSettings = settingsBuilder.getDatabaseSettings().build();
+    updateDatabaseSettings = settingsBuilder.updateDatabaseSettings().build();
+    updateDatabaseOperationSettings = settingsBuilder.updateDatabaseOperationSettings().build();
     updateDatabaseDdlSettings = settingsBuilder.updateDatabaseDdlSettings().build();
     updateDatabaseDdlOperationSettings =
         settingsBuilder.updateDatabaseDdlOperationSettings().build();
@@ -764,6 +785,11 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
             CreateDatabaseRequest, Database, CreateDatabaseMetadata>
         createDatabaseOperationSettings;
     private final UnaryCallSettings.Builder<GetDatabaseRequest, Database> getDatabaseSettings;
+    private final UnaryCallSettings.Builder<UpdateDatabaseRequest, Operation>
+        updateDatabaseSettings;
+    private final OperationCallSettings.Builder<
+            UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+        updateDatabaseOperationSettings;
     private final UnaryCallSettings.Builder<UpdateDatabaseDdlRequest, Operation>
         updateDatabaseDdlSettings;
     private final OperationCallSettings.Builder<
@@ -886,6 +912,8 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
       createDatabaseSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       createDatabaseOperationSettings = OperationCallSettings.newBuilder();
       getDatabaseSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      updateDatabaseSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      updateDatabaseOperationSettings = OperationCallSettings.newBuilder();
       updateDatabaseDdlSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       updateDatabaseDdlOperationSettings = OperationCallSettings.newBuilder();
       dropDatabaseSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
@@ -914,6 +942,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
               listDatabasesSettings,
               createDatabaseSettings,
               getDatabaseSettings,
+              updateDatabaseSettings,
               updateDatabaseDdlSettings,
               dropDatabaseSettings,
               getDatabaseDdlSettings,
@@ -940,6 +969,8 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
       createDatabaseSettings = settings.createDatabaseSettings.toBuilder();
       createDatabaseOperationSettings = settings.createDatabaseOperationSettings.toBuilder();
       getDatabaseSettings = settings.getDatabaseSettings.toBuilder();
+      updateDatabaseSettings = settings.updateDatabaseSettings.toBuilder();
+      updateDatabaseOperationSettings = settings.updateDatabaseOperationSettings.toBuilder();
       updateDatabaseDdlSettings = settings.updateDatabaseDdlSettings.toBuilder();
       updateDatabaseDdlOperationSettings = settings.updateDatabaseDdlOperationSettings.toBuilder();
       dropDatabaseSettings = settings.dropDatabaseSettings.toBuilder();
@@ -966,6 +997,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
               listDatabasesSettings,
               createDatabaseSettings,
               getDatabaseSettings,
+              updateDatabaseSettings,
               updateDatabaseDdlSettings,
               dropDatabaseSettings,
               getDatabaseDdlSettings,
@@ -1023,6 +1055,11 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
 
       builder
           .getDatabaseSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
+
+      builder
+          .updateDatabaseSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
 
@@ -1128,6 +1165,30 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
                       .setRpcTimeoutMultiplier(1.0)
                       .setMaxRpcTimeout(Duration.ZERO)
                       .setTotalTimeout(Duration.ofMillis(86400000L))
+                      .build()));
+
+      builder
+          .updateDatabaseOperationSettings()
+          .setInitialCallSettings(
+              UnaryCallSettings
+                  .<UpdateDatabaseRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
+                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"))
+                  .build())
+          .setResponseTransformer(
+              ProtoOperationTransformers.ResponseTransformer.create(Database.class))
+          .setMetadataTransformer(
+              ProtoOperationTransformers.MetadataTransformer.create(UpdateDatabaseMetadata.class))
+          .setPollingAlgorithm(
+              OperationTimedPollAlgorithm.create(
+                  RetrySettings.newBuilder()
+                      .setInitialRetryDelay(Duration.ofMillis(5000L))
+                      .setRetryDelayMultiplier(1.5)
+                      .setMaxRetryDelay(Duration.ofMillis(45000L))
+                      .setInitialRpcTimeout(Duration.ZERO)
+                      .setRpcTimeoutMultiplier(1.0)
+                      .setMaxRpcTimeout(Duration.ZERO)
+                      .setTotalTimeout(Duration.ofMillis(300000L))
                       .build()));
 
       builder
@@ -1267,6 +1328,19 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     /** Returns the builder for the settings used for calls to getDatabase. */
     public UnaryCallSettings.Builder<GetDatabaseRequest, Database> getDatabaseSettings() {
       return getDatabaseSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to updateDatabase. */
+    public UnaryCallSettings.Builder<UpdateDatabaseRequest, Operation> updateDatabaseSettings() {
+      return updateDatabaseSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to updateDatabase. */
+    @BetaApi(
+        "The surface for use by generated code is not stable yet and may change in the future.")
+    public OperationCallSettings.Builder<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+        updateDatabaseOperationSettings() {
+      return updateDatabaseOperationSettings;
     }
 
     /** Returns the builder for the settings used for calls to updateDatabaseDdl. */

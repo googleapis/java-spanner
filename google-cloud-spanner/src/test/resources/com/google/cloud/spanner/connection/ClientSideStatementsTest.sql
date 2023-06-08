@@ -3392,6 +3392,404 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION UNIMPLEMENTED
 show variable/-rpc_priority;
 NEW_CONNECTION;
+show variable savepoint_support;
+NEW_CONNECTION;
+SHOW VARIABLE SAVEPOINT_SUPPORT;
+NEW_CONNECTION;
+show variable savepoint_support;
+NEW_CONNECTION;
+   show variable savepoint_support;
+NEW_CONNECTION;
+			show variable savepoint_support;
+NEW_CONNECTION;
+
+
+
+show variable savepoint_support;
+NEW_CONNECTION;
+show variable savepoint_support  ;
+NEW_CONNECTION;
+show variable savepoint_support		;
+NEW_CONNECTION;
+show variable savepoint_support
+
+;
+NEW_CONNECTION;
+show   variable   savepoint_support;
+NEW_CONNECTION;
+show	variable	savepoint_support;
+NEW_CONNECTION;
+show
+variable
+savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable savepoint_support/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-savepoint_support;
+NEW_CONNECTION;
+show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+SHOW VARIABLE DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
+NEW_CONNECTION;
+show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+   show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+			show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+
+
+
+show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+show variable delay_transaction_start_until_first_write  ;
+NEW_CONNECTION;
+show variable delay_transaction_start_until_first_write		;
+NEW_CONNECTION;
+show variable delay_transaction_start_until_first_write
+
+;
+NEW_CONNECTION;
+show   variable   delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+show	variable	delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+show
+variable
+delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable delay_transaction_start_until_first_write;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable delay_transaction_start_until_first_write/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-delay_transaction_start_until_first_write;
+NEW_CONNECTION;
 begin;
 NEW_CONNECTION;
 BEGIN;
@@ -16309,3 +16707,997 @@ set rpc_priority='NULL'/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set/-rpc_priority='NULL';
+NEW_CONNECTION;
+set savepoint_support='ENABLED';
+NEW_CONNECTION;
+SET SAVEPOINT_SUPPORT='ENABLED';
+NEW_CONNECTION;
+set savepoint_support='enabled';
+NEW_CONNECTION;
+   set savepoint_support='ENABLED';
+NEW_CONNECTION;
+			set savepoint_support='ENABLED';
+NEW_CONNECTION;
+
+
+
+set savepoint_support='ENABLED';
+NEW_CONNECTION;
+set savepoint_support='ENABLED'  ;
+NEW_CONNECTION;
+set savepoint_support='ENABLED'		;
+NEW_CONNECTION;
+set savepoint_support='ENABLED'
+
+;
+NEW_CONNECTION;
+set   savepoint_support='ENABLED';
+NEW_CONNECTION;
+set	savepoint_support='ENABLED';
+NEW_CONNECTION;
+set
+savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='ENABLED'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-savepoint_support='ENABLED';
+NEW_CONNECTION;
+set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+SET SAVEPOINT_SUPPORT='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+set savepoint_support='fail_after_rollback';
+NEW_CONNECTION;
+   set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+			set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+
+
+
+set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+set savepoint_support='FAIL_AFTER_ROLLBACK'  ;
+NEW_CONNECTION;
+set savepoint_support='FAIL_AFTER_ROLLBACK'		;
+NEW_CONNECTION;
+set savepoint_support='FAIL_AFTER_ROLLBACK'
+
+;
+NEW_CONNECTION;
+set   savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+set	savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+set
+savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='FAIL_AFTER_ROLLBACK'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+set savepoint_support='DISABLED';
+NEW_CONNECTION;
+SET SAVEPOINT_SUPPORT='DISABLED';
+NEW_CONNECTION;
+set savepoint_support='disabled';
+NEW_CONNECTION;
+   set savepoint_support='DISABLED';
+NEW_CONNECTION;
+			set savepoint_support='DISABLED';
+NEW_CONNECTION;
+
+
+
+set savepoint_support='DISABLED';
+NEW_CONNECTION;
+set savepoint_support='DISABLED'  ;
+NEW_CONNECTION;
+set savepoint_support='DISABLED'		;
+NEW_CONNECTION;
+set savepoint_support='DISABLED'
+
+;
+NEW_CONNECTION;
+set   savepoint_support='DISABLED';
+NEW_CONNECTION;
+set	savepoint_support='DISABLED';
+NEW_CONNECTION;
+set
+savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set savepoint_support='DISABLED'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-savepoint_support='DISABLED';
+NEW_CONNECTION;
+set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+SET DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE = TRUE;
+NEW_CONNECTION;
+set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+   set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+			set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+
+
+
+set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+set delay_transaction_start_until_first_write = true  ;
+NEW_CONNECTION;
+set delay_transaction_start_until_first_write = true		;
+NEW_CONNECTION;
+set delay_transaction_start_until_first_write = true
+
+;
+NEW_CONNECTION;
+set   delay_transaction_start_until_first_write   =   true;
+NEW_CONNECTION;
+set	delay_transaction_start_until_first_write	=	true;
+NEW_CONNECTION;
+set
+delay_transaction_start_until_first_write
+=
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set delay_transaction_start_until_first_write = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =/-true;
+NEW_CONNECTION;
+set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+SET DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE = FALSE;
+NEW_CONNECTION;
+set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+   set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+			set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+
+
+
+set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+set delay_transaction_start_until_first_write = false  ;
+NEW_CONNECTION;
+set delay_transaction_start_until_first_write = false		;
+NEW_CONNECTION;
+set delay_transaction_start_until_first_write = false
+
+;
+NEW_CONNECTION;
+set   delay_transaction_start_until_first_write   =   false;
+NEW_CONNECTION;
+set	delay_transaction_start_until_first_write	=	false;
+NEW_CONNECTION;
+set
+delay_transaction_start_until_first_write
+=
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set delay_transaction_start_until_first_write = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write = false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set delay_transaction_start_until_first_write =/-false;

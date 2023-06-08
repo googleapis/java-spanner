@@ -333,14 +333,14 @@ public final class SpannerInstanceAdminProto {
           + "missions:\001*\332A\024resource,permissions\032x\312A\026s"
           + "panner.googleapis.com\322A\\https://www.goog"
           + "leapis.com/auth/cloud-platform,https://w"
-          + "ww.googleapis.com/auth/spanner.adminB\215\002\n"
+          + "ww.googleapis.com/auth/spanner.adminB\213\002\n"
           + "$com.google.spanner.admin.instance.v1B\031S"
-          + "pannerInstanceAdminProtoP\001ZHgoogle.golan"
-          + "g.org/genproto/googleapis/spanner/admin/"
-          + "instance/v1;instance\252\002&Google.Cloud.Span"
-          + "ner.Admin.Instance.V1\312\002&Google\\Cloud\\Spa"
-          + "nner\\Admin\\Instance\\V1\352\002+Google::Cloud::"
-          + "Spanner::Admin::Instance::V1b\006proto3"
+          + "pannerInstanceAdminProtoP\001ZFcloud.google"
+          + ".com/go/spanner/admin/instance/apiv1/ins"
+          + "tancepb;instancepb\252\002&Google.Cloud.Spanne"
+          + "r.Admin.Instance.V1\312\002&Google\\Cloud\\Spann"
+          + "er\\Admin\\Instance\\V1\352\002+Google::Cloud::Sp"
+          + "anner::Admin::Instance::V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(

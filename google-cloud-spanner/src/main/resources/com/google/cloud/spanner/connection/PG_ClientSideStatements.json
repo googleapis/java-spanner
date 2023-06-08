@@ -141,6 +141,24 @@
       "exampleStatements": ["show spanner.rpc_priority","show variable spanner.rpc_priority"]
     },
     {
+      "name": "SHOW [VARIABLE] SPANNER.SAVEPOINT_SUPPORT",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_SAVEPOINT_SUPPORT",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.savepoint_support\\s*\\z",
+      "method": "statementShowSavepointSupport",
+      "exampleStatements": ["show spanner.savepoint_support","show variable spanner.savepoint_support"]
+    },
+    {
+      "name": "SHOW [VARIABLE] SPANNER.DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.delay_transaction_start_until_first_write\\s*\\z",
+      "method": "statementShowDelayTransactionStartUntilFirstWrite",
+      "exampleStatements": ["show spanner.delay_transaction_start_until_first_write","show variable spanner.delay_transaction_start_until_first_write"]
+    },
+    {
       "name": "SHOW [VARIABLE] TRANSACTION ISOLATION LEVEL",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
@@ -603,6 +621,43 @@
         "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "'(HIGH|MEDIUM|LOW|NULL)'",
         "converterName": "ClientSideStatementValueConverters$RpcPriorityConverter"
+      }
+    },
+    {
+      "name": "SET SPANNER.SAVEPOINT_SUPPORT =|TO 'ENABLED'|'FAIL_AFTER_ROLLBACK'|'DISABLED'",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_SAVEPOINT_SUPPORT",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.savepoint_support(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetSavepointSupport",
+      "exampleStatements": [
+        "set spanner.savepoint_support='ENABLED'",
+        "set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'",
+        "set spanner.savepoint_support='DISABLED'",
+        "set spanner.savepoint_support to 'ENABLED'",
+        "set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'",
+        "set spanner.savepoint_support to 'DISABLED'"
+      ],
+      "setStatement": {
+        "propertyName": "SPANNER.SAVEPOINT_SUPPORT",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "'(ENABLED|FAIL_AFTER_ROLLBACK|DISABLED)'",
+        "converterName": "ClientSideStatementValueConverters$SavepointSupportConverter"
+      }
+    },
+    {
+      "name": "SET SPANNER.DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE = TRUE|FALSE",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.delay_transaction_start_until_first_write(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetDelayTransactionStartUntilFirstWrite",
+      "exampleStatements": ["set spanner.delay_transaction_start_until_first_write = true", "set spanner.delay_transaction_start_until_first_write = false", "set spanner.delay_transaction_start_until_first_write to true", "set spanner.delay_transaction_start_until_first_write to false"],
+      "setStatement": {
+        "propertyName": "SPANNER.DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(TRUE|FALSE)",
+        "converterName": "ClientSideStatementValueConverters$BooleanConverter"
       }
     }
   ]

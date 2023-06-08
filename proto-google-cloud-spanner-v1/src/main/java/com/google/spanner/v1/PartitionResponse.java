@@ -69,6 +69,8 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
   }
 
   public static final int PARTITIONS_FIELD_NUMBER = 1;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.v1.Partition> partitions_;
   /**
    *
@@ -182,7 +184,9 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
    */
   @java.lang.Override
   public com.google.spanner.v1.TransactionOrBuilder getTransactionOrBuilder() {
-    return getTransaction();
+    return transaction_ == null
+        ? com.google.spanner.v1.Transaction.getDefaultInstance()
+        : transaction_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -398,6 +402,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       if (partitionsBuilder_ == null) {
         partitions_ = java.util.Collections.emptyList();
       } else {
@@ -405,10 +410,9 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
         partitionsBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000001);
-      if (transactionBuilder_ == null) {
-        transaction_ = null;
-      } else {
-        transaction_ = null;
+      transaction_ = null;
+      if (transactionBuilder_ != null) {
+        transactionBuilder_.dispose();
         transactionBuilder_ = null;
       }
       return this;
@@ -438,7 +442,15 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
     public com.google.spanner.v1.PartitionResponse buildPartial() {
       com.google.spanner.v1.PartitionResponse result =
           new com.google.spanner.v1.PartitionResponse(this);
-      int from_bitField0_ = bitField0_;
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(com.google.spanner.v1.PartitionResponse result) {
       if (partitionsBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
           partitions_ = java.util.Collections.unmodifiableList(partitions_);
@@ -448,13 +460,14 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
       } else {
         result.partitions_ = partitionsBuilder_.build();
       }
-      if (transactionBuilder_ == null) {
-        result.transaction_ = transaction_;
-      } else {
-        result.transaction_ = transactionBuilder_.build();
+    }
+
+    private void buildPartial0(com.google.spanner.v1.PartitionResponse result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.transaction_ =
+            transactionBuilder_ == null ? transaction_ : transactionBuilder_.build();
       }
-      onBuilt();
-      return result;
     }
 
     @java.lang.Override
@@ -573,7 +586,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
             case 18:
               {
                 input.readMessage(getTransactionFieldBuilder().getBuilder(), extensionRegistry);
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
             default:
@@ -961,7 +974,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
      * @return Whether the transaction field is set.
      */
     public boolean hasTransaction() {
-      return transactionBuilder_ != null || transaction_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -998,11 +1011,11 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
           throw new NullPointerException();
         }
         transaction_ = value;
-        onChanged();
       } else {
         transactionBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1017,11 +1030,11 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
     public Builder setTransaction(com.google.spanner.v1.Transaction.Builder builderForValue) {
       if (transactionBuilder_ == null) {
         transaction_ = builderForValue.build();
-        onChanged();
       } else {
         transactionBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1035,19 +1048,18 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
      */
     public Builder mergeTransaction(com.google.spanner.v1.Transaction value) {
       if (transactionBuilder_ == null) {
-        if (transaction_ != null) {
-          transaction_ =
-              com.google.spanner.v1.Transaction.newBuilder(transaction_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && transaction_ != null
+            && transaction_ != com.google.spanner.v1.Transaction.getDefaultInstance()) {
+          getTransactionBuilder().mergeFrom(value);
         } else {
           transaction_ = value;
         }
-        onChanged();
       } else {
         transactionBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1060,14 +1072,13 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
      * <code>.google.spanner.v1.Transaction transaction = 2;</code>
      */
     public Builder clearTransaction() {
-      if (transactionBuilder_ == null) {
-        transaction_ = null;
-        onChanged();
-      } else {
-        transaction_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      transaction_ = null;
+      if (transactionBuilder_ != null) {
+        transactionBuilder_.dispose();
         transactionBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1080,7 +1091,7 @@ public final class PartitionResponse extends com.google.protobuf.GeneratedMessag
      * <code>.google.spanner.v1.Transaction transaction = 2;</code>
      */
     public com.google.spanner.v1.Transaction.Builder getTransactionBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getTransactionFieldBuilder().getBuilder();
     }

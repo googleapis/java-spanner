@@ -517,6 +517,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       if (singleUseBuilder_ != null) {
         singleUseBuilder_.clear();
       }
@@ -552,26 +553,27 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     public com.google.spanner.v1.TransactionSelector buildPartial() {
       com.google.spanner.v1.TransactionSelector result =
           new com.google.spanner.v1.TransactionSelector(this);
-      if (selectorCase_ == 1) {
-        if (singleUseBuilder_ == null) {
-          result.selector_ = selector_;
-        } else {
-          result.selector_ = singleUseBuilder_.build();
-        }
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      if (selectorCase_ == 2) {
-        result.selector_ = selector_;
-      }
-      if (selectorCase_ == 3) {
-        if (beginBuilder_ == null) {
-          result.selector_ = selector_;
-        } else {
-          result.selector_ = beginBuilder_.build();
-        }
-      }
-      result.selectorCase_ = selectorCase_;
+      buildPartialOneofs(result);
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.TransactionSelector result) {
+      int from_bitField0_ = bitField0_;
+    }
+
+    private void buildPartialOneofs(com.google.spanner.v1.TransactionSelector result) {
+      result.selectorCase_ = selectorCase_;
+      result.selector_ = this.selector_;
+      if (selectorCase_ == 1 && singleUseBuilder_ != null) {
+        result.selector_ = singleUseBuilder_.build();
+      }
+      if (selectorCase_ == 3 && beginBuilder_ != null) {
+        result.selector_ = beginBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -714,6 +716,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       onChanged();
       return this;
     }
+
+    private int bitField0_;
 
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.spanner.v1.TransactionOptions,
@@ -938,7 +942,6 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       }
       selectorCase_ = 1;
       onChanged();
-      ;
       return singleUseBuilder_;
     }
 
@@ -1246,7 +1249,6 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       }
       selectorCase_ = 3;
       onChanged();
-      ;
       return beginBuilder_;
     }
 
