@@ -124,5 +124,9 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowTransactionIsolationLevel();
 
+  StatementResult statementSetProtoDescriptors(byte[] protoDescriptors);
+
+  StatementResult statementShowProtoDescriptors();
+
   StatementResult statementExplain(String sql);
 }

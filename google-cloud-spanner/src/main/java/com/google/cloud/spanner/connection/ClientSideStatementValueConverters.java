@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -28,6 +29,11 @@ import com.google.common.base.Preconditions;
 import com.google.protobuf.Duration;
 import com.google.protobuf.util.Durations;
 import com.google.spanner.v1.RequestOptions.Priority;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Base64;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Locale;
@@ -492,6 +498,54 @@ class ClientSideStatementValueConverters {
         return null;
       }
       return value.substring(7).trim();
+    }
+  }
+
+  /** Converter for converting strings to byte[] */
+  static class ProtoDescriptorsConverter implements ClientSideStatementValueConverter<byte[]> {
+
+    public ProtoDescriptorsConverter(String allowedValues) {}
+
+    @Override
+    public Class<byte[]> getParameterClass() {
+      return byte[].class;
+    }
+
+    @Override
+    public byte[] convert(String value) {
+      if (value.length() == 0 || value.equalsIgnoreCase("null")) {
+        return null;
+      }
+      return Base64.getDecoder().decode(value);
+    }
+  }
+
+  /** Converter for converting strings that take in file path as input to byte[] */
+  static class ProtoDescriptorsFileConverter implements ClientSideStatementValueConverter<byte[]> {
+
+    public ProtoDescriptorsFileConverter(String allowedValues) {}
+
+    @Override
+    public Class<byte[]> getParameterClass() {
+      return byte[].class;
+    }
+
+    @Override
+    public byte[] convert(String filePath) {
+      if (filePath != null && filePath.length() > 0) {
+        try {
+          File protoDescriptorsFile = new File(filePath);
+          if (!protoDescriptorsFile.isFile()) {
+            throw new IOException("File does not exist.");
+          }
+          InputStream pdStream = new FileInputStream(protoDescriptorsFile);
+          return ByteArray.copyFrom(pdStream).toByteArray();
+        } catch (Exception e) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT, e.getMessage());
+        }
+      }
+      return null;
     }
   }
 }

@@ -73,6 +73,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   private final TimestampBound readOnlyStaleness;
   private final AutocommitDmlMode autocommitDmlMode;
   private final boolean returnCommitStats;
+  private final byte[] protoDescriptors;
   private volatile SettableApiFuture<Timestamp> readTimestamp = null;
   private volatile TransactionRunner writeTransaction;
   private boolean used = false;
@@ -85,6 +86,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     private TimestampBound readOnlyStaleness;
     private AutocommitDmlMode autocommitDmlMode;
     private boolean returnCommitStats;
+    private byte[] protoDescriptors;
 
     private Builder() {}
 
@@ -122,6 +124,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       return this;
     }
 
+    Builder setProtoDescriptors(byte[] protoDescriptors) {
+      this.protoDescriptors = protoDescriptors;
+      return this;
+    }
+
     @Override
     SingleUseTransaction build() {
       Preconditions.checkState(ddlClient != null, "No DDL client specified");
@@ -144,6 +151,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     this.readOnlyStaleness = builder.readOnlyStaleness;
     this.autocommitDmlMode = builder.autocommitDmlMode;
     this.returnCommitStats = builder.returnCommitStats;
+    this.protoDescriptors = builder.protoDescriptors;
   }
 
   @Override
@@ -317,7 +325,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
                   ddlClient.executeCreateDatabase(
                       ddl.getSqlWithoutComments(), dbClient.getDialect());
             } else {
-              operation = ddlClient.executeDdl(ddl.getSqlWithoutComments());
+              operation = ddlClient.executeDdl(ddl.getSqlWithoutComments(), protoDescriptors);
             }
             getWithStatementTimeout(operation, ddl);
             state = UnitOfWorkState.COMMITTED;

@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 
+import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
@@ -144,6 +145,23 @@ class StatementResultImpl implements StatementResult {
         ResultSets.forRows(
             Type.struct(StructField.of(name, Type.timestamp())),
             Collections.singletonList(Struct.newBuilder().set(name).to(value).build())),
+        clientSideStatementType);
+  }
+
+  /**
+   * Convenience method for creating a {@link StatementResult} containing a {@link ResultSet} with
+   * one BYTES column and one row that is created by a {@link ClientSideStatement}.
+   */
+  static StatementResult resultSet(
+      String name, byte[] values, ClientSideStatementType clientSideStatementType) {
+    return of(
+        ResultSets.forRows(
+            Type.struct(StructField.of(name, Type.bytes())),
+            Collections.singletonList(
+                Struct.newBuilder()
+                    .set(name)
+                    .to(values != null ? ByteArray.copyFrom(values) : null)
+                    .build())),
         clientSideStatementType);
   }
 

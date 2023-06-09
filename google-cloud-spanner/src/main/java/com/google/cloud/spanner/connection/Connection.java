@@ -42,6 +42,7 @@ import com.google.spanner.v1.ResultSetStats;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 
 /**
  * Internal connection API for Google Cloud Spanner. This interface may introduce breaking changes
@@ -379,6 +380,25 @@ public interface Connection extends AutoCloseable {
    *     connection.
    */
   default String getStatementTag() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Sets the proto descriptors to use for the next DDL statement (single or batch) that will be
+   * executed. The proto descriptor is automatically cleared after the statement is executed.
+   *
+   * @param protoDescriptors The proto descriptors to use with the next DDL statement (single or
+   *     batch) that will be executed on this connection.
+   */
+  default void setProtoDescriptors(@Nonnull byte[] protoDescriptors) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * @return The proto descriptor that will be used with the next DDL statement (single or batch)
+   *     that is executed on this connection.
+   */
+  default byte[] getProtoDescriptors() {
     throw new UnsupportedOperationException();
   }
 

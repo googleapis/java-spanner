@@ -28,6 +28,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_VERSION;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_PROTO_DESCRIPTORS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READONLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETRY_ABORTS_INTERNALLY;
@@ -45,6 +46,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_VERSION;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_PROTO_DESCRIPTORS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READONLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_TIMESTAMP;
@@ -491,6 +493,20 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementShowTransactionIsolationLevel() {
     return resultSet("transaction_isolation", "serializable", SHOW_TRANSACTION_ISOLATION_LEVEL);
+  }
+
+  @Override
+  public StatementResult statementSetProtoDescriptors(byte[] protoDescriptors) {
+    getConnection().setProtoDescriptors(protoDescriptors);
+    return noResult(SET_PROTO_DESCRIPTORS);
+  }
+
+  @Override
+  public StatementResult statementShowProtoDescriptors() {
+    return resultSet(
+        String.format("%sPROTO_DESCRIPTORS", getNamespace(connection.getDialect())),
+        getConnection().getProtoDescriptors(),
+        SHOW_PROTO_DESCRIPTORS);
   }
 
   private String processQueryPlan(PlanNode planNode) {

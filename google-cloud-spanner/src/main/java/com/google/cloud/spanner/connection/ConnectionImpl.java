@@ -63,6 +63,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.annotation.Nonnull;
 import org.threeten.bp.Instant;
 
 /** Implementation for {@link Connection}, the generic Spanner connection API (not JDBC). */
@@ -85,7 +86,7 @@ class ConnectionImpl implements Connection {
     }
   }
 
-  private volatile LeakedConnectionException leakedException;;
+  private volatile LeakedConnectionException leakedException;
   private final SpannerPool spannerPool;
   private AbstractStatementParser statementParser;
   /**
@@ -221,6 +222,8 @@ class ConnectionImpl implements Connection {
   private String transactionTag;
   private String statementTag;
 
+  private byte[] protoDescriptors;
+
   /** Create a connection and register it in the SpannerPool. */
   ConnectionImpl(ConnectionOptions options) {
     Preconditions.checkNotNull(options);
@@ -278,6 +281,7 @@ class ConnectionImpl implements Connection {
   private DdlClient createDdlClient() {
     return DdlClient.newBuilder()
         .setDatabaseAdminClient(spanner.getDatabaseAdminClient())
+        .setProjectId(options.getProjectId())
         .setInstanceId(options.getInstanceId())
         .setDatabaseName(options.getDatabaseName())
         .build();
@@ -621,6 +625,21 @@ class ConnectionImpl implements Connection {
         !isBatchActive(), "Statement tags are not allowed inside a batch");
 
     this.statementTag = tag;
+  }
+
+  @Override
+  public byte[] getProtoDescriptors() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return protoDescriptors;
+  }
+
+  @Override
+  public void setProtoDescriptors(@Nonnull byte[] protoDescriptors) {
+    Preconditions.checkNotNull(protoDescriptors);
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Proto descriptors cannot be set when a batch is active");
+    this.protoDescriptors = protoDescriptors;
   }
 
   /**
@@ -1379,6 +1398,7 @@ class ConnectionImpl implements Connection {
           .setReturnCommitStats(returnCommitStats)
           .setStatementTimeout(statementTimeout)
           .withStatementExecutor(statementExecutor)
+          .setProtoDescriptors(protoDescriptors)
           .build();
     } else {
       switch (getUnitOfWorkType()) {
@@ -1421,6 +1441,7 @@ class ConnectionImpl implements Connection {
               .setDatabaseClient(dbClient)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
+              .setProtoDescriptors(protoDescriptors)
               .build();
         default:
       }
@@ -1444,7 +1465,11 @@ class ConnectionImpl implements Connection {
   }
 
   private ApiFuture<Void> executeDdlAsync(CallType callType, ParsedStatement ddl) {
-    return getCurrentUnitOfWorkOrStartNewUnitOfWork().executeDdlAsync(callType, ddl);
+    ApiFuture<Void> result =
+        getCurrentUnitOfWorkOrStartNewUnitOfWork().executeDdlAsync(callType, ddl);
+    // reset proto descriptors after executing a DDL statement
+    this.protoDescriptors = null;
+    return result;
   }
 
   @Override
@@ -1535,6 +1560,10 @@ class ConnectionImpl implements Connection {
       }
       return ApiFutures.immediateFuture(new long[0]);
     } finally {
+      if (isDdlBatchActive()) {
+        // reset proto descriptors after executing a DDL batch
+        this.protoDescriptors = null;
+      }
       this.batchMode = BatchMode.NONE;
       setDefaultTransactionOptions();
     }
