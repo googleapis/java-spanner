@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.argThat;
@@ -110,8 +111,8 @@ public class DdlBatchTest {
       ApiFuture<UpdateDatabaseDdlMetadata> metadataFuture =
           ApiFutures.immediateFuture(metadataBuilder.build());
       when(operation.getMetadata()).thenReturn(metadataFuture);
-      when(ddlClient.executeDdl(anyString())).thenReturn(operation);
-      when(ddlClient.executeDdl(anyList())).thenReturn(operation);
+      when(ddlClient.executeDdl(anyString(), isNull())).thenReturn(operation);
+      when(ddlClient.executeDdl(anyList(), isNull())).thenReturn(operation);
       return ddlClient;
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -273,7 +274,7 @@ public class DdlBatchTest {
     DdlClient client = mock(DdlClient.class);
     SpannerException exception = mock(SpannerException.class);
     when(exception.getErrorCode()).thenReturn(ErrorCode.FAILED_PRECONDITION);
-    doThrow(exception).when(client).executeDdl(anyList());
+    doThrow(exception).when(client).executeDdl(anyList(), isNull());
     batch = createSubject(client);
     assertThat(batch.getState(), is(UnitOfWorkState.STARTED));
     assertThat(batch.isActive(), is(true));
@@ -319,8 +320,8 @@ public class DdlBatchTest {
     DdlBatch batch = createSubject(client);
     get(batch.runBatchAsync(CallType.SYNC));
     assertThat(batch.getState(), is(UnitOfWorkState.RAN));
-    verify(client, never()).executeDdl(anyString());
-    verify(client, never()).executeDdl(argThat(isEmptyListOfStrings()));
+    verify(client, never()).executeDdl(anyString(), isNull());
+    verify(client, never()).executeDdl(argThat(isEmptyListOfStrings()), isNull());
 
     ParsedStatement statement = mock(ParsedStatement.class);
     when(statement.getType()).thenReturn(StatementType.DDL);
@@ -331,14 +332,14 @@ public class DdlBatchTest {
     batch = createSubject(client);
     batch.executeDdlAsync(CallType.SYNC, statement);
     get(batch.runBatchAsync(CallType.SYNC));
-    verify(client).executeDdl(argThat(isListOfStringsWithSize(1)));
+    verify(client).executeDdl(argThat(isListOfStringsWithSize(1)), isNull());
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
     batch.executeDdlAsync(CallType.SYNC, statement);
     batch.executeDdlAsync(CallType.SYNC, statement);
     get(batch.runBatchAsync(CallType.SYNC));
-    verify(client).executeDdl(argThat(isListOfStringsWithSize(2)));
+    verify(client).executeDdl(argThat(isListOfStringsWithSize(2)), isNull());
     assertThat(batch.getState(), is(UnitOfWorkState.RAN));
     boolean exception = false;
     try {
@@ -384,7 +385,7 @@ public class DdlBatchTest {
     }
     assertThat(exception, is(true));
     assertThat(batch.getState(), is(UnitOfWorkState.RUN_FAILED));
-    verify(client).executeDdl(argThat(isListOfStringsWithSize(2)));
+    verify(client).executeDdl(argThat(isListOfStringsWithSize(2)), isNull());
   }
 
   @Test
@@ -403,7 +404,8 @@ public class DdlBatchTest {
     OperationFuture<Void, UpdateDatabaseDdlMetadata> operationFuture = mock(OperationFuture.class);
     when(operationFuture.get()).thenReturn(null);
     when(operationFuture.getMetadata()).thenReturn(metadataFuture);
-    when(client.executeDdl(argThat(isListOfStringsWithSize(2)))).thenReturn(operationFuture);
+    when(client.executeDdl(argThat(isListOfStringsWithSize(2)), isNull()))
+        .thenReturn(operationFuture);
     DdlBatch batch =
         DdlBatch.newBuilder()
             .withStatementExecutor(new StatementExecutor())
@@ -441,7 +443,8 @@ public class DdlBatchTest {
             new ExecutionException(
                 "ddl statement failed", Status.INVALID_ARGUMENT.asRuntimeException()));
     when(operationFuture.getMetadata()).thenReturn(metadataFuture);
-    when(client.executeDdl(argThat(isListOfStringsWithSize(2)))).thenReturn(operationFuture);
+    when(client.executeDdl(argThat(isListOfStringsWithSize(2)), isNull()))
+        .thenReturn(operationFuture);
     DdlBatch batch =
         DdlBatch.newBuilder()
             .withStatementExecutor(new StatementExecutor())
@@ -483,7 +486,8 @@ public class DdlBatchTest {
             new ExecutionException(
                 "ddl statement failed", Status.INVALID_ARGUMENT.asRuntimeException()));
     when(operationFuture.getMetadata()).thenReturn(metadataFuture);
-    when(client.executeDdl(argThat(isListOfStringsWithSize(2)))).thenReturn(operationFuture);
+    when(client.executeDdl(argThat(isListOfStringsWithSize(2)), isNull()))
+        .thenReturn(operationFuture);
     DdlBatch batch =
         DdlBatch.newBuilder()
             .withStatementExecutor(new StatementExecutor())
@@ -514,8 +518,8 @@ public class DdlBatchTest {
     DdlBatch batch = createSubject(client);
     batch.abortBatch();
     assertThat(batch.getState(), is(UnitOfWorkState.ABORTED));
-    verify(client, never()).executeDdl(anyString());
-    verify(client, never()).executeDdl(anyList());
+    verify(client, never()).executeDdl(anyString(), isNull());
+    verify(client, never()).executeDdl(anyList(), isNull());
 
     ParsedStatement statement = mock(ParsedStatement.class);
     when(statement.getType()).thenReturn(StatementType.DDL);
@@ -526,21 +530,21 @@ public class DdlBatchTest {
     batch = createSubject(client);
     batch.executeDdlAsync(CallType.SYNC, statement);
     batch.abortBatch();
-    verify(client, never()).executeDdl(anyList());
+    verify(client, never()).executeDdl(anyList(), isNull());
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
     batch.executeDdlAsync(CallType.SYNC, statement);
     batch.executeDdlAsync(CallType.SYNC, statement);
     batch.abortBatch();
-    verify(client, never()).executeDdl(anyList());
+    verify(client, never()).executeDdl(anyList(), isNull());
 
     client = createDefaultMockDdlClient();
     batch = createSubject(client);
     batch.executeDdlAsync(CallType.SYNC, statement);
     batch.executeDdlAsync(CallType.SYNC, statement);
     batch.abortBatch();
-    verify(client, never()).executeDdl(anyList());
+    verify(client, never()).executeDdl(anyList(), isNull());
     boolean exception = false;
     try {
       get(batch.runBatchAsync(CallType.SYNC));
@@ -551,7 +555,7 @@ public class DdlBatchTest {
       exception = true;
     }
     assertThat(exception, is(true));
-    verify(client, never()).executeDdl(anyList());
+    verify(client, never()).executeDdl(anyList(), isNull());
   }
 
   @Test

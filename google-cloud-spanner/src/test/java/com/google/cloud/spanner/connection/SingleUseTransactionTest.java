@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
@@ -299,8 +300,8 @@ public class SingleUseTransactionTest {
       final OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
           mock(OperationFuture.class);
       when(operation.get()).thenReturn(null);
-      when(ddlClient.executeDdl(anyString())).thenCallRealMethod();
-      when(ddlClient.executeDdl(anyList())).thenReturn(operation);
+      when(ddlClient.executeDdl(anyString(), isNull())).thenCallRealMethod();
+      when(ddlClient.executeDdl(anyList(), isNull())).thenReturn(operation);
       return ddlClient;
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -537,7 +538,7 @@ public class SingleUseTransactionTest {
     DdlClient ddlClient = createDefaultMockDdlClient();
     SingleUseTransaction subject = createDdlSubject(ddlClient);
     get(subject.executeDdlAsync(CallType.SYNC, ddl));
-    verify(ddlClient).executeDdl(sql);
+    verify(ddlClient).executeDdl(sql, null);
   }
 
   @Test
@@ -729,7 +730,7 @@ public class SingleUseTransactionTest {
     DdlClient ddlClient = createDefaultMockDdlClient();
     SingleUseTransaction subject = createDdlSubject(ddlClient);
     get(subject.executeDdlAsync(CallType.SYNC, ddl));
-    verify(ddlClient).executeDdl(sql);
+    verify(ddlClient).executeDdl(sql, null);
     try {
       get(subject.executeDdlAsync(CallType.SYNC, ddl));
       fail("missing expected exception");

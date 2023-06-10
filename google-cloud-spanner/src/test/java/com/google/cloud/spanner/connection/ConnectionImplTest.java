@@ -30,6 +30,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.anyString;
@@ -213,8 +214,8 @@ public class ConnectionImplTest {
       UpdateDatabaseDdlMetadata metadata = UpdateDatabaseDdlMetadata.getDefaultInstance();
       ApiFuture<UpdateDatabaseDdlMetadata> futureMetadata = ApiFutures.immediateFuture(metadata);
       when(operation.getMetadata()).thenReturn(futureMetadata);
-      when(ddlClient.executeDdl(anyString())).thenCallRealMethod();
-      when(ddlClient.executeDdl(anyList())).thenReturn(operation);
+      when(ddlClient.executeDdl(anyString(), isNull())).thenCallRealMethod();
+      when(ddlClient.executeDdl(anyList(), isNull())).thenReturn(operation);
       return ddlClient;
     } catch (Exception e) {
       throw new RuntimeException(e);
