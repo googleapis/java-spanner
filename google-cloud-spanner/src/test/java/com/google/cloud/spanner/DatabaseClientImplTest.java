@@ -299,7 +299,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void writeAtLeastOnceWithTagOptions() {
+  public void testWriteAtLeastOnceWithTagOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     client.writeAtLeastOnceWithOptions(
@@ -321,7 +321,7 @@ public class DatabaseClientImplTest {
   public void testBatchWriteAtLeastOnce() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Iterable<Mutation> mutations =
+    final Iterable<Mutation> mutations =
         ImmutableList.of(
             Mutation.newInsertBuilder("FOO1").set("ID").to(1L).set("NAME").to("Bar1").build(),
             Mutation.newInsertBuilder("FOO2").set("ID").to(2L).set("NAME").to("Bar2").build(),
@@ -339,12 +339,6 @@ public class DatabaseClientImplTest {
                 .build()));
 
     ServerStream<BatchWriteResponse> responseStream = client.batchWriteAtleastOnce(mutations);
-    assertNotNull(responseStream);
-    List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
-    assertEquals(requests.size(), 1);
-    BatchWriteRequest request = requests.get(0);
-    assertEquals(request.getMutationsCount(), 4);
-    assertEquals(request.getRequestOptions().getPriority(), Priority.PRIORITY_UNSPECIFIED);
     int idx = 0;
     for (BatchWriteResponse response : responseStream) {
       assertEquals(
@@ -353,6 +347,13 @@ public class DatabaseClientImplTest {
       assertEquals(response.getIndexesList(), ImmutableList.of(idx, idx + 1));
       idx += 2;
     }
+
+    assertNotNull(responseStream);
+    List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
+    assertEquals(requests.size(), 1);
+    BatchWriteRequest request = requests.get(0);
+    assertEquals(request.getMutationsCount(), 4);
+    assertEquals(request.getRequestOptions().getPriority(), Priority.PRIORITY_UNSPECIFIED);
   }
 
   @Test
@@ -364,7 +365,9 @@ public class DatabaseClientImplTest {
             Collections.singletonList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
             Options.priority(RpcPriority.LOW));
+    for (BatchWriteResponse response : responseStream) {}
 
+    assertNotNull(responseStream);
     List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
     assertEquals(requests.size(), 1);
     BatchWriteRequest request = requests.get(0);
@@ -373,7 +376,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void batchWriteAtLeastOnceWithTagOptions() {
+  public void testBatchWriteAtLeastOnceWithTagOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     ServerStream<BatchWriteResponse> responseStream =
@@ -381,7 +384,9 @@ public class DatabaseClientImplTest {
             Collections.singletonList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
             Options.tag("app=spanner,env=test"));
+    for (BatchWriteResponse response : responseStream) {}
 
+    assertNotNull(responseStream);
     List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
     assertEquals(requests.size(), 1);
     BatchWriteRequest request = requests.get(0);
