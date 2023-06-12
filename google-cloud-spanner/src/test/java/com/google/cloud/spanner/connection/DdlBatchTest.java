@@ -21,10 +21,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.argThat;
@@ -52,9 +54,11 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType
 import com.google.cloud.spanner.connection.Connection.InternalMetadataQuery;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
+import com.google.common.io.ByteStreams;
 import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import io.grpc.Status;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -111,8 +115,8 @@ public class DdlBatchTest {
       ApiFuture<UpdateDatabaseDdlMetadata> metadataFuture =
           ApiFutures.immediateFuture(metadataBuilder.build());
       when(operation.getMetadata()).thenReturn(metadataFuture);
-      when(ddlClient.executeDdl(anyString(), isNull())).thenReturn(operation);
-      when(ddlClient.executeDdl(anyList(), isNull())).thenReturn(operation);
+      when(ddlClient.executeDdl(anyString(), any())).thenReturn(operation);
+      when(ddlClient.executeDdl(anyList(), any())).thenReturn(operation);
       return ddlClient;
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -386,6 +390,45 @@ public class DdlBatchTest {
     assertThat(exception, is(true));
     assertThat(batch.getState(), is(UnitOfWorkState.RUN_FAILED));
     verify(client).executeDdl(argThat(isListOfStringsWithSize(2)), isNull());
+
+    // verify when protoDescriptors is null
+    client = createDefaultMockDdlClient();
+    batch =
+        DdlBatch.newBuilder()
+            .setDdlClient(client)
+            .setDatabaseClient(mock(DatabaseClient.class))
+            .withStatementExecutor(new StatementExecutor())
+            .setProtoDescriptors(null)
+            .build();
+    batch.executeDdlAsync(CallType.SYNC, statement);
+    batch.executeDdlAsync(CallType.SYNC, statement);
+    get(batch.runBatchAsync(CallType.SYNC));
+    verify(client).executeDdl(argThat(isListOfStringsWithSize(2)), isNull());
+
+    // verify when protoDescriptors is not null
+    byte[] protoDescriptors;
+    try {
+      InputStream in =
+          DdlBatchTest.class
+              .getClassLoader()
+              .getResourceAsStream("com/google/cloud/spanner/descriptors.pb");
+      assertNotNull(in);
+      protoDescriptors = ByteStreams.toByteArray(in);
+    } catch (Exception e) {
+      throw SpannerExceptionFactory.newSpannerException(e);
+    }
+    client = createDefaultMockDdlClient();
+    batch =
+        DdlBatch.newBuilder()
+            .setDdlClient(client)
+            .setDatabaseClient(mock(DatabaseClient.class))
+            .withStatementExecutor(new StatementExecutor())
+            .setProtoDescriptors(protoDescriptors)
+            .build();
+    batch.executeDdlAsync(CallType.SYNC, statement);
+    batch.executeDdlAsync(CallType.SYNC, statement);
+    get(batch.runBatchAsync(CallType.SYNC));
+    verify(client).executeDdl(argThat(isListOfStringsWithSize(2)), any(byte[].class));
   }
 
   @Test

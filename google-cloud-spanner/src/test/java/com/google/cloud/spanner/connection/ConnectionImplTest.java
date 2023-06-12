@@ -24,6 +24,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -71,9 +72,11 @@ import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.GetExactStalene
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
+import com.google.common.io.ByteStreams;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -1609,6 +1612,64 @@ public class ConnectionImplTest {
         assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
       }
       assertNull(connection.getTransactionTag());
+    }
+  }
+
+  @Test
+  public void testProtoDescriptorsAlwaysAllowed() {
+    ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
+    when(connectionOptions.isAutocommit()).thenReturn(true);
+    SpannerPool spannerPool = mock(SpannerPool.class);
+    DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
+    final UnitOfWork unitOfWork = mock(UnitOfWork.class);
+    when(unitOfWork.executeDdlAsync(any(), any(ParsedStatement.class)))
+        .thenReturn(ApiFutures.immediateFuture(null));
+    when(unitOfWork.executeQueryAsync(
+            any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
+        .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
+    try (ConnectionImpl connection =
+        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
+          @Override
+          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
+            return unitOfWork;
+          }
+        }) {
+      byte[] protoDescriptors;
+      try {
+        InputStream in =
+            ConnectionImplTest.class
+                .getClassLoader()
+                .getResourceAsStream("com/google/cloud/spanner/descriptors.pb");
+        assertNotNull(in);
+        protoDescriptors = ByteStreams.toByteArray(in);
+      } catch (Exception e) {
+        throw SpannerExceptionFactory.newSpannerException(e);
+      }
+
+      assertTrue(connection.isAutocommit());
+
+      assertNull(connection.getProtoDescriptors());
+      connection.setProtoDescriptors(protoDescriptors);
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+
+      connection.setAutocommit(false);
+
+      connection.setProtoDescriptors(protoDescriptors);
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+
+      // proto descriptor should reset after executing a DDL statement
+      connection.setProtoDescriptors(protoDescriptors);
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+      connection.execute(Statement.of("CREATE PROTO BUNDLE (spanner.examples.music.SingerInfo)"));
+      assertNull(connection.getProtoDescriptors());
+
+      // proto descriptor should not reset if the statement is not a DDL statement
+      connection.setProtoDescriptors(protoDescriptors);
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+      connection.execute(Statement.of("SELECT FOO FROM BAR"));
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
     }
   }
 }

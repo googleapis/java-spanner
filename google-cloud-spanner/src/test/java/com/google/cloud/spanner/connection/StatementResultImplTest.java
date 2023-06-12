@@ -21,9 +21,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
+import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ResultSet;
@@ -189,5 +193,20 @@ public class StatementResultImplTest {
         subject.getResultSet().getTimestamp("foo"),
         is(equalTo(Timestamp.ofTimeSecondsAndNanos(10L, 10))));
     assertThat(subject.getResultSet().next(), is(false));
+  }
+
+  @Test
+  public void testBytesResultSetGetResultSet() {
+    StatementResult subject =
+        StatementResultImpl.resultSet(
+            "foo", "protoDescriptors".getBytes(), ClientSideStatementType.SHOW_PROTO_DESCRIPTORS);
+    assertEquals(subject.getResultType(), ResultType.RESULT_SET);
+    assertEquals(
+        subject.getClientSideStatementType(), ClientSideStatementType.SHOW_PROTO_DESCRIPTORS);
+    assertNotNull(subject.getResultSet());
+    assertTrue(subject.getResultSet().next());
+    assertEquals(
+        subject.getResultSet().getBytes("foo"), ByteArray.copyFrom("protoDescriptors".getBytes()));
+    assertFalse(subject.getResultSet().next());
   }
 }

@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
@@ -57,8 +57,10 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.common.base.Preconditions;
+import com.google.common.io.ByteStreams;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ResultSetStats;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -300,8 +302,8 @@ public class SingleUseTransactionTest {
       final OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
           mock(OperationFuture.class);
       when(operation.get()).thenReturn(null);
-      when(ddlClient.executeDdl(anyString(), isNull())).thenCallRealMethod();
-      when(ddlClient.executeDdl(anyList(), isNull())).thenReturn(operation);
+      when(ddlClient.executeDdl(anyString(), any())).thenCallRealMethod();
+      when(ddlClient.executeDdl(anyList(), any())).thenReturn(operation);
       return ddlClient;
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -315,7 +317,8 @@ public class SingleUseTransactionTest {
         TimestampBound.strong(),
         AutocommitDmlMode.TRANSACTIONAL,
         CommitBehavior.SUCCEED,
-        0L);
+        0L,
+        null);
   }
 
   private SingleUseTransaction createSubject(AutocommitDmlMode dmlMode) {
@@ -325,7 +328,8 @@ public class SingleUseTransactionTest {
         TimestampBound.strong(),
         dmlMode,
         CommitBehavior.SUCCEED,
-        0L);
+        0L,
+        null);
   }
 
   private SingleUseTransaction createSubject(CommitBehavior commitBehavior) {
@@ -335,7 +339,8 @@ public class SingleUseTransactionTest {
         TimestampBound.strong(),
         AutocommitDmlMode.TRANSACTIONAL,
         commitBehavior,
-        0L);
+        0L,
+        null);
   }
 
   private SingleUseTransaction createDdlSubject(DdlClient ddlClient) {
@@ -345,7 +350,20 @@ public class SingleUseTransactionTest {
         TimestampBound.strong(),
         AutocommitDmlMode.TRANSACTIONAL,
         CommitBehavior.SUCCEED,
-        0L);
+        0L,
+        null);
+  }
+
+  private SingleUseTransaction createProtoDescriptorsSubject(
+      DdlClient ddlClient, byte[] protoDescriptors) {
+    return createSubject(
+        ddlClient,
+        false,
+        TimestampBound.strong(),
+        AutocommitDmlMode.TRANSACTIONAL,
+        CommitBehavior.SUCCEED,
+        0L,
+        protoDescriptors);
   }
 
   private SingleUseTransaction createReadOnlySubject(TimestampBound staleness) {
@@ -355,7 +373,8 @@ public class SingleUseTransactionTest {
         staleness,
         AutocommitDmlMode.TRANSACTIONAL,
         CommitBehavior.SUCCEED,
-        0L);
+        0L,
+        null);
   }
 
   private SingleUseTransaction createSubject(
@@ -364,7 +383,8 @@ public class SingleUseTransactionTest {
       TimestampBound staleness,
       AutocommitDmlMode dmlMode,
       final CommitBehavior commitBehavior,
-      long timeout) {
+      long timeout,
+      byte[] protoDescriptors) {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     com.google.cloud.spanner.ReadOnlyTransaction singleUse =
         new SimpleReadOnlyTransaction(staleness);
@@ -451,6 +471,7 @@ public class SingleUseTransactionTest {
         .setStatementTimeout(
             timeout == 0L ? nullTimeout() : timeout(timeout, TimeUnit.MILLISECONDS))
         .withStatementExecutor(executor)
+        .setProtoDescriptors(protoDescriptors)
         .build();
   }
 
@@ -539,6 +560,33 @@ public class SingleUseTransactionTest {
     SingleUseTransaction subject = createDdlSubject(ddlClient);
     get(subject.executeDdlAsync(CallType.SYNC, ddl));
     verify(ddlClient).executeDdl(sql, null);
+  }
+
+  @Test
+  public void testExecuteDdlWithProtoDescriptors() {
+    String sql = "CREATE TABLE FOO";
+    ParsedStatement ddl = createParsedDdl(sql);
+    DdlClient ddlClient = createDefaultMockDdlClient();
+    // verify when protoDescriptors value is null
+    SingleUseTransaction subject = createProtoDescriptorsSubject(ddlClient, null);
+    get(subject.executeDdlAsync(CallType.SYNC, ddl));
+    verify(ddlClient).executeDdl(sql, null);
+
+    // verify when protoDescriptors value is not null
+    byte[] protoDescriptors;
+    try {
+      InputStream in =
+          SingleUseTransactionTest.class
+              .getClassLoader()
+              .getResourceAsStream("com/google/cloud/spanner/descriptors.pb");
+      assertNotNull(in);
+      protoDescriptors = ByteStreams.toByteArray(in);
+    } catch (Exception e) {
+      throw SpannerExceptionFactory.newSpannerException(e);
+    }
+    subject = createProtoDescriptorsSubject(ddlClient, protoDescriptors);
+    get(subject.executeDdlAsync(CallType.SYNC, ddl));
+    verify(ddlClient).executeDdl(sql, protoDescriptors);
   }
 
   @Test

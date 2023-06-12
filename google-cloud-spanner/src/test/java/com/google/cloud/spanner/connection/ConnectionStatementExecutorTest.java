@@ -252,4 +252,16 @@ public class ConnectionStatementExecutorTest {
     verify(connection, never()).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
     verify(connection, never()).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
   }
+
+  @Test
+  public void testStatementSetProtoDescriptors() {
+    subject.statementSetProtoDescriptors("protoDescriptor".getBytes());
+    verify(connection).setProtoDescriptors("protoDescriptor".getBytes());
+  }
+
+  @Test
+  public void testStatementGetProtoDescriptors() {
+    subject.statementShowProtoDescriptors();
+    verify(connection).getProtoDescriptors();
+  }
 }
