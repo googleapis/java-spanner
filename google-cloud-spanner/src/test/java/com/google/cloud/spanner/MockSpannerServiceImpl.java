@@ -679,7 +679,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
-  public void putBatchWriteResult(final Iterable<BatchWriteResponse> responses) {
+  public void setBatchWriteResult(final Iterable<BatchWriteResponse> responses) {
     this.batchWriteResult = responses;
   }
 
