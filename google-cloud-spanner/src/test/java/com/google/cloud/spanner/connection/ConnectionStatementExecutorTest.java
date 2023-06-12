@@ -260,6 +260,12 @@ public class ConnectionStatementExecutorTest {
   }
 
   @Test
+  public void testStatementSetProtoDescriptorsFilePath() {
+    subject.statementSetProtoDescriptorsFilePath("protoDescriptor".getBytes());
+    verify(connection).setProtoDescriptors("protoDescriptor".getBytes());
+  }
+
+  @Test
   public void testStatementGetProtoDescriptors() {
     subject.statementShowProtoDescriptors();
     verify(connection).getProtoDescriptors();

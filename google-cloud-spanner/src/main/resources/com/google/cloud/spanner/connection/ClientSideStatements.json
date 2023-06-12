@@ -496,8 +496,8 @@
 		"resultType": "NO_RESULT",
 		"statementType": "SET_PROTO_DESCRIPTORS_FILE_PATH",
 		"regex": "(?is)\\A\\s*set\\s+proto_descriptors\\s+file_path\\s*(?:=)\\s*(.*)\\z",
-		"method": "statementSetProtoDescriptors",
-		"exampleStatements": ["set proto_descriptors file_path='/src/main/resources/descriptors.pb'"],
+		"method": "statementSetProtoDescriptorsFilePath",
+		"exampleStatements": ["set proto_descriptors file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'"],
 		"setStatement": {
 			"propertyName": "PROTO_DESCRIPTORS FILE_PATH",
 			"separator": "=",

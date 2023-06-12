@@ -126,6 +126,8 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementSetProtoDescriptors(byte[] protoDescriptors);
 
+  StatementResult statementSetProtoDescriptorsFilePath(byte[] protoDescriptors);
+
   StatementResult statementShowProtoDescriptors();
 
   StatementResult statementExplain(String sql);

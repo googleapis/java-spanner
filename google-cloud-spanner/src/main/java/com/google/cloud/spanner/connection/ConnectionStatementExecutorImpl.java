@@ -29,6 +29,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_PROTO_DESCRIPTORS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_PROTO_DESCRIPTORS_FILE_PATH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READONLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETRY_ABORTS_INTERNALLY;
@@ -500,6 +501,13 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     Preconditions.checkNotNull(protoDescriptors);
     getConnection().setProtoDescriptors(protoDescriptors);
     return noResult(SET_PROTO_DESCRIPTORS);
+  }
+
+  @Override
+  public StatementResult statementSetProtoDescriptorsFilePath(byte[] protoDescriptors) {
+    Preconditions.checkNotNull(protoDescriptors);
+    getConnection().setProtoDescriptors(protoDescriptors);
+    return noResult(SET_PROTO_DESCRIPTORS_FILE_PATH);
   }
 
   @Override
