@@ -187,3 +187,42 @@ RUN BATCH;
 
 START BATCH DDL;
 ABORT BATCH;
+
+NEW_CONNECTION;
+-- Set proto descriptors using relative path to the descriptors.pb file. This gets applied for next DDL statement
+SET PROTO_DESCRIPTORS FILE_PATH = 'src/test/resources/com/google/cloud/spanner/descriptors.pb';
+-- Check if Proto descriptors is set
+@EXPECT RESULT_SET 'PROTO_DESCRIPTORS'
+SHOW VARIABLE PROTO_DESCRIPTORS;
+
+CREATE PROTO BUNDLE (spanner.examples.music.Genre);
+-- Check if Proto descriptors is reset to null
+@EXPECT RESULT_SET 'PROTO_DESCRIPTORS',null
+SHOW VARIABLE PROTO_DESCRIPTORS;
+
+-- Set Proto Descriptor as base64 string. This gets applied to all statements in next DDL batch
+SET PROTO_DESCRIPTORS = 'CvgBCgxzaW5nZXIucHJvdG8SFnNwYW5uZXIuZXhhbXBsZXMubXVzaWMinwEKClNpbmdlckluZm8SGwoJc2luZ2VyX2lkGAEgASgDUghzaW5nZXJJZBIdCgpiaXJ0aF9kYXRlGAIgASgJUgliaXJ0aERhdGUSIAoLbmF0aW9uYWxpdHkYAyABKAlSC25hdGlvbmFsaXR5EjMKBWdlbnJlGAQgASgOMh0uc3Bhbm5lci5leGFtcGxlcy5tdXNpYy5HZW5yZVIFZ2VucmUqLgoFR2VucmUSBwoDUE9QEAASCAoESkFaWhABEggKBEZPTEsQAhIICgRST0NLEAM=';
+
+@EXPECT RESULT_SET 'PROTO_DESCRIPTORS'
+SHOW VARIABLE PROTO_DESCRIPTORS;
+
+START BATCH DDL;
+ALTER PROTO BUNDLE INSERT (spanner.examples.music.SingerInfo);
+CREATE TABLE Singers (
+                         SingerId   INT64 NOT NULL,
+                         FirstName  STRING(1024),
+                         LastName   STRING(1024),
+                         SingerInfo spanner.examples.music.SingerInfo,
+                         SingerGenre spanner.examples.music.Genre
+) PRIMARY KEY (SingerId);
+-- Run the batch
+RUN BATCH;
+
+-- Check if Proto descriptors is reset to null
+@EXPECT RESULT_SET 'PROTO_DESCRIPTORS',null
+SHOW VARIABLE PROTO_DESCRIPTORS;
+-- Check that the table is created
+@EXPECT RESULT_SET
+SELECT COUNT(*) AS ACTUAL, 1 AS EXPECTED
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_NAME='Singers';
