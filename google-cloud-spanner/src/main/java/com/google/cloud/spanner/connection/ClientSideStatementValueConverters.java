@@ -516,7 +516,11 @@ class ClientSideStatementValueConverters {
       if (value.length() == 0 || value.equalsIgnoreCase("null")) {
         return null;
       }
-      return Base64.getDecoder().decode(value);
+      try {
+        return Base64.getDecoder().decode(value);
+      } catch (IllegalArgumentException e) {
+        return null;
+      }
     }
   }
 
@@ -535,9 +539,18 @@ class ClientSideStatementValueConverters {
       if (filePath != null && filePath.length() > 0) {
         try {
           File protoDescriptorsFile = new File(filePath);
+          String fileName = protoDescriptorsFile.getName();
+          int dotIndex = fileName.lastIndexOf('.');
+          // check if file is a .pb extension file.
+          if (dotIndex < 0
+              || dotIndex > fileName.length() - 1
+              || !fileName.substring(dotIndex + 1).equals("pb")) {
+            return null;
+          }
           if (!protoDescriptorsFile.isFile()) {
             throw new IOException("File does not exist.");
           }
+
           InputStream pdStream = new FileInputStream(protoDescriptorsFile);
           return ByteArray.copyFrom(pdStream).toByteArray();
         } catch (Exception e) {

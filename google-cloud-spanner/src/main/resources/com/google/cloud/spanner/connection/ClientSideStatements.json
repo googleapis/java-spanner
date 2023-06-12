@@ -482,12 +482,27 @@
 		"statementType": "SET_PROTO_DESCRIPTORS",
 		"regex": "(?is)\\A\\s*set\\s+proto_descriptors\\s*(?:=)\\s*(.*)\\z",
 		"method": "statementSetProtoDescriptors",
-		"exampleStatements": ["set proto_descriptors='tag1'", "set proto_descriptors='tag2'", "set proto_descriptors=''"],
+		"exampleStatements": ["set proto_descriptors='protodescriptorsbase64'"],
 		"setStatement": {
 			"propertyName": "PROTO_DESCRIPTORS",
 			"separator": "=",
 			"allowedValues": "'((\\S+)|())'",
 			"converterName": "ClientSideStatementValueConverters$ProtoDescriptorsConverter"
+		}
+	},
+	{
+		"name": "SET PROTO_DESCRIPTORS FILE_PATH = '<path>'",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_PROTO_DESCRIPTORS_FILE_PATH",
+		"regex": "(?is)\\A\\s*set\\s+proto_descriptors\\s+file_path\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetProtoDescriptors",
+		"exampleStatements": ["set proto_descriptors file_path='/src/main/resources/descriptors.pb'"],
+		"setStatement": {
+			"propertyName": "PROTO_DESCRIPTORS FILE_PATH",
+			"separator": "=",
+			"allowedValues": "'((\\S+)|())'",
+			"converterName": "ClientSideStatementValueConverters$ProtoDescriptorsFileConverter"
 		}
 	},
 	{
@@ -498,21 +513,6 @@
 		"regex": "(?is)\\A\\s*show\\s+variable\\s+proto_descriptors\\s*\\z",
 		"method": "statementShowProtoDescriptors",
 		"exampleStatements": ["show variable proto_descriptors"]
-	},
-	{
-		"name": "SET PROTO_DESCRIPTORS FILE_PATH = '<path>'",
-		"executorName": "ClientSideStatementSetExecutor",
-		"resultType": "NO_RESULT",
-		"statementType": "SET_PROTO_DESCRIPTORS_FILE_PATH",
-		"regex": "(?is)\\A\\s*set\\s+proto_descriptors\\s+file_path\\s*(?:=)\\s*(.*)\\z",
-		"method": "statementSetProtoDescriptors",
-		"exampleStatements": ["set proto_descriptors file_path='tag1'", "set proto_descriptors='tag2'", "set proto_descriptors=''"],
-		"setStatement": {
-			"propertyName": "PROTO_DESCRIPTORS FILE_PATH",
-			"separator": "=",
-			"allowedValues": "'((\\S+)|())'",
-			"converterName": "ClientSideStatementValueConverters$ProtoDescriptorsFileConverter"
-		}
 	}
 	]
 }

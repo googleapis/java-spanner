@@ -497,6 +497,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementSetProtoDescriptors(byte[] protoDescriptors) {
+    Preconditions.checkNotNull(protoDescriptors);
     getConnection().setProtoDescriptors(protoDescriptors);
     return noResult(SET_PROTO_DESCRIPTORS);
   }
