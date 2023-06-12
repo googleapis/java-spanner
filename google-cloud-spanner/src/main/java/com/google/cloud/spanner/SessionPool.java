@@ -1832,21 +1832,19 @@ class SessionPool {
     // cleans up transactions which are unexpectedly long-running.
     void closeLongRunningTransactions(Instant currentTime) {
       try {
-        synchronized (lock) {
-          if (SessionPool.this.isClosed()) {
-            return;
-          }
-          final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
-              options.getInactiveTransactionRemovalOptions();
-          final Instant minExecutionTime =
-              lastExecutionTime.plus(inactiveTransactionRemovalOptions.getExecutionFrequency());
-          if (currentTime.isBefore(minExecutionTime)) {
-            return;
-          }
-          lastExecutionTime = currentTime; // update this only after we have decided to execute task
-          if (options.closeInactiveTransactions() || options.warnInactiveTransactions()) {
-            removeLongRunningSessions(currentTime, inactiveTransactionRemovalOptions);
-          }
+        if (SessionPool.this.isClosed()) {
+          return;
+        }
+        final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
+            options.getInactiveTransactionRemovalOptions();
+        final Instant minExecutionTime =
+            lastExecutionTime.plus(inactiveTransactionRemovalOptions.getExecutionFrequency());
+        if (currentTime.isBefore(minExecutionTime)) {
+          return;
+        }
+        lastExecutionTime = currentTime; // update this only after we have decided to execute task
+        if (options.closeInactiveTransactions() || options.warnInactiveTransactions()) {
+          removeLongRunningSessions(currentTime, inactiveTransactionRemovalOptions);
         }
       } catch (final Throwable t) {
         logger.log(Level.WARNING, "Failed removing long running transactions", t);
