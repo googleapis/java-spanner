@@ -501,7 +501,7 @@ class ClientSideStatementValueConverters {
     }
   }
 
-  /** Converter for converting strings to byte[] */
+  /** Converter for converting Base64 encoded string to byte[] */
   static class ProtoDescriptorsConverter implements ClientSideStatementValueConverter<byte[]> {
 
     public ProtoDescriptorsConverter(String allowedValues) {}
