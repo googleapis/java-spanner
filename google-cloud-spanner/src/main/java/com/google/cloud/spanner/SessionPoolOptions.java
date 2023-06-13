@@ -189,7 +189,7 @@ public class SessionPoolOptions {
     return autoDetectDialect;
   }
 
-  public boolean closeInactiveTransactions() {
+  boolean closeInactiveTransactions() {
     return actionOnInactiveTransaction == ActionOnInactiveTransaction.CLOSE;
   }
 
@@ -197,7 +197,7 @@ public class SessionPoolOptions {
     return inactiveTransactionRemovalOptions;
   }
 
-  public boolean warnInactiveTransactions() {
+  boolean warnInactiveTransactions() {
     return actionOnInactiveTransaction == ActionOnInactiveTransaction.WARN;
   }
 
@@ -252,8 +252,8 @@ public class SessionPoolOptions {
   /** Configuration options for task to clean up long-running transactions. */
   static class InactiveTransactionRemovalOptions {
     /**
-     * Frequency for closing inactive transactions. Between two consecutive task executions,
-     * it's ensured that the duration is greater or equal to this duration.
+     * Frequency for closing inactive transactions. Between two consecutive task executions, it's
+     * ensured that the duration is greater or equal to this duration.
      */
     private Duration executionFrequency;
 
@@ -263,8 +263,8 @@ public class SessionPoolOptions {
     private double usedSessionsRatioThreshold;
 
     /**
-     * A transaction is considered to be idle if it has not been used for a
-     * duration greater than the below value.
+     * A transaction is considered to be idle if it has not been used for a duration greater than
+     * the below value.
      */
     private Duration idleTimeThreshold;
 

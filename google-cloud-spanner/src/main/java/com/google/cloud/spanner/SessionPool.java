@@ -1367,6 +1367,7 @@ class SessionPool {
     private volatile SpannerException lastException;
     private volatile boolean allowReplacing = true;
     private volatile boolean isLongRunning = false;
+    private volatile boolean isLeakedExceptionLogged = false;
 
     @GuardedBy("lock")
     private SessionState state;
@@ -1868,8 +1869,11 @@ class SessionPool {
             if (!session.isLongRunning
                 && durationFromLastUse.toMillis()
                     > inactiveTransactionRemovalOptions.getIdleTimeThreshold().toMillis()) {
-              logger.log(
-                  Level.WARNING, "Removing long running session", sessionFuture.leakedException);
+              if (!session.isLeakedExceptionLogged) {
+                logger.log(
+                    Level.WARNING, "Removing long running session", sessionFuture.leakedException);
+                session.isLeakedExceptionLogged = true;
+              }
               numLeakedSessionsRemoved++;
               if (options.closeInactiveTransactions() && session.state != SessionState.CLOSING) {
                 removeFromPool(session);
