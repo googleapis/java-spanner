@@ -126,7 +126,7 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementSetProtoDescriptors(byte[] protoDescriptors);
 
-  StatementResult statementSetProtoDescriptorsFilePath(byte[] protoDescriptors);
+  StatementResult statementSetProtoDescriptorsFilePath(String filePath);
 
   StatementResult statementShowProtoDescriptors();
 

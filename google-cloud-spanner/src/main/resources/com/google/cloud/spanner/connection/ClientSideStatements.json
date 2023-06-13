@@ -499,7 +499,7 @@
 		"method": "statementSetProtoDescriptorsFilePath",
 		"exampleStatements": ["set proto_descriptors file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'"],
 		"setStatement": {
-			"propertyName": "PROTO_DESCRIPTORS FILE_PATH",
+			"propertyName": "PROTO_DESCRIPTORS\\s+FILE_PATH",
 			"separator": "=",
 			"allowedValues": "'((\\S+)|())'",
 			"converterName": "ClientSideStatementValueConverters$ProtoDescriptorsFileConverter"

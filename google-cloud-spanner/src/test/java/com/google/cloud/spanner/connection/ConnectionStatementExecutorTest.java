@@ -261,8 +261,9 @@ public class ConnectionStatementExecutorTest {
 
   @Test
   public void testStatementSetProtoDescriptorsFilePath() {
-    subject.statementSetProtoDescriptorsFilePath("protoDescriptor".getBytes());
-    verify(connection).setProtoDescriptors("protoDescriptor".getBytes());
+    String filePath = "com/google/cloud/spanner/descriptors.pb";
+    subject.statementSetProtoDescriptorsFilePath(filePath);
+    verify(connection).setProtoDescriptorsFilePath(filePath);
   }
 
   @Test

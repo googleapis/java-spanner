@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.connection.ConnectionPreconditions.checkV
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
+import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.CommitResponse;
@@ -51,6 +52,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -223,6 +228,7 @@ class ConnectionImpl implements Connection {
   private String statementTag;
 
   private byte[] protoDescriptors;
+  private String protoDescriptorsFilePath;
 
   /** Create a connection and register it in the SpannerPool. */
   ConnectionImpl(ConnectionOptions options) {
@@ -630,7 +636,32 @@ class ConnectionImpl implements Connection {
   @Override
   public byte[] getProtoDescriptors() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return protoDescriptors;
+    if (this.protoDescriptorsFilePath != null) {
+      // Read from file if filepath is valid
+      try {
+        File protoDescriptorsFile = new File(this.protoDescriptorsFilePath);
+        String fileName = protoDescriptorsFile.getName();
+        int dotIndex = fileName.lastIndexOf('.');
+        // check if the file is a .pb extension file.
+        if (dotIndex < 0
+            || dotIndex > fileName.length() - 1
+            || !fileName.substring(dotIndex + 1).equals("pb")) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT, "Proto descriptor file should be a .pb extension file");
+        }
+        if (!protoDescriptorsFile.isFile()) {
+          throw new IOException("File does not exist.");
+        }
+
+        InputStream pdStream = new FileInputStream(protoDescriptorsFile);
+        this.protoDescriptors = ByteArray.copyFrom(pdStream).toByteArray();
+      } catch (Exception e) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, e.getMessage());
+      }
+      this.protoDescriptorsFilePath = null;
+    }
+    return this.protoDescriptors;
   }
 
   @Override
@@ -640,6 +671,15 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         !isBatchActive(), "Proto descriptors cannot be set when a batch is active");
     this.protoDescriptors = protoDescriptors;
+    this.protoDescriptorsFilePath = null;
+  }
+
+  void setProtoDescriptorsFilePath(@Nonnull String protoDescriptorsFilePath) {
+    Preconditions.checkNotNull(protoDescriptorsFilePath);
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Proto descriptors cannot be set when a batch is active");
+    this.protoDescriptorsFilePath = protoDescriptorsFilePath;
   }
 
   /**
@@ -1398,7 +1438,7 @@ class ConnectionImpl implements Connection {
           .setReturnCommitStats(returnCommitStats)
           .setStatementTimeout(statementTimeout)
           .withStatementExecutor(statementExecutor)
-          .setProtoDescriptors(protoDescriptors)
+          .setProtoDescriptors(getProtoDescriptors())
           .build();
     } else {
       switch (getUnitOfWorkType()) {
@@ -1441,7 +1481,7 @@ class ConnectionImpl implements Connection {
               .setDatabaseClient(dbClient)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
-              .setProtoDescriptors(protoDescriptors)
+              .setProtoDescriptors(getProtoDescriptors())
               .build();
         default:
       }

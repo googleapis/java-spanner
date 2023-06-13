@@ -16,16 +16,13 @@
 
 package com.google.cloud.spanner.connection;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import com.google.cloud.spanner.Dialect;
-import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.ProtoDescriptorsFileConverter;
-import com.google.common.io.ByteStreams;
-import java.io.InputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -39,25 +36,11 @@ public class ProtoDescriptorsFileConverterTest {
             ProtoDescriptorsFileConverter.class, Dialect.GOOGLE_STANDARD_SQL);
     assertNotNull(allowedValues);
     ProtoDescriptorsFileConverter converter = new ProtoDescriptorsFileConverter(allowedValues);
-    byte[] protoDescriptors;
-    try {
-      InputStream in =
-          ProtoDescriptorsConverterTest.class
-              .getClassLoader()
-              .getResourceAsStream("com/google/cloud/spanner/descriptors.pb");
-      assertNotNull(in);
-      protoDescriptors = ByteStreams.toByteArray(in);
-    } catch (Exception e) {
-      throw SpannerExceptionFactory.newSpannerException(e);
-    }
 
     assertNull(converter.convert(""));
-    assertNull(converter.convert("null"));
-    assertNull(converter.convert("random string"));
-    assertNull(converter.convert("/descriptors.txt"));
+    assertNull(converter.convert(null));
 
-    assertArrayEquals(
-        converter.convert("src/test/resources/com/google/cloud/spanner/descriptors.pb"),
-        protoDescriptors);
+    String filePath = "com/google/cloud/spanner/descriptors.pb";
+    assertEquals(converter.convert(filePath), filePath);
   }
 }

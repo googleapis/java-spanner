@@ -504,9 +504,9 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
-  public StatementResult statementSetProtoDescriptorsFilePath(byte[] protoDescriptors) {
-    Preconditions.checkNotNull(protoDescriptors);
-    getConnection().setProtoDescriptors(protoDescriptors);
+  public StatementResult statementSetProtoDescriptorsFilePath(String filePath) {
+    Preconditions.checkNotNull(filePath);
+    getConnection().setProtoDescriptorsFilePath(filePath);
     return noResult(SET_PROTO_DESCRIPTORS_FILE_PATH);
   }
 
