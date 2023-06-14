@@ -226,12 +226,10 @@ class SessionImpl implements Session {
     }
     Span span = tracer.spanBuilder(SpannerImpl.BATCH_WRITE).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      ServerStream<BatchWriteResponse> response =
-          spanner.getRpc().batchWriteAtleastOnce(requestBuilder.build(), this.options);
-      return response;
-    } catch (RuntimeException e) {
+      return spanner.getRpc().batchWriteAtleastOnce(requestBuilder.build(), this.options);
+    } catch (Throwable e) {
       TraceUtil.setWithFailure(span, e);
-      throw e;
+      throw SpannerExceptionFactory.newSpannerException(e);
     } finally {
       span.end(TraceUtil.END_SPAN_OPTIONS);
     }

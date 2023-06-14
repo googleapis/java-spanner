@@ -29,6 +29,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -53,6 +54,9 @@ import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.NullValue;
+import com.google.rpc.Code;
+import com.google.rpc.Status;
+import com.google.spanner.v1.BatchWriteResponse;
 import io.grpc.Context;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -210,6 +214,28 @@ public class ITWriteTest {
     Struct row = readLastRow("StringValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getString(0)).isEqualTo("v1");
+  }
+
+  @Test
+  public void batchWriteAtLeastOnce() {
+    ServerStream<BatchWriteResponse> responses =
+        client.batchWriteAtleastOnce(
+            ImmutableList.of(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(lastKey = uniqueString())
+                    .set("StringValue")
+                    .to("v1")
+                    .build()));
+    for (BatchWriteResponse response : responses) {
+      assertEquals(response.getIndexesList(), Collections.singletonList(0));
+      if (response.getStatus().equals(Status.newBuilder().setCode(Code.OK_VALUE).build())) {
+        assertNotNull(response.getCommitTimestamp());
+        Struct row = readLastRow("StringValue");
+        assertFalse(row.isNull(0));
+        assertEquals(row.getString(0), "v1");
+      }
+    }
   }
 
   @Test
