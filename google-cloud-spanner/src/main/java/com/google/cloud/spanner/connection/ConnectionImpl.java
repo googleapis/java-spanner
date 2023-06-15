@@ -671,7 +671,7 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(protoDescriptorsFilePath);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ConnectionPreconditions.checkState(
-        !isBatchActive(), "Proto descriptors cannot be set when a batch is active");
+        !isBatchActive(), "Proto descriptors file path cannot be set when a batch is active");
     this.protoDescriptorsFilePath = protoDescriptorsFilePath;
     this.protoDescriptors = null;
   }
