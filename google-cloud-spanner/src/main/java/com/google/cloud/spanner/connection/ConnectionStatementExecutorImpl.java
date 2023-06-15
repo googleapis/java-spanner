@@ -48,6 +48,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_PROTO_DESCRIPTORS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_PROTO_DESCRIPTORS_FILE_PATH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READONLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_TIMESTAMP;
@@ -516,6 +517,14 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         String.format("%sPROTO_DESCRIPTORS", getNamespace(connection.getDialect())),
         getConnection().getProtoDescriptors(),
         SHOW_PROTO_DESCRIPTORS);
+  }
+
+  @Override
+  public StatementResult statementShowProtoDescriptorsFilePath() {
+    return resultSet(
+        String.format("%sPROTO_DESCRIPTORS_FILE_PATH", getNamespace(connection.getDialect())),
+        getConnection().getProtoDescriptorsFilePath(),
+        SHOW_PROTO_DESCRIPTORS_FILE_PATH);
   }
 
   private String processQueryPlan(PlanNode planNode) {

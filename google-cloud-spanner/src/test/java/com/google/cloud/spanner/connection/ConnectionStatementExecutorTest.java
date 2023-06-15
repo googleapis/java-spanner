@@ -271,4 +271,10 @@ public class ConnectionStatementExecutorTest {
     subject.statementShowProtoDescriptors();
     verify(connection).getProtoDescriptors();
   }
+
+  @Test
+  public void testStatementGetProtoDescriptorsFilePath() {
+    subject.statementShowProtoDescriptorsFilePath();
+    verify(connection).getProtoDescriptorsFilePath();
+  }
 }

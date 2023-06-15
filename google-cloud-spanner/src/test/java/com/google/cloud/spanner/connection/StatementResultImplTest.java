@@ -158,6 +158,18 @@ public class StatementResultImplTest {
     assertThat(subject.getResultSet().next(), is(true));
     assertThat(subject.getResultSet().getString("foo"), is(equalTo("bar")));
     assertThat(subject.getResultSet().next(), is(false));
+
+    subject =
+        StatementResultImpl.resultSet(
+            "path", "descriptors.pb", ClientSideStatementType.SHOW_PROTO_DESCRIPTORS_FILE_PATH);
+    assertThat(subject.getResultType(), is(equalTo(ResultType.RESULT_SET)));
+    assertThat(
+        subject.getClientSideStatementType(),
+        is(equalTo(ClientSideStatementType.SHOW_PROTO_DESCRIPTORS_FILE_PATH)));
+    assertThat(subject.getResultSet(), is(notNullValue()));
+    assertThat(subject.getResultSet().next(), is(true));
+    assertThat(subject.getResultSet().getString("path"), is(equalTo("descriptors.pb")));
+    assertThat(subject.getResultSet().next(), is(false));
   }
 
   @Test

@@ -130,5 +130,7 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowProtoDescriptors();
 
+  StatementResult statementShowProtoDescriptorsFilePath();
+
   StatementResult statementExplain(String sql);
 }
