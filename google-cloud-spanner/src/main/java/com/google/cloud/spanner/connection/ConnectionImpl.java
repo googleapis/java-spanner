@@ -639,22 +639,12 @@ class ConnectionImpl implements Connection {
       // Read from file if filepath is valid
       try {
         File protoDescriptorsFile = new File(this.protoDescriptorsFilePath);
-        String fileName = protoDescriptorsFile.getName();
-        int dotIndex = fileName.lastIndexOf('.');
-        // check if the file is a .pb extension file.
-        if (dotIndex < 0
-            || dotIndex > fileName.length() - 1
-            || !fileName.substring(dotIndex + 1).equals("pb")) {
-          throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INVALID_ARGUMENT, "Proto descriptor file should be a .pb extension file");
-        }
         if (!protoDescriptorsFile.isFile()) {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INVALID_ARGUMENT,
               String.format(
                   "File %s is not a valid proto descriptors file", this.protoDescriptorsFilePath));
         }
-
         InputStream pdStream = new FileInputStream(protoDescriptorsFile);
         this.protoDescriptors = ByteArray.copyFrom(pdStream).toByteArray();
       } catch (SpannerException exception) {
