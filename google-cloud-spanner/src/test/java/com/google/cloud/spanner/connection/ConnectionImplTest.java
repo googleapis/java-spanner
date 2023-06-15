@@ -1624,6 +1624,8 @@ public class ConnectionImplTest {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
+    final String protoDescriptorsFilePath =
+        "src/test/resources/com/google/cloud/spanner/descriptors.pb";
     when(unitOfWork.executeDdlAsync(any(), any(ParsedStatement.class)))
         .thenReturn(ApiFutures.immediateFuture(null));
     when(unitOfWork.executeQueryAsync(
@@ -1671,9 +1673,22 @@ public class ConnectionImplTest {
       connection.execute(Statement.of("SELECT FOO FROM BAR"));
       assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
 
+      // proto descriptor file path should reset after executing a DDL statement
+      connection.setProtoDescriptorsFilePath(protoDescriptorsFilePath);
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+      connection.execute(Statement.of("CREATE PROTO BUNDLE (spanner.examples.music.SingerInfo)"));
+      assertNull(connection.getProtoDescriptors());
+      assertNull(connection.getProtoDescriptorsFilePath());
+
+      // proto descriptor file path should not reset if the statement is not a DDL statement
+      connection.setProtoDescriptorsFilePath(protoDescriptorsFilePath);
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+      connection.execute(Statement.of("SELECT FOO FROM BAR"));
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+      assertEquals(protoDescriptorsFilePath, connection.getProtoDescriptorsFilePath());
+
       // test proto descriptor file path as input
-      connection.setProtoDescriptorsFilePath(
-          "src/test/resources/com/google/cloud/spanner/descriptors.pb");
+      connection.setProtoDescriptorsFilePath(protoDescriptorsFilePath);
       assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
       connection.execute(Statement.of("CREATE PROTO BUNDLE (spanner.examples.music.SingerInfo)"));
       assertNull(connection.getProtoDescriptors());
@@ -1681,15 +1696,13 @@ public class ConnectionImplTest {
       // proto descriptor set through file path should overwrite the proto descriptor set from
       // byte[]
       connection.setProtoDescriptors("protoDescriptors".getBytes());
-      connection.setProtoDescriptorsFilePath(
-          "src/test/resources/com/google/cloud/spanner/descriptors.pb");
+      connection.setProtoDescriptorsFilePath(protoDescriptorsFilePath);
       assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
       connection.execute(Statement.of("CREATE PROTO BUNDLE (spanner.examples.music.SingerInfo)"));
       assertNull(connection.getProtoDescriptors());
 
       // proto descriptor set through byte[] should overwrite the proto descriptor from file path
-      connection.setProtoDescriptorsFilePath(
-          "src/test/resources/com/google/cloud/spanner/descriptors.pb");
+      connection.setProtoDescriptorsFilePath(protoDescriptorsFilePath);
       connection.setProtoDescriptors("protoDescriptors".getBytes());
       assertArrayEquals("protoDescriptors".getBytes(), connection.getProtoDescriptors());
       connection.execute(Statement.of("CREATE PROTO BUNDLE (spanner.examples.music.SingerInfo)"));

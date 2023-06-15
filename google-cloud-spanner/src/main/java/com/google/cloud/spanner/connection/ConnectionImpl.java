@@ -54,7 +54,6 @@ import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -636,7 +635,7 @@ class ConnectionImpl implements Connection {
   @Override
   public byte[] getProtoDescriptors() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    if (this.protoDescriptorsFilePath != null) {
+    if (this.protoDescriptors == null && this.protoDescriptorsFilePath != null) {
       // Read from file if filepath is valid
       try {
         File protoDescriptorsFile = new File(this.protoDescriptorsFilePath);
@@ -650,16 +649,20 @@ class ConnectionImpl implements Connection {
               ErrorCode.INVALID_ARGUMENT, "Proto descriptor file should be a .pb extension file");
         }
         if (!protoDescriptorsFile.isFile()) {
-          throw new IOException("File does not exist.");
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT,
+              String.format(
+                  "File %s is not a valid proto descriptors file", this.protoDescriptorsFilePath));
         }
 
         InputStream pdStream = new FileInputStream(protoDescriptorsFile);
         this.protoDescriptors = ByteArray.copyFrom(pdStream).toByteArray();
-      } catch (Exception e) {
+      } catch (SpannerException exception) {
+        throw exception;
+      } catch (Exception exception) {
         throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT, e.getMessage());
+            ErrorCode.INVALID_ARGUMENT, exception.getMessage());
       }
-      this.protoDescriptorsFilePath = null;
     }
     return this.protoDescriptors;
   }
@@ -680,6 +683,12 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         !isBatchActive(), "Proto descriptors cannot be set when a batch is active");
     this.protoDescriptorsFilePath = protoDescriptorsFilePath;
+    this.protoDescriptors = null;
+  }
+
+  String getProtoDescriptorsFilePath() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.protoDescriptorsFilePath;
   }
 
   /**
@@ -1509,6 +1518,7 @@ class ConnectionImpl implements Connection {
         getCurrentUnitOfWorkOrStartNewUnitOfWork().executeDdlAsync(callType, ddl);
     // reset proto descriptors after executing a DDL statement
     this.protoDescriptors = null;
+    this.protoDescriptorsFilePath = null;
     return result;
   }
 
@@ -1603,6 +1613,7 @@ class ConnectionImpl implements Connection {
       if (isDdlBatchActive()) {
         // reset proto descriptors after executing a DDL batch
         this.protoDescriptors = null;
+        this.protoDescriptorsFilePath = null;
       }
       this.batchMode = BatchMode.NONE;
       setDefaultTransactionOptions();

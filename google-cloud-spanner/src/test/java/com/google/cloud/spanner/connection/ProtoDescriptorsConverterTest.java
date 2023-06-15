@@ -55,6 +55,7 @@ public class ProtoDescriptorsConverterTest {
 
     assertNull(converter.convert(""));
     assertNull(converter.convert("null"));
+    assertNull(converter.convert(null));
     assertNull(converter.convert("random string"));
 
     assertArrayEquals(

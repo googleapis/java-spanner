@@ -25,6 +25,7 @@ import com.google.cloud.spanner.connection.PgTransactionMode.AccessMode;
 import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.protobuf.Duration;
 import com.google.protobuf.util.Durations;
 import com.google.spanner.v1.RequestOptions.Priority;
@@ -508,7 +509,7 @@ class ClientSideStatementValueConverters {
 
     @Override
     public byte[] convert(String value) {
-      if (value.length() == 0 || value.equalsIgnoreCase("null")) {
+      if (value == null || value.length() == 0 || value.equalsIgnoreCase("null")) {
         return null;
       }
       try {
@@ -531,7 +532,7 @@ class ClientSideStatementValueConverters {
 
     @Override
     public String convert(String filePath) {
-      if (filePath == null || filePath.length() == 0) {
+      if (Strings.isNullOrEmpty(filePath)) {
         return null;
       }
       return filePath;
