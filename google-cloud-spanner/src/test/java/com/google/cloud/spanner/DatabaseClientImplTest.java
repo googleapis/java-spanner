@@ -199,7 +199,8 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testPoolMaintainer_whenInactiveTransactionAndSessionIsNotFoundOnBackend_removeSessionsFromPool() {
+  public void
+      testPoolMaintainer_whenInactiveTransactionAndSessionIsNotFoundOnBackend_removeSessionsFromPool() {
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
             .setIdleTimeThreshold(
@@ -230,7 +231,7 @@ public class DatabaseClientImplTest {
 
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
-      mockSpanner.setIsCommitSessionNotFound(true);
+      mockSpanner.setOnCommitThrowSessionNotFoundException(true);
       while (true) {
         try {
           // Simulate a delay of 4s to ensure that the below transaction is a long-running one.
@@ -246,13 +247,14 @@ public class DatabaseClientImplTest {
         } catch (AbortedException e) {
           transaction = manager.resetForRetry();
         }
-        mockSpanner.setIsCommitSessionNotFound(false);
+        mockSpanner.setOnCommitThrowSessionNotFoundException(false);
       }
     }
     Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
     // first session executed update, session found to be long-running and cleaned up.
-    // During commit, SessionNotFound exception from backend caused replacement of session and transaction needs to be retried.
+    // During commit, SessionNotFound exception from backend caused replacement of session and
+    // transaction needs to be retried.
     // On retry, session again found to be long-running and cleaned up.
     // During commit, there was no exception from backend.
     final int numSessionsInPool = client.pool.getNumberOfSessionsInPool();
@@ -261,7 +263,7 @@ public class DatabaseClientImplTest {
     assertNotEquals(
         endExecutionTime,
         initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertTrue(numSessionsInPool > 0 && numSessionsInPool<3);
+    assertTrue(numSessionsInPool > 0 && numSessionsInPool < 3);
     assertThat(numLeakedSessionsRemoved > 0 && numLeakedSessionsRemoved <= 2);
   }
 

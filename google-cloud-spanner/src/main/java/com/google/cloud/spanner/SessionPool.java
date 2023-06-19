@@ -1874,9 +1874,14 @@ class SessionPool {
                     Level.WARNING, "Removing long running session", sessionFuture.leakedException);
                 session.isLeakedExceptionLogged = true;
               }
-              numLeakedSessionsRemoved++;
               if (options.closeInactiveTransactions() && session.state != SessionState.CLOSING) {
-                removeFromPool(session);
+                final boolean isRemoved = removeFromPool(session);
+                if (isRemoved) {
+                  numLeakedSessionsRemoved++;
+                  if (longRunningSessionRemovedListener != null) {
+                    longRunningSessionRemovedListener.apply(session);
+                  }
+                }
                 iterator.remove();
               }
             }
@@ -1979,6 +1984,8 @@ class SessionPool {
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
 
   @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
+
+  @VisibleForTesting Function<PooledSession, Void> longRunningSessionRemovedListener;
 
   private final CountDownLatch waitOnMinSessionsLatch;
 

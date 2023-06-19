@@ -66,7 +66,6 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
   Object lock = new Object();
   Random random = new Random();
   FakeClock clock = new FakeClock();
-
   Map<String, Boolean> sessions = new HashMap<>();
   // Exception keeps track of where the session was closed at.
   Map<String, Exception> closedSessions = new HashMap<>();
@@ -221,6 +220,14 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
         SessionPool.createPool(
             builder.build(), new TestExecutorFactory(), mockSpanner.getSessionClient(db), clock);
     pool.idleSessionRemovedListener =
+        pooled -> {
+          String name = pooled.getName();
+          synchronized (lock) {
+            sessions.remove(name);
+            return null;
+          }
+        };
+    pool.longRunningSessionRemovedListener =
         pooled -> {
           String name = pooled.getName();
           synchronized (lock) {
