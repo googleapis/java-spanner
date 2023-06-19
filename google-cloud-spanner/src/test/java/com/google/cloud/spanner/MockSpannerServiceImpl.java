@@ -596,7 +596,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private int maxNumSessionsInOneBatch = 100;
   private int maxTotalSessions = Integer.MAX_VALUE;
   private AtomicInteger numSessionsCreated = new AtomicInteger();
-
+  private boolean isCommitSessionNotFound = false;
   private SimulatedExecutionTime beginTransactionExecutionTime = NO_EXECUTION_TIME;
   private SimulatedExecutionTime commitExecutionTime = NO_EXECUTION_TIME;
   private SimulatedExecutionTime batchCreateSessionsExecutionTime = NO_EXECUTION_TIME;
@@ -1900,7 +1900,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     requests.add(request);
     Preconditions.checkNotNull(request.getSession());
     Session session = sessions.get(request.getSession());
-    if (session == null) {
+    if (session == null || getIsCommitSessionNotFound()) {
       setSessionNotFound(request.getSession(), responseObserver);
       return;
     }
@@ -2205,6 +2205,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     readExecutionTime = NO_EXECUTION_TIME;
     rollbackExecutionTime = NO_EXECUTION_TIME;
     streamingReadExecutionTime = NO_EXECUTION_TIME;
+  }
+
+  public boolean getIsCommitSessionNotFound() {
+    return isCommitSessionNotFound;
+  }
+
+  public void setIsCommitSessionNotFound(boolean isCommitSessionNotFound) {
+    this.isCommitSessionNotFound = isCommitSessionNotFound;
   }
 
   public SimulatedExecutionTime getBeginTransactionExecutionTime() {

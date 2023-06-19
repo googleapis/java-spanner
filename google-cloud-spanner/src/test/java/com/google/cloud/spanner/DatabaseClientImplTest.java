@@ -199,12 +199,12 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testPoolMaintainer_whenInactiveTransactions_removeSessionsFromPool() {
+  public void testPoolMaintainer_whenInactiveTransactionAndSessionIsNotFoundOnBackend_removeSessionsFromPool() {
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
             .setIdleTimeThreshold(
-                Duration.ofMillis(5L)) // anything more than 5s will be long-running
-            .setExecutionFrequency(Duration.ofSeconds(15L))
+                Duration.ofSeconds(2L)) // any session idle for more than 2s will be long-running
+            .setExecutionFrequency(Duration.ofSeconds(1L)) // check long-running sessions every 1s
             .build();
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptions.newBuilder()
@@ -212,6 +212,7 @@ public class DatabaseClientImplTest {
             .setMaxSessions(1) // to ensure there is 1 session and pool is 100% utilized
             .setCloseIfInactiveTransactions()
             .setInactiveTransactionRemovalOptions(inactiveTransactionRemovalOptions)
+            .setLoopFrequency(1000L) // main thread runs every 1s
             .build();
     spanner =
         SpannerOptions.newBuilder()
@@ -229,14 +230,15 @@ public class DatabaseClientImplTest {
 
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
+      mockSpanner.setIsCommitSessionNotFound(true);
       while (true) {
         try {
-          // Simulate a delay of 20s to ensure that the below transaction is a long-running one.
-          // We require to wait for 20s so that the main thread executes at-least once every 10s
-          // As per this test, anything which takes more than 5s is long-running
+          // Simulate a delay of 4s to ensure that the below transaction is a long-running one.
+          // We require to wait for 4s so that the main thread executes at-least once every 1s
+          // As per this test, anything which takes more than 2s is long-running
           mockSpanner.setExecuteSqlExecutionTime(
               SimulatedExecutionTime.ofMinimumAndRandomTime(
-                  (int) Duration.ofSeconds(20).toMillis(), 0));
+                  (int) Duration.ofSeconds(4).toMillis(), 0));
           transaction.executeUpdate(UPDATE_STATEMENT);
           manager.commit();
           assertNotNull(manager.getCommitTimestamp());
@@ -244,15 +246,23 @@ public class DatabaseClientImplTest {
         } catch (AbortedException e) {
           transaction = manager.resetForRetry();
         }
+        mockSpanner.setIsCommitSessionNotFound(false);
       }
     }
     Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(1);
-    assertThat(client.pool.numLeakedSessionsRemoved()).isEqualTo(1);
+    // first session executed update, session found to be long-running and cleaned up.
+    // During commit, SessionNotFound exception from backend caused replacement of session and transaction needs to be retried.
+    // On retry, session again found to be long-running and cleaned up.
+    // During commit, there was no exception from backend.
+    final int numSessionsInPool = client.pool.getNumberOfSessionsInPool();
+    final long numLeakedSessionsRemoved = client.pool.numLeakedSessionsRemoved();
+
     assertNotEquals(
         endExecutionTime,
         initialExecutionTime); // if session clean up task runs then these timings won't match
+    assertTrue(numSessionsInPool > 0 && numSessionsInPool<3);
+    assertThat(numLeakedSessionsRemoved > 0 && numLeakedSessionsRemoved <= 2);
   }
 
   @Test
@@ -260,8 +270,8 @@ public class DatabaseClientImplTest {
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
             .setIdleTimeThreshold(
-                Duration.ofMillis(5L)) // anything more than 5s will be long-running
-            .setExecutionFrequency(Duration.ofSeconds(15L))
+                Duration.ofSeconds(2L)) // any session idle for more than 2s will be long-running
+            .setExecutionFrequency(Duration.ofSeconds(1L)) // check long-running sessions every 1s
             .build();
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptions.newBuilder()
@@ -269,7 +279,9 @@ public class DatabaseClientImplTest {
             .setMaxSessions(1) // to ensure there is 1 session and pool is 100% utilized
             .setCloseIfInactiveTransactions()
             .setInactiveTransactionRemovalOptions(inactiveTransactionRemovalOptions)
+            .setLoopFrequency(1000L) // main thread runs every 1s
             .build();
+
     spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
@@ -284,23 +296,23 @@ public class DatabaseClientImplTest {
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    // Simulate a delay of 20s to ensure that the below transaction is a long-running one.
-    // We require to wait for 20s so that the main thread executes at-least once every 10s
-    // As per this test, anything which takes more than 5s is long-running
+    // Simulate a delay of 4s to ensure that the below transaction is a long-running one.
+    // We require to wait for 4s so that the main thread executes at-least once every 1s
+    // As per this test, anything which takes more than 2s is long-running
     mockSpanner.setExecuteStreamingSqlExecutionTime(
-        SimulatedExecutionTime.ofMinimumAndRandomTime((int) Duration.ofSeconds(20).toMillis(), 0));
+        SimulatedExecutionTime.ofMinimumAndRandomTime((int) Duration.ofSeconds(4).toMillis(), 0));
     client.executePartitionedUpdate(UPDATE_STATEMENT);
     Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(1);
-    assertThat(client.pool.numLeakedSessionsRemoved()).isEqualTo(0);
     assertNotEquals(
         endExecutionTime,
         initialExecutionTime); // if session clean up task runs then these timings won't match
+    assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(1);
+    assertThat(client.pool.numLeakedSessionsRemoved()).isEqualTo(0);
   }
 
   @Test
-  public void testPoolMaintainer_whenLongRunningBathReadOnlyTransactionRequest_takeNoAction() {
+  public void testPoolMaintainer_whenLongRunningBatchReadOnlyTransactionRequest_takeNoAction() {
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
             .setIdleTimeThreshold(Duration.ofMillis(1L))
@@ -322,9 +334,12 @@ public class DatabaseClientImplTest {
             .setSessionPoolOption(sessionPoolOptions)
             .build()
             .getService();
-    // Simulate a delay to ensure that the below transaction is a long-running one.
+
+    // Simulate a delay of 4s to ensure that the below transaction is a long-running one.
+    // We require to wait for 4s so that the main thread executes at-least once every 1s
+    // As per this test, anything which takes more than 2s is long-running
     mockSpanner.setExecuteStreamingSqlExecutionTime(
-        SimulatedExecutionTime.ofMinimumAndRandomTime((int) Duration.ofSeconds(20).toMillis(), 0));
+        SimulatedExecutionTime.ofMinimumAndRandomTime((int) Duration.ofSeconds(4).toMillis(), 0));
     BatchClient client =
         spanner.getBatchClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE"));
 
@@ -349,7 +364,7 @@ public class DatabaseClientImplTest {
     }
     final long finish = System.currentTimeMillis();
     // Assert that the transaction was indeed long-running
-    assertTrue(Duration.ofMillis(finish - start).toMillis() >= Duration.ofSeconds(20).toMillis());
+    assertTrue(Duration.ofMillis(finish - start).toMillis() >= Duration.ofSeconds(4).toMillis());
   }
 
   @Test

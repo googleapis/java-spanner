@@ -1753,7 +1753,7 @@ class SessionPool {
           decrementPendingClosures(1);
         }
       }
-      closeLongRunningTransactions(currTime);
+      removeLongRunningSessions(currTime);
     }
 
     private void removeIdleSessions(Instant currTime) {
@@ -1830,8 +1830,8 @@ class SessionPool {
       }
     }
 
-    // cleans up transactions which are unexpectedly long-running.
-    void closeLongRunningTransactions(Instant currentTime) {
+    // cleans up sessions which are unexpectedly long-running.
+    void removeLongRunningSessions(Instant currentTime) {
       try {
         if (SessionPool.this.isClosed()) {
           return;
