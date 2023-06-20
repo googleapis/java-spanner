@@ -50,7 +50,6 @@ public class SessionPoolOptions {
   private final ActionOnSessionNotFound actionOnSessionNotFound;
   private final ActionOnSessionLeak actionOnSessionLeak;
   private final boolean trackStackTraceOfSessionCheckout;
-  private final ActionOnInactiveTransaction actionOnInactiveTransaction;
   private final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions;
   private final long initialWaitForSessionTimeoutMillis;
   private final boolean autoDetectDialect;
@@ -75,7 +74,6 @@ public class SessionPoolOptions {
     this.removeInactiveSessionAfter = builder.removeInactiveSessionAfter;
     this.autoDetectDialect = builder.autoDetectDialect;
     this.waitForMinSessions = builder.waitForMinSessions;
-    this.actionOnInactiveTransaction = builder.actionOnInactiveTransaction;
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
   }
 
@@ -102,7 +100,6 @@ public class SessionPoolOptions {
         && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter)
         && Objects.equals(this.autoDetectDialect, other.autoDetectDialect)
         && Objects.equals(this.waitForMinSessions, other.waitForMinSessions)
-        && Objects.equals(this.actionOnInactiveTransaction, other.actionOnInactiveTransaction)
         && Objects.equals(
             this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions);
   }
@@ -118,7 +115,6 @@ public class SessionPoolOptions {
         this.actionOnExhaustion,
         this.actionOnSessionNotFound,
         this.actionOnSessionLeak,
-        this.actionOnInactiveTransaction,
         this.trackStackTraceOfSessionCheckout,
         this.initialWaitForSessionTimeoutMillis,
         this.loopFrequency,
@@ -190,7 +186,8 @@ public class SessionPoolOptions {
   }
 
   boolean closeInactiveTransactions() {
-    return actionOnInactiveTransaction == ActionOnInactiveTransaction.CLOSE;
+    return inactiveTransactionRemovalOptions.actionOnInactiveTransaction
+        == ActionOnInactiveTransaction.CLOSE;
   }
 
   InactiveTransactionRemovalOptions getInactiveTransactionRemovalOptions() {
@@ -198,7 +195,8 @@ public class SessionPoolOptions {
   }
 
   boolean warnInactiveTransactions() {
-    return actionOnInactiveTransaction == ActionOnInactiveTransaction.WARN;
+    return inactiveTransactionRemovalOptions.actionOnInactiveTransaction
+        == ActionOnInactiveTransaction.WARN;
   }
 
   @VisibleForTesting
@@ -249,8 +247,12 @@ public class SessionPoolOptions {
     CLOSE
   }
 
-  /** Configuration options for task to clean up long-running transactions. */
+  /** Configuration options for task to clean up inactive transactions. */
   static class InactiveTransactionRemovalOptions {
+
+    /** Option to set the behaviour when there are inactive transactions. */
+    private ActionOnInactiveTransaction actionOnInactiveTransaction;
+
     /**
      * Frequency for closing inactive transactions. Between two consecutive task executions, it's
      * ensured that the duration is greater or equal to this duration.
@@ -269,6 +271,7 @@ public class SessionPoolOptions {
     private Duration idleTimeThreshold;
 
     InactiveTransactionRemovalOptions(final Builder builder) {
+      this.actionOnInactiveTransaction = builder.actionOnInactiveTransaction;
       this.idleTimeThreshold = builder.idleTimeThreshold;
       this.executionFrequency = builder.executionFrequency;
       this.usedSessionsRatioThreshold = builder.usedSessionsRatioThreshold;
@@ -308,6 +311,8 @@ public class SessionPoolOptions {
     }
 
     static class Builder {
+      private ActionOnInactiveTransaction actionOnInactiveTransaction =
+          ActionOnInactiveTransaction.WARN;
       private Duration executionFrequency = Duration.ofMinutes(2);
       private double usedSessionsRatioThreshold = 0.95;
       private Duration idleTimeThreshold = Duration.ofMinutes(60L);
@@ -328,6 +333,13 @@ public class SessionPoolOptions {
             idleTimeThreshold.toMillis() > 0,
             "Idle Time Threshold duration %s should be positive",
             idleTimeThreshold.toMillis());
+      }
+
+      @VisibleForTesting
+      InactiveTransactionRemovalOptions.Builder setActionOnInactiveTransaction(
+          final ActionOnInactiveTransaction actionOnInactiveTransaction) {
+        this.actionOnInactiveTransaction = actionOnInactiveTransaction;
+        return this;
       }
 
       @VisibleForTesting
@@ -384,8 +396,6 @@ public class SessionPoolOptions {
      */
     private boolean trackStackTraceOfSessionCheckout = true;
 
-    private ActionOnInactiveTransaction actionOnInactiveTransaction =
-        ActionOnInactiveTransaction.WARN;
     private InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder().build();
     private long loopFrequency = 10 * 1000L;
@@ -408,12 +418,12 @@ public class SessionPoolOptions {
       this.actionOnSessionNotFound = options.actionOnSessionNotFound;
       this.actionOnSessionLeak = options.actionOnSessionLeak;
       this.trackStackTraceOfSessionCheckout = options.trackStackTraceOfSessionCheckout;
-      this.actionOnInactiveTransaction = options.actionOnInactiveTransaction;
       this.loopFrequency = options.loopFrequency;
       this.keepAliveIntervalMinutes = options.keepAliveIntervalMinutes;
       this.removeInactiveSessionAfter = options.removeInactiveSessionAfter;
       this.autoDetectDialect = options.autoDetectDialect;
       this.waitForMinSessions = options.waitForMinSessions;
+      this.inactiveTransactionRemovalOptions = options.inactiveTransactionRemovalOptions;
     }
 
     /**
@@ -521,7 +531,10 @@ public class SessionPoolOptions {
      * @return this builder for chaining
      */
     public Builder setWarnIfInactiveTransactions() {
-      this.actionOnInactiveTransaction = ActionOnInactiveTransaction.WARN;
+      this.inactiveTransactionRemovalOptions =
+          InactiveTransactionRemovalOptions.newBuilder()
+              .setActionOnInactiveTransaction(ActionOnInactiveTransaction.WARN)
+              .build();
       return this;
     }
 
@@ -537,7 +550,10 @@ public class SessionPoolOptions {
      * @return this builder for chaining
      */
     public Builder setCloseIfInactiveTransactions() {
-      this.actionOnInactiveTransaction = ActionOnInactiveTransaction.CLOSE;
+      this.inactiveTransactionRemovalOptions =
+          InactiveTransactionRemovalOptions.newBuilder()
+              .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
+              .build();
       return this;
     }
 

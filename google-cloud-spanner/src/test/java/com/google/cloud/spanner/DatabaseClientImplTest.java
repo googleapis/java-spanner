@@ -231,7 +231,9 @@ public class DatabaseClientImplTest {
 
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
-      mockSpanner.setOnCommitThrowSessionNotFoundException(true);
+      mockSpanner.setCommitExecutionTime(
+          SimulatedExecutionTime.ofException(
+              mockSpanner.createSessionNotFoundException("TEST_SESSION_NAME")));
       while (true) {
         try {
           // Simulate a delay of 4s to ensure that the below transaction is a long-running one.
@@ -247,7 +249,7 @@ public class DatabaseClientImplTest {
         } catch (AbortedException e) {
           transaction = manager.resetForRetry();
         }
-        mockSpanner.setOnCommitThrowSessionNotFoundException(false);
+        mockSpanner.setCommitExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(0, 0));
       }
     }
     Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
