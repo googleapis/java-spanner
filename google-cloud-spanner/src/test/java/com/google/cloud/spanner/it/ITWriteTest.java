@@ -225,6 +225,7 @@ public class ITWriteTest {
 
   @Test
   public void batchWriteAtLeastOnce() {
+    assumeFalse("Emulator does not support BatchWriteAtleastOnce", isUsingEmulator());
     final String k1 = uniqueString(), k2 = uniqueString();
     lastKey = k2;
     final List<Mutation> mutations =
