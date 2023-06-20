@@ -221,9 +221,7 @@ public interface DatabaseClient {
    *         .to("Joel")
    *         .build();
    * ServerStream<BatchWriteResponse> responses =
-   *     dbClient.batchWriteAtLeastOnce(
-   *             Collections.singletonList(mutation),
-   *             Options.priority(RpcPriority.LOW));
+   *     dbClient.batchWriteAtLeastOnce(Collections.singletonList(mutation));
    * for (BatchWriteResponse response : responses) {
    *   // Do something when a response is received.
    * }
@@ -262,7 +260,9 @@ public interface DatabaseClient {
    *         .to("Joel")
    *         .build();
    * ServerStream<BatchWriteResponse> responses =
-   *     dbClient.batchWriteAtLeastOnce(Collections.singletonList(mutation));
+   *     dbClient.batchWriteAtLeastOnce(
+   *             Collections.singletonList(mutation),
+   *             Options.priority(RpcPriority.LOW));
    * for (BatchWriteResponse response : responses) {
    *   // Do something when a response is received.
    * }
