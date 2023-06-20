@@ -265,8 +265,9 @@ public class ITWriteTest {
 
     // assert row with key k2
     if (appliedMutationIndexes.contains(1)) {
-      row = readRow(k2, "StringValue");
+      row = readRow(k2, "StringValue", "BoolValue");
       assertEquals(row.getString(0), "v2");
+      assertTrue(row.isNull(1));
     }
   }
 
