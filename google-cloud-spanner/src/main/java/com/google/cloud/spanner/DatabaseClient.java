@@ -247,7 +247,7 @@ public interface DatabaseClient {
    * However, {@code batchWriteAtLeastOnce()} method may be appropriate for non-atomically
    * committing multiple mutations in a single RPC with low latency.
    *
-   * <p>Example of BatchWriteAtleastOnce
+   * <p>Example of BatchWriteAtleastOnceWithOptions
    *
    * <pre>{@code
    * long singerId = my_singer_id;
