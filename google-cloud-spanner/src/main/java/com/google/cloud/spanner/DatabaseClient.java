@@ -193,9 +193,91 @@ public interface DatabaseClient {
   CommitResponse writeAtLeastOnceWithOptions(
       Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException;
 
+  /**
+   * Batches the supplied mutations in a collection of efficient transactions. The mutations are
+   * applied non-atomically in an unspecified order and thus, they must be independent of each
+   * other. Partial failure is possible, i.e., some mutations may have been applied successfully,
+   * while some may have failed. The results of individual batches are streamed into the response as
+   * and when the batches are applied.
+   *
+   * <p>Since this method does not feature replay protection, it may attempt to apply {@code
+   * mutations} more than once; if the mutations are not idempotent, this may lead to a failure
+   * being reported when the mutation was applied once. For example, an insert may fail with {@link
+   * ErrorCode#ALREADY_EXISTS} even though the row did not exist before this method was called. For
+   * this reason, most users of the library will prefer to use {@link #write(Iterable)} instead.
+   * However, {@code batchWriteAtLeastOnce()} method may be appropriate for non-atomically
+   * committing multiple mutations in a single RPC with low latency.
+   *
+   * <p>Example of BatchWriteAtleastOnce
+   *
+   * <pre>{@code
+   * long singerId = my_singer_id;
+   * Mutation mutation = Mutation.newInsertBuilder("Singers")
+   *         .set("SingerId")
+   *         .to(singerId)
+   *         .set("FirstName")
+   *         .to("Billy")
+   *         .set("LastName")
+   *         .to("Joel")
+   *         .build();
+   * ServerStream<BatchWriteResponse> responses =
+   *     dbClient.batchWriteAtLeastOnce(
+   *             Collections.singletonList(mutation),
+   *             Options.priority(RpcPriority.LOW));
+   * for (BatchWriteResponse response : responses) {
+   *   // Do something when a response is received.
+   * }
+   * }</pre>
+   *
+   * @return ServerStream\<BatchWriteResponse>
+   */
   ServerStream<BatchWriteResponse> batchWriteAtleastOnce(Iterable<Mutation> mutations)
       throws SpannerException;
 
+  /**
+   * Batches the supplied mutations in a collection of efficient transactions. The mutations are
+   * applied non-atomically in an unspecified order and thus, they must be independent of each
+   * other. Partial failure is possible, i.e., some mutations may have been applied successfully,
+   * while some may have failed. The results of individual batches are streamed into the response as
+   * and when the batches are applied.
+   *
+   * <p>Since this method does not feature replay protection, it may attempt to apply {@code
+   * mutations} more than once; if the mutations are not idempotent, this may lead to a failure
+   * being reported when the mutation was applied once. For example, an insert may fail with {@link
+   * ErrorCode#ALREADY_EXISTS} even though the row did not exist before this method was called. For
+   * this reason, most users of the library will prefer to use {@link #write(Iterable)} instead.
+   * However, {@code batchWriteAtLeastOnce()} method may be appropriate for non-atomically
+   * committing multiple mutations in a single RPC with low latency.
+   *
+   * <p>Example of BatchWriteAtleastOnce
+   *
+   * <pre>{@code
+   * long singerId = my_singer_id;
+   * Mutation mutation = Mutation.newInsertBuilder("Singers")
+   *         .set("SingerId")
+   *         .to(singerId)
+   *         .set("FirstName")
+   *         .to("Billy")
+   *         .set("LastName")
+   *         .to("Joel")
+   *         .build();
+   * ServerStream<BatchWriteResponse> responses =
+   *     dbClient.batchWriteAtLeastOnce(Collections.singletonList(mutation));
+   * for (BatchWriteResponse response : responses) {
+   *   // Do something when a response is received.
+   * }
+   * }</pre>
+   *
+   * Options for a transaction can include:
+   *
+   * <ul>
+   *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
+   *       RpcPriority} to use for the batch write request.
+   *   <li>{@link Options#tag(String)}: The transaction tag to use for the batch write request.
+   * </ul>
+   *
+   * @return ServerStream\<BatchWriteResponse>
+   */
   ServerStream<BatchWriteResponse> batchWriteAtleastOnceWithOptions(
       Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException;
 
