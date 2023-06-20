@@ -25,6 +25,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
@@ -64,9 +65,11 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -196,9 +199,13 @@ public class ITWriteTest {
   }
 
   private Struct readLastRow(String... columns) {
+    return readRow(lastKey, columns);
+  }
+
+  private Struct readRow(String key, String... columns) {
     return client
         .singleUse(TimestampBound.strong())
-        .readRow("T", Key.of(lastKey), Arrays.asList(columns));
+        .readRow("T", Key.of(key), Arrays.asList(columns));
   }
 
   @Test
@@ -218,23 +225,48 @@ public class ITWriteTest {
 
   @Test
   public void batchWriteAtLeastOnce() {
-    ServerStream<BatchWriteResponse> responses =
-        client.batchWriteAtleastOnce(
-            ImmutableList.of(
-                Mutation.newInsertOrUpdateBuilder("T")
-                    .set("K")
-                    .to(lastKey = uniqueString())
-                    .set("StringValue")
-                    .to("v1")
-                    .build()));
+    final String k1 = uniqueString(), k2 = uniqueString();
+    lastKey = k2;
+    final List<Mutation> mutations =
+        ImmutableList.of(
+            Mutation.newInsertOrUpdateBuilder("T")
+                .set("K")
+                .to(k1)
+                .set("StringValue")
+                .to("v1")
+                .set("BoolValue")
+                .to(true)
+                .build(),
+            Mutation.newInsertOrUpdateBuilder("T")
+                .set("K")
+                .to(k2)
+                .set("StringValue")
+                .to("v2")
+                .build());
+    ServerStream<BatchWriteResponse> responses = client.batchWriteAtleastOnce(mutations);
+    Set<Integer> responseIndexes = new HashSet<>();
+    Set<Integer> appliedMutationIndexes = new HashSet<>();
     for (BatchWriteResponse response : responses) {
-      assertEquals(response.getIndexesList(), Collections.singletonList(0));
+      responseIndexes.addAll(response.getIndexesList());
       if (response.getStatus().equals(Status.newBuilder().setCode(Code.OK_VALUE).build())) {
+        appliedMutationIndexes.addAll(response.getIndexesList());
         assertNotNull(response.getCommitTimestamp());
-        Struct row = readLastRow("StringValue");
-        assertFalse(row.isNull(0));
-        assertEquals(row.getString(0), "v1");
       }
+    }
+    assertEquals(responseIndexes, new HashSet<>(Arrays.asList(0, 1)));
+
+    Struct row;
+    // assert row with key k1
+    if (appliedMutationIndexes.contains(0)) {
+      row = readRow(k1, "StringValue", "BoolValue");
+      assertEquals(row.getString(0), "v1");
+      assertTrue(row.getBoolean(1));
+    }
+
+    // assert row with key k2
+    if (appliedMutationIndexes.contains(1)) {
+      row = readRow(k2, "StringValue");
+      assertEquals(row.getString(0), "v2");
     }
   }
 
