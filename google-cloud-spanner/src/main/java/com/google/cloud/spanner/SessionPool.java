@@ -1366,7 +1366,21 @@ class SessionPool {
     private volatile Instant lastUseTime;
     private volatile SpannerException lastException;
     private volatile boolean allowReplacing = true;
-    private volatile boolean isLongRunning = false;
+
+    /**
+     * Property to mark if the session is eligible to be long-running. This can only be true if the
+     * session is executing certain types of transactions (for ex - Partitioned DML) which can be
+     * long-running. By default, most transaction types are not expected to be long-running and
+     * hence this value is false.
+     */
+    private volatile boolean eligibleForLongRunning = false;
+
+    /**
+     * Property to mark if the session is no longer part of the session pool For ex - A session
+     * which is long-running gets cleaned up and removed from the pool.
+     */
+    private volatile boolean isRemoved = false;
+
     private volatile boolean isLeakedExceptionLogged = false;
 
     @GuardedBy("lock")
@@ -1389,8 +1403,8 @@ class SessionPool {
     }
 
     @VisibleForTesting
-    void setIsLongRunning(boolean isLongRunning) {
-      this.isLongRunning = isLongRunning;
+    void setEligibleForLongRunning(boolean eligibleForLongRunning) {
+      this.eligibleForLongRunning = eligibleForLongRunning;
     }
 
     @Override
@@ -1430,7 +1444,7 @@ class SessionPool {
         throws SpannerException {
       try {
         markUsed();
-        markLongRunning();
+        markEligibleForLongRunning();
         return delegate.executePartitionedUpdate(stmt, options);
       } catch (SpannerException e) {
         throw lastException = e;
@@ -1494,7 +1508,7 @@ class SessionPool {
         numSessionsInUse--;
         numSessionsReleased++;
       }
-      if (lastException != null && isSessionNotFound(lastException)) {
+      if ((lastException != null && isSessionNotFound(lastException)) || isRemoved) {
         invalidateSession(this);
       } else {
         if (lastException != null && isDatabaseOrInstanceNotFound(lastException)) {
@@ -1508,11 +1522,13 @@ class SessionPool {
           }
         }
         lastException = null;
+        isRemoved = false;
         if (state != SessionState.CLOSING) {
           state = SessionState.AVAILABLE;
         }
         releaseSession(this, Position.FIRST);
       }
+      eligibleForLongRunning = false;
     }
 
     @Override
@@ -1582,11 +1598,12 @@ class SessionPool {
     }
 
     /**
-     * Method to mark a session occupied by a long-running transaction. Any transaction that is
-     * expected to be long-running (for ex - Partitioned DML, Batch Read) must use this method.
+     * Method to mark a session that is to be occupied by a possibly long-running transaction. Any
+     * transaction that is expected to be long-running (for ex - Partitioned DML, Batch Read) must
+     * use this method.
      */
-    void markLongRunning() {
-      isLongRunning = true;
+    void markEligibleForLongRunning() {
+      eligibleForLongRunning = true;
     }
 
     @Override
@@ -1866,17 +1883,20 @@ class SessionPool {
             // called.
             final PooledSession session = sessionFuture.get();
             final Duration durationFromLastUse = Duration.between(session.lastUseTime, currentTime);
-            if (!session.isLongRunning
+            if (!session.eligibleForLongRunning
                 && durationFromLastUse.toMillis()
                     > inactiveTransactionRemovalOptions.getIdleTimeThreshold().toMillis()) {
               if (!session.isLeakedExceptionLogged) {
                 logger.log(
-                    Level.WARNING, "Removing long running session", sessionFuture.leakedException);
+                    Level.WARNING,
+                    String.format("Removing long running session => %s", session.getName()),
+                    sessionFuture.leakedException);
                 session.isLeakedExceptionLogged = true;
               }
               if (options.closeInactiveTransactions() && session.state != SessionState.CLOSING) {
                 final boolean isRemoved = removeFromPool(session);
                 if (isRemoved) {
+                  session.isRemoved = true;
                   numLeakedSessionsRemoved++;
                   if (longRunningSessionRemovedListener != null) {
                     longRunningSessionRemovedListener.apply(session);
@@ -1997,12 +2017,16 @@ class SessionPool {
    */
   static SessionPool createPool(
       SpannerOptions spannerOptions, SessionClient sessionClient, List<LabelValue> labelValues) {
+    final SessionPoolOptions sessionPoolOptions = spannerOptions.getSessionPoolOptions();
+
+    // A clock instance is passed in {@code SessionPoolOptions} in order to allow mocking via tests.
+    final Clock poolMaintainerClock = sessionPoolOptions.getPoolMaintainerClock();
     return createPool(
-        spannerOptions.getSessionPoolOptions(),
+        sessionPoolOptions,
         spannerOptions.getDatabaseRole(),
         ((GrpcTransportOptions) spannerOptions.getTransportOptions()).getExecutorFactory(),
         sessionClient,
-        new Clock(),
+        poolMaintainerClock == null ? new Clock() : poolMaintainerClock,
         Metrics.getMetricRegistry(),
         labelValues);
   }

@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import java.util.Objects;
@@ -55,6 +56,9 @@ public class SessionPoolOptions {
   private final boolean autoDetectDialect;
   private final Duration waitForMinSessions;
 
+  /** Property for allowing mocking of session maintenance clock. */
+  private final Clock poolMaintainerClock;
+
   private SessionPoolOptions(Builder builder) {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
     // We allow that to prevent code that only sets a value for maxSessions to break if the
@@ -75,6 +79,7 @@ public class SessionPoolOptions {
     this.autoDetectDialect = builder.autoDetectDialect;
     this.waitForMinSessions = builder.waitForMinSessions;
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
+    this.poolMaintainerClock = builder.poolMaintainerClock;
   }
 
   @Override
@@ -101,7 +106,8 @@ public class SessionPoolOptions {
         && Objects.equals(this.autoDetectDialect, other.autoDetectDialect)
         && Objects.equals(this.waitForMinSessions, other.waitForMinSessions)
         && Objects.equals(
-            this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions);
+            this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions)
+        && Objects.equals(this.poolMaintainerClock, other.poolMaintainerClock);
   }
 
   @Override
@@ -122,7 +128,8 @@ public class SessionPoolOptions {
         this.removeInactiveSessionAfter,
         this.autoDetectDialect,
         this.waitForMinSessions,
-        this.inactiveTransactionRemovalOptions);
+        this.inactiveTransactionRemovalOptions,
+        this.poolMaintainerClock);
   }
 
   public Builder toBuilder() {
@@ -214,6 +221,11 @@ public class SessionPoolOptions {
     return actionOnSessionLeak == ActionOnSessionLeak.FAIL;
   }
 
+  @VisibleForTesting
+  Clock getPoolMaintainerClock() {
+    return poolMaintainerClock;
+  }
+
   public boolean isTrackStackTraceOfSessionCheckout() {
     return trackStackTraceOfSessionCheckout;
   }
@@ -242,7 +254,8 @@ public class SessionPoolOptions {
     FAIL
   }
 
-  private enum ActionOnInactiveTransaction {
+  @VisibleForTesting
+  enum ActionOnInactiveTransaction {
     WARN,
     CLOSE
   }
@@ -404,6 +417,8 @@ public class SessionPoolOptions {
     private boolean autoDetectDialect = false;
     private Duration waitForMinSessions = Duration.ZERO;
 
+    private Clock poolMaintainerClock;
+
     public Builder() {}
 
     private Builder(SessionPoolOptions options) {
@@ -424,6 +439,7 @@ public class SessionPoolOptions {
       this.autoDetectDialect = options.autoDetectDialect;
       this.waitForMinSessions = options.waitForMinSessions;
       this.inactiveTransactionRemovalOptions = options.inactiveTransactionRemovalOptions;
+      this.poolMaintainerClock = options.poolMaintainerClock;
     }
 
     /**
@@ -554,6 +570,12 @@ public class SessionPoolOptions {
           InactiveTransactionRemovalOptions.newBuilder()
               .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
               .build();
+      return this;
+    }
+
+    @VisibleForTesting
+    Builder setPoolMaintainerClock(Clock poolMaintainerClock) {
+      this.poolMaintainerClock = poolMaintainerClock;
       return this;
     }
 
