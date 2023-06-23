@@ -647,11 +647,8 @@ class ConnectionImpl implements Connection {
         }
         InputStream pdStream = new FileInputStream(protoDescriptorsFile);
         this.protoDescriptors = ByteArray.copyFrom(pdStream).toByteArray();
-      } catch (SpannerException exception) {
-        throw exception;
       } catch (Exception exception) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT, exception.getMessage());
+        throw SpannerExceptionFactory.newSpannerException(exception);
       }
     }
     return this.protoDescriptors;
