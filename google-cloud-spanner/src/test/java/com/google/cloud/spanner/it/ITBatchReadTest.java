@@ -240,7 +240,7 @@ public class ITBatchReadTest {
   }
 
   @Test
-  public void dataBoostRead() {e
+  public void dataBoostRead() {
     assumeFalse("Emulator does not support data boost read", isUsingEmulator());
 
     BitSet seenRows = new BitSet(numRows);
