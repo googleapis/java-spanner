@@ -210,7 +210,6 @@ public class DatabaseClientImplTest {
             .setIdleTimeThreshold(
                 Duration.ofSeconds(
                     2L)) // any session not used for more than 2s will be long-running
-            .setExecutionFrequency(Duration.ofSeconds(1L)) // check long-running sessions every 1s
             .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
             .build();
     SessionPoolOptions sessionPoolOptions =
@@ -235,6 +234,8 @@ public class DatabaseClientImplTest {
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
+    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       mockSpanner.setCommitExecutionTime(
@@ -244,10 +245,10 @@ public class DatabaseClientImplTest {
         try {
           transaction.executeUpdate(UPDATE_STATEMENT);
 
-          // Simulate a delay of 4s to ensure that the below transaction is a long-running one.
-          // We require to wait for 4s so that the main thread executes at-least once every 1s
+          // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running
+          // one.
           // As per this test, anything which takes more than 2s is long-running
-          poolMaintainerClock.currentTimeMillis += Duration.ofSeconds(4).toMillis();
+          poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
           // force trigger pool maintainer to check for long-running sessions
           client.pool.poolMaintainer.maintainPool();
 
@@ -267,15 +268,13 @@ public class DatabaseClientImplTest {
     // transaction needs to be retried.
     // On retry, session again found to be long-running and cleaned up.
     // During commit, there was no exception from backend.
-    final int numSessionsInPool = client.pool.getNumberOfSessionsInPool();
-    final long numLeakedSessionsRemoved = client.pool.numLeakedSessionsRemoved();
 
     assertNotEquals(
         endExecutionTime,
         initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(0, numSessionsInPool);
+    assertEquals(2, client.pool.numLeakedSessionsRemoved());
+    assertEquals(0, client.pool.getNumberOfSessionsInPool());
     assertEquals(0, client.pool.totalSessions());
-    assertEquals(2, numLeakedSessionsRemoved);
   }
 
   @Test
@@ -287,7 +286,6 @@ public class DatabaseClientImplTest {
             .setIdleTimeThreshold(
                 Duration.ofSeconds(
                     2L)) // any session not used for more than 2s will be long-running
-            .setExecutionFrequency(Duration.ofSeconds(1L)) // check long-running sessions every 1s
             .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
             .build();
     SessionPoolOptions sessionPoolOptions =
@@ -312,16 +310,18 @@ public class DatabaseClientImplTest {
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
+    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
         try {
           transaction.executeUpdate(UPDATE_STATEMENT);
 
-          // Simulate a delay of 4s to ensure that the below transaction is a long-running one.
-          // We require to wait for 4s so that the main thread executes at-least once every 1s
+          // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running
+          // one.
           // As per this test, anything which takes more than 2s is long-running
-          poolMaintainerClock.currentTimeMillis += Duration.ofSeconds(4).toMillis();
+          poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
           // force trigger pool maintainer to check for long-running sessions
           client.pool.poolMaintainer.maintainPool();
 
@@ -343,9 +343,9 @@ public class DatabaseClientImplTest {
     assertNotEquals(
         endExecutionTime,
         initialExecutionTime); // if session clean up task runs then these timings won't match
+    assertEquals(1, client.pool.numLeakedSessionsRemoved());
     assertEquals(0, client.pool.getNumberOfSessionsInPool());
     assertEquals(0, client.pool.totalSessions());
-    assertEquals(1, client.pool.numLeakedSessionsRemoved());
   }
 
   @Test
@@ -356,7 +356,6 @@ public class DatabaseClientImplTest {
             .setIdleTimeThreshold(
                 Duration.ofSeconds(
                     2L)) // any session not used for more than 2s will be long-running
-            .setExecutionFrequency(Duration.ofSeconds(1L)) // check long-running sessions every 1s
             .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
             .build();
     SessionPoolOptions sessionPoolOptions =
@@ -381,13 +380,14 @@ public class DatabaseClientImplTest {
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
 
     client.executePartitionedUpdate(UPDATE_STATEMENT);
 
-    // Simulate a delay of 4s to ensure that the below transaction is a long-running one.
-    // We require to wait for 4s so that the main thread executes at-least once every 1s
+    // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running one.
     // As per this test, anything which takes more than 2s is long-running
-    poolMaintainerClock.currentTimeMillis += Duration.ofSeconds(4).toMillis();
+    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+
     // force trigger pool maintainer to check for long-running sessions
     client.pool.poolMaintainer.maintainPool();
 
@@ -396,9 +396,9 @@ public class DatabaseClientImplTest {
     assertNotEquals(
         endExecutionTime,
         initialExecutionTime); // if session clean up task runs then these timings won't match
+    assertEquals(0, client.pool.numLeakedSessionsRemoved());
     assertEquals(1, client.pool.getNumberOfSessionsInPool());
     assertEquals(1, client.pool.totalSessions());
-    assertEquals(0, client.pool.numLeakedSessionsRemoved());
   }
 
   @Test
