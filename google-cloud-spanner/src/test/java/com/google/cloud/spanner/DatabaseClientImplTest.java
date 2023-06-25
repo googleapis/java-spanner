@@ -211,6 +211,7 @@ public class DatabaseClientImplTest {
                 Duration.ofSeconds(
                     2L)) // any session not used for more than 2s will be long-running
             .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
+            .setExecutionFrequency(Duration.ofSeconds(1)) // execute thread every 1s
             .build();
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptions.newBuilder()
@@ -287,6 +288,7 @@ public class DatabaseClientImplTest {
                 Duration.ofSeconds(
                     2L)) // any session not used for more than 2s will be long-running
             .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
+            .setExecutionFrequency(Duration.ofSeconds(1)) // execute thread every 1s
             .build();
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptions.newBuilder()
@@ -357,6 +359,7 @@ public class DatabaseClientImplTest {
                 Duration.ofSeconds(
                     2L)) // any session not used for more than 2s will be long-running
             .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
+            .setExecutionFrequency(Duration.ofSeconds(1)) // execute thread every 1s
             .build();
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptions.newBuilder()

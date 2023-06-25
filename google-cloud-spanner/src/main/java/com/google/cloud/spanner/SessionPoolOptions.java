@@ -356,6 +356,13 @@ public class SessionPoolOptions {
       }
 
       @VisibleForTesting
+      InactiveTransactionRemovalOptions.Builder setExecutionFrequency(
+          final Duration executionFrequency) {
+        this.executionFrequency = executionFrequency;
+        return this;
+      }
+
+      @VisibleForTesting
       InactiveTransactionRemovalOptions.Builder setUsedSessionsRatioThreshold(
           final double usedSessionsRatioThreshold) {
         this.usedSessionsRatioThreshold = usedSessionsRatioThreshold;
