@@ -26,6 +26,8 @@ import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
+import com.google.cloud.spanner.SessionPoolOptions.ActionOnInactiveTransaction;
+import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
@@ -210,7 +212,13 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     int minSessions = 2;
     int maxSessions = concurrentThreads / 2;
     SessionPoolOptions.Builder builder =
-        SessionPoolOptions.newBuilder().setMinSessions(minSessions).setMaxSessions(maxSessions);
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(minSessions)
+            .setMaxSessions(maxSessions)
+            .setInactiveTransactionRemovalOptions(
+                InactiveTransactionRemovalOptions.newBuilder()
+                    .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
+                    .build());
     if (shouldBlock) {
       builder.setBlockIfPoolExhausted();
     } else {
@@ -270,7 +278,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     releaseThreads.countDown();
     threadsDone.await();
     synchronized (lock) {
-      assertThat(maxAliveSessions).isAtMost(maxSessions);
+      assertThat(pool.totalSessions()).isAtMost(maxSessions);
     }
     stopMaintenance.set(true);
     pool.closeAsync(new SpannerImpl.ClosedException()).get();

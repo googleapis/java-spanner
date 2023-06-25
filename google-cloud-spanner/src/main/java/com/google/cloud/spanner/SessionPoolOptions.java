@@ -192,13 +192,18 @@ public class SessionPoolOptions {
     return autoDetectDialect;
   }
 
+  InactiveTransactionRemovalOptions getInactiveTransactionRemovalOptions() {
+    return inactiveTransactionRemovalOptions;
+  }
+
   boolean closeInactiveTransactions() {
     return inactiveTransactionRemovalOptions.actionOnInactiveTransaction
         == ActionOnInactiveTransaction.CLOSE;
   }
 
-  InactiveTransactionRemovalOptions getInactiveTransactionRemovalOptions() {
-    return inactiveTransactionRemovalOptions;
+  boolean warnAndCloseInactiveTransactions() {
+    return inactiveTransactionRemovalOptions.actionOnInactiveTransaction
+        == ActionOnInactiveTransaction.WARN_AND_CLOSE;
   }
 
   boolean warnInactiveTransactions() {
@@ -257,6 +262,8 @@ public class SessionPoolOptions {
   @VisibleForTesting
   enum ActionOnInactiveTransaction {
     WARN,
+
+    WARN_AND_CLOSE,
     CLOSE
   }
 
@@ -568,7 +575,7 @@ public class SessionPoolOptions {
     public Builder setCloseIfInactiveTransactions() {
       this.inactiveTransactionRemovalOptions =
           InactiveTransactionRemovalOptions.newBuilder()
-              .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
+              .setActionOnInactiveTransaction(ActionOnInactiveTransaction.WARN_AND_CLOSE)
               .build();
       return this;
     }

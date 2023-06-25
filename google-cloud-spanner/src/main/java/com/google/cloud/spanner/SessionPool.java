@@ -1861,7 +1861,9 @@ class SessionPool {
           return;
         }
         lastExecutionTime = currentTime; // update this only after we have decided to execute task
-        if (options.closeInactiveTransactions() || options.warnInactiveTransactions()) {
+        if (options.closeInactiveTransactions()
+            || options.warnInactiveTransactions()
+            || options.warnAndCloseInactiveTransactions()) {
           removeLongRunningSessions(currentTime, inactiveTransactionRemovalOptions);
         }
       } catch (final Throwable t) {
@@ -1886,14 +1888,18 @@ class SessionPool {
             if (!session.eligibleForLongRunning
                 && durationFromLastUse.toMillis()
                     > inactiveTransactionRemovalOptions.getIdleTimeThreshold().toMillis()) {
-              if (!session.isLeakedExceptionLogged) {
+              if (!session.isLeakedExceptionLogged
+                  && (options.warnAndCloseInactiveTransactions()
+                      || options.warnInactiveTransactions())) {
                 logger.log(
                     Level.WARNING,
                     String.format("Removing long running session => %s", session.getName()),
                     sessionFuture.leakedException);
                 session.isLeakedExceptionLogged = true;
               }
-              if (options.closeInactiveTransactions() && session.state != SessionState.CLOSING) {
+              if ((options.closeInactiveTransactions()
+                      || options.warnAndCloseInactiveTransactions())
+                  && session.state != SessionState.CLOSING) {
                 final boolean isRemoved = removeFromPool(session);
                 if (isRemoved) {
                   session.isRemoved = true;
