@@ -1379,7 +1379,7 @@ class SessionPool {
      * Property to mark if the session is no longer part of the session pool For ex - A session
      * which is long-running gets cleaned up and removed from the pool.
      */
-    private volatile boolean isRemoved = false;
+    private volatile boolean isRemovedFromPool = false;
 
     private volatile boolean isLeakedExceptionLogged = false;
 
@@ -1508,7 +1508,7 @@ class SessionPool {
         numSessionsInUse--;
         numSessionsReleased++;
       }
-      if ((lastException != null && isSessionNotFound(lastException)) || isRemoved) {
+      if ((lastException != null && isSessionNotFound(lastException)) || isRemovedFromPool) {
         invalidateSession(this);
       } else {
         if (lastException != null && isDatabaseOrInstanceNotFound(lastException)) {
@@ -1522,7 +1522,7 @@ class SessionPool {
           }
         }
         lastException = null;
-        isRemoved = false;
+        isRemovedFromPool = false;
         if (state != SessionState.CLOSING) {
           state = SessionState.AVAILABLE;
         }
@@ -1685,10 +1685,10 @@ class SessionPool {
    *   <li>Keeps alive sessions that have not been used for a user configured time in order to keep
    *       MinSessions sessions alive in the pool at any time. The keep-alive traffic is smeared out
    *       over a window of 10 minutes to avoid bursty traffic.
-   *   <li>Returns unexpected long running transactions to the pool. Only certain transaction types
-   *       (for ex - Partitioned DML / Batch Reads) can be long running. This tasks checks the
-   *       sessions which have been executing for a longer than usual duration (60 minutes) and
-   *       returns such sessions back to the pool.
+   *   <li>Removes unexpected long running transactions from the pool. Only certain transaction
+   *       types (for ex - Partitioned DML / Batch Reads) can be long running. This tasks checks the
+   *       sessions which have been inactive for a longer than usual duration (for ex - 60 minutes)
+   *       and removes such sessions from the pool.
    * </ul>
    */
   final class PoolMaintainer {
@@ -1886,11 +1886,11 @@ class SessionPool {
             final PooledSession session = sessionFuture.get();
             final Duration durationFromLastUse = Duration.between(session.lastUseTime, currentTime);
             if (!session.eligibleForLongRunning
-                && durationFromLastUse.toMillis()
-                    > inactiveTransactionRemovalOptions.getIdleTimeThreshold().toMillis()) {
-              if (!session.isLeakedExceptionLogged
-                  && (options.warnAndCloseInactiveTransactions()
-                      || options.warnInactiveTransactions())) {
+                && durationFromLastUse.compareTo(
+                        inactiveTransactionRemovalOptions.getIdleTimeThreshold())
+                    > 0) {
+              if ((options.warnInactiveTransactions() || options.warnAndCloseInactiveTransactions())
+                  && !session.isLeakedExceptionLogged) {
                 logger.log(
                     Level.WARNING,
                     String.format("Removing long running session => %s", session.getName()),
@@ -1902,7 +1902,7 @@ class SessionPool {
                   && session.state != SessionState.CLOSING) {
                 final boolean isRemoved = removeFromPool(session);
                 if (isRemoved) {
-                  session.isRemoved = true;
+                  session.isRemovedFromPool = true;
                   numLeakedSessionsRemoved++;
                   if (longRunningSessionRemovedListener != null) {
                     longRunningSessionRemovedListener.apply(session);

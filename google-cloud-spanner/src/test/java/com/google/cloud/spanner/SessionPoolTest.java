@@ -596,6 +596,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     // the two session that were un-expectedly long-running were removed from the pool.
     // verify that only 1 session that is unexpected to be long-running remains in the pool.
     assertEquals(1, pool.totalSessions());
+    assertEquals(2, pool.numLeakedSessionsRemoved());
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
@@ -639,6 +640,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     assertEquals(3, pool.totalSessions());
     assertEquals(3, pool.checkedOutSessions.size());
+    assertEquals(0, pool.numLeakedSessionsRemoved());
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
@@ -680,6 +682,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     assertEquals(2, pool.totalSessions());
     assertEquals(2, pool.checkedOutSessions.size());
+    assertEquals(0, pool.numLeakedSessionsRemoved());
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
@@ -745,6 +748,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     assertEquals(3, pool.totalSessions());
     assertEquals(3, pool.checkedOutSessions.size());
+    assertEquals(0, pool.numLeakedSessionsRemoved());
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
@@ -788,6 +792,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     assertEquals(3, pool.totalSessions());
     assertEquals(3, pool.checkedOutSessions.size());
+    assertEquals(0, pool.numLeakedSessionsRemoved());
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
@@ -829,6 +834,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     assertEquals(3, pool.totalSessions());
     assertEquals(3, pool.checkedOutSessions.size());
+    assertEquals(0, pool.numLeakedSessionsRemoved());
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
@@ -872,6 +878,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     assertEquals(3, pool.totalSessions());
     assertEquals(3, pool.checkedOutSessions.size());
+    assertEquals(0, pool.numLeakedSessionsRemoved());
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 

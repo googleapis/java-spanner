@@ -572,7 +572,29 @@ public class SessionPoolOptions {
      *
      * @return this builder for chaining
      */
-    public Builder setCloseIfInactiveTransactions() {
+    public Builder setWarnAndCloseIfInactiveTransactions() {
+      this.inactiveTransactionRemovalOptions =
+          InactiveTransactionRemovalOptions.newBuilder()
+              .setActionOnInactiveTransaction(ActionOnInactiveTransaction.WARN_AND_CLOSE)
+              .build();
+      return this;
+    }
+
+    /**
+     * If there are inactive transactions, release the resources consumed by such transactions. A
+     * transaction is classified as inactive if it executes for more than a system defined
+     * configuration.
+     *
+     * <p>Use the option {@link Builder#setWarnIfInactiveTransactions()} if you only want to log
+     * warnings about long-running sessions.
+     *
+     * <p>Use the option {@link Builder#setWarnAndCloseIfInactiveTransactions()} if you want to log
+     * warnings along with closing the long-running sessions.
+     *
+     * @return this builder for chaining
+     */
+    @VisibleForTesting
+    Builder setCloseIfInactiveTransactions() {
       this.inactiveTransactionRemovalOptions =
           InactiveTransactionRemovalOptions.newBuilder()
               .setActionOnInactiveTransaction(ActionOnInactiveTransaction.WARN_AND_CLOSE)
