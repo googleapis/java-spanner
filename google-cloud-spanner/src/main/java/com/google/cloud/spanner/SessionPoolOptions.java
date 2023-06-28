@@ -546,7 +546,7 @@ public class SessionPoolOptions {
     /**
      * If there are inactive transactions, log warning messages with the origin of such transactions
      * to aid debugging. A transaction is classified as inactive if it executes for more than a
-     * system defined configuration.
+     * system defined duration.
      *
      * <p>This option won't change the state of the transactions. It only generates warning logs
      * that can be used for debugging.
