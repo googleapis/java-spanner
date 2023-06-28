@@ -78,6 +78,22 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
     assertEquals(
         ClientSideStatementType.ROLLBACK,
         parser.parse(Statement.of("ROLLBACK TRANSACTION")).getClientSideStatementType());
+    if (dialect == Dialect.POSTGRESQL) {
+      assertEquals(
+          ClientSideStatementType.ROLLBACK,
+          parser.parse(Statement.of("ABORT")).getClientSideStatementType());
+      assertEquals(
+          ClientSideStatementType.ROLLBACK,
+          parser.parse(Statement.of("ABORT TRANSACTION")).getClientSideStatementType());
+      assertEquals(
+          ClientSideStatementType.ROLLBACK,
+          parser.parse(Statement.of("ABORT WORK")).getClientSideStatementType());
+      assertEquals(
+          ClientSideStatementType.ROLLBACK,
+          parser
+              .parse(Statement.of("ABORT TRANSACTION and no chain"))
+              .getClientSideStatementType());
+    }
 
     for (ClientSideStatementImpl statement : parser.getClientSideStatements()) {
       assertNotNull(
