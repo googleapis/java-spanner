@@ -589,7 +589,7 @@ public class SessionPoolOptions {
      * warnings about long-running sessions.
      *
      * <p>Use the option {@link Builder#setWarnAndCloseIfInactiveTransactions()} if you want to log
-     * warnings along with closing the long-running sessions.
+     * warnings along with closing the long-running transactions.
      *
      * @return this builder for chaining
      */
