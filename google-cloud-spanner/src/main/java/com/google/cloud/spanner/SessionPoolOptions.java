@@ -568,7 +568,7 @@ public class SessionPoolOptions {
      * debugged as to what resources were released due to this option.
      *
      * <p>Use the option {@link Builder#setWarnIfInactiveTransactions()} if you only want to log
-     * warnings about long-running sessions.
+     * warnings about long-running transactions.
      *
      * @return this builder for chaining
      */
