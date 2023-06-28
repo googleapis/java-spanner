@@ -583,7 +583,7 @@ public class SessionPoolOptions {
     /**
      * If there are inactive transactions, release the resources consumed by such transactions. A
      * transaction is classified as inactive if it executes for more than a system defined
-     * configuration.
+     * duration.
      *
      * <p>Use the option {@link Builder#setWarnIfInactiveTransactions()} if you only want to log
      * warnings about long-running sessions.
