@@ -1713,7 +1713,7 @@ class SessionPool {
      * every 2 minutes, then we need to keep a track of when was the last time that this task
      * executed and makes sure we only execute it every 2 minutes and not every 10 seconds.
      */
-    @VisibleForTesting volatile Instant lastExecutionTime;
+    @VisibleForTesting Instant lastExecutionTime;
 
     boolean closed = false;
 

@@ -262,7 +262,6 @@ public class SessionPoolOptions {
   @VisibleForTesting
   enum ActionOnInactiveTransaction {
     WARN,
-
     WARN_AND_CLOSE,
     CLOSE
   }
@@ -563,9 +562,9 @@ public class SessionPoolOptions {
 
     /**
      * If there are inactive transactions, release the resources consumed by such transactions. A
-     * transaction is classified as inactive if it executes for more than a system defined
-     * duration. The option would also produce necessary warning logs through which it can be
-     * debugged as to what resources were released due to this option.
+     * transaction is classified as inactive if it executes for more than a system defined duration.
+     * The option would also produce necessary warning logs through which it can be debugged as to
+     * what resources were released due to this option.
      *
      * <p>Use the option {@link Builder#setWarnIfInactiveTransactions()} if you only want to log
      * warnings about long-running transactions.
@@ -582,8 +581,7 @@ public class SessionPoolOptions {
 
     /**
      * If there are inactive transactions, release the resources consumed by such transactions. A
-     * transaction is classified as inactive if it executes for more than a system defined
-     * duration.
+     * transaction is classified as inactive if it executes for more than a system defined duration.
      *
      * <p>Use the option {@link Builder#setWarnIfInactiveTransactions()} if you only want to log
      * warnings about long-running sessions.
