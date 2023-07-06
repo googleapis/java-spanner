@@ -48,6 +48,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     return new ExecuteBatchDmlRequest();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_ExecuteBatchDmlRequest_descriptor;
@@ -98,16 +103,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the DML string.
-     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
      * letters, numbers, and underscores.
-     *
      * Parameters can appear anywhere that a literal value is expected.  The
      * same parameter name can be used more than once, for example:
-     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -121,16 +122,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the DML string.
-     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
      * letters, numbers, and underscores.
-     *
      * Parameters can appear anywhere that a literal value is expected.  The
      * same parameter name can be used more than once, for example:
-     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -144,16 +141,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the DML string.
-     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
      * letters, numbers, and underscores.
-     *
      * Parameters can appear anywhere that a literal value is expected.  The
      * same parameter name can be used more than once, for example:
-     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -168,7 +161,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -185,7 +177,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -205,7 +196,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -222,7 +212,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -243,7 +232,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -281,6 +269,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     @SuppressWarnings({"unused"})
     protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
       return new Statement();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+      return this.unknownFields;
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -367,16 +360,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the DML string.
-     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
      * letters, numbers, and underscores.
-     *
      * Parameters can appear anywhere that a literal value is expected.  The
      * same parameter name can be used more than once, for example:
-     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -393,16 +382,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the DML string.
-     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
      * letters, numbers, and underscores.
-     *
      * Parameters can appear anywhere that a literal value is expected.  The
      * same parameter name can be used more than once, for example:
-     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -419,16 +404,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the DML string.
-     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
      * letters, numbers, and underscores.
-     *
      * Parameters can appear anywhere that a literal value is expected.  The
      * same parameter name can be used more than once, for example:
-     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -476,7 +457,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -505,7 +485,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -525,7 +504,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -553,7 +531,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -1127,16 +1104,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
-       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
-       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
-       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1152,16 +1125,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
-       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
-       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
-       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1181,16 +1150,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
-       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
-       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
-       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1214,16 +1179,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
-       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
-       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
-       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1244,16 +1205,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
-       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
-       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
-       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1280,16 +1237,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
-       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
-       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
-       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1310,16 +1263,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
-       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
-       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
-       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1335,16 +1284,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
-       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
-       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
-       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1362,16 +1307,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
-       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
-       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
-       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1430,7 +1371,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
        * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-       *
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1459,7 +1399,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
        * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-       *
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1479,7 +1418,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
        * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-       *
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1507,7 +1445,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
        * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-       *
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1541,7 +1478,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
        * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-       *
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1570,7 +1506,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
        * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-       *
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1597,7 +1532,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
        * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
-       *
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1739,7 +1673,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    * <pre>
    * Required. The transaction to use. Must be a read-write transaction.
-   *
    * To protect against replays, single-use transactions are not supported. The
    * caller must either supply an existing transaction ID or begin a new
    * transaction.
@@ -1760,7 +1693,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    * <pre>
    * Required. The transaction to use. Must be a read-write transaction.
-   *
    * To protect against replays, single-use transactions are not supported. The
    * caller must either supply an existing transaction ID or begin a new
    * transaction.
@@ -1783,7 +1715,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    * <pre>
    * Required. The transaction to use. Must be a read-write transaction.
-   *
    * To protect against replays, single-use transactions are not supported. The
    * caller must either supply an existing transaction ID or begin a new
    * transaction.
@@ -1812,7 +1743,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    * serially, such that the effects of statement `i` are visible to statement
    * `i+1`. Each statement must be a DML statement. Execution stops at the
    * first failed statement; the remaining statements are not executed.
-   *
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -1833,7 +1763,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    * serially, such that the effects of statement `i` are visible to statement
    * `i+1`. Each statement must be a DML statement. Execution stops at the
    * first failed statement; the remaining statements are not executed.
-   *
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -1854,7 +1783,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    * serially, such that the effects of statement `i` are visible to statement
    * `i+1`. Each statement must be a DML statement. Execution stops at the
    * first failed statement; the remaining statements are not executed.
-   *
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -1874,7 +1802,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    * serially, such that the effects of statement `i` are visible to statement
    * `i+1`. Each statement must be a DML statement. Execution stops at the
    * first failed statement; the remaining statements are not executed.
-   *
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -1894,7 +1821,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    * serially, such that the effects of statement `i` are visible to statement
    * `i+1`. Each statement must be a DML statement. Execution stops at the
    * first failed statement; the remaining statements are not executed.
-   *
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -1917,7 +1843,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    * Required. A per-transaction sequence number used to identify this request. This field
    * makes each request idempotent such that if the request is received multiple
    * times, at most one will succeed.
-   *
    * The sequence number must be monotonically increasing within the
    * transaction. If a request arrives for the first time with an out-of-order
    * sequence number, the transaction may be aborted. Replays of previously
@@ -2609,7 +2534,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
-     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2629,7 +2553,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
-     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2655,7 +2578,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
-     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2683,7 +2605,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
-     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2709,7 +2630,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
-     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2740,7 +2660,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
-     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2765,7 +2684,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
-     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2785,7 +2703,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
-     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2809,7 +2726,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
-     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2862,7 +2778,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2886,7 +2801,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2909,7 +2823,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2932,7 +2845,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2962,7 +2874,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2989,7 +2900,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3018,7 +2928,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3048,7 +2957,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3075,7 +2983,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3102,7 +3009,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3130,7 +3036,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3156,7 +3061,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3182,7 +3086,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3202,7 +3105,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3226,7 +3128,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3250,7 +3151,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3270,7 +3170,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3292,7 +3191,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * serially, such that the effects of statement `i` are visible to statement
      * `i+1`. Each statement must be a DML statement. Execution stops at the
      * first failed statement; the remaining statements are not executed.
-     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3330,7 +3228,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * Required. A per-transaction sequence number used to identify this request. This field
      * makes each request idempotent such that if the request is received multiple
      * times, at most one will succeed.
-     *
      * The sequence number must be monotonically increasing within the
      * transaction. If a request arrives for the first time with an out-of-order
      * sequence number, the transaction may be aborted. Replays of previously
@@ -3352,7 +3249,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * Required. A per-transaction sequence number used to identify this request. This field
      * makes each request idempotent such that if the request is received multiple
      * times, at most one will succeed.
-     *
      * The sequence number must be monotonically increasing within the
      * transaction. If a request arrives for the first time with an out-of-order
      * sequence number, the transaction may be aborted. Replays of previously
@@ -3378,7 +3274,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * Required. A per-transaction sequence number used to identify this request. This field
      * makes each request idempotent such that if the request is received multiple
      * times, at most one will succeed.
-     *
      * The sequence number must be monotonically increasing within the
      * transaction. If a request arrives for the first time with an out-of-order
      * sequence number, the transaction may be aborted. Replays of previously

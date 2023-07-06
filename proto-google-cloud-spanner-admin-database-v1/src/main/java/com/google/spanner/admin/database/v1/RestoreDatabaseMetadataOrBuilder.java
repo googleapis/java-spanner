@@ -259,5 +259,6 @@ public interface RestoreDatabaseMetadataOrBuilder
    */
   com.google.protobuf.ByteString getOptimizeDatabaseOperationNameBytes();
 
-  com.google.spanner.admin.database.v1.RestoreDatabaseMetadata.SourceInfoCase getSourceInfoCase();
+  public com.google.spanner.admin.database.v1.RestoreDatabaseMetadata.SourceInfoCase
+      getSourceInfoCase();
 }

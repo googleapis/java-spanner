@@ -45,6 +45,11 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
     return new ResultSetStats();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.ResultSetProto
         .internal_static_google_spanner_v1_ResultSetStats_descriptor;
@@ -61,8 +66,6 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
   }
 
   private int rowCountCase_ = 0;
-
-  @SuppressWarnings("serial")
   private java.lang.Object rowCount_;
 
   public enum RowCountCase
@@ -164,7 +167,6 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
    * Aggregated statistics from the execution of the query. Only present when
    * the query is profiled. For example, a query could return the statistics as
    * follows:
-   *
    *     {
    *       "rows_returned": "3",
    *       "elapsed_time": "1.22 secs",
@@ -187,7 +189,6 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
    * Aggregated statistics from the execution of the query. Only present when
    * the query is profiled. For example, a query could return the statistics as
    * follows:
-   *
    *     {
    *       "rows_returned": "3",
    *       "elapsed_time": "1.22 secs",
@@ -210,7 +211,6 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
    * Aggregated statistics from the execution of the query. Only present when
    * the query is profiled. For example, a query could return the statistics as
    * follows:
-   *
    *     {
    *       "rows_returned": "3",
    *       "elapsed_time": "1.22 secs",
@@ -958,7 +958,6 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
      * Aggregated statistics from the execution of the query. Only present when
      * the query is profiled. For example, a query could return the statistics as
      * follows:
-     *
      *     {
      *       "rows_returned": "3",
      *       "elapsed_time": "1.22 secs",
@@ -980,7 +979,6 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
      * Aggregated statistics from the execution of the query. Only present when
      * the query is profiled. For example, a query could return the statistics as
      * follows:
-     *
      *     {
      *       "rows_returned": "3",
      *       "elapsed_time": "1.22 secs",
@@ -1006,7 +1004,6 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
      * Aggregated statistics from the execution of the query. Only present when
      * the query is profiled. For example, a query could return the statistics as
      * follows:
-     *
      *     {
      *       "rows_returned": "3",
      *       "elapsed_time": "1.22 secs",
@@ -1036,7 +1033,6 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
      * Aggregated statistics from the execution of the query. Only present when
      * the query is profiled. For example, a query could return the statistics as
      * follows:
-     *
      *     {
      *       "rows_returned": "3",
      *       "elapsed_time": "1.22 secs",
@@ -1063,7 +1059,6 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
      * Aggregated statistics from the execution of the query. Only present when
      * the query is profiled. For example, a query could return the statistics as
      * follows:
-     *
      *     {
      *       "rows_returned": "3",
      *       "elapsed_time": "1.22 secs",
@@ -1096,7 +1091,6 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
      * Aggregated statistics from the execution of the query. Only present when
      * the query is profiled. For example, a query could return the statistics as
      * follows:
-     *
      *     {
      *       "rows_returned": "3",
      *       "elapsed_time": "1.22 secs",
@@ -1123,7 +1117,6 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
      * Aggregated statistics from the execution of the query. Only present when
      * the query is profiled. For example, a query could return the statistics as
      * follows:
-     *
      *     {
      *       "rows_returned": "3",
      *       "elapsed_time": "1.22 secs",
@@ -1145,7 +1138,6 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
      * Aggregated statistics from the execution of the query. Only present when
      * the query is profiled. For example, a query could return the statistics as
      * follows:
-     *
      *     {
      *       "rows_returned": "3",
      *       "elapsed_time": "1.22 secs",
@@ -1169,7 +1161,6 @@ public final class ResultSetStats extends com.google.protobuf.GeneratedMessageV3
      * Aggregated statistics from the execution of the query. Only present when
      * the query is profiled. For example, a query could return the statistics as
      * follows:
-     *
      *     {
      *       "rows_returned": "3",
      *       "elapsed_time": "1.22 secs",

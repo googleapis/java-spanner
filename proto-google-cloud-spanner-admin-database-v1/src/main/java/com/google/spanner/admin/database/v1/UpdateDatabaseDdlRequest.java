@@ -32,7 +32,6 @@ package com.google.spanner.admin.database.v1;
  * there is some data-related problem like a `NULL` value in a column to
  * which `NOT NULL` would be added). If a statement fails, all
  * subsequent statements in the batch are automatically cancelled.
- *
  * Each batch of statements is assigned a name which can be used with
  * the [Operations][google.longrunning.Operations] API to monitor
  * progress. See the
@@ -54,7 +53,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
 
   private UpdateDatabaseDdlRequest() {
     database_ = "";
-    statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
+    statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     operationId_ = "";
   }
 
@@ -62,6 +61,11 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new UpdateDatabaseDdlRequest();
+  }
+
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -137,8 +141,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
   public static final int STATEMENTS_FIELD_NUMBER = 2;
 
   @SuppressWarnings("serial")
-  private com.google.protobuf.LazyStringArrayList statements_ =
-      com.google.protobuf.LazyStringArrayList.emptyList();
+  private com.google.protobuf.LazyStringList statements_;
   /**
    *
    *
@@ -210,7 +213,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
    * automatically-generated operation ID. Otherwise, `operation_id`
    * is used to construct the name of the resulting
    * [Operation][google.longrunning.Operation].
-   *
    * Specifying an explicit operation ID simplifies determining
    * whether the statements were executed in the event that the
    * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] call is replayed,
@@ -218,7 +220,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
    * `operation_id` fields can be combined to form the
    * [name][google.longrunning.Operation.name] of the resulting
    * [longrunning.Operation][google.longrunning.Operation]: `&lt;database&gt;/operations/&lt;operation_id&gt;`.
-   *
    * `operation_id` should be unique within the database, and must be
    * a valid identifier: `[a-z][a-z0-9_]*`. Note that
    * automatically-generated operation IDs always begin with an
@@ -251,7 +252,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
    * automatically-generated operation ID. Otherwise, `operation_id`
    * is used to construct the name of the resulting
    * [Operation][google.longrunning.Operation].
-   *
    * Specifying an explicit operation ID simplifies determining
    * whether the statements were executed in the event that the
    * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] call is replayed,
@@ -259,7 +259,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
    * `operation_id` fields can be combined to form the
    * [name][google.longrunning.Operation.name] of the resulting
    * [longrunning.Operation][google.longrunning.Operation]: `&lt;database&gt;/operations/&lt;operation_id&gt;`.
-   *
    * `operation_id` should be unique within the database, and must be
    * a valid identifier: `[a-z][a-z0-9_]*`. Note that
    * automatically-generated operation IDs always begin with an
@@ -484,7 +483,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
    * there is some data-related problem like a `NULL` value in a column to
    * which `NOT NULL` would be added). If a statement fails, all
    * subsequent statements in the batch are automatically cancelled.
-   *
    * Each batch of statements is assigned a name which can be used with
    * the [Operations][google.longrunning.Operations] API to monitor
    * progress. See the
@@ -525,7 +523,8 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       super.clear();
       bitField0_ = 0;
       database_ = "";
-      statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000002);
       operationId_ = "";
       return this;
     }
@@ -555,6 +554,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     public com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest buildPartial() {
       com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest result =
           new com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest(this);
+      buildPartialRepeatedFields(result);
       if (bitField0_ != 0) {
         buildPartial0(result);
       }
@@ -562,15 +562,20 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       return result;
     }
 
+    private void buildPartialRepeatedFields(
+        com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest result) {
+      if (((bitField0_ & 0x00000002) != 0)) {
+        statements_ = statements_.getUnmodifiableView();
+        bitField0_ = (bitField0_ & ~0x00000002);
+      }
+      result.statements_ = statements_;
+    }
+
     private void buildPartial0(
         com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000001) != 0)) {
         result.database_ = database_;
-      }
-      if (((from_bitField0_ & 0x00000002) != 0)) {
-        statements_.makeImmutable();
-        result.statements_ = statements_;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
         result.operationId_ = operationId_;
@@ -632,7 +637,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       if (!other.statements_.isEmpty()) {
         if (statements_.isEmpty()) {
           statements_ = other.statements_;
-          bitField0_ |= 0x00000002;
+          bitField0_ = (bitField0_ & ~0x00000002);
         } else {
           ensureStatementsIsMutable();
           statements_.addAll(other.statements_);
@@ -824,14 +829,14 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       return this;
     }
 
-    private com.google.protobuf.LazyStringArrayList statements_ =
-        com.google.protobuf.LazyStringArrayList.emptyList();
+    private com.google.protobuf.LazyStringList statements_ =
+        com.google.protobuf.LazyStringArrayList.EMPTY;
 
     private void ensureStatementsIsMutable() {
-      if (!statements_.isModifiable()) {
+      if (!((bitField0_ & 0x00000002) != 0)) {
         statements_ = new com.google.protobuf.LazyStringArrayList(statements_);
+        bitField0_ |= 0x00000002;
       }
-      bitField0_ |= 0x00000002;
     }
     /**
      *
@@ -845,8 +850,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
      * @return A list containing the statements.
      */
     public com.google.protobuf.ProtocolStringList getStatementsList() {
-      statements_.makeImmutable();
-      return statements_;
+      return statements_.getUnmodifiableView();
     }
     /**
      *
@@ -911,7 +915,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       }
       ensureStatementsIsMutable();
       statements_.set(index, value);
-      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -933,7 +936,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       }
       ensureStatementsIsMutable();
       statements_.add(value);
-      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -952,7 +954,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     public Builder addAllStatements(java.lang.Iterable<java.lang.String> values) {
       ensureStatementsIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, statements_);
-      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -968,9 +969,8 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
      * @return This builder for chaining.
      */
     public Builder clearStatements() {
-      statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       bitField0_ = (bitField0_ & ~0x00000002);
-      ;
       onChanged();
       return this;
     }
@@ -993,7 +993,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       checkByteStringIsUtf8(value);
       ensureStatementsIsMutable();
       statements_.add(value);
-      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1007,7 +1006,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
      * automatically-generated operation ID. Otherwise, `operation_id`
      * is used to construct the name of the resulting
      * [Operation][google.longrunning.Operation].
-     *
      * Specifying an explicit operation ID simplifies determining
      * whether the statements were executed in the event that the
      * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] call is replayed,
@@ -1015,7 +1013,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
      * `operation_id` fields can be combined to form the
      * [name][google.longrunning.Operation.name] of the resulting
      * [longrunning.Operation][google.longrunning.Operation]: `&lt;database&gt;/operations/&lt;operation_id&gt;`.
-     *
      * `operation_id` should be unique within the database, and must be
      * a valid identifier: `[a-z][a-z0-9_]*`. Note that
      * automatically-generated operation IDs always begin with an
@@ -1047,7 +1044,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
      * automatically-generated operation ID. Otherwise, `operation_id`
      * is used to construct the name of the resulting
      * [Operation][google.longrunning.Operation].
-     *
      * Specifying an explicit operation ID simplifies determining
      * whether the statements were executed in the event that the
      * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] call is replayed,
@@ -1055,7 +1051,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
      * `operation_id` fields can be combined to form the
      * [name][google.longrunning.Operation.name] of the resulting
      * [longrunning.Operation][google.longrunning.Operation]: `&lt;database&gt;/operations/&lt;operation_id&gt;`.
-     *
      * `operation_id` should be unique within the database, and must be
      * a valid identifier: `[a-z][a-z0-9_]*`. Note that
      * automatically-generated operation IDs always begin with an
@@ -1087,7 +1082,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
      * automatically-generated operation ID. Otherwise, `operation_id`
      * is used to construct the name of the resulting
      * [Operation][google.longrunning.Operation].
-     *
      * Specifying an explicit operation ID simplifies determining
      * whether the statements were executed in the event that the
      * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] call is replayed,
@@ -1095,7 +1089,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
      * `operation_id` fields can be combined to form the
      * [name][google.longrunning.Operation.name] of the resulting
      * [longrunning.Operation][google.longrunning.Operation]: `&lt;database&gt;/operations/&lt;operation_id&gt;`.
-     *
      * `operation_id` should be unique within the database, and must be
      * a valid identifier: `[a-z][a-z0-9_]*`. Note that
      * automatically-generated operation IDs always begin with an
@@ -1126,7 +1119,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
      * automatically-generated operation ID. Otherwise, `operation_id`
      * is used to construct the name of the resulting
      * [Operation][google.longrunning.Operation].
-     *
      * Specifying an explicit operation ID simplifies determining
      * whether the statements were executed in the event that the
      * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] call is replayed,
@@ -1134,7 +1126,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
      * `operation_id` fields can be combined to form the
      * [name][google.longrunning.Operation.name] of the resulting
      * [longrunning.Operation][google.longrunning.Operation]: `&lt;database&gt;/operations/&lt;operation_id&gt;`.
-     *
      * `operation_id` should be unique within the database, and must be
      * a valid identifier: `[a-z][a-z0-9_]*`. Note that
      * automatically-generated operation IDs always begin with an
@@ -1161,7 +1152,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
      * automatically-generated operation ID. Otherwise, `operation_id`
      * is used to construct the name of the resulting
      * [Operation][google.longrunning.Operation].
-     *
      * Specifying an explicit operation ID simplifies determining
      * whether the statements were executed in the event that the
      * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] call is replayed,
@@ -1169,7 +1159,6 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
      * `operation_id` fields can be combined to form the
      * [name][google.longrunning.Operation.name] of the resulting
      * [longrunning.Operation][google.longrunning.Operation]: `&lt;database&gt;/operations/&lt;operation_id&gt;`.
-     *
      * `operation_id` should be unique within the database, and must be
      * a valid identifier: `[a-z][a-z0-9_]*`. Note that
      * automatically-generated operation IDs always begin with an

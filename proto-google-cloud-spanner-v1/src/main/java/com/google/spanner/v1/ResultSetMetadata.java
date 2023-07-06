@@ -45,6 +45,11 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
     return new ResultSetMetadata();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.ResultSetProto
         .internal_static_google_spanner_v1_ResultSetMetadata_descriptor;
@@ -69,7 +74,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
    * Indicates the field names and types for the rows in the result
    * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
    * Users"` could return a `row_type` value like:
-   *
    *     "fields": [
    *       { "name": "UserId", "type": { "code": "INT64" } },
    *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -91,7 +95,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
    * Indicates the field names and types for the rows in the result
    * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
    * Users"` could return a `row_type` value like:
-   *
    *     "fields": [
    *       { "name": "UserId", "type": { "code": "INT64" } },
    *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -113,7 +116,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
    * Indicates the field names and types for the rows in the result
    * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
    * Users"` could return a `row_type` value like:
-   *
    *     "fields": [
    *       { "name": "UserId", "type": { "code": "INT64" } },
    *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -191,7 +193,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
    * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
    * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
    * `undeclared_parameters` value like:
-   *
    *     "fields": [
    *       { "name": "UserId", "type": { "code": "INT64" } },
    *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -215,7 +216,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
    * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
    * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
    * `undeclared_parameters` value like:
-   *
    *     "fields": [
    *       { "name": "UserId", "type": { "code": "INT64" } },
    *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -241,7 +241,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
    * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
    * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
    * `undeclared_parameters` value like:
-   *
    *     "fields": [
    *       { "name": "UserId", "type": { "code": "INT64" } },
    *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -685,7 +684,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * Indicates the field names and types for the rows in the result
      * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -706,7 +704,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * Indicates the field names and types for the rows in the result
      * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -731,7 +728,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * Indicates the field names and types for the rows in the result
      * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -760,7 +756,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * Indicates the field names and types for the rows in the result
      * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -786,7 +781,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * Indicates the field names and types for the rows in the result
      * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -818,7 +812,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * Indicates the field names and types for the rows in the result
      * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -844,7 +837,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * Indicates the field names and types for the rows in the result
      * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -865,7 +857,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * Indicates the field names and types for the rows in the result
      * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -888,7 +879,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * Indicates the field names and types for the rows in the result
      * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
      * Users"` could return a `row_type` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -1121,7 +1111,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
      * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
      * `undeclared_parameters` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -1144,7 +1133,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
      * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
      * `undeclared_parameters` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -1173,7 +1161,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
      * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
      * `undeclared_parameters` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -1204,7 +1191,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
      * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
      * `undeclared_parameters` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -1233,7 +1219,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
      * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
      * `undeclared_parameters` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -1267,7 +1252,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
      * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
      * `undeclared_parameters` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -1295,7 +1279,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
      * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
      * `undeclared_parameters` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -1318,7 +1301,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
      * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
      * `undeclared_parameters` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -1345,7 +1327,6 @@ public final class ResultSetMetadata extends com.google.protobuf.GeneratedMessag
      * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
      * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
      * `undeclared_parameters` value like:
-     *
      *     "fields": [
      *       { "name": "UserId", "type": { "code": "INT64" } },
      *       { "name": "UserName", "type": { "code": "STRING" } },

@@ -45,6 +45,11 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     return new CommitResponse();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.CommitResponseProto
         .internal_static_google_spanner_v1_CommitResponse_descriptor;
@@ -109,6 +114,11 @@ public final class CommitResponse extends com.google.protobuf.GeneratedMessageV3
     @SuppressWarnings({"unused"})
     protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
       return new CommitStats();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+      return this.unknownFields;
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {

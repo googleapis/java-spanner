@@ -42,13 +42,18 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     config_ = "";
     displayName_ = "";
     state_ = 0;
-    endpointUris_ = com.google.protobuf.LazyStringArrayList.emptyList();
+    endpointUris_ = com.google.protobuf.LazyStringArrayList.EMPTY;
   }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new Instance();
+  }
+
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -421,7 +426,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * node_count or processing_units should be present in the message. This
    * may be zero in API responses for instances that are not yet in state
    * `READY`.
-   *
    * See [the
    * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
    * for more information about nodes and processing units.
@@ -445,7 +449,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * The number of processing units allocated to this instance. At most one of
    * processing_units or node_count should be present in the message. This may
    * be zero in API responses for instances that are not yet in state `READY`.
-   *
    * See [the
    * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
    * for more information about nodes and processing units.
@@ -545,15 +548,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * resources. They can be used to control how resource metrics are aggregated.
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
-   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
    *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
    *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
-   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
-   *
    * If you plan to use labels in your own code, please note that additional
    * characters may be allowed in the future. And so you are advised to use an
    * internal label representation, such as JSON, which doesn't rely upon
@@ -587,15 +587,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * resources. They can be used to control how resource metrics are aggregated.
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
-   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
    *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
    *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
-   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
-   *
    * If you plan to use labels in your own code, please note that additional
    * characters may be allowed in the future. And so you are advised to use an
    * internal label representation, such as JSON, which doesn't rely upon
@@ -620,15 +617,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * resources. They can be used to control how resource metrics are aggregated.
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
-   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
    *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
    *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
-   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
-   *
    * If you plan to use labels in your own code, please note that additional
    * characters may be allowed in the future. And so you are advised to use an
    * internal label representation, such as JSON, which doesn't rely upon
@@ -660,15 +654,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * resources. They can be used to control how resource metrics are aggregated.
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
-   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
    *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
    *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
-   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
-   *
    * If you plan to use labels in your own code, please note that additional
    * characters may be allowed in the future. And so you are advised to use an
    * internal label representation, such as JSON, which doesn't rely upon
@@ -694,8 +685,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
   public static final int ENDPOINT_URIS_FIELD_NUMBER = 8;
 
   @SuppressWarnings("serial")
-  private com.google.protobuf.LazyStringArrayList endpointUris_ =
-      com.google.protobuf.LazyStringArrayList.emptyList();
+  private com.google.protobuf.LazyStringList endpointUris_;
   /**
    *
    *
@@ -1186,7 +1176,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       processingUnits_ = 0;
       state_ = 0;
       internalGetMutableLabels().clear();
-      endpointUris_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      endpointUris_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000080);
       createTime_ = null;
       if (createTimeBuilder_ != null) {
         createTimeBuilder_.dispose();
@@ -1224,11 +1215,20 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.admin.instance.v1.Instance buildPartial() {
       com.google.spanner.admin.instance.v1.Instance result =
           new com.google.spanner.admin.instance.v1.Instance(this);
+      buildPartialRepeatedFields(result);
       if (bitField0_ != 0) {
         buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartialRepeatedFields(com.google.spanner.admin.instance.v1.Instance result) {
+      if (((bitField0_ & 0x00000080) != 0)) {
+        endpointUris_ = endpointUris_.getUnmodifiableView();
+        bitField0_ = (bitField0_ & ~0x00000080);
+      }
+      result.endpointUris_ = endpointUris_;
     }
 
     private void buildPartial0(com.google.spanner.admin.instance.v1.Instance result) {
@@ -1254,10 +1254,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (((from_bitField0_ & 0x00000040) != 0)) {
         result.labels_ = internalGetLabels();
         result.labels_.makeImmutable();
-      }
-      if (((from_bitField0_ & 0x00000080) != 0)) {
-        endpointUris_.makeImmutable();
-        result.endpointUris_ = endpointUris_;
       }
       if (((from_bitField0_ & 0x00000100) != 0)) {
         result.createTime_ = createTimeBuilder_ == null ? createTime_ : createTimeBuilder_.build();
@@ -1341,7 +1337,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (!other.endpointUris_.isEmpty()) {
         if (endpointUris_.isEmpty()) {
           endpointUris_ = other.endpointUris_;
-          bitField0_ |= 0x00000080;
+          bitField0_ = (bitField0_ & ~0x00000080);
         } else {
           ensureEndpointUrisIsMutable();
           endpointUris_.addAll(other.endpointUris_);
@@ -1838,7 +1834,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * node_count or processing_units should be present in the message. This
      * may be zero in API responses for instances that are not yet in state
      * `READY`.
-     *
      * See [the
      * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
      * for more information about nodes and processing units.
@@ -1860,7 +1855,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * node_count or processing_units should be present in the message. This
      * may be zero in API responses for instances that are not yet in state
      * `READY`.
-     *
      * See [the
      * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
      * for more information about nodes and processing units.
@@ -1886,7 +1880,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * node_count or processing_units should be present in the message. This
      * may be zero in API responses for instances that are not yet in state
      * `READY`.
-     *
      * See [the
      * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
      * for more information about nodes and processing units.
@@ -1911,7 +1904,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * The number of processing units allocated to this instance. At most one of
      * processing_units or node_count should be present in the message. This may
      * be zero in API responses for instances that are not yet in state `READY`.
-     *
      * See [the
      * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
      * for more information about nodes and processing units.
@@ -1932,7 +1924,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * The number of processing units allocated to this instance. At most one of
      * processing_units or node_count should be present in the message. This may
      * be zero in API responses for instances that are not yet in state `READY`.
-     *
      * See [the
      * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
      * for more information about nodes and processing units.
@@ -1957,7 +1948,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * The number of processing units allocated to this instance. At most one of
      * processing_units or node_count should be present in the message. This may
      * be zero in API responses for instances that are not yet in state `READY`.
-     *
      * See [the
      * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
      * for more information about nodes and processing units.
@@ -2131,15 +2121,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * resources. They can be used to control how resource metrics are aggregated.
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
-     *
      *  * Label keys must be between 1 and 63 characters long and must conform to
      *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
      *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
-     *
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
-     *
      * If you plan to use labels in your own code, please note that additional
      * characters may be allowed in the future. And so you are advised to use an
      * internal label representation, such as JSON, which doesn't rely upon
@@ -2173,15 +2160,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * resources. They can be used to control how resource metrics are aggregated.
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
-     *
      *  * Label keys must be between 1 and 63 characters long and must conform to
      *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
      *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
-     *
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
-     *
      * If you plan to use labels in your own code, please note that additional
      * characters may be allowed in the future. And so you are advised to use an
      * internal label representation, such as JSON, which doesn't rely upon
@@ -2206,15 +2190,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * resources. They can be used to control how resource metrics are aggregated.
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
-     *
      *  * Label keys must be between 1 and 63 characters long and must conform to
      *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
      *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
-     *
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
-     *
      * If you plan to use labels in your own code, please note that additional
      * characters may be allowed in the future. And so you are advised to use an
      * internal label representation, such as JSON, which doesn't rely upon
@@ -2246,15 +2227,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * resources. They can be used to control how resource metrics are aggregated.
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
-     *
      *  * Label keys must be between 1 and 63 characters long and must conform to
      *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
      *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
-     *
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
-     *
      * If you plan to use labels in your own code, please note that additional
      * characters may be allowed in the future. And so you are advised to use an
      * internal label representation, such as JSON, which doesn't rely upon
@@ -2292,15 +2270,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * resources. They can be used to control how resource metrics are aggregated.
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
-     *
      *  * Label keys must be between 1 and 63 characters long and must conform to
      *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
      *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
-     *
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
-     *
      * If you plan to use labels in your own code, please note that additional
      * characters may be allowed in the future. And so you are advised to use an
      * internal label representation, such as JSON, which doesn't rely upon
@@ -2334,15 +2309,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * resources. They can be used to control how resource metrics are aggregated.
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
-     *
      *  * Label keys must be between 1 and 63 characters long and must conform to
      *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
      *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
-     *
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
-     *
      * If you plan to use labels in your own code, please note that additional
      * characters may be allowed in the future. And so you are advised to use an
      * internal label representation, such as JSON, which doesn't rely upon
@@ -2374,15 +2346,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * resources. They can be used to control how resource metrics are aggregated.
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
-     *
      *  * Label keys must be between 1 and 63 characters long and must conform to
      *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
      *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
-     *
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
-     *
      * If you plan to use labels in your own code, please note that additional
      * characters may be allowed in the future. And so you are advised to use an
      * internal label representation, such as JSON, which doesn't rely upon
@@ -2399,14 +2368,14 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
-    private com.google.protobuf.LazyStringArrayList endpointUris_ =
-        com.google.protobuf.LazyStringArrayList.emptyList();
+    private com.google.protobuf.LazyStringList endpointUris_ =
+        com.google.protobuf.LazyStringArrayList.EMPTY;
 
     private void ensureEndpointUrisIsMutable() {
-      if (!endpointUris_.isModifiable()) {
+      if (!((bitField0_ & 0x00000080) != 0)) {
         endpointUris_ = new com.google.protobuf.LazyStringArrayList(endpointUris_);
+        bitField0_ |= 0x00000080;
       }
-      bitField0_ |= 0x00000080;
     }
     /**
      *
@@ -2420,8 +2389,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return A list containing the endpointUris.
      */
     public com.google.protobuf.ProtocolStringList getEndpointUrisList() {
-      endpointUris_.makeImmutable();
-      return endpointUris_;
+      return endpointUris_.getUnmodifiableView();
     }
     /**
      *
@@ -2486,7 +2454,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       }
       ensureEndpointUrisIsMutable();
       endpointUris_.set(index, value);
-      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -2508,7 +2475,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       }
       ensureEndpointUrisIsMutable();
       endpointUris_.add(value);
-      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -2527,7 +2493,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     public Builder addAllEndpointUris(java.lang.Iterable<java.lang.String> values) {
       ensureEndpointUrisIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, endpointUris_);
-      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -2543,9 +2508,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearEndpointUris() {
-      endpointUris_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      endpointUris_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       bitField0_ = (bitField0_ & ~0x00000080);
-      ;
       onChanged();
       return this;
     }
@@ -2568,7 +2532,6 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       checkByteStringIsUtf8(value);
       ensureEndpointUrisIsMutable();
       endpointUris_.add(value);
-      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }

@@ -49,6 +49,11 @@ public final class ListInstanceConfigsRequest extends com.google.protobuf.Genera
     return new ListInstanceConfigsRequest();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
         .internal_static_google_spanner_admin_instance_v1_ListInstanceConfigsRequest_descriptor;

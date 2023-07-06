@@ -49,6 +49,11 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
     return new ListSessionsRequest();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_ListSessionsRequest_descriptor;
@@ -203,11 +208,8 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
    * <pre>
    * An expression for filtering the results of the request. Filter rules are
    * case insensitive. The fields eligible for filtering are:
-   *
    *   * `labels.key` where key is the name of a label
-   *
    * Some examples of using filters are:
-   *
    *   * `labels.env:*` --&gt; The session has the label "env".
    *   * `labels.env:dev` --&gt; The session has the label "env" and the value of
    *                        the label contains the string "dev".
@@ -235,11 +237,8 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
    * <pre>
    * An expression for filtering the results of the request. Filter rules are
    * case insensitive. The fields eligible for filtering are:
-   *
    *   * `labels.key` where key is the name of a label
-   *
    * Some examples of using filters are:
-   *
    *   * `labels.env:*` --&gt; The session has the label "env".
    *   * `labels.env:dev` --&gt; The session has the label "env" and the value of
    *                        the label contains the string "dev".
@@ -968,11 +967,8 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
      * <pre>
      * An expression for filtering the results of the request. Filter rules are
      * case insensitive. The fields eligible for filtering are:
-     *
      *   * `labels.key` where key is the name of a label
-     *
      * Some examples of using filters are:
-     *
      *   * `labels.env:*` --&gt; The session has the label "env".
      *   * `labels.env:dev` --&gt; The session has the label "env" and the value of
      *                        the label contains the string "dev".
@@ -999,11 +995,8 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
      * <pre>
      * An expression for filtering the results of the request. Filter rules are
      * case insensitive. The fields eligible for filtering are:
-     *
      *   * `labels.key` where key is the name of a label
-     *
      * Some examples of using filters are:
-     *
      *   * `labels.env:*` --&gt; The session has the label "env".
      *   * `labels.env:dev` --&gt; The session has the label "env" and the value of
      *                        the label contains the string "dev".
@@ -1030,11 +1023,8 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
      * <pre>
      * An expression for filtering the results of the request. Filter rules are
      * case insensitive. The fields eligible for filtering are:
-     *
      *   * `labels.key` where key is the name of a label
-     *
      * Some examples of using filters are:
-     *
      *   * `labels.env:*` --&gt; The session has the label "env".
      *   * `labels.env:dev` --&gt; The session has the label "env" and the value of
      *                        the label contains the string "dev".
@@ -1060,11 +1050,8 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
      * <pre>
      * An expression for filtering the results of the request. Filter rules are
      * case insensitive. The fields eligible for filtering are:
-     *
      *   * `labels.key` where key is the name of a label
-     *
      * Some examples of using filters are:
-     *
      *   * `labels.env:*` --&gt; The session has the label "env".
      *   * `labels.env:dev` --&gt; The session has the label "env" and the value of
      *                        the label contains the string "dev".
@@ -1086,11 +1073,8 @@ public final class ListSessionsRequest extends com.google.protobuf.GeneratedMess
      * <pre>
      * An expression for filtering the results of the request. Filter rules are
      * case insensitive. The fields eligible for filtering are:
-     *
      *   * `labels.key` where key is the name of a label
-     *
      * Some examples of using filters are:
-     *
      *   * `labels.env:*` --&gt; The session has the label "env".
      *   * `labels.env:dev` --&gt; The session has the label "env" and the value of
      *                        the label contains the string "dev".

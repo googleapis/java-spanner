@@ -50,6 +50,11 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
     return new ListDatabaseOperationsRequest();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.database.v1.SpannerDatabaseAdminProto
         .internal_static_google_spanner_admin_database_v1_ListDatabaseOperationsRequest_descriptor;
@@ -131,16 +136,13 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
    *
    * <pre>
    * An expression that filters the list of returned operations.
-   *
    * A filter expression consists of a field name, a
    * comparison operator, and a value for filtering.
    * The value must be a string, a number, or a boolean. The comparison operator
    * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
    * Colon `:` is the contains operator. Filter rules are not case sensitive.
-   *
    * The following fields in the [Operation][google.longrunning.Operation]
    * are eligible for filtering:
-   *
    *   * `name` - The name of the long-running operation
    *   * `done` - False if the operation is in progress, else true.
    *   * `metadata.&#64;type` - the type of metadata. For example, the type string
@@ -152,13 +154,10 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
    *   * `error` - Error associated with the long-running operation.
    *   * `response.&#64;type` - the type of response.
    *   * `response.&lt;field_name&gt;` - any field in response.value.
-   *
    * You can combine multiple expressions by enclosing each expression in
    * parentheses. By default, expressions are combined with AND logic. However,
    * you can specify AND, OR, and NOT logic explicitly.
-   *
    * Here are a few examples:
-   *
    *   * `done:true` - The operation is complete.
    *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &#92;
    *     `(metadata.source_type:BACKUP) AND` &#92;
@@ -195,16 +194,13 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
    *
    * <pre>
    * An expression that filters the list of returned operations.
-   *
    * A filter expression consists of a field name, a
    * comparison operator, and a value for filtering.
    * The value must be a string, a number, or a boolean. The comparison operator
    * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
    * Colon `:` is the contains operator. Filter rules are not case sensitive.
-   *
    * The following fields in the [Operation][google.longrunning.Operation]
    * are eligible for filtering:
-   *
    *   * `name` - The name of the long-running operation
    *   * `done` - False if the operation is in progress, else true.
    *   * `metadata.&#64;type` - the type of metadata. For example, the type string
@@ -216,13 +212,10 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
    *   * `error` - Error associated with the long-running operation.
    *   * `response.&#64;type` - the type of response.
    *   * `response.&lt;field_name&gt;` - any field in response.value.
-   *
    * You can combine multiple expressions by enclosing each expression in
    * parentheses. By default, expressions are combined with AND logic. However,
    * you can specify AND, OR, and NOT logic explicitly.
-   *
    * Here are a few examples:
-   *
    *   * `done:true` - The operation is complete.
    *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &#92;
    *     `(metadata.source_type:BACKUP) AND` &#92;
@@ -880,16 +873,13 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      *
      * <pre>
      * An expression that filters the list of returned operations.
-     *
      * A filter expression consists of a field name, a
      * comparison operator, and a value for filtering.
      * The value must be a string, a number, or a boolean. The comparison operator
      * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
      * Colon `:` is the contains operator. Filter rules are not case sensitive.
-     *
      * The following fields in the [Operation][google.longrunning.Operation]
      * are eligible for filtering:
-     *
      *   * `name` - The name of the long-running operation
      *   * `done` - False if the operation is in progress, else true.
      *   * `metadata.&#64;type` - the type of metadata. For example, the type string
@@ -901,13 +891,10 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      *   * `error` - Error associated with the long-running operation.
      *   * `response.&#64;type` - the type of response.
      *   * `response.&lt;field_name&gt;` - any field in response.value.
-     *
      * You can combine multiple expressions by enclosing each expression in
      * parentheses. By default, expressions are combined with AND logic. However,
      * you can specify AND, OR, and NOT logic explicitly.
-     *
      * Here are a few examples:
-     *
      *   * `done:true` - The operation is complete.
      *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &#92;
      *     `(metadata.source_type:BACKUP) AND` &#92;
@@ -943,16 +930,13 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      *
      * <pre>
      * An expression that filters the list of returned operations.
-     *
      * A filter expression consists of a field name, a
      * comparison operator, and a value for filtering.
      * The value must be a string, a number, or a boolean. The comparison operator
      * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
      * Colon `:` is the contains operator. Filter rules are not case sensitive.
-     *
      * The following fields in the [Operation][google.longrunning.Operation]
      * are eligible for filtering:
-     *
      *   * `name` - The name of the long-running operation
      *   * `done` - False if the operation is in progress, else true.
      *   * `metadata.&#64;type` - the type of metadata. For example, the type string
@@ -964,13 +948,10 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      *   * `error` - Error associated with the long-running operation.
      *   * `response.&#64;type` - the type of response.
      *   * `response.&lt;field_name&gt;` - any field in response.value.
-     *
      * You can combine multiple expressions by enclosing each expression in
      * parentheses. By default, expressions are combined with AND logic. However,
      * you can specify AND, OR, and NOT logic explicitly.
-     *
      * Here are a few examples:
-     *
      *   * `done:true` - The operation is complete.
      *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &#92;
      *     `(metadata.source_type:BACKUP) AND` &#92;
@@ -1006,16 +987,13 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      *
      * <pre>
      * An expression that filters the list of returned operations.
-     *
      * A filter expression consists of a field name, a
      * comparison operator, and a value for filtering.
      * The value must be a string, a number, or a boolean. The comparison operator
      * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
      * Colon `:` is the contains operator. Filter rules are not case sensitive.
-     *
      * The following fields in the [Operation][google.longrunning.Operation]
      * are eligible for filtering:
-     *
      *   * `name` - The name of the long-running operation
      *   * `done` - False if the operation is in progress, else true.
      *   * `metadata.&#64;type` - the type of metadata. For example, the type string
@@ -1027,13 +1005,10 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      *   * `error` - Error associated with the long-running operation.
      *   * `response.&#64;type` - the type of response.
      *   * `response.&lt;field_name&gt;` - any field in response.value.
-     *
      * You can combine multiple expressions by enclosing each expression in
      * parentheses. By default, expressions are combined with AND logic. However,
      * you can specify AND, OR, and NOT logic explicitly.
-     *
      * Here are a few examples:
-     *
      *   * `done:true` - The operation is complete.
      *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &#92;
      *     `(metadata.source_type:BACKUP) AND` &#92;
@@ -1068,16 +1043,13 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      *
      * <pre>
      * An expression that filters the list of returned operations.
-     *
      * A filter expression consists of a field name, a
      * comparison operator, and a value for filtering.
      * The value must be a string, a number, or a boolean. The comparison operator
      * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
      * Colon `:` is the contains operator. Filter rules are not case sensitive.
-     *
      * The following fields in the [Operation][google.longrunning.Operation]
      * are eligible for filtering:
-     *
      *   * `name` - The name of the long-running operation
      *   * `done` - False if the operation is in progress, else true.
      *   * `metadata.&#64;type` - the type of metadata. For example, the type string
@@ -1089,13 +1061,10 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      *   * `error` - Error associated with the long-running operation.
      *   * `response.&#64;type` - the type of response.
      *   * `response.&lt;field_name&gt;` - any field in response.value.
-     *
      * You can combine multiple expressions by enclosing each expression in
      * parentheses. By default, expressions are combined with AND logic. However,
      * you can specify AND, OR, and NOT logic explicitly.
-     *
      * Here are a few examples:
-     *
      *   * `done:true` - The operation is complete.
      *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &#92;
      *     `(metadata.source_type:BACKUP) AND` &#92;
@@ -1126,16 +1095,13 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      *
      * <pre>
      * An expression that filters the list of returned operations.
-     *
      * A filter expression consists of a field name, a
      * comparison operator, and a value for filtering.
      * The value must be a string, a number, or a boolean. The comparison operator
      * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
      * Colon `:` is the contains operator. Filter rules are not case sensitive.
-     *
      * The following fields in the [Operation][google.longrunning.Operation]
      * are eligible for filtering:
-     *
      *   * `name` - The name of the long-running operation
      *   * `done` - False if the operation is in progress, else true.
      *   * `metadata.&#64;type` - the type of metadata. For example, the type string
@@ -1147,13 +1113,10 @@ public final class ListDatabaseOperationsRequest extends com.google.protobuf.Gen
      *   * `error` - Error associated with the long-running operation.
      *   * `response.&#64;type` - the type of response.
      *   * `response.&lt;field_name&gt;` - any field in response.value.
-     *
      * You can combine multiple expressions by enclosing each expression in
      * parentheses. By default, expressions are combined with AND logic. However,
      * you can specify AND, OR, and NOT logic explicitly.
-     *
      * Here are a few examples:
-     *
      *   * `done:true` - The operation is complete.
      *   * `(metadata.&#64;type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` &#92;
      *     `(metadata.source_type:BACKUP) AND` &#92;

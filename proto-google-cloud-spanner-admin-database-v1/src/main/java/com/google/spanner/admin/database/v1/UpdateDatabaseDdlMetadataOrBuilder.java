@@ -169,7 +169,7 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    *
    *
    * <pre>
-   * Output only. When true, indicates that the operation is throttled e.g.
+   * Output only. When true, indicates that the operation is throttled e.g
    * due to resource constraints. When resources become available the operation
    * will resume and this field will be false again.
    * </pre>
@@ -185,12 +185,13 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    *
    * <pre>
    * The progress of the
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
-   * operations. All DDL statements will have continuously updating progress,
-   * and `progress[i]` is the operation progress for `statements[i]`. Also,
-   * `progress[i]` will have start time and end time populated with commit
-   * timestamp of operation, as well as a progress of 100% once the operation
-   * has completed.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+   * Currently, only index creation statements will have a continuously
+   * updating progress.
+   * For non-index creation statements, `progress[i]` will have start time
+   * and end time populated with commit timestamp of operation,
+   * as well as a progress of 100% once the operation has completed.
+   * `progress[i]` is the operation progress for `statements[i]`.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -201,12 +202,13 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    *
    * <pre>
    * The progress of the
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
-   * operations. All DDL statements will have continuously updating progress,
-   * and `progress[i]` is the operation progress for `statements[i]`. Also,
-   * `progress[i]` will have start time and end time populated with commit
-   * timestamp of operation, as well as a progress of 100% once the operation
-   * has completed.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+   * Currently, only index creation statements will have a continuously
+   * updating progress.
+   * For non-index creation statements, `progress[i]` will have start time
+   * and end time populated with commit timestamp of operation,
+   * as well as a progress of 100% once the operation has completed.
+   * `progress[i]` is the operation progress for `statements[i]`.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -217,12 +219,13 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    *
    * <pre>
    * The progress of the
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
-   * operations. All DDL statements will have continuously updating progress,
-   * and `progress[i]` is the operation progress for `statements[i]`. Also,
-   * `progress[i]` will have start time and end time populated with commit
-   * timestamp of operation, as well as a progress of 100% once the operation
-   * has completed.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+   * Currently, only index creation statements will have a continuously
+   * updating progress.
+   * For non-index creation statements, `progress[i]` will have start time
+   * and end time populated with commit timestamp of operation,
+   * as well as a progress of 100% once the operation has completed.
+   * `progress[i]` is the operation progress for `statements[i]`.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -233,12 +236,13 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    *
    * <pre>
    * The progress of the
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
-   * operations. All DDL statements will have continuously updating progress,
-   * and `progress[i]` is the operation progress for `statements[i]`. Also,
-   * `progress[i]` will have start time and end time populated with commit
-   * timestamp of operation, as well as a progress of 100% once the operation
-   * has completed.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+   * Currently, only index creation statements will have a continuously
+   * updating progress.
+   * For non-index creation statements, `progress[i]` will have start time
+   * and end time populated with commit timestamp of operation,
+   * as well as a progress of 100% once the operation has completed.
+   * `progress[i]` is the operation progress for `statements[i]`.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -250,73 +254,16 @@ public interface UpdateDatabaseDdlMetadataOrBuilder
    *
    * <pre>
    * The progress of the
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
-   * operations. All DDL statements will have continuously updating progress,
-   * and `progress[i]` is the operation progress for `statements[i]`. Also,
-   * `progress[i]` will have start time and end time populated with commit
-   * timestamp of operation, as well as a progress of 100% once the operation
-   * has completed.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
+   * Currently, only index creation statements will have a continuously
+   * updating progress.
+   * For non-index creation statements, `progress[i]` will have start time
+   * and end time populated with commit timestamp of operation,
+   * as well as a progress of 100% once the operation has completed.
+   * `progress[i]` is the operation progress for `statements[i]`.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
    */
   com.google.spanner.admin.database.v1.OperationProgressOrBuilder getProgressOrBuilder(int index);
-
-  /**
-   *
-   *
-   * <pre>
-   * The brief action info for the DDL statements.
-   * `actions[i]` is the brief info for `statements[i]`.
-   * </pre>
-   *
-   * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
-   */
-  java.util.List<com.google.spanner.admin.database.v1.DdlStatementActionInfo> getActionsList();
-  /**
-   *
-   *
-   * <pre>
-   * The brief action info for the DDL statements.
-   * `actions[i]` is the brief info for `statements[i]`.
-   * </pre>
-   *
-   * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
-   */
-  com.google.spanner.admin.database.v1.DdlStatementActionInfo getActions(int index);
-  /**
-   *
-   *
-   * <pre>
-   * The brief action info for the DDL statements.
-   * `actions[i]` is the brief info for `statements[i]`.
-   * </pre>
-   *
-   * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
-   */
-  int getActionsCount();
-  /**
-   *
-   *
-   * <pre>
-   * The brief action info for the DDL statements.
-   * `actions[i]` is the brief info for `statements[i]`.
-   * </pre>
-   *
-   * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
-   */
-  java.util.List<? extends com.google.spanner.admin.database.v1.DdlStatementActionInfoOrBuilder>
-      getActionsOrBuilderList();
-  /**
-   *
-   *
-   * <pre>
-   * The brief action info for the DDL statements.
-   * `actions[i]` is the brief info for `statements[i]`.
-   * </pre>
-   *
-   * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
-   */
-  com.google.spanner.admin.database.v1.DdlStatementActionInfoOrBuilder getActionsOrBuilder(
-      int index);
 }

@@ -133,5 +133,5 @@ public interface TransactionSelectorOrBuilder
    */
   com.google.spanner.v1.TransactionOptionsOrBuilder getBeginOrBuilder();
 
-  com.google.spanner.v1.TransactionSelector.SelectorCase getSelectorCase();
+  public com.google.spanner.v1.TransactionSelector.SelectorCase getSelectorCase();
 }

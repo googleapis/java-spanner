@@ -35,8 +35,6 @@ import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
-import com.google.spanner.v1.BatchWriteRequest;
-import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -152,11 +150,6 @@ public class SpannerSettings extends ClientSettings<SpannerSettings> {
   /** Returns the object with the settings used for calls to streamingRead. */
   public ServerStreamingCallSettings<ReadRequest, PartialResultSet> streamingReadSettings() {
     return ((SpannerStubSettings) getStubSettings()).streamingReadSettings();
-  }
-
-  /** Returns the object with the settings used for calls to batchWrite. */
-  public ServerStreamingCallSettings<BatchWriteRequest, BatchWriteResponse> batchWriteSettings() {
-    return ((SpannerStubSettings) getStubSettings()).batchWriteSettings();
   }
 
   /** Returns the object with the settings used for calls to beginTransaction. */
@@ -352,12 +345,6 @@ public class SpannerSettings extends ClientSettings<SpannerSettings> {
     public ServerStreamingCallSettings.Builder<ReadRequest, PartialResultSet>
         streamingReadSettings() {
       return getStubSettingsBuilder().streamingReadSettings();
-    }
-
-    /** Returns the builder for the settings used for calls to batchWrite. */
-    public ServerStreamingCallSettings.Builder<BatchWriteRequest, BatchWriteResponse>
-        batchWriteSettings() {
-      return getStubSettingsBuilder().batchWriteSettings();
     }
 
     /** Returns the builder for the settings used for calls to beginTransaction. */

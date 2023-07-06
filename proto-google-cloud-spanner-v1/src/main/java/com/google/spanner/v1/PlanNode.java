@@ -49,6 +49,11 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     return new PlanNode();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.QueryPlanProto
         .internal_static_google_spanner_v1_PlanNode_descriptor;
@@ -348,6 +353,11 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     @SuppressWarnings({"unused"})
     protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
       return new ChildLink();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+      return this.unknownFields;
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -1408,6 +1418,11 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
     @SuppressWarnings({"unused"})
     protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
       return new ShortRepresentation();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+      return this.unknownFields;
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -2609,7 +2624,6 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    * Attributes relevant to the node contained in a group of key-value pairs.
    * For example, a Parameter Reference node could have the following
    * information in its metadata:
-   *
    *     {
    *       "parameter_reference": "param1",
    *       "parameter_type": "array"
@@ -2631,7 +2645,6 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    * Attributes relevant to the node contained in a group of key-value pairs.
    * For example, a Parameter Reference node could have the following
    * information in its metadata:
-   *
    *     {
    *       "parameter_reference": "param1",
    *       "parameter_type": "array"
@@ -2653,7 +2666,6 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
    * Attributes relevant to the node contained in a group of key-value pairs.
    * For example, a Parameter Reference node could have the following
    * information in its metadata:
-   *
    *     {
    *       "parameter_reference": "param1",
    *       "parameter_type": "array"
@@ -4097,7 +4109,6 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * Attributes relevant to the node contained in a group of key-value pairs.
      * For example, a Parameter Reference node could have the following
      * information in its metadata:
-     *
      *     {
      *       "parameter_reference": "param1",
      *       "parameter_type": "array"
@@ -4118,7 +4129,6 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * Attributes relevant to the node contained in a group of key-value pairs.
      * For example, a Parameter Reference node could have the following
      * information in its metadata:
-     *
      *     {
      *       "parameter_reference": "param1",
      *       "parameter_type": "array"
@@ -4143,7 +4153,6 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * Attributes relevant to the node contained in a group of key-value pairs.
      * For example, a Parameter Reference node could have the following
      * information in its metadata:
-     *
      *     {
      *       "parameter_reference": "param1",
      *       "parameter_type": "array"
@@ -4172,7 +4181,6 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * Attributes relevant to the node contained in a group of key-value pairs.
      * For example, a Parameter Reference node could have the following
      * information in its metadata:
-     *
      *     {
      *       "parameter_reference": "param1",
      *       "parameter_type": "array"
@@ -4198,7 +4206,6 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * Attributes relevant to the node contained in a group of key-value pairs.
      * For example, a Parameter Reference node could have the following
      * information in its metadata:
-     *
      *     {
      *       "parameter_reference": "param1",
      *       "parameter_type": "array"
@@ -4230,7 +4237,6 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * Attributes relevant to the node contained in a group of key-value pairs.
      * For example, a Parameter Reference node could have the following
      * information in its metadata:
-     *
      *     {
      *       "parameter_reference": "param1",
      *       "parameter_type": "array"
@@ -4256,7 +4262,6 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * Attributes relevant to the node contained in a group of key-value pairs.
      * For example, a Parameter Reference node could have the following
      * information in its metadata:
-     *
      *     {
      *       "parameter_reference": "param1",
      *       "parameter_type": "array"
@@ -4277,7 +4282,6 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * Attributes relevant to the node contained in a group of key-value pairs.
      * For example, a Parameter Reference node could have the following
      * information in its metadata:
-     *
      *     {
      *       "parameter_reference": "param1",
      *       "parameter_type": "array"
@@ -4300,7 +4304,6 @@ public final class PlanNode extends com.google.protobuf.GeneratedMessageV3
      * Attributes relevant to the node contained in a group of key-value pairs.
      * For example, a Parameter Reference node could have the following
      * information in its metadata:
-     *
      *     {
      *       "parameter_reference": "param1",
      *       "parameter_type": "array"

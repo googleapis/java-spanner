@@ -100,7 +100,6 @@ public interface PartitionQueryRequestOrBuilder
    * union operator conceptually divides one or more tables into multiple
    * splits, remotely evaluates a subquery independently on each split, and
    * then unions all results.
-   *
    * This must not contain DML commands, such as INSERT, UPDATE, or
    * DELETE. Use [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] with a
    * PartitionedDml transaction for large, partition-friendly DML operations.
@@ -121,7 +120,6 @@ public interface PartitionQueryRequestOrBuilder
    * union operator conceptually divides one or more tables into multiple
    * splits, remotely evaluates a subquery independently on each split, and
    * then unions all results.
-   *
    * This must not contain DML commands, such as INSERT, UPDATE, or
    * DELETE. Use [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] with a
    * PartitionedDml transaction for large, partition-friendly DML operations.
@@ -138,16 +136,12 @@ public interface PartitionQueryRequestOrBuilder
    *
    * <pre>
    * Parameter names and values that bind to placeholders in the SQL string.
-   *
    * A parameter placeholder consists of the `&#64;` character followed by the
    * parameter name (for example, `&#64;firstName`). Parameter names can contain
    * letters, numbers, and underscores.
-   *
    * Parameters can appear anywhere that a literal value is expected.  The same
    * parameter name can be used more than once, for example:
-   *
    * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-   *
    * It is an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
@@ -161,16 +155,12 @@ public interface PartitionQueryRequestOrBuilder
    *
    * <pre>
    * Parameter names and values that bind to placeholders in the SQL string.
-   *
    * A parameter placeholder consists of the `&#64;` character followed by the
    * parameter name (for example, `&#64;firstName`). Parameter names can contain
    * letters, numbers, and underscores.
-   *
    * Parameters can appear anywhere that a literal value is expected.  The same
    * parameter name can be used more than once, for example:
-   *
    * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-   *
    * It is an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
@@ -184,16 +174,12 @@ public interface PartitionQueryRequestOrBuilder
    *
    * <pre>
    * Parameter names and values that bind to placeholders in the SQL string.
-   *
    * A parameter placeholder consists of the `&#64;` character followed by the
    * parameter name (for example, `&#64;firstName`). Parameter names can contain
    * letters, numbers, and underscores.
-   *
    * Parameters can appear anywhere that a literal value is expected.  The same
    * parameter name can be used more than once, for example:
-   *
    * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-   *
    * It is an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
@@ -208,7 +194,6 @@ public interface PartitionQueryRequestOrBuilder
    * It is not always possible for Cloud Spanner to infer the right SQL type
    * from a JSON value.  For example, values of type `BYTES` and values
    * of type `STRING` both appear in [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
-   *
    * In these cases, `param_types` can be used to specify the exact
    * SQL type for some or all of the SQL query parameters. See the
    * definition of [Type][google.spanner.v1.Type] for more information
@@ -225,7 +210,6 @@ public interface PartitionQueryRequestOrBuilder
    * It is not always possible for Cloud Spanner to infer the right SQL type
    * from a JSON value.  For example, values of type `BYTES` and values
    * of type `STRING` both appear in [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
-   *
    * In these cases, `param_types` can be used to specify the exact
    * SQL type for some or all of the SQL query parameters. See the
    * definition of [Type][google.spanner.v1.Type] for more information
@@ -245,7 +229,6 @@ public interface PartitionQueryRequestOrBuilder
    * It is not always possible for Cloud Spanner to infer the right SQL type
    * from a JSON value.  For example, values of type `BYTES` and values
    * of type `STRING` both appear in [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
-   *
    * In these cases, `param_types` can be used to specify the exact
    * SQL type for some or all of the SQL query parameters. See the
    * definition of [Type][google.spanner.v1.Type] for more information
@@ -262,7 +245,6 @@ public interface PartitionQueryRequestOrBuilder
    * It is not always possible for Cloud Spanner to infer the right SQL type
    * from a JSON value.  For example, values of type `BYTES` and values
    * of type `STRING` both appear in [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
-   *
    * In these cases, `param_types` can be used to specify the exact
    * SQL type for some or all of the SQL query parameters. See the
    * definition of [Type][google.spanner.v1.Type] for more information
@@ -283,7 +265,6 @@ public interface PartitionQueryRequestOrBuilder
    * It is not always possible for Cloud Spanner to infer the right SQL type
    * from a JSON value.  For example, values of type `BYTES` and values
    * of type `STRING` both appear in [params][google.spanner.v1.PartitionQueryRequest.params] as JSON strings.
-   *
    * In these cases, `param_types` can be used to specify the exact
    * SQL type for some or all of the SQL query parameters. See the
    * definition of [Type][google.spanner.v1.Type] for more information

@@ -25,7 +25,6 @@ package com.google.spanner.v1;
  * `KeySet` defines a collection of Cloud Spanner keys and/or key ranges. All
  * the keys are expected to be in the same table or index. The keys need
  * not be sorted in any particular way.
- *
  * If the same key is specified multiple times in the set (for example
  * if two ranges, two keys, or a key and a range overlap), Cloud Spanner
  * behaves as if the key were only specified once.
@@ -52,6 +51,11 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new KeySet();
+  }
+
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -434,7 +438,6 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    * `KeySet` defines a collection of Cloud Spanner keys and/or key ranges. All
    * the keys are expected to be in the same table or index. The keys need
    * not be sorted in any particular way.
-   *
    * If the same key is specified multiple times in the set (for example
    * if two ranges, two keys, or a key and a range overlap), Cloud Spanner
    * behaves as if the key were only specified once.

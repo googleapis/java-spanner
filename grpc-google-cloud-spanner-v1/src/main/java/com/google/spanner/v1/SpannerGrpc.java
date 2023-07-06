@@ -451,47 +451,6 @@ public final class SpannerGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<
-          com.google.spanner.v1.BatchWriteRequest, com.google.spanner.v1.BatchWriteResponse>
-      getBatchWriteMethod;
-
-  @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "BatchWrite",
-      requestType = com.google.spanner.v1.BatchWriteRequest.class,
-      responseType = com.google.spanner.v1.BatchWriteResponse.class,
-      methodType = io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
-  public static io.grpc.MethodDescriptor<
-          com.google.spanner.v1.BatchWriteRequest, com.google.spanner.v1.BatchWriteResponse>
-      getBatchWriteMethod() {
-    io.grpc.MethodDescriptor<
-            com.google.spanner.v1.BatchWriteRequest, com.google.spanner.v1.BatchWriteResponse>
-        getBatchWriteMethod;
-    if ((getBatchWriteMethod = SpannerGrpc.getBatchWriteMethod) == null) {
-      synchronized (SpannerGrpc.class) {
-        if ((getBatchWriteMethod = SpannerGrpc.getBatchWriteMethod) == null) {
-          SpannerGrpc.getBatchWriteMethod =
-              getBatchWriteMethod =
-                  io.grpc.MethodDescriptor
-                      .<com.google.spanner.v1.BatchWriteRequest,
-                          com.google.spanner.v1.BatchWriteResponse>
-                          newBuilder()
-                      .setType(io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
-                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "BatchWrite"))
-                      .setSampledToLocalTracing(true)
-                      .setRequestMarshaller(
-                          io.grpc.protobuf.ProtoUtils.marshaller(
-                              com.google.spanner.v1.BatchWriteRequest.getDefaultInstance()))
-                      .setResponseMarshaller(
-                          io.grpc.protobuf.ProtoUtils.marshaller(
-                              com.google.spanner.v1.BatchWriteResponse.getDefaultInstance()))
-                      .setSchemaDescriptor(new SpannerMethodDescriptorSupplier("BatchWrite"))
-                      .build();
-        }
-      }
-    }
-    return getBatchWriteMethod;
-  }
-
-  private static volatile io.grpc.MethodDescriptor<
           com.google.spanner.v1.BeginTransactionRequest, com.google.spanner.v1.Transaction>
       getBeginTransactionMethod;
 
@@ -942,24 +901,6 @@ public final class SpannerGrpc {
      *
      *
      * <pre>
-     * Batches the supplied mutations in a collection of efficient transactions.
-     * The mutations are applied non-atomically in an unspecified order and
-     * thus, they must be independent of each other. Partial failure is possible,
-     * i.e., some mutations may have been applied successfully, while some may
-     * have failed. The results of individual batches are streamed into the
-     * response as and when the batches are applied.
-     * </pre>
-     */
-    default void batchWrite(
-        com.google.spanner.v1.BatchWriteRequest request,
-        io.grpc.stub.StreamObserver<com.google.spanner.v1.BatchWriteResponse> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getBatchWriteMethod(), responseObserver);
-    }
-
-    /**
-     *
-     *
-     * <pre>
      * Begins a new transaction. This step can often be skipped:
      * [Read][google.spanner.v1.Spanner.Read], [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] and
      * [Commit][google.spanner.v1.Spanner.Commit] can begin a new transaction as a
@@ -1316,25 +1257,6 @@ public final class SpannerGrpc {
      *
      *
      * <pre>
-     * Batches the supplied mutations in a collection of efficient transactions.
-     * The mutations are applied non-atomically in an unspecified order and
-     * thus, they must be independent of each other. Partial failure is possible,
-     * i.e., some mutations may have been applied successfully, while some may
-     * have failed. The results of individual batches are streamed into the
-     * response as and when the batches are applied.
-     * </pre>
-     */
-    public void batchWrite(
-        com.google.spanner.v1.BatchWriteRequest request,
-        io.grpc.stub.StreamObserver<com.google.spanner.v1.BatchWriteResponse> responseObserver) {
-      io.grpc.stub.ClientCalls.asyncServerStreamingCall(
-          getChannel().newCall(getBatchWriteMethod(), getCallOptions()), request, responseObserver);
-    }
-
-    /**
-     *
-     *
-     * <pre>
      * Begins a new transaction. This step can often be skipped:
      * [Read][google.spanner.v1.Spanner.Read], [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] and
      * [Commit][google.spanner.v1.Spanner.Commit] can begin a new transaction as a
@@ -1650,24 +1572,6 @@ public final class SpannerGrpc {
         com.google.spanner.v1.ReadRequest request) {
       return io.grpc.stub.ClientCalls.blockingServerStreamingCall(
           getChannel(), getStreamingReadMethod(), getCallOptions(), request);
-    }
-
-    /**
-     *
-     *
-     * <pre>
-     * Batches the supplied mutations in a collection of efficient transactions.
-     * The mutations are applied non-atomically in an unspecified order and
-     * thus, they must be independent of each other. Partial failure is possible,
-     * i.e., some mutations may have been applied successfully, while some may
-     * have failed. The results of individual batches are streamed into the
-     * response as and when the batches are applied.
-     * </pre>
-     */
-    public java.util.Iterator<com.google.spanner.v1.BatchWriteResponse> batchWrite(
-        com.google.spanner.v1.BatchWriteRequest request) {
-      return io.grpc.stub.ClientCalls.blockingServerStreamingCall(
-          getChannel(), getBatchWriteMethod(), getCallOptions(), request);
     }
 
     /**
@@ -2067,12 +1971,11 @@ public final class SpannerGrpc {
   private static final int METHODID_EXECUTE_BATCH_DML = 7;
   private static final int METHODID_READ = 8;
   private static final int METHODID_STREAMING_READ = 9;
-  private static final int METHODID_BATCH_WRITE = 10;
-  private static final int METHODID_BEGIN_TRANSACTION = 11;
-  private static final int METHODID_COMMIT = 12;
-  private static final int METHODID_ROLLBACK = 13;
-  private static final int METHODID_PARTITION_QUERY = 14;
-  private static final int METHODID_PARTITION_READ = 15;
+  private static final int METHODID_BEGIN_TRANSACTION = 10;
+  private static final int METHODID_COMMIT = 11;
+  private static final int METHODID_ROLLBACK = 12;
+  private static final int METHODID_PARTITION_QUERY = 13;
+  private static final int METHODID_PARTITION_READ = 14;
 
   private static final class MethodHandlers<Req, Resp>
       implements io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -2144,12 +2047,6 @@ public final class SpannerGrpc {
           serviceImpl.streamingRead(
               (com.google.spanner.v1.ReadRequest) request,
               (io.grpc.stub.StreamObserver<com.google.spanner.v1.PartialResultSet>)
-                  responseObserver);
-          break;
-        case METHODID_BATCH_WRITE:
-          serviceImpl.batchWrite(
-              (com.google.spanner.v1.BatchWriteRequest) request,
-              (io.grpc.stub.StreamObserver<com.google.spanner.v1.BatchWriteResponse>)
                   responseObserver);
           break;
         case METHODID_BEGIN_TRANSACTION:
@@ -2261,12 +2158,6 @@ public final class SpannerGrpc {
                     com.google.spanner.v1.ReadRequest, com.google.spanner.v1.PartialResultSet>(
                     service, METHODID_STREAMING_READ)))
         .addMethod(
-            getBatchWriteMethod(),
-            io.grpc.stub.ServerCalls.asyncServerStreamingCall(
-                new MethodHandlers<
-                    com.google.spanner.v1.BatchWriteRequest,
-                    com.google.spanner.v1.BatchWriteResponse>(service, METHODID_BATCH_WRITE)))
-        .addMethod(
             getBeginTransactionMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
                 new MethodHandlers<
@@ -2355,7 +2246,6 @@ public final class SpannerGrpc {
                       .addMethod(getExecuteBatchDmlMethod())
                       .addMethod(getReadMethod())
                       .addMethod(getStreamingReadMethod())
-                      .addMethod(getBatchWriteMethod())
                       .addMethod(getBeginTransactionMethod())
                       .addMethod(getCommitMethod())
                       .addMethod(getRollbackMethod())

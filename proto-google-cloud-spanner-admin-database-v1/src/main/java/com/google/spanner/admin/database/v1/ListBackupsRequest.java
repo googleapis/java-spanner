@@ -49,6 +49,11 @@ public final class ListBackupsRequest extends com.google.protobuf.GeneratedMessa
     return new ListBackupsRequest();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.database.v1.BackupProto
         .internal_static_google_spanner_admin_database_v1_ListBackupsRequest_descriptor;
@@ -130,15 +135,12 @@ public final class ListBackupsRequest extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * An expression that filters the list of returned backups.
-   *
    * A filter expression consists of a field name, a comparison operator, and a
    * value for filtering.
    * The value must be a string, a number, or a boolean. The comparison operator
    * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
    * Colon `:` is the contains operator. Filter rules are not case sensitive.
-   *
    * The following fields in the [Backup][google.spanner.admin.database.v1.Backup] are eligible for filtering:
-   *
    *   * `name`
    *   * `database`
    *   * `state`
@@ -146,13 +148,10 @@ public final class ListBackupsRequest extends com.google.protobuf.GeneratedMessa
    *   * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *   * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *   * `size_bytes`
-   *
    * You can combine multiple expressions by enclosing each expression in
    * parentheses. By default, expressions are combined with AND logic, but
    * you can specify AND, OR, and NOT logic explicitly.
-   *
    * Here are a few examples:
-   *
    *   * `name:Howl` - The backup's name contains the string "howl".
    *   * `database:prod`
    *          - The database's name contains the string "prod".
@@ -187,15 +186,12 @@ public final class ListBackupsRequest extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * An expression that filters the list of returned backups.
-   *
    * A filter expression consists of a field name, a comparison operator, and a
    * value for filtering.
    * The value must be a string, a number, or a boolean. The comparison operator
    * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
    * Colon `:` is the contains operator. Filter rules are not case sensitive.
-   *
    * The following fields in the [Backup][google.spanner.admin.database.v1.Backup] are eligible for filtering:
-   *
    *   * `name`
    *   * `database`
    *   * `state`
@@ -203,13 +199,10 @@ public final class ListBackupsRequest extends com.google.protobuf.GeneratedMessa
    *   * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *   * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *   * `size_bytes`
-   *
    * You can combine multiple expressions by enclosing each expression in
    * parentheses. By default, expressions are combined with AND logic, but
    * you can specify AND, OR, and NOT logic explicitly.
-   *
    * Here are a few examples:
-   *
    *   * `name:Howl` - The backup's name contains the string "howl".
    *   * `database:prod`
    *          - The database's name contains the string "prod".
@@ -856,15 +849,12 @@ public final class ListBackupsRequest extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * An expression that filters the list of returned backups.
-     *
      * A filter expression consists of a field name, a comparison operator, and a
      * value for filtering.
      * The value must be a string, a number, or a boolean. The comparison operator
      * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
      * Colon `:` is the contains operator. Filter rules are not case sensitive.
-     *
      * The following fields in the [Backup][google.spanner.admin.database.v1.Backup] are eligible for filtering:
-     *
      *   * `name`
      *   * `database`
      *   * `state`
@@ -872,13 +862,10 @@ public final class ListBackupsRequest extends com.google.protobuf.GeneratedMessa
      *   * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
      *   * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
      *   * `size_bytes`
-     *
      * You can combine multiple expressions by enclosing each expression in
      * parentheses. By default, expressions are combined with AND logic, but
      * you can specify AND, OR, and NOT logic explicitly.
-     *
      * Here are a few examples:
-     *
      *   * `name:Howl` - The backup's name contains the string "howl".
      *   * `database:prod`
      *          - The database's name contains the string "prod".
@@ -912,15 +899,12 @@ public final class ListBackupsRequest extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * An expression that filters the list of returned backups.
-     *
      * A filter expression consists of a field name, a comparison operator, and a
      * value for filtering.
      * The value must be a string, a number, or a boolean. The comparison operator
      * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
      * Colon `:` is the contains operator. Filter rules are not case sensitive.
-     *
      * The following fields in the [Backup][google.spanner.admin.database.v1.Backup] are eligible for filtering:
-     *
      *   * `name`
      *   * `database`
      *   * `state`
@@ -928,13 +912,10 @@ public final class ListBackupsRequest extends com.google.protobuf.GeneratedMessa
      *   * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
      *   * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
      *   * `size_bytes`
-     *
      * You can combine multiple expressions by enclosing each expression in
      * parentheses. By default, expressions are combined with AND logic, but
      * you can specify AND, OR, and NOT logic explicitly.
-     *
      * Here are a few examples:
-     *
      *   * `name:Howl` - The backup's name contains the string "howl".
      *   * `database:prod`
      *          - The database's name contains the string "prod".
@@ -968,15 +949,12 @@ public final class ListBackupsRequest extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * An expression that filters the list of returned backups.
-     *
      * A filter expression consists of a field name, a comparison operator, and a
      * value for filtering.
      * The value must be a string, a number, or a boolean. The comparison operator
      * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
      * Colon `:` is the contains operator. Filter rules are not case sensitive.
-     *
      * The following fields in the [Backup][google.spanner.admin.database.v1.Backup] are eligible for filtering:
-     *
      *   * `name`
      *   * `database`
      *   * `state`
@@ -984,13 +962,10 @@ public final class ListBackupsRequest extends com.google.protobuf.GeneratedMessa
      *   * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
      *   * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
      *   * `size_bytes`
-     *
      * You can combine multiple expressions by enclosing each expression in
      * parentheses. By default, expressions are combined with AND logic, but
      * you can specify AND, OR, and NOT logic explicitly.
-     *
      * Here are a few examples:
-     *
      *   * `name:Howl` - The backup's name contains the string "howl".
      *   * `database:prod`
      *          - The database's name contains the string "prod".
@@ -1023,15 +998,12 @@ public final class ListBackupsRequest extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * An expression that filters the list of returned backups.
-     *
      * A filter expression consists of a field name, a comparison operator, and a
      * value for filtering.
      * The value must be a string, a number, or a boolean. The comparison operator
      * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
      * Colon `:` is the contains operator. Filter rules are not case sensitive.
-     *
      * The following fields in the [Backup][google.spanner.admin.database.v1.Backup] are eligible for filtering:
-     *
      *   * `name`
      *   * `database`
      *   * `state`
@@ -1039,13 +1011,10 @@ public final class ListBackupsRequest extends com.google.protobuf.GeneratedMessa
      *   * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
      *   * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
      *   * `size_bytes`
-     *
      * You can combine multiple expressions by enclosing each expression in
      * parentheses. By default, expressions are combined with AND logic, but
      * you can specify AND, OR, and NOT logic explicitly.
-     *
      * Here are a few examples:
-     *
      *   * `name:Howl` - The backup's name contains the string "howl".
      *   * `database:prod`
      *          - The database's name contains the string "prod".
@@ -1074,15 +1043,12 @@ public final class ListBackupsRequest extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * An expression that filters the list of returned backups.
-     *
      * A filter expression consists of a field name, a comparison operator, and a
      * value for filtering.
      * The value must be a string, a number, or a boolean. The comparison operator
      * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
      * Colon `:` is the contains operator. Filter rules are not case sensitive.
-     *
      * The following fields in the [Backup][google.spanner.admin.database.v1.Backup] are eligible for filtering:
-     *
      *   * `name`
      *   * `database`
      *   * `state`
@@ -1090,13 +1056,10 @@ public final class ListBackupsRequest extends com.google.protobuf.GeneratedMessa
      *   * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
      *   * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
      *   * `size_bytes`
-     *
      * You can combine multiple expressions by enclosing each expression in
      * parentheses. By default, expressions are combined with AND logic, but
      * you can specify AND, OR, and NOT logic explicitly.
-     *
      * Here are a few examples:
-     *
      *   * `name:Howl` - The backup's name contains the string "howl".
      *   * `database:prod`
      *          - The database's name contains the string "prod".

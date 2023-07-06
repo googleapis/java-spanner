@@ -32,8 +32,6 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
-import com.google.spanner.v1.BatchWriteRequest;
-import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -1268,41 +1266,6 @@ public class SpannerClient implements BackgroundResource {
    */
   public final ServerStreamingCallable<ReadRequest, PartialResultSet> streamingReadCallable() {
     return stub.streamingReadCallable();
-  }
-
-  // AUTO-GENERATED DOCUMENTATION AND METHOD.
-  /**
-   * Batches the supplied mutations in a collection of efficient transactions. The mutations are
-   * applied non-atomically in an unspecified order and thus, they must be independent of each
-   * other. Partial failure is possible, i.e., some mutations may have been applied successfully,
-   * while some may have failed. The results of individual batches are streamed into the response as
-   * and when the batches are applied.
-   *
-   * <p>Sample code:
-   *
-   * <pre>{@code
-   * // This snippet has been automatically generated and should be regarded as a code template only.
-   * // It will require modifications to work:
-   * // - It may require correct/in-range values for request initialization.
-   * // - It may require specifying regional endpoints when creating the service client as shown in
-   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
-   * try (SpannerClient spannerClient = SpannerClient.create()) {
-   *   BatchWriteRequest request =
-   *       BatchWriteRequest.newBuilder()
-   *           .setSession(
-   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
-   *           .addAllMutations(new ArrayList<Mutation>())
-   *           .setRequestOptions(RequestOptions.newBuilder().build())
-   *           .build();
-   *   ServerStream<BatchWriteResponse> stream = spannerClient.batchWriteCallable().call(request);
-   *   for (BatchWriteResponse response : stream) {
-   *     // Do something when a response is received.
-   *   }
-   * }
-   * }</pre>
-   */
-  public final ServerStreamingCallable<BatchWriteRequest, BatchWriteResponse> batchWriteCallable() {
-    return stub.batchWriteCallable();
   }
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.

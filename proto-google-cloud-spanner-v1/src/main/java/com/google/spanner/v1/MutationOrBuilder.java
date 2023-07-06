@@ -106,7 +106,6 @@ public interface MutationOrBuilder
    * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
    * its column values are overwritten with the ones provided. Any
    * column values not explicitly written are preserved.
-   *
    * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
    * NULL` columns in the table must be given a value. This holds true
    * even when the row already exists and will therefore actually be updated.
@@ -124,7 +123,6 @@ public interface MutationOrBuilder
    * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
    * its column values are overwritten with the ones provided. Any
    * column values not explicitly written are preserved.
-   *
    * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
    * NULL` columns in the table must be given a value. This holds true
    * even when the row already exists and will therefore actually be updated.
@@ -142,7 +140,6 @@ public interface MutationOrBuilder
    * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
    * its column values are overwritten with the ones provided. Any
    * column values not explicitly written are preserved.
-   *
    * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
    * NULL` columns in the table must be given a value. This holds true
    * even when the row already exists and will therefore actually be updated.
@@ -160,7 +157,6 @@ public interface MutationOrBuilder
    * deleted, and the column values provided are inserted
    * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
    * explicitly written become `NULL`.
-   *
    * In an interleaved table, if you create the child table with the
    * `ON DELETE CASCADE` annotation, then replacing a parent row
    * also deletes the child rows. Otherwise, you must delete the
@@ -180,7 +176,6 @@ public interface MutationOrBuilder
    * deleted, and the column values provided are inserted
    * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
    * explicitly written become `NULL`.
-   *
    * In an interleaved table, if you create the child table with the
    * `ON DELETE CASCADE` annotation, then replacing a parent row
    * also deletes the child rows. Otherwise, you must delete the
@@ -200,7 +195,6 @@ public interface MutationOrBuilder
    * deleted, and the column values provided are inserted
    * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
    * explicitly written become `NULL`.
-   *
    * In an interleaved table, if you create the child table with the
    * `ON DELETE CASCADE` annotation, then replacing a parent row
    * also deletes the child rows. Otherwise, you must delete the
@@ -249,5 +243,5 @@ public interface MutationOrBuilder
    */
   com.google.spanner.v1.Mutation.DeleteOrBuilder getDeleteOrBuilder();
 
-  com.google.spanner.v1.Mutation.OperationCase getOperationCase();
+  public com.google.spanner.v1.Mutation.OperationCase getOperationCase();
 }

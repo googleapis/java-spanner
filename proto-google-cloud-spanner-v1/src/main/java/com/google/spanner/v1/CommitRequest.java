@@ -48,6 +48,11 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     return new CommitRequest();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_CommitRequest_descriptor;
@@ -64,8 +69,6 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
   }
 
   private int transactionCase_ = 0;
-
-  @SuppressWarnings("serial")
   private java.lang.Object transaction_;
 
   public enum TransactionCase

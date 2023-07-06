@@ -101,11 +101,8 @@ public interface ListSessionsRequestOrBuilder
    * <pre>
    * An expression for filtering the results of the request. Filter rules are
    * case insensitive. The fields eligible for filtering are:
-   *
    *   * `labels.key` where key is the name of a label
-   *
    * Some examples of using filters are:
-   *
    *   * `labels.env:*` --&gt; The session has the label "env".
    *   * `labels.env:dev` --&gt; The session has the label "env" and the value of
    *                        the label contains the string "dev".
@@ -122,11 +119,8 @@ public interface ListSessionsRequestOrBuilder
    * <pre>
    * An expression for filtering the results of the request. Filter rules are
    * case insensitive. The fields eligible for filtering are:
-   *
    *   * `labels.key` where key is the name of a label
-   *
    * Some examples of using filters are:
-   *
    *   * `labels.env:*` --&gt; The session has the label "env".
    *   * `labels.env:dev` --&gt; The session has the label "env" and the value of
    *                        the label contains the string "dev".

@@ -52,6 +52,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
     return new ExecuteSqlRequest();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_ExecuteSqlRequest_descriptor;
@@ -249,26 +254,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * An option to control the selection of optimizer version.
-     *
      * This parameter allows individual queries to pick different query
      * optimizer versions.
-     *
      * Specifying `latest` as a value instructs Cloud Spanner to use the
      * latest supported query optimizer version. If not specified, Cloud Spanner
      * uses the optimizer version set at the database level options. Any other
      * positive integer (from the list of supported optimizer versions)
      * overrides the default optimizer version for query execution.
-     *
      * The list of supported optimizer versions can be queried from
      * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
-     *
      * Executing a SQL statement with an invalid optimizer version fails with
      * an `INVALID_ARGUMENT` error.
-     *
      * See
      * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
      * for more information on managing the query optimizer.
-     *
      * The `optimizer_version` statement hint has precedence over this setting.
      * </pre>
      *
@@ -282,26 +281,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * An option to control the selection of optimizer version.
-     *
      * This parameter allows individual queries to pick different query
      * optimizer versions.
-     *
      * Specifying `latest` as a value instructs Cloud Spanner to use the
      * latest supported query optimizer version. If not specified, Cloud Spanner
      * uses the optimizer version set at the database level options. Any other
      * positive integer (from the list of supported optimizer versions)
      * overrides the default optimizer version for query execution.
-     *
      * The list of supported optimizer versions can be queried from
      * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
-     *
      * Executing a SQL statement with an invalid optimizer version fails with
      * an `INVALID_ARGUMENT` error.
-     *
      * See
      * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
      * for more information on managing the query optimizer.
-     *
      * The `optimizer_version` statement hint has precedence over this setting.
      * </pre>
      *
@@ -316,26 +309,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * An option to control the selection of optimizer statistics package.
-     *
      * This parameter allows individual queries to use a different query
      * optimizer statistics package.
-     *
      * Specifying `latest` as a value instructs Cloud Spanner to use the latest
      * generated statistics package. If not specified, Cloud Spanner uses
      * the statistics package set at the database level options, or the latest
      * package if the database option is not set.
-     *
      * The statistics package requested by the query has to be exempt from
      * garbage collection. This can be achieved with the following DDL
      * statement:
-     *
      * ```
      * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
      * ```
-     *
      * The list of available statistics packages can be queried from
      * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
-     *
      * Executing a SQL statement with an invalid optimizer statistics package
      * or with a statistics package that allows garbage collection fails with
      * an `INVALID_ARGUMENT` error.
@@ -351,26 +338,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * An option to control the selection of optimizer statistics package.
-     *
      * This parameter allows individual queries to use a different query
      * optimizer statistics package.
-     *
      * Specifying `latest` as a value instructs Cloud Spanner to use the latest
      * generated statistics package. If not specified, Cloud Spanner uses
      * the statistics package set at the database level options, or the latest
      * package if the database option is not set.
-     *
      * The statistics package requested by the query has to be exempt from
      * garbage collection. This can be achieved with the following DDL
      * statement:
-     *
      * ```
      * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
      * ```
-     *
      * The list of available statistics packages can be queried from
      * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
-     *
      * Executing a SQL statement with an invalid optimizer statistics package
      * or with a statistics package that allows garbage collection fails with
      * an `INVALID_ARGUMENT` error.
@@ -412,6 +393,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
       return new QueryOptions();
     }
 
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+      return this.unknownFields;
+    }
+
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
       return com.google.spanner.v1.SpannerProto
           .internal_static_google_spanner_v1_ExecuteSqlRequest_QueryOptions_descriptor;
@@ -436,26 +422,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * An option to control the selection of optimizer version.
-     *
      * This parameter allows individual queries to pick different query
      * optimizer versions.
-     *
      * Specifying `latest` as a value instructs Cloud Spanner to use the
      * latest supported query optimizer version. If not specified, Cloud Spanner
      * uses the optimizer version set at the database level options. Any other
      * positive integer (from the list of supported optimizer versions)
      * overrides the default optimizer version for query execution.
-     *
      * The list of supported optimizer versions can be queried from
      * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
-     *
      * Executing a SQL statement with an invalid optimizer version fails with
      * an `INVALID_ARGUMENT` error.
-     *
      * See
      * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
      * for more information on managing the query optimizer.
-     *
      * The `optimizer_version` statement hint has precedence over this setting.
      * </pre>
      *
@@ -480,26 +460,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * An option to control the selection of optimizer version.
-     *
      * This parameter allows individual queries to pick different query
      * optimizer versions.
-     *
      * Specifying `latest` as a value instructs Cloud Spanner to use the
      * latest supported query optimizer version. If not specified, Cloud Spanner
      * uses the optimizer version set at the database level options. Any other
      * positive integer (from the list of supported optimizer versions)
      * overrides the default optimizer version for query execution.
-     *
      * The list of supported optimizer versions can be queried from
      * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
-     *
      * Executing a SQL statement with an invalid optimizer version fails with
      * an `INVALID_ARGUMENT` error.
-     *
      * See
      * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
      * for more information on managing the query optimizer.
-     *
      * The `optimizer_version` statement hint has precedence over this setting.
      * </pre>
      *
@@ -529,26 +503,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * An option to control the selection of optimizer statistics package.
-     *
      * This parameter allows individual queries to use a different query
      * optimizer statistics package.
-     *
      * Specifying `latest` as a value instructs Cloud Spanner to use the latest
      * generated statistics package. If not specified, Cloud Spanner uses
      * the statistics package set at the database level options, or the latest
      * package if the database option is not set.
-     *
      * The statistics package requested by the query has to be exempt from
      * garbage collection. This can be achieved with the following DDL
      * statement:
-     *
      * ```
      * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
      * ```
-     *
      * The list of available statistics packages can be queried from
      * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
-     *
      * Executing a SQL statement with an invalid optimizer statistics package
      * or with a statistics package that allows garbage collection fails with
      * an `INVALID_ARGUMENT` error.
@@ -575,26 +543,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * An option to control the selection of optimizer statistics package.
-     *
      * This parameter allows individual queries to use a different query
      * optimizer statistics package.
-     *
      * Specifying `latest` as a value instructs Cloud Spanner to use the latest
      * generated statistics package. If not specified, Cloud Spanner uses
      * the statistics package set at the database level options, or the latest
      * package if the database option is not set.
-     *
      * The statistics package requested by the query has to be exempt from
      * garbage collection. This can be achieved with the following DDL
      * statement:
-     *
      * ```
      * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
      * ```
-     *
      * The list of available statistics packages can be queried from
      * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
-     *
      * Executing a SQL statement with an invalid optimizer statistics package
      * or with a statistics package that allows garbage collection fails with
      * an `INVALID_ARGUMENT` error.
@@ -997,26 +959,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        *
        * <pre>
        * An option to control the selection of optimizer version.
-       *
        * This parameter allows individual queries to pick different query
        * optimizer versions.
-       *
        * Specifying `latest` as a value instructs Cloud Spanner to use the
        * latest supported query optimizer version. If not specified, Cloud Spanner
        * uses the optimizer version set at the database level options. Any other
        * positive integer (from the list of supported optimizer versions)
        * overrides the default optimizer version for query execution.
-       *
        * The list of supported optimizer versions can be queried from
        * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
-       *
        * Executing a SQL statement with an invalid optimizer version fails with
        * an `INVALID_ARGUMENT` error.
-       *
        * See
        * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
        * for more information on managing the query optimizer.
-       *
        * The `optimizer_version` statement hint has precedence over this setting.
        * </pre>
        *
@@ -1040,26 +996,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        *
        * <pre>
        * An option to control the selection of optimizer version.
-       *
        * This parameter allows individual queries to pick different query
        * optimizer versions.
-       *
        * Specifying `latest` as a value instructs Cloud Spanner to use the
        * latest supported query optimizer version. If not specified, Cloud Spanner
        * uses the optimizer version set at the database level options. Any other
        * positive integer (from the list of supported optimizer versions)
        * overrides the default optimizer version for query execution.
-       *
        * The list of supported optimizer versions can be queried from
        * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
-       *
        * Executing a SQL statement with an invalid optimizer version fails with
        * an `INVALID_ARGUMENT` error.
-       *
        * See
        * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
        * for more information on managing the query optimizer.
-       *
        * The `optimizer_version` statement hint has precedence over this setting.
        * </pre>
        *
@@ -1083,26 +1033,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        *
        * <pre>
        * An option to control the selection of optimizer version.
-       *
        * This parameter allows individual queries to pick different query
        * optimizer versions.
-       *
        * Specifying `latest` as a value instructs Cloud Spanner to use the
        * latest supported query optimizer version. If not specified, Cloud Spanner
        * uses the optimizer version set at the database level options. Any other
        * positive integer (from the list of supported optimizer versions)
        * overrides the default optimizer version for query execution.
-       *
        * The list of supported optimizer versions can be queried from
        * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
-       *
        * Executing a SQL statement with an invalid optimizer version fails with
        * an `INVALID_ARGUMENT` error.
-       *
        * See
        * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
        * for more information on managing the query optimizer.
-       *
        * The `optimizer_version` statement hint has precedence over this setting.
        * </pre>
        *
@@ -1125,26 +1069,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        *
        * <pre>
        * An option to control the selection of optimizer version.
-       *
        * This parameter allows individual queries to pick different query
        * optimizer versions.
-       *
        * Specifying `latest` as a value instructs Cloud Spanner to use the
        * latest supported query optimizer version. If not specified, Cloud Spanner
        * uses the optimizer version set at the database level options. Any other
        * positive integer (from the list of supported optimizer versions)
        * overrides the default optimizer version for query execution.
-       *
        * The list of supported optimizer versions can be queried from
        * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
-       *
        * Executing a SQL statement with an invalid optimizer version fails with
        * an `INVALID_ARGUMENT` error.
-       *
        * See
        * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
        * for more information on managing the query optimizer.
-       *
        * The `optimizer_version` statement hint has precedence over this setting.
        * </pre>
        *
@@ -1163,26 +1101,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        *
        * <pre>
        * An option to control the selection of optimizer version.
-       *
        * This parameter allows individual queries to pick different query
        * optimizer versions.
-       *
        * Specifying `latest` as a value instructs Cloud Spanner to use the
        * latest supported query optimizer version. If not specified, Cloud Spanner
        * uses the optimizer version set at the database level options. Any other
        * positive integer (from the list of supported optimizer versions)
        * overrides the default optimizer version for query execution.
-       *
        * The list of supported optimizer versions can be queried from
        * SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS.
-       *
        * Executing a SQL statement with an invalid optimizer version fails with
        * an `INVALID_ARGUMENT` error.
-       *
        * See
        * https://cloud.google.com/spanner/docs/query-optimizer/manage-query-optimizer
        * for more information on managing the query optimizer.
-       *
        * The `optimizer_version` statement hint has precedence over this setting.
        * </pre>
        *
@@ -1208,26 +1140,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        *
        * <pre>
        * An option to control the selection of optimizer statistics package.
-       *
        * This parameter allows individual queries to use a different query
        * optimizer statistics package.
-       *
        * Specifying `latest` as a value instructs Cloud Spanner to use the latest
        * generated statistics package. If not specified, Cloud Spanner uses
        * the statistics package set at the database level options, or the latest
        * package if the database option is not set.
-       *
        * The statistics package requested by the query has to be exempt from
        * garbage collection. This can be achieved with the following DDL
        * statement:
-       *
        * ```
        * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
        * ```
-       *
        * The list of available statistics packages can be queried from
        * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
-       *
        * Executing a SQL statement with an invalid optimizer statistics package
        * or with a statistics package that allows garbage collection fails with
        * an `INVALID_ARGUMENT` error.
@@ -1253,26 +1179,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        *
        * <pre>
        * An option to control the selection of optimizer statistics package.
-       *
        * This parameter allows individual queries to use a different query
        * optimizer statistics package.
-       *
        * Specifying `latest` as a value instructs Cloud Spanner to use the latest
        * generated statistics package. If not specified, Cloud Spanner uses
        * the statistics package set at the database level options, or the latest
        * package if the database option is not set.
-       *
        * The statistics package requested by the query has to be exempt from
        * garbage collection. This can be achieved with the following DDL
        * statement:
-       *
        * ```
        * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
        * ```
-       *
        * The list of available statistics packages can be queried from
        * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
-       *
        * Executing a SQL statement with an invalid optimizer statistics package
        * or with a statistics package that allows garbage collection fails with
        * an `INVALID_ARGUMENT` error.
@@ -1298,26 +1218,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        *
        * <pre>
        * An option to control the selection of optimizer statistics package.
-       *
        * This parameter allows individual queries to use a different query
        * optimizer statistics package.
-       *
        * Specifying `latest` as a value instructs Cloud Spanner to use the latest
        * generated statistics package. If not specified, Cloud Spanner uses
        * the statistics package set at the database level options, or the latest
        * package if the database option is not set.
-       *
        * The statistics package requested by the query has to be exempt from
        * garbage collection. This can be achieved with the following DDL
        * statement:
-       *
        * ```
        * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
        * ```
-       *
        * The list of available statistics packages can be queried from
        * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
-       *
        * Executing a SQL statement with an invalid optimizer statistics package
        * or with a statistics package that allows garbage collection fails with
        * an `INVALID_ARGUMENT` error.
@@ -1342,26 +1256,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        *
        * <pre>
        * An option to control the selection of optimizer statistics package.
-       *
        * This parameter allows individual queries to use a different query
        * optimizer statistics package.
-       *
        * Specifying `latest` as a value instructs Cloud Spanner to use the latest
        * generated statistics package. If not specified, Cloud Spanner uses
        * the statistics package set at the database level options, or the latest
        * package if the database option is not set.
-       *
        * The statistics package requested by the query has to be exempt from
        * garbage collection. This can be achieved with the following DDL
        * statement:
-       *
        * ```
        * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
        * ```
-       *
        * The list of available statistics packages can be queried from
        * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
-       *
        * Executing a SQL statement with an invalid optimizer statistics package
        * or with a statistics package that allows garbage collection fails with
        * an `INVALID_ARGUMENT` error.
@@ -1382,26 +1290,20 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
        *
        * <pre>
        * An option to control the selection of optimizer statistics package.
-       *
        * This parameter allows individual queries to use a different query
        * optimizer statistics package.
-       *
        * Specifying `latest` as a value instructs Cloud Spanner to use the latest
        * generated statistics package. If not specified, Cloud Spanner uses
        * the statistics package set at the database level options, or the latest
        * package if the database option is not set.
-       *
        * The statistics package requested by the query has to be exempt from
        * garbage collection. This can be achieved with the following DDL
        * statement:
-       *
        * ```
        * ALTER STATISTICS &lt;package_name&gt; SET OPTIONS (allow_gc=false)
        * ```
-       *
        * The list of available statistics packages can be queried from
        * `INFORMATION_SCHEMA.SPANNER_STATISTICS`.
-       *
        * Executing a SQL statement with an invalid optimizer statistics package
        * or with a statistics package that allows garbage collection fails with
        * an `INVALID_ARGUMENT` error.
@@ -1549,14 +1451,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * <pre>
    * The transaction to use.
-   *
    * For queries, if none is provided, the default is a temporary read-only
    * transaction with strong concurrency.
-   *
    * Standard DML statements require a read-write transaction. To protect
    * against replays, single-use transactions are not supported.  The caller
    * must either supply an existing transaction ID or begin a new transaction.
-   *
    * Partitioned DML requires an existing Partitioned DML transaction ID.
    * </pre>
    *
@@ -1573,14 +1472,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * <pre>
    * The transaction to use.
-   *
    * For queries, if none is provided, the default is a temporary read-only
    * transaction with strong concurrency.
-   *
    * Standard DML statements require a read-write transaction. To protect
    * against replays, single-use transactions are not supported.  The caller
    * must either supply an existing transaction ID or begin a new transaction.
-   *
    * Partitioned DML requires an existing Partitioned DML transaction ID.
    * </pre>
    *
@@ -1599,14 +1495,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * <pre>
    * The transaction to use.
-   *
    * For queries, if none is provided, the default is a temporary read-only
    * transaction with strong concurrency.
-   *
    * Standard DML statements require a read-write transaction. To protect
    * against replays, single-use transactions are not supported.  The caller
    * must either supply an existing transaction ID or begin a new transaction.
-   *
    * Partitioned DML requires an existing Partitioned DML transaction ID.
    * </pre>
    *
@@ -1677,17 +1570,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * <pre>
    * Parameter names and values that bind to placeholders in the SQL string.
-   *
    * A parameter placeholder consists of the `&#64;` character followed by the
    * parameter name (for example, `&#64;firstName`). Parameter names must conform
    * to the naming requirements of identifiers as specified at
    * https://cloud.google.com/spanner/docs/lexical#identifiers.
-   *
    * Parameters can appear anywhere that a literal value is expected.  The same
    * parameter name can be used more than once, for example:
-   *
    * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-   *
    * It is an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
@@ -1704,17 +1593,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * <pre>
    * Parameter names and values that bind to placeholders in the SQL string.
-   *
    * A parameter placeholder consists of the `&#64;` character followed by the
    * parameter name (for example, `&#64;firstName`). Parameter names must conform
    * to the naming requirements of identifiers as specified at
    * https://cloud.google.com/spanner/docs/lexical#identifiers.
-   *
    * Parameters can appear anywhere that a literal value is expected.  The same
    * parameter name can be used more than once, for example:
-   *
    * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-   *
    * It is an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
@@ -1731,17 +1616,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    *
    * <pre>
    * Parameter names and values that bind to placeholders in the SQL string.
-   *
    * A parameter placeholder consists of the `&#64;` character followed by the
    * parameter name (for example, `&#64;firstName`). Parameter names must conform
    * to the naming requirements of identifiers as specified at
    * https://cloud.google.com/spanner/docs/lexical#identifiers.
-   *
    * Parameters can appear anywhere that a literal value is expected.  The same
    * parameter name can be used more than once, for example:
-   *
    * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-   *
    * It is an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
@@ -1788,7 +1669,6 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    * It is not always possible for Cloud Spanner to infer the right SQL type
    * from a JSON value.  For example, values of type `BYTES` and values
    * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-   *
    * In these cases, `param_types` can be used to specify the exact
    * SQL type for some or all of the SQL statement parameters. See the
    * definition of [Type][google.spanner.v1.Type] for more information
@@ -1817,7 +1697,6 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    * It is not always possible for Cloud Spanner to infer the right SQL type
    * from a JSON value.  For example, values of type `BYTES` and values
    * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-   *
    * In these cases, `param_types` can be used to specify the exact
    * SQL type for some or all of the SQL statement parameters. See the
    * definition of [Type][google.spanner.v1.Type] for more information
@@ -1837,7 +1716,6 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    * It is not always possible for Cloud Spanner to infer the right SQL type
    * from a JSON value.  For example, values of type `BYTES` and values
    * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-   *
    * In these cases, `param_types` can be used to specify the exact
    * SQL type for some or all of the SQL statement parameters. See the
    * definition of [Type][google.spanner.v1.Type] for more information
@@ -1865,7 +1743,6 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    * It is not always possible for Cloud Spanner to infer the right SQL type
    * from a JSON value.  For example, values of type `BYTES` and values
    * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-   *
    * In these cases, `param_types` can be used to specify the exact
    * SQL type for some or all of the SQL statement parameters. See the
    * definition of [Type][google.spanner.v1.Type] for more information
@@ -1979,12 +1856,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    * A per-transaction sequence number used to identify this request. This field
    * makes each request idempotent such that if the request is received multiple
    * times, at most one will succeed.
-   *
    * The sequence number must be monotonically increasing within the
    * transaction. If a request arrives for the first time with an out-of-order
    * sequence number, the transaction may be aborted. Replays of previously
    * handled requests will yield the same response as the first execution.
-   *
    * Required for DML statements. Ignored for queries.
    * </pre>
    *
@@ -2105,7 +1980,6 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
    * <pre>
    * If this is for a partitioned query and this field is set to `true`, the
    * request will be executed via Spanner independent compute resources.
-   *
    * If the field is set to `true` but the request does not set
    * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
    * </pre>
@@ -2905,14 +2779,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * The transaction to use.
-     *
      * For queries, if none is provided, the default is a temporary read-only
      * transaction with strong concurrency.
-     *
      * Standard DML statements require a read-write transaction. To protect
      * against replays, single-use transactions are not supported.  The caller
      * must either supply an existing transaction ID or begin a new transaction.
-     *
      * Partitioned DML requires an existing Partitioned DML transaction ID.
      * </pre>
      *
@@ -2928,14 +2799,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * The transaction to use.
-     *
      * For queries, if none is provided, the default is a temporary read-only
      * transaction with strong concurrency.
-     *
      * Standard DML statements require a read-write transaction. To protect
      * against replays, single-use transactions are not supported.  The caller
      * must either supply an existing transaction ID or begin a new transaction.
-     *
      * Partitioned DML requires an existing Partitioned DML transaction ID.
      * </pre>
      *
@@ -2957,14 +2825,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * The transaction to use.
-     *
      * For queries, if none is provided, the default is a temporary read-only
      * transaction with strong concurrency.
-     *
      * Standard DML statements require a read-write transaction. To protect
      * against replays, single-use transactions are not supported.  The caller
      * must either supply an existing transaction ID or begin a new transaction.
-     *
      * Partitioned DML requires an existing Partitioned DML transaction ID.
      * </pre>
      *
@@ -2988,14 +2853,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * The transaction to use.
-     *
      * For queries, if none is provided, the default is a temporary read-only
      * transaction with strong concurrency.
-     *
      * Standard DML statements require a read-write transaction. To protect
      * against replays, single-use transactions are not supported.  The caller
      * must either supply an existing transaction ID or begin a new transaction.
-     *
      * Partitioned DML requires an existing Partitioned DML transaction ID.
      * </pre>
      *
@@ -3017,14 +2879,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * The transaction to use.
-     *
      * For queries, if none is provided, the default is a temporary read-only
      * transaction with strong concurrency.
-     *
      * Standard DML statements require a read-write transaction. To protect
      * against replays, single-use transactions are not supported.  The caller
      * must either supply an existing transaction ID or begin a new transaction.
-     *
      * Partitioned DML requires an existing Partitioned DML transaction ID.
      * </pre>
      *
@@ -3051,14 +2910,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * The transaction to use.
-     *
      * For queries, if none is provided, the default is a temporary read-only
      * transaction with strong concurrency.
-     *
      * Standard DML statements require a read-write transaction. To protect
      * against replays, single-use transactions are not supported.  The caller
      * must either supply an existing transaction ID or begin a new transaction.
-     *
      * Partitioned DML requires an existing Partitioned DML transaction ID.
      * </pre>
      *
@@ -3079,14 +2935,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * The transaction to use.
-     *
      * For queries, if none is provided, the default is a temporary read-only
      * transaction with strong concurrency.
-     *
      * Standard DML statements require a read-write transaction. To protect
      * against replays, single-use transactions are not supported.  The caller
      * must either supply an existing transaction ID or begin a new transaction.
-     *
      * Partitioned DML requires an existing Partitioned DML transaction ID.
      * </pre>
      *
@@ -3102,14 +2955,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * The transaction to use.
-     *
      * For queries, if none is provided, the default is a temporary read-only
      * transaction with strong concurrency.
-     *
      * Standard DML statements require a read-write transaction. To protect
      * against replays, single-use transactions are not supported.  The caller
      * must either supply an existing transaction ID or begin a new transaction.
-     *
      * Partitioned DML requires an existing Partitioned DML transaction ID.
      * </pre>
      *
@@ -3129,14 +2979,11 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * The transaction to use.
-     *
      * For queries, if none is provided, the default is a temporary read-only
      * transaction with strong concurrency.
-     *
      * Standard DML statements require a read-write transaction. To protect
      * against replays, single-use transactions are not supported.  The caller
      * must either supply an existing transaction ID or begin a new transaction.
-     *
      * Partitioned DML requires an existing Partitioned DML transaction ID.
      * </pre>
      *
@@ -3276,17 +3123,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the SQL string.
-     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names must conform
      * to the naming requirements of identifiers as specified at
      * https://cloud.google.com/spanner/docs/lexical#identifiers.
-     *
      * Parameters can appear anywhere that a literal value is expected.  The same
      * parameter name can be used more than once, for example:
-     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -3302,17 +3145,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the SQL string.
-     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names must conform
      * to the naming requirements of identifiers as specified at
      * https://cloud.google.com/spanner/docs/lexical#identifiers.
-     *
      * Parameters can appear anywhere that a literal value is expected.  The same
      * parameter name can be used more than once, for example:
-     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -3332,17 +3171,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the SQL string.
-     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names must conform
      * to the naming requirements of identifiers as specified at
      * https://cloud.google.com/spanner/docs/lexical#identifiers.
-     *
      * Parameters can appear anywhere that a literal value is expected.  The same
      * parameter name can be used more than once, for example:
-     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -3366,17 +3201,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the SQL string.
-     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names must conform
      * to the naming requirements of identifiers as specified at
      * https://cloud.google.com/spanner/docs/lexical#identifiers.
-     *
      * Parameters can appear anywhere that a literal value is expected.  The same
      * parameter name can be used more than once, for example:
-     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -3397,17 +3228,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the SQL string.
-     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names must conform
      * to the naming requirements of identifiers as specified at
      * https://cloud.google.com/spanner/docs/lexical#identifiers.
-     *
      * Parameters can appear anywhere that a literal value is expected.  The same
      * parameter name can be used more than once, for example:
-     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -3434,17 +3261,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the SQL string.
-     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names must conform
      * to the naming requirements of identifiers as specified at
      * https://cloud.google.com/spanner/docs/lexical#identifiers.
-     *
      * Parameters can appear anywhere that a literal value is expected.  The same
      * parameter name can be used more than once, for example:
-     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -3465,17 +3288,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the SQL string.
-     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names must conform
      * to the naming requirements of identifiers as specified at
      * https://cloud.google.com/spanner/docs/lexical#identifiers.
-     *
      * Parameters can appear anywhere that a literal value is expected.  The same
      * parameter name can be used more than once, for example:
-     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -3491,17 +3310,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the SQL string.
-     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names must conform
      * to the naming requirements of identifiers as specified at
      * https://cloud.google.com/spanner/docs/lexical#identifiers.
-     *
      * Parameters can appear anywhere that a literal value is expected.  The same
      * parameter name can be used more than once, for example:
-     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -3519,17 +3334,13 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the SQL string.
-     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names must conform
      * to the naming requirements of identifiers as specified at
      * https://cloud.google.com/spanner/docs/lexical#identifiers.
-     *
      * Parameters can appear anywhere that a literal value is expected.  The same
      * parameter name can be used more than once, for example:
-     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -3587,7 +3398,6 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -3616,7 +3426,6 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -3636,7 +3445,6 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -3664,7 +3472,6 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -3698,7 +3505,6 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -3727,7 +3533,6 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -3754,7 +3559,6 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
      * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -4014,12 +3818,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * A per-transaction sequence number used to identify this request. This field
      * makes each request idempotent such that if the request is received multiple
      * times, at most one will succeed.
-     *
      * The sequence number must be monotonically increasing within the
      * transaction. If a request arrives for the first time with an out-of-order
      * sequence number, the transaction may be aborted. Replays of previously
      * handled requests will yield the same response as the first execution.
-     *
      * Required for DML statements. Ignored for queries.
      * </pre>
      *
@@ -4038,12 +3840,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * A per-transaction sequence number used to identify this request. This field
      * makes each request idempotent such that if the request is received multiple
      * times, at most one will succeed.
-     *
      * The sequence number must be monotonically increasing within the
      * transaction. If a request arrives for the first time with an out-of-order
      * sequence number, the transaction may be aborted. Replays of previously
      * handled requests will yield the same response as the first execution.
-     *
      * Required for DML statements. Ignored for queries.
      * </pre>
      *
@@ -4066,12 +3866,10 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * A per-transaction sequence number used to identify this request. This field
      * makes each request idempotent such that if the request is received multiple
      * times, at most one will succeed.
-     *
      * The sequence number must be monotonically increasing within the
      * transaction. If a request arrives for the first time with an out-of-order
      * sequence number, the transaction may be aborted. Replays of previously
      * handled requests will yield the same response as the first execution.
-     *
      * Required for DML statements. Ignored for queries.
      * </pre>
      *
@@ -4462,7 +4260,6 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * <pre>
      * If this is for a partitioned query and this field is set to `true`, the
      * request will be executed via Spanner independent compute resources.
-     *
      * If the field is set to `true` but the request does not set
      * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
      * </pre>
@@ -4481,7 +4278,6 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * <pre>
      * If this is for a partitioned query and this field is set to `true`, the
      * request will be executed via Spanner independent compute resources.
-     *
      * If the field is set to `true` but the request does not set
      * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
      * </pre>
@@ -4504,7 +4300,6 @@ public final class ExecuteSqlRequest extends com.google.protobuf.GeneratedMessag
      * <pre>
      * If this is for a partitioned query and this field is set to `true`, the
      * request will be executed via Spanner independent compute resources.
-     *
      * If the field is set to `true` but the request does not set
      * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
      * </pre>

@@ -50,6 +50,11 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
     return new RestoreDatabaseMetadata();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.database.v1.SpannerDatabaseAdminProto
         .internal_static_google_spanner_admin_database_v1_RestoreDatabaseMetadata_descriptor;
@@ -66,8 +71,6 @@ public final class RestoreDatabaseMetadata extends com.google.protobuf.Generated
   }
 
   private int sourceInfoCase_ = 0;
-
-  @SuppressWarnings("serial")
   private java.lang.Object sourceInfo_;
 
   public enum SourceInfoCase

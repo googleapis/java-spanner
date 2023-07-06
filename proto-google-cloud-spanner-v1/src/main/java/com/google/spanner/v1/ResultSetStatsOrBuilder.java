@@ -65,7 +65,6 @@ public interface ResultSetStatsOrBuilder
    * Aggregated statistics from the execution of the query. Only present when
    * the query is profiled. For example, a query could return the statistics as
    * follows:
-   *
    *     {
    *       "rows_returned": "3",
    *       "elapsed_time": "1.22 secs",
@@ -85,7 +84,6 @@ public interface ResultSetStatsOrBuilder
    * Aggregated statistics from the execution of the query. Only present when
    * the query is profiled. For example, a query could return the statistics as
    * follows:
-   *
    *     {
    *       "rows_returned": "3",
    *       "elapsed_time": "1.22 secs",
@@ -105,7 +103,6 @@ public interface ResultSetStatsOrBuilder
    * Aggregated statistics from the execution of the query. Only present when
    * the query is profiled. For example, a query could return the statistics as
    * follows:
-   *
    *     {
    *       "rows_returned": "3",
    *       "elapsed_time": "1.22 secs",
@@ -169,5 +166,5 @@ public interface ResultSetStatsOrBuilder
    */
   long getRowCountLowerBound();
 
-  com.google.spanner.v1.ResultSetStats.RowCountCase getRowCountCase();
+  public com.google.spanner.v1.ResultSetStats.RowCountCase getRowCountCase();
 }

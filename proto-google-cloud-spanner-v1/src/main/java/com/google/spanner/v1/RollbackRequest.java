@@ -48,6 +48,11 @@ public final class RollbackRequest extends com.google.protobuf.GeneratedMessageV
     return new RollbackRequest();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_RollbackRequest_descriptor;

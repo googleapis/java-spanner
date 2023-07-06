@@ -47,6 +47,11 @@ public final class DeleteSessionRequest extends com.google.protobuf.GeneratedMes
     return new DeleteSessionRequest();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_DeleteSessionRequest_descriptor;

@@ -156,13 +156,11 @@ public interface BackupOrBuilder
    * <pre>
    * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
    * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
-   *
    * A globally unique identifier for the backup which cannot be
    * changed. Values are of the form
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
    * The final segment of the name must be between 2 and 60 characters
    * in length.
-   *
    * The backup is stored in the location(s) specified in the instance
    * configuration of the instance containing the backup, identified
    * by the prefix of the backup name of the form
@@ -180,13 +178,11 @@ public interface BackupOrBuilder
    * <pre>
    * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
    * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
-   *
    * A globally unique identifier for the backup which cannot be
    * changed. Values are of the form
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
    * The final segment of the name must be between 2 and 60 characters
    * in length.
-   *
    * The backup is stored in the location(s) specified in the instance
    * configuration of the instance containing the backup, identified
    * by the prefix of the backup name of the form

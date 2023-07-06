@@ -105,13 +105,10 @@ public interface ListInstancesRequestOrBuilder
    * <pre>
    * An expression for filtering the results of the request. Filter rules are
    * case insensitive. The fields eligible for filtering are:
-   *
    *   * `name`
    *   * `display_name`
    *   * `labels.key` where key is the name of a label
-   *
    * Some examples of using filters are:
-   *
    *   * `name:*` --&gt; The instance has a name.
    *   * `name:Howl` --&gt; The instance's name contains the string "howl".
    *   * `name:HOWL` --&gt; Equivalent to above.
@@ -135,13 +132,10 @@ public interface ListInstancesRequestOrBuilder
    * <pre>
    * An expression for filtering the results of the request. Filter rules are
    * case insensitive. The fields eligible for filtering are:
-   *
    *   * `name`
    *   * `display_name`
    *   * `labels.key` where key is the name of a label
-   *
    * Some examples of using filters are:
-   *
    *   * `name:*` --&gt; The instance has a name.
    *   * `name:Howl` --&gt; The instance's name contains the string "howl".
    *   * `name:HOWL` --&gt; Equivalent to above.

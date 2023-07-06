@@ -40,6 +40,11 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
     return new ReplicaInfo();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
         .internal_static_google_spanner_admin_instance_v1_ReplicaInfo_descriptor;
@@ -82,7 +87,6 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Read-write replicas support both reads and writes. These replicas:
-     *
      * * Maintain a full copy of your data.
      * * Serve reads.
      * * Can vote whether to commit a write.
@@ -98,7 +102,6 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Read-only replicas only support reads (not writes). Read-only replicas:
-     *
      * * Maintain a full copy of your data.
      * * Serve reads.
      * * Do not participate in voting to commit writes.
@@ -114,7 +117,6 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Witness replicas don't support reads but do participate in voting to
      * commit writes. Witness replicas:
-     *
      * * Do not maintain a full copy of data.
      * * Do not serve reads.
      * * Vote whether to commit writes.
@@ -142,7 +144,6 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Read-write replicas support both reads and writes. These replicas:
-     *
      * * Maintain a full copy of your data.
      * * Serve reads.
      * * Can vote whether to commit a write.
@@ -158,7 +159,6 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Read-only replicas only support reads (not writes). Read-only replicas:
-     *
      * * Maintain a full copy of your data.
      * * Serve reads.
      * * Do not participate in voting to commit writes.
@@ -174,7 +174,6 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Witness replicas don't support reads but do participate in voting to
      * commit writes. Witness replicas:
-     *
      * * Do not maintain a full copy of data.
      * * Do not serve reads.
      * * Vote whether to commit writes.

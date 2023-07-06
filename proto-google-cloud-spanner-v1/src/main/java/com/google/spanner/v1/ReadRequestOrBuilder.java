@@ -207,12 +207,10 @@ public interface ReadRequestOrBuilder
    * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to be yielded, unless [index][google.spanner.v1.ReadRequest.index]
    * is present. If [index][google.spanner.v1.ReadRequest.index] is present, then [key_set][google.spanner.v1.ReadRequest.key_set] instead names
    * index keys in [index][google.spanner.v1.ReadRequest.index].
-   *
    * If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is empty, rows are yielded
    * in table primary key order (if [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
    * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is not
    * empty, rows will be yielded in an unspecified order.
-   *
    * It is not an error for the `key_set` to name rows that do not
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
@@ -230,12 +228,10 @@ public interface ReadRequestOrBuilder
    * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to be yielded, unless [index][google.spanner.v1.ReadRequest.index]
    * is present. If [index][google.spanner.v1.ReadRequest.index] is present, then [key_set][google.spanner.v1.ReadRequest.key_set] instead names
    * index keys in [index][google.spanner.v1.ReadRequest.index].
-   *
    * If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is empty, rows are yielded
    * in table primary key order (if [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
    * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is not
    * empty, rows will be yielded in an unspecified order.
-   *
    * It is not an error for the `key_set` to name rows that do not
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
@@ -253,12 +249,10 @@ public interface ReadRequestOrBuilder
    * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to be yielded, unless [index][google.spanner.v1.ReadRequest.index]
    * is present. If [index][google.spanner.v1.ReadRequest.index] is present, then [key_set][google.spanner.v1.ReadRequest.key_set] instead names
    * index keys in [index][google.spanner.v1.ReadRequest.index].
-   *
    * If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is empty, rows are yielded
    * in table primary key order (if [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
    * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is not
    * empty, rows will be yielded in an unspecified order.
-   *
    * It is not an error for the `key_set` to name rows that do not
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
@@ -357,7 +351,6 @@ public interface ReadRequestOrBuilder
    * <pre>
    * If this is for a partitioned read and this field is set to `true`, the
    * request will be executed via Spanner independent compute resources.
-   *
    * If the field is set to `true` but the request does not set
    * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
    * </pre>

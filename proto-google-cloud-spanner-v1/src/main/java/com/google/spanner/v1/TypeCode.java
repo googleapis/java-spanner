@@ -24,7 +24,6 @@ package com.google.spanner.v1;
  * <pre>
  * `TypeCode` is used as part of [Type][google.spanner.v1.Type] to
  * indicate the type of a Cloud Spanner value.
- *
  * Each legal value of a type can be encoded to or decoded from a JSON
  * value, using the encodings described below. All Cloud Spanner values can
  * be `null`, regardless of type; `null`s are always encoded as a JSON
@@ -81,7 +80,6 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <pre>
    * Encoded as `string` in RFC 3339 timestamp format. The time zone
    * must be present, and must be `"Z"`.
-   *
    * If the schema has the column option
    * `allow_commit_timestamp=true`, the placeholder string
    * `"spanner.commit_timestamp()"` can be used to instruct the system
@@ -154,7 +152,6 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * &lt;br&gt;Decimal format:
    * &lt;br&gt;`[+-]Digits[.[Digits]]` or
    * &lt;br&gt;`[+-][Digits].Digits`
-   *
    * Scientific notation:
    * &lt;br&gt;`[+-]Digits[.[Digits]][ExponentIndicator[+-]Digits]` or
    * &lt;br&gt;`[+-][Digits].Digits[ExponentIndicator[+-]Digits]`
@@ -170,7 +167,6 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <pre>
    * Encoded as a JSON-formatted `string` as described in RFC 7159. The
    * following rules are applied when parsing JSON input:
-   *
    * - Whitespace characters are not preserved.
    * - If a JSON object has duplicate keys, only the first key is preserved.
    * - Members of a JSON object are not guaranteed to have their order
@@ -231,7 +227,6 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <pre>
    * Encoded as `string` in RFC 3339 timestamp format. The time zone
    * must be present, and must be `"Z"`.
-   *
    * If the schema has the column option
    * `allow_commit_timestamp=true`, the placeholder string
    * `"spanner.commit_timestamp()"` can be used to instruct the system
@@ -304,7 +299,6 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * &lt;br&gt;Decimal format:
    * &lt;br&gt;`[+-]Digits[.[Digits]]` or
    * &lt;br&gt;`[+-][Digits].Digits`
-   *
    * Scientific notation:
    * &lt;br&gt;`[+-]Digits[.[Digits]][ExponentIndicator[+-]Digits]` or
    * &lt;br&gt;`[+-][Digits].Digits[ExponentIndicator[+-]Digits]`
@@ -320,7 +314,6 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <pre>
    * Encoded as a JSON-formatted `string` as described in RFC 7159. The
    * following rules are applied when parsing JSON input:
-   *
    * - Whitespace characters are not preserved.
    * - If a JSON object has duplicate keys, only the first key is preserved.
    * - Members of a JSON object are not guaranteed to have their order

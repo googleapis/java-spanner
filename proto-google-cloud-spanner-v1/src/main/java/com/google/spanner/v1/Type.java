@@ -49,6 +49,11 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
     return new Type();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.TypeProto.internal_static_google_spanner_v1_Type_descriptor;
   }

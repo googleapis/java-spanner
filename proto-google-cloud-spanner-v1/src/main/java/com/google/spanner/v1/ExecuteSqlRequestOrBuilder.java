@@ -57,14 +57,11 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * <pre>
    * The transaction to use.
-   *
    * For queries, if none is provided, the default is a temporary read-only
    * transaction with strong concurrency.
-   *
    * Standard DML statements require a read-write transaction. To protect
    * against replays, single-use transactions are not supported.  The caller
    * must either supply an existing transaction ID or begin a new transaction.
-   *
    * Partitioned DML requires an existing Partitioned DML transaction ID.
    * </pre>
    *
@@ -78,14 +75,11 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * <pre>
    * The transaction to use.
-   *
    * For queries, if none is provided, the default is a temporary read-only
    * transaction with strong concurrency.
-   *
    * Standard DML statements require a read-write transaction. To protect
    * against replays, single-use transactions are not supported.  The caller
    * must either supply an existing transaction ID or begin a new transaction.
-   *
    * Partitioned DML requires an existing Partitioned DML transaction ID.
    * </pre>
    *
@@ -99,14 +93,11 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * <pre>
    * The transaction to use.
-   *
    * For queries, if none is provided, the default is a temporary read-only
    * transaction with strong concurrency.
-   *
    * Standard DML statements require a read-write transaction. To protect
    * against replays, single-use transactions are not supported.  The caller
    * must either supply an existing transaction ID or begin a new transaction.
-   *
    * Partitioned DML requires an existing Partitioned DML transaction ID.
    * </pre>
    *
@@ -144,17 +135,13 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * <pre>
    * Parameter names and values that bind to placeholders in the SQL string.
-   *
    * A parameter placeholder consists of the `&#64;` character followed by the
    * parameter name (for example, `&#64;firstName`). Parameter names must conform
    * to the naming requirements of identifiers as specified at
    * https://cloud.google.com/spanner/docs/lexical#identifiers.
-   *
    * Parameters can appear anywhere that a literal value is expected.  The same
    * parameter name can be used more than once, for example:
-   *
    * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-   *
    * It is an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
@@ -168,17 +155,13 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * <pre>
    * Parameter names and values that bind to placeholders in the SQL string.
-   *
    * A parameter placeholder consists of the `&#64;` character followed by the
    * parameter name (for example, `&#64;firstName`). Parameter names must conform
    * to the naming requirements of identifiers as specified at
    * https://cloud.google.com/spanner/docs/lexical#identifiers.
-   *
    * Parameters can appear anywhere that a literal value is expected.  The same
    * parameter name can be used more than once, for example:
-   *
    * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-   *
    * It is an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
@@ -192,17 +175,13 @@ public interface ExecuteSqlRequestOrBuilder
    *
    * <pre>
    * Parameter names and values that bind to placeholders in the SQL string.
-   *
    * A parameter placeholder consists of the `&#64;` character followed by the
    * parameter name (for example, `&#64;firstName`). Parameter names must conform
    * to the naming requirements of identifiers as specified at
    * https://cloud.google.com/spanner/docs/lexical#identifiers.
-   *
    * Parameters can appear anywhere that a literal value is expected.  The same
    * parameter name can be used more than once, for example:
-   *
    * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
-   *
    * It is an error to execute a SQL statement with unbound parameters.
    * </pre>
    *
@@ -217,7 +196,6 @@ public interface ExecuteSqlRequestOrBuilder
    * It is not always possible for Cloud Spanner to infer the right SQL type
    * from a JSON value.  For example, values of type `BYTES` and values
    * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-   *
    * In these cases, `param_types` can be used to specify the exact
    * SQL type for some or all of the SQL statement parameters. See the
    * definition of [Type][google.spanner.v1.Type] for more information
@@ -234,7 +212,6 @@ public interface ExecuteSqlRequestOrBuilder
    * It is not always possible for Cloud Spanner to infer the right SQL type
    * from a JSON value.  For example, values of type `BYTES` and values
    * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-   *
    * In these cases, `param_types` can be used to specify the exact
    * SQL type for some or all of the SQL statement parameters. See the
    * definition of [Type][google.spanner.v1.Type] for more information
@@ -254,7 +231,6 @@ public interface ExecuteSqlRequestOrBuilder
    * It is not always possible for Cloud Spanner to infer the right SQL type
    * from a JSON value.  For example, values of type `BYTES` and values
    * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-   *
    * In these cases, `param_types` can be used to specify the exact
    * SQL type for some or all of the SQL statement parameters. See the
    * definition of [Type][google.spanner.v1.Type] for more information
@@ -271,7 +247,6 @@ public interface ExecuteSqlRequestOrBuilder
    * It is not always possible for Cloud Spanner to infer the right SQL type
    * from a JSON value.  For example, values of type `BYTES` and values
    * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-   *
    * In these cases, `param_types` can be used to specify the exact
    * SQL type for some or all of the SQL statement parameters. See the
    * definition of [Type][google.spanner.v1.Type] for more information
@@ -292,7 +267,6 @@ public interface ExecuteSqlRequestOrBuilder
    * It is not always possible for Cloud Spanner to infer the right SQL type
    * from a JSON value.  For example, values of type `BYTES` and values
    * of type `STRING` both appear in [params][google.spanner.v1.ExecuteSqlRequest.params] as JSON strings.
-   *
    * In these cases, `param_types` can be used to specify the exact
    * SQL type for some or all of the SQL statement parameters. See the
    * definition of [Type][google.spanner.v1.Type] for more information
@@ -373,12 +347,10 @@ public interface ExecuteSqlRequestOrBuilder
    * A per-transaction sequence number used to identify this request. This field
    * makes each request idempotent such that if the request is received multiple
    * times, at most one will succeed.
-   *
    * The sequence number must be monotonically increasing within the
    * transaction. If a request arrives for the first time with an out-of-order
    * sequence number, the transaction may be aborted. Replays of previously
    * handled requests will yield the same response as the first execution.
-   *
    * Required for DML statements. Ignored for queries.
    * </pre>
    *
@@ -464,7 +436,6 @@ public interface ExecuteSqlRequestOrBuilder
    * <pre>
    * If this is for a partitioned query and this field is set to `true`, the
    * request will be executed via Spanner independent compute resources.
-   *
    * If the field is set to `true` but the request does not set
    * `partition_token`, the API will return an `INVALID_ARGUMENT` error.
    * </pre>

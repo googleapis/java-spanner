@@ -52,6 +52,11 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
     return new Database();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.database.v1.SpannerDatabaseAdminProto
         .internal_static_google_spanner_admin_database_v1_Database_descriptor;
@@ -114,7 +119,6 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The database is fully created and ready for use, but is still
      * being optimized for performance and cannot handle full load.
-     *
      * In this state, the database still references the backup
      * it was restore from, preventing the backup
      * from being deleted. When optimizations are complete, the full performance
@@ -165,7 +169,6 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * The database is fully created and ready for use, but is still
      * being optimized for performance and cannot handle full load.
-     *
      * In this state, the database still references the backup
      * it was restore from, preventing the backup
      * from being deleted. When optimizations are complete, the full performance
@@ -547,10 +550,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * Output only. For databases that are using customer managed encryption, this
    * field contains the encryption information for the database, such as
    * encryption state and the Cloud KMS key versions that are in use.
-   *
    * For databases that are using Google default or other types of encryption,
    * this field is empty.
-   *
    * This field is propagated lazily from the backend. There might be a delay
    * from when a key version is being used and when it appears in this field.
    * </pre>
@@ -571,10 +572,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * Output only. For databases that are using customer managed encryption, this
    * field contains the encryption information for the database, such as
    * encryption state and the Cloud KMS key versions that are in use.
-   *
    * For databases that are using Google default or other types of encryption,
    * this field is empty.
-   *
    * This field is propagated lazily from the backend. There might be a delay
    * from when a key version is being used and when it appears in this field.
    * </pre>
@@ -595,10 +594,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * Output only. For databases that are using customer managed encryption, this
    * field contains the encryption information for the database, such as
    * encryption state and the Cloud KMS key versions that are in use.
-   *
    * For databases that are using Google default or other types of encryption,
    * this field is empty.
-   *
    * This field is propagated lazily from the backend. There might be a delay
    * from when a key version is being used and when it appears in this field.
    * </pre>
@@ -618,10 +615,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * Output only. For databases that are using customer managed encryption, this
    * field contains the encryption information for the database, such as
    * encryption state and the Cloud KMS key versions that are in use.
-   *
    * For databases that are using Google default or other types of encryption,
    * this field is empty.
-   *
    * This field is propagated lazily from the backend. There might be a delay
    * from when a key version is being used and when it appears in this field.
    * </pre>
@@ -641,10 +636,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * Output only. For databases that are using customer managed encryption, this
    * field contains the encryption information for the database, such as
    * encryption state and the Cloud KMS key versions that are in use.
-   *
    * For databases that are using Google default or other types of encryption,
    * this field is empty.
-   *
    * This field is propagated lazily from the backend. There might be a delay
    * from when a key version is being used and when it appears in this field.
    * </pre>
@@ -796,7 +789,6 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * Output only. The read-write region which contains the database's leader
    * replicas.
-   *
    * This is the same as the value of default_leader
    * database option set using DatabaseAdmin.CreateDatabase or
    * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
@@ -824,7 +816,6 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * Output only. The read-write region which contains the database's leader
    * replicas.
-   *
    * This is the same as the value of default_leader
    * database option set using DatabaseAdmin.CreateDatabase or
    * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
@@ -2512,10 +2503,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2539,10 +2528,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2565,10 +2552,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2591,10 +2576,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2624,10 +2607,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2654,10 +2635,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2686,10 +2665,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2719,10 +2696,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2749,10 +2724,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2779,10 +2752,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2809,10 +2780,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2838,10 +2807,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2867,10 +2834,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2890,10 +2855,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2917,10 +2880,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2944,10 +2905,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2967,10 +2926,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -2992,10 +2949,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
      * encryption state and the Cloud KMS key versions that are in use.
-     *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
-     *
      * This field is propagated lazily from the backend. There might be a delay
      * from when a key version is being used and when it appears in this field.
      * </pre>
@@ -3404,7 +3359,6 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. The read-write region which contains the database's leader
      * replicas.
-     *
      * This is the same as the value of default_leader
      * database option set using DatabaseAdmin.CreateDatabase or
      * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
@@ -3431,7 +3385,6 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. The read-write region which contains the database's leader
      * replicas.
-     *
      * This is the same as the value of default_leader
      * database option set using DatabaseAdmin.CreateDatabase or
      * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
@@ -3458,7 +3411,6 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. The read-write region which contains the database's leader
      * replicas.
-     *
      * This is the same as the value of default_leader
      * database option set using DatabaseAdmin.CreateDatabase or
      * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
@@ -3484,7 +3436,6 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. The read-write region which contains the database's leader
      * replicas.
-     *
      * This is the same as the value of default_leader
      * database option set using DatabaseAdmin.CreateDatabase or
      * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
@@ -3506,7 +3457,6 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. The read-write region which contains the database's leader
      * replicas.
-     *
      * This is the same as the value of default_leader
      * database option set using DatabaseAdmin.CreateDatabase or
      * DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.

@@ -47,6 +47,11 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     return new Mutation();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.MutationProto
         .internal_static_google_spanner_v1_Mutation_descriptor;
@@ -96,7 +101,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -112,7 +116,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -128,7 +131,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -145,7 +147,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -266,7 +267,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
 
     private Write() {
       table_ = "";
-      columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       values_ = java.util.Collections.emptyList();
     }
 
@@ -274,6 +275,11 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     @SuppressWarnings({"unused"})
     protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
       return new Write();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+      return this.unknownFields;
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -345,14 +351,12 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     public static final int COLUMNS_FIELD_NUMBER = 2;
 
     @SuppressWarnings("serial")
-    private com.google.protobuf.LazyStringArrayList columns_ =
-        com.google.protobuf.LazyStringArrayList.emptyList();
+    private com.google.protobuf.LazyStringList columns_;
     /**
      *
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -370,7 +374,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -388,7 +391,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -407,7 +409,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -756,7 +757,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         super.clear();
         bitField0_ = 0;
         table_ = "";
-        columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
+        columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000002);
         if (valuesBuilder_ == null) {
           values_ = java.util.Collections.emptyList();
         } else {
@@ -800,6 +802,11 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
 
       private void buildPartialRepeatedFields(com.google.spanner.v1.Mutation.Write result) {
+        if (((bitField0_ & 0x00000002) != 0)) {
+          columns_ = columns_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        }
+        result.columns_ = columns_;
         if (valuesBuilder_ == null) {
           if (((bitField0_ & 0x00000004) != 0)) {
             values_ = java.util.Collections.unmodifiableList(values_);
@@ -815,10 +822,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           result.table_ = table_;
-        }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          columns_.makeImmutable();
-          result.columns_ = columns_;
         }
       }
 
@@ -877,7 +880,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         if (!other.columns_.isEmpty()) {
           if (columns_.isEmpty()) {
             columns_ = other.columns_;
-            bitField0_ |= 0x00000002;
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureColumnsIsMutable();
             columns_.addAll(other.columns_);
@@ -1087,21 +1090,20 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         return this;
       }
 
-      private com.google.protobuf.LazyStringArrayList columns_ =
-          com.google.protobuf.LazyStringArrayList.emptyList();
+      private com.google.protobuf.LazyStringList columns_ =
+          com.google.protobuf.LazyStringArrayList.EMPTY;
 
       private void ensureColumnsIsMutable() {
-        if (!columns_.isModifiable()) {
+        if (!((bitField0_ & 0x00000002) != 0)) {
           columns_ = new com.google.protobuf.LazyStringArrayList(columns_);
+          bitField0_ |= 0x00000002;
         }
-        bitField0_ |= 0x00000002;
       }
       /**
        *
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1112,15 +1114,13 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * @return A list containing the columns.
        */
       public com.google.protobuf.ProtocolStringList getColumnsList() {
-        columns_.makeImmutable();
-        return columns_;
+        return columns_.getUnmodifiableView();
       }
       /**
        *
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1138,7 +1138,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1157,7 +1156,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1176,7 +1174,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1194,7 +1191,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
         ensureColumnsIsMutable();
         columns_.set(index, value);
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -1203,7 +1199,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1220,7 +1215,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
         ensureColumnsIsMutable();
         columns_.add(value);
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -1229,7 +1223,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1243,7 +1236,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       public Builder addAllColumns(java.lang.Iterable<java.lang.String> values) {
         ensureColumnsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(values, columns_);
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -1252,7 +1244,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1263,9 +1254,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * @return This builder for chaining.
        */
       public Builder clearColumns() {
-        columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
+        columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000002);
-        ;
         onChanged();
         return this;
       }
@@ -1274,7 +1264,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
-       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1292,7 +1281,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         checkByteStringIsUtf8(value);
         ensureColumnsIsMutable();
         columns_.add(value);
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -1940,6 +1928,11 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     @SuppressWarnings({"unused"})
     protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
       return new Delete();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+      return this.unknownFields;
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -2848,8 +2841,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
   }
 
   private int operationCase_ = 0;
-
-  @SuppressWarnings("serial")
   private java.lang.Object operation_;
 
   public enum OperationCase
@@ -3021,7 +3012,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
    * its column values are overwritten with the ones provided. Any
    * column values not explicitly written are preserved.
-   *
    * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
    * NULL` columns in the table must be given a value. This holds true
    * even when the row already exists and will therefore actually be updated.
@@ -3042,7 +3032,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
    * its column values are overwritten with the ones provided. Any
    * column values not explicitly written are preserved.
-   *
    * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
    * NULL` columns in the table must be given a value. This holds true
    * even when the row already exists and will therefore actually be updated.
@@ -3066,7 +3055,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
    * its column values are overwritten with the ones provided. Any
    * column values not explicitly written are preserved.
-   *
    * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
    * NULL` columns in the table must be given a value. This holds true
    * even when the row already exists and will therefore actually be updated.
@@ -3091,7 +3079,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    * deleted, and the column values provided are inserted
    * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
    * explicitly written become `NULL`.
-   *
    * In an interleaved table, if you create the child table with the
    * `ON DELETE CASCADE` annotation, then replacing a parent row
    * also deletes the child rows. Otherwise, you must delete the
@@ -3114,7 +3101,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    * deleted, and the column values provided are inserted
    * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
    * explicitly written become `NULL`.
-   *
    * In an interleaved table, if you create the child table with the
    * `ON DELETE CASCADE` annotation, then replacing a parent row
    * also deletes the child rows. Otherwise, you must delete the
@@ -3140,7 +3126,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    * deleted, and the column values provided are inserted
    * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
    * explicitly written become `NULL`.
-   *
    * In an interleaved table, if you create the child table with the
    * `ON DELETE CASCADE` annotation, then replacing a parent row
    * also deletes the child rows. Otherwise, you must delete the
@@ -4169,7 +4154,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
-     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4190,7 +4174,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
-     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4221,7 +4204,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
-     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4249,7 +4231,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
-     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4274,7 +4255,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
-     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4312,7 +4292,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
-     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4343,7 +4322,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
-     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4361,7 +4339,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
-     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4387,7 +4364,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
-     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4432,7 +4408,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
-     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4455,7 +4430,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
-     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4488,7 +4462,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
-     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4518,7 +4491,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
-     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4545,7 +4517,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
-     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4585,7 +4556,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
-     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4618,7 +4588,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
-     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4638,7 +4607,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
-     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4666,7 +4634,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
-     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the

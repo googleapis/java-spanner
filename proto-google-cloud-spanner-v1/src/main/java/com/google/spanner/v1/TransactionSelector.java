@@ -25,7 +25,6 @@ package com.google.spanner.v1;
  * This message is used to select the transaction in which a
  * [Read][google.spanner.v1.Spanner.Read] or
  * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] call runs.
- *
  * See [TransactionOptions][google.spanner.v1.TransactionOptions] for more
  * information about transactions.
  * </pre>
@@ -50,6 +49,11 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     return new TransactionSelector();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.TransactionProto
         .internal_static_google_spanner_v1_TransactionSelector_descriptor;
@@ -66,8 +70,6 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
   }
 
   private int selectorCase_ = 0;
-
-  @SuppressWarnings("serial")
   private java.lang.Object selector_;
 
   public enum SelectorCase
@@ -480,7 +482,6 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    * This message is used to select the transaction in which a
    * [Read][google.spanner.v1.Spanner.Read] or
    * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] call runs.
-   *
    * See [TransactionOptions][google.spanner.v1.TransactionOptions] for more
    * information about transactions.
    * </pre>

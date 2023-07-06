@@ -47,6 +47,11 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     return new Transaction();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.TransactionProto
         .internal_static_google_spanner_v1_Transaction_descriptor;
@@ -73,7 +78,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
    * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql],
    * [Commit][google.spanner.v1.Spanner.Commit], or
    * [Rollback][google.spanner.v1.Spanner.Rollback] calls.
-   *
    * Single-use read-only transactions do not have IDs, because
    * single-use transactions do not support multiple requests.
    * </pre>
@@ -96,7 +100,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
    * For snapshot read-only transactions, the read timestamp chosen
    * for the transaction. Not returned by default: see
    * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
-   *
    * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
    * Example: `"2014-10-02T15:01:23.045123456Z"`.
    * </pre>
@@ -116,7 +119,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
    * For snapshot read-only transactions, the read timestamp chosen
    * for the transaction. Not returned by default: see
    * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
-   *
    * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
    * Example: `"2014-10-02T15:01:23.045123456Z"`.
    * </pre>
@@ -138,7 +140,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
    * For snapshot read-only transactions, the read timestamp chosen
    * for the transaction. Not returned by default: see
    * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
-   *
    * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
    * Example: `"2014-10-02T15:01:23.045123456Z"`.
    * </pre>
@@ -530,7 +531,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql],
      * [Commit][google.spanner.v1.Spanner.Commit], or
      * [Rollback][google.spanner.v1.Spanner.Rollback] calls.
-     *
      * Single-use read-only transactions do not have IDs, because
      * single-use transactions do not support multiple requests.
      * </pre>
@@ -552,7 +552,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql],
      * [Commit][google.spanner.v1.Spanner.Commit], or
      * [Rollback][google.spanner.v1.Spanner.Rollback] calls.
-     *
      * Single-use read-only transactions do not have IDs, because
      * single-use transactions do not support multiple requests.
      * </pre>
@@ -580,7 +579,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql],
      * [Commit][google.spanner.v1.Spanner.Commit], or
      * [Rollback][google.spanner.v1.Spanner.Rollback] calls.
-     *
      * Single-use read-only transactions do not have IDs, because
      * single-use transactions do not support multiple requests.
      * </pre>
@@ -609,7 +607,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
-     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -628,7 +625,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
-     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -653,7 +649,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
-     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -680,7 +675,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
-     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -704,7 +698,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
-     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -734,7 +727,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
-     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -758,7 +750,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
-     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -777,7 +768,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
-     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -800,7 +790,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
-     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>

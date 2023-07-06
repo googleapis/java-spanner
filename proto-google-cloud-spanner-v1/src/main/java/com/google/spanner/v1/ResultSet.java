@@ -48,6 +48,11 @@ public final class ResultSet extends com.google.protobuf.GeneratedMessageV3
     return new ResultSet();
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
+    return this.unknownFields;
+  }
+
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.ResultSetProto
         .internal_static_google_spanner_v1_ResultSet_descriptor;
