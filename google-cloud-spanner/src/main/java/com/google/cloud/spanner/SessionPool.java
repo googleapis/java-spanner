@@ -1173,7 +1173,7 @@ class SessionPool {
     }
 
     @Override
-    public ServerStream<BatchWriteResponse> batchWriteAtleastOnce(Iterable<Mutation> mutations)
+    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(Iterable<Mutation> mutations)
         throws SpannerException {
       return batchWriteAtleastOnceWithOptions(mutations);
     }
@@ -1436,7 +1436,7 @@ class SessionPool {
     }
 
     @Override
-    public ServerStream<BatchWriteResponse> batchWriteAtleastOnce(Iterable<Mutation> mutations)
+    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(Iterable<Mutation> mutations)
         throws SpannerException {
       return batchWriteAtleastOnceWithOptions(mutations);
     }

@@ -244,7 +244,7 @@ public class ITWriteTest {
                 .set("StringValue")
                 .to("v2")
                 .build());
-    ServerStream<BatchWriteResponse> responses = client.batchWriteAtleastOnce(mutations);
+    ServerStream<BatchWriteResponse> responses = client.batchWriteAtLeastOnce(mutations);
     Set<Integer> responseIndexes = new HashSet<>();
     Set<Integer> appliedMutationIndexes = new HashSet<>();
     for (BatchWriteResponse response : responses) {

@@ -1663,7 +1663,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
-  public ServerStream<BatchWriteResponse> batchWriteAtleastOnce(
+  public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
       BatchWriteRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context =
         newCallContext(options, request.getSession(), request, SpannerGrpc.getBatchWriteMethod());

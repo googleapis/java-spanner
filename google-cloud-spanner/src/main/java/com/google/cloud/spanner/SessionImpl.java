@@ -199,7 +199,7 @@ class SessionImpl implements Session {
   }
 
   @Override
-  public ServerStream<BatchWriteResponse> batchWriteAtleastOnce(Iterable<Mutation> mutations)
+  public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(Iterable<Mutation> mutations)
       throws SpannerException {
     return batchWriteAtleastOnceWithOptions(mutations);
   }
@@ -226,7 +226,7 @@ class SessionImpl implements Session {
     }
     Span span = tracer.spanBuilder(SpannerImpl.BATCH_WRITE).startSpan();
     try (Scope s = tracer.withSpan(span)) {
-      return spanner.getRpc().batchWriteAtleastOnce(requestBuilder.build(), this.options);
+      return spanner.getRpc().batchWriteAtLeastOnce(requestBuilder.build(), this.options);
     } catch (Throwable e) {
       TraceUtil.setWithFailure(span, e);
       throw SpannerExceptionFactory.newSpannerException(e);

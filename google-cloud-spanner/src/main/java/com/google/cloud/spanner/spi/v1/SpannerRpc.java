@@ -376,7 +376,7 @@ public interface SpannerRpc extends ServiceRpc {
   ServerStream<PartialResultSet> executeStreamingPartitionedDml(
       ExecuteSqlRequest request, @Nullable Map<Option, ?> options, Duration timeout);
 
-  ServerStream<BatchWriteResponse> batchWriteAtleastOnce(
+  ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
       BatchWriteRequest request, @Nullable Map<Option, ?> options);
 
   /**

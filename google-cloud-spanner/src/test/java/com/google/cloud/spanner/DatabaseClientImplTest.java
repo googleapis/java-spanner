@@ -339,7 +339,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
 
-    ServerStream<BatchWriteResponse> responseStream = client.batchWriteAtleastOnce(MUTATIONS);
+    ServerStream<BatchWriteResponse> responseStream = client.batchWriteAtLeastOnce(MUTATIONS);
     int idx = 0;
     for (BatchWriteResponse response : responseStream) {
       assertEquals(

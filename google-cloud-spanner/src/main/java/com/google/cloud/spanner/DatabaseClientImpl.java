@@ -109,7 +109,7 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
-  public ServerStream<BatchWriteResponse> batchWriteAtleastOnce(final Iterable<Mutation> mutations)
+  public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(final Iterable<Mutation> mutations)
       throws SpannerException {
     return batchWriteAtleastOnceWithOptions(mutations);
   }
