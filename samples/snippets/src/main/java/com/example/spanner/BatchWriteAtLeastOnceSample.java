@@ -30,7 +30,7 @@ import com.google.rpc.Code;
 import com.google.spanner.v1.BatchWriteResponse;
 import java.util.List;
 
-public class BatchWriteAtleastOnceSample {
+public class BatchWriteAtLeastOnceSample {
 
   private static final List<Mutation> MUTATIONS =
       ImmutableList.of(
@@ -49,15 +49,15 @@ public class BatchWriteAtleastOnceSample {
               .to("Luciano")
               .build());
 
-  static void batchWriteAtleastOnce() {
+  static void batchWriteAtLeastOnce() {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
     final String instanceId = "my-instance";
     final String databaseId = "my-database";
-    batchWriteAtleastOnce(projectId, instanceId, databaseId);
+    batchWriteAtLeastOnce(projectId, instanceId, databaseId);
   }
 
-  static void batchWriteAtleastOnce(String projectId, String instanceId, String databaseId) {
+  static void batchWriteAtLeastOnce(String projectId, String instanceId, String databaseId) {
     try (Spanner spanner =
         SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
