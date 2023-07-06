@@ -201,11 +201,11 @@ class SessionImpl implements Session {
   @Override
   public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(Iterable<Mutation> mutations)
       throws SpannerException {
-    return batchWriteAtleastOnceWithOptions(mutations);
+    return batchWriteAtLeastOnceWithOptions(mutations);
   }
 
   @Override
-  public ServerStream<BatchWriteResponse> batchWriteAtleastOnceWithOptions(
+  public ServerStream<BatchWriteResponse> batchWriteAtLeastOnceWithOptions(
       Iterable<Mutation> mutations, TransactionOption... transactionOptions)
       throws SpannerException {
     setActive(null);

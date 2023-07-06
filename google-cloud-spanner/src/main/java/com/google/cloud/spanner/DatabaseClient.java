@@ -278,7 +278,7 @@ public interface DatabaseClient {
    *
    * @return ServerStream\<BatchWriteResponse>
    */
-  ServerStream<BatchWriteResponse> batchWriteAtleastOnceWithOptions(
+  ServerStream<BatchWriteResponse> batchWriteAtLeastOnceWithOptions(
       Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException;
 
   /**

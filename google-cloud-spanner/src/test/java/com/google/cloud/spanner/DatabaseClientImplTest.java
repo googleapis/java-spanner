@@ -362,7 +362,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     ServerStream<BatchWriteResponse> responseStream =
-        client.batchWriteAtleastOnceWithOptions(MUTATIONS, Options.priority(RpcPriority.LOW));
+        client.batchWriteAtLeastOnceWithOptions(MUTATIONS, Options.priority(RpcPriority.LOW));
     for (BatchWriteResponse response : responseStream) {}
 
     assertNotNull(responseStream);
@@ -378,7 +378,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     ServerStream<BatchWriteResponse> responseStream =
-        client.batchWriteAtleastOnceWithOptions(MUTATIONS, Options.tag("app=spanner,env=test"));
+        client.batchWriteAtLeastOnceWithOptions(MUTATIONS, Options.tag("app=spanner,env=test"));
     for (BatchWriteResponse response : responseStream) {}
 
     assertNotNull(responseStream);
