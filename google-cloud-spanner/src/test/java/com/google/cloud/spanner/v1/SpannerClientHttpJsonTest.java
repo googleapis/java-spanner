@@ -807,17 +807,6 @@ public class SpannerClientHttpJsonTest {
   }
 
   @Test
-  public void batchWriteTest() throws Exception {}
-
-  @Test
-  public void batchWriteExceptionTest() throws Exception {
-    ApiException exception =
-        ApiExceptionFactory.createException(
-            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
-    mockService.addException(exception);
-  }
-
-  @Test
   public void beginTransactionTest() throws Exception {
     Transaction expectedResponse =
         Transaction.newBuilder()
