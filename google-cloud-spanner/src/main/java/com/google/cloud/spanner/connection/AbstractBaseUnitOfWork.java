@@ -177,10 +177,12 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   }
 
   <T> ApiFuture<T> executeStatementAsync(
+      CallType callType,
       ParsedStatement statement,
       Callable<T> callable,
       @Nullable MethodDescriptor<?, ?> applyStatementTimeoutToMethod) {
     return executeStatementAsync(
+        callType,
         statement,
         callable,
         InterceptorsUsage.INVOKE_INTERCEPTORS,
@@ -190,11 +192,16 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   }
 
   <T> ApiFuture<T> executeStatementAsync(
+      CallType callType,
       ParsedStatement statement,
       Callable<T> callable,
       Collection<MethodDescriptor<?, ?>> applyStatementTimeoutToMethods) {
     return executeStatementAsync(
-        statement, callable, InterceptorsUsage.INVOKE_INTERCEPTORS, applyStatementTimeoutToMethods);
+        callType,
+        statement,
+        callable,
+        InterceptorsUsage.INVOKE_INTERCEPTORS,
+        applyStatementTimeoutToMethods);
   }
 
   <ResponseT, MetadataT> ResponseT getWithStatementTimeout(
@@ -237,6 +244,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   }
 
   <T> ApiFuture<T> executeStatementAsync(
+      CallType callType,
       ParsedStatement statement,
       Callable<T> callable,
       InterceptorsUsage interceptorUsage,
@@ -268,13 +276,17 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     }
     ApiFuture<T> f = statementExecutor.submit(context.wrap(callable));
     final SpannerAsyncExecutionException caller =
-        new SpannerAsyncExecutionException(statement.getStatement());
+        callType == CallType.ASYNC
+            ? new SpannerAsyncExecutionException(statement.getStatement())
+            : null;
     final ApiFuture<T> future =
         ApiFutures.catching(
             f,
             Throwable.class,
             input -> {
-              input.addSuppressed(caller);
+              if (caller != null) {
+                input.addSuppressed(caller);
+              }
               throw SpannerExceptionFactory.asSpannerException(input);
             },
             MoreExecutors.directExecutor());

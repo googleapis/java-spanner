@@ -19,6 +19,8 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -27,6 +29,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.DatabaseInfo.DatabaseField;
 import com.google.cloud.spanner.DatabaseRole;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
@@ -39,10 +42,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -57,6 +64,8 @@ import org.junit.runners.JUnit4;
 public class ITDatabaseAdminTest {
   private static final long TIMEOUT_MINUTES = 5;
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
+
+  private static final Logger logger = Logger.getLogger(ITDatabaseAdminTest.class.getName());
   private DatabaseAdminClient dbAdminClient;
   private RemoteSpannerHelper testHelper;
   private List<Database> dbs = new ArrayList<>();
@@ -268,5 +277,72 @@ public class ITDatabaseAdminTest {
       pageRemainingRoles = pageRemainingRoles.getNextPage();
     }
     assertThat(dbRolesRemaining).containsNoneIn(dbRoles);
+  }
+
+  @Test
+  public void updateDatabaseInvalidFieldsToUpdate() throws Exception {
+    assumeFalse("Emulator does not drop database protection", isUsingEmulator());
+    String instanceId = testHelper.getInstanceId().getInstance();
+    Database database =
+        dbAdminClient
+            .createDatabase(instanceId, testHelper.getUniqueDatabaseId(), ImmutableList.of())
+            .get();
+    logger.log(Level.INFO, "Created database: {0}", database.getId().getName());
+
+    Database databaseToUpdate =
+        dbAdminClient.newDatabaseBuilder(database.getId()).enableDropProtection().build();
+    // Don't provide any fields to update.
+    OperationFuture<Database, UpdateDatabaseMetadata> op =
+        dbAdminClient.updateDatabase(databaseToUpdate);
+
+    ExecutionException e =
+        assertThrows(ExecutionException.class, () -> op.get(5, TimeUnit.MINUTES));
+    assertThat(e.getMessage()).contains("Invalid field mask");
+  }
+
+  @Test
+  public void dropDatabaseWithProtectionEnabled() throws Exception {
+    assumeFalse("Emulator does not drop database protection", isUsingEmulator());
+    String instanceId = testHelper.getInstanceId().getInstance();
+    Database database =
+        dbAdminClient
+            .createDatabase(instanceId, testHelper.getUniqueDatabaseId(), ImmutableList.of())
+            .get();
+    logger.log(Level.INFO, "Created database: {0}", database.getId().getName());
+
+    // Enable drop protection for the database.
+    Database databaseToUpdate =
+        dbAdminClient.newDatabaseBuilder(database.getId()).enableDropProtection().build();
+    OperationFuture<Database, UpdateDatabaseMetadata> op =
+        dbAdminClient.updateDatabase(databaseToUpdate, DatabaseField.DROP_PROTECTION);
+    Database updatedDatabase = op.get(5, TimeUnit.MINUTES);
+    assertEquals(updatedDatabase.getId().getName(), database.getId().getName());
+    assertTrue(updatedDatabase.isDropProtectionEnabled());
+
+    String databaseId = database.getId().getDatabase();
+
+    // Assert that dropping a database with protection enabled fails due to precondition violation.
+    SpannerException e =
+        assertThrows(
+            SpannerException.class, () -> dbAdminClient.dropDatabase(instanceId, databaseId));
+    assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+
+    // Assert that deleting the instance also fails due to precondition violation.
+    e =
+        assertThrows(
+            SpannerException.class,
+            () -> testHelper.getClient().getInstanceAdminClient().deleteInstance(instanceId));
+    assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
+
+    // Disable drop protection for the database.
+    databaseToUpdate =
+        dbAdminClient.newDatabaseBuilder(database.getId()).disableDropProtection().build();
+    op = dbAdminClient.updateDatabase(databaseToUpdate, DatabaseField.DROP_PROTECTION);
+    updatedDatabase = op.get(5, TimeUnit.MINUTES);
+    assertEquals(updatedDatabase.getId().getName(), database.getId().getName());
+    assertFalse(updatedDatabase.isDropProtectionEnabled());
+
+    // Dropping the database should succeed now.
+    dbAdminClient.dropDatabase(instanceId, databaseId);
   }
 }

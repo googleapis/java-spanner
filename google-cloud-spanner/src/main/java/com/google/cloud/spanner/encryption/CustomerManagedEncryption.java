@@ -42,6 +42,10 @@ public class CustomerManagedEncryption implements BackupEncryptionConfig, Restor
         : new CustomerManagedEncryption(proto.getKmsKeyName());
   }
 
+  public EncryptionConfig toProto() {
+    return EncryptionConfig.newBuilder().setKmsKeyName(this.getKmsKeyName()).build();
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

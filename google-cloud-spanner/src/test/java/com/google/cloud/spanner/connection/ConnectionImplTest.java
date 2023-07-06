@@ -68,6 +68,7 @@ import com.google.cloud.spanner.connection.ConnectionImpl.UnitOfWorkType;
 import com.google.cloud.spanner.connection.ConnectionStatementExecutorImpl.StatementTimeoutGetter;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.GetExactStaleness;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
+import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -1373,7 +1374,7 @@ public class ConnectionImplTest {
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
     when(unitOfWork.executeQueryAsync(
-            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
+            any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl impl =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
@@ -1388,6 +1389,7 @@ public class ConnectionImplTest {
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"));
       verify(unitOfWork)
           .executeQueryAsync(
+              CallType.SYNC,
               AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
                   .parse(
                       Statement.newBuilder("SELECT FOO FROM BAR")
@@ -1405,6 +1407,7 @@ public class ConnectionImplTest {
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"));
       verify(unitOfWork)
           .executeQueryAsync(
+              CallType.SYNC,
               AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
                   .parse(
                       Statement.newBuilder("SELECT FOO FROM BAR")
@@ -1425,6 +1428,7 @@ public class ConnectionImplTest {
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"), prefetchOption);
       verify(unitOfWork)
           .executeQueryAsync(
+              CallType.SYNC,
               AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
                   .parse(
                       Statement.newBuilder("SELECT FOO FROM BAR")
@@ -1453,6 +1457,7 @@ public class ConnectionImplTest {
           prefetchOption);
       verify(unitOfWork)
           .executeQueryAsync(
+              CallType.SYNC,
               AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
                   .parse(
                       Statement.newBuilder("SELECT FOO FROM BAR")
@@ -1477,7 +1482,7 @@ public class ConnectionImplTest {
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
     when(unitOfWork.executeQueryAsync(
-            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
+            any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl connection =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
@@ -1584,9 +1589,9 @@ public class ConnectionImplTest {
     // Indicate that a transaction has been started.
     when(unitOfWork.getState()).thenReturn(UnitOfWorkState.STARTED);
     when(unitOfWork.executeQueryAsync(
-            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
+            any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
-    when(unitOfWork.rollbackAsync()).thenReturn(ApiFutures.immediateFuture(null));
+    when(unitOfWork.rollbackAsync(any())).thenReturn(ApiFutures.immediateFuture(null));
     try (ConnectionImpl connection =
         new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
           @Override

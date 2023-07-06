@@ -457,4 +457,32 @@ public interface DatabaseOrBuilder
    * @return The databaseDialect.
    */
   com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect();
+
+  /**
+   *
+   *
+   * <pre>
+   * Whether drop protection is enabled for this database. Defaults to false,
+   * if not set.
+   * </pre>
+   *
+   * <code>bool enable_drop_protection = 11;</code>
+   *
+   * @return The enableDropProtection.
+   */
+  boolean getEnableDropProtection();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. If true, the database is being updated. If false, there are no
+   * ongoing update operations for the database.
+   * </pre>
+   *
+   * <code>bool reconciling = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The reconciling.
+   */
+  boolean getReconciling();
 }

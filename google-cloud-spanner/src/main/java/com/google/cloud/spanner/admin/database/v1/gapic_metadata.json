@@ -64,6 +64,9 @@
             "UpdateBackup": {
               "methods": ["updateBackup", "updateBackup", "updateBackupCallable"]
             },
+            "UpdateDatabase": {
+              "methods": ["updateDatabaseAsync", "updateDatabaseAsync", "updateDatabaseOperationCallable", "updateDatabaseCallable"]
+            },
             "UpdateDatabaseDdl": {
               "methods": ["updateDatabaseDdlAsync", "updateDatabaseDdlAsync", "updateDatabaseDdlAsync", "updateDatabaseDdlOperationCallable", "updateDatabaseDdlCallable"]
             }
