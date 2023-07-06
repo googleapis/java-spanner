@@ -1,5 +1,20 @@
 # Changelog
 
+## [6.43.1](https://github.com/googleapis/java-spanner/compare/v6.43.0...v6.43.1) (2023-06-26)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.20.0 ([#2492](https://github.com/googleapis/java-spanner/issues/2492)) ([faa6807](https://github.com/googleapis/java-spanner/commit/faa68073673e789e35b600dab72152591a647dc6))
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.21.0 ([#2510](https://github.com/googleapis/java-spanner/issues/2510)) ([f10400b](https://github.com/googleapis/java-spanner/commit/f10400baf2d320991e75794250b9e1b2fb218718))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.12.0.with temp exclusions. ([#2512](https://github.com/googleapis/java-spanner/issues/2512)) ([ce04645](https://github.com/googleapis/java-spanner/commit/ce0464527ef489d351b9086f6bb8922f295f1897))
+* Update dependency com.google.cloud:google-cloud-trace to v2.19.0 ([#2493](https://github.com/googleapis/java-spanner/issues/2493)) ([1dc7cea](https://github.com/googleapis/java-spanner/commit/1dc7cea723658c43b8c8d2e085c964371fb72223))
+* Update dependency com.google.cloud:google-cloud-trace to v2.20.0 ([#2511](https://github.com/googleapis/java-spanner/issues/2511)) ([2ea52ec](https://github.com/googleapis/java-spanner/commit/2ea52ec1cef2468e6c36b76797a3878f270badaa))
+* Update dependency commons-io:commons-io to v2.13.0 ([#2490](https://github.com/googleapis/java-spanner/issues/2490)) ([b087b0e](https://github.com/googleapis/java-spanner/commit/b087b0e813cacb4f08d12815d9371fe9c004ca9e))
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.23 ([#2500](https://github.com/googleapis/java-spanner/issues/2500)) ([0b794a6](https://github.com/googleapis/java-spanner/commit/0b794a68d57eb990e013fdd05c72eaed868497b0))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.23 ([#2501](https://github.com/googleapis/java-spanner/issues/2501)) ([9db5c78](https://github.com/googleapis/java-spanner/commit/9db5c7850b53fa10d1856d88908d5e8e95467206))
+* Update dependency org.json:json to v20230618 ([#2504](https://github.com/googleapis/java-spanner/issues/2504)) ([8a87fee](https://github.com/googleapis/java-spanner/commit/8a87fee19bb2dd41495a15740893375c8778f71a))
+
 ## [6.43.0](https://github.com/googleapis/java-spanner/compare/v6.42.3...v6.43.0) (2023-06-07)
 
 
