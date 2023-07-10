@@ -6770,6 +6770,403 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION UNIMPLEMENTED
 show variable/-spanner.rpc_priority;
 NEW_CONNECTION;
+show spanner.savepoint_support;
+NEW_CONNECTION;
+SHOW SPANNER.SAVEPOINT_SUPPORT;
+NEW_CONNECTION;
+show spanner.savepoint_support;
+NEW_CONNECTION;
+   show spanner.savepoint_support;
+NEW_CONNECTION;
+			show spanner.savepoint_support;
+NEW_CONNECTION;
+
+
+
+show spanner.savepoint_support;
+NEW_CONNECTION;
+show spanner.savepoint_support  ;
+NEW_CONNECTION;
+show spanner.savepoint_support		;
+NEW_CONNECTION;
+show spanner.savepoint_support
+
+;
+NEW_CONNECTION;
+show   spanner.savepoint_support;
+NEW_CONNECTION;
+show	spanner.savepoint_support;
+NEW_CONNECTION;
+show
+spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show%spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show_spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show&spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show$spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show@spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show!spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show*spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show(spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show)spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show+spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-#spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show\spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show?spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-/spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/#spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.savepoint_support/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/-spanner.savepoint_support;
+NEW_CONNECTION;
+show variable spanner.savepoint_support;
+NEW_CONNECTION;
+SHOW VARIABLE SPANNER.SAVEPOINT_SUPPORT;
+NEW_CONNECTION;
+show variable spanner.savepoint_support;
+NEW_CONNECTION;
+   show variable spanner.savepoint_support;
+NEW_CONNECTION;
+			show variable spanner.savepoint_support;
+NEW_CONNECTION;
+
+
+
+show variable spanner.savepoint_support;
+NEW_CONNECTION;
+show variable spanner.savepoint_support  ;
+NEW_CONNECTION;
+show variable spanner.savepoint_support		;
+NEW_CONNECTION;
+show variable spanner.savepoint_support
+
+;
+NEW_CONNECTION;
+show   variable   spanner.savepoint_support;
+NEW_CONNECTION;
+show	variable	spanner.savepoint_support;
+NEW_CONNECTION;
+show
+variable
+spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable spanner.savepoint_support;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.savepoint_support/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-spanner.savepoint_support;
+NEW_CONNECTION;
 show transaction isolation level;
 NEW_CONNECTION;
 SHOW TRANSACTION ISOLATION LEVEL;
@@ -67333,3 +67730,1197 @@ set spanner.rpc_priority to 'NULL'/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set spanner.rpc_priority to/-'NULL';
+NEW_CONNECTION;
+set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+SET SPANNER.SAVEPOINT_SUPPORT='ENABLED';
+NEW_CONNECTION;
+set spanner.savepoint_support='enabled';
+NEW_CONNECTION;
+   set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+			set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+
+
+
+set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+set spanner.savepoint_support='ENABLED'  ;
+NEW_CONNECTION;
+set spanner.savepoint_support='ENABLED'		;
+NEW_CONNECTION;
+set spanner.savepoint_support='ENABLED'
+
+;
+NEW_CONNECTION;
+set   spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+set	spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+set
+spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='ENABLED'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-spanner.savepoint_support='ENABLED';
+NEW_CONNECTION;
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+SET SPANNER.SAVEPOINT_SUPPORT='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+set spanner.savepoint_support='fail_after_rollback';
+NEW_CONNECTION;
+   set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+			set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+
+
+
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'  ;
+NEW_CONNECTION;
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'		;
+NEW_CONNECTION;
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'
+
+;
+NEW_CONNECTION;
+set   spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+set	spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+set
+spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='FAIL_AFTER_ROLLBACK'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-spanner.savepoint_support='FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+SET SPANNER.SAVEPOINT_SUPPORT='DISABLED';
+NEW_CONNECTION;
+set spanner.savepoint_support='disabled';
+NEW_CONNECTION;
+   set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+			set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+
+
+
+set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+set spanner.savepoint_support='DISABLED'  ;
+NEW_CONNECTION;
+set spanner.savepoint_support='DISABLED'		;
+NEW_CONNECTION;
+set spanner.savepoint_support='DISABLED'
+
+;
+NEW_CONNECTION;
+set   spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+set	spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+set
+spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support='DISABLED'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-spanner.savepoint_support='DISABLED';
+NEW_CONNECTION;
+set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+SET SPANNER.SAVEPOINT_SUPPORT TO 'ENABLED';
+NEW_CONNECTION;
+set spanner.savepoint_support to 'enabled';
+NEW_CONNECTION;
+   set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+			set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+
+
+
+set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+set spanner.savepoint_support to 'ENABLED'  ;
+NEW_CONNECTION;
+set spanner.savepoint_support to 'ENABLED'		;
+NEW_CONNECTION;
+set spanner.savepoint_support to 'ENABLED'
+
+;
+NEW_CONNECTION;
+set   spanner.savepoint_support   to   'ENABLED';
+NEW_CONNECTION;
+set	spanner.savepoint_support	to	'ENABLED';
+NEW_CONNECTION;
+set
+spanner.savepoint_support
+to
+'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to%'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to_'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to&'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to$'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to@'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to!'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to*'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to('ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to)'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to-'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to+'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to-#'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to/'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to\'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to?'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to-/'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to/#'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.savepoint_support to 'ENABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'ENABLED'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to/-'ENABLED';
+NEW_CONNECTION;
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+SET SPANNER.SAVEPOINT_SUPPORT TO 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+set spanner.savepoint_support to 'fail_after_rollback';
+NEW_CONNECTION;
+   set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+			set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+
+
+
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'  ;
+NEW_CONNECTION;
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'		;
+NEW_CONNECTION;
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'
+
+;
+NEW_CONNECTION;
+set   spanner.savepoint_support   to   'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+set	spanner.savepoint_support	to	'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+set
+spanner.savepoint_support
+to
+'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to%'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to_'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to&'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to$'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to@'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to!'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to*'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to('FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to)'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to-'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to+'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to-#'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to/'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to\'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to?'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to-/'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to/#'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'FAIL_AFTER_ROLLBACK'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to/-'FAIL_AFTER_ROLLBACK';
+NEW_CONNECTION;
+set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+SET SPANNER.SAVEPOINT_SUPPORT TO 'DISABLED';
+NEW_CONNECTION;
+set spanner.savepoint_support to 'disabled';
+NEW_CONNECTION;
+   set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+			set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+
+
+
+set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+set spanner.savepoint_support to 'DISABLED'  ;
+NEW_CONNECTION;
+set spanner.savepoint_support to 'DISABLED'		;
+NEW_CONNECTION;
+set spanner.savepoint_support to 'DISABLED'
+
+;
+NEW_CONNECTION;
+set   spanner.savepoint_support   to   'DISABLED';
+NEW_CONNECTION;
+set	spanner.savepoint_support	to	'DISABLED';
+NEW_CONNECTION;
+set
+spanner.savepoint_support
+to
+'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to%'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to_'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to&'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to$'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to@'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to!'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to*'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to('DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to)'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to-'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to+'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to-#'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to/'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to\'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to?'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to-/'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to/#'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.savepoint_support to 'DISABLED';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to 'DISABLED'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.savepoint_support to/-'DISABLED';

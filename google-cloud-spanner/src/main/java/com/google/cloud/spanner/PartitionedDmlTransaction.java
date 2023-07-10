@@ -202,7 +202,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
                 TransactionOptions.newBuilder()
                     .setPartitionedDml(TransactionOptions.PartitionedDml.getDefaultInstance()))
             .build();
-    Transaction tx = rpc.beginTransaction(request, session.getOptions());
+    Transaction tx = rpc.beginTransaction(request, session.getOptions(), true);
     if (tx.getId().isEmpty()) {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INTERNAL,

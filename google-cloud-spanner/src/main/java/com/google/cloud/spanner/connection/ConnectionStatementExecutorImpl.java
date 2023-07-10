@@ -25,6 +25,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT_DML_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DEFAULT_TRANSACTION_ISOLATION;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READONLY;
@@ -32,6 +33,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETRY_ABORTS_INTERNALLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETURN_COMMIT_STATS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RPC_PRIORITY;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_SAVEPOINT_SUPPORT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_STATEMENT_TAG;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_STATEMENT_TIMEOUT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_TRANSACTION_MODE;
@@ -40,6 +42,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT_DML_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_RESPONSE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_TIMESTAMP;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READONLY;
@@ -48,6 +51,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_RETRY_ABORTS_INTERNALLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_RETURN_COMMIT_STATS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_RPC_PRIORITY;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_SAVEPOINT_SUPPORT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_STATEMENT_TAG;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_STATEMENT_TIMEOUT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_TRANSACTION_ISOLATION_LEVEL;
@@ -312,6 +316,22 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
+  public StatementResult statementSetDelayTransactionStartUntilFirstWrite(
+      Boolean delayTransactionStartUntilFirstWrite) {
+    getConnection().setDelayTransactionStartUntilFirstWrite(delayTransactionStartUntilFirstWrite);
+    return noResult(SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE);
+  }
+
+  @Override
+  public StatementResult statementShowDelayTransactionStartUntilFirstWrite() {
+    return resultSet(
+        String.format(
+            "%sDELAY_TRANSACTION_START_UNTIL_FIRST_WRITE", getNamespace(connection.getDialect())),
+        getConnection().isDelayTransactionStartUntilFirstWrite(),
+        SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE);
+  }
+
+  @Override
   public StatementResult statementSetStatementTag(String tag) {
     getConnection().setStatementTag("".equals(tag) ? null : tag);
     return noResult(SET_STATEMENT_TAG);
@@ -452,6 +472,20 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
             ? RequestOptions.Priority.PRIORITY_UNSPECIFIED
             : getConnection().getRPCPriority(),
         SHOW_RPC_PRIORITY);
+  }
+
+  @Override
+  public StatementResult statementSetSavepointSupport(SavepointSupport savepointSupport) {
+    getConnection().setSavepointSupport(savepointSupport);
+    return noResult(SET_SAVEPOINT_SUPPORT);
+  }
+
+  @Override
+  public StatementResult statementShowSavepointSupport() {
+    return resultSet(
+        String.format("%SAVEPOINT_SUPPORT", getNamespace(connection.getDialect())),
+        getConnection().getSavepointSupport(),
+        SHOW_SAVEPOINT_SUPPORT);
   }
 
   @Override

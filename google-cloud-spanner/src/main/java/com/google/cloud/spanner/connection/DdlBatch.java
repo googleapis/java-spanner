@@ -115,8 +115,12 @@ class DdlBatch extends AbstractBaseUnitOfWork {
     return false;
   }
 
+  @Override
   public ApiFuture<ResultSet> executeQueryAsync(
-      final ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options) {
+      CallType callType,
+      final ParsedStatement statement,
+      AnalyzeMode analyzeMode,
+      QueryOption... options) {
     if (options != null) {
       for (int i = 0; i < options.length; i++) {
         if (options[i] instanceof InternalMetadataQuery) {
@@ -136,7 +140,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
                   DirectExecuteResultSet.ofResultSet(
                       dbClient.singleUse().executeQuery(statement.getStatement(), internalOptions));
           return executeStatementAsync(
-              statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
+              callType, statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
         }
       }
     }
@@ -179,7 +183,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<Void> executeDdlAsync(ParsedStatement ddl) {
+  public ApiFuture<Void> executeDdlAsync(CallType callType, ParsedStatement ddl) {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED,
         "The batch is no longer active and cannot be used for further statements");
@@ -196,33 +200,34 @@ class DdlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options) {
+  public ApiFuture<Long> executeUpdateAsync(
+      CallType callType, ParsedStatement update, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing updates is not allowed for DDL batches.");
   }
 
   @Override
   public ApiFuture<ResultSet> analyzeUpdateAsync(
-      ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
+      CallType callType, ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Analyzing updates is not allowed for DDL batches.");
   }
 
   @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(
-      Iterable<ParsedStatement> updates, UpdateOption... options) {
+      CallType callType, Iterable<ParsedStatement> updates, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Executing batch updates is not allowed for DDL batches.");
   }
 
   @Override
-  public ApiFuture<Void> writeAsync(Iterable<Mutation> mutations) {
+  public ApiFuture<Void> writeAsync(CallType callType, Iterable<Mutation> mutations) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Writing mutations is not allowed for DDL batches.");
   }
 
   @Override
-  public ApiFuture<long[]> runBatchAsync() {
+  public ApiFuture<long[]> runBatchAsync(CallType callType) {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED, "The batch is no longer active and cannot be ran");
     if (statements.isEmpty()) {
@@ -254,7 +259,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
         };
     this.state = UnitOfWorkState.RUNNING;
     return executeStatementAsync(
-        RUN_BATCH_STATEMENT, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
+        callType, RUN_BATCH_STATEMENT, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
   }
 
   long[] extractUpdateCounts(OperationFuture<Void, UpdateDatabaseDdlMetadata> operation) {
@@ -286,14 +291,19 @@ class DdlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<Void> commitAsync() {
+  public ApiFuture<Void> commitAsync(CallType callType) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Commit is not allowed for DDL batches.");
   }
 
   @Override
-  public ApiFuture<Void> rollbackAsync() {
+  public ApiFuture<Void> rollbackAsync(CallType callType) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Rollback is not allowed for DDL batches.");
+  }
+
+  @Override
+  String getUnitOfWorkName() {
+    return "DDL batch";
   }
 }

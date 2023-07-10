@@ -20,9 +20,13 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import com.google.api.gax.grpc.GrpcCallContext;
@@ -82,7 +86,7 @@ public class SpannerOptionsTest {
       assertThat(options.getHost()).isEqualTo("http://" + System.getenv("SPANNER_EMULATOR_HOST"));
     }
     assertThat(options.getPrefetchChunks()).isEqualTo(4);
-    assertThat(options.getSessionLabels()).isNull();
+    assertNull(options.getSessionLabels());
   }
 
   @Test
@@ -453,7 +457,7 @@ public class SpannerOptionsTest {
             () ->
                 SpannerOptions.newBuilder()
                     .setTransportOptions(Mockito.mock(TransportOptions.class)));
-    assertThat(e.getMessage()).isNotNull();
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -463,7 +467,7 @@ public class SpannerOptionsTest {
     NullPointerException e =
         assertThrows(
             NullPointerException.class, () -> SpannerOptions.newBuilder().setSessionLabels(labels));
-    assertThat(e.getMessage()).isNotNull();
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -471,7 +475,7 @@ public class SpannerOptionsTest {
     NullPointerException e =
         assertThrows(
             NullPointerException.class, () -> SpannerOptions.newBuilder().setSessionLabels(null));
-    assertThat(e.getMessage()).isNotNull();
+    assertNotNull(e.getMessage());
   }
 
   @Test
@@ -664,15 +668,32 @@ public class SpannerOptionsTest {
                 .build()
                 .getCompressorName())
         .isEqualTo("identity");
-    assertThat(
-            SpannerOptions.newBuilder()
-                .setProjectId("p")
-                .setCompressorName(null)
-                .build()
-                .getCompressorName())
-        .isNull();
+    assertNull(
+        SpannerOptions.newBuilder()
+            .setProjectId("p")
+            .setCompressorName(null)
+            .build()
+            .getCompressorName());
     assertThrows(
         IllegalArgumentException.class, () -> SpannerOptions.newBuilder().setCompressorName("foo"));
+  }
+
+  @Test
+  public void testLeaderAwareRoutingEnablement() {
+    assertFalse(
+        SpannerOptions.newBuilder().setProjectId("p").build().isLeaderAwareRoutingEnabled());
+    assertTrue(
+        SpannerOptions.newBuilder()
+            .setProjectId("p")
+            .enableLeaderAwareRouting()
+            .build()
+            .isLeaderAwareRoutingEnabled());
+    assertFalse(
+        SpannerOptions.newBuilder()
+            .setProjectId("p")
+            .disableLeaderAwareRouting()
+            .build()
+            .isLeaderAwareRoutingEnabled());
   }
 
   @Test
@@ -681,103 +702,85 @@ public class SpannerOptionsTest {
         SpannerCallContextTimeoutConfigurator.create();
     ApiCallContext inputCallContext = GrpcCallContext.createDefault();
 
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                BatchCreateSessionsRequest.getDefaultInstance(),
-                SpannerGrpc.getBatchCreateSessionsMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                CreateSessionRequest.getDefaultInstance(),
-                SpannerGrpc.getCreateSessionMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                DeleteSessionRequest.getDefaultInstance(),
-                SpannerGrpc.getDeleteSessionMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                GetSessionRequest.getDefaultInstance(),
-                SpannerGrpc.getGetSessionMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                DeleteSessionRequest.getDefaultInstance(),
-                SpannerGrpc.getDeleteSessionMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                ListSessionsRequest.getDefaultInstance(),
-                SpannerGrpc.getListSessionsMethod()))
-        .isNull();
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            BatchCreateSessionsRequest.getDefaultInstance(),
+            SpannerGrpc.getBatchCreateSessionsMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            CreateSessionRequest.getDefaultInstance(),
+            SpannerGrpc.getCreateSessionMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            DeleteSessionRequest.getDefaultInstance(),
+            SpannerGrpc.getDeleteSessionMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            GetSessionRequest.getDefaultInstance(),
+            SpannerGrpc.getGetSessionMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            DeleteSessionRequest.getDefaultInstance(),
+            SpannerGrpc.getDeleteSessionMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            ListSessionsRequest.getDefaultInstance(),
+            SpannerGrpc.getListSessionsMethod()));
 
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                BeginTransactionRequest.getDefaultInstance(),
-                SpannerGrpc.getBeginTransactionMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                CommitRequest.getDefaultInstance(),
-                SpannerGrpc.getCommitMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                RollbackRequest.getDefaultInstance(),
-                SpannerGrpc.getRollbackMethod()))
-        .isNull();
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            BeginTransactionRequest.getDefaultInstance(),
+            SpannerGrpc.getBeginTransactionMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext, CommitRequest.getDefaultInstance(), SpannerGrpc.getCommitMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            RollbackRequest.getDefaultInstance(),
+            SpannerGrpc.getRollbackMethod()));
 
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                ExecuteSqlRequest.getDefaultInstance(),
-                SpannerGrpc.getExecuteSqlMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                ExecuteSqlRequest.getDefaultInstance(),
-                SpannerGrpc.getExecuteStreamingSqlMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                ExecuteBatchDmlRequest.getDefaultInstance(),
-                SpannerGrpc.getExecuteBatchDmlMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext, ReadRequest.getDefaultInstance(), SpannerGrpc.getReadMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                ReadRequest.getDefaultInstance(),
-                SpannerGrpc.getStreamingReadMethod()))
-        .isNull();
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            ExecuteSqlRequest.getDefaultInstance(),
+            SpannerGrpc.getExecuteSqlMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            ExecuteSqlRequest.getDefaultInstance(),
+            SpannerGrpc.getExecuteStreamingSqlMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            ExecuteBatchDmlRequest.getDefaultInstance(),
+            SpannerGrpc.getExecuteBatchDmlMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext, ReadRequest.getDefaultInstance(), SpannerGrpc.getReadMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            ReadRequest.getDefaultInstance(),
+            SpannerGrpc.getStreamingReadMethod()));
 
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                PartitionQueryRequest.getDefaultInstance(),
-                SpannerGrpc.getPartitionQueryMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                PartitionReadRequest.getDefaultInstance(),
-                SpannerGrpc.getPartitionReadMethod()))
-        .isNull();
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            PartitionQueryRequest.getDefaultInstance(),
+            SpannerGrpc.getPartitionQueryMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            PartitionReadRequest.getDefaultInstance(),
+            SpannerGrpc.getPartitionReadMethod()));
   }
 
   @Test
@@ -795,49 +798,42 @@ public class SpannerOptionsTest {
 
     ApiCallContext inputCallContext = GrpcCallContext.createDefault();
 
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                BatchCreateSessionsRequest.getDefaultInstance(),
-                SpannerGrpc.getBatchCreateSessionsMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                CreateSessionRequest.getDefaultInstance(),
-                SpannerGrpc.getCreateSessionMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                DeleteSessionRequest.getDefaultInstance(),
-                SpannerGrpc.getDeleteSessionMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                GetSessionRequest.getDefaultInstance(),
-                SpannerGrpc.getGetSessionMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                DeleteSessionRequest.getDefaultInstance(),
-                SpannerGrpc.getDeleteSessionMethod()))
-        .isNull();
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                ListSessionsRequest.getDefaultInstance(),
-                SpannerGrpc.getListSessionsMethod()))
-        .isNull();
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            BatchCreateSessionsRequest.getDefaultInstance(),
+            SpannerGrpc.getBatchCreateSessionsMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            CreateSessionRequest.getDefaultInstance(),
+            SpannerGrpc.getCreateSessionMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            DeleteSessionRequest.getDefaultInstance(),
+            SpannerGrpc.getDeleteSessionMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            GetSessionRequest.getDefaultInstance(),
+            SpannerGrpc.getGetSessionMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            DeleteSessionRequest.getDefaultInstance(),
+            SpannerGrpc.getDeleteSessionMethod()));
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            ListSessionsRequest.getDefaultInstance(),
+            SpannerGrpc.getListSessionsMethod()));
 
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                BeginTransactionRequest.getDefaultInstance(),
-                SpannerGrpc.getBeginTransactionMethod()))
-        .isNull();
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            BeginTransactionRequest.getDefaultInstance(),
+            SpannerGrpc.getBeginTransactionMethod()));
     assertThat(
             configurator
                 .configure(
@@ -855,12 +851,11 @@ public class SpannerOptionsTest {
                 .getTimeout())
         .isEqualTo(Duration.ofSeconds(8L));
 
-    assertThat(
-            configurator.configure(
-                inputCallContext,
-                ExecuteSqlRequest.getDefaultInstance(),
-                SpannerGrpc.getExecuteSqlMethod()))
-        .isNull();
+    assertNull(
+        configurator.configure(
+            inputCallContext,
+            ExecuteSqlRequest.getDefaultInstance(),
+            SpannerGrpc.getExecuteSqlMethod()));
     assertThat(
             configurator
                 .configure(
@@ -877,10 +872,9 @@ public class SpannerOptionsTest {
                     SpannerGrpc.getExecuteBatchDmlMethod())
                 .getTimeout())
         .isEqualTo(Duration.ofSeconds(1L));
-    assertThat(
-            configurator.configure(
-                inputCallContext, ReadRequest.getDefaultInstance(), SpannerGrpc.getReadMethod()))
-        .isNull();
+    assertNull(
+        configurator.configure(
+            inputCallContext, ReadRequest.getDefaultInstance(), SpannerGrpc.getReadMethod()));
     assertThat(
             configurator
                 .configure(
@@ -923,14 +917,22 @@ public class SpannerOptionsTest {
   @Test
   public void testDefaultNumChannelsWithGrpcGcpExtensionEnabled() {
     SpannerOptions options =
-        SpannerOptions.newBuilder().setProjectId("test-project").enableGrpcGcpExtension().build();
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .enableGrpcGcpExtension()
+            .build();
 
     assertEquals(SpannerOptions.GRPC_GCP_ENABLED_DEFAULT_CHANNELS, options.getNumChannels());
   }
 
   @Test
   public void testDefaultNumChannelsWithGrpcGcpExtensionDisabled() {
-    SpannerOptions options = SpannerOptions.newBuilder().setProjectId("test-project").build();
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
 
     assertEquals(SpannerOptions.DEFAULT_CHANNELS, options.getNumChannels());
   }
@@ -943,6 +945,7 @@ public class SpannerOptionsTest {
     SpannerOptions options1 =
         SpannerOptions.newBuilder()
             .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
             .setNumChannels(numChannels)
             .enableGrpcGcpExtension()
             .build();
@@ -954,6 +957,7 @@ public class SpannerOptionsTest {
     SpannerOptions options2 =
         SpannerOptions.newBuilder()
             .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
             .enableGrpcGcpExtension()
             .setNumChannels(numChannels)
             .build();
@@ -972,12 +976,19 @@ public class SpannerOptionsTest {
     Spanner spanner2 = options1.getService();
 
     assertNotSame(spanner1, spanner2);
+
+    spanner1.close();
+    spanner2.close();
   }
 
   @Test
   public void checkCreatedInstanceWhenGrpcGcpExtensionEnabled() {
     SpannerOptions options =
-        SpannerOptions.newBuilder().setProjectId("test-project").enableGrpcGcpExtension().build();
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .enableGrpcGcpExtension()
+            .build();
     SpannerOptions options1 = options.toBuilder().build();
     assertEquals(true, options.isGrpcGcpExtensionEnabled());
     assertEquals(options.isGrpcGcpExtensionEnabled(), options1.isGrpcGcpExtensionEnabled());
@@ -986,5 +997,8 @@ public class SpannerOptionsTest {
     Spanner spanner2 = options1.getService();
 
     assertNotSame(spanner1, spanner2);
+
+    spanner1.close();
+    spanner2.close();
   }
 }

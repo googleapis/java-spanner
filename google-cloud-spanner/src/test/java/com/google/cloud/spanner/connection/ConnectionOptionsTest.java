@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -487,6 +488,50 @@ public class ConnectionOptionsTest {
             .build();
     assertThat(options.getMaxSessions()).isEqualTo(4000);
     assertThat(options.getSessionPoolOptions().getMaxSessions()).isEqualTo(4000);
+  }
+
+  @Test
+  public void testTrackSessionLeaks() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?trackSessionLeaks=false")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertFalse(options.getSessionPoolOptions().isTrackStackTraceOfSessionCheckout());
+  }
+
+  @Test
+  public void testTrackSessionLeaksDefault() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertTrue(options.getSessionPoolOptions().isTrackStackTraceOfSessionCheckout());
+  }
+
+  @Test
+  public void testTrackConnectionLeaks() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?trackConnectionLeaks=false")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertFalse(options.isTrackConnectionLeaks());
+  }
+
+  @Test
+  public void testTrackConnectionLeaksDefault() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertTrue(options.isTrackConnectionLeaks());
   }
 
   @Test

@@ -76,6 +76,11 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowReturnCommitStats();
 
+  StatementResult statementSetDelayTransactionStartUntilFirstWrite(
+      Boolean delayTransactionStartUntilFirstWrite);
+
+  StatementResult statementShowDelayTransactionStartUntilFirstWrite();
+
   StatementResult statementSetStatementTag(String tag);
 
   StatementResult statementShowStatementTag();
@@ -112,6 +117,10 @@ interface ConnectionStatementExecutor {
   StatementResult statementSetRPCPriority(Priority priority);
 
   StatementResult statementShowRPCPriority();
+
+  StatementResult statementSetSavepointSupport(SavepointSupport savepointSupport);
+
+  StatementResult statementShowSavepointSupport();
 
   StatementResult statementShowTransactionIsolationLevel();
 
