@@ -302,7 +302,8 @@ public class SessionPoolOptions {
         return false;
       }
       InactiveTransactionRemovalOptions other = (InactiveTransactionRemovalOptions) o;
-      return Objects.equals(this.idleTimeThreshold, other.idleTimeThreshold)
+      return Objects.equals(this.actionOnInactiveTransaction, other.actionOnInactiveTransaction)
+          && Objects.equals(this.idleTimeThreshold, other.idleTimeThreshold)
           && Objects.equals(this.executionFrequency, other.executionFrequency)
           && Objects.equals(this.usedSessionsRatioThreshold, other.usedSessionsRatioThreshold);
     }
@@ -310,7 +311,10 @@ public class SessionPoolOptions {
     @Override
     public int hashCode() {
       return Objects.hash(
-          this.idleTimeThreshold, this.executionFrequency, this.usedSessionsRatioThreshold);
+          this.actionOnInactiveTransaction,
+          this.idleTimeThreshold,
+          this.executionFrequency,
+          this.usedSessionsRatioThreshold);
     }
 
     Duration getExecutionFrequency() {
@@ -595,7 +599,7 @@ public class SessionPoolOptions {
     Builder setCloseIfInactiveTransactions() {
       this.inactiveTransactionRemovalOptions =
           InactiveTransactionRemovalOptions.newBuilder()
-              .setActionOnInactiveTransaction(ActionOnInactiveTransaction.WARN_AND_CLOSE)
+              .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
               .build();
       return this;
     }
