@@ -1381,6 +1381,12 @@ class SessionPool {
      */
     private volatile boolean isRemovedFromPool = false;
 
+    /**
+     * Property to mark if a leaked session exception is already logged. Given a session maintainer
+     * thread runs repeatedly at a defined interval, this property allows us to ensure that an
+     * exception is logged only once per leaked session. This is to avoid noisy repeated logs around
+     * session leaks for long-running sessions.
+     */
     private volatile boolean isLeakedExceptionLogged = false;
 
     @GuardedBy("lock")
