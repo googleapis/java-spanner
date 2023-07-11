@@ -1376,7 +1376,7 @@ class SessionPool {
     private volatile boolean eligibleForLongRunning = false;
 
     /**
-     * Property to mark if the session is no longer part of the session pool For ex - A session
+     * Property to mark if the session is no longer part of the session pool. For ex - A session
      * which is long-running gets cleaned up and removed from the pool.
      */
     private volatile boolean isRemovedFromPool = false;
