@@ -1772,6 +1772,36 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testBatchCreateSessionsTimesOut() {
+    // Simulate a minimum execution time of 1000 milliseconds for the BatchCreateSessions RPC.
+    mockSpanner.setBatchCreateSessionsExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
+    SpannerOptions.Builder builder =
+        SpannerOptions.newBuilder()
+            .setProjectId("my-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance());
+    // Set the timeout and retry settings for BatchCreateSessions to a simple
+    // single-attempt-and-timeout after 100ms.
+    builder
+        .getSpannerStubSettingsBuilder()
+        .batchCreateSessionsSettings()
+        .setSimpleTimeoutNoRetries(Duration.ofMillis(100));
+
+    try (Spanner spanner = builder.build().getService()) {
+      DatabaseId databaseId = DatabaseId.of("my-project", "my-instance", "my-database");
+      DatabaseClient client = spanner.getDatabaseClient(databaseId);
+      // The following call is non-blocking and will not generate an exception.
+      ResultSet rs = client.singleUse().executeQuery(SELECT1);
+      // Actually trying to get any results will cause an exception.
+      // The DEADLINE_EXCEEDED error of the BatchCreateSessions RPC is in this case propagated to
+      // the application.
+      SpannerException e = assertThrows(SpannerException.class, rs::next);
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
+    }
+  }
+
+  @Test
   public void testExceptionIncludesStatement() {
     mockSpanner.setExecuteStreamingSqlExecutionTime(
         SimulatedExecutionTime.ofException(
