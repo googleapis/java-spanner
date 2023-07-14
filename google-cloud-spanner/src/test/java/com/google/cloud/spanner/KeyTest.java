@@ -65,8 +65,9 @@ public class KeyTest {
             json,
             ByteArray.copyFrom("y"),
             Timestamp.parseTimestamp(timestamp),
-            Date.parseDate(date));
-    assertThat(k.size()).isEqualTo(12);
+            Date.parseDate(date),
+            ErrorCode.ABORTED);
+    assertThat(k.size()).isEqualTo(13);
     assertThat(k.getParts())
         .containsExactly(
             null,
@@ -80,7 +81,8 @@ public class KeyTest {
             json,
             ByteArray.copyFrom("y"),
             Timestamp.parseTimestamp(timestamp),
-            Date.parseDate(date))
+            Date.parseDate(date),
+            ErrorCode.ABORTED)
         .inOrder();
 
     // Singleton null key.
@@ -109,8 +111,9 @@ public class KeyTest {
             .append(ByteArray.copyFrom("y"))
             .append(Timestamp.parseTimestamp(timestamp))
             .append(Date.parseDate(date))
+            .append(ErrorCode.ABORTED)
             .build();
-    assertThat(k.size()).isEqualTo(12);
+    assertThat(k.size()).isEqualTo(13);
     assertThat(k.getParts())
         .containsExactly(
             null,
@@ -124,7 +127,8 @@ public class KeyTest {
             json,
             ByteArray.copyFrom("y"),
             Timestamp.parseTimestamp(timestamp),
-            Date.parseDate(date))
+            Date.parseDate(date),
+            ErrorCode.ABORTED)
         .inOrder();
   }
 
@@ -173,6 +177,7 @@ public class KeyTest {
         Key.newBuilder().append((ByteArray) null).build(),
         Key.newBuilder().append((Timestamp) null).build(),
         Key.newBuilder().append((Date) null).build(),
+        Key.newBuilder().append((Enum<?>) null).build(),
         Key.newBuilder().appendObject(null).build());
 
     tester.addEqualityGroup(Key.of(true), Key.newBuilder().append(true).build());
@@ -197,6 +202,7 @@ public class KeyTest {
     tester.addEqualityGroup(Key.of(t), Key.newBuilder().append(t).build());
     Date d = Date.parseDate("2016-09-15");
     tester.addEqualityGroup(Key.of(d), Key.newBuilder().append(d).build());
+    tester.addEqualityGroup(Key.of(ErrorCode.ABORTED), Key.newBuilder().append(ErrorCode.ABORTED).build());
     tester.addEqualityGroup(Key.of("a", 2, null));
 
     tester.testEquals();
@@ -215,6 +221,7 @@ public class KeyTest {
     reserializeAndAssert(Key.of(ByteArray.copyFrom("xyz")));
     reserializeAndAssert(Key.of(Timestamp.parseTimestamp("2015-09-15T00:00:00Z")));
     reserializeAndAssert(Key.of(Date.parseDate("2015-09-15")));
+    reserializeAndAssert(Key.of(ErrorCode.ABORTED));
     reserializeAndAssert(Key.of(1, 2, 3));
   }
 
@@ -222,6 +229,7 @@ public class KeyTest {
   public void toProto() {
     String timestamp = "2015-09-15T00:00:00Z";
     String date = "2015-09-15";
+    ErrorCode enumValue = ErrorCode.ABORTED;
     Key k =
         Key.newBuilder()
             .append((Boolean) null)
@@ -236,6 +244,7 @@ public class KeyTest {
             .append(ByteArray.copyFrom("y"))
             .append(Timestamp.parseTimestamp(timestamp))
             .append(Date.parseDate(date))
+            .append(enumValue)
             .build();
     ListValue.Builder builder = ListValue.newBuilder();
     builder.addValuesBuilder().setNullValue(NullValue.NULL_VALUE);
@@ -250,6 +259,7 @@ public class KeyTest {
     builder.addValuesBuilder().setStringValue("eQ==");
     builder.addValuesBuilder().setStringValue(timestamp);
     builder.addValuesBuilder().setStringValue(date);
+    builder.addValuesBuilder().setStringValue(enumValue.toString());
     assertThat(k.toProto()).isEqualTo(builder.build());
   }
 }

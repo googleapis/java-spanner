@@ -164,6 +164,12 @@ public final class Key implements Serializable {
       return this;
     }
 
+    /** Appends a {@code Enum} value to the key */
+    public Builder append(@Nullable Enum<?> value) {
+      buffer.add(value);
+      return this;
+    }
+
     /**
      * Appends an object following the same conversion rules as {@link Key#of(Object...)}. When
      * using the {@code Builder}, most code should prefer using the strongly typed {@code
@@ -192,6 +198,8 @@ public final class Key implements Serializable {
         append((Timestamp) value);
       } else if (value instanceof Date) {
         append((Date) value);
+      } else if (value instanceof Enum){
+        append(((Enum<?>) value));
       } else {
         throw new IllegalArgumentException(
             "Unsupported type ["
@@ -299,6 +307,8 @@ public final class Key implements Serializable {
       } else if (part instanceof Timestamp) {
         builder.addValuesBuilder().setStringValue(part.toString());
       } else if (part instanceof Date) {
+        builder.addValuesBuilder().setStringValue(part.toString());
+      } else if (part instanceof Enum) {
         builder.addValuesBuilder().setStringValue(part.toString());
       } else {
         throw new AssertionError("Illegal key part: " + part.getClass());
