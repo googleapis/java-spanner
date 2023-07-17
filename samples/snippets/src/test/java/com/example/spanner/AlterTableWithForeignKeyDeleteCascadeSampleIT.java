@@ -44,7 +44,7 @@ public class AlterTableWithForeignKeyDeleteCascadeSampleIT extends SampleTestBas
                     + "              CustomerName STRING(62) NOT NULL,\n"
                     + "              CONSTRAINT FKShoppingCartsCustomerId"
                     + " FOREIGN KEY (CustomerId)\n"
-                    + "              REFERENCES Customers (CustomerId) ON DELETE CASCADE\n"
+                    + "              REFERENCES Customers (CustomerId)\n"
                     + "              ) PRIMARY KEY (CartId)\n"))
         .get(5, TimeUnit.MINUTES);
 
