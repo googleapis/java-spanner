@@ -22,8 +22,8 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <opencensus.version>0.31.1</opencensus.version>
-    <trace.version>2.16.0</trace.version>
-    <cloudmonitoring.version>3.17.0</cloudmonitoring.version>
+    <trace.version>2.21.0</trace.version>
+    <cloudmonitoring.version>3.21.0</cloudmonitoring.version>
   </properties>
 
   <dependencies>
@@ -31,7 +31,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.41.1-SNAPSHOT</version>
+      <version>6.43.3-SNAPSHOT</version>
     </dependency>
     <!-- {x-version-update-end} -->
     
@@ -98,7 +98,7 @@
     <dependency>
       <groupId>com.google.truth</groupId>
       <artifactId>truth</artifactId>
-      <version>1.1.3</version>
+      <version>1.1.5</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -109,7 +109,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.3.0</version>
+        <version>3.4.0</version>
         <executions>
           <execution>
             <id>add-snippets-source</id>
@@ -138,7 +138,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.2</version>
         <configuration>
           <systemPropertyVariables>
             <spanner.test.instance>spanner-testing-east1</spanner.test.instance>

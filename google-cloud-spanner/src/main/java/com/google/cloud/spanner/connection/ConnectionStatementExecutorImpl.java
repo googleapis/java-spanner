@@ -25,6 +25,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT_DML_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DEFAULT_TRANSACTION_ISOLATION;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READONLY;
@@ -41,6 +42,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT_DML_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_RESPONSE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_TIMESTAMP;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READONLY;
@@ -311,6 +313,22 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         String.format("%sRETURN_COMMIT_STATS", getNamespace(connection.getDialect())),
         getConnection().isReturnCommitStats(),
         SHOW_RETURN_COMMIT_STATS);
+  }
+
+  @Override
+  public StatementResult statementSetDelayTransactionStartUntilFirstWrite(
+      Boolean delayTransactionStartUntilFirstWrite) {
+    getConnection().setDelayTransactionStartUntilFirstWrite(delayTransactionStartUntilFirstWrite);
+    return noResult(SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE);
+  }
+
+  @Override
+  public StatementResult statementShowDelayTransactionStartUntilFirstWrite() {
+    return resultSet(
+        String.format(
+            "%sDELAY_TRANSACTION_START_UNTIL_FIRST_WRITE", getNamespace(connection.getDialect())),
+        getConnection().isDelayTransactionStartUntilFirstWrite(),
+        SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE);
   }
 
   @Override
