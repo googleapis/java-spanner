@@ -16,8 +16,6 @@
 
 package com.google.cloud.spanner.spi.v1;
 
-import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
-
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
@@ -179,6 +177,9 @@ import io.grpc.Context;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
 import io.opencensus.metrics.Metrics;
+import org.threeten.bp.Duration;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -203,8 +204,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import org.threeten.bp.Duration;
+
+import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
 /** Implementation of Cloud Spanner remote calls using Gapic libraries. */
 @InternalApi
@@ -367,6 +368,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                     .setTransportChannelProvider(channelProvider)
                     .setCredentialsProvider(credentialsProvider)
                     .setStreamWatchdogProvider(watchdogProvider)
+                    .setTracerFactory(options.getApiTracerFactory())
                     .build());
         partitionedDmlRetrySettings =
             options
