@@ -1,5 +1,22 @@
 # Changelog
 
+## [6.43.2](https://github.com/googleapis/java-spanner/compare/v6.43.1...v6.43.2) (2023-07-09)
+
+
+### Bug Fixes
+
+* Recognize ABORT statements for PostgreSQL ([#2479](https://github.com/googleapis/java-spanner/issues/2479)) ([da47b0a](https://github.com/googleapis/java-spanner/commit/da47b0aef7a2e03fc9b5e25cf036ef8d8d001672))
+
+
+### Documentation
+
+* Add background info for session pool ([#2498](https://github.com/googleapis/java-spanner/issues/2498)) ([0bbb1a1](https://github.com/googleapis/java-spanner/commit/0bbb1a1b5ac6b9d4ea061a2f2a4d26c3bd958d7e))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.13.0 ([#2521](https://github.com/googleapis/java-spanner/issues/2521)) ([bdb2461](https://github.com/googleapis/java-spanner/commit/bdb2461dfa90535241c333d1cfee33afc2b33eca))
+
 ## [6.43.1](https://github.com/googleapis/java-spanner/compare/v6.43.0...v6.43.1) (2023-06-26)
 
 
