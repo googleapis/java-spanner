@@ -115,6 +115,9 @@ public interface AsyncTransactionManager extends AutoCloseable {
    *     executor)
    *   .commitAsync();
    * }</pre>
+   *
+   * @param <I>
+   * @param <O>
    */
   interface AsyncTransactionStep<I, O> extends ApiFuture<O> {
     /**
@@ -140,6 +143,9 @@ public interface AsyncTransactionManager extends AutoCloseable {
    * a {@link TransactionContext} and the output value of the previous transaction step as its input
    * parameters. The method should return an {@link ApiFuture} that will return the result of this
    * step.
+   *
+   * @param <I>
+   * @param <O>
    */
   interface AsyncTransactionFunction<I, O> {
     /**
