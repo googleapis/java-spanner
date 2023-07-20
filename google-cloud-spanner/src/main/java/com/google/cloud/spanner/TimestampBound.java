@@ -46,7 +46,7 @@ import java.util.concurrent.TimeUnit;
  *
  * <p>Each type of timestamp bound is discussed in detail below.
  *
- * <h3>Strong reads</h3>
+ * <h2>Strong reads</h2>
  *
  * <p>Strong reads are guaranteed to see the effects of all transactions that have committed before
  * the start of the read. Furthermore, all rows yielded by a single read are consistent with each
@@ -59,7 +59,7 @@ import java.util.concurrent.TimeUnit;
  *
  * <p>Use {@link #strong()} to create a bound of this type.
  *
- * <h3>Exact Staleness</h3>
+ * <h2>Exact Staleness</h2>
  *
  * <p>These timestamp bounds execute reads at a user-specified timestamp. Reads at a timestamp are
  * guaranteed to see a consistent prefix of the global transaction history: they observe
@@ -78,7 +78,7 @@ import java.util.concurrent.TimeUnit;
  * <p>Use {@link #ofReadTimestamp(Timestamp)} and {@link #ofExactStaleness(long, TimeUnit)} to
  * create a bound of this type.
  *
- * <h3>Bounded Staleness</h3>
+ * <h2>Bounded Staleness</h2>
  *
  * <p>Bounded staleness modes allow Cloud Spanner to pick the read timestamp, subject to a
  * user-provided staleness bound. Cloud Spanner chooses the newest timestamp within the staleness
@@ -103,7 +103,7 @@ import java.util.concurrent.TimeUnit;
  * <p>Use {@link #ofMinReadTimestamp(Timestamp)} and {@link #ofMaxStaleness(long, TimeUnit)} to
  * create a bound of this type.
  *
- * <h3>Old Read Timestamps and Garbage Collection</h3>
+ * <h2>Old Read Timestamps and Garbage Collection</h2>
  *
  * <p>Cloud Spanner continuously garbage collects deleted and overwritten data in the background to
  * reclaim storage space. This process is known as "version GC". By default, version GC reclaims

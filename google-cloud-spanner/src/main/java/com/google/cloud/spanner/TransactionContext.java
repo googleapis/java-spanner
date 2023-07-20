@@ -44,7 +44,7 @@ import com.google.spanner.v1.ResultSetStats;
  * <p>Conceptually, a read-write transaction consists of zero or more reads or SQL queries followed
  * by a commit.
  *
- * <h3>Semantics</h3>
+ * <h2>Semantics</h2>
  *
  * <p>Cloud Spanner can commit the transaction if all read locks it acquired are still valid at
  * commit time, and it is able to acquire write locks for all writes. Cloud Spanner can abort the
@@ -55,7 +55,7 @@ import com.google.spanner.v1.ResultSetStats;
  * transaction's locks were held for. It is an error to use Cloud Spanner locks for any sort of
  * mutual exclusion other than between Cloud Spanner transactions themselves.
  *
- * <h3>Retrying Aborted Transactions</h3>
+ * <h2>Retrying Aborted Transactions</h2>
  *
  * <p>When a transaction aborts, the application can choose to retry the whole transaction again. To
  * maximize the chances of successfully committing the retry, the client should execute the retry in
@@ -71,7 +71,7 @@ import com.google.spanner.v1.ResultSetStats;
  * <p>Application code does not need to retry explicitly; {@link TransactionRunner} will
  * automatically retry a transaction if an attempt results in an abort.
  *
- * <h3>Idle Transactions</h3>
+ * <h2>Idle Transactions</h2>
  *
  * <p>A transaction is considered idle if it has no outstanding reads or SQL queries and has not
  * started a read or SQL query within the last 10 seconds. Idle transactions can be aborted by Cloud
