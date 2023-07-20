@@ -52,21 +52,21 @@ import java.util.List;
  */
 public interface StructReader {
   /**
-   * Returns the type of the underlying data. This will always be a {@code STRUCT} type, with fields
+   * @return the type of the underlying data. This will always be a {@code STRUCT} type, with fields
    * corresponding to the data's columns. For the result of a read or query, this will always match
    * the columns passed to the {@code read()} call or named in the query text, in order.
    */
   Type getType();
 
   /**
-   * Returns the number of columns in the underlying data. This includes any columns with {@code
+   * @return the number of columns in the underlying data. This includes any columns with {@code
    * NULL} values.
    */
   int getColumnCount();
 
   /**
-   * Returns the index of the column named {@code columnName}.
-   *
+   * @param columnName
+   * @return the index of the column named {@code columnName}.
    * @throws IllegalArgumentException if there is not exactly one element of {@code
    *     type().structFields()} with {@link Type.StructField#getName()} equal to {@code columnName}
    */
@@ -157,13 +157,17 @@ public interface StructReader {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
-  /** Returns the value of a nullable column as a {@link Value}. */
+  /**
+   * @param columnName
+   * @return the value of a nullable column as a {@link Value}.
+   */
   default Value getValue(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}.
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}.
    *
    * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
    *     may contain {@code NULL} values, use {@link #getBooleanList(int)} instead.
@@ -171,7 +175,8 @@ public interface StructReader {
   boolean[] getBooleanArray(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}.
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}.
    *
    * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
    *     may contain {@code NULL} values, use {@link #getBooleanList(String)} instead.
@@ -179,21 +184,24 @@ public interface StructReader {
   boolean[] getBooleanArray(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}. The
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}. The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
   List<Boolean> getBooleanList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}. The
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}. The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
   List<Boolean> getBooleanList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}.
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}.
    *
    * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
    *     may contain {@code NULL} values, use {@link #getLongList(int)} instead.
@@ -201,7 +209,8 @@ public interface StructReader {
   long[] getLongArray(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}.
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}.
    *
    * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
    *     may contain {@code NULL} values, use {@link #getLongList(String)} instead.
@@ -209,21 +218,24 @@ public interface StructReader {
   long[] getLongArray(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}. The
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}. The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
   List<Long> getLongList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}. The
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}. The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
   List<Long> getLongList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())}.
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())}.
    *
    * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
    *     may contain {@code NULL} values, use {@link #getDoubleList(int)} instead.
@@ -231,7 +243,8 @@ public interface StructReader {
   double[] getDoubleArray(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())}.
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())}.
    *
    * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
    *     may contain {@code NULL} values, use {@link #getDoubleList(String)} instead.
@@ -239,49 +252,56 @@ public interface StructReader {
   double[] getDoubleArray(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())} The
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())} The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
   List<Double> getDoubleList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())} The
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())} The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
   List<Double> getDoubleList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.numeric())} The
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.numeric())} The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
   List<BigDecimal> getBigDecimalList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.numeric())} The
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.numeric())} The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
   List<BigDecimal> getBigDecimalList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. The
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
   List<String> getStringList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. The
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
   List<String> getStringList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.json())}. The
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.json())}. The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
@@ -290,7 +310,8 @@ public interface StructReader {
   };
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.json())}. The
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.json())}. The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
@@ -299,7 +320,8 @@ public interface StructReader {
   };
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.pgJsonb())} The
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.pgJsonb())} The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
@@ -308,7 +330,8 @@ public interface StructReader {
   };
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.pgJsonb())} The
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.pgJsonb())} The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
@@ -317,56 +340,64 @@ public interface StructReader {
   };
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bytes())}. The
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.bytes())}. The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
   List<ByteArray> getBytesList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bytes())}. The
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.bytes())}. The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
   List<ByteArray> getBytesList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.timestamp())}
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.timestamp())}
    * The list returned by this method is lazily constructed. Create a copy of it if you intend to
    * access each element in the list multiple times.
    */
   List<Timestamp> getTimestampList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.timestamp())}
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.timestamp())}
    * The list returned by this method is lazily constructed. Create a copy of it if you intend to
    * access each element in the list multiple times.
    */
   List<Timestamp> getTimestampList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.date())}. The
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.date())}. The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
   List<Date> getDateList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.date())}. The
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.date())}. The
    * list returned by this method is lazily constructed. Create a copy of it if you intend to access
    * each element in the list multiple times.
    */
   List<Date> getDateList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.struct(...))}
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.struct(...))}
    * The list returned by this method is lazily constructed. Create a copy of it if you intend to
    * access each element in the list multiple times.
    */
   List<Struct> getStructList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.struct(...))}
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.struct(...))}
    * The list returned by this method is lazily constructed. Create a copy of it if you intend to
    * access each element in the list multiple times.
    */
