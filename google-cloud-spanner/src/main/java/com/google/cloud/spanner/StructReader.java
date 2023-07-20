@@ -72,87 +72,164 @@ public interface StructReader {
    */
   int getColumnIndex(String columnName);
 
-  /** Returns the type of a column. */
+  /**
+   * @param columnIndex
+   * @return the type of a column.
+   */
   Type getColumnType(int columnIndex);
 
-  /** Returns the type of a column. */
+  /**
+   * @param columnName
+   * @return the type of a column.
+   */
   Type getColumnType(String columnName);
 
-  /** Returns {@code true} if a column contains a {@code NULL} value. */
+  /**
+   * @param columnIndex
+   * @return {@code true} if a column contains a {@code NULL} value.
+   */
   boolean isNull(int columnIndex);
 
-  /** Returns {@code true} if a column contains a {@code NULL} value. */
+  /**
+   * @param columnName
+   * @return {@code true} if a column contains a {@code NULL} value.
+   */
   boolean isNull(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#bool()}. */
+  /**
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@link Type#bool()}.
+   */
   boolean getBoolean(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#bool()}. */
+  /**
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@link Type#bool()}.
+   */
   boolean getBoolean(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#int64()}. */
+  /**
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@link Type#int64()}.
+   */
   long getLong(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#int64()}. */
+  /**
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@link Type#int64()}.
+   */
   long getLong(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#float64()}. */
+  /**
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@link Type#float64()}.
+   */
   double getDouble(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#float64()}. */
+  /**
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@link Type#float64()}.
+   */
   double getDouble(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#numeric()}. */
+  /**
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@link Type#numeric()}.
+   */
   BigDecimal getBigDecimal(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#numeric()}. */
+  /**
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@link Type#numeric()}.
+   */
   BigDecimal getBigDecimal(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#string()}. */
+  /**
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@link Type#string()}.
+   */
   String getString(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#string()}. */
+  /**
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@link Type#string()}.
+   */
   String getString(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#json()}. */
+  /**
+   *
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@link Type#json()}.
+   */
   default String getJson(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#json()}. */
+  /**
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@link Type#json()}.
+   */
   default String getJson(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#pgJsonb()}. */
+  /**
+   *
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@link Type#pgJsonb()}.
+   */
   default String getPgJsonb(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#pgJsonb()}. */
+  /**
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@link Type#pgJsonb()}.
+   */
   default String getPgJsonb(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#bytes()}. */
+  /**
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@link Type#bytes()}.
+   */
   ByteArray getBytes(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#bytes()}. */
+  /**
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@link Type#bytes()}.
+   */
   ByteArray getBytes(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#timestamp()}. */
+  /**
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@link Type#timestamp()}.
+   */
   Timestamp getTimestamp(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#timestamp()}. */
+  /**
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@link Type#timestamp()}.
+   */
   Timestamp getTimestamp(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#date()}. */
+  /**
+   * @param columnIndex
+   * @return the value of a non-{@code NULL} column with type {@link Type#date()}.
+   */
   Date getDate(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#date()}. */
+  /**
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@link Type#date()}.
+   */
   Date getDate(String columnName);
 
-  /** Returns the value of a nullable column as a {@link Value}. */
+  /**
+   * @param columnIndex
+   * @return the value of a nullable column as a {@link Value}.
+   */
   default Value getValue(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
