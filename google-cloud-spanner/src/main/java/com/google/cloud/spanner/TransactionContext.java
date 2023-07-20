@@ -118,13 +118,13 @@ public interface TransactionContext extends ReadContext {
   long executeUpdate(Statement statement, UpdateOption... options);
 
   /**
-   * Same as {@link #executeUpdate(Statement)}, but is guaranteed to be non-blocking. If multiple
-   * asynchronous update statements are submitted to the same read/write transaction, the statements
-   * are guaranteed to be submitted to Cloud Spanner in the order that they were submitted in the
-   * client. This does however not guarantee that an asynchronous update statement will see the
-   * results of all previously submitted statements, as the execution of the statements can be
-   * parallel. If you rely on the results of a previous statement, you should block until the result
-   * of that statement is known and has been returned to the client.
+   * Same as {@link #executeUpdate(Statement,UpdateOption...)}, but is guaranteed to be
+   * non-blocking. If multiple asynchronous update statements are submitted to the same read/write
+   * transaction, the statements are guaranteed to be submitted to Cloud Spanner in the order that
+   * they were submitted in the client. This does however not guarantee that an asynchronous update
+   * statement will see the results of all previously submitted statements, as the execution of the
+   * statements can be parallel. If you rely on the results of a previous statement, you should
+   * block until the result of that statement is known and has been returned to the client.
    */
   ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... options);
 
@@ -179,13 +179,13 @@ public interface TransactionContext extends ReadContext {
   long[] batchUpdate(Iterable<Statement> statements, UpdateOption... options);
 
   /**
-   * Same as {@link #batchUpdate(Iterable)}, but is guaranteed to be non-blocking. If multiple
-   * asynchronous update statements are submitted to the same read/write transaction, the statements
-   * are guaranteed to be submitted to Cloud Spanner in the order that they were submitted in the
-   * client. This does however not guarantee that an asynchronous update statement will see the
-   * results of all previously submitted statements, as the execution of the statements can be
-   * parallel. If you rely on the results of a previous statement, you should block until the result
-   * of that statement is known and has been returned to the client.
+   * Same as {@link #batchUpdate(Iterable, UpdateOption...)}, but is guaranteed to be non-blocking.
+   * If multiple asynchronous update statements are submitted to the same read/write transaction,
+   * the statements are guaranteed to be submitted to Cloud Spanner in the order that they were
+   * submitted in the client. This does however not guarantee that an asynchronous update statement
+   * will see the results of all previously submitted statements, as the execution of the statements
+   * can be parallel. If you rely on the results of a previous statement, you should block until the
+   * result of that statement is known and has been returned to the client.
    */
   ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> statements, UpdateOption... options);
 }

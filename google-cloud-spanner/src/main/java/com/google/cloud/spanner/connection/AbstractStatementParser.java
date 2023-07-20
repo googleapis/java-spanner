@@ -59,6 +59,7 @@ public abstract class AbstractStatementParser {
 
   /**
    * Get an instance of {@link AbstractStatementParser} for the specified dialect.
+   *
    * @param dialect
    * @return
    */
@@ -231,17 +232,13 @@ public abstract class AbstractStatementParser {
           && Objects.equals(this.sqlWithoutComments, o.sqlWithoutComments);
     }
 
-    /**
-     * @return the type of statement that was recognized by the parser.
-     */
+    /** @return the type of statement that was recognized by the parser. */
     @InternalApi
     public StatementType getType() {
       return type;
     }
 
-    /**
-     * @return whether the statement has a returning clause or not.
-     */
+    /** @return whether the statement has a returning clause or not. */
     @InternalApi
     public boolean hasReturningClause() {
       return this.returningClause;
@@ -249,7 +246,7 @@ public abstract class AbstractStatementParser {
 
     /**
      * @return true if the statement is a query that will return a {@link
-     * com.google.cloud.spanner.ResultSet}.
+     *     com.google.cloud.spanner.ResultSet}.
      */
     @InternalApi
     public boolean isQuery() {
@@ -268,7 +265,7 @@ public abstract class AbstractStatementParser {
 
     /**
      * @return true if the statement is a DML statement or a client side statement that will return
-     * an update count.
+     *     an update count.
      */
     @InternalApi
     public boolean isUpdate() {
@@ -285,9 +282,7 @@ public abstract class AbstractStatementParser {
       return false;
     }
 
-    /**
-     * @return true if the statement is a DDL statement.
-     */
+    /** @return true if the statement is a DDL statement. */
     @InternalApi
     public boolean isDdl() {
       switch (type) {
@@ -304,7 +299,7 @@ public abstract class AbstractStatementParser {
 
     /**
      * @return the {@link ClientSideStatementType} of this statement. This method may only be called
-     * on statements of type {@link StatementType#CLIENT_SIDE}.
+     *     on statements of type {@link StatementType#CLIENT_SIDE}.
      */
     @InternalApi
     public ClientSideStatementType getClientSideStatementType() {
@@ -336,9 +331,7 @@ public abstract class AbstractStatementParser {
           .build();
     }
 
-    /**
-     * @return the SQL statement with all comments removed from the SQL string.
-     */
+    /** @return the SQL statement with all comments removed from the SQL string. */
     @InternalApi
     public String getSqlWithoutComments() {
       return sqlWithoutComments;
