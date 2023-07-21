@@ -47,11 +47,6 @@ public final class BatchCreateSessionsResponse extends com.google.protobuf.Gener
     return new BatchCreateSessionsResponse();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_BatchCreateSessionsResponse_descriptor;
