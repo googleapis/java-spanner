@@ -412,7 +412,7 @@ public interface DatabaseClient {
    *
    * <p>Example of a read write transaction.
    *
-   * <pre> <code>
+   * <pre>{@code
    * Executor executor = Executors.newSingleThreadExecutor();
    * final long singerId = my_singer_id;
    * AsyncRunner runner = client.runAsync();
@@ -432,7 +432,7 @@ public interface DatabaseClient {
    *                   .build());
    *         },
    *         executor);
-   * </code></pre>
+   * }</pre>
    *
    * Options for a transaction can include:
    *

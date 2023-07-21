@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.spanner.v1.ResultSetStats;
 
@@ -81,7 +82,7 @@ import com.google.spanner.v1.ResultSetStats;
  * <p>If this behavior is undesirable, periodically executing a simple SQL query in the transaction
  * (e.g., {@code SELECT 1}) prevents the transaction from becoming idle.
  *
- * @see Session#readWriteTransaction()
+ * @see DatabaseClient#readWriteTransaction(TransactionOption...)
  * @see TransactionRunner
  */
 public interface TransactionContext extends ReadContext {

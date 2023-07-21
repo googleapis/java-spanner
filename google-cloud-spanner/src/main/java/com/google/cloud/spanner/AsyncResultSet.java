@@ -117,7 +117,7 @@ public interface AsyncResultSet extends ResultSet {
    *       CursorState#NOT_READY}.
    * </ul>
    *
-   * <h2>Flow Control</h2>
+   * <h4>Flow Control</h4>
    *
    * If no flow control is needed (say because result sizes are known in advance to be finite in
    * size) then async processing is simple. The following is a code example that transfers work from
