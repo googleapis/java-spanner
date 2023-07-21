@@ -10,6 +10,7 @@ branchProtectionRules:
     requiredStatusCheckContexts:
       - dependencies (17)
       - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
@@ -28,6 +29,7 @@ branchProtectionRules:
     requiredStatusCheckContexts:
       - dependencies (11)
       - lint
+      - javadoc
       - units (7)
       - units (8)
       - units (11)
@@ -42,6 +44,7 @@ branchProtectionRules:
     requiredStatusCheckContexts:
       - dependencies (11)
       - lint
+      - javadoc
       - units (7)
       - units (8)
       - units (11)
@@ -56,6 +59,7 @@ branchProtectionRules:
     requiredStatusCheckContexts:
       - dependencies (11)
       - lint
+      - javadoc
       - units (7)
       - units (8)
       - units (11)
@@ -69,6 +73,7 @@ branchProtectionRules:
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
       - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
@@ -81,6 +86,7 @@ branchProtectionRules:
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
       - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
@@ -95,6 +101,7 @@ branchProtectionRules:
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
       - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
@@ -109,6 +116,7 @@ branchProtectionRules:
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
       - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
