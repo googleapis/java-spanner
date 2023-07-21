@@ -20,6 +20,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.CommitResponse;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.UpdateOption;
@@ -30,10 +31,16 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.concurrent.ExecutionException;
+import javax.annotation.Nonnull;
 
 /** Internal interface for transactions and batches on {@link Connection}s. */
 @InternalApi
 interface UnitOfWork {
+
+  enum CallType {
+    SYNC,
+    ASYNC
+  }
 
   /** A unit of work can be either a transaction or a DDL/DML batch. */
   enum Type {
@@ -74,29 +81,41 @@ interface UnitOfWork {
    * closes the {@link ReadContext}. This method will throw a {@link SpannerException} if called for
    * a {@link Type#BATCH}.
    *
+   * @param callType Indicates whether the top-level call is a sync or async call.
    * @return An {@link ApiFuture} that is done when the commit has finished.
    */
-  ApiFuture<Void> commitAsync();
+  ApiFuture<Void> commitAsync(CallType callType);
 
   /**
    * Rollbacks any changes in this unit of work. For read-only transactions, this only closes the
    * {@link ReadContext}. This method will throw a {@link SpannerException} if called for a {@link
    * Type#BATCH}.
    *
+   * @param callType Indicates whether the top-level call is a sync or async call.
    * @return An {@link ApiFuture} that is done when the rollback has finished.
    */
-  ApiFuture<Void> rollbackAsync();
+  ApiFuture<Void> rollbackAsync(CallType callType);
+
+  /** @see Connection#savepoint(String) */
+  void savepoint(@Nonnull String name, @Nonnull Dialect dialect);
+
+  /** @see Connection#releaseSavepoint(String) */
+  void releaseSavepoint(@Nonnull String name);
+
+  /** @see Connection#rollbackToSavepoint(String) */
+  void rollbackToSavepoint(@Nonnull String name, @Nonnull SavepointSupport savepointSupport);
 
   /**
    * Sends the currently buffered statements in this unit of work to the database and ends the
    * batch. This method will throw a {@link SpannerException} if called for a {@link
    * Type#TRANSACTION}.
    *
+   * @param callType Indicates whether the top-level call is a sync or async call.
    * @return an {@link ApiFuture} containing the update counts in case of a DML batch. Returns an
    *     array containing 1 for each successful statement and 0 for each failed statement or
    *     statement that was not executed in case of a DDL batch.
    */
-  ApiFuture<long[]> runBatchAsync();
+  ApiFuture<long[]> runBatchAsync(CallType callType);
 
   /**
    * Clears the currently buffered statements in this unit of work and ends the batch. This method
@@ -113,6 +132,7 @@ interface UnitOfWork {
    * AnalyzeMode#PLAN} or {@link AnalyzeMode#PROFILE}, the returned {@link ResultSet} will include
    * {@link ResultSetStats}.
    *
+   * @param callType Indicates whether the top-level call is a sync or async call.
    * @param statement The statement to execute.
    * @param analyzeMode Indicates whether to include {@link ResultSetStats} in the returned {@link
    *     ResultSet} or not. Cannot be used in combination with {@link QueryOption}s.
@@ -124,7 +144,10 @@ interface UnitOfWork {
    *     if a database error occurs.
    */
   ApiFuture<ResultSet> executeQueryAsync(
-      ParsedStatement statement, AnalyzeMode analyzeMode, QueryOption... options);
+      CallType callType,
+      ParsedStatement statement,
+      AnalyzeMode analyzeMode,
+      QueryOption... options);
 
   /**
    * @return the read timestamp of this transaction. Will throw a {@link SpannerException} if there
@@ -165,21 +188,24 @@ interface UnitOfWork {
    * @param ddl The DDL statement to execute.
    * @return an {@link ApiFuture} that is done when the DDL operation has finished.
    */
-  ApiFuture<Void> executeDdlAsync(ParsedStatement ddl);
+  ApiFuture<Void> executeDdlAsync(CallType callType, ParsedStatement ddl);
 
   /**
    * Execute a DML statement on Spanner.
    *
+   * @param callType Indicates whether the top-level call is a sync or async call.
    * @param update The DML statement to execute.
    * @param options Update options to apply for the statement.
    * @return an {@link ApiFuture} containing the number of records that were
    *     inserted/updated/deleted by this statement.
    */
-  ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options);
+  ApiFuture<Long> executeUpdateAsync(
+      CallType callType, ParsedStatement update, UpdateOption... options);
 
   /**
    * Execute and/or analyze a DML statement on Spanner.
    *
+   * @param callType Indicates whether the top-level call is a sync or async call.
    * @param update The DML statement to analyze/execute.
    * @param analyzeMode Specifies the query/analyze mode to use for the DML statement.
    * @param options Update options to apply for the statement.
@@ -187,11 +213,12 @@ interface UnitOfWork {
    *     statement. The {@link ResultSet} will not contain any rows.
    */
   ApiFuture<ResultSet> analyzeUpdateAsync(
-      ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options);
+      CallType callType, ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options);
 
   /**
    * Execute a batch of DML statements on Spanner.
    *
+   * @param callType Indicates whether the top-level call is a sync or async call.
    * @param updates The DML statements to execute.
    * @param options Update options to apply for the statement.
    * @return an {@link ApiFuture} containing an array with the number of records that were
@@ -199,7 +226,7 @@ interface UnitOfWork {
    * @see TransactionContext#batchUpdate(Iterable)
    */
   ApiFuture<long[]> executeBatchUpdateAsync(
-      Iterable<ParsedStatement> updates, UpdateOption... options);
+      CallType callType, Iterable<ParsedStatement> updates, UpdateOption... options);
 
   /**
    * Writes a batch of {@link Mutation}s to Spanner. For {@link ReadWriteTransaction}s, this means
@@ -207,9 +234,10 @@ interface UnitOfWork {
    * {@link UnitOfWork#commit()}. For {@link SingleUseTransaction}s, the {@link Mutation}s will be
    * sent directly to Spanner.
    *
+   * @param callType Indicates whether the top-level call is a sync or async call.
    * @param mutations The mutations to write.
    * @return an {@link ApiFuture} that is done when the {@link Mutation}s have been successfully
    *     buffered or written to Cloud Spanner.
    */
-  ApiFuture<Void> writeAsync(Iterable<Mutation> mutations);
+  ApiFuture<Void> writeAsync(CallType callType, Iterable<Mutation> mutations);
 }

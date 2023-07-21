@@ -15,11 +15,12 @@
  */
 package com.google.cloud.spanner.spi.v1;
 
-import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
 import java.util.List;
@@ -77,9 +78,20 @@ public class SpannerMetadataProviderTest {
     SpannerMetadataProvider metadataProvider =
         SpannerMetadataProvider.create(ImmutableMap.of(), "header1");
     Map<String, List<String>> extraHeaders = metadataProvider.newExtraHeaders(null, "value1");
-    assertThat(extraHeaders)
-        .containsExactlyEntriesIn(
-            ImmutableMap.<String, List<String>>of("header1", ImmutableList.of("value1")));
+    Map<String, List<String>> expectedHeaders =
+        ImmutableMap.<String, List<String>>of("header1", ImmutableList.of("value1"));
+    assertTrue(Maps.difference(extraHeaders, expectedHeaders).areEqual());
+  }
+
+  @Test
+  public void testNewRouteToLeaderHeader() {
+    SpannerMetadataProvider metadataProvider =
+        SpannerMetadataProvider.create(ImmutableMap.of(), "header1");
+    Map<String, List<String>> extraHeaders = metadataProvider.newRouteToLeaderHeader();
+    Map<String, List<String>> expectedHeaders =
+        ImmutableMap.<String, List<String>>of(
+            "x-goog-spanner-route-to-leader", ImmutableList.of("true"));
+    assertTrue(Maps.difference(extraHeaders, expectedHeaders).areEqual());
   }
 
   private String getResourceHeaderValue(

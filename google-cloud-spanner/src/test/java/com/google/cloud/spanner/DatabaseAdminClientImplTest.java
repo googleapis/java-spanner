@@ -18,7 +18,9 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -27,6 +29,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Identity;
 import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.DatabaseInfo.DatabaseField;
 import com.google.cloud.spanner.DatabaseInfo.State;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -53,6 +56,7 @@ import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -244,6 +248,24 @@ public class DatabaseAdminClientImplTest {
     OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
         client.updateDatabaseDdl(INSTANCE_ID, DB_ID, ddl, newOpId);
     assertThat(op.getName()).isEqualTo(originalOpName);
+  }
+
+  @Test
+  public void updateDatabase() throws Exception {
+    com.google.cloud.spanner.Database database =
+        client.newDatabaseBuilder(DatabaseId.of(DB_NAME)).enableDropProtection().build();
+    Database databaseProto = database.toProto();
+    OperationFuture<Database, UpdateDatabaseMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "updateDatabase", databaseProto, UpdateDatabaseMetadata.getDefaultInstance());
+    when(rpc.updateDatabase(
+            databaseProto, DatabaseField.toFieldMask(DatabaseField.DROP_PROTECTION)))
+        .thenReturn(rawOperationFuture);
+    OperationFuture<com.google.cloud.spanner.Database, UpdateDatabaseMetadata> op =
+        client.updateDatabase(database, DatabaseField.DROP_PROTECTION);
+    assertTrue(op.isDone());
+    assertEquals(op.get().getId().getName(), DB_NAME);
+    assertTrue(op.get().isDropProtectionEnabled());
   }
 
   @Test

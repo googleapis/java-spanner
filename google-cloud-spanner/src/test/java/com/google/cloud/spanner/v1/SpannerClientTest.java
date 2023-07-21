@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -554,6 +554,7 @@ public class SpannerClientTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDataBoostEnabled(true)
             .build();
 
     ResultSet actualResponse = client.executeSql(request);
@@ -574,6 +575,7 @@ public class SpannerClientTest {
     Assert.assertEquals(request.getSeqno(), actualRequest.getSeqno());
     Assert.assertEquals(request.getQueryOptions(), actualRequest.getQueryOptions());
     Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
+    Assert.assertEquals(request.getDataBoostEnabled(), actualRequest.getDataBoostEnabled());
     Assert.assertTrue(
         channelProvider.isHeaderSent(
             ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
@@ -599,6 +601,7 @@ public class SpannerClientTest {
               .setSeqno(109325920)
               .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
               .setRequestOptions(RequestOptions.newBuilder().build())
+              .setDataBoostEnabled(true)
               .build();
       client.executeSql(request);
       Assert.fail("No exception raised");
@@ -631,6 +634,7 @@ public class SpannerClientTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDataBoostEnabled(true)
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
@@ -661,6 +665,7 @@ public class SpannerClientTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDataBoostEnabled(true)
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
@@ -761,6 +766,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDataBoostEnabled(true)
             .build();
 
     ResultSet actualResponse = client.read(request);
@@ -780,6 +786,7 @@ public class SpannerClientTest {
     Assert.assertEquals(request.getResumeToken(), actualRequest.getResumeToken());
     Assert.assertEquals(request.getPartitionToken(), actualRequest.getPartitionToken());
     Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
+    Assert.assertEquals(request.getDataBoostEnabled(), actualRequest.getDataBoostEnabled());
     Assert.assertTrue(
         channelProvider.isHeaderSent(
             ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
@@ -805,6 +812,7 @@ public class SpannerClientTest {
               .setResumeToken(ByteString.EMPTY)
               .setPartitionToken(ByteString.EMPTY)
               .setRequestOptions(RequestOptions.newBuilder().build())
+              .setDataBoostEnabled(true)
               .build();
       client.read(request);
       Assert.fail("No exception raised");
@@ -837,6 +845,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDataBoostEnabled(true)
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();
@@ -867,6 +876,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDataBoostEnabled(true)
             .build();
 
     MockStreamObserver<PartialResultSet> responseObserver = new MockStreamObserver<>();

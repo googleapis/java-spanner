@@ -275,7 +275,7 @@ class SessionImpl implements Session {
   @Override
   public void prepareReadWriteTransaction() {
     setActive(null);
-    readyTransactionId = beginTransaction();
+    readyTransactionId = beginTransaction(true);
   }
 
   @Override
@@ -296,9 +296,9 @@ class SessionImpl implements Session {
     }
   }
 
-  ByteString beginTransaction() {
+  ByteString beginTransaction(boolean routeToLeader) {
     try {
-      return beginTransactionAsync().get();
+      return beginTransactionAsync(routeToLeader).get();
     } catch (ExecutionException e) {
       throw SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause());
     } catch (InterruptedException e) {
@@ -306,11 +306,11 @@ class SessionImpl implements Session {
     }
   }
 
-  ApiFuture<ByteString> beginTransactionAsync() {
-    return beginTransactionAsync(Options.fromTransactionOptions());
+  ApiFuture<ByteString> beginTransactionAsync(boolean routeToLeader) {
+    return beginTransactionAsync(Options.fromTransactionOptions(), routeToLeader);
   }
 
-  ApiFuture<ByteString> beginTransactionAsync(Options transactionOptions) {
+  ApiFuture<ByteString> beginTransactionAsync(Options transactionOptions, boolean routeToLeader) {
     final SettableApiFuture<ByteString> res = SettableApiFuture.create();
     final Span span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION).startSpan();
     final BeginTransactionRequest request =
@@ -319,7 +319,7 @@ class SessionImpl implements Session {
             .setOptions(createReadWriteTransactionOptions(transactionOptions))
             .build();
     final ApiFuture<Transaction> requestFuture =
-        spanner.getRpc().beginTransactionAsync(request, options);
+        spanner.getRpc().beginTransactionAsync(request, options, routeToLeader);
     requestFuture.addListener(
         tracer.withSpan(
             span,

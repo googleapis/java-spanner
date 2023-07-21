@@ -513,6 +513,50 @@ public class ConnectionOptionsTest {
   }
 
   @Test
+  public void testTrackSessionLeaks() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?trackSessionLeaks=false")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertFalse(options.getSessionPoolOptions().isTrackStackTraceOfSessionCheckout());
+  }
+
+  @Test
+  public void testTrackSessionLeaksDefault() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertTrue(options.getSessionPoolOptions().isTrackStackTraceOfSessionCheckout());
+  }
+
+  @Test
+  public void testTrackConnectionLeaks() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?trackConnectionLeaks=false")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertFalse(options.isTrackConnectionLeaks());
+  }
+
+  @Test
+  public void testTrackConnectionLeaksDefault() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertTrue(options.isTrackConnectionLeaks());
+  }
+
+  @Test
   public void testLocalConnectionError() {
     String uri =
         "cloudspanner://localhost:1/projects/test-project/instances/test-instance/databases/test-database?usePlainText=true";

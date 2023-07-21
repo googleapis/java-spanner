@@ -49,11 +49,6 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
     return new RequestOptions();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_RequestOptions_descriptor;
@@ -75,8 +70,10 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * The relative priority for requests. Note that priority is not applicable
    * for [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
+   *
    * The priority acts as a hint to the Cloud Spanner scheduler and does not
    * guarantee priority or order of execution. For example:
+   *
    * * Some parts of a write operation always execute at `PRIORITY_HIGH`,
    *   regardless of the specified priority. This may cause you to see an
    *   increase in high priority workload even when executing a low priority

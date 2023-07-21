@@ -54,6 +54,7 @@ import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
+import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.common.base.Preconditions;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ResultSetStats;
@@ -489,7 +490,7 @@ public class SingleUseTransactionTest {
   public void testCommit() {
     SingleUseTransaction subject = createSubject();
     try {
-      subject.commitAsync();
+      subject.commitAsync(CallType.SYNC);
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
@@ -500,7 +501,7 @@ public class SingleUseTransactionTest {
   public void testRollback() {
     SingleUseTransaction subject = createSubject();
     try {
-      subject.rollbackAsync();
+      subject.rollbackAsync(CallType.SYNC);
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
@@ -511,7 +512,7 @@ public class SingleUseTransactionTest {
   public void testRunBatch() {
     SingleUseTransaction subject = createSubject();
     try {
-      subject.runBatchAsync();
+      subject.runBatchAsync(CallType.SYNC);
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
@@ -535,7 +536,7 @@ public class SingleUseTransactionTest {
     ParsedStatement ddl = createParsedDdl(sql);
     DdlClient ddlClient = createDefaultMockDdlClient();
     SingleUseTransaction subject = createDdlSubject(ddlClient);
-    get(subject.executeDdlAsync(ddl));
+    get(subject.executeDdlAsync(CallType.SYNC, ddl));
     verify(ddlClient).executeDdl(sql);
   }
 
@@ -548,7 +549,7 @@ public class SingleUseTransactionTest {
         .thenReturn(mock(OperationFuture.class));
 
     SingleUseTransaction singleUseTransaction = createDdlSubject(ddlClient);
-    get(singleUseTransaction.executeDdlAsync(ddl));
+    get(singleUseTransaction.executeDdlAsync(CallType.SYNC, ddl));
     verify(ddlClient).executeCreateDatabase(sql, Dialect.GOOGLE_STANDARD_SQL);
   }
 
@@ -557,7 +558,10 @@ public class SingleUseTransactionTest {
     for (TimestampBound staleness : getTestTimestampBounds()) {
       for (AnalyzeMode analyzeMode : AnalyzeMode.values()) {
         SingleUseTransaction subject = createReadOnlySubject(staleness);
-        ResultSet rs = get(subject.executeQueryAsync(createParsedQuery(VALID_QUERY), analyzeMode));
+        ResultSet rs =
+            get(
+                subject.executeQueryAsync(
+                    CallType.SYNC, createParsedQuery(VALID_QUERY), analyzeMode));
         assertThat(rs).isNotNull();
         assertThat(subject.getReadTimestamp()).isNotNull();
         assertThat(subject.getState())
@@ -575,7 +579,9 @@ public class SingleUseTransactionTest {
     for (TimestampBound staleness : getTestTimestampBounds()) {
       SingleUseTransaction subject = createReadOnlySubject(staleness);
       try {
-        get(subject.executeQueryAsync(createParsedQuery(INVALID_QUERY), AnalyzeMode.NONE));
+        get(
+            subject.executeQueryAsync(
+                CallType.SYNC, createParsedQuery(INVALID_QUERY), AnalyzeMode.NONE));
         fail("missing expected exception");
       } catch (SpannerException e) {
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
@@ -608,7 +614,10 @@ public class SingleUseTransactionTest {
             .withStatementExecutor(executor)
             .setReadOnlyStaleness(TimestampBound.strong())
             .build();
-    assertThat(get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.NONE, option)))
+    assertThat(
+            get(
+                transaction.executeQueryAsync(
+                    CallType.SYNC, parsedStatement, AnalyzeMode.NONE, option)))
         .isNotNull();
   }
 
@@ -616,7 +625,7 @@ public class SingleUseTransactionTest {
   public void testExecuteUpdate_Transactional_Valid() {
     ParsedStatement update = createParsedUpdate(VALID_UPDATE);
     SingleUseTransaction subject = createSubject();
-    long updateCount = get(subject.executeUpdateAsync(update));
+    long updateCount = get(subject.executeUpdateAsync(CallType.SYNC, update));
     assertThat(updateCount).isEqualTo(VALID_UPDATE_COUNT);
     assertThat(subject.getCommitTimestamp()).isNotNull();
     assertThat(subject.getState())
@@ -628,7 +637,7 @@ public class SingleUseTransactionTest {
     ParsedStatement update = createParsedUpdate(INVALID_UPDATE);
     SingleUseTransaction subject = createSubject();
     try {
-      get(subject.executeUpdateAsync(update));
+      get(subject.executeUpdateAsync(CallType.SYNC, update));
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
@@ -641,7 +650,7 @@ public class SingleUseTransactionTest {
     ParsedStatement update = createParsedUpdate(VALID_UPDATE);
     SingleUseTransaction subject = createSubject(CommitBehavior.FAIL);
     try {
-      get(subject.executeUpdateAsync(update));
+      get(subject.executeUpdateAsync(CallType.SYNC, update));
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
@@ -653,7 +662,7 @@ public class SingleUseTransactionTest {
   public void testExecuteUpdate_Partitioned_Valid() {
     ParsedStatement update = createParsedUpdate(VALID_UPDATE);
     SingleUseTransaction subject = createSubject(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);
-    long updateCount = get(subject.executeUpdateAsync(update));
+    long updateCount = get(subject.executeUpdateAsync(CallType.SYNC, update));
     assertThat(updateCount).isEqualTo(VALID_UPDATE_COUNT);
     assertThat(subject.getState())
         .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED);
@@ -664,7 +673,7 @@ public class SingleUseTransactionTest {
     ParsedStatement update = createParsedUpdate(INVALID_UPDATE);
     SingleUseTransaction subject = createSubject(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);
     try {
-      get(subject.executeUpdateAsync(update));
+      get(subject.executeUpdateAsync(CallType.SYNC, update));
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
@@ -676,7 +685,7 @@ public class SingleUseTransactionTest {
   public void testWriteIterable() {
     SingleUseTransaction subject = createSubject();
     Mutation mutation = Mutation.newInsertBuilder("FOO").build();
-    get(subject.writeAsync(Arrays.asList(mutation, mutation)));
+    get(subject.writeAsync(CallType.SYNC, Arrays.asList(mutation, mutation)));
     assertThat(subject.getCommitTimestamp()).isNotNull();
     assertThat(subject.getState())
         .isEqualTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED);
@@ -687,7 +696,7 @@ public class SingleUseTransactionTest {
     SingleUseTransaction subject = createSubject(CommitBehavior.FAIL);
     Mutation mutation = Mutation.newInsertBuilder("FOO").build();
     try {
-      get(subject.writeAsync(Arrays.asList(mutation, mutation)));
+      get(subject.writeAsync(CallType.SYNC, Arrays.asList(mutation, mutation)));
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
@@ -700,11 +709,15 @@ public class SingleUseTransactionTest {
     for (TimestampBound staleness : getTestTimestampBounds()) {
       SingleUseTransaction subject = createReadOnlySubject(staleness);
       ResultSet rs =
-          get(subject.executeQueryAsync(createParsedQuery(VALID_QUERY), AnalyzeMode.NONE));
+          get(
+              subject.executeQueryAsync(
+                  CallType.SYNC, createParsedQuery(VALID_QUERY), AnalyzeMode.NONE));
       assertThat(rs).isNotNull();
       assertThat(subject.getReadTimestamp()).isNotNull();
       try {
-        get(subject.executeQueryAsync(createParsedQuery(VALID_QUERY), AnalyzeMode.NONE));
+        get(
+            subject.executeQueryAsync(
+                CallType.SYNC, createParsedQuery(VALID_QUERY), AnalyzeMode.NONE));
         fail("missing expected exception");
       } catch (IllegalStateException e) {
         // Expected exception
@@ -715,10 +728,10 @@ public class SingleUseTransactionTest {
     ParsedStatement ddl = createParsedDdl(sql);
     DdlClient ddlClient = createDefaultMockDdlClient();
     SingleUseTransaction subject = createDdlSubject(ddlClient);
-    get(subject.executeDdlAsync(ddl));
+    get(subject.executeDdlAsync(CallType.SYNC, ddl));
     verify(ddlClient).executeDdl(sql);
     try {
-      get(subject.executeDdlAsync(ddl));
+      get(subject.executeDdlAsync(CallType.SYNC, ddl));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
       // Expected exception
@@ -726,21 +739,25 @@ public class SingleUseTransactionTest {
 
     ParsedStatement update = createParsedUpdate(VALID_UPDATE);
     subject = createSubject();
-    long updateCount = get(subject.executeUpdateAsync(update));
+    long updateCount = get(subject.executeUpdateAsync(CallType.SYNC, update));
     assertThat(updateCount).isEqualTo(VALID_UPDATE_COUNT);
     assertThat(subject.getCommitTimestamp()).isNotNull();
     try {
-      get(subject.executeUpdateAsync(update));
+      get(subject.executeUpdateAsync(CallType.SYNC, update));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
       // Expected exception
     }
 
     subject = createSubject();
-    get(subject.writeAsync(Collections.singleton(Mutation.newInsertBuilder("FOO").build())));
+    get(
+        subject.writeAsync(
+            CallType.SYNC, Collections.singleton(Mutation.newInsertBuilder("FOO").build())));
     assertThat(subject.getCommitTimestamp()).isNotNull();
     try {
-      get(subject.writeAsync(Collections.singleton(Mutation.newInsertBuilder("FOO").build())));
+      get(
+          subject.writeAsync(
+              CallType.SYNC, Collections.singleton(Mutation.newInsertBuilder("FOO").build())));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
       // Expected exception
@@ -748,10 +765,10 @@ public class SingleUseTransactionTest {
 
     subject = createSubject();
     Mutation mutation = Mutation.newInsertBuilder("FOO").build();
-    get(subject.writeAsync(Arrays.asList(mutation, mutation)));
+    get(subject.writeAsync(CallType.SYNC, Arrays.asList(mutation, mutation)));
     assertThat(subject.getCommitTimestamp()).isNotNull();
     try {
-      get(subject.writeAsync(Arrays.asList(mutation, mutation)));
+      get(subject.writeAsync(CallType.SYNC, Arrays.asList(mutation, mutation)));
       fail("missing expected exception");
     } catch (IllegalStateException e) {
       // Expected exception
@@ -762,7 +779,7 @@ public class SingleUseTransactionTest {
   public void testGetCommitResponseAfterUpdate() {
     ParsedStatement update = createParsedUpdate(VALID_UPDATE);
     SingleUseTransaction transaction = createSubject();
-    get(transaction.executeUpdateAsync(update));
+    get(transaction.executeUpdateAsync(CallType.SYNC, update));
     assertNotNull(transaction.getCommitResponse());
     assertNotNull(transaction.getCommitResponseOrNull());
   }
@@ -771,7 +788,7 @@ public class SingleUseTransactionTest {
   public void testGetCommitResponseAfterQuery() {
     ParsedStatement query = createParsedQuery(VALID_QUERY);
     SingleUseTransaction transaction = createSubject();
-    get(transaction.executeQueryAsync(query, AnalyzeMode.NONE));
+    get(transaction.executeQueryAsync(CallType.SYNC, query, AnalyzeMode.NONE));
     try {
       transaction.getCommitResponse();
       fail("missing expected exception");
@@ -785,7 +802,7 @@ public class SingleUseTransactionTest {
   public void testGetCommitResponseAfterDdl() {
     ParsedStatement ddl = createParsedDdl(VALID_DDL);
     SingleUseTransaction transaction = createSubject();
-    get(transaction.executeDdlAsync(ddl));
+    get(transaction.executeDdlAsync(CallType.SYNC, ddl));
     try {
       transaction.getCommitResponse();
       fail("missing expected exception");

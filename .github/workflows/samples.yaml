@@ -21,13 +21,13 @@ jobs:
       with:
         # Java 11 to generate class file targeting  Java 8
         java-version: 11
-        distribution: zulu
+        distribution: temurin
     - name: Compile Spanner
-      run: mvn clean install
+      run: mvn clean install -Dclirr.skip=true
     - uses: actions/setup-java@v3
       with:
         java-version: 8
-        distribution: zulu
+        distribution: temurin
     - name: Compile samples
       run: mvn compile
       working-directory: samples
@@ -42,9 +42,9 @@ jobs:
     - uses: actions/setup-java@v3
       with:
         java-version: ${{matrix.java}}
-        distribution: zulu
+        distribution: temurin
     - name: Compile Spanner
-      run: mvn clean install
+      run: mvn clean install -Dclirr.skip=true
     - name: Compile samples
       run: mvn compile
       working-directory: samples

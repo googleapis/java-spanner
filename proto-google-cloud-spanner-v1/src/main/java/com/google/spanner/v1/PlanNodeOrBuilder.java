@@ -188,6 +188,7 @@ public interface PlanNodeOrBuilder
    * Attributes relevant to the node contained in a group of key-value pairs.
    * For example, a Parameter Reference node could have the following
    * information in its metadata:
+   *
    *     {
    *       "parameter_reference": "param1",
    *       "parameter_type": "array"
@@ -206,6 +207,7 @@ public interface PlanNodeOrBuilder
    * Attributes relevant to the node contained in a group of key-value pairs.
    * For example, a Parameter Reference node could have the following
    * information in its metadata:
+   *
    *     {
    *       "parameter_reference": "param1",
    *       "parameter_type": "array"
@@ -224,6 +226,7 @@ public interface PlanNodeOrBuilder
    * Attributes relevant to the node contained in a group of key-value pairs.
    * For example, a Parameter Reference node could have the following
    * information in its metadata:
+   *
    *     {
    *       "parameter_reference": "param1",
    *       "parameter_type": "array"

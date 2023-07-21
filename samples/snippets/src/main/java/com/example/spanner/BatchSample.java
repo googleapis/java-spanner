@@ -19,6 +19,7 @@ package com.example.spanner;
 import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.BatchReadOnlyTransaction;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Partition;
 import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ResultSet;
@@ -76,10 +77,15 @@ public class BatchSample {
           batchClient.batchReadOnlyTransaction(TimestampBound.strong());
 
       // A Partition object is serializable and can be used from a different process.
+      // DataBoost option is an optional parameter which can be used for partition read
+      // and query to execute the request via spanner independent compute resources.
+
       List<Partition> partitions =
           txn.partitionQuery(
               PartitionOptions.getDefaultInstance(),
-              Statement.of("SELECT SingerId, FirstName, LastName FROM Singers"));
+              Statement.of("SELECT SingerId, FirstName, LastName FROM Singers"),
+              // Option to enable data boost for a given request
+              Options.dataBoostEnabled(true));
 
       totalPartitions = partitions.size();
 

@@ -47,11 +47,6 @@ public final class GetDatabaseRequest extends com.google.protobuf.GeneratedMessa
     return new GetDatabaseRequest();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.database.v1.SpannerDatabaseAdminProto
         .internal_static_google_spanner_admin_database_v1_GetDatabaseRequest_descriptor;

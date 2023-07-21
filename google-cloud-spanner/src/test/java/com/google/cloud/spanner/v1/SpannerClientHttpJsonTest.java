@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -598,6 +598,7 @@ public class SpannerClientHttpJsonTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDataBoostEnabled(true)
             .build();
 
     ResultSet actualResponse = client.executeSql(request);
@@ -639,6 +640,7 @@ public class SpannerClientHttpJsonTest {
               .setSeqno(109325920)
               .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
               .setRequestOptions(RequestOptions.newBuilder().build())
+              .setDataBoostEnabled(true)
               .build();
       client.executeSql(request);
       Assert.fail("No exception raised");
@@ -742,6 +744,7 @@ public class SpannerClientHttpJsonTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDataBoostEnabled(true)
             .build();
 
     ResultSet actualResponse = client.read(request);
@@ -783,6 +786,7 @@ public class SpannerClientHttpJsonTest {
               .setResumeToken(ByteString.EMPTY)
               .setPartitionToken(ByteString.EMPTY)
               .setRequestOptions(RequestOptions.newBuilder().build())
+              .setDataBoostEnabled(true)
               .build();
       client.read(request);
       Assert.fail("No exception raised");

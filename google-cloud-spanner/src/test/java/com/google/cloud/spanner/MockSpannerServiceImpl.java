@@ -20,6 +20,7 @@ import com.google.api.gax.grpc.testing.MockGrpcService;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.spanner.AbstractResultSet.GrpcStruct;
+import com.google.cloud.spanner.AbstractResultSet.LazyByteArray;
 import com.google.cloud.spanner.SessionPool.SessionPoolTransactionContext;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.common.base.Optional;
@@ -1362,9 +1363,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 builder
                     .bind(fieldName)
                     .toBytesArray(
-                        (Iterable<ByteArray>)
-                            GrpcStruct.decodeArrayValue(
-                                com.google.cloud.spanner.Type.bytes(), value.getListValue()));
+                        Iterables.transform(
+                            (Iterable<LazyByteArray>)
+                                GrpcStruct.decodeArrayValue(
+                                    com.google.cloud.spanner.Type.bytes(), value.getListValue()),
+                            lazyByteArray ->
+                                lazyByteArray == null ? null : lazyByteArray.getByteArray()));
                 break;
               case DATE:
                 builder

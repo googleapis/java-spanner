@@ -44,10 +44,14 @@ public class SampleTestBase {
 
   @BeforeClass
   public static void beforeClass() {
-    final SpannerOptions options = SpannerOptions
+    final String serverUrl = "";
+    final SpannerOptions.Builder optionsBuilder = SpannerOptions
         .newBuilder()
-        .setAutoThrottleAdministrativeRequests()
-        .build();
+        .setAutoThrottleAdministrativeRequests();
+    if (!serverUrl.isEmpty()) {
+      optionsBuilder.setHost(serverUrl);
+    }
+    final SpannerOptions options = optionsBuilder.build();
     projectId = options.getProjectId();
     spanner = options.getService();
     databaseAdminClient = spanner.getDatabaseAdminClient();
