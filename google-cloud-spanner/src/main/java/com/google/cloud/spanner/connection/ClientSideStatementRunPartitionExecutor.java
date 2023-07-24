@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
@@ -44,13 +46,18 @@ class ClientSideStatementRunPartitionExecutor implements ClientSideStatementExec
   public StatementResult execute(
       ConnectionStatementExecutor connection, ParsedStatement parsedStatement) throws Exception {
     String partitionId = getParameterValue(parsedStatement);
+    if (partitionId == null) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          "No valid partition id found in statement: " + parsedStatement.getStatement().getSql());
+    }
     return (StatementResult) method.invoke(connection, partitionId);
   }
 
   String getParameterValue(ParsedStatement parsedStatement) {
     Matcher matcher = statement.getPattern().matcher(parsedStatement.getSqlWithoutComments());
-    if (matcher.find() && matcher.groupCount() >= 2) {
-      String value = matcher.group(2);
+    if (matcher.find() && matcher.groupCount() >= 1) {
+      String value = matcher.group(1);
       if (!Strings.isNullOrEmpty(value)) {
         return value;
       }

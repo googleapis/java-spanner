@@ -263,11 +263,8 @@ public class BatchReadMockServerTest extends AbstractMockServerTest {
               try (ResultSet resultSet =
                   connection.executeQuery(
                       useLiteral
-                          ? Statement.newBuilder(
-                                  "RUN PARTITION '" + partitions.getString("PARTITION") + "'")
-                              .bind("partition")
-                              .to(partitions.getString("PARTITION"))
-                              .build()
+                          ? Statement.of(
+                              "RUN PARTITION '" + partitions.getString("PARTITION") + "'")
                           : Statement.newBuilder("RUN PARTITION")
                               .bind("PARTITION")
                               .to(partitions.getString("PARTITION"))
@@ -280,8 +277,7 @@ public class BatchReadMockServerTest extends AbstractMockServerTest {
             }
             assertEquals(maxPartitions, partitionCount);
             // The mock server is not smart enough to actually only return a partition of a query,
-            // so
-            // each partition just returns all rows of the query.
+            // so each partition just returns all rows of the query.
             assertEquals(generatedRowCount * maxPartitions, rowCount);
           }
 
