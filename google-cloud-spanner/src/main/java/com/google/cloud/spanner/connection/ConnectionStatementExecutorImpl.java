@@ -24,8 +24,10 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.RUN_BATCH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DEFAULT_TRANSACTION_ISOLATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READONLY;
@@ -42,7 +44,9 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT_DML_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_RESPONSE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_TIMESTAMP;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READONLY;
@@ -66,6 +70,7 @@ import com.google.cloud.spanner.CommitStats;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
@@ -77,6 +82,7 @@ import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
+import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -491,6 +497,51 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementShowTransactionIsolationLevel() {
     return resultSet("transaction_isolation", "serializable", SHOW_TRANSACTION_ISOLATION_LEVEL);
+  }
+
+  @Override
+  public StatementResult statementShowDataBoostEnabled() {
+    return resultSet(
+        String.format("%sDATA_BOOST_ENABLED", getNamespace(connection.getDialect())),
+        getConnection().isDataBoostEnabled(),
+        SHOW_DATA_BOOST_ENABLED);
+  }
+
+  @Override
+  public StatementResult statementSetDataBoostEnabled(Boolean dataBoostEnabled) {
+    getConnection().setDataBoostEnabled(Preconditions.checkNotNull(dataBoostEnabled));
+    return noResult(SET_DATA_BOOST_ENABLED);
+  }
+
+  @Override
+  public StatementResult statementShowMaxPartitions() {
+    return resultSet(
+        String.format("%sMAX_PARTITIONS", getNamespace(connection.getDialect())),
+        Long.valueOf(getConnection().getMaxPartitions()),
+        SHOW_MAX_PARTITIONS);
+  }
+
+  @Override
+  public StatementResult statementSetMaxPartitions(Integer maxPartitions) {
+    getConnection().setMaxPartitions(Preconditions.checkNotNull(maxPartitions));
+    return noResult(SET_MAX_PARTITIONS);
+  }
+
+  @Override
+  public StatementResult statementPartition(Statement statement) {
+    PartitionOptions.Builder partitionOptionsBuilder = PartitionOptions.newBuilder();
+    if (getConnection().getMaxPartitions() > 0) {
+      partitionOptionsBuilder.setMaxPartitions(getConnection().getMaxPartitions());
+    }
+    return StatementResultImpl.of(
+        getConnection().partitionQuery(statement, partitionOptionsBuilder.build()),
+        ClientSideStatementType.PARTITION);
+  }
+
+  @Override
+  public StatementResult statementRunPartition(String partitionId) {
+    return StatementResultImpl.of(
+        getConnection().runPartition(partitionId), ClientSideStatementType.RUN_PARTITION);
   }
 
   private String processQueryPlan(PlanNode planNode) {

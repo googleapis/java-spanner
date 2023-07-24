@@ -177,6 +177,24 @@
       "exampleStatements": []
     },
     {
+      "name": "PARTITION <sql>",
+      "executorName": "ClientSideStatementPartitionExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "PARTITION",
+      "regex": "(?is)\\A\\s*partition(\\s+|\\()(.*)\\z",
+      "method": "statementPartition",
+      "exampleStatements": []
+    },
+    {
+      "name": "RUN PARTITION ['<partition_id>']",
+      "executorName": "ClientSideStatementRunPartitionExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "RUN_PARTITION",
+      "regex": "(?is)\\A\\s*run\\s+partition(?:\\s*'(.*)')?\\s*\\z",
+      "method": "statementRunPartition",
+      "exampleStatements": []
+    },
+    {
       "name": "{START | BEGIN} [TRANSACTION | WORK] [{ (READ ONLY|READ WRITE) [[,] (ISOLATION LEVEL (DEFAULT|SERIALIZABLE))] [[,] NOT DEFERRABLE]}]",
       "executorName": "ClientSideStatementPgBeginExecutor",
       "resultType": "NO_RESULT",
@@ -661,6 +679,54 @@
         "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "(TRUE|FALSE)",
         "converterName": "ClientSideStatementValueConverters$BooleanConverter"
+      }
+    },
+    {
+      "name": "SHOW [VARIABLE] SPANNER.DATA_BOOST_ENABLED",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_DATA_BOOST_ENABLED",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.data_boost_enabled\\s*\\z",
+      "method": "statementShowDataBoostEnabled",
+      "exampleStatements": ["show spanner.data_boost_enabled","show variable spanner.data_boost_enabled"]
+    },
+    {
+      "name": "SET SPANNER.DATA_BOOST_ENABLED = TRUE|FALSE",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_DATA_BOOST_ENABLED",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.data_boost_enabled(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetDataBoostEnabled",
+      "exampleStatements": ["set spanner.data_boost_enabled = true", "set spanner.data_boost_enabled = false", "set spanner.data_boost_enabled to true", "set spanner.data_boost_enabled to false"],
+      "setStatement": {
+        "propertyName": "SPANNER.DATA_BOOST_ENABLED",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(TRUE|FALSE)",
+        "converterName": "ClientSideStatementValueConverters$BooleanConverter"
+      }
+    },
+    {
+      "name": "SHOW [VARIABLE] SPANNER.MAX_PARTITIONS",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_MAX_PARTITIONS",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.max_partitions\\s*\\z",
+      "method": "statementShowMaxPartitions",
+      "exampleStatements": ["show spanner.max_partitions","show variable spanner.max_partitions"]
+    },
+    {
+      "name": "SET SPANNER.MAX_PARTITIONS = <INT64>",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_MAX_PARTITIONS",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.max_partitions(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetMaxPartitions",
+      "exampleStatements": ["set spanner.max_partitions = 1", "set spanner.max_partitions = 10", "set spanner.max_partitions to 5", "set spanner.max_partitions to 20"],
+      "setStatement": {
+        "propertyName": "SPANNER.MAX_PARTITIONS",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(\\d{1,9})",
+        "converterName": "ClientSideStatementValueConverters$IntegerConverter"
       }
     }
   ]

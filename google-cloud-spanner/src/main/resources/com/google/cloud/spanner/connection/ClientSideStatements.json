@@ -159,6 +159,24 @@
 		"exampleStatements": ["show variable delay_transaction_start_until_first_write"]
 	},
 	{
+		"name": "PARTITION <sql>",
+		"executorName": "ClientSideStatementPartitionExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "PARTITION",
+		"regex": "(?is)\\A\\s*partition(\\s+|\\()(.*)\\z",
+		"method": "statementPartition",
+		"exampleStatements": []
+	},
+	{
+		"name": "RUN PARTITION ['<partition_id>']",
+		"executorName": "ClientSideStatementRunPartitionExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "RUN_PARTITION",
+		"regex": "(?is)\\A\\s*run\\s+partition(?:\\s*'(.*)')?\\s*\\z",
+		"method": "statementRunPartition",
+		"exampleStatements": []
+	},
+	{
 	  "name": "BEGIN TRANSACTION",
 	  "executorName": "ClientSideStatementNoParamExecutor",
 	  "resultType": "NO_RESULT",
@@ -473,6 +491,54 @@
 			"separator": "=",
 			"allowedValues": "(TRUE|FALSE)",
 			"converterName": "ClientSideStatementValueConverters$BooleanConverter"
+		}
+	},
+	{
+		"name": "SHOW VARIABLE DATA_BOOST_ENABLED",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_DATA_BOOST_ENABLED",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+data_boost_enabled\\s*\\z",
+		"method": "statementShowDataBoostEnabled",
+		"exampleStatements": ["show variable data_boost_enabled"]
+	},
+	{
+		"name": "SET DATA_BOOST_ENABLED = TRUE|FALSE",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_DATA_BOOST_ENABLED",
+		"regex": "(?is)\\A\\s*set\\s+data_boost_enabled\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetDataBoostEnabled",
+		"exampleStatements": ["set data_boost_enabled = true", "set data_boost_enabled = false"],
+		"setStatement": {
+			"propertyName": "DATA_BOOST_ENABLED",
+			"separator": "=",
+			"allowedValues": "(TRUE|FALSE)",
+			"converterName": "ClientSideStatementValueConverters$BooleanConverter"
+		}
+	},
+	{
+		"name": "SHOW VARIABLE MAX_PARTITIONS",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_MAX_PARTITIONS",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+max_partitions\\s*\\z",
+		"method": "statementShowMaxPartitions",
+		"exampleStatements": ["show max_partitions"]
+	},
+	{
+		"name": "SET MAX_PARTITIONS = <INT64>",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_MAX_PARTITIONS",
+		"regex": "(?is)\\A\\s*set\\s+max_partitions\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetMaxPartitions",
+		"exampleStatements": ["set max_partitions = 0", "set max_partitions = 10"],
+		"setStatement": {
+			"propertyName": "MAX_PARTITIONS",
+			"separator": "=",
+			"allowedValues": "(\\d{1,9})",
+			"converterName": "ClientSideStatementValueConverters$IntegerConverter"
 		}
 	}
 	]

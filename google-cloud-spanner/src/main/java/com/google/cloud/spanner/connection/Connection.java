@@ -30,6 +30,7 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
@@ -1030,6 +1031,48 @@ public interface Connection extends AutoCloseable {
    * @param queryMode the mode in which to execute the query
    */
   ResultSet analyzeQuery(Statement query, QueryAnalyzeMode queryMode);
+
+  /**
+   * Enable data boost for partitioned queries. See also {@link #partitionQuery(Statement,
+   * PartitionOptions, QueryOption...)}
+   */
+  void setDataBoostEnabled(boolean dataBoostEnabled);
+
+  /**
+   * Returns whether data boost is enabled for partitioned queries. See also {@link
+   * #partitionQuery(Statement, PartitionOptions, QueryOption...)}
+   */
+  boolean isDataBoostEnabled();
+
+  void setMaxPartitions(int maxPartitions);
+
+  int getMaxPartitions();
+
+  /**
+   * Partitions the given query, so it can be executed in parallel. This method returns a {@link
+   * ResultSet} with a string-representation of the partitions that were created. These strings can
+   * be used to execute a partition either on this connection or an any other connection (on this
+   * host or an any other host) by calling the method {@link #runPartition(String)}. This method
+   * will automatically enable data boost for the query if {@link #isDataBoostEnabled()} returns
+   * true.
+   */
+  ResultSet partitionQuery(
+      Statement query, PartitionOptions partitionOptions, QueryOption... options);
+
+  /**
+   * Executes the given partition of a query. The encodedPartitionId should be a string that was
+   * returned by {@link #partitionQuery(Statement, PartitionOptions, QueryOption...)}.
+   */
+  ResultSet runPartition(String encodedPartitionId);
+
+  /**
+   * Executes the given query as a partitioned query. The query will first be partitioned using the
+   * {@link #partitionQuery(Statement, PartitionOptions, QueryOption...)} method. Each of the
+   * partitions will then be executed in the background, and the results will be merged into a
+   * single result set.
+   */
+  ResultSet executePartitionedQuery(
+      Statement query, PartitionOptions partitionOptions, QueryOption... options);
 
   /**
    * Executes the given statement as a simple DML statement. If the statement does not contain a

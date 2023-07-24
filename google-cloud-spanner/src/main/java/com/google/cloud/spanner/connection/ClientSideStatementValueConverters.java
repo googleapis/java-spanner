@@ -135,6 +135,30 @@ class ClientSideStatementValueConverters {
     }
   }
 
+  /** Converter from string to {@link Boolean} */
+  static class IntegerConverter implements ClientSideStatementValueConverter<Integer> {
+
+    public IntegerConverter(String allowedValues) {}
+
+    @Override
+    public Class<Integer> getParameterClass() {
+      return Integer.class;
+    }
+
+    @Override
+    public Integer convert(String value) {
+      try {
+        int res = Integer.parseInt(value);
+        if (res < 0) {
+          return null;
+        }
+        return res;
+      } catch (Exception ignore) {
+        return null;
+      }
+    }
+  }
+
   /** Converter from string to {@link Duration}. */
   static class DurationConverter implements ClientSideStatementValueConverter<Duration> {
     private final Pattern allowedValues;
@@ -477,6 +501,10 @@ class ClientSideStatementValueConverters {
   }
 
   static class ExplainCommandConverter implements ClientSideStatementValueConverter<String> {
+    static final ExplainCommandConverter INSTANCE = new ExplainCommandConverter();
+
+    private ExplainCommandConverter() {}
+
     @Override
     public Class<String> getParameterClass() {
       return String.class;
@@ -492,6 +520,51 @@ class ClientSideStatementValueConverters {
         return null;
       }
       return value.substring(7).trim();
+    }
+  }
+
+  static class PartitionCommandConverter implements ClientSideStatementValueConverter<String> {
+    private static final int KEYWORD_LENGTH = "PARTITION".length();
+
+    static final PartitionCommandConverter INSTANCE = new PartitionCommandConverter();
+
+    private PartitionCommandConverter() {}
+
+    @Override
+    public Class<String> getParameterClass() {
+      return String.class;
+    }
+
+    @Override
+    public String convert(String value) {
+      // The first keyword should be PARTITION.
+      if (value.length() <= KEYWORD_LENGTH) {
+        return null;
+      }
+      return value.substring(KEYWORD_LENGTH).trim();
+    }
+  }
+
+  static class ExecutePartitionCommandConverter
+      implements ClientSideStatementValueConverter<String> {
+    private static final int KEYWORD_LENGTH = "EXECUTE_PARTITION".length();
+
+    static final ExecutePartitionCommandConverter INSTANCE = new ExecutePartitionCommandConverter();
+
+    private ExecutePartitionCommandConverter() {}
+
+    @Override
+    public Class<String> getParameterClass() {
+      return String.class;
+    }
+
+    @Override
+    public String convert(String value) {
+      // The first keyword should be EXECUTE_PARTITION.
+      if (value.length() <= KEYWORD_LENGTH) {
+        return null;
+      }
+      return value.substring(KEYWORD_LENGTH).trim();
     }
   }
 }

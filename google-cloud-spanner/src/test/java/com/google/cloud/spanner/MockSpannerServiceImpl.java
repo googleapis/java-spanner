@@ -55,6 +55,7 @@ import com.google.spanner.v1.ListSessionsRequest;
 import com.google.spanner.v1.ListSessionsResponse;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.Partition;
+import com.google.spanner.v1.PartitionOptions;
 import com.google.spanner.v1.PartitionQueryRequest;
 import com.google.spanner.v1.PartitionReadRequest;
 import com.google.spanner.v1.PartitionResponse;
@@ -107,6 +108,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import org.threeten.bp.Instant;
 
 /**
@@ -2007,7 +2010,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     try {
       partitionQueryExecutionTime.simulateExecutionTime(
           exceptions, stickyGlobalExceptions, freezeLock);
-      partition(request.getSession(), request.getTransaction(), responseObserver);
+      partition(
+          request.getSession(),
+          request.getTransaction(),
+          request.getPartitionOptions(),
+          responseObserver);
     } catch (StatusRuntimeException t) {
       responseObserver.onError(t);
     } catch (Throwable t) {
@@ -2022,7 +2029,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     try {
       partitionReadExecutionTime.simulateExecutionTime(
           exceptions, stickyGlobalExceptions, freezeLock);
-      partition(request.getSession(), request.getTransaction(), responseObserver);
+      partition(
+          request.getSession(),
+          request.getTransaction(),
+          request.getPartitionOptions(),
+          responseObserver);
     } catch (StatusRuntimeException t) {
       responseObserver.onError(t);
     } catch (Throwable t) {
@@ -2033,6 +2044,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private void partition(
       String sessionName,
       TransactionSelector transactionSelector,
+      PartitionOptions options,
       StreamObserver<PartitionResponse> responseObserver) {
     Session session = sessions.get(sessionName);
     if (session == null) {
@@ -2044,10 +2056,16 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       ByteString transactionId = getTransactionId(session, transactionSelector);
       responseObserver.onNext(
           PartitionResponse.newBuilder()
-              .addPartitions(
-                  Partition.newBuilder()
-                      .setPartitionToken(generatePartitionToken(session.getName(), transactionId))
-                      .build())
+              .addAllPartitions(
+                  LongStream.range(
+                          0L, options.getMaxPartitions() == 0L ? 1L : options.getMaxPartitions())
+                      .mapToObj(
+                          ignored ->
+                              Partition.newBuilder()
+                                  .setPartitionToken(
+                                      generatePartitionToken(session.getName(), transactionId))
+                                  .build())
+                      .collect(Collectors.toList()))
               .build());
       responseObserver.onCompleted();
     } catch (StatusRuntimeException e) {

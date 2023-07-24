@@ -25,7 +25,7 @@ import com.google.common.base.Suppliers;
 import java.math.BigDecimal;
 import java.util.List;
 
-/** Forwarding implements of StructReader */
+/** Forwarding implementation of StructReader */
 public class ForwardingStructReader implements StructReader {
 
   private Supplier<? extends StructReader> delegate;
@@ -47,6 +47,10 @@ public class ForwardingStructReader implements StructReader {
    */
   void replaceDelegate(StructReader newDelegate) {
     this.delegate = Suppliers.ofInstance(Preconditions.checkNotNull(newDelegate));
+  }
+
+  protected void replaceDelegate(Supplier<? extends StructReader> delegate) {
+    this.delegate = Preconditions.checkNotNull(delegate);
   }
 
   /**

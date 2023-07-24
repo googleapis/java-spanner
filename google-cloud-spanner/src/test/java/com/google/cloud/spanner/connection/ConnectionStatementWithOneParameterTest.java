@@ -55,6 +55,10 @@ public class ConnectionStatementWithOneParameterTest {
     parser = AbstractStatementParser.getInstance(dialect);
   }
 
+  ParsedStatement parse(String sql) {
+    return parser.parse(Statement.of(sql));
+  }
+
   @Test
   public void testExecuteSetAutocommit() {
     ParsedStatement subject = parser.parse(Statement.of("set autocommit = true"));
@@ -65,7 +69,7 @@ public class ConnectionStatementWithOneParameterTest {
     for (Boolean mode : new Boolean[] {Boolean.FALSE, Boolean.TRUE}) {
       subject
           .getClientSideStatement()
-          .execute(executor, String.format("set autocommit = %s", mode));
+          .execute(executor, parse(String.format("set autocommit = %s", mode)));
       verify(connection, times(1)).setAutocommit(mode);
     }
   }
@@ -81,7 +85,8 @@ public class ConnectionStatementWithOneParameterTest {
     for (Boolean mode : new Boolean[] {Boolean.FALSE, Boolean.TRUE}) {
       subject
           .getClientSideStatement()
-          .execute(executor, String.format("set %sreadonly = %s", getNamespace(dialect), mode));
+          .execute(
+              executor, parse(String.format("set %sreadonly = %s", getNamespace(dialect), mode)));
       verify(connection, times(1)).setReadOnly(mode);
     }
   }
@@ -98,7 +103,8 @@ public class ConnectionStatementWithOneParameterTest {
     for (Boolean mode : new Boolean[] {Boolean.FALSE, Boolean.TRUE}) {
       subject
           .getClientSideStatement()
-          .execute(executor, String.format("set %sreadonly to %s", getNamespace(dialect), mode));
+          .execute(
+              executor, parse(String.format("set %sreadonly to %s", getNamespace(dialect), mode)));
       verify(connection, times(1)).setReadOnly(mode);
     }
   }
@@ -117,7 +123,9 @@ public class ConnectionStatementWithOneParameterTest {
           .getClientSideStatement()
           .execute(
               executor,
-              String.format("set %sautocommit_dml_mode='%s'", getNamespace(dialect), mode.name()));
+              parse(
+                  String.format(
+                      "set %sautocommit_dml_mode='%s'", getNamespace(dialect), mode.name())));
       verify(connection, times(1)).setAutocommitDmlMode(mode);
     }
   }
@@ -140,9 +148,10 @@ public class ConnectionStatementWithOneParameterTest {
             .getClientSideStatement()
             .execute(
                 executor,
-                String.format(
-                    "set statement_timeout='%d%s'",
-                    val, ReadOnlyStalenessUtil.getTimeUnitAbbreviation(unit)));
+                parse(
+                    String.format(
+                        "set statement_timeout='%d%s'",
+                        val, ReadOnlyStalenessUtil.getTimeUnitAbbreviation(unit))));
         verify(connection, times(1)).setStatementTimeout(val, unit);
       }
     }
@@ -153,15 +162,15 @@ public class ConnectionStatementWithOneParameterTest {
             parser.parse(Statement.of(String.format("set statement_timeout=%d", val)));
         subject
             .getClientSideStatement()
-            .execute(executor, String.format("set statement_timeout=%d", val));
+            .execute(executor, parse(String.format("set statement_timeout=%d", val)));
         verify(connection, times(1)).setStatementTimeout(val, TimeUnit.MILLISECONDS);
       }
 
       ParsedStatement subject = parser.parse(Statement.of("set statement_timeout=default"));
-      subject.getClientSideStatement().execute(executor, "set statement_timeout=default");
+      subject.getClientSideStatement().execute(executor, parse("set statement_timeout=default"));
     } else {
       ParsedStatement subject = parser.parse(Statement.of("set statement_timeout=null"));
-      subject.getClientSideStatement().execute(executor, "set statement_timeout=null");
+      subject.getClientSideStatement().execute(executor, parse("set statement_timeout=null"));
     }
     verify(connection, times(1)).clearStatementTimeout();
   }
@@ -187,9 +196,10 @@ public class ConnectionStatementWithOneParameterTest {
           .getClientSideStatement()
           .execute(
               executor,
-              String.format(
-                  "set %sread_only_staleness='%s'",
-                  getNamespace(dialect), timestampBoundToString(val)));
+              parse(
+                  String.format(
+                      "set %sread_only_staleness='%s'",
+                      getNamespace(dialect), timestampBoundToString(val))));
       verify(connection, times(1)).setReadOnlyStaleness(val);
     }
   }
@@ -225,7 +235,7 @@ public class ConnectionStatementWithOneParameterTest {
           .getClientSideStatement()
           .execute(
               executor,
-              String.format("set %soptimizer_version='%s'", getNamespace(dialect), version));
+              parse(String.format("set %soptimizer_version='%s'", getNamespace(dialect), version)));
       verify(connection, times(1)).setOptimizerVersion(version);
     }
   }
@@ -245,9 +255,10 @@ public class ConnectionStatementWithOneParameterTest {
           .getClientSideStatement()
           .execute(
               executor,
-              String.format(
-                  "set %soptimizer_statistics_package='%s'",
-                  getNamespace(dialect), statisticsPackage));
+              parse(
+                  String.format(
+                      "set %soptimizer_statistics_package='%s'",
+                      getNamespace(dialect), statisticsPackage)));
       verify(connection, times(1)).setOptimizerStatisticsPackage(statisticsPackage);
     }
   }
@@ -260,7 +271,7 @@ public class ConnectionStatementWithOneParameterTest {
     for (TransactionMode mode : TransactionMode.values()) {
       subject
           .getClientSideStatement()
-          .execute(executor, String.format("set transaction %s", mode.getStatementString()));
+          .execute(executor, parse(String.format("set transaction %s", mode.getStatementString())));
       verify(connection, times(1)).setTransactionMode(mode);
     }
   }

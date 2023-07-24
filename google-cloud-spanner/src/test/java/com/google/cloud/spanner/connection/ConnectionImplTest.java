@@ -42,6 +42,7 @@ import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.CommitStats;
 import com.google.cloud.spanner.DatabaseClient;
@@ -365,7 +366,7 @@ public class ConnectionImplTest {
                 };
               }
             });
-    return new ConnectionImpl(options, spannerPool, ddlClient, dbClient);
+    return new ConnectionImpl(options, spannerPool, ddlClient, dbClient, mock(BatchClient.class));
   }
 
   @Test
@@ -1377,7 +1378,8 @@ public class ConnectionImplTest {
             any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl impl =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
           UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
             return unitOfWork;
@@ -1485,7 +1487,8 @@ public class ConnectionImplTest {
             any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl connection =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
           UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
             return unitOfWork;
@@ -1524,7 +1527,8 @@ public class ConnectionImplTest {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     try (ConnectionImpl connection =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class))) {
       assertFalse(connection.isAutocommit());
 
       assertNull(connection.getTransactionTag());
@@ -1565,7 +1569,8 @@ public class ConnectionImplTest {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     try (ConnectionImpl connection =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class))) {
       assertTrue(connection.isAutocommit());
 
       try {
@@ -1593,7 +1598,8 @@ public class ConnectionImplTest {
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     when(unitOfWork.rollbackAsync(any())).thenReturn(ApiFutures.immediateFuture(null));
     try (ConnectionImpl connection =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
           UnitOfWork createNewUnitOfWork() {
             return unitOfWork;
