@@ -1280,7 +1280,7 @@ class SessionPool {
     @Override
     public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
       try {
-        return get().executePartitionedUpdate(stmt, options);
+        return get(true).executePartitionedUpdate(stmt, options);
       } finally {
         close();
       }
@@ -1333,6 +1333,10 @@ class SessionPool {
 
     @Override
     public PooledSession get() {
+      return get(false);
+    }
+
+    public PooledSession get(final boolean eligibleForLongRunning) {
       if (inUse.compareAndSet(false, true)) {
         PooledSession res = null;
         try {
@@ -1347,6 +1351,7 @@ class SessionPool {
             incrementNumSessionsInUse();
             checkedOutSessions.add(this);
           }
+          res.eligibleForLongRunning = eligibleForLongRunning;
         }
         initialized.countDown();
       }
@@ -1450,7 +1455,6 @@ class SessionPool {
         throws SpannerException {
       try {
         markUsed();
-        markEligibleForLongRunning();
         return delegate.executePartitionedUpdate(stmt, options);
       } catch (SpannerException e) {
         throw lastException = e;
@@ -1534,7 +1538,6 @@ class SessionPool {
         }
         releaseSession(this, Position.FIRST);
       }
-      eligibleForLongRunning = false;
     }
 
     @Override
@@ -1601,15 +1604,6 @@ class SessionPool {
 
     void markUsed() {
       lastUseTime = clock.instant();
-    }
-
-    /**
-     * Method to mark a session that is to be occupied by a possibly long-running transaction. Any
-     * transaction that is expected to be long-running (for ex - Partitioned DML, Batch Read) must
-     * use this method.
-     */
-    void markEligibleForLongRunning() {
-      eligibleForLongRunning = true;
     }
 
     @Override
