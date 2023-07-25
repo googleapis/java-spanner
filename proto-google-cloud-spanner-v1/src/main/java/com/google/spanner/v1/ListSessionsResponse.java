@@ -48,11 +48,6 @@ public final class ListSessionsResponse extends com.google.protobuf.GeneratedMes
     return new ListSessionsResponse();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_ListSessionsResponse_descriptor;

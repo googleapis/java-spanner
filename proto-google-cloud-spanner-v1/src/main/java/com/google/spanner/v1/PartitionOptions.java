@@ -46,11 +46,6 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     return new PartitionOptions();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_PartitionOptions_descriptor;
@@ -74,6 +69,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
    * <pre>
    * **Note:** This hint is currently ignored by PartitionQuery and
    * PartitionRead requests.
+   *
    * The desired data size for each partition generated.  The default for this
    * option is currently 1 GiB.  This is only a hint. The actual size of each
    * partition may be smaller or larger than this size request.
@@ -96,6 +92,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
    * <pre>
    * **Note:** This hint is currently ignored by PartitionQuery and
    * PartitionRead requests.
+   *
    * The desired maximum number of partitions to return.  For example, this may
    * be set to the number of workers available.  The default for this option
    * is currently 10,000. The maximum value is currently 200,000.  This is only
@@ -480,6 +477,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * <pre>
      * **Note:** This hint is currently ignored by PartitionQuery and
      * PartitionRead requests.
+     *
      * The desired data size for each partition generated.  The default for this
      * option is currently 1 GiB.  This is only a hint. The actual size of each
      * partition may be smaller or larger than this size request.
@@ -499,6 +497,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * <pre>
      * **Note:** This hint is currently ignored by PartitionQuery and
      * PartitionRead requests.
+     *
      * The desired data size for each partition generated.  The default for this
      * option is currently 1 GiB.  This is only a hint. The actual size of each
      * partition may be smaller or larger than this size request.
@@ -522,6 +521,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * <pre>
      * **Note:** This hint is currently ignored by PartitionQuery and
      * PartitionRead requests.
+     *
      * The desired data size for each partition generated.  The default for this
      * option is currently 1 GiB.  This is only a hint. The actual size of each
      * partition may be smaller or larger than this size request.
@@ -545,6 +545,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * <pre>
      * **Note:** This hint is currently ignored by PartitionQuery and
      * PartitionRead requests.
+     *
      * The desired maximum number of partitions to return.  For example, this may
      * be set to the number of workers available.  The default for this option
      * is currently 10,000. The maximum value is currently 200,000.  This is only
@@ -566,6 +567,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * <pre>
      * **Note:** This hint is currently ignored by PartitionQuery and
      * PartitionRead requests.
+     *
      * The desired maximum number of partitions to return.  For example, this may
      * be set to the number of workers available.  The default for this option
      * is currently 10,000. The maximum value is currently 200,000.  This is only
@@ -591,6 +593,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * <pre>
      * **Note:** This hint is currently ignored by PartitionQuery and
      * PartitionRead requests.
+     *
      * The desired maximum number of partitions to return.  For example, this may
      * be set to the number of workers available.  The default for this option
      * is currently 10,000. The maximum value is currently 200,000.  This is only

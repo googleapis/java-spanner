@@ -28,6 +28,7 @@ public interface TransactionOptionsOrBuilder
    *
    * <pre>
    * Transaction may write.
+   *
    * Authorization to begin a read-write transaction requires
    * `spanner.databases.beginOrRollbackReadWriteTransaction` permission
    * on the `session` resource.
@@ -43,6 +44,7 @@ public interface TransactionOptionsOrBuilder
    *
    * <pre>
    * Transaction may write.
+   *
    * Authorization to begin a read-write transaction requires
    * `spanner.databases.beginOrRollbackReadWriteTransaction` permission
    * on the `session` resource.
@@ -58,6 +60,7 @@ public interface TransactionOptionsOrBuilder
    *
    * <pre>
    * Transaction may write.
+   *
    * Authorization to begin a read-write transaction requires
    * `spanner.databases.beginOrRollbackReadWriteTransaction` permission
    * on the `session` resource.
@@ -72,6 +75,7 @@ public interface TransactionOptionsOrBuilder
    *
    * <pre>
    * Partitioned DML transaction.
+   *
    * Authorization to begin a Partitioned DML transaction requires
    * `spanner.databases.beginPartitionedDmlTransaction` permission
    * on the `session` resource.
@@ -87,6 +91,7 @@ public interface TransactionOptionsOrBuilder
    *
    * <pre>
    * Partitioned DML transaction.
+   *
    * Authorization to begin a Partitioned DML transaction requires
    * `spanner.databases.beginPartitionedDmlTransaction` permission
    * on the `session` resource.
@@ -102,6 +107,7 @@ public interface TransactionOptionsOrBuilder
    *
    * <pre>
    * Partitioned DML transaction.
+   *
    * Authorization to begin a Partitioned DML transaction requires
    * `spanner.databases.beginPartitionedDmlTransaction` permission
    * on the `session` resource.
@@ -116,6 +122,7 @@ public interface TransactionOptionsOrBuilder
    *
    * <pre>
    * Transaction will not write.
+   *
    * Authorization to begin a read-only transaction requires
    * `spanner.databases.beginReadOnlyTransaction` permission
    * on the `session` resource.
@@ -131,6 +138,7 @@ public interface TransactionOptionsOrBuilder
    *
    * <pre>
    * Transaction will not write.
+   *
    * Authorization to begin a read-only transaction requires
    * `spanner.databases.beginReadOnlyTransaction` permission
    * on the `session` resource.
@@ -146,6 +154,7 @@ public interface TransactionOptionsOrBuilder
    *
    * <pre>
    * Transaction will not write.
+   *
    * Authorization to begin a read-only transaction requires
    * `spanner.databases.beginReadOnlyTransaction` permission
    * on the `session` resource.
@@ -155,5 +164,5 @@ public interface TransactionOptionsOrBuilder
    */
   com.google.spanner.v1.TransactionOptions.ReadOnlyOrBuilder getReadOnlyOrBuilder();
 
-  public com.google.spanner.v1.TransactionOptions.ModeCase getModeCase();
+  com.google.spanner.v1.TransactionOptions.ModeCase getModeCase();
 }
