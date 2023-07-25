@@ -1336,7 +1336,7 @@ class SessionPool {
       return get(false);
     }
 
-    public PooledSession get(final boolean eligibleForLongRunning) {
+    PooledSession get(final boolean eligibleForLongRunning) {
       if (inUse.compareAndSet(false, true)) {
         PooledSession res = null;
         try {
