@@ -38,6 +38,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.ByteArray;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
@@ -51,6 +52,7 @@ import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
+import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.connection.RandomResultSetGenerator;
@@ -77,6 +79,7 @@ import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Context;
+import io.grpc.MethodDescriptor;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -2961,6 +2964,33 @@ public class DatabaseClientImplTest {
       assertEquals(1L, resultSet.getLong(0));
       assertFalse(resultSet.next());
     }
+  }
+
+  @Test
+  public void testStreamWaitTimeout() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    // Create a custom call configuration that uses a 1 nanosecond stream timeout value. This will
+    // always time out, as a call to the mock server will always take more than 1 nanosecond.
+    CallContextConfigurator configurator =
+        new CallContextConfigurator() {
+          @Override
+          public <ReqT, RespT> ApiCallContext configure(
+              ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
+            return context.withStreamWaitTimeout(Duration.ofNanos(1L));
+          }
+        };
+    Context context =
+        Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
+    context.run(
+        () -> {
+          try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
+            SpannerException exception = assertThrows(SpannerException.class, resultSet::next);
+            assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
+            assertTrue(
+                exception.getMessage(), exception.getMessage().contains("stream wait timeout"));
+          }
+        });
   }
 
   static void assertAsString(String expected, ResultSet resultSet, int col) {

@@ -27,7 +27,9 @@ import static org.mockito.Mockito.when;
 
 import com.google.api.core.ApiFutures;
 import com.google.api.core.NanoClock;
+import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
@@ -407,6 +409,11 @@ public class SessionImplTest {
   }
 
   private static class NoOpStreamingCall implements SpannerRpc.StreamingCall {
+    @Override
+    public ApiCallContext getCallContext() {
+      return GrpcCallContext.createDefault();
+    }
+
     @Override
     public void cancel(@Nullable String message) {}
 

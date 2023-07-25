@@ -25,6 +25,7 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.api.client.util.BackOff;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -74,6 +75,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.threeten.bp.Duration;
 
 /** Implementation of {@link ResultSet}. */
 abstract class AbstractResultSet<R> extends AbstractStructReader implements ResultSet {
@@ -944,6 +946,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     private SpannerRpc.StreamingCall call;
     private volatile boolean withBeginTransaction;
+    private TimeUnit streamWaitTimeoutUnit;
+    private long streamWaitTimeoutValue;
     private SpannerException error;
 
     @VisibleForTesting
@@ -965,6 +969,20 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     public void setCall(SpannerRpc.StreamingCall call, boolean withBeginTransaction) {
       this.call = call;
       this.withBeginTransaction = withBeginTransaction;
+      ApiCallContext callContext = call.getCallContext();
+      Duration streamWaitTimeout = callContext == null ? null : callContext.getStreamWaitTimeout();
+      if (streamWaitTimeout != null) {
+        // Determine the timeout unit to use. This reduces the precision to seconds if the timeout
+        // value is more than 1 second, which is lower than the precision that would normally be
+        // used by the stream watchdog (which uses a precision of 10 seconds by default).
+        if (streamWaitTimeout.getSeconds() > 0L) {
+          streamWaitTimeoutValue = streamWaitTimeout.getSeconds();
+          streamWaitTimeoutUnit = TimeUnit.SECONDS;
+        } else if (streamWaitTimeout.getNano() > 0) {
+          streamWaitTimeoutValue = streamWaitTimeout.getNano();
+          streamWaitTimeoutUnit = TimeUnit.NANOSECONDS;
+        }
+      }
     }
 
     @Override
@@ -983,11 +1001,15 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     protected final PartialResultSet computeNext() {
       PartialResultSet next;
       try {
-        // TODO: Ideally honor io.grpc.Context while blocking here.  In practice,
-        //       cancellation/deadline results in an error being delivered to "stream", which
-        //       should mean that we do not block significantly longer afterwards, but it would
-        //       be more robust to use poll() with a timeout.
-        next = stream.take();
+        if (streamWaitTimeoutUnit != null) {
+          next = stream.poll(streamWaitTimeoutValue, streamWaitTimeoutUnit);
+          if (next == null) {
+            throw SpannerExceptionFactory.newSpannerException(
+                ErrorCode.DEADLINE_EXCEEDED, "stream wait timeout");
+          }
+        } else {
+          next = stream.take();
+        }
       } catch (InterruptedException e) {
         // Treat interrupt as a request to cancel the read.
         throw SpannerExceptionFactory.propagateInterrupt(e);
