@@ -41,20 +41,15 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     database_ = "";
     name_ = "";
     state_ = 0;
-    referencingDatabases_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    referencingDatabases_ = com.google.protobuf.LazyStringArrayList.emptyList();
     databaseDialect_ = 0;
-    referencingBackups_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    referencingBackups_ = com.google.protobuf.LazyStringArrayList.emptyList();
   }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new Backup();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -416,11 +411,13 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
    * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
+   *
    * A globally unique identifier for the backup which cannot be
    * changed. Values are of the form
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
    * The final segment of the name must be between 2 and 60 characters
    * in length.
+   *
    * The backup is stored in the location(s) specified in the instance
    * configuration of the instance containing the backup, identified
    * by the prefix of the backup name of the form
@@ -449,11 +446,13 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
    * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
+   *
    * A globally unique identifier for the backup which cannot be
    * changed. Values are of the form
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
    * The final segment of the name must be between 2 and 60 characters
    * in length.
+   *
    * The backup is stored in the location(s) specified in the instance
    * configuration of the instance containing the backup, identified
    * by the prefix of the backup name of the form
@@ -592,7 +591,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
   public static final int REFERENCING_DATABASES_FIELD_NUMBER = 7;
 
   @SuppressWarnings("serial")
-  private com.google.protobuf.LazyStringList referencingDatabases_;
+  private com.google.protobuf.LazyStringArrayList referencingDatabases_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    *
    *
@@ -784,7 +784,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
   public static final int REFERENCING_BACKUPS_FIELD_NUMBER = 11;
 
   @SuppressWarnings("serial")
-  private com.google.protobuf.LazyStringList referencingBackups_;
+  private com.google.protobuf.LazyStringArrayList referencingBackups_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    *
    *
@@ -1304,16 +1305,14 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       }
       sizeBytes_ = 0L;
       state_ = 0;
-      referencingDatabases_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000080);
+      referencingDatabases_ = com.google.protobuf.LazyStringArrayList.emptyList();
       encryptionInfo_ = null;
       if (encryptionInfoBuilder_ != null) {
         encryptionInfoBuilder_.dispose();
         encryptionInfoBuilder_ = null;
       }
       databaseDialect_ = 0;
-      referencingBackups_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000400);
+      referencingBackups_ = com.google.protobuf.LazyStringArrayList.emptyList();
       maxExpireTime_ = null;
       if (maxExpireTimeBuilder_ != null) {
         maxExpireTimeBuilder_.dispose();
@@ -1346,25 +1345,11 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.admin.database.v1.Backup buildPartial() {
       com.google.spanner.admin.database.v1.Backup result =
           new com.google.spanner.admin.database.v1.Backup(this);
-      buildPartialRepeatedFields(result);
       if (bitField0_ != 0) {
         buildPartial0(result);
       }
       onBuilt();
       return result;
-    }
-
-    private void buildPartialRepeatedFields(com.google.spanner.admin.database.v1.Backup result) {
-      if (((bitField0_ & 0x00000080) != 0)) {
-        referencingDatabases_ = referencingDatabases_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000080);
-      }
-      result.referencingDatabases_ = referencingDatabases_;
-      if (((bitField0_ & 0x00000400) != 0)) {
-        referencingBackups_ = referencingBackups_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000400);
-      }
-      result.referencingBackups_ = referencingBackups_;
     }
 
     private void buildPartial0(com.google.spanner.admin.database.v1.Backup result) {
@@ -1391,12 +1376,20 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (((from_bitField0_ & 0x00000040) != 0)) {
         result.state_ = state_;
       }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        referencingDatabases_.makeImmutable();
+        result.referencingDatabases_ = referencingDatabases_;
+      }
       if (((from_bitField0_ & 0x00000100) != 0)) {
         result.encryptionInfo_ =
             encryptionInfoBuilder_ == null ? encryptionInfo_ : encryptionInfoBuilder_.build();
       }
       if (((from_bitField0_ & 0x00000200) != 0)) {
         result.databaseDialect_ = databaseDialect_;
+      }
+      if (((from_bitField0_ & 0x00000400) != 0)) {
+        referencingBackups_.makeImmutable();
+        result.referencingBackups_ = referencingBackups_;
       }
       if (((from_bitField0_ & 0x00000800) != 0)) {
         result.maxExpireTime_ =
@@ -1477,7 +1470,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (!other.referencingDatabases_.isEmpty()) {
         if (referencingDatabases_.isEmpty()) {
           referencingDatabases_ = other.referencingDatabases_;
-          bitField0_ = (bitField0_ & ~0x00000080);
+          bitField0_ |= 0x00000080;
         } else {
           ensureReferencingDatabasesIsMutable();
           referencingDatabases_.addAll(other.referencingDatabases_);
@@ -1493,7 +1486,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (!other.referencingBackups_.isEmpty()) {
         if (referencingBackups_.isEmpty()) {
           referencingBackups_ = other.referencingBackups_;
-          bitField0_ = (bitField0_ & ~0x00000400);
+          bitField0_ |= 0x00000400;
         } else {
           ensureReferencingBackupsIsMutable();
           referencingBackups_.addAll(other.referencingBackups_);
@@ -2193,11 +2186,13 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
      * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
+     *
      * A globally unique identifier for the backup which cannot be
      * changed. Values are of the form
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
      * The final segment of the name must be between 2 and 60 characters
      * in length.
+     *
      * The backup is stored in the location(s) specified in the instance
      * configuration of the instance containing the backup, identified
      * by the prefix of the backup name of the form
@@ -2225,11 +2220,13 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
      * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
+     *
      * A globally unique identifier for the backup which cannot be
      * changed. Values are of the form
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
      * The final segment of the name must be between 2 and 60 characters
      * in length.
+     *
      * The backup is stored in the location(s) specified in the instance
      * configuration of the instance containing the backup, identified
      * by the prefix of the backup name of the form
@@ -2257,11 +2254,13 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
      * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
+     *
      * A globally unique identifier for the backup which cannot be
      * changed. Values are of the form
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
      * The final segment of the name must be between 2 and 60 characters
      * in length.
+     *
      * The backup is stored in the location(s) specified in the instance
      * configuration of the instance containing the backup, identified
      * by the prefix of the backup name of the form
@@ -2288,11 +2287,13 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
      * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
+     *
      * A globally unique identifier for the backup which cannot be
      * changed. Values are of the form
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
      * The final segment of the name must be between 2 and 60 characters
      * in length.
+     *
      * The backup is stored in the location(s) specified in the instance
      * configuration of the instance containing the backup, identified
      * by the prefix of the backup name of the form
@@ -2315,11 +2316,13 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only for the [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup] operation.
      * Required for the [UpdateBackup][google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackup] operation.
+     *
      * A globally unique identifier for the backup which cannot be
      * changed. Values are of the form
      * `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/[a-z][a-z0-9_&#92;-]*[a-z0-9]`
      * The final segment of the name must be between 2 and 60 characters
      * in length.
+     *
      * The backup is stored in the location(s) specified in the instance
      * configuration of the instance containing the backup, identified
      * by the prefix of the backup name of the form
@@ -2716,14 +2719,14 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
-    private com.google.protobuf.LazyStringList referencingDatabases_ =
-        com.google.protobuf.LazyStringArrayList.EMPTY;
+    private com.google.protobuf.LazyStringArrayList referencingDatabases_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
 
     private void ensureReferencingDatabasesIsMutable() {
-      if (!((bitField0_ & 0x00000080) != 0)) {
+      if (!referencingDatabases_.isModifiable()) {
         referencingDatabases_ = new com.google.protobuf.LazyStringArrayList(referencingDatabases_);
-        bitField0_ |= 0x00000080;
       }
+      bitField0_ |= 0x00000080;
     }
     /**
      *
@@ -2745,7 +2748,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * @return A list containing the referencingDatabases.
      */
     public com.google.protobuf.ProtocolStringList getReferencingDatabasesList() {
-      return referencingDatabases_.getUnmodifiableView();
+      referencingDatabases_.makeImmutable();
+      return referencingDatabases_;
     }
     /**
      *
@@ -2842,6 +2846,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       }
       ensureReferencingDatabasesIsMutable();
       referencingDatabases_.set(index, value);
+      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -2871,6 +2876,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       }
       ensureReferencingDatabasesIsMutable();
       referencingDatabases_.add(value);
+      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -2897,6 +2903,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     public Builder addAllReferencingDatabases(java.lang.Iterable<java.lang.String> values) {
       ensureReferencingDatabasesIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, referencingDatabases_);
+      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -2920,8 +2927,9 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearReferencingDatabases() {
-      referencingDatabases_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      referencingDatabases_ = com.google.protobuf.LazyStringArrayList.emptyList();
       bitField0_ = (bitField0_ & ~0x00000080);
+      ;
       onChanged();
       return this;
     }
@@ -2952,6 +2960,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       checkByteStringIsUtf8(value);
       ensureReferencingDatabasesIsMutable();
       referencingDatabases_.add(value);
+      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -3262,14 +3271,14 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
-    private com.google.protobuf.LazyStringList referencingBackups_ =
-        com.google.protobuf.LazyStringArrayList.EMPTY;
+    private com.google.protobuf.LazyStringArrayList referencingBackups_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
 
     private void ensureReferencingBackupsIsMutable() {
-      if (!((bitField0_ & 0x00000400) != 0)) {
+      if (!referencingBackups_.isModifiable()) {
         referencingBackups_ = new com.google.protobuf.LazyStringArrayList(referencingBackups_);
-        bitField0_ |= 0x00000400;
       }
+      bitField0_ |= 0x00000400;
     }
     /**
      *
@@ -3291,7 +3300,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * @return A list containing the referencingBackups.
      */
     public com.google.protobuf.ProtocolStringList getReferencingBackupsList() {
-      return referencingBackups_.getUnmodifiableView();
+      referencingBackups_.makeImmutable();
+      return referencingBackups_;
     }
     /**
      *
@@ -3388,6 +3398,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       }
       ensureReferencingBackupsIsMutable();
       referencingBackups_.set(index, value);
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3417,6 +3428,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       }
       ensureReferencingBackupsIsMutable();
       referencingBackups_.add(value);
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3443,6 +3455,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     public Builder addAllReferencingBackups(java.lang.Iterable<java.lang.String> values) {
       ensureReferencingBackupsIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, referencingBackups_);
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3466,8 +3479,9 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearReferencingBackups() {
-      referencingBackups_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      referencingBackups_ = com.google.protobuf.LazyStringArrayList.emptyList();
       bitField0_ = (bitField0_ & ~0x00000400);
+      ;
       onChanged();
       return this;
     }
@@ -3498,6 +3512,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       checkByteStringIsUtf8(value);
       ensureReferencingBackupsIsMutable();
       referencingBackups_.add(value);
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }

@@ -32,7 +32,12 @@ import java.util.concurrent.ExecutionException;
 import javax.annotation.Nullable;
 import org.threeten.bp.Duration;
 
-/** Represents a long running operation. */
+/**
+ * Represents a long-running operation.
+ *
+ * @param <R>
+ * @param <M>
+ */
 // TODO(user): Implement other operations on Operation.
 public class Operation<R, M> {
 

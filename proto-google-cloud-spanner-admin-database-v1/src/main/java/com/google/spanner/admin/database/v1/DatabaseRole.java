@@ -47,11 +47,6 @@ public final class DatabaseRole extends com.google.protobuf.GeneratedMessageV3
     return new DatabaseRole();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.database.v1.SpannerDatabaseAdminProto
         .internal_static_google_spanner_admin_database_v1_DatabaseRole_descriptor;

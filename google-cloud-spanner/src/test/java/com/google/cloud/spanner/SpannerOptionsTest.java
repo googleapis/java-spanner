@@ -680,8 +680,7 @@ public class SpannerOptionsTest {
 
   @Test
   public void testLeaderAwareRoutingEnablement() {
-    assertFalse(
-        SpannerOptions.newBuilder().setProjectId("p").build().isLeaderAwareRoutingEnabled());
+    assertTrue(SpannerOptions.newBuilder().setProjectId("p").build().isLeaderAwareRoutingEnabled());
     assertTrue(
         SpannerOptions.newBuilder()
             .setProjectId("p")
