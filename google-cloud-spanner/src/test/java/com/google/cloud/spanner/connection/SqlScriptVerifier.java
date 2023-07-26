@@ -28,7 +28,8 @@ import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 
 /**
- * SQL script verifier implementation for Spanner {@link com.google.cloud.spanner.jdbc.Connection}
+ * SQL script verifier implementation for Spanner {@link
+ * com.google.cloud.spanner.connection.Connection}
  *
  * @see AbstractSqlScriptVerifier for more information
  */
