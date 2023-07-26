@@ -124,6 +124,25 @@ branchProtectionRules:
       - checkstyle
       - compile (8)
       - compile (11)
+  - pattern: 6.43.x
+    isAdminEnforced: true
+    requiredApprovingReviewCount: 1
+    requiresCodeOwnerReviews: true
+    requiresStrictStatusChecks: false
+    requiredStatusCheckContexts:
+      - dependencies (17)
+      - lint
+      - javadoc
+      - units (8)
+      - units (11)
+      - 'Kokoro - Test: Integration'
+      - cla/google
+      - checkstyle
+      - compile (8)
+      - compile (11)
+      - OwlBot Post Processor
+      - 'Kokoro - Test: Java GraalVM Native Image'
+      - 'Kokoro - Test: Java 17 GraalVM Native Image'
 permissionRules:
   - team: yoshi-admins
     permission: admin
