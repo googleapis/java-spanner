@@ -158,6 +158,7 @@ public class ConnectionOptionsTest {
         "cloudspanner:/projects/test-project-123/instances/test-instance-123/databases/test-database-123";
     ConnectionOptions.Builder builder = ConnectionOptions.newBuilder();
     builder.setUri(BASE_URI + "?routeToLeader=false");
+    builder.setCredentialsUrl(FILE_TEST_PATH);
     ConnectionOptions options = builder.build();
     assertEquals(options.getHost(), DEFAULT_HOST);
     assertEquals(options.getProjectId(), TEST_PROJECT);
