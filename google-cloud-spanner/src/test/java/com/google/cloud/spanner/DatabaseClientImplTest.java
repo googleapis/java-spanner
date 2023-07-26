@@ -2970,6 +2970,10 @@ public class DatabaseClientImplTest {
   public void testStreamWaitTimeout() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    // Add a wait time to the mock server. Note that the test won't actually wait 100ms, as it uses
+    // a 1ns time out.
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
     // Create a custom call configuration that uses a 1 nanosecond stream timeout value. This will
     // always time out, as a call to the mock server will always take more than 1 nanosecond.
     CallContextConfigurator configurator =
