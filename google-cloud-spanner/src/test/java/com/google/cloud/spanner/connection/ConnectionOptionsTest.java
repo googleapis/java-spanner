@@ -168,6 +168,7 @@ public class ConnectionOptionsTest {
 
     // Test for default behavior for routeToLeader property.
     builder = ConnectionOptions.newBuilder().setUri(BASE_URI);
+    builder.setCredentialsUrl(FILE_TEST_PATH);
     options = builder.build();
     assertTrue(options.isRouteToLeader());
   }
