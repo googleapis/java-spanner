@@ -34,6 +34,7 @@ import com.google.common.base.Ticker;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Duration;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
@@ -181,6 +182,11 @@ class SessionImpl implements Session {
         requestOptionsBuilder.setTransactionTag(commitRequestOptions.tag());
       }
       requestBuilder.setRequestOptions(requestOptionsBuilder.build());
+    }
+    if (commitRequestOptions.hasMaxBatchingDelayMs()) {
+	Duration maxBatchingDelay =
+	  Duration.newBuilder.setNanos(1000000 * commitRequestOptions.maxBatchingDelayMs());
+	requestBuilder.setMaxBatchingDelay(maxBatchingDelay);
     }
     Span span = tracer.spanBuilder(SpannerImpl.COMMIT).startSpan();
     try (Scope s = tracer.withSpan(span)) {
