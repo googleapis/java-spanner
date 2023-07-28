@@ -144,14 +144,7 @@ public class ConnectionStatementWithOneParameterTest {
                     String.format(
                         "set statement_timeout='%d%s'",
                         val, ReadOnlyStalenessUtil.getTimeUnitAbbreviation(unit))));
-        subject
-            .getClientSideStatement()
-            .execute(
-                executor,
-                parse(
-                    String.format(
-                        "set statement_timeout='%d%s'",
-                        val, ReadOnlyStalenessUtil.getTimeUnitAbbreviation(unit))));
+        subject.getClientSideStatement().execute(executor, subject);
         verify(connection, times(1)).setStatementTimeout(val, unit);
       }
     }
@@ -160,17 +153,15 @@ public class ConnectionStatementWithOneParameterTest {
         Mockito.clearInvocations(connection);
         ParsedStatement subject =
             parser.parse(Statement.of(String.format("set statement_timeout=%d", val)));
-        subject
-            .getClientSideStatement()
-            .execute(executor, parse(String.format("set statement_timeout=%d", val)));
+        subject.getClientSideStatement().execute(executor, subject);
         verify(connection, times(1)).setStatementTimeout(val, TimeUnit.MILLISECONDS);
       }
 
       ParsedStatement subject = parser.parse(Statement.of("set statement_timeout=default"));
-      subject.getClientSideStatement().execute(executor, parse("set statement_timeout=default"));
+      subject.getClientSideStatement().execute(executor, subject);
     } else {
       ParsedStatement subject = parser.parse(Statement.of("set statement_timeout=null"));
-      subject.getClientSideStatement().execute(executor, parse("set statement_timeout=null"));
+      subject.getClientSideStatement().execute(executor, subject);
     }
     verify(connection, times(1)).clearStatementTimeout();
   }
