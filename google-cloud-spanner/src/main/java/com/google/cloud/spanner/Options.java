@@ -141,7 +141,7 @@ public final class Options implements Serializable {
   }
 
   /** Specifies the priority to use for the RPC. */
-p  public static ReadQueryUpdateTransactionOption priority(RpcPriority priority) {
+  public static ReadQueryUpdateTransactionOption priority(RpcPriority priority) {
     return new PriorityOption(priority);
   }
 
