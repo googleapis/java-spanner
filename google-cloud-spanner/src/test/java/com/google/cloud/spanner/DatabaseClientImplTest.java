@@ -2997,6 +2997,32 @@ public class DatabaseClientImplTest {
         });
   }
 
+  @Test
+  public void testZeroStreamWaitTimeout() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    // Create a custom call configuration that sets the stream timeout to zero.
+    // This should disable the timeout.
+    CallContextConfigurator configurator =
+        new CallContextConfigurator() {
+          @Override
+          public <ReqT, RespT> ApiCallContext configure(
+              ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
+            return context.withStreamWaitTimeout(Duration.ZERO);
+          }
+        };
+    Context context =
+        Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
+    context.run(
+        () -> {
+          try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
+            // A zero timeout should not cause a timeout, and instead be ignored.
+            assertTrue(resultSet.next());
+            assertFalse(resultSet.next());
+          }
+        });
+  }
+
   static void assertAsString(String expected, ResultSet resultSet, int col) {
     assertEquals(expected, resultSet.getValue(col).getAsString());
     assertEquals(ImmutableList.of(expected), resultSet.getValue(col).getAsStringList());

@@ -982,6 +982,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           streamWaitTimeoutValue = streamWaitTimeout.getNano();
           streamWaitTimeoutUnit = TimeUnit.NANOSECONDS;
         }
+        // Note that if the stream-wait-timeout is zero, we won't set a timeout at all.
+        // That is consistent with ApiCallContext#withStreamWaitTimeout(Duration.ZERO).
       }
     }
 
