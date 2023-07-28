@@ -242,7 +242,7 @@ public final class Options implements Serializable {
 
   static final CommitStatsOption COMMIT_STATS_OPTION = new CommitStatsOption();
 
-  static final class MaxBatchingDelayMsOption extends InernalOption implements TransactionOption {
+  static final class MaxBatchingDelayMsOption extends InternalOption implements TransactionOption {
     final int maxBatchingDelayMs;
 
     MaxBatchingDelayMsOption(int maxBatchingDelayMs) {
