@@ -32,6 +32,7 @@ import com.google.cloud.TransportOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
@@ -134,10 +135,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final String compressorName;
   private final boolean leaderAwareRoutingEnabled;
 
-  /**
-   * Interface that can be used to provide {@link CallCredentials} instead of {@link Credentials} to
-   * {@link SpannerOptions}.
-   */
+  /** Interface that can be used to provide {@link CallCredentials} to {@link SpannerOptions}. */
   public interface CallCredentialsProvider {
     /** Return the {@link CallCredentials} to use for a gRPC call. */
     CallCredentials getCallCredentials();
@@ -970,7 +968,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /**
      * Sets a timeout specifically for Partitioned DML statements executed through {@link
-     * DatabaseClient#executePartitionedUpdate(Statement)}. The default is 2 hours.
+     * DatabaseClient#executePartitionedUpdate(Statement, UpdateOption...)}. The default is 2 hours.
      */
     public Builder setPartitionedDmlTimeout(Duration timeout) {
       this.partitionedDmlTimeout = timeout;
@@ -1065,9 +1063,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /**
      * Sets a {@link CallCredentialsProvider} that can deliver {@link CallCredentials} to use on a
-     * per-gRPC basis. Any credentials returned by this {@link CallCredentialsProvider} will have
-     * preference above any {@link Credentials} that may have been set on the {@link SpannerOptions}
-     * instance.
+     * per-gRPC basis.
      */
     public Builder setCallCredentialsProvider(CallCredentialsProvider callCredentialsProvider) {
       this.callCredentialsProvider = callCredentialsProvider;

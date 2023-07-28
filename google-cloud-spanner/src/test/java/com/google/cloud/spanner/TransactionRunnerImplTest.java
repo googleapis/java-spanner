@@ -73,7 +73,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-/** Unit test for {@link com.google.cloud.spanner.SpannerImpl.TransactionRunnerImpl} */
+/** Unit test for {@link com.google.cloud.spanner.TransactionRunnerImpl} */
 @RunWith(JUnit4.class)
 public class TransactionRunnerImplTest {
   private static final class TestExecutorFactory

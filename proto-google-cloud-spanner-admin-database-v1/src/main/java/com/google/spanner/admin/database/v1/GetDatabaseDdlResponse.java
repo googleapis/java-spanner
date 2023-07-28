@@ -38,18 +38,13 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
   }
 
   private GetDatabaseDdlResponse() {
-    statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
   }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new GetDatabaseDdlResponse();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -70,7 +65,8 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
   public static final int STATEMENTS_FIELD_NUMBER = 1;
 
   @SuppressWarnings("serial")
-  private com.google.protobuf.LazyStringList statements_;
+  private com.google.protobuf.LazyStringArrayList statements_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    *
    *
@@ -340,8 +336,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
     public Builder clear() {
       super.clear();
       bitField0_ = 0;
-      statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000001);
+      statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
       return this;
     }
 
@@ -369,7 +364,6 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
     public com.google.spanner.admin.database.v1.GetDatabaseDdlResponse buildPartial() {
       com.google.spanner.admin.database.v1.GetDatabaseDdlResponse result =
           new com.google.spanner.admin.database.v1.GetDatabaseDdlResponse(this);
-      buildPartialRepeatedFields(result);
       if (bitField0_ != 0) {
         buildPartial0(result);
       }
@@ -377,17 +371,12 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       return result;
     }
 
-    private void buildPartialRepeatedFields(
-        com.google.spanner.admin.database.v1.GetDatabaseDdlResponse result) {
-      if (((bitField0_ & 0x00000001) != 0)) {
-        statements_ = statements_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000001);
-      }
-      result.statements_ = statements_;
-    }
-
     private void buildPartial0(com.google.spanner.admin.database.v1.GetDatabaseDdlResponse result) {
       int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        statements_.makeImmutable();
+        result.statements_ = statements_;
+      }
     }
 
     @java.lang.Override
@@ -439,7 +428,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       if (!other.statements_.isEmpty()) {
         if (statements_.isEmpty()) {
           statements_ = other.statements_;
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ |= 0x00000001;
         } else {
           ensureStatementsIsMutable();
           statements_.addAll(other.statements_);
@@ -498,14 +487,14 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
 
     private int bitField0_;
 
-    private com.google.protobuf.LazyStringList statements_ =
-        com.google.protobuf.LazyStringArrayList.EMPTY;
+    private com.google.protobuf.LazyStringArrayList statements_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
 
     private void ensureStatementsIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
+      if (!statements_.isModifiable()) {
         statements_ = new com.google.protobuf.LazyStringArrayList(statements_);
-        bitField0_ |= 0x00000001;
       }
+      bitField0_ |= 0x00000001;
     }
     /**
      *
@@ -520,7 +509,8 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
      * @return A list containing the statements.
      */
     public com.google.protobuf.ProtocolStringList getStatementsList() {
-      return statements_.getUnmodifiableView();
+      statements_.makeImmutable();
+      return statements_;
     }
     /**
      *
@@ -589,6 +579,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       }
       ensureStatementsIsMutable();
       statements_.set(index, value);
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -611,6 +602,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       }
       ensureStatementsIsMutable();
       statements_.add(value);
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -630,6 +622,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
     public Builder addAllStatements(java.lang.Iterable<java.lang.String> values) {
       ensureStatementsIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, statements_);
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -646,8 +639,9 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
      * @return This builder for chaining.
      */
     public Builder clearStatements() {
-      statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
       bitField0_ = (bitField0_ & ~0x00000001);
+      ;
       onChanged();
       return this;
     }
@@ -671,6 +665,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       checkByteStringIsUtf8(value);
       ensureStatementsIsMutable();
       statements_.add(value);
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
