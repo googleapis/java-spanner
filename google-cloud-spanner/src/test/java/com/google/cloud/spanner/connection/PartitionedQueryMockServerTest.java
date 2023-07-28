@@ -19,6 +19,7 @@ package com.google.cloud.spanner.connection;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -48,7 +49,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class BatchReadMockServerTest extends AbstractMockServerTest {
+public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
 
   @Parameters(name = "dialect = {0}")
   public static Object[] data() {
@@ -166,7 +167,7 @@ public class BatchReadMockServerTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testExecutePartition() {
+  public void testRunPartition() {
     int generatedRowCount = 20;
     RandomResultSetGenerator generator = new RandomResultSetGenerator(generatedRowCount);
     Statement statement = Statement.of("select * from random_table");
@@ -214,7 +215,7 @@ public class BatchReadMockServerTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testExecutePartitionUsingSql() {
+  public void testRunPartitionUsingSql() {
     int generatedRowCount = 20;
     RandomResultSetGenerator generator = new RandomResultSetGenerator(generatedRowCount);
     String paramName = dialect == Dialect.POSTGRESQL ? "$1" : "@p1";
@@ -264,7 +265,7 @@ public class BatchReadMockServerTest extends AbstractMockServerTest {
                   connection.executeQuery(
                       useLiteral
                           ? Statement.of(
-                              "RUN PARTITION '" + partitions.getString("PARTITION") + "'")
+                              "RUN\tPARTITION\n '" + partitions.getString("PARTITION") + "'")
                           : Statement.newBuilder("RUN PARTITION")
                               .bind("PARTITION")
                               .to(partitions.getString("PARTITION"))
@@ -298,7 +299,7 @@ public class BatchReadMockServerTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testExecutePartitionedQuery() {
+  public void testRunPartitionedQuery() {
     int generatedRowCount = 20;
     RandomResultSetGenerator generator = new RandomResultSetGenerator(generatedRowCount);
     Statement statement =
@@ -312,7 +313,7 @@ public class BatchReadMockServerTest extends AbstractMockServerTest {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       try (ResultSet resultSet =
-          connection.executePartitionedQuery(
+          connection.runPartitionedQuery(
               statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
         int rowCount = 0;
         while (resultSet.next()) {
@@ -330,7 +331,79 @@ public class BatchReadMockServerTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testExecutePartitionedQueryWithError() {
+  public void testRunPartitionedQueryUsingSql() {
+    int generatedRowCount = 20;
+    RandomResultSetGenerator generator = new RandomResultSetGenerator(generatedRowCount);
+    Statement statement =
+        Statement.newBuilder("select * from random_table where active=@active")
+            .bind("active")
+            .to(true)
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+    String prefix = dialect == Dialect.POSTGRESQL ? "spanner." : "";
+
+    int maxPartitions = 5;
+    int maxParallelism = 4;
+    try (Connection connection = createConnection()) {
+      connection.execute(Statement.of("set autocommit=true"));
+      assertTrue(connection.isAutocommit());
+      for (boolean dataBoostEnabled : new boolean[] {false, true}) {
+        connection.execute(
+            Statement.of(String.format("set %sdata_boost_enabled=%s", prefix, dataBoostEnabled)));
+        try (ResultSet resultSet =
+            connection.executeQuery(
+                Statement.of(String.format("show variable %sdata_boost_enabled", prefix)))) {
+          assertTrue(resultSet.next());
+          assertEquals(dataBoostEnabled, resultSet.getBoolean(0));
+          assertFalse(resultSet.next());
+        }
+        connection.execute(
+            Statement.of(String.format("set %smax_partitions=%d", prefix, maxPartitions)));
+        try (ResultSet resultSet =
+            connection.executeQuery(
+                Statement.of(String.format("show variable %smax_partitions", prefix)))) {
+          assertTrue(resultSet.next());
+          assertEquals(maxPartitions, resultSet.getLong(0));
+          assertFalse(resultSet.next());
+        }
+        connection.execute(
+            Statement.of(
+                String.format("set %smax_partitioned_parallelism=%d", prefix, maxParallelism)));
+        try (ResultSet resultSet =
+            connection.executeQuery(
+                Statement.of(
+                    String.format("show variable %smax_partitioned_parallelism", prefix)))) {
+          assertTrue(resultSet.next());
+          assertEquals(maxParallelism, resultSet.getLong(0));
+          assertFalse(resultSet.next());
+        }
+
+        try (ResultSet resultSet =
+            connection.executeQuery(
+                Statement.newBuilder(
+                        "run\tpartitioned   query\n select * from random_table where active=@active")
+                    .bind("active")
+                    .to(true)
+                    .build())) {
+          int rowCount = 0;
+          while (resultSet.next()) {
+            rowCount++;
+          }
+          // The mock server is not smart enough to actually return only a partition of the query.
+          // Instead, the server returns the same query result for each partition, so the actual row
+          // count will be maxPartitions * generatedRowCount.
+          assertEquals(maxPartitions * generatedRowCount, rowCount);
+        }
+      }
+    }
+    // We have 2 requests of each, as we run the query with data boost both enabled and disabled.
+    assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
+    assertEquals(2, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+    assertEquals(2, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
+  }
+
+  @Test
+  public void testRunPartitionedQueryWithError() {
     int generatedRowCount = 20;
     RandomResultSetGenerator generator = new RandomResultSetGenerator(generatedRowCount);
     Statement statement =
@@ -355,7 +428,7 @@ public class BatchReadMockServerTest extends AbstractMockServerTest {
 
       int rowCount = 0;
       try (ResultSet resultSet =
-          connection.executePartitionedQuery(
+          connection.runPartitionedQuery(
               statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
         while (resultSet.next()) {
           rowCount++;
@@ -384,5 +457,125 @@ public class BatchReadMockServerTest extends AbstractMockServerTest {
     assertEquals(1, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
     assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
     assertEquals(1, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
+  }
+
+  @Test
+  public void testRunPartitionedQueryWithMaxParallelism() {
+    int generatedRowCount = 20;
+    RandomResultSetGenerator generator = new RandomResultSetGenerator(generatedRowCount);
+    Statement statement =
+        Statement.newBuilder("select * from random_table where active=@active")
+            .bind("active")
+            .to(true)
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+
+    int maxPartitions = 15;
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
+      for (int maxParallelism : new int[] {0, 1, 2, 5, 20}) {
+        connection.setMaxPartitionedParallelism(maxParallelism);
+        try (PartitionedQueryResultSet resultSet =
+            connection.runPartitionedQuery(
+                statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
+          int expectedParallelism;
+          if (maxParallelism == 0) {
+            expectedParallelism =
+                Math.min(maxPartitions, Runtime.getRuntime().availableProcessors());
+          } else {
+            expectedParallelism = Math.min(maxParallelism, maxPartitions);
+          }
+          assertEquals(expectedParallelism, resultSet.getParallelism());
+          int rowCount = 0;
+          while (resultSet.next()) {
+            rowCount++;
+          }
+          // The mock server is not smart enough to actually return only a partition of the query.
+          // Instead, the server returns the same query result for each partition, so the actual row
+          // count will be maxPartitions * generatedRowCount.
+          assertEquals(maxPartitions * generatedRowCount, rowCount);
+        }
+      }
+    }
+    assertEquals(5, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
+    assertEquals(5, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+    assertEquals(5, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
+  }
+
+  @Test
+  public void testAlwaysUsePartitionedQueries() {
+    int generatedRowCount = 5;
+    RandomResultSetGenerator generator = new RandomResultSetGenerator(generatedRowCount);
+    Statement statement =
+        Statement.newBuilder("select * from random_table where active=@active")
+            .bind("active")
+            .to(true)
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+    String prefix = dialect == Dialect.POSTGRESQL ? "spanner." : "";
+
+    int maxPartitions = 4;
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
+      connection.setMaxPartitions(maxPartitions);
+
+      connection.execute(
+          Statement.of(String.format("set %salways_use_partitioned_queries=true", prefix)));
+      try (ResultSet resultSet =
+          connection.executeQuery(
+              Statement.of(
+                  String.format("show variable %salways_use_partitioned_queries", prefix)))) {
+        assertTrue(resultSet.next());
+        assertTrue(resultSet.getBoolean(0));
+        assertFalse(resultSet.next());
+      }
+
+      try (ResultSet resultSet = connection.executeQuery(statement)) {
+        int rowCount = 0;
+        while (resultSet.next()) {
+          rowCount++;
+        }
+        assertEquals(maxPartitions * generatedRowCount, rowCount);
+      }
+      try (ResultSet resultSet = connection.execute(statement).getResultSet()) {
+        int rowCount = 0;
+        while (resultSet.next()) {
+          rowCount++;
+        }
+        assertEquals(maxPartitions * generatedRowCount, rowCount);
+      }
+      SpannerException exception =
+          assertThrows(SpannerException.class, () -> connection.executeQueryAsync(statement));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
+      assertTrue(
+          exception.getMessage(),
+          exception.getMessage().contains("Partitioned queries cannot be executed asynchronously"));
+      exception = assertThrows(SpannerException.class, () -> connection.executeAsync(statement));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
+      assertTrue(
+          exception.getMessage(),
+          exception.getMessage().contains("Partitioned queries cannot be executed asynchronously"));
+
+      // Turn off autocommit mode. This will cause the next query to start a read/write transaction.
+      // These also do not support partitioned queries.
+      connection.setAutocommit(false);
+      exception = assertThrows(SpannerException.class, () -> connection.executeQuery(statement));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
+      assertTrue(
+          exception.getMessage(),
+          exception
+              .getMessage()
+              .contains("Partition query is not supported for read/write transaction"));
+      exception = assertThrows(SpannerException.class, () -> connection.execute(statement));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
+      assertTrue(
+          exception.getMessage(),
+          exception
+              .getMessage()
+              .contains("Partition query is not supported for read/write transaction"));
+    }
+    assertEquals(2, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
+    assertEquals(2, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+    assertEquals(2, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
   }
 }

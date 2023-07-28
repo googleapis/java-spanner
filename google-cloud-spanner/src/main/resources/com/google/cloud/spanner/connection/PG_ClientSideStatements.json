@@ -195,6 +195,15 @@
       "exampleStatements": []
     },
     {
+      "name": "RUN PARTITIONED QUERY <sql>",
+      "executorName": "ClientSideStatementRunPartitionedQueryExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "RUN_PARTITIONED_QUERY",
+      "regex": "(?is)\\A\\s*run\\s+partitioned\\s+query(\\s+|\\()(.*)\\z",
+      "method": "statementRunPartitionedQuery",
+      "exampleStatements": []
+    },
+    {
       "name": "{START | BEGIN} [TRANSACTION | WORK] [{ (READ ONLY|READ WRITE) [[,] (ISOLATION LEVEL (DEFAULT|SERIALIZABLE))] [[,] NOT DEFERRABLE]}]",
       "executorName": "ClientSideStatementPgBeginExecutor",
       "resultType": "NO_RESULT",
@@ -706,6 +715,30 @@
       }
     },
     {
+      "name": "SHOW [VARIABLE] SPANNER.ALWAYS_USE_PARTITIONED_QUERIES",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_ALWAYS_USE_PARTITIONED_QUERIES",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.always_use_partitioned_queries\\s*\\z",
+      "method": "statementShowAlwaysUsePartitionedQueries",
+      "exampleStatements": ["show spanner.always_use_partitioned_queries","show variable spanner.always_use_partitioned_queries"]
+    },
+    {
+      "name": "SET SPANNER.ALWAYS_USE_PARTITIONED_QUERIES = TRUE|FALSE",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_ALWAYS_USE_PARTITIONED_QUERIES",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.always_use_partitioned_queries(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetAlwaysUsePartitionedQueries",
+      "exampleStatements": ["set spanner.always_use_partitioned_queries = true", "set spanner.always_use_partitioned_queries = false", "set spanner.always_use_partitioned_queries to true", "set spanner.always_use_partitioned_queries to false"],
+      "setStatement": {
+        "propertyName": "SPANNER.ALWAYS_USE_PARTITIONED_QUERIES",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(TRUE|FALSE)",
+        "converterName": "ClientSideStatementValueConverters$BooleanConverter"
+      }
+    },
+    {
       "name": "SHOW [VARIABLE] SPANNER.MAX_PARTITIONS",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
@@ -724,6 +757,30 @@
       "exampleStatements": ["set spanner.max_partitions = 1", "set spanner.max_partitions = 10", "set spanner.max_partitions to 5", "set spanner.max_partitions to 20"],
       "setStatement": {
         "propertyName": "SPANNER.MAX_PARTITIONS",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(\\d{1,9})",
+        "converterName": "ClientSideStatementValueConverters$IntegerConverter"
+      }
+    },
+    {
+      "name": "SHOW [VARIABLE] SPANNER.MAX_PARTITIONED_PARALLELISM",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_MAX_PARTITIONED_PARALLELISM",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.max_partitioned_parallelism\\s*\\z",
+      "method": "statementShowMaxPartitionedParallelism",
+      "exampleStatements": ["show spanner.max_partitioned_parallelism","show variable spanner.max_partitioned_parallelism"]
+    },
+    {
+      "name": "SET SPANNER.MAX_PARTITIONED_PARALLELISM = <INT64>",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_MAX_PARTITIONED_PARALLELISM",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.max_partitioned_parallelism(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetMaxPartitionedParallelism",
+      "exampleStatements": ["set spanner.max_partitioned_parallelism = 1", "set spanner.max_partitioned_parallelism = 10", "set spanner.max_partitioned_parallelism to 5", "set spanner.max_partitioned_parallelism to 20"],
+      "setStatement": {
+        "propertyName": "SPANNER.MAX_PARTITIONED_PARALLELISM",
         "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "(\\d{1,9})",
         "converterName": "ClientSideStatementValueConverters$IntegerConverter"

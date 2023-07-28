@@ -24,12 +24,13 @@ import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileExcept
 import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 
-/** Executor for <code>PARTITION &lt;sql&gt;</code> statements. */
-class ClientSideStatementPartitionExecutor implements ClientSideStatementExecutor {
+/** Executor for <code>RUN PARTITIONED QUERY &lt;sql&gt;</code> statements. */
+class ClientSideStatementRunPartitionedQueryExecutor implements ClientSideStatementExecutor {
   private final ClientSideStatementImpl statement;
   private final Method method;
 
-  ClientSideStatementPartitionExecutor(ClientSideStatementImpl statement) throws CompileException {
+  ClientSideStatementRunPartitionedQueryExecutor(ClientSideStatementImpl statement)
+      throws CompileException {
     try {
       this.statement = statement;
       this.method =
@@ -51,6 +52,8 @@ class ClientSideStatementPartitionExecutor implements ClientSideStatementExecuto
   String getParameterValue(ParsedStatement parsedStatement) {
     Matcher matcher = statement.getPattern().matcher(parsedStatement.getSqlWithoutComments());
     if (matcher.find() && matcher.groupCount() >= 2) {
+      // Include the spacing group in case the query is enclosed in parentheses like this:
+      // `run partitioned query(select * from foo)`
       String space = matcher.group(1);
       String value = matcher.group(2);
       return (space + value).trim();
@@ -58,6 +61,7 @@ class ClientSideStatementPartitionExecutor implements ClientSideStatementExecuto
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
         String.format(
-            "Invalid argument for PARTITION: %s", parsedStatement.getStatement().getSql()));
+            "Invalid argument for RUN PARTITIONED QUERY: %s",
+            parsedStatement.getStatement().getSql()));
   }
 }

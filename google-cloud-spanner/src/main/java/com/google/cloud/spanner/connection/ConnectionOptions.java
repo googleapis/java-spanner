@@ -100,6 +100,11 @@ public class ConnectionOptions {
           name, description, String.valueOf(defaultValue), BOOLEAN_VALUES);
     }
 
+    private static ConnectionProperty createIntProperty(
+        String name, String description, int defaultValue) {
+      return new ConnectionProperty(name, description, String.valueOf(defaultValue), null);
+    }
+
     private static ConnectionProperty createEmptyProperty(String name) {
       return new ConnectionProperty(name, "", "", null);
     }
@@ -175,6 +180,10 @@ public class ConnectionOptions {
   private static final boolean DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE = false;
   private static final boolean DEFAULT_TRACK_SESSION_LEAKS = true;
   private static final boolean DEFAULT_TRACK_CONNECTION_LEAKS = true;
+  private static final boolean DEFAULT_DATA_BOOST_ENABLED = false;
+  private static final boolean DEFAULT_ALWAYS_USE_PARTITIONED_QUERIES = false;
+  private static final int DEFAULT_MAX_PARTITIONS = 0;
+  private static final int DEFAULT_MAX_PARTITIONED_PARALLELISM = 1;
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -228,6 +237,14 @@ public class ConnectionOptions {
   public static final String TRACK_SESSION_LEAKS_PROPERTY_NAME = "trackSessionLeaks";
   /** Name of the 'trackStackTraceOfConnectionCreation' connection property. */
   public static final String TRACK_CONNECTION_LEAKS_PROPERTY_NAME = "trackConnectionLeaks";
+
+  public static final String DATA_BOOST_ENABLED_PROPERTY_NAME = "dataBoostEnabled";
+  public static final String ALWAYS_USE_PARTITIONED_QUERIES_PROPERTY_NAME =
+      "alwaysUsePartitionedQueries";
+  public static final String MAX_PARTITIONS_PROPERTY_NAME = "maxPartitions";
+  public static final String MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME =
+      "maxPartitionedParallelism";
+
   /** All valid connection properties. */
   public static final Set<ConnectionProperty> VALID_PROPERTIES =
       Collections.unmodifiableSet(
@@ -323,7 +340,29 @@ public class ConnectionOptions {
                           + "If disabled, the LeakedConnectionException will only be created when an "
                           + "actual connection leak is detected. The stack trace of the exception will "
                           + "in that case not contain the call stack of when the connection was created.",
-                      DEFAULT_TRACK_CONNECTION_LEAKS))));
+                      DEFAULT_TRACK_CONNECTION_LEAKS),
+                  ConnectionProperty.createBooleanProperty(
+                      DATA_BOOST_ENABLED_PROPERTY_NAME,
+                      "Enable data boost for all partitioned queries that are executed by this connection. "
+                          + "This setting is only used for partitioned queries and is ignored by all other statements.",
+                      DEFAULT_DATA_BOOST_ENABLED),
+                  ConnectionProperty.createBooleanProperty(
+                      ALWAYS_USE_PARTITIONED_QUERIES_PROPERTY_NAME,
+                      "Execute all queries on this connection as partitioned queries. "
+                          + "Executing a query that cannot be partitioned will fail. "
+                          + "Executing a query in a read/write transaction will also fail.",
+                      DEFAULT_ALWAYS_USE_PARTITIONED_QUERIES),
+                  ConnectionProperty.createIntProperty(
+                      MAX_PARTITIONS_PROPERTY_NAME,
+                      "The max partitions hint value to use for partitioned queries. "
+                          + "Use 0 if you do not want to specify a hint.",
+                      DEFAULT_MAX_PARTITIONS),
+                  ConnectionProperty.createIntProperty(
+                      MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME,
+                      "The maximum number of partitions that will be executed in parallel "
+                          + "for partitioned queries on this connection. Set this value to 0 to "
+                          + "dynamically use the number of processors available in the runtime.",
+                      DEFAULT_MAX_PARTITIONED_PARALLELISM))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -584,6 +623,11 @@ public class ConnectionOptions {
   private final boolean trackSessionLeaks;
   private final boolean trackConnectionLeaks;
 
+  private final boolean dataBoostEnabled;
+  private final boolean alwaysUsePartitionedQueries;
+  private final int maxPartitions;
+  private final int maxPartitionedParallelism;
+
   private final boolean autocommit;
   private final boolean readOnly;
   private final boolean retryAbortsInternally;
@@ -630,6 +674,11 @@ public class ConnectionOptions {
     this.delayTransactionStartUntilFirstWrite = parseDelayTransactionStartUntilFirstWrite(this.uri);
     this.trackSessionLeaks = parseTrackSessionLeaks(this.uri);
     this.trackConnectionLeaks = parseTrackConnectionLeaks(this.uri);
+
+    this.dataBoostEnabled = parseDataBoostEnabled(this.uri);
+    this.alwaysUsePartitionedQueries = parseAlwaysUsePartitionedQueries(this.uri);
+    this.maxPartitions = parseMaxPartitions(this.uri);
+    this.maxPartitionedParallelism = parseMaxPartitionedParallelism(this.uri);
 
     this.instanceId = matcher.group(Builder.INSTANCE_GROUP);
     this.databaseName = matcher.group(Builder.DATABASE_GROUP);
@@ -902,6 +951,57 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
+  static boolean parseDataBoostEnabled(String uri) {
+    String value = parseUriProperty(uri, DATA_BOOST_ENABLED_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_DATA_BOOST_ENABLED;
+  }
+
+  @VisibleForTesting
+  static boolean parseAlwaysUsePartitionedQueries(String uri) {
+    String value = parseUriProperty(uri, ALWAYS_USE_PARTITIONED_QUERIES_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_ALWAYS_USE_PARTITIONED_QUERIES;
+  }
+
+  @VisibleForTesting
+  static int parseMaxPartitions(String uri) {
+    String stringValue = parseUriProperty(uri, MAX_PARTITIONS_PROPERTY_NAME);
+    if (stringValue == null) {
+      return DEFAULT_MAX_PARTITIONS;
+    }
+    try {
+      int value = Integer.parseInt(stringValue);
+      if (value < 0) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, "maxPartitions must be >=0");
+      }
+      return value;
+    } catch (NumberFormatException numberFormatException) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT, "Invalid value for maxPartitions: " + stringValue);
+    }
+  }
+
+  @VisibleForTesting
+  static int parseMaxPartitionedParallelism(String uri) {
+    String stringValue = parseUriProperty(uri, MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME);
+    if (stringValue == null) {
+      return DEFAULT_MAX_PARTITIONED_PARALLELISM;
+    }
+    try {
+      int value = Integer.parseInt(stringValue);
+      if (value < 0) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, "maxPartitionedParallelism must be >=0");
+      }
+      return value;
+    } catch (NumberFormatException numberFormatException) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          "Invalid value for maxPartitionedParallelism: " + stringValue);
+    }
+  }
+
+  @VisibleForTesting
   static RpcPriority parseRPCPriority(String uri) {
     String value = parseUriProperty(uri, RPC_PRIORITY_NAME);
     return value != null ? RpcPriority.valueOf(value) : DEFAULT_RPC_PRIORITY;
@@ -1151,6 +1251,22 @@ public class ConnectionOptions {
 
   boolean isTrackConnectionLeaks() {
     return this.trackConnectionLeaks;
+  }
+
+  boolean isDataBoostEnabled() {
+    return this.dataBoostEnabled;
+  }
+
+  boolean isAlwaysUsePartitionedQueries() {
+    return this.alwaysUsePartitionedQueries;
+  }
+
+  int getMaxPartitions() {
+    return this.maxPartitions;
+  }
+
+  int getMaxPartitionedParallelism() {
+    return this.maxPartitionedParallelism;
   }
 
   /** Interceptors that should be executed after each statement */

@@ -131,11 +131,21 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementSetDataBoostEnabled(Boolean dataBoostEnabled);
 
+  StatementResult statementShowAlwaysUsePartitionedQueries();
+
+  StatementResult statementSetAlwaysUsePartitionedQueries(Boolean alwaysUsePartitionedQueries);
+
   StatementResult statementShowMaxPartitions();
 
   StatementResult statementSetMaxPartitions(Integer maxPartitions);
 
+  StatementResult statementShowMaxPartitionedParallelism();
+
+  StatementResult statementSetMaxPartitionedParallelism(Integer maxPartitionedParallelism);
+
   StatementResult statementPartition(Statement statement);
 
   StatementResult statementRunPartition(String partitionId);
+
+  StatementResult statementRunPartitionedQuery(Statement statement);
 }

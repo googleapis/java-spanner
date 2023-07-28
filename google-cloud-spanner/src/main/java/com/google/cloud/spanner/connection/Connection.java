@@ -1044,8 +1044,30 @@ public interface Connection extends AutoCloseable {
    */
   boolean isDataBoostEnabled();
 
+  /**
+   * Sets whether this connection should always use partitioned queries when a query is executed on
+   * this connection. Setting this flag to <code>true</code> and then executing a query that cannot
+   * be partitioned, or executing a query in a read/write transaction, will cause an error. Use this
+   * flag in combination with {@link #setDataBoostEnabled(boolean)} to force all queries on this
+   * connection to use data boost.
+   */
+  void setAlwaysUsePartitionedQueries(boolean alwaysUsePartitionedQueries);
+
+  /** Returns whether this connection will execute all queries as partitioned queries. */
+  boolean isAlwaysUsePartitionedQueries();
+
+  /**
+   * Sets the maximum number of partitions that should be included as a hint to Cloud Spanner when
+   * partitioning a query on this connection. Note that this is only a hint and Cloud Spanner might
+   * choose to ignore the hint.
+   */
   void setMaxPartitions(int maxPartitions);
 
+  /**
+   * Gets the maximum number of partitions that should be included as a hint to Cloud Spanner when
+   * partitioning a query on this connection. Note that this is only a hint and Cloud Spanner might
+   * choose to ignore the hint.
+   */
   int getMaxPartitions();
 
   /**
@@ -1066,12 +1088,31 @@ public interface Connection extends AutoCloseable {
   ResultSet runPartition(String encodedPartitionId);
 
   /**
+   * Sets the maximum degree of parallelism that is used when executing a partitioned query using
+   * {@link #runPartitionedQuery(Statement, PartitionOptions, QueryOption...)}. The method will use
+   * up to <code>maxThreads</code> to execute and retrieve the results from Cloud Spanner. Set this
+   * value to <code>0</code>> to use the number of available processors as returned by {@link
+   * Runtime#availableProcessors()}.
+   */
+  void setMaxPartitionedParallelism(int maxThreads);
+
+  /**
+   * Returns the maximum degree of parallelism that is used for {@link
+   * #runPartitionedQuery(Statement, PartitionOptions, QueryOption...)}
+   */
+  int getMaxPartitionedParallelism();
+
+  /**
    * Executes the given query as a partitioned query. The query will first be partitioned using the
    * {@link #partitionQuery(Statement, PartitionOptions, QueryOption...)} method. Each of the
    * partitions will then be executed in the background, and the results will be merged into a
    * single result set.
+   *
+   * <p>This method will use <code>maxPartitionedParallelism</code> threads to execute the
+   * partitioned query. Set this variable to a higher/lower value to increase/decrease the degree of
+   * parallelism used for execution.
    */
-  ResultSet executePartitionedQuery(
+  PartitionedQueryResultSet runPartitionedQuery(
       Statement query, PartitionOptions partitionOptions, QueryOption... options);
 
   /**

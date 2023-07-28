@@ -535,6 +535,142 @@ public class ConnectionOptionsTest {
   }
 
   @Test
+  public void testDataBoostEnabled() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?dataBoostEnabled=true")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertTrue(options.isDataBoostEnabled());
+  }
+
+  @Test
+  public void testDataBoostEnabledDefault() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertFalse(options.isDataBoostEnabled());
+  }
+
+  @Test
+  public void testAlwaysUsePartitionedQueries() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?alwaysUsePartitionedQueries=true")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertTrue(options.isAlwaysUsePartitionedQueries());
+  }
+
+  @Test
+  public void testAlwaysUsePartitionedQueriesDefault() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertFalse(options.isAlwaysUsePartitionedQueries());
+  }
+
+  @Test
+  public void testMaxPartitions() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxPartitions=4")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertEquals(4, options.getMaxPartitions());
+  }
+
+  @Test
+  public void testMaxPartitionsDefault() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertEquals(0, options.getMaxPartitions());
+  }
+
+  @Test
+  public void testMaxPartitionsInvalidValue() {
+    assertThrows(
+        SpannerException.class,
+        () ->
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxPartitions=-1")
+                .setCredentialsUrl(FILE_TEST_PATH)
+                .build());
+  }
+
+  @Test
+  public void testMaxPartitionsNonNumeric() {
+    assertThrows(
+        SpannerException.class,
+        () ->
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxPartitions=four")
+                .setCredentialsUrl(FILE_TEST_PATH)
+                .build());
+  }
+
+  @Test
+  public void testMaxPartitionedParallelism() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxPartitionedParallelism=4")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertEquals(4, options.getMaxPartitionedParallelism());
+  }
+
+  @Test
+  public void testMaxPartitionedParallelismDefault() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertEquals(1, options.getMaxPartitionedParallelism());
+  }
+
+  @Test
+  public void testMaxPartitionedParallelismInvalidValue() {
+    assertThrows(
+        SpannerException.class,
+        () ->
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxPartitionedParallelism=-1")
+                .setCredentialsUrl(FILE_TEST_PATH)
+                .build());
+  }
+
+  @Test
+  public void testMaxPartitionedParallelismNonNumeric() {
+    assertThrows(
+        SpannerException.class,
+        () ->
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxPartitionedParallelism=four")
+                .setCredentialsUrl(FILE_TEST_PATH)
+                .build());
+  }
+
+  @Test
   public void testLocalConnectionError() {
     String uri =
         "cloudspanner://localhost:1/projects/test-project/instances/test-instance/databases/test-database?usePlainText=true";

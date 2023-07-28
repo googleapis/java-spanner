@@ -522,49 +522,4 @@ class ClientSideStatementValueConverters {
       return value.substring(7).trim();
     }
   }
-
-  static class PartitionCommandConverter implements ClientSideStatementValueConverter<String> {
-    private static final int KEYWORD_LENGTH = "PARTITION".length();
-
-    static final PartitionCommandConverter INSTANCE = new PartitionCommandConverter();
-
-    private PartitionCommandConverter() {}
-
-    @Override
-    public Class<String> getParameterClass() {
-      return String.class;
-    }
-
-    @Override
-    public String convert(String value) {
-      // The first keyword should be PARTITION.
-      if (value.length() <= KEYWORD_LENGTH) {
-        return null;
-      }
-      return value.substring(KEYWORD_LENGTH).trim();
-    }
-  }
-
-  static class ExecutePartitionCommandConverter
-      implements ClientSideStatementValueConverter<String> {
-    private static final int KEYWORD_LENGTH = "EXECUTE_PARTITION".length();
-
-    static final ExecutePartitionCommandConverter INSTANCE = new ExecutePartitionCommandConverter();
-
-    private ExecutePartitionCommandConverter() {}
-
-    @Override
-    public Class<String> getParameterClass() {
-      return String.class;
-    }
-
-    @Override
-    public String convert(String value) {
-      // The first keyword should be EXECUTE_PARTITION.
-      if (value.length() <= KEYWORD_LENGTH) {
-        return null;
-      }
-      return value.substring(KEYWORD_LENGTH).trim();
-    }
-  }
 }

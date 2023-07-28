@@ -35,7 +35,12 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class MergedResultSet extends ForwardingStructReader implements ResultSet {
+/**
+ * {@link MergedResultSet} is a {@link ResultSet} implementation that combines the results from
+ * multiple queries. Each query uses its own {@link RowProducer} that feeds rows into the {@link
+ * MergedResultSet}. The order of the records in the {@link MergedResultSet} is not guaranteed.
+ */
+class MergedResultSet extends ForwardingStructReader implements PartitionedQueryResultSet {
   static class PartitionExecutor implements Runnable {
     private final Connection connection;
     private final String partitionId;
@@ -121,8 +126,11 @@ class MergedResultSet extends ForwardingStructReader implements ResultSet {
   }
 
   static class RowProducer implements Supplier<Struct> {
+    /** The maximum number of rows that we will cache per thread that is fetching rows. */
     private static final int QUEUE_SIZE_PER_WORKER = 32;
+
     private final ExecutorService executor;
+    private final int parallelism;
     private final List<PartitionExecutor> partitionExecutors;
     private final AtomicInteger finishedCounter;
     private final LinkedBlockingDeque<PartitionExecutorResult> queue;
@@ -133,18 +141,20 @@ class MergedResultSet extends ForwardingStructReader implements ResultSet {
       Preconditions.checkArgument(maxParallelism >= 0, "maxParallelism must be >= 0");
       if (maxParallelism == 0) {
         // Dynamically determine parallelism.
-        maxParallelism = Math.min(partitions.size(), Runtime.getRuntime().availableProcessors());
+        this.parallelism = Math.min(partitions.size(), Runtime.getRuntime().availableProcessors());
+      } else {
+        this.parallelism = Math.min(partitions.size(), maxParallelism);
       }
       this.executor =
           Executors.newFixedThreadPool(
-              maxParallelism,
+              this.parallelism,
               runnable -> {
                 Thread thread = new Thread(runnable);
                 thread.setName("partitioned-query-row-producer");
                 thread.setDaemon(true);
                 return thread;
               });
-      this.queue = new LinkedBlockingDeque<>(QUEUE_SIZE_PER_WORKER * maxParallelism);
+      this.queue = new LinkedBlockingDeque<>(QUEUE_SIZE_PER_WORKER * this.parallelism);
       this.partitionExecutors = new ArrayList<>(partitions.size());
       this.finishedCounter = new AtomicInteger(partitions.size());
       for (String partition : partitions) {
@@ -262,5 +272,15 @@ class MergedResultSet extends ForwardingStructReader implements ResultSet {
   public ResultSetMetadata getMetadata() {
     checkValidState();
     return rowProducer.getMetadata();
+  }
+
+  @Override
+  public int getNumPartitions() {
+    return rowProducer.partitionExecutors.size();
+  }
+
+  @Override
+  public int getParallelism() {
+    return rowProducer.parallelism;
   }
 }

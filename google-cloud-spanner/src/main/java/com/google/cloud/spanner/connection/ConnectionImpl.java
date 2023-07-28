@@ -218,8 +218,31 @@ class ConnectionImpl implements Connection {
   private final List<TransactionRetryListener> transactionRetryListeners = new ArrayList<>();
   private AutocommitDmlMode autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
   private TimestampBound readOnlyStaleness = TimestampBound.strong();
+  /**
+   * alwaysUsePartitionedQueries will force this connection to execute all queries as partitioned
+   * queries. If a query cannot be executed as a partitioned query, for example if it is not
+   * partitionable, then the query will fail. This mode is intended for integrations with frameworks
+   * that should always use partitioned queries, and that do not support executing custom SQL
+   * statements. This setting can be used in combination with the dataBoostEnabled flag to force all
+   * queries to use data boost.
+   */
+  private boolean alwaysUsePartitionedQueries;
+  /**
+   * dataBoostEnabled=true will cause all partitionedQueries to use data boost. All other queries
+   * and other statements ignore this flag.
+   */
   private boolean dataBoostEnabled;
+  /**
+   * maxPartitions determines the maximum number of partitions that will be used for partitioned
+   * queries. All other statements ignore this variable.
+   */
   private int maxPartitions;
+  /**
+   * maxPartitionedParallelism determines the maximum number of threads that will be used to execute
+   * partitions in parallel when executing a partitioned query on this connection.
+   */
+  private int maxPartitionedParallelism;
+
   private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
   private RpcPriority rpcPriority = null;
   private SavepointSupport savepointSupport = SavepointSupport.FAIL_AFTER_ROLLBACK;
@@ -248,6 +271,10 @@ class ConnectionImpl implements Connection {
     this.rpcPriority = options.getRPCPriority();
     this.returnCommitStats = options.isReturnCommitStats();
     this.delayTransactionStartUntilFirstWrite = options.isDelayTransactionStartUntilFirstWrite();
+    this.dataBoostEnabled = options.isDataBoostEnabled();
+    this.alwaysUsePartitionedQueries = options.isAlwaysUsePartitionedQueries();
+    this.maxPartitions = options.getMaxPartitions();
+    this.maxPartitionedParallelism = options.getMaxPartitionedParallelism();
     this.ddlClient = createDdlClient();
     setDefaultTransactionOptions();
   }
@@ -1011,6 +1038,16 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
+  public void setAlwaysUsePartitionedQueries(boolean alwaysUsePartitionedQueries) {
+    this.alwaysUsePartitionedQueries = alwaysUsePartitionedQueries;
+  }
+
+  @Override
+  public boolean isAlwaysUsePartitionedQueries() {
+    return this.alwaysUsePartitionedQueries;
+  }
+
+  @Override
   public void setMaxPartitions(int maxPartitions) {
     this.maxPartitions = maxPartitions;
   }
@@ -1035,8 +1072,31 @@ class ConnectionImpl implements Connection {
         transaction.partitionQueryAsync(
             CallType.SYNC,
             parsedStatement,
-            partitionOptions,
+            getEffectivePartitionOptions(partitionOptions),
             mergeDataBoost(mergeQueryRequestOptions(mergeQueryStatementTag(options)))));
+  }
+
+  private PartitionOptions getEffectivePartitionOptions(
+      PartitionOptions callSpecificPartitionOptions) {
+    if (maxPartitions == 0) {
+      if (callSpecificPartitionOptions == null) {
+        return PartitionOptions.newBuilder().build();
+      } else {
+        return callSpecificPartitionOptions;
+      }
+    }
+    if (callSpecificPartitionOptions != null
+        && callSpecificPartitionOptions.getMaxPartitions() > 0L) {
+      return callSpecificPartitionOptions;
+    }
+    if (callSpecificPartitionOptions != null
+        && callSpecificPartitionOptions.getPartitionSizeBytes() > 0L) {
+      return PartitionOptions.newBuilder()
+          .setMaxPartitions(maxPartitions)
+          .setPartitionSizeBytes(callSpecificPartitionOptions.getPartitionSizeBytes())
+          .build();
+    }
+    return PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build();
   }
 
   @Override
@@ -1049,7 +1109,18 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
-  public ResultSet executePartitionedQuery(
+  public void setMaxPartitionedParallelism(int maxThreads) {
+    Preconditions.checkArgument(maxThreads >= 0, "maxThreads must be >=0");
+    this.maxPartitionedParallelism = maxThreads;
+  }
+
+  @Override
+  public int getMaxPartitionedParallelism() {
+    return this.maxPartitionedParallelism;
+  }
+
+  @Override
+  public PartitionedQueryResultSet runPartitionedQuery(
       Statement query, PartitionOptions partitionOptions, QueryOption... options) {
     List<String> partitionIds = new ArrayList<>();
     try (ResultSet partitions = partitionQuery(query, partitionOptions, options)) {
@@ -1059,7 +1130,7 @@ class ConnectionImpl implements Connection {
     }
     // parallelism=0 means 'dynamically choose based on the number of available processors and the
     // number of partitions'.
-    return new MergedResultSet(this, partitionIds, 0);
+    return new MergedResultSet(this, partitionIds, maxPartitionedParallelism);
   }
 
   /**
@@ -1379,6 +1450,10 @@ class ConnectionImpl implements Connection {
                 && (analyzeMode != AnalyzeMode.NONE || statement.hasReturningClause())),
         "Statement must either be a query or a DML mode with analyzeMode!=NONE or returning clause");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
+    if (alwaysUsePartitionedQueries && statement.getType() == StatementType.QUERY) {
+      return runPartitionedQuery(
+          statement.getStatement(), PartitionOptions.getDefaultInstance(), options);
+    }
     return get(
         transaction.executeQueryAsync(
             callType,
@@ -1396,6 +1471,9 @@ class ConnectionImpl implements Connection {
         (statement.getType() == StatementType.QUERY)
             || (statement.getType() == StatementType.UPDATE && statement.hasReturningClause()),
         "Statement must be a query or DML with returning clause.");
+    ConnectionPreconditions.checkState(
+        !(alwaysUsePartitionedQueries && statement.getType() == StatementType.QUERY),
+        "Partitioned queries cannot be executed asynchronously");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return ResultSets.toAsyncResultSet(
         transaction.executeQueryAsync(
