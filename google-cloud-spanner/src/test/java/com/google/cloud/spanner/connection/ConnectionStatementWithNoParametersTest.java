@@ -51,6 +51,10 @@ public class ConnectionStatementWithNoParametersTest {
     parser = AbstractStatementParser.getInstance(dialect);
   }
 
+  ParsedStatement parse(String sql) {
+    return parser.parse(Statement.of(sql));
+  }
+
   @Test
   public void testExecuteGetAutocommit() {
     ParsedStatement statement = parser.parse(Statement.of("show variable autocommit"));
@@ -176,7 +180,7 @@ public class ConnectionStatementWithNoParametersTest {
     for (String statement : subject.getClientSideStatement().getExampleStatements()) {
       ConnectionImpl connection = mock(ConnectionImpl.class);
       ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
-      subject.getClientSideStatement().execute(executor, parser.parse(Statement.of(statement)));
+      subject.getClientSideStatement().execute(executor, parse(statement));
       verify(connection, times(1)).beginTransaction();
     }
   }
@@ -189,7 +193,7 @@ public class ConnectionStatementWithNoParametersTest {
       ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
       when(executor.getConnection()).thenReturn(connection);
       when(executor.statementCommit()).thenCallRealMethod();
-      subject.getClientSideStatement().execute(executor, parser.parse(Statement.of(statement)));
+      subject.getClientSideStatement().execute(executor, parse(statement));
       verify(connection, times(1)).commit();
     }
   }
@@ -202,7 +206,7 @@ public class ConnectionStatementWithNoParametersTest {
       ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
       when(executor.getConnection()).thenReturn(connection);
       when(executor.statementRollback()).thenCallRealMethod();
-      subject.getClientSideStatement().execute(executor, parser.parse(Statement.of(statement)));
+      subject.getClientSideStatement().execute(executor, parse(statement));
       verify(connection, times(1)).rollback();
     }
   }
