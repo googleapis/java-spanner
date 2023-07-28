@@ -135,10 +135,10 @@ class ClientSideStatementValueConverters {
     }
   }
 
-  /** Converter from string to {@link Boolean} */
-  static class IntegerConverter implements ClientSideStatementValueConverter<Integer> {
+  /** Converter from string to a non-negative integer. */
+  static class NonNegativeIntegerConverter implements ClientSideStatementValueConverter<Integer> {
 
-    public IntegerConverter(String allowedValues) {}
+    public NonNegativeIntegerConverter(String allowedValues) {}
 
     @Override
     public Class<Integer> getParameterClass() {
@@ -150,6 +150,7 @@ class ClientSideStatementValueConverters {
       try {
         int res = Integer.parseInt(value);
         if (res < 0) {
+          // The conventions for these converters is to return null if the value is invalid.
           return null;
         }
         return res;
@@ -501,10 +502,6 @@ class ClientSideStatementValueConverters {
   }
 
   static class ExplainCommandConverter implements ClientSideStatementValueConverter<String> {
-    static final ExplainCommandConverter INSTANCE = new ExplainCommandConverter();
-
-    private ExplainCommandConverter() {}
-
     @Override
     public Class<String> getParameterClass() {
       return String.class;

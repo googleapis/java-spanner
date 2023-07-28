@@ -24,7 +24,7 @@ import org.junit.Test;
 public class ExplainCommandConverterTest {
   @Test
   public void testConvert() {
-    ExplainCommandConverter explainCommandConverter = ExplainCommandConverter.INSTANCE;
+    ExplainCommandConverter explainCommandConverter = new ExplainCommandConverter();
     assertEquals(
         "select * from table1", explainCommandConverter.convert("explain select * from table1"));
     assertEquals(

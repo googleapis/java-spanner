@@ -30,6 +30,7 @@ import java.util.regex.Matcher;
 class ClientSideStatementExplainExecutor implements ClientSideStatementExecutor {
   private final ClientSideStatementImpl statement;
   private final Method method;
+  private final ExplainCommandConverter converter;
   public static final Set<String> EXPLAIN_OPTIONS =
       ImmutableSet.of(
           "verbose", "costs", "settings", "buffers", "wal", "timing", "summary", "format");
@@ -37,9 +38,10 @@ class ClientSideStatementExplainExecutor implements ClientSideStatementExecutor 
   ClientSideStatementExplainExecutor(ClientSideStatementImpl statement) throws CompileException {
     try {
       this.statement = statement;
+      this.converter = new ExplainCommandConverter();
       this.method =
           ConnectionStatementExecutor.class.getDeclaredMethod(
-              statement.getMethodName(), ExplainCommandConverter.INSTANCE.getParameterClass());
+              statement.getMethodName(), converter.getParameterClass());
     } catch (Exception e) {
       throw new CompileException(e, statement);
     }
@@ -57,7 +59,7 @@ class ClientSideStatementExplainExecutor implements ClientSideStatementExecutor 
     if (matcher.find() && matcher.groupCount() >= 1) {
       String value = matcher.group(0);
       if (value != null) {
-        String res = ExplainCommandConverter.INSTANCE.convert(value.trim());
+        String res = converter.convert(value.trim());
         if (res != null) {
           return res;
         }
