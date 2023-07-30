@@ -136,6 +136,7 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
     private final LinkedBlockingDeque<PartitionExecutorResult> queue;
     private ResultSetMetadata metadata;
     private Struct currentRow;
+    private Throwable exception;
 
     RowProducer(Connection connection, List<String> partitions, int maxParallelism) {
       Preconditions.checkArgument(maxParallelism >= 0, "maxParallelism must be >= 0");
@@ -177,6 +178,9 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
     }
 
     boolean nextRow() throws Throwable {
+      if (this.exception != null) {
+        throw this.exception;
+      }
       while (true) {
         PartitionExecutorResult next;
         if ((next = queue.peek()) != null && !next.isFinished()) {
@@ -200,6 +204,7 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
 
     void setNextRow(PartitionExecutorResult next) throws Throwable {
       if (next.exception != null) {
+        this.exception = next.exception;
         throw next.exception;
       }
       currentRow = next.data;
