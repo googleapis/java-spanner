@@ -51,7 +51,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link com.google.cloud.spanner.SpannerImpl.GrpcResultSet}. */
+/** Unit tests for {@link com.google.cloud.spanner.AbstractResultSet.GrpcResultSet}. */
 @RunWith(JUnit4.class)
 public class GrpcResultSetTest {
 

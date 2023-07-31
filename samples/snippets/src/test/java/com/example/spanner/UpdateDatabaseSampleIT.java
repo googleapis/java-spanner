@@ -20,6 +20,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.cloud.spanner.Database;
+import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.DatabaseInfo.DatabaseField;
 import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
 import java.util.Collections;

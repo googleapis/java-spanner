@@ -564,6 +564,29 @@ public interface Connection extends AutoCloseable {
   }
 
   /**
+   * Sets whether this connection should delay the actual start of a read/write transaction until
+   * the first write operation is observed on that transaction. All read operations that are
+   * executed before the first write operation in the transaction will be executed as if the
+   * connection was in auto-commit mode. This can reduce locking, especially for transactions that
+   * execute a large number of reads before any writes, at the expense of a lower transaction
+   * isolation.
+   *
+   * <p>NOTE: This will make read/write transactions non-serializable.
+   */
+  default void setDelayTransactionStartUntilFirstWrite(
+      boolean delayTransactionStartUntilFirstWrite) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
+   * @return true if this connection delays the actual start of a read/write transaction until the
+   *     first write operation on that transaction.
+   */
+  default boolean isDelayTransactionStartUntilFirstWrite() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
    * Commits the current transaction of this connection. All mutations that have been buffered
    * during the current transaction will be written to the database.
    *

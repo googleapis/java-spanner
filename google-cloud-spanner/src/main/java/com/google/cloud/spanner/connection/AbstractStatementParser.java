@@ -57,7 +57,12 @@ public abstract class AbstractStatementParser {
               Dialect.POSTGRESQL,
               PostgreSQLStatementParser.class);
 
-  /** Get an instance of {@link AbstractStatementParser} for the specified dialect. */
+  /**
+   * Get an instance of {@link AbstractStatementParser} for the specified dialect.
+   *
+   * @param dialect
+   * @return
+   */
   public static AbstractStatementParser getInstance(Dialect dialect) {
     synchronized (lock) {
       if (!INSTANCES.containsKey(dialect)) {
@@ -227,21 +232,21 @@ public abstract class AbstractStatementParser {
           && Objects.equals(this.sqlWithoutComments, o.sqlWithoutComments);
     }
 
-    /** Returns the type of statement that was recognized by the parser. */
+    /** @return the type of statement that was recognized by the parser. */
     @InternalApi
     public StatementType getType() {
       return type;
     }
 
-    /** Returns whether the statement has a returning clause or not. * */
+    /** @return whether the statement has a returning clause or not. */
     @InternalApi
     public boolean hasReturningClause() {
       return this.returningClause;
     }
 
     /**
-     * Returns true if the statement is a query that will return a {@link
-     * com.google.cloud.spanner.ResultSet}.
+     * @return true if the statement is a query that will return a {@link
+     *     com.google.cloud.spanner.ResultSet}.
      */
     @InternalApi
     public boolean isQuery() {
@@ -259,8 +264,8 @@ public abstract class AbstractStatementParser {
     }
 
     /**
-     * Returns true if the statement is a DML statement or a client side statement that will return
-     * an update count.
+     * @return true if the statement is a DML statement or a client side statement that will return
+     *     an update count.
      */
     @InternalApi
     public boolean isUpdate() {
@@ -277,7 +282,7 @@ public abstract class AbstractStatementParser {
       return false;
     }
 
-    /** Returns true if the statement is a DDL statement. */
+    /** @return true if the statement is a DDL statement. */
     @InternalApi
     public boolean isDdl() {
       switch (type) {
@@ -293,8 +298,8 @@ public abstract class AbstractStatementParser {
     }
 
     /**
-     * Returns the {@link ClientSideStatementType} of this statement. This method may only be called
-     * on statements of type {@link StatementType#CLIENT_SIDE}.
+     * @return the {@link ClientSideStatementType} of this statement. This method may only be called
+     *     on statements of type {@link StatementType#CLIENT_SIDE}.
      */
     @InternalApi
     public ClientSideStatementType getClientSideStatementType() {
@@ -326,7 +331,7 @@ public abstract class AbstractStatementParser {
           .build();
     }
 
-    /** Returns the SQL statement with all comments removed from the SQL string. */
+    /** @return the SQL statement with all comments removed from the SQL string. */
     @InternalApi
     public String getSqlWithoutComments() {
       return sqlWithoutComments;
@@ -494,6 +499,12 @@ public abstract class AbstractStatementParser {
   @InternalApi
   abstract String removeCommentsAndTrimInternal(String sql);
 
+  /**
+   * Removes comments from and trims the given sql statement using the dialect of this parser.
+   *
+   * @param sql The sql statement to remove comments from and to trim.
+   * @return the sql statement without the comments and leading and trailing spaces.
+   */
   @InternalApi
   public String removeCommentsAndTrim(String sql) {
     return removeCommentsAndTrimInternal(sql);
@@ -531,6 +542,19 @@ public abstract class AbstractStatementParser {
   abstract ParametersInfo convertPositionalParametersToNamedParametersInternal(
       char paramChar, String sql);
 
+  /**
+   * Converts all positional parameters (?) in the given sql string into named parameters. The
+   * parameters are named @p1, @p2, etc. This method is used when converting a JDBC statement that
+   * uses positional parameters to a Cloud Spanner {@link Statement} instance that requires named
+   * parameters. The input SQL string may not contain any comments. There is an exception case if
+   * the statement starts with a GSQL comment which forces it to be interpreted as a GoogleSql
+   * statement.
+   *
+   * @param sql The sql string without comments that should be converted
+   * @return A {@link ParametersInfo} object containing a string with named parameters instead of
+   *     positional parameters and the number of parameters.
+   * @throws SpannerException If the input sql string contains an unclosed string/byte literal.
+   */
   @InternalApi
   public ParametersInfo convertPositionalParametersToNamedParameters(char paramChar, String sql) {
     return convertPositionalParametersToNamedParametersInternal(paramChar, sql);
@@ -557,6 +581,13 @@ public abstract class AbstractStatementParser {
   @InternalApi
   protected abstract boolean checkReturningClauseInternal(String sql);
 
+  /**
+   * Checks if the given SQL string contains a Returning clause. This method is used only in case of
+   * a DML statement.
+   *
+   * @param sql The sql string without comments that has to be evaluated.
+   * @return A boolean indicating whether the sql string has a Returning clause or not.
+   */
   @InternalApi
   public boolean checkReturningClause(String sql) {
     return checkReturningClauseInternal(sql);
