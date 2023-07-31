@@ -1842,7 +1842,15 @@ class SessionPool {
 
   final PoolMaintainer poolMaintainer;
   private final Clock clock;
+  /**
+   * initialReleasePosition determines where in the pool sessions are added when they are released
+   * into the pool the first time. This is always RANDOM in production, but some tests use FIRST to
+   * be able to verify the order of sessions in the pool. Using RANDOM ensures that we do not get an
+   * unbalanced session pool where all sessions belonging to one gRPC channel are added to the same
+   * region in the pool.
+   */
   private final Position initialReleasePosition;
+
   private final Object lock = new Object();
   private final Random random = new Random();
 
