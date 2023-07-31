@@ -474,7 +474,7 @@ public final class Options implements Serializable {
     if (withCommitStats) {
       b.append("withCommitStats: ").append(withCommitStats).append(' ');
     }
-    if (maxBatchingDelayMs) {
+    if (maxBatchingDelayMs != null) {
       b.append("maxBatchingDelayMs: ").append(maxBatchingDelayMs).append(' ');
     }
     if (limit != null) {
@@ -555,7 +555,7 @@ public final class Options implements Serializable {
     if (withCommitStats) {
       result = 31 * result + 1231;
     }
-    if (maxBatchingDelayMs) {
+    if (maxBatchingDelayMs != null) {
       result = 31 * result + maxBatchingDelayMs.hashCode();
     }
     if (limit != null) {

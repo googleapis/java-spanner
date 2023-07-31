@@ -36,6 +36,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Duration;
+import com.google.protobuf.Duration.Builder;
 import com.google.protobuf.Empty;
 import com.google.rpc.Code;
 import com.google.spanner.v1.CommitRequest;
@@ -332,8 +333,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         builder.setRequestOptions(requestOptionsBuilder.build());
       }
       if (options.hasMaxBatchingDelayMs()) {
-	Duration maxBatchingDelay =
-	  Duration.newBuilder.setNanos(1000000 * options.maxBatchingDelayMs());
+	Duration.Builder maxBatchingDelay =
+	    Duration.newBuilder()
+	        .setNanos(1000000 * options.maxBatchingDelayMs());
 	builder.setMaxBatchingDelay(maxBatchingDelay);
       }
       synchronized (lock) {
