@@ -185,7 +185,7 @@ class SessionImpl implements Session {
     }
     if (commitRequestOptions.hasMaxBatchingDelayMs()) {
 	Duration maxBatchingDelay =
-	  Duration.newBuilder.setNanos(1000000 * commitRequestOptions.maxBatchingDelayMs());
+	    Duration.newBuilder().setNanos(1000000 * commitRequestOptions.maxBatchingDelayMs());
 	requestBuilder.setMaxBatchingDelay(maxBatchingDelay);
     }
     Span span = tracer.spanBuilder(SpannerImpl.COMMIT).startSpan();
