@@ -312,7 +312,7 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
     int maxPartitions = 5;
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
-      try (ResultSet resultSet =
+      try (PartitionedQueryResultSet resultSet =
           connection.runPartitionedQuery(
               statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
         int rowCount = 0;
@@ -323,6 +323,35 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
         // Instead, the server returns the same query result for each partition, so the actual row
         // count will be maxPartitions * generatedRowCount.
         assertEquals(maxPartitions * generatedRowCount, rowCount);
+      }
+    }
+    assertEquals(1, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
+  }
+
+  @Test
+  public void testRunEmptyPartitionedQuery() {
+    int generatedRowCount = 0;
+    RandomResultSetGenerator generator = new RandomResultSetGenerator(generatedRowCount);
+    Statement statement =
+        Statement.newBuilder("select * from random_table where active=@active")
+            .bind("active")
+            .to(true)
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+
+    int maxPartitions = 5;
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
+      try (PartitionedQueryResultSet resultSet =
+          connection.runPartitionedQuery(
+              statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
+        assertFalse(resultSet.next());
+        assertNotNull(resultSet.getMetadata());
+        assertEquals(18, resultSet.getMetadata().getRowType().getFieldsCount());
+        assertNotNull(resultSet.getType());
+        assertEquals(18, resultSet.getType().getStructFields().size());
       }
     }
     assertEquals(1, mockSpanner.countRequestsOfType(CreateSessionRequest.class));

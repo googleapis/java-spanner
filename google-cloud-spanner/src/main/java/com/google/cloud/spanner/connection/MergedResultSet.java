@@ -23,6 +23,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.Type;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -61,17 +62,25 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
       try (ResultSet resultSet = connection.runPartition(partitionId)) {
         boolean first = true;
         while (resultSet.next()) {
+          Struct row = resultSet.getCurrentRowAsStruct();
           if (first) {
             queue.put(
                 PartitionExecutorResult.dataAndMetadata(
-                    resultSet.getCurrentRowAsStruct(), resultSet.getMetadata()));
+                    row, resultSet.getType(), resultSet.getMetadata()));
             first = false;
           } else {
-            queue.put(PartitionExecutorResult.data(resultSet.getCurrentRowAsStruct()));
+            queue.put(PartitionExecutorResult.data(row));
           }
           if (shouldStop.get()) {
             break;
           }
+        }
+        if (first) {
+          // Special case: The result set did not return any rows. Push the metadata to the merged
+          // result set.
+          queue.put(
+              PartitionExecutorResult.typeAndMetadata(
+                  resultSet.getType(), resultSet.getMetadata()));
         }
       } catch (Throwable exception) {
         putWithoutInterruptPropagation(PartitionExecutorResult.exception(exception));
@@ -96,32 +105,47 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
   static class PartitionExecutorResult {
     private final Struct data;
     private final Throwable exception;
+    private final Type type;
     private final ResultSetMetadata metadata;
 
     static PartitionExecutorResult data(Struct data) {
-      return new PartitionExecutorResult(data, null, null);
+      return new PartitionExecutorResult(data, null, null, null);
     }
 
-    static PartitionExecutorResult dataAndMetadata(Struct data, ResultSetMetadata metadata) {
-      return new PartitionExecutorResult(data, metadata, null);
+    static PartitionExecutorResult typeAndMetadata(Type type, ResultSetMetadata metadata) {
+      return new PartitionExecutorResult(null, type, metadata, null);
+    }
+
+    static PartitionExecutorResult dataAndMetadata(
+        Struct data, Type type, ResultSetMetadata metadata) {
+      return new PartitionExecutorResult(data, type, metadata, null);
     }
 
     static PartitionExecutorResult exception(Throwable exception) {
-      return new PartitionExecutorResult(null, null, exception);
+      return new PartitionExecutorResult(null, null, null, exception);
     }
 
     static PartitionExecutorResult finished() {
-      return new PartitionExecutorResult(null, null, null);
+      return new PartitionExecutorResult(null, null, null, null);
     }
 
-    private PartitionExecutorResult(Struct data, ResultSetMetadata metadata, Throwable exception) {
+    private PartitionExecutorResult(
+        Struct data, Type type, ResultSetMetadata metadata, Throwable exception) {
       this.data = data;
+      this.type = type;
       this.metadata = metadata;
       this.exception = exception;
     }
 
+    boolean hasData() {
+      return this.data != null;
+    }
+
     boolean isFinished() {
-      return this.data == null && this.metadata == null && this.exception == null;
+      return this.data == null
+          && this.type == null
+          && this.metadata == null
+          && this.exception == null;
     }
   }
 
@@ -135,6 +159,7 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
     private final AtomicInteger finishedCounter;
     private final LinkedBlockingDeque<PartitionExecutorResult> queue;
     private ResultSetMetadata metadata;
+    private Type type;
     private Struct currentRow;
     private Throwable exception;
 
@@ -185,8 +210,7 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
         PartitionExecutorResult next;
         if ((next = queue.peek()) != null && !next.isFinished()) {
           // There's a valid result available. Return this quickly.
-          setNextRow(queue.remove());
-          return true;
+          return setNextRow(queue.remove());
         }
         // Block until the next row is available.
         next = queue.take();
@@ -196,13 +220,12 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
             return false;
           }
         } else {
-          setNextRow(next);
-          return true;
+          return setNextRow(next);
         }
       }
     }
 
-    void setNextRow(PartitionExecutorResult next) throws Throwable {
+    boolean setNextRow(PartitionExecutorResult next) throws Throwable {
       if (next.exception != null) {
         this.exception = next.exception;
         throw next.exception;
@@ -211,6 +234,10 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
       if (this.metadata == null && next.metadata != null) {
         this.metadata = next.metadata;
       }
+      if (this.type == null && next.type != null) {
+        this.type = next.type;
+      }
+      return next.hasData();
     }
 
     @Override
@@ -222,6 +249,11 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
     public ResultSetMetadata getMetadata() {
       checkState(metadata != null, "next() call required");
       return metadata;
+    }
+
+    public Type getType() {
+      checkState(type != null, "next() call required");
+      return type;
     }
   }
 
@@ -277,6 +309,12 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
   public ResultSetMetadata getMetadata() {
     checkValidState();
     return rowProducer.getMetadata();
+  }
+
+  @Override
+  public Type getType() {
+    checkValidState();
+    return rowProducer.getType();
   }
 
   @Override
