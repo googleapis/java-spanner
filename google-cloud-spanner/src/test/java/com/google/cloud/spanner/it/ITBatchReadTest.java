@@ -341,7 +341,6 @@ public class ITBatchReadTest {
     try (Connection connection = options.getConnection()) {
       // Use dynamic parallelism.
       connection.setMaxPartitionedParallelism(0);
-      connection.setReadOnlyStaleness(getRandomBound());
 
       BitSet seenRows = new BitSet(numRows);
       try (PartitionedQueryResultSet resultSet =
