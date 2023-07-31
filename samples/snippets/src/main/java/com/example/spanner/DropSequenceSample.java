@@ -51,7 +51,8 @@ public class DropSequenceSample {
           .get(5, TimeUnit.MINUTES);
 
       System.out.println(
-          "Altered Customers table to drop DEFAULT from CustomerId column and dropped the Seq sequence");
+          "Altered Customers table to drop DEFAULT from CustomerId column "
+              + "and dropped the Seq sequence");
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
       throw SpannerExceptionFactory.asSpannerException(e.getCause());

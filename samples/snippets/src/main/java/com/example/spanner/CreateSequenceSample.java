@@ -51,12 +51,15 @@ public class CreateSequenceSample {
               databaseId,
               ImmutableList.of(
                   "CREATE SEQUENCE Seq OPTIONS (sequence_kind = 'bit_reversed_positive')",
-                  "CREATE TABLE Customers (CustomerId INT64 DEFAULT (GET_NEXT_SEQUENCE_VALUE(SEQUENCE Seq)), CustomerName STRING(1024)) PRIMARY KEY (CustomerId)"),
+                  "CREATE TABLE Customers (CustomerId INT64 DEFAULT "
+                      + "(GET_NEXT_SEQUENCE_VALUE(SEQUENCE Seq)), CustomerName STRING(1024)) "
+                      + "PRIMARY KEY (CustomerId)"),
               null)
           .get(5, TimeUnit.MINUTES);
 
       System.out.println(
-          "Created Seq sequence and Customers table, where the key column CustomerId uses the sequence as a default value");
+          "Created Seq sequence and Customers table, where the key column CustomerId "
+              + "uses the sequence as a default value");
 
       final DatabaseClient dbClient =
           spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
@@ -69,7 +72,8 @@ public class CreateSequenceSample {
                     try (ResultSet rs =
                         transaction.executeQuery(
                             Statement.of(
-                                "INSERT INTO Customers (CustomerName) VALUES ('Alice'), ('David'), ('Marc') THEN RETURN CustomerId"))) {
+                                "INSERT INTO Customers (CustomerName) VALUES "
+                                    + "('Alice'), ('David'), ('Marc') THEN RETURN CustomerId"))) {
                       while (rs.next()) {
                         System.out.printf(
                             "Inserted customer record with CustomerId: %d\n", rs.getLong(0));

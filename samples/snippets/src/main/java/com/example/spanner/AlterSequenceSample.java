@@ -50,7 +50,8 @@ public class AlterSequenceSample {
               instanceId,
               databaseId,
               ImmutableList.of(
-                  "ALTER SEQUENCE Seq SET OPTIONS (skip_range_min = 1000, skip_range_max = 5000000)"),
+                  "ALTER SEQUENCE Seq SET OPTIONS "
+                      + "(skip_range_min = 1000, skip_range_max = 5000000)"),
               null)
           .get(5, TimeUnit.MINUTES);
 
@@ -68,7 +69,9 @@ public class AlterSequenceSample {
                     try (ResultSet rs =
                         transaction.executeQuery(
                             Statement.of(
-                                "INSERT INTO Customers (CustomerName) VALUES ('Lea'), ('Catalina'), ('Smith') THEN RETURN CustomerId"))) {
+                                "INSERT INTO Customers (CustomerName) VALUES "
+                                    + "('Lea'), ('Catalina'), ('Smith') "
+                                    + "THEN RETURN CustomerId"))) {
                       while (rs.next()) {
                         System.out.printf(
                             "Inserted customer record with CustomerId: %d\n", rs.getLong(0));

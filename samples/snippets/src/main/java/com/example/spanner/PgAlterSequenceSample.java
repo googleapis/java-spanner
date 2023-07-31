@@ -63,7 +63,8 @@ public class PgAlterSequenceSample {
                     try (ResultSet rs =
                         transaction.executeQuery(
                             Statement.of(
-                                "INSERT INTO Customers (CustomerName) VALUES ('Lea'), ('Catalina'), ('Smith') RETURNING CustomerId"))) {
+                                "INSERT INTO Customers (CustomerName) VALUES "
+                                    + "('Lea'), ('Catalina'), ('Smith') RETURNING CustomerId"))) {
                       while (rs.next()) {
                         System.out.printf(
                             "Inserted customer record with CustomerId: %d\n", rs.getLong(0));

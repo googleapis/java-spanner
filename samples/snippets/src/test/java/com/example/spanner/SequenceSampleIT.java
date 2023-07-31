@@ -52,7 +52,8 @@ public class SequenceSampleIT extends SampleTestBase {
                     projectId, instanceId, databaseId.getDatabase()));
     assertTrue(
         out.contains(
-            "Created Seq sequence and Customers table, where the key column CustomerId uses the sequence as a default value"));
+            "Created Seq sequence and Customers table, where the key column "
+                + "CustomerId uses the sequence as a default value"));
     assertEquals(out.split("Inserted customer record with CustomerId", -1).length - 1, 3);
     assertTrue(out.contains("Number of customer records inserted is: 3"));
   }
@@ -76,6 +77,7 @@ public class SequenceSampleIT extends SampleTestBase {
             () -> DropSequenceSample.dropSequence(projectId, instanceId, databaseId.getDatabase()));
     assertTrue(
         out.contains(
-            "Altered Customers table to drop DEFAULT from CustomerId column and dropped the Seq sequence"));
+            "Altered Customers table to drop DEFAULT from "
+                + "CustomerId column and dropped the Seq sequence"));
   }
 }

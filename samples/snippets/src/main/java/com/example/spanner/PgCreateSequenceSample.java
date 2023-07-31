@@ -51,12 +51,14 @@ public class PgCreateSequenceSample {
               databaseId,
               ImmutableList.of(
                   "CREATE SEQUENCE Seq BIT_REVERSED_POSITIVE;",
-                  "CREATE TABLE Customers (CustomerId BIGINT DEFAULT nextval('Seq'), CustomerName character varying(1024), PRIMARY KEY (CustomerId))"),
+                  "CREATE TABLE Customers (CustomerId BIGINT DEFAULT nextval('Seq'), "
+                      + "CustomerName character varying(1024), PRIMARY KEY (CustomerId))"),
               null)
           .get(5, TimeUnit.MINUTES);
 
       System.out.println(
-          "Created Seq sequence and Customers table, where its key column CustomerId uses the sequence as a default value");
+          "Created Seq sequence and Customers table, where its key column "
+              + "CustomerId uses the sequence as a default value");
 
       final DatabaseClient dbClient =
           spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
@@ -69,7 +71,8 @@ public class PgCreateSequenceSample {
                     try (ResultSet rs =
                         transaction.executeQuery(
                             Statement.of(
-                                "INSERT INTO Customers (CustomerName) VALUES ('Alice'), ('David'), ('Marc') RETURNING CustomerId"))) {
+                                "INSERT INTO Customers (CustomerName) VALUES "
+                                    + "('Alice'), ('David'), ('Marc') RETURNING CustomerId"))) {
                       while (rs.next()) {
                         System.out.printf(
                             "Inserted customer record with CustomerId: %d\n", rs.getLong(0));
