@@ -20,6 +20,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.spanner.BackupId;
@@ -149,6 +150,9 @@ public interface SpannerRpc extends ServiceRpc {
 
   /** Handle for cancellation of a streaming read or query call. */
   interface StreamingCall {
+
+    /** Returns the {@link ApiCallContext} that is used for this streaming call. */
+    ApiCallContext getCallContext();
 
     /**
      * Requests more messages from the stream. We disable the auto flow control mechanism in grpc,

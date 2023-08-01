@@ -359,4 +359,11 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>boolean isDelayTransactionStartUntilFirstWrite()</method>
   </difference>
+
+  <!-- (Internal change, use stream timeout) -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc$StreamingCall</className>
+    <method>com.google.api.gax.rpc.ApiCallContext getCallContext()</method>
+  </difference>
 </differences>

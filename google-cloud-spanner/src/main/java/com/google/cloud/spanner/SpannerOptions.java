@@ -700,7 +700,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private CloseableExecutorProvider asyncExecutorProvider;
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
-    private boolean leaderAwareRoutingEnabled = true;
+    private boolean leaderAwareRoutingEnabled = false;
 
     private Builder() {
       // Manually set retry and polling settings that work.
