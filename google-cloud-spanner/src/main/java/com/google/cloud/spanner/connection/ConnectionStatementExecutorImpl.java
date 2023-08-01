@@ -521,15 +521,14 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   public StatementResult statementShowAlwaysUsePartitionedQueries() {
     return resultSet(
         String.format("%sALWAYS_USE_PARTITIONED_QUERIES", getNamespace(connection.getDialect())),
-        getConnection().isAlwaysUsePartitionedQueries(),
+        getConnection().isAutoPartitionMode(),
         SHOW_ALWAYS_USE_PARTITIONED_QUERIES);
   }
 
   @Override
   public StatementResult statementSetAlwaysUsePartitionedQueries(
       Boolean alwaysUsePartitionedQueries) {
-    getConnection()
-        .setAlwaysUsePartitionedQueries(Preconditions.checkNotNull(alwaysUsePartitionedQueries));
+    getConnection().setAutoPartitionMode(Preconditions.checkNotNull(alwaysUsePartitionedQueries));
     return noResult(SET_ALWAYS_USE_PARTITIONED_QUERIES);
   }
 

@@ -1051,10 +1051,10 @@ public interface Connection extends AutoCloseable {
    * flag in combination with {@link #setDataBoostEnabled(boolean)} to force all queries on this
    * connection to use data boost.
    */
-  void setAlwaysUsePartitionedQueries(boolean alwaysUsePartitionedQueries);
+  void setAutoPartitionMode(boolean autoPartitionMode);
 
   /** Returns whether this connection will execute all queries as partitioned queries. */
-  boolean isAlwaysUsePartitionedQueries();
+  boolean isAutoPartitionMode();
 
   /**
    * Sets the maximum number of partitions that should be included as a hint to Cloud Spanner when

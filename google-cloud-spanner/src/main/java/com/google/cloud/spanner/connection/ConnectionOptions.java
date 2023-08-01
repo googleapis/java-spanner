@@ -181,7 +181,7 @@ public class ConnectionOptions {
   private static final boolean DEFAULT_TRACK_SESSION_LEAKS = true;
   private static final boolean DEFAULT_TRACK_CONNECTION_LEAKS = true;
   private static final boolean DEFAULT_DATA_BOOST_ENABLED = false;
-  private static final boolean DEFAULT_ALWAYS_USE_PARTITIONED_QUERIES = false;
+  private static final boolean DEFAULT_AUTO_PARTITION_MODE = false;
   private static final int DEFAULT_MAX_PARTITIONS = 0;
   private static final int DEFAULT_MAX_PARTITIONED_PARALLELISM = 1;
 
@@ -239,8 +239,7 @@ public class ConnectionOptions {
   public static final String TRACK_CONNECTION_LEAKS_PROPERTY_NAME = "trackConnectionLeaks";
 
   public static final String DATA_BOOST_ENABLED_PROPERTY_NAME = "dataBoostEnabled";
-  public static final String ALWAYS_USE_PARTITIONED_QUERIES_PROPERTY_NAME =
-      "alwaysUsePartitionedQueries";
+  public static final String AUTO_PARTITION_MODE_PROPERTY_NAME = "autoPartitionMode";
   public static final String MAX_PARTITIONS_PROPERTY_NAME = "maxPartitions";
   public static final String MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME =
       "maxPartitionedParallelism";
@@ -347,11 +346,11 @@ public class ConnectionOptions {
                           + "This setting is only used for partitioned queries and is ignored by all other statements.",
                       DEFAULT_DATA_BOOST_ENABLED),
                   ConnectionProperty.createBooleanProperty(
-                      ALWAYS_USE_PARTITIONED_QUERIES_PROPERTY_NAME,
+                      AUTO_PARTITION_MODE_PROPERTY_NAME,
                       "Execute all queries on this connection as partitioned queries. "
                           + "Executing a query that cannot be partitioned will fail. "
                           + "Executing a query in a read/write transaction will also fail.",
-                      DEFAULT_ALWAYS_USE_PARTITIONED_QUERIES),
+                      DEFAULT_AUTO_PARTITION_MODE),
                   ConnectionProperty.createIntProperty(
                       MAX_PARTITIONS_PROPERTY_NAME,
                       "The max partitions hint value to use for partitioned queries. "
@@ -624,7 +623,7 @@ public class ConnectionOptions {
   private final boolean trackConnectionLeaks;
 
   private final boolean dataBoostEnabled;
-  private final boolean alwaysUsePartitionedQueries;
+  private final boolean autoPartitionMode;
   private final int maxPartitions;
   private final int maxPartitionedParallelism;
 
@@ -676,7 +675,7 @@ public class ConnectionOptions {
     this.trackConnectionLeaks = parseTrackConnectionLeaks(this.uri);
 
     this.dataBoostEnabled = parseDataBoostEnabled(this.uri);
-    this.alwaysUsePartitionedQueries = parseAlwaysUsePartitionedQueries(this.uri);
+    this.autoPartitionMode = parseAutoPartitionMode(this.uri);
     this.maxPartitions = parseMaxPartitions(this.uri);
     this.maxPartitionedParallelism = parseMaxPartitionedParallelism(this.uri);
 
@@ -957,9 +956,9 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
-  static boolean parseAlwaysUsePartitionedQueries(String uri) {
-    String value = parseUriProperty(uri, ALWAYS_USE_PARTITIONED_QUERIES_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_ALWAYS_USE_PARTITIONED_QUERIES;
+  static boolean parseAutoPartitionMode(String uri) {
+    String value = parseUriProperty(uri, AUTO_PARTITION_MODE_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_AUTO_PARTITION_MODE;
   }
 
   @VisibleForTesting
@@ -1257,8 +1256,8 @@ public class ConnectionOptions {
     return this.dataBoostEnabled;
   }
 
-  boolean isAlwaysUsePartitionedQueries() {
-    return this.alwaysUsePartitionedQueries;
+  boolean isAutoPartitionMode() {
+    return this.autoPartitionMode;
   }
 
   int getMaxPartitions() {

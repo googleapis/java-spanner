@@ -219,14 +219,14 @@ class ConnectionImpl implements Connection {
   private AutocommitDmlMode autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
   private TimestampBound readOnlyStaleness = TimestampBound.strong();
   /**
-   * alwaysUsePartitionedQueries will force this connection to execute all queries as partitioned
-   * queries. If a query cannot be executed as a partitioned query, for example if it is not
-   * partitionable, then the query will fail. This mode is intended for integrations with frameworks
-   * that should always use partitioned queries, and that do not support executing custom SQL
-   * statements. This setting can be used in combination with the dataBoostEnabled flag to force all
-   * queries to use data boost.
+   * autoPartitionMode will force this connection to execute all queries as partitioned queries. If
+   * a query cannot be executed as a partitioned query, for example if it is not partitionable, then
+   * the query will fail. This mode is intended for integrations with frameworks that should always
+   * use partitioned queries, and that do not support executing custom SQL statements. This setting
+   * can be used in combination with the dataBoostEnabled flag to force all queries to use data
+   * boost.
    */
-  private boolean alwaysUsePartitionedQueries;
+  private boolean autoPartitionMode;
   /**
    * dataBoostEnabled=true will cause all partitionedQueries to use data boost. All other queries
    * and other statements ignore this flag.
@@ -272,7 +272,7 @@ class ConnectionImpl implements Connection {
     this.returnCommitStats = options.isReturnCommitStats();
     this.delayTransactionStartUntilFirstWrite = options.isDelayTransactionStartUntilFirstWrite();
     this.dataBoostEnabled = options.isDataBoostEnabled();
-    this.alwaysUsePartitionedQueries = options.isAlwaysUsePartitionedQueries();
+    this.autoPartitionMode = options.isAutoPartitionMode();
     this.maxPartitions = options.getMaxPartitions();
     this.maxPartitionedParallelism = options.getMaxPartitionedParallelism();
     this.ddlClient = createDdlClient();
@@ -1038,13 +1038,13 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
-  public void setAlwaysUsePartitionedQueries(boolean alwaysUsePartitionedQueries) {
-    this.alwaysUsePartitionedQueries = alwaysUsePartitionedQueries;
+  public void setAutoPartitionMode(boolean autoPartitionMode) {
+    this.autoPartitionMode = autoPartitionMode;
   }
 
   @Override
-  public boolean isAlwaysUsePartitionedQueries() {
-    return this.alwaysUsePartitionedQueries;
+  public boolean isAutoPartitionMode() {
+    return this.autoPartitionMode;
   }
 
   @Override
@@ -1450,7 +1450,7 @@ class ConnectionImpl implements Connection {
                 && (analyzeMode != AnalyzeMode.NONE || statement.hasReturningClause())),
         "Statement must either be a query or a DML mode with analyzeMode!=NONE or returning clause");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    if (alwaysUsePartitionedQueries && statement.getType() == StatementType.QUERY) {
+    if (autoPartitionMode && statement.getType() == StatementType.QUERY) {
       return runPartitionedQuery(
           statement.getStatement(), PartitionOptions.getDefaultInstance(), options);
     }
@@ -1472,7 +1472,7 @@ class ConnectionImpl implements Connection {
             || (statement.getType() == StatementType.UPDATE && statement.hasReturningClause()),
         "Statement must be a query or DML with returning clause.");
     ConnectionPreconditions.checkState(
-        !(alwaysUsePartitionedQueries && statement.getType() == StatementType.QUERY),
+        !(autoPartitionMode && statement.getType() == StatementType.QUERY),
         "Partitioned queries cannot be executed asynchronously");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return ResultSets.toAsyncResultSet(

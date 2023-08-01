@@ -557,25 +557,25 @@ public class ConnectionOptionsTest {
   }
 
   @Test
-  public void testAlwaysUsePartitionedQueries() {
+  public void testAutoPartitionMode() {
     ConnectionOptions options =
         ConnectionOptions.newBuilder()
             .setUri(
-                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?alwaysUsePartitionedQueries=true")
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?autoPartitionMode=true")
             .setCredentialsUrl(FILE_TEST_PATH)
             .build();
-    assertTrue(options.isAlwaysUsePartitionedQueries());
+    assertTrue(options.isAutoPartitionMode());
   }
 
   @Test
-  public void testAlwaysUsePartitionedQueriesDefault() {
+  public void testAutoPartitionModeDefault() {
     ConnectionOptions options =
         ConnectionOptions.newBuilder()
             .setUri(
                 "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
             .setCredentialsUrl(FILE_TEST_PATH)
             .build();
-    assertFalse(options.isAlwaysUsePartitionedQueries());
+    assertFalse(options.isAutoPartitionMode());
   }
 
   @Test
