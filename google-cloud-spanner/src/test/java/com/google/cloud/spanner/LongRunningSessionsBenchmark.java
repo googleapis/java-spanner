@@ -202,7 +202,8 @@ public class LongRunningSessionsBenchmark {
     }
     Futures.allAsList(futures).get();
     service.shutdown();
-    assertThat(pool.numLeakedSessionsRemoved()).isEqualTo(0); // no sessions should be cleaned up in case of partitioned updates.
+    assertThat(pool.numLeakedSessionsRemoved())
+        .isEqualTo(0); // no sessions should be cleaned up in case of partitioned updates.
   }
 
   /** Measures the time needed to execute a burst of read and write requests. */
@@ -249,7 +250,7 @@ public class LongRunningSessionsBenchmark {
   }
 
   private void randomWait() throws InterruptedException {
-    if(RND.nextBoolean()) {
+    if (RND.nextBoolean()) {
       Thread.sleep(RND.nextInt(LONG_HOLD_SESSION_TIME));
     } else {
       Thread.sleep(RND.nextInt(HOLD_SESSION_TIME));
@@ -257,23 +258,28 @@ public class LongRunningSessionsBenchmark {
   }
 
   private void randomWaitForMockServer(final BenchmarkState server) {
-    if(RND.nextBoolean()) {
-      server.mockServer.getMockSpanner().setExecuteStreamingSqlExecutionTime(
-          SimulatedExecutionTime.ofMinimumAndRandomTime(
-              LONG_HOLD_SESSION_TIME, 0));
+    if (RND.nextBoolean()) {
+      server
+          .mockServer
+          .getMockSpanner()
+          .setExecuteStreamingSqlExecutionTime(
+              SimulatedExecutionTime.ofMinimumAndRandomTime(LONG_HOLD_SESSION_TIME, 0));
     } else {
-      server.mockServer.getMockSpanner().setExecuteStreamingSqlExecutionTime(
-          SimulatedExecutionTime.ofMinimumAndRandomTime(
-              HOLD_SESSION_TIME, 0));
+      server
+          .mockServer
+          .getMockSpanner()
+          .setExecuteStreamingSqlExecutionTime(
+              SimulatedExecutionTime.ofMinimumAndRandomTime(HOLD_SESSION_TIME, 0));
     }
   }
 
   private void assertNumLeakedSessionsRemoved(final BenchmarkState server, final SessionPool pool) {
     final SessionPoolOptions sessionPoolOptions =
         server.spanner.getOptions().getSessionPoolOptions();
-    if(sessionPoolOptions.warnAndCloseInactiveTransactions() || sessionPoolOptions.closeInactiveTransactions()) {
+    if (sessionPoolOptions.warnAndCloseInactiveTransactions()
+        || sessionPoolOptions.closeInactiveTransactions()) {
       assertThat(pool.numLeakedSessionsRemoved()).isGreaterThan(0);
-    } else if(sessionPoolOptions.warnInactiveTransactions()) {
+    } else if (sessionPoolOptions.warnInactiveTransactions()) {
       assertThat(pool.numLeakedSessionsRemoved()).isEqualTo(0);
     }
   }

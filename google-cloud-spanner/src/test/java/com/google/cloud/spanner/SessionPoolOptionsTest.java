@@ -129,7 +129,7 @@ public class SessionPoolOptionsTest {
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         sessionPoolOptions.getInactiveTransactionRemovalOptions();
 
-    assertTrue(sessionPoolOptions.warnInactiveTransactions());
+    assertFalse(sessionPoolOptions.warnInactiveTransactions());
     assertFalse(sessionPoolOptions.warnAndCloseInactiveTransactions());
     assertFalse(sessionPoolOptions.closeInactiveTransactions());
     assertEquals(0.95, inactiveTransactionRemovalOptions.getUsedSessionsRatioThreshold(), 0.0);

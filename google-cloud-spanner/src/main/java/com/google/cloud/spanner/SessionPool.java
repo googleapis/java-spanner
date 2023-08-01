@@ -1891,11 +1891,23 @@ class SessionPool {
                     > 0) {
               if ((options.warnInactiveTransactions() || options.warnAndCloseInactiveTransactions())
                   && !session.isLeakedExceptionLogged) {
-                logger.log(
-                    Level.WARNING,
-                    String.format("Removing long running session => %s", session.getName()),
-                    sessionFuture.leakedException);
-                session.isLeakedExceptionLogged = true;
+                if (options.warnAndCloseInactiveTransactions()) {
+                  logger.log(
+                      Level.WARNING,
+                      String.format("Removing long-running session => %s", session.getName()),
+                      sessionFuture.leakedException);
+                  session.isLeakedExceptionLogged = true;
+                } else if (options.warnInactiveTransactions()) {
+                  logger.log(
+                      Level.WARNING,
+                      String.format(
+                          "Detected long-running session => %s. To automatically remove "
+                              + "long-running sessions, set SessionOption ActionOnInactiveTransaction "
+                              + "to WARN_AND_CLOSE by invoking setWarnAndCloseIfInactiveTransactions() method.",
+                          session.getName()),
+                      sessionFuture.leakedException);
+                  session.isLeakedExceptionLogged = true;
+                }
               }
               if ((options.closeInactiveTransactions()
                       || options.warnAndCloseInactiveTransactions())
