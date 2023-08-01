@@ -210,7 +210,9 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
         PartitionExecutorResult next;
         if ((next = queue.peek()) != null && !next.isFinished()) {
           // There's a valid result available. Return this quickly.
-          return setNextRow(queue.remove());
+          if (setNextRow(queue.remove())) {
+            return true;
+          }
         }
         // Block until the next row is available.
         next = queue.take();
@@ -220,7 +222,9 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
             return false;
           }
         } else {
-          return setNextRow(next);
+          if (setNextRow(next)) {
+            return true;
+          }
         }
       }
     }
