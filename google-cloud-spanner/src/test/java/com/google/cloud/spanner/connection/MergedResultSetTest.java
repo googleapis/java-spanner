@@ -91,8 +91,8 @@ public class MergedResultSetTest {
   @Parameters(name = "numPartitions = {0}, maxRowsPerPartition = {1}, maxParallelism = {2}")
   public static Collection<Object[]> parameters() {
     List<Object[]> params = new ArrayList<>();
-    for (int numPartitions : new int[] {1, 2, 5, 8}) {
-      for (int maxRowsPerPartition : new int[] {1, 5, 10, 20}) {
+    for (int numPartitions : new int[] {0, 1, 2, 5, 8}) {
+      for (int maxRowsPerPartition : new int[] {0, 1, 5, 10, 100}) {
         for (int maxParallelism : new int[] {0, 1, 2, 4, 8}) {
           params.add(new Object[] {numPartitions, maxRowsPerPartition, maxParallelism});
         }
@@ -110,12 +110,12 @@ public class MergedResultSetTest {
     for (int index = 0; index < numPartitions; index++) {
       String partition = String.valueOf(index);
       partitions.add(partition);
-      int numRows = random.nextInt(maxRowsPerPartition) + 1;
+      int numRows = maxRowsPerPartition == 0 ? 0 : random.nextInt(maxRowsPerPartition) + 1;
       RandomResultSetGenerator generator = new RandomResultSetGenerator(numRows);
       com.google.spanner.v1.ResultSet proto = generator.generate();
       if (withErrors) {
         // Add a random error somewhere in the result.
-        int errorIndex = random.nextInt(numRows);
+        int errorIndex = numRows == 0 ? 0 : random.nextInt(numRows);
         minErrorIndex = Math.min(minErrorIndex, errorIndex);
         when(connection.runPartition(partition))
             .thenReturn(new ResultSetWithError(ResultSetsHelper.fromProto(proto), errorIndex));
@@ -158,22 +158,24 @@ public class MergedResultSetTest {
     MockedResults results = setupResults(true);
     try (MergedResultSet resultSet =
         new MergedResultSet(results.connection, results.partitions, maxParallelism)) {
-      AtomicInteger rowCount = new AtomicInteger();
-      SpannerException exception =
-          assertThrows(
-              SpannerException.class,
-              () -> {
-                while (resultSet.next()) {
-                  rowCount.getAndIncrement();
-                }
-              });
-      assertEquals(ErrorCode.INTERNAL, exception.getErrorCode());
-      assertTrue(exception.getMessage(), exception.getMessage().contains("test error"));
-      // The result set should continue to throw the same error if we continue to call next().
-      SpannerException nextException = assertThrows(SpannerException.class, resultSet::next);
-      assertEquals(exception, nextException);
-      // We should see at least minErrorIndex rows before an error.
-      assertTrue(rowCount.get() >= results.minErrorIndex);
+      if (numPartitions > 0) {
+        AtomicInteger rowCount = new AtomicInteger();
+        SpannerException exception =
+            assertThrows(
+                SpannerException.class,
+                () -> {
+                  while (resultSet.next()) {
+                    rowCount.getAndIncrement();
+                  }
+                });
+        assertEquals(ErrorCode.INTERNAL, exception.getErrorCode());
+        assertTrue(exception.getMessage(), exception.getMessage().contains("test error"));
+        // The result set should continue to throw the same error if we continue to call next().
+        SpannerException nextException = assertThrows(SpannerException.class, resultSet::next);
+        assertEquals(exception, nextException);
+        // We should see at least minErrorIndex rows before an error.
+        assertTrue(rowCount.get() >= results.minErrorIndex);
+      }
     }
   }
 

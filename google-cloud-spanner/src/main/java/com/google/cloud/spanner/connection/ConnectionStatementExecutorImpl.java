@@ -22,9 +22,9 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.COMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.ROLLBACK;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.RUN_BATCH;
-import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_ALWAYS_USE_PARTITIONED_QUERIES;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DEFAULT_TRANSACTION_ISOLATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
@@ -42,9 +42,9 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_STATEMENT_TIMEOUT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_TRANSACTION_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_TRANSACTION_TAG;
-import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_ALWAYS_USE_PARTITIONED_QUERIES;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_RESPONSE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_TIMESTAMP;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DATA_BOOST_ENABLED;
@@ -518,18 +518,17 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
-  public StatementResult statementShowAlwaysUsePartitionedQueries() {
+  public StatementResult statementShowAutoPartitionMode() {
     return resultSet(
-        String.format("%sALWAYS_USE_PARTITIONED_QUERIES", getNamespace(connection.getDialect())),
+        String.format("%sAUTO_PARTITION_MODE", getNamespace(connection.getDialect())),
         getConnection().isAutoPartitionMode(),
-        SHOW_ALWAYS_USE_PARTITIONED_QUERIES);
+        SHOW_AUTO_PARTITION_MODE);
   }
 
   @Override
-  public StatementResult statementSetAlwaysUsePartitionedQueries(
-      Boolean alwaysUsePartitionedQueries) {
-    getConnection().setAutoPartitionMode(Preconditions.checkNotNull(alwaysUsePartitionedQueries));
-    return noResult(SET_ALWAYS_USE_PARTITIONED_QUERIES);
+  public StatementResult statementSetAutoPartitionMode(Boolean autoPartitionMode) {
+    getConnection().setAutoPartitionMode(Preconditions.checkNotNull(autoPartitionMode));
+    return noResult(SET_AUTO_PARTITION_MODE);
   }
 
   @Override

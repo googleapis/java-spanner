@@ -527,24 +527,24 @@
 		}
 	},
 	{
-		"name": "SHOW VARIABLE ALWAYS_USE_PARTITIONED_QUERIES",
+		"name": "SHOW VARIABLE AUTO_PARTITION_MODE",
 		"executorName": "ClientSideStatementNoParamExecutor",
 		"resultType": "RESULT_SET",
-		"statementType": "SHOW_ALWAYS_USE_PARTITIONED_QUERIES",
-		"regex": "(?is)\\A\\s*show\\s+variable\\s+always_use_partitioned_queries\\s*\\z",
-		"method": "statementShowAlwaysUsePartitionedQueries",
-		"exampleStatements": ["show variable always_use_partitioned_queries"]
+		"statementType": "SHOW_AUTO_PARTITION_MODE",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+auto_partition_mode\\s*\\z",
+		"method": "statementShowAutoPartitionMode",
+		"exampleStatements": ["show variable auto_partition_mode"]
 	},
 	{
-		"name": "SET ALWAYS_USE_PARTITIONED_QUERIES = TRUE|FALSE",
+		"name": "SET AUTO_PARTITION_MODE = TRUE|FALSE",
 		"executorName": "ClientSideStatementSetExecutor",
 		"resultType": "NO_RESULT",
-		"statementType": "SET_ALWAYS_USE_PARTITIONED_QUERIES",
-		"regex": "(?is)\\A\\s*set\\s+always_use_partitioned_queries\\s*(?:=)\\s*(.*)\\z",
-		"method": "statementSetAlwaysUsePartitionedQueries",
-		"exampleStatements": ["set always_use_partitioned_queries = true", "set always_use_partitioned_queries = false"],
+		"statementType": "SET_AUTO_PARTITION_MODE",
+		"regex": "(?is)\\A\\s*set\\s+auto_partition_mode\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetAutoPartitionMode",
+		"exampleStatements": ["set auto_partition_mode = true", "set auto_partition_mode = false"],
 		"setStatement": {
-			"propertyName": "ALWAYS_USE_PARTITIONED_QUERIES",
+			"propertyName": "AUTO_PARTITION_MODE",
 			"separator": "=",
 			"allowedValues": "(TRUE|FALSE)",
 			"converterName": "ClientSideStatementValueConverters$BooleanConverter"

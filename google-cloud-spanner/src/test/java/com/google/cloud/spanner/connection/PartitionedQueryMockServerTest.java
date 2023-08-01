@@ -532,7 +532,7 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testAlwaysUsePartitionedQueries() {
+  public void testAutoPartitionMode() {
     int generatedRowCount = 5;
     RandomResultSetGenerator generator = new RandomResultSetGenerator(generatedRowCount);
     Statement statement =
@@ -548,12 +548,10 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
       connection.setAutocommit(true);
       connection.setMaxPartitions(maxPartitions);
 
-      connection.execute(
-          Statement.of(String.format("set %salways_use_partitioned_queries=true", prefix)));
+      connection.execute(Statement.of(String.format("set %sauto_partition_mode=true", prefix)));
       try (ResultSet resultSet =
           connection.executeQuery(
-              Statement.of(
-                  String.format("show variable %salways_use_partitioned_queries", prefix)))) {
+              Statement.of(String.format("show variable %sauto_partition_mode", prefix)))) {
         assertTrue(resultSet.next());
         assertTrue(resultSet.getBoolean(0));
         assertFalse(resultSet.next());

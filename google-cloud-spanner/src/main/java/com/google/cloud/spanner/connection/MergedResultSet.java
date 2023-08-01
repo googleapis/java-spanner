@@ -149,7 +149,56 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
     }
   }
 
-  static class RowProducer implements Supplier<Struct> {
+  interface RowProducer extends Supplier<Struct> {
+    boolean nextRow() throws Throwable;
+
+    void close();
+
+    Type getType();
+
+    ResultSetMetadata getMetadata();
+
+    int getNumPartitions();
+
+    int getParallelism();
+  }
+
+  static class EmptyRowProducer implements RowProducer {
+    @Override
+    public Struct get() {
+      return Struct.newBuilder().build();
+    }
+
+    @Override
+    public boolean nextRow() {
+      return false;
+    }
+
+    @Override
+    public Type getType() {
+      return Type.struct();
+    }
+
+    @Override
+    public ResultSetMetadata getMetadata() {
+      return ResultSetMetadata.getDefaultInstance();
+    }
+
+    @Override
+    public int getNumPartitions() {
+      return 0;
+    }
+
+    @Override
+    public int getParallelism() {
+      return 0;
+    }
+
+    @Override
+    public void close() {}
+  }
+
+  private static class RowProducerImpl implements RowProducer {
     /** The maximum number of rows that we will cache per thread that is fetching rows. */
     private static final int QUEUE_SIZE_PER_WORKER = 32;
 
@@ -163,8 +212,10 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
     private Struct currentRow;
     private Throwable exception;
 
-    RowProducer(Connection connection, List<String> partitions, int maxParallelism) {
+    RowProducerImpl(Connection connection, List<String> partitions, int maxParallelism) {
       Preconditions.checkArgument(maxParallelism >= 0, "maxParallelism must be >= 0");
+      Preconditions.checkArgument(
+          !Preconditions.checkNotNull(partitions).isEmpty(), "partitions must not be empty");
       if (maxParallelism == 0) {
         // Dynamically determine parallelism.
         this.parallelism = Math.min(partitions.size(), Runtime.getRuntime().availableProcessors());
@@ -195,14 +246,16 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
       this.executor.shutdown();
     }
 
-    void close() {
+    @Override
+    public void close() {
       this.partitionExecutors.forEach(partitionExecutor -> partitionExecutor.shouldStop.set(true));
       // shutdownNow will interrupt any running tasks and then shut down directly.
       // This will also cancel any queries that might be running.
       this.executor.shutdownNow();
     }
 
-    boolean nextRow() throws Throwable {
+    @Override
+    public boolean nextRow() throws Throwable {
       if (this.exception != null) {
         throw this.exception;
       }
@@ -255,6 +308,16 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
       return metadata;
     }
 
+    @Override
+    public int getNumPartitions() {
+      return partitionExecutors.size();
+    }
+
+    @Override
+    public int getParallelism() {
+      return parallelism;
+    }
+
     public Type getType() {
       checkState(type != null, "next() call required");
       return type;
@@ -266,10 +329,13 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
   private boolean closed;
 
   MergedResultSet(Connection connection, List<String> partitions, int maxParallelism) {
-    this(new RowProducer(connection, partitions, maxParallelism));
+    this(
+        Preconditions.checkNotNull(partitions).isEmpty()
+            ? new EmptyRowProducer()
+            : new RowProducerImpl(connection, partitions, maxParallelism));
   }
 
-  MergedResultSet(RowProducer rowProducer) {
+  private MergedResultSet(RowProducer rowProducer) {
     super(rowProducer);
     this.rowProducer = rowProducer;
   }
@@ -323,11 +389,11 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
 
   @Override
   public int getNumPartitions() {
-    return rowProducer.partitionExecutors.size();
+    return rowProducer.getNumPartitions();
   }
 
   @Override
   public int getParallelism() {
-    return rowProducer.parallelism;
+    return rowProducer.getParallelism();
   }
 }

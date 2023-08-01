@@ -131,9 +131,9 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementSetDataBoostEnabled(Boolean dataBoostEnabled);
 
-  StatementResult statementShowAlwaysUsePartitionedQueries();
+  StatementResult statementShowAutoPartitionMode();
 
-  StatementResult statementSetAlwaysUsePartitionedQueries(Boolean alwaysUsePartitionedQueries);
+  StatementResult statementSetAutoPartitionMode(Boolean autoPartitionMode);
 
   StatementResult statementShowMaxPartitions();
 

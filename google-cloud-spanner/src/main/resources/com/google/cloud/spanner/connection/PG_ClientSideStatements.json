@@ -715,24 +715,24 @@
       }
     },
     {
-      "name": "SHOW [VARIABLE] SPANNER.ALWAYS_USE_PARTITIONED_QUERIES",
+      "name": "SHOW [VARIABLE] SPANNER.AUTO_PARTITION_MODE",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
-      "statementType": "SHOW_ALWAYS_USE_PARTITIONED_QUERIES",
-      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.always_use_partitioned_queries\\s*\\z",
-      "method": "statementShowAlwaysUsePartitionedQueries",
-      "exampleStatements": ["show spanner.always_use_partitioned_queries","show variable spanner.always_use_partitioned_queries"]
+      "statementType": "SHOW_AUTO_PARTITION_MODE",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.auto_partition_mode\\s*\\z",
+      "method": "statementShowAutoPartitionMode",
+      "exampleStatements": ["show spanner.auto_partition_mode","show variable spanner.auto_partition_mode"]
     },
     {
-      "name": "SET SPANNER.ALWAYS_USE_PARTITIONED_QUERIES = TRUE|FALSE",
+      "name": "SET SPANNER.AUTO_PARTITION_MODE = TRUE|FALSE",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
-      "statementType": "SET_ALWAYS_USE_PARTITIONED_QUERIES",
-      "regex": "(?is)\\A\\s*set\\s+spanner\\.always_use_partitioned_queries(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
-      "method": "statementSetAlwaysUsePartitionedQueries",
-      "exampleStatements": ["set spanner.always_use_partitioned_queries = true", "set spanner.always_use_partitioned_queries = false", "set spanner.always_use_partitioned_queries to true", "set spanner.always_use_partitioned_queries to false"],
+      "statementType": "SET_AUTO_PARTITION_MODE",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.auto_partition_mode(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetAutoPartitionMode",
+      "exampleStatements": ["set spanner.auto_partition_mode = true", "set spanner.auto_partition_mode = false", "set spanner.auto_partition_mode to true", "set spanner.auto_partition_mode to false"],
       "setStatement": {
-        "propertyName": "SPANNER.ALWAYS_USE_PARTITIONED_QUERIES",
+        "propertyName": "SPANNER.AUTO_PARTITION_MODE",
         "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "(TRUE|FALSE)",
         "converterName": "ClientSideStatementValueConverters$BooleanConverter"
