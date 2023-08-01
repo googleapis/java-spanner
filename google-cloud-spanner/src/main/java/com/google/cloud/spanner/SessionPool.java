@@ -2282,6 +2282,10 @@ class SessionPool {
         // with the same channel as this one.
         if (session.releaseToPosition == Position.FIRST && isUnbalanced(session)) {
           session.releaseToPosition = Position.RANDOM;
+        } else if (session.releaseToPosition == Position.RANDOM && checkedOutSessions.isEmpty()) {
+          // Do not randomize if there are no other sessions checked out. This ensures that this
+          // session will be re-used for the next transaction, which is more efficient.
+          session.releaseToPosition = Position.FIRST;
         }
         switch (session.releaseToPosition) {
           case RANDOM:
@@ -2306,7 +2310,9 @@ class SessionPool {
   }
 
   private boolean isUnbalanced(PooledSession session) {
-    if (sessions.isEmpty()) {
+    // Don't bother with any randomization if the number of checked out sessions is low, as it is
+    // better to re-use sessions as much as possible in a low-QPS scenario.
+    if (sessions.isEmpty() || checkedOutSessions.size() <= 2) {
       return false;
     }
     int numChannels = sessionClient.getSpanner().getOptions().getNumChannels();
