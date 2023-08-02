@@ -2282,8 +2282,8 @@ class SessionPool {
         // with the same channel as this one.
         if (session.releaseToPosition == Position.FIRST && isUnbalanced(session)) {
           session.releaseToPosition = Position.RANDOM;
-        } else if (session.releaseToPosition == Position.RANDOM && checkedOutSessions.isEmpty()) {
-          // Do not randomize if there are no other sessions checked out. This ensures that this
+        } else if (session.releaseToPosition == Position.RANDOM && checkedOutSessions.size() <= 2) {
+          // Do not randomize if there are few other sessions checked out. This ensures that this
           // session will be re-used for the next transaction, which is more efficient.
           session.releaseToPosition = Position.FIRST;
         }
