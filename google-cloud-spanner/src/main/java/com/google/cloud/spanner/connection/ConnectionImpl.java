@@ -925,7 +925,7 @@ class ConnectionImpl implements Connection {
       case CLIENT_SIDE:
         return parsedStatement
             .getClientSideStatement()
-            .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments());
+            .execute(connectionStatementExecutor, parsedStatement);
       case QUERY:
         return StatementResultImpl.of(
             internalExecuteQuery(CallType.SYNC, parsedStatement, AnalyzeMode.NONE));
@@ -957,7 +957,7 @@ class ConnectionImpl implements Connection {
         return AsyncStatementResultImpl.of(
             parsedStatement
                 .getClientSideStatement()
-                .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments()),
+                .execute(connectionStatementExecutor, parsedStatement),
             spanner.getAsyncExecutorProvider());
       case QUERY:
         return AsyncStatementResultImpl.of(
@@ -1010,7 +1010,7 @@ class ConnectionImpl implements Connection {
         case CLIENT_SIDE:
           return parsedStatement
               .getClientSideStatement()
-              .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments())
+              .execute(connectionStatementExecutor, parsedStatement)
               .getResultSet();
         case QUERY:
           return internalExecuteQuery(callType, parsedStatement, analyzeMode, options);
@@ -1050,7 +1050,7 @@ class ConnectionImpl implements Connection {
           return ResultSets.toAsyncResultSet(
               parsedStatement
                   .getClientSideStatement()
-                  .execute(connectionStatementExecutor, parsedStatement.getSqlWithoutComments())
+                  .execute(connectionStatementExecutor, parsedStatement)
                   .getResultSet(),
               spanner.getAsyncExecutorProvider(),
               options);

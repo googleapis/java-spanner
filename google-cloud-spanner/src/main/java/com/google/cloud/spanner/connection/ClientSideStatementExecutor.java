@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+
 /**
  * A {@link ClientSideStatementExecutor} is used to compile {@link ClientSideStatement}s from the
  * json source file, and to execute these against a {@link Connection} (through a {@link
@@ -29,13 +31,13 @@ interface ClientSideStatementExecutor {
    *
    * @param connectionExecutor The {@link ConnectionStatementExecutor} to use to execute the
    *     statement on a {@link Connection}.
-   * @param sql The sql statement that is executed. This can be used to parse any additional
+   * @param statement The statement that is executed. This can be used to parse any additional
    *     arguments that might be needed for the execution of the {@link ClientSideStatementImpl}.
    * @return the result of the execution.
    * @throws Exception If an error occurs while executing the statement, for example if an invalid
    *     argument has been specified in the sql statement, or if the statement is invalid for the
    *     current state of the {@link Connection}.
    */
-  StatementResult execute(ConnectionStatementExecutor connectionExecutor, String sql)
+  StatementResult execute(ConnectionStatementExecutor connectionExecutor, ParsedStatement statement)
       throws Exception;
 }
