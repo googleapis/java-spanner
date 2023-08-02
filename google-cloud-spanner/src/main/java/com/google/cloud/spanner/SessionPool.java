@@ -1517,7 +1517,7 @@ class SessionPool {
         if (state != SessionState.CLOSING) {
           state = SessionState.AVAILABLE;
         }
-        releaseSession(this);
+        releaseSession(this, false);
       }
     }
 
@@ -1557,7 +1557,7 @@ class SessionPool {
               // in the database dialect, and there's nothing sensible that we can do with it here.
               dialect.setException(t);
             } finally {
-              releaseSession(this);
+              releaseSession(this, false);
             }
           });
     }
@@ -1791,7 +1791,7 @@ class SessionPool {
           logger.log(Level.FINE, "Keeping alive session " + sessionToKeepAlive.getName());
           numSessionsToKeepAlive--;
           sessionToKeepAlive.keepAlive();
-          releaseSession(sessionToKeepAlive);
+          releaseSession(sessionToKeepAlive, false);
         } catch (SpannerException e) {
           handleException(e, sessionToKeepAlive);
         }
@@ -2105,7 +2105,7 @@ class SessionPool {
     if (isSessionNotFound(e)) {
       invalidateSession(session);
     } else {
-      releaseSession(session);
+      releaseSession(session, false);
     }
   }
 
@@ -2270,21 +2270,24 @@ class SessionPool {
   }
 
   /** Releases a session back to the pool. This might cause one of the waiters to be unblocked. */
-  private void releaseSession(PooledSession session) {
+  private void releaseSession(PooledSession session, boolean isNewSession) {
     Preconditions.checkNotNull(session);
     synchronized (lock) {
       if (closureFuture != null) {
         return;
       }
       if (waiters.size() == 0) {
-        // No pending waiters.
+        // There are no pending waiters.
         // Add to a random position if the head of the session pool already contains many sessions
         // with the same channel as this one.
         if (session.releaseToPosition == Position.FIRST && isUnbalanced(session)) {
           session.releaseToPosition = Position.RANDOM;
-        } else if (session.releaseToPosition == Position.RANDOM && checkedOutSessions.size() <= 2) {
-          // Do not randomize if there are few other sessions checked out. This ensures that this
-          // session will be re-used for the next transaction, which is more efficient.
+        } else if (session.releaseToPosition == Position.RANDOM
+            && !isNewSession
+            && checkedOutSessions.size() <= 2) {
+          // Do not randomize if there are few other sessions checked out and this session has been
+          // used. This ensures that this session will be re-used for the next transaction, which is
+          // more efficient.
           session.releaseToPosition = Position.FIRST;
         }
         switch (session.releaseToPosition) {
@@ -2550,7 +2553,7 @@ class SessionPool {
             // Release the session to a random position in the pool to prevent the case that a batch
             // of sessions that are affiliated with the same channel are all placed sequentially in
             // the pool.
-            releaseSession(pooledSession);
+            releaseSession(pooledSession, true);
           }
         }
       }
