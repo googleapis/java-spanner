@@ -599,7 +599,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private int maxNumSessionsInOneBatch = 100;
   private int maxTotalSessions = Integer.MAX_VALUE;
   private AtomicInteger numSessionsCreated = new AtomicInteger();
-
   private SimulatedExecutionTime beginTransactionExecutionTime = NO_EXECUTION_TIME;
   private SimulatedExecutionTime commitExecutionTime = NO_EXECUTION_TIME;
   private SimulatedExecutionTime batchCreateSessionsExecutionTime = NO_EXECUTION_TIME;
@@ -906,7 +905,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
-  private <T> void setSessionNotFound(String name, StreamObserver<T> responseObserver) {
+  public StatusRuntimeException createSessionNotFoundException(String name) {
     ResourceInfo resourceInfo =
         ResourceInfo.newBuilder()
             .setResourceType(SpannerExceptionFactory.SESSION_RESOURCE_TYPE)
@@ -918,10 +917,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             ProtoLiteUtils.metadataMarshaller(resourceInfo));
     Metadata trailers = new Metadata();
     trailers.put(key, resourceInfo);
-    responseObserver.onError(
-        Status.NOT_FOUND
-            .withDescription(String.format("Session not found: Session with id %s not found", name))
-            .asRuntimeException(trailers));
+    return Status.NOT_FOUND
+        .withDescription(String.format("Session not found: Session with id %s not found", name))
+        .asRuntimeException(trailers);
+  }
+
+  private <T> void setSessionNotFound(String name, StreamObserver<T> responseObserver) {
+    final StatusRuntimeException statusRuntimeException = createSessionNotFoundException(name);
+    responseObserver.onError(statusRuntimeException);
   }
 
   @Override
@@ -2223,10 +2226,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     readExecutionTime = NO_EXECUTION_TIME;
     rollbackExecutionTime = NO_EXECUTION_TIME;
     streamingReadExecutionTime = NO_EXECUTION_TIME;
-  }
-
-  public SimulatedExecutionTime getBeginTransactionExecutionTime() {
-    return beginTransactionExecutionTime;
   }
 
   public void setBeginTransactionExecutionTime(

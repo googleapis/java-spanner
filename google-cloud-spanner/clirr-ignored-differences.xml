@@ -374,7 +374,7 @@
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/connection/Connection</className>
-    <method>boolean isAlwaysUsePartitionedQueries()</method>
+    <method>boolean isAutoPartitionMode()</method>
   </difference>
   <difference>
     <differenceType>7012</differenceType>
@@ -399,7 +399,7 @@
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/connection/Connection</className>
-    <method>void setAlwaysUsePartitionedQueries(boolean)</method>
+    <method>void setAutoPartitionMode(boolean)</method>
   </difference>
   <difference>
     <differenceType>7012</differenceType>
@@ -415,5 +415,11 @@
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>void setMaxPartitions(int)</method>
+  </difference>
+  <!-- (Internal change, use stream timeout) -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc$StreamingCall</className>
+    <method>com.google.api.gax.rpc.ApiCallContext getCallContext()</method>
   </difference>
 </differences>
