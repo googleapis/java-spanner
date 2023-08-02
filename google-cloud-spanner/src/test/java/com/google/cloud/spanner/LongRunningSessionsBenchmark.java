@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.openjdk.jmh.annotations.AuxCounters;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -77,6 +78,7 @@ public class LongRunningSessionsBenchmark {
     private StandardBenchmarkMockServer mockServer;
     private Spanner spanner;
     private DatabaseClientImpl client;
+    private AtomicInteger longRunningSessions;
 
     @Param({"100"})
     int minSessions;
@@ -100,6 +102,7 @@ public class LongRunningSessionsBenchmark {
     @Setup(Level.Invocation)
     public void setup() throws Exception {
       mockServer = new StandardBenchmarkMockServer();
+      longRunningSessions = new AtomicInteger();
       TransportChannelProvider channelProvider = mockServer.start();
 
       /**
@@ -123,6 +126,7 @@ public class LongRunningSessionsBenchmark {
                   SessionPoolOptions.newBuilder()
                       .setMinSessions(minSessions)
                       .setMaxSessions(maxSessions)
+                      .setWaitForMinSessions(Duration.ofSeconds(5))
                       .setInactiveTransactionRemovalOptions(inactiveTransactionRemovalOptions)
                       .build())
               .build();
@@ -131,11 +135,6 @@ public class LongRunningSessionsBenchmark {
       client =
           (DatabaseClientImpl)
               spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-      // Wait until the session pool has initialized.
-      while (client.pool.getNumberOfSessionsInPool()
-          < spanner.getOptions().getSessionPoolOptions().getMinSessions()) {
-        Thread.sleep(1L);
-      }
     }
 
     @TearDown(Level.Invocation)
@@ -176,12 +175,15 @@ public class LongRunningSessionsBenchmark {
                     client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
                   while (rs.next()) {
                     // introduce random sleep times to have long-running sessions
-                    randomWait();
+                    randomWait(server);
                   }
                   return null;
                 }
               }));
     }
+    // explicitly run the maintenance cycle to clean up any dangling long-running sessions.
+    pool.poolMaintainer.maintainPool();
+
     Futures.allAsList(futures).get();
     service.shutdown();
     assertNumLeakedSessionsRemoved(server, pool);
@@ -218,6 +220,9 @@ public class LongRunningSessionsBenchmark {
                 client.executePartitionedUpdate(StandardBenchmarkMockServer.UPDATE_STATEMENT);
               }));
     }
+    // explicitly run the maintenance cycle to clean up any dangling long-running sessions.
+    pool.poolMaintainer.maintainPool();
+
     Futures.allAsList(futures).get();
     service.shutdown();
     assertThat(pool.numLeakedSessionsRemoved())
@@ -269,19 +274,23 @@ public class LongRunningSessionsBenchmark {
                     client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
                   while (rs.next()) {
                     // introduce random sleep times to have long-running sessions
-                    randomWait();
+                    randomWait(server);
                   }
                   return null;
                 }
               }));
     }
+    // explicitly run the maintenance cycle to clean up any dangling long-running sessions.
+    pool.poolMaintainer.maintainPool();
+
     Futures.allAsList(futures).get();
     service.shutdown();
     assertNumLeakedSessionsRemoved(server, pool);
   }
 
-  private void randomWait() throws InterruptedException {
+  private void randomWait(final BenchmarkState server) throws InterruptedException {
     if (RND.nextBoolean()) {
+      server.longRunningSessions.incrementAndGet();
       Thread.sleep(LONG_HOLD_SESSION_TIME);
     } else {
       Thread.sleep(HOLD_SESSION_TIME);
@@ -290,6 +299,7 @@ public class LongRunningSessionsBenchmark {
 
   private void randomWaitForMockServer(final BenchmarkState server) {
     if (RND.nextBoolean()) {
+      server.longRunningSessions.incrementAndGet();
       server
           .mockServer
           .getMockSpanner()
@@ -307,6 +317,7 @@ public class LongRunningSessionsBenchmark {
   private void assertNumLeakedSessionsRemoved(final BenchmarkState server, final SessionPool pool) {
     final SessionPoolOptions sessionPoolOptions =
         server.spanner.getOptions().getSessionPoolOptions();
+    assertThat(server.longRunningSessions.get()).isNotEqualTo(0);
     if (sessionPoolOptions.warnAndCloseInactiveTransactions()
         || sessionPoolOptions.closeInactiveTransactions()) {
       assertThat(pool.numLeakedSessionsRemoved()).isGreaterThan(0);

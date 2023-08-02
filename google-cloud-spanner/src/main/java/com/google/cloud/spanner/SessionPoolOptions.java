@@ -235,7 +235,6 @@ public class SessionPoolOptions {
     return trackStackTraceOfSessionCheckout;
   }
 
-  @VisibleForTesting
   Duration getWaitForMinSessions() {
     return waitForMinSessions;
   }
