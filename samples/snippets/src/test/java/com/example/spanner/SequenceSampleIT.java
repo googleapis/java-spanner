@@ -63,7 +63,6 @@ public class SequenceSampleIT extends SampleTestBase {
       return;
     }
     dbInitializedDialects.add(dialect);
-    System.out.println(dialect);
     final String database = idGenerator.generateDatabaseId();
     databaseAdminClient
         .createDatabase(
