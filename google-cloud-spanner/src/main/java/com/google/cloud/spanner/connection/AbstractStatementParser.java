@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Internal class for the Spanner Connection API.
@@ -91,8 +93,7 @@ public abstract class AbstractStatementParser {
    */
 
   /** Begins a transaction. */
-  static final ParsedStatement BEGIN_STATEMENT =
-      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("BEGIN"));
+  static final ParsedStatement BEGIN_STATEMENT;
 
   /**
    * Create a COMMIT statement to use with the {@link #commit()} method to allow it to be cancelled,
@@ -104,14 +105,10 @@ public abstract class AbstractStatementParser {
    * #commit()} method is called directly, we do not have a {@link ParsedStatement}, and the method
    * uses this statement instead in order to use the same logic as the other statements.
    */
-  static final ParsedStatement COMMIT_STATEMENT =
-      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
-          .parse(Statement.of("COMMIT"));
+  static final ParsedStatement COMMIT_STATEMENT;
 
   /** The {@link Statement} and {@link Callable} for rollbacks */
-  static final ParsedStatement ROLLBACK_STATEMENT =
-      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
-          .parse(Statement.of("ROLLBACK"));
+  static final ParsedStatement ROLLBACK_STATEMENT;
 
   /**
    * Create a RUN BATCH statement to use with the {@link #executeBatchUpdate(Iterable)} method to
@@ -124,9 +121,22 @@ public abstract class AbstractStatementParser {
    * and the method uses this statement instead in order to use the same logic as the other
    * statements.
    */
-  static final ParsedStatement RUN_BATCH_STATEMENT =
-      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
-          .parse(Statement.of("RUN BATCH"));
+  static final ParsedStatement RUN_BATCH_STATEMENT;
+
+  static {
+    try {
+      BEGIN_STATEMENT = getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("BEGIN"));
+      COMMIT_STATEMENT = getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("COMMIT"));
+      ROLLBACK_STATEMENT = getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("ROLLBACK"));
+      RUN_BATCH_STATEMENT =
+          getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("RUN BATCH"));
+
+    } catch (Throwable ex) {
+      Logger logger = Logger.getLogger(AbstractStatementParser.class.getName());
+      logger.log(Level.SEVERE, "Static initialization failure.", ex);
+      throw ex;
+    }
+  }
 
   /** The type of statement that has been recognized by the parser. */
   @InternalApi
