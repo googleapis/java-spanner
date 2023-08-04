@@ -184,17 +184,18 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
       PartitionOptions partitionOptions,
       ParsedStatement query,
       QueryOption... options) {
+    final String partitionColumnName = "PARTITION";
     BatchTransactionId transactionId = transaction.getBatchTransactionId();
     List<Partition> partitions =
         transaction.partitionQuery(partitionOptions, query.getStatement(), options);
     return ResultSets.forRows(
         com.google.cloud.spanner.Type.struct(
-            StructField.of("PARTITION", com.google.cloud.spanner.Type.string())),
+            StructField.of(partitionColumnName, com.google.cloud.spanner.Type.string())),
         partitions.stream()
             .map(
                 partition ->
                     Struct.newBuilder()
-                        .set("PARTITION")
+                        .set(partitionColumnName)
                         .to(PartitionId.encodeToString(transactionId, partition))
                         .build())
             .collect(Collectors.toList()));

@@ -45,7 +45,7 @@ class ClientSideStatementPartitionExecutor implements ClientSideStatementExecuto
       ConnectionStatementExecutor connection, ParsedStatement parsedStatement) throws Exception {
     String sql = getParameterValue(parsedStatement);
     return (StatementResult)
-        method.invoke(connection, parsedStatement.getStatement().toBuilder().withSql(sql).build());
+        method.invoke(connection, parsedStatement.getStatement().toBuilder().replace(sql).build());
   }
 
   String getParameterValue(ParsedStatement parsedStatement) {

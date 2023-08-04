@@ -55,6 +55,16 @@ class ClientSideStatementRunPartitionExecutor implements ClientSideStatementExec
   }
 
   String getParameterValue(ParsedStatement parsedStatement) {
+    // The statement has the form `RUN PARTITION ['partition-id']`.
+    // The regex that is defined for this statement is (simplified) `run\s+partition(?:\s*'(.*)')?`
+    // This regex has one capturing group, which captures the partition-id inside the single quotes.
+    // That capturing group is however inside a non-capturing optional group.
+    // That means that:
+    // 1. If the matcher matches and returns one or more groups, we know that we have a partition-id
+    //    in the SQL statement itself, as that is the only thing that can be in a capturing group.
+    // 2. If the matcher matches and returns zero groups, we know that the statement is valid, but
+    //    that it does not contain a partition-id in the SQL statement. The partition-id must then
+    //    be included in the statement as a query parameter.
     Matcher matcher = statement.getPattern().matcher(parsedStatement.getSqlWithoutComments());
     if (matcher.find() && matcher.groupCount() >= 1) {
       String value = matcher.group(1);

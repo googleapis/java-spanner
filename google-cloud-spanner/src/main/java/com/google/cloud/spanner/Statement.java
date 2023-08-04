@@ -87,7 +87,7 @@ public final class Statement implements Serializable {
     }
 
     /** Replaces the current SQL of this builder with the given string. */
-    public Builder withSql(String sql) {
+    public Builder replace(String sql) {
       sqlBuffer.replace(0, sqlBuffer.length(), sql);
       return this;
     }

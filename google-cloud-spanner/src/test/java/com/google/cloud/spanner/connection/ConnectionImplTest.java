@@ -43,6 +43,8 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.BatchClient;
+import com.google.cloud.spanner.BatchReadOnlyTransaction;
+import com.google.cloud.spanner.BatchTransactionId;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.CommitStats;
 import com.google.cloud.spanner.DatabaseClient;
@@ -366,7 +368,13 @@ public class ConnectionImplTest {
                 };
               }
             });
-    return new ConnectionImpl(options, spannerPool, ddlClient, dbClient, mock(BatchClient.class));
+    BatchClient batchClient = mock(BatchClient.class);
+    BatchReadOnlyTransaction batchReadOnlyTransaction = mock(BatchReadOnlyTransaction.class);
+    when(batchClient.batchReadOnlyTransaction(any(TimestampBound.class)))
+        .thenReturn(batchReadOnlyTransaction);
+    when(batchClient.batchReadOnlyTransaction(any(BatchTransactionId.class)))
+        .thenReturn(batchReadOnlyTransaction);
+    return new ConnectionImpl(options, spannerPool, ddlClient, dbClient, batchClient);
   }
 
   @Test

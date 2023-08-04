@@ -35,6 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nonnull;
 
 /**
  * {@link MergedResultSet} is a {@link ResultSet} implementation that combines the results from
@@ -108,21 +109,27 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
     private final Type type;
     private final ResultSetMetadata metadata;
 
-    static PartitionExecutorResult data(Struct data) {
-      return new PartitionExecutorResult(data, null, null, null);
+    static PartitionExecutorResult data(@Nonnull Struct data) {
+      return new PartitionExecutorResult(Preconditions.checkNotNull(data), null, null, null);
     }
 
-    static PartitionExecutorResult typeAndMetadata(Type type, ResultSetMetadata metadata) {
-      return new PartitionExecutorResult(null, type, metadata, null);
+    static PartitionExecutorResult typeAndMetadata(
+        @Nonnull Type type, @Nonnull ResultSetMetadata metadata) {
+      return new PartitionExecutorResult(
+          null, Preconditions.checkNotNull(type), Preconditions.checkNotNull(metadata), null);
     }
 
     static PartitionExecutorResult dataAndMetadata(
-        Struct data, Type type, ResultSetMetadata metadata) {
-      return new PartitionExecutorResult(data, type, metadata, null);
+        @Nonnull Struct data, @Nonnull Type type, @Nonnull ResultSetMetadata metadata) {
+      return new PartitionExecutorResult(
+          Preconditions.checkNotNull(data),
+          Preconditions.checkNotNull(type),
+          Preconditions.checkNotNull(metadata),
+          null);
     }
 
-    static PartitionExecutorResult exception(Throwable exception) {
-      return new PartitionExecutorResult(null, null, null, exception);
+    static PartitionExecutorResult exception(@Nonnull Throwable exception) {
+      return new PartitionExecutorResult(null, null, null, Preconditions.checkNotNull(exception));
     }
 
     static PartitionExecutorResult finished() {

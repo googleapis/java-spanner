@@ -1374,6 +1374,7 @@ class ConnectionImpl implements Connection {
 
   private QueryOption[] mergeDataBoost(QueryOption... options) {
     if (this.dataBoostEnabled) {
+
       // Shortcut for the most common scenario.
       if (options == null || options.length == 0) {
         options = new QueryOption[] {Options.dataBoostEnabled(true)};
