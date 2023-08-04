@@ -172,6 +172,7 @@ public class ConnectionOptions {
   private static final RpcPriority DEFAULT_RPC_PRIORITY = null;
   private static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
   private static final boolean DEFAULT_LENIENT = false;
+  private static final boolean DEFAULT_ROUTE_TO_LEADER = true;
   private static final boolean DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE = false;
   private static final boolean DEFAULT_TRACK_SESSION_LEAKS = true;
   private static final boolean DEFAULT_TRACK_CONNECTION_LEAKS = true;
@@ -186,6 +187,8 @@ public class ConnectionOptions {
   public static final String AUTOCOMMIT_PROPERTY_NAME = "autocommit";
   /** Name of the 'readonly' connection property. */
   public static final String READONLY_PROPERTY_NAME = "readonly";
+  /** Name of the 'routeToLeader' connection property. */
+  public static final String ROUTE_TO_LEADER_PROPERTY_NAME = "routeToLeader";
   /** Name of the 'retry aborts internally' connection property. */
   public static final String RETRY_ABORTS_INTERNALLY_PROPERTY_NAME = "retryAbortsInternally";
   /** Name of the 'credentials' connection property. */
@@ -241,6 +244,10 @@ public class ConnectionOptions {
                       READONLY_PROPERTY_NAME,
                       "Should the connection start in read-only mode (true/false)",
                       DEFAULT_READONLY),
+                  ConnectionProperty.createBooleanProperty(
+                      ROUTE_TO_LEADER_PROPERTY_NAME,
+                      "Should read/write transactions and partitioned DML be routed to leader region (true/false)",
+                      DEFAULT_ROUTE_TO_LEADER),
                   ConnectionProperty.createBooleanProperty(
                       RETRY_ABORTS_INTERNALLY_PROPERTY_NAME,
                       "Should the connection automatically retry Aborted errors (true/false)",
@@ -462,6 +469,8 @@ public class ConnectionOptions {
      *       created on the emulator if any of them do not yet exist. Any existing instance or
      *       database on the emulator will remain untouched. No other configuration is needed in
      *       order to connect to the emulator than setting this property.
+     *   <li>routeToLeader (boolean): Sets the routeToLeader flag to route requests to leader (true)
+     *       or any region (false) in read/write transactions and Partitioned DML. Default is true.
      * </ul>
      *
      * @param uri The URI of the Spanner database to connect to.
@@ -586,6 +595,7 @@ public class ConnectionOptions {
 
   private final boolean autocommit;
   private final boolean readOnly;
+  private final boolean routeToLeader;
   private final boolean retryAbortsInternally;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
@@ -678,6 +688,7 @@ public class ConnectionOptions {
 
     this.autocommit = parseAutocommit(this.uri);
     this.readOnly = parseReadOnly(this.uri);
+    this.routeToLeader = parseRouteToLeader(this.uri);
     this.retryAbortsInternally = parseRetryAbortsInternally(this.uri);
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
@@ -760,6 +771,11 @@ public class ConnectionOptions {
   static boolean parseReadOnly(String uri) {
     String value = parseUriProperty(uri, READONLY_PROPERTY_NAME);
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_READONLY;
+  }
+
+  static boolean parseRouteToLeader(String uri) {
+    String value = parseUriProperty(uri, ROUTE_TO_LEADER_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_ROUTE_TO_LEADER;
   }
 
   @VisibleForTesting
@@ -1087,6 +1103,14 @@ public class ConnectionOptions {
   /** The initial readonly value for connections created by this {@link ConnectionOptions} */
   public boolean isReadOnly() {
     return readOnly;
+  }
+
+  /**
+   * Whether read/write transactions and partitioned DML are preferred to be routed to the leader
+   * region.
+   */
+  public boolean isRouteToLeader() {
+    return routeToLeader;
   }
 
   /**
