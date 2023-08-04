@@ -125,12 +125,9 @@ public abstract class AbstractStatementParser {
 
   static {
     try {
-      BEGIN_STATEMENT =
-          getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("BEGIN"));
-      COMMIT_STATEMENT =
-          getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("COMMIT"));
-      ROLLBACK_STATEMENT =
-          getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("ROLLBACK"));
+      BEGIN_STATEMENT = getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("BEGIN"));
+      COMMIT_STATEMENT = getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("COMMIT"));
+      ROLLBACK_STATEMENT = getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("ROLLBACK"));
       RUN_BATCH_STATEMENT =
           getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("RUN BATCH"));
 
