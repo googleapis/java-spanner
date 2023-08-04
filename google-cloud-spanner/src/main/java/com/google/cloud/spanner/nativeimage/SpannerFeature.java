@@ -19,9 +19,7 @@ package com.google.cloud.spanner.nativeimage;
 import com.google.api.gax.nativeimage.NativeImageUtils;
 import org.graalvm.nativeimage.hosted.Feature;
 
-/**
- * Registers Spanner library classes for reflection.
- */
+/** Registers Spanner library classes for reflection. */
 final class SpannerFeature implements Feature {
 
   private static final String SPANNER_CLASS = "com.google.spanner.v1.SpannerGrpc";
@@ -82,12 +80,12 @@ final class SpannerFeature implements Feature {
       NativeImageUtils.registerClassForReflection(access, CLIENT_SIDE_STATEMENT_PARTITION_EXECUTOR);
     }
     if (access.findClassByName(CLIENT_SIDE_STATEMENT_RUN_PARTITION_EXECUTOR) != null) {
-      NativeImageUtils.registerClassForReflection(access,
-          CLIENT_SIDE_STATEMENT_RUN_PARTITION_EXECUTOR);
+      NativeImageUtils.registerClassForReflection(
+          access, CLIENT_SIDE_STATEMENT_RUN_PARTITION_EXECUTOR);
     }
     if (access.findClassByName(CLIENT_SIDE_STATEMENT_RUN_PARTITIONED_QUERY_EXECUTOR) != null) {
-      NativeImageUtils.registerClassForReflection(access,
-          CLIENT_SIDE_STATEMENT_RUN_PARTITIONED_QUERY_EXECUTOR);
+      NativeImageUtils.registerClassForReflection(
+          access, CLIENT_SIDE_STATEMENT_RUN_PARTITIONED_QUERY_EXECUTOR);
     }
     if (access.findClassByName(CLIENT_SIDE_VALUE_CONVERTER) != null) {
       NativeImageUtils.registerClassHierarchyForReflection(access, CLIENT_SIDE_VALUE_CONVERTER);

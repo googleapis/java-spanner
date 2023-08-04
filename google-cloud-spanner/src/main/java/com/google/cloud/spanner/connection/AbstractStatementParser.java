@@ -39,12 +39,12 @@ import java.util.logging.Logger;
 /**
  * Internal class for the Spanner Connection API.
  *
- * <p>Parses {@link ClientSideStatement}s and normal SQL statements. The parser is able to
- * recognize the type of statement, allowing the connection API to know which method on Spanner
- * should be called. The parser does not validate the validity of statements, except for
- * {@link ClientSideStatement}s. This means that an invalid DML statement could be accepted by the
- * {@link AbstractStatementParser} and sent to Spanner, and Spanner will then reject it with some
- * error message.
+ * <p>Parses {@link ClientSideStatement}s and normal SQL statements. The parser is able to recognize
+ * the type of statement, allowing the connection API to know which method on Spanner should be
+ * called. The parser does not validate the validity of statements, except for {@link
+ * ClientSideStatement}s. This means that an invalid DML statement could be accepted by the {@link
+ * AbstractStatementParser} and sent to Spanner, and Spanner will then reject it with some error
+ * message.
  */
 @InternalApi
 public abstract class AbstractStatementParser {
@@ -53,11 +53,11 @@ public abstract class AbstractStatementParser {
   private static final Map<Dialect, AbstractStatementParser> INSTANCES = new HashMap<>();
   static final ImmutableMap<Dialect, Class<? extends AbstractStatementParser>>
       KNOWN_PARSER_CLASSES =
-      ImmutableMap.of(
-          Dialect.GOOGLE_STANDARD_SQL,
-          SpannerStatementParser.class,
-          Dialect.POSTGRESQL,
-          PostgreSQLStatementParser.class);
+          ImmutableMap.of(
+              Dialect.GOOGLE_STANDARD_SQL,
+              SpannerStatementParser.class,
+              Dialect.POSTGRESQL,
+              PostgreSQLStatementParser.class);
 
   /**
    * Get an instance of {@link AbstractStatementParser} for the specified dialect.
@@ -93,12 +93,9 @@ public abstract class AbstractStatementParser {
 
   static {
     try {
-      BEGIN_STATEMENT =
-          getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("BEGIN"));
-      COMMIT_STATEMENT =
-          getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("COMMIT"));
-      ROLLBACK_STATEMENT =
-          getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("ROLLBACK"));
+      BEGIN_STATEMENT = getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("BEGIN"));
+      COMMIT_STATEMENT = getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("COMMIT"));
+      ROLLBACK_STATEMENT = getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("ROLLBACK"));
       RUN_BATCH_STATEMENT =
           getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("RUN BATCH"));
 
@@ -109,9 +106,7 @@ public abstract class AbstractStatementParser {
     }
   }
 
-  /**
-   * The type of statement that has been recognized by the parser.
-   */
+  /** The type of statement that has been recognized by the parser. */
   @InternalApi
   public enum StatementType {
     CLIENT_SIDE,
@@ -121,9 +116,7 @@ public abstract class AbstractStatementParser {
     UNKNOWN
   }
 
-  /**
-   * A statement that has been parsed
-   */
+  /** A statement that has been parsed */
   @InternalApi
   public static class ParsedStatement {
 
@@ -218,25 +211,21 @@ public abstract class AbstractStatementParser {
           && Objects.equals(this.sqlWithoutComments, o.sqlWithoutComments);
     }
 
-    /**
-     * @return the type of statement that was recognized by the parser.
-     */
+    /** @return the type of statement that was recognized by the parser. */
     @InternalApi
     public StatementType getType() {
       return type;
     }
 
-    /**
-     * @return whether the statement has a returning clause or not.
-     */
+    /** @return whether the statement has a returning clause or not. */
     @InternalApi
     public boolean hasReturningClause() {
       return this.returningClause;
     }
 
     /**
-     * @return true if the statement is a query that will return a
-     * {@link com.google.cloud.spanner.ResultSet}.
+     * @return true if the statement is a query that will return a {@link
+     *     com.google.cloud.spanner.ResultSet}.
      */
     @InternalApi
     public boolean isQuery() {
@@ -255,7 +244,7 @@ public abstract class AbstractStatementParser {
 
     /**
      * @return true if the statement is a DML statement or a client side statement that will return
-     * an update count.
+     *     an update count.
      */
     @InternalApi
     public boolean isUpdate() {
@@ -272,9 +261,7 @@ public abstract class AbstractStatementParser {
       return false;
     }
 
-    /**
-     * @return true if the statement is a DDL statement.
-     */
+    /** @return true if the statement is a DDL statement. */
     @InternalApi
     public boolean isDdl() {
       switch (type) {
@@ -291,7 +278,7 @@ public abstract class AbstractStatementParser {
 
     /**
      * @return the {@link ClientSideStatementType} of this statement. This method may only be called
-     * on statements of type {@link StatementType#CLIENT_SIDE}.
+     *     on statements of type {@link StatementType#CLIENT_SIDE}.
      */
     @InternalApi
     public ClientSideStatementType getClientSideStatementType() {
@@ -304,9 +291,9 @@ public abstract class AbstractStatementParser {
     }
 
     /**
-     * Merges the {@link QueryOptions} of the {@link Statement} with the current
-     * {@link QueryOptions} of this connection. The {@link QueryOptions} that are already present on
-     * the statement take precedence above the connection {@link QueryOptions}.
+     * Merges the {@link QueryOptions} of the {@link Statement} with the current {@link
+     * QueryOptions} of this connection. The {@link QueryOptions} that are already present on the
+     * statement take precedence above the connection {@link QueryOptions}.
      */
     Statement mergeQueryOptions(Statement statement, QueryOptions defaultQueryOptions) {
       if (defaultQueryOptions == null
@@ -323,9 +310,7 @@ public abstract class AbstractStatementParser {
           .build();
     }
 
-    /**
-     * @return the SQL statement with all comments removed from the SQL string.
-     */
+    /** @return the SQL statement with all comments removed from the SQL string. */
     @InternalApi
     public String getSqlWithoutComments() {
       return sqlWithoutComments;
@@ -389,7 +374,7 @@ public abstract class AbstractStatementParser {
    *
    * @param sql The statement to try to parse as a client-side statement (without any comments).
    * @return a valid {@link ClientSideStatement} or null if the statement is not a client-side
-   * statement.
+   *     statement.
    */
   @VisibleForTesting
   ClientSideStatementImpl parseClientSideStatement(String sql) {
@@ -408,7 +393,7 @@ public abstract class AbstractStatementParser {
    *
    * @param sql The statement to check (without any comments).
    * @return <code>true</code> if the statement is a DDL statement (i.e. starts with 'CREATE',
-   * 'ALTER' or 'DROP').
+   *     'ALTER' or 'DROP').
    */
   @InternalApi
   public boolean isDdlStatement(String sql) {
@@ -441,7 +426,7 @@ public abstract class AbstractStatementParser {
    *
    * @param sql The statement to check (without any comments).
    * @return <code>true</code> if the statement is a DML update statement (i.e. starts with
-   * 'INSERT', 'UPDATE' or 'DELETE').
+   *     'INSERT', 'UPDATE' or 'DELETE').
    */
   @InternalApi
   public boolean isUpdateStatement(String sql) {
@@ -504,14 +489,10 @@ public abstract class AbstractStatementParser {
     return removeCommentsAndTrimInternal(sql);
   }
 
-  /**
-   * Removes any statement hints at the beginning of the statement.
-   */
+  /** Removes any statement hints at the beginning of the statement. */
   abstract String removeStatementHint(String sql);
 
-  /**
-   * Parameter information with positional parameters translated to named parameters.
-   */
+  /** Parameter information with positional parameters translated to named parameters. */
   @InternalApi
   public static class ParametersInfo {
 
@@ -534,7 +515,7 @@ public abstract class AbstractStatementParser {
    *
    * @param sql The sql string without comments that should be converted
    * @return A {@link ParametersInfo} object containing a string with named parameters instead of
-   * positional parameters and the number of parameters.
+   *     positional parameters and the number of parameters.
    * @throws SpannerException If the input sql string contains an unclosed string/byte literal.
    */
   @InternalApi
@@ -551,7 +532,7 @@ public abstract class AbstractStatementParser {
    *
    * @param sql The sql string without comments that should be converted
    * @return A {@link ParametersInfo} object containing a string with named parameters instead of
-   * positional parameters and the number of parameters.
+   *     positional parameters and the number of parameters.
    * @throws SpannerException If the input sql string contains an unclosed string/byte literal.
    */
   @InternalApi
@@ -559,9 +540,7 @@ public abstract class AbstractStatementParser {
     return convertPositionalParametersToNamedParametersInternal(paramChar, sql);
   }
 
-  /**
-   * Convenience method that is used to estimate the number of parameters in a SQL statement.
-   */
+  /** Convenience method that is used to estimate the number of parameters in a SQL statement. */
   static int countOccurrencesOf(char c, String string) {
     int res = 0;
     for (int i = 0; i < string.length(); i++) {
