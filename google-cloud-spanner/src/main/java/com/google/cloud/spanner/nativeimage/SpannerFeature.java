@@ -19,7 +19,9 @@ package com.google.cloud.spanner.nativeimage;
 import com.google.api.gax.nativeimage.NativeImageUtils;
 import org.graalvm.nativeimage.hosted.Feature;
 
-/** Registers Spanner library classes for reflection. */
+/**
+ * Registers Spanner library classes for reflection.
+ */
 final class SpannerFeature implements Feature {
 
   private static final String SPANNER_CLASS = "com.google.spanner.v1.SpannerGrpc";
@@ -45,6 +47,10 @@ final class SpannerFeature implements Feature {
       "com.google.cloud.spanner.connection.ClientSideStatementExplainExecutor";
   private static final String CLIENT_SIDE_STATEMENT_PARTITION_EXECUTOR =
       "com.google.cloud.spanner.connection.ClientSideStatementPartitionExecutor";
+  private static final String CLIENT_SIDE_STATEMENT_RUN_PARTITION_EXECUTOR =
+      "com.google.cloud.spanner.connection.ClientSideStatementRunPartitionExecutor";
+  private static final String CLIENT_SIDE_STATEMENT_RUN_PARTITIONED_QUERY_EXECUTOR =
+      "com.google.cloud.spanner.connection.ClientSideStatementRunPartitionedQueryExecutor";
   private static final String ABSTRACT_STATEMENT_PARSER =
       "com.google.cloud.spanner.connection.AbstractStatementParser";
   private static final String STATEMENT_PARSER =
@@ -75,6 +81,14 @@ final class SpannerFeature implements Feature {
     if (access.findClassByName(CLIENT_SIDE_STATEMENT_PARTITION_EXECUTOR) != null) {
       NativeImageUtils.registerClassForReflection(access, CLIENT_SIDE_STATEMENT_PARTITION_EXECUTOR);
     }
+    if (access.findClassByName(CLIENT_SIDE_STATEMENT_RUN_PARTITION_EXECUTOR) != null) {
+      NativeImageUtils.registerClassForReflection(access,
+          CLIENT_SIDE_STATEMENT_RUN_PARTITION_EXECUTOR);
+    }
+    if (access.findClassByName(CLIENT_SIDE_STATEMENT_RUN_PARTITIONED_QUERY_EXECUTOR) != null) {
+      NativeImageUtils.registerClassForReflection(access,
+          CLIENT_SIDE_STATEMENT_RUN_PARTITIONED_QUERY_EXECUTOR);
+    }
     if (access.findClassByName(CLIENT_SIDE_VALUE_CONVERTER) != null) {
       NativeImageUtils.registerClassHierarchyForReflection(access, CLIENT_SIDE_VALUE_CONVERTER);
     }
@@ -88,7 +102,6 @@ final class SpannerFeature implements Feature {
       NativeImageUtils.registerClassForReflection(access, CONNECTION_IMPL);
     }
     if (access.findClassByName(ABSTRACT_STATEMENT_PARSER) != null) {
-      System.out.println(ABSTRACT_STATEMENT_PARSER + " accessed. Registering.");
       NativeImageUtils.registerClassHierarchyForReflection(access, ABSTRACT_STATEMENT_PARSER);
       NativeImageUtils.registerClassForReflection(access, "com.google.cloud.spanner.Dialect");
     }
