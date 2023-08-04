@@ -132,7 +132,11 @@ graalvm)
 graalvm17)
     # Run Unit and Integration Tests with Native Image
     pushd google-cloud-spanner
-    mvn test -Pnative -Penable-integration-tests -Dtest="ITBulkConnectionTest"
+    mvn test -Pnative -Penable-integration-tests \
+      -Dtest="ITBulkConnectionTest" \
+      -DargLine="-agentlib:native-image-agent=config-output-dir=native-image-config"
+
+    cat native-image-config/reflect-config.json
     popd
     RETURN_CODE=$?
     ;;
