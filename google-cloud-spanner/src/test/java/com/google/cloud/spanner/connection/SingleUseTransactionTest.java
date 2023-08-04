@@ -32,6 +32,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Dialect;
@@ -443,6 +444,7 @@ public class SingleUseTransactionTest {
 
     return SingleUseTransaction.newBuilder()
         .setDatabaseClient(dbClient)
+        .setBatchClient(mock(BatchClient.class))
         .setDdlClient(ddlClient)
         .setAutocommitDmlMode(dmlMode)
         .setReadOnly(readOnly)
@@ -609,6 +611,7 @@ public class SingleUseTransactionTest {
     SingleUseTransaction transaction =
         SingleUseTransaction.newBuilder()
             .setDatabaseClient(client)
+            .setBatchClient(mock(BatchClient.class))
             .setDdlClient(mock(DdlClient.class))
             .setAutocommitDmlMode(AutocommitDmlMode.TRANSACTIONAL)
             .withStatementExecutor(executor)

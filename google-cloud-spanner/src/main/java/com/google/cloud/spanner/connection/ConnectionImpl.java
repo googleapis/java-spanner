@@ -23,6 +23,8 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.BatchClient;
+import com.google.cloud.spanner.BatchReadOnlyTransaction;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Dialect;
@@ -32,6 +34,7 @@ import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
@@ -188,8 +191,9 @@ class ConnectionImpl implements Connection {
   private boolean closed = false;
 
   private final Spanner spanner;
-  private DdlClient ddlClient;
-  private DatabaseClient dbClient;
+  private final DdlClient ddlClient;
+  private final DatabaseClient dbClient;
+  private final BatchClient batchClient;
   private boolean autocommit;
   private boolean readOnly;
   private boolean returnCommitStats;
@@ -214,6 +218,31 @@ class ConnectionImpl implements Connection {
   private final List<TransactionRetryListener> transactionRetryListeners = new ArrayList<>();
   private AutocommitDmlMode autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
   private TimestampBound readOnlyStaleness = TimestampBound.strong();
+  /**
+   * autoPartitionMode will force this connection to execute all queries as partitioned queries. If
+   * a query cannot be executed as a partitioned query, for example if it is not partitionable, then
+   * the query will fail. This mode is intended for integrations with frameworks that should always
+   * use partitioned queries, and that do not support executing custom SQL statements. This setting
+   * can be used in combination with the dataBoostEnabled flag to force all queries to use data
+   * boost.
+   */
+  private boolean autoPartitionMode;
+  /**
+   * dataBoostEnabled=true will cause all partitionedQueries to use data boost. All other queries
+   * and other statements ignore this flag.
+   */
+  private boolean dataBoostEnabled;
+  /**
+   * maxPartitions determines the maximum number of partitions that will be used for partitioned
+   * queries. All other statements ignore this variable.
+   */
+  private int maxPartitions;
+  /**
+   * maxPartitionedParallelism determines the maximum number of threads that will be used to execute
+   * partitions in parallel when executing a partitioned query on this connection.
+   */
+  private int maxPartitionedParallelism;
+
   private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
   private RpcPriority rpcPriority = null;
   private SavepointSupport savepointSupport = SavepointSupport.FAIL_AFTER_ROLLBACK;
@@ -234,6 +263,7 @@ class ConnectionImpl implements Connection {
       EmulatorUtil.maybeCreateInstanceAndDatabase(spanner, options.getDatabaseId());
     }
     this.dbClient = spanner.getDatabaseClient(options.getDatabaseId());
+    this.batchClient = spanner.getBatchClient(options.getDatabaseId());
     this.retryAbortsInternally = options.isRetryAbortsInternally();
     this.readOnly = options.isReadOnly();
     this.autocommit = options.isAutocommit();
@@ -241,6 +271,10 @@ class ConnectionImpl implements Connection {
     this.rpcPriority = options.getRPCPriority();
     this.returnCommitStats = options.isReturnCommitStats();
     this.delayTransactionStartUntilFirstWrite = options.isDelayTransactionStartUntilFirstWrite();
+    this.dataBoostEnabled = options.isDataBoostEnabled();
+    this.autoPartitionMode = options.isAutoPartitionMode();
+    this.maxPartitions = options.getMaxPartitions();
+    this.maxPartitionedParallelism = options.getMaxPartitionedParallelism();
     this.ddlClient = createDdlClient();
     setDefaultTransactionOptions();
   }
@@ -251,19 +285,17 @@ class ConnectionImpl implements Connection {
       ConnectionOptions options,
       SpannerPool spannerPool,
       DdlClient ddlClient,
-      DatabaseClient dbClient) {
-    Preconditions.checkNotNull(options);
-    Preconditions.checkNotNull(spannerPool);
-    Preconditions.checkNotNull(ddlClient);
-    Preconditions.checkNotNull(dbClient);
+      DatabaseClient dbClient,
+      BatchClient batchClient) {
     this.leakedException =
         options.isTrackConnectionLeaks() ? new LeakedConnectionException() : null;
     this.statementExecutor = new StatementExecutor(Collections.emptyList());
-    this.spannerPool = spannerPool;
-    this.options = options;
+    this.spannerPool = Preconditions.checkNotNull(spannerPool);
+    this.options = Preconditions.checkNotNull(options);
     this.spanner = spannerPool.getSpanner(options, this);
-    this.ddlClient = ddlClient;
-    this.dbClient = dbClient;
+    this.ddlClient = Preconditions.checkNotNull(ddlClient);
+    this.dbClient = Preconditions.checkNotNull(dbClient);
+    this.batchClient = Preconditions.checkNotNull(batchClient);
     setReadOnly(options.isReadOnly());
     setAutocommit(options.isAutocommit());
     setReturnCommitStats(options.isReturnCommitStats());
@@ -995,6 +1027,112 @@ class ConnectionImpl implements Connection {
     return parseAndExecuteQuery(CallType.SYNC, query, AnalyzeMode.of(queryMode));
   }
 
+  @Override
+  public void setDataBoostEnabled(boolean dataBoostEnabled) {
+    this.dataBoostEnabled = dataBoostEnabled;
+  }
+
+  @Override
+  public boolean isDataBoostEnabled() {
+    return this.dataBoostEnabled;
+  }
+
+  @Override
+  public void setAutoPartitionMode(boolean autoPartitionMode) {
+    this.autoPartitionMode = autoPartitionMode;
+  }
+
+  @Override
+  public boolean isAutoPartitionMode() {
+    return this.autoPartitionMode;
+  }
+
+  @Override
+  public void setMaxPartitions(int maxPartitions) {
+    this.maxPartitions = maxPartitions;
+  }
+
+  @Override
+  public int getMaxPartitions() {
+    return this.maxPartitions;
+  }
+
+  @Override
+  public ResultSet partitionQuery(
+      Statement query, PartitionOptions partitionOptions, QueryOption... options) {
+    ParsedStatement parsedStatement = getStatementParser().parse(query, this.queryOptions);
+    if (parsedStatement.getType() != StatementType.QUERY) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          "Only queries can be partitioned. Invalid statement: " + query.getSql());
+    }
+
+    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
+    return get(
+        transaction.partitionQueryAsync(
+            CallType.SYNC,
+            parsedStatement,
+            getEffectivePartitionOptions(partitionOptions),
+            mergeDataBoost(mergeQueryRequestOptions(mergeQueryStatementTag(options)))));
+  }
+
+  private PartitionOptions getEffectivePartitionOptions(
+      PartitionOptions callSpecificPartitionOptions) {
+    if (maxPartitions == 0) {
+      if (callSpecificPartitionOptions == null) {
+        return PartitionOptions.newBuilder().build();
+      } else {
+        return callSpecificPartitionOptions;
+      }
+    }
+    if (callSpecificPartitionOptions != null
+        && callSpecificPartitionOptions.getMaxPartitions() > 0L) {
+      return callSpecificPartitionOptions;
+    }
+    if (callSpecificPartitionOptions != null
+        && callSpecificPartitionOptions.getPartitionSizeBytes() > 0L) {
+      return PartitionOptions.newBuilder()
+          .setMaxPartitions(maxPartitions)
+          .setPartitionSizeBytes(callSpecificPartitionOptions.getPartitionSizeBytes())
+          .build();
+    }
+    return PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build();
+  }
+
+  @Override
+  public ResultSet runPartition(String encodedPartitionId) {
+    PartitionId id = PartitionId.decodeFromString(encodedPartitionId);
+    try (BatchReadOnlyTransaction transaction =
+        batchClient.batchReadOnlyTransaction(id.getTransactionId())) {
+      return transaction.execute(id.getPartition());
+    }
+  }
+
+  @Override
+  public void setMaxPartitionedParallelism(int maxThreads) {
+    Preconditions.checkArgument(maxThreads >= 0, "maxThreads must be >=0");
+    this.maxPartitionedParallelism = maxThreads;
+  }
+
+  @Override
+  public int getMaxPartitionedParallelism() {
+    return this.maxPartitionedParallelism;
+  }
+
+  @Override
+  public PartitionedQueryResultSet runPartitionedQuery(
+      Statement query, PartitionOptions partitionOptions, QueryOption... options) {
+    List<String> partitionIds = new ArrayList<>();
+    try (ResultSet partitions = partitionQuery(query, partitionOptions, options)) {
+      while (partitions.next()) {
+        partitionIds.add(partitions.getString(0));
+      }
+    }
+    // parallelism=0 means 'dynamically choose based on the number of available processors and the
+    // number of partitions'.
+    return new MergedResultSet(this, partitionIds, maxPartitionedParallelism);
+  }
+
   /**
    * Parses the given statement as a query and executes it. Throws a {@link SpannerException} if the
    * statement is not a query.
@@ -1234,6 +1372,20 @@ class ConnectionImpl implements Connection {
     return internalExecuteBatchUpdateAsync(CallType.ASYNC, parsedStatements);
   }
 
+  private QueryOption[] mergeDataBoost(QueryOption... options) {
+    if (this.dataBoostEnabled) {
+
+      // Shortcut for the most common scenario.
+      if (options == null || options.length == 0) {
+        options = new QueryOption[] {Options.dataBoostEnabled(true)};
+      } else {
+        options = Arrays.copyOf(options, options.length + 1);
+        options[options.length - 1] = Options.dataBoostEnabled(true);
+      }
+    }
+    return options;
+  }
+
   private QueryOption[] mergeQueryStatementTag(QueryOption... options) {
     if (this.statementTag != null) {
       // Shortcut for the most common scenario.
@@ -1299,6 +1451,10 @@ class ConnectionImpl implements Connection {
                 && (analyzeMode != AnalyzeMode.NONE || statement.hasReturningClause())),
         "Statement must either be a query or a DML mode with analyzeMode!=NONE or returning clause");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
+    if (autoPartitionMode && statement.getType() == StatementType.QUERY) {
+      return runPartitionedQuery(
+          statement.getStatement(), PartitionOptions.getDefaultInstance(), options);
+    }
     return get(
         transaction.executeQueryAsync(
             callType,
@@ -1316,6 +1472,9 @@ class ConnectionImpl implements Connection {
         (statement.getType() == StatementType.QUERY)
             || (statement.getType() == StatementType.UPDATE && statement.hasReturningClause()),
         "Statement must be a query or DML with returning clause.");
+    ConnectionPreconditions.checkState(
+        !(autoPartitionMode && statement.getType() == StatementType.QUERY),
+        "Partitioned queries cannot be executed asynchronously");
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return ResultSets.toAsyncResultSet(
         transaction.executeQueryAsync(
@@ -1373,6 +1532,7 @@ class ConnectionImpl implements Connection {
       return SingleUseTransaction.newBuilder()
           .setDdlClient(ddlClient)
           .setDatabaseClient(dbClient)
+          .setBatchClient(batchClient)
           .setReadOnly(isReadOnly())
           .setReadOnlyStaleness(readOnlyStaleness)
           .setAutocommitDmlMode(autocommitDmlMode)
@@ -1385,6 +1545,7 @@ class ConnectionImpl implements Connection {
         case READ_ONLY_TRANSACTION:
           return ReadOnlyTransaction.newBuilder()
               .setDatabaseClient(dbClient)
+              .setBatchClient(batchClient)
               .setReadOnlyStaleness(readOnlyStaleness)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)

@@ -135,6 +135,31 @@ class ClientSideStatementValueConverters {
     }
   }
 
+  /** Converter from string to a non-negative integer. */
+  static class NonNegativeIntegerConverter implements ClientSideStatementValueConverter<Integer> {
+
+    public NonNegativeIntegerConverter(String allowedValues) {}
+
+    @Override
+    public Class<Integer> getParameterClass() {
+      return Integer.class;
+    }
+
+    @Override
+    public Integer convert(String value) {
+      try {
+        int res = Integer.parseInt(value);
+        if (res < 0) {
+          // The conventions for these converters is to return null if the value is invalid.
+          return null;
+        }
+        return res;
+      } catch (Exception ignore) {
+        return null;
+      }
+    }
+  }
+
   /** Converter from string to {@link Duration}. */
   static class DurationConverter implements ClientSideStatementValueConverter<Duration> {
     private final Pattern allowedValues;
