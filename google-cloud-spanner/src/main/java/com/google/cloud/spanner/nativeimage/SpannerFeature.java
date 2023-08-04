@@ -83,6 +83,7 @@ final class SpannerFeature implements Feature {
       NativeImageUtils.registerClassForReflection(access, CONNECTION_IMPL);
     }
     if (access.findClassByName(ABSTRACT_STATEMENT_PARSER) != null) {
+      System.out.println(ABSTRACT_STATEMENT_PARSER + " accessed. Registering.");
       NativeImageUtils.registerClassHierarchyForReflection(access, ABSTRACT_STATEMENT_PARSER);
       NativeImageUtils.registerClassForReflection(access, "com.google.cloud.spanner.Dialect");
     }
