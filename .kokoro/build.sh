@@ -131,7 +131,9 @@ graalvm)
     ;;
 graalvm17)
     # Run Unit and Integration Tests with Native Image
+    pushd google-cloud-spanner
     mvn test -Pnative -Penable-integration-tests -Dtest="ITBulkConnectionTest"
+    popd
     RETURN_CODE=$?
     ;;
 slowtests)
