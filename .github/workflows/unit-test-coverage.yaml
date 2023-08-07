@@ -38,6 +38,10 @@ jobs:
         path: ./google-cloud-spanner/target/site/jacoco
         name: jacoco-report
         verbose: true
+    - name: Log coverage percentages to workflow output
+      run: |
+        echo "coverage = ${{ steps.jacoco.outputs.coverage }}"
+        echo "branches = ${{ steps.jacoco.outputs.branches }}"
     - name: Comment on PR with coverage percentages
       if: ${{ github.event_name == 'pull_request' }}
       run: |
