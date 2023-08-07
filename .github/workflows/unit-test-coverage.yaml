@@ -1,0 +1,40 @@
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+name: coverage
+jobs:
+  unit-test-coverage:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: stCarolas/setup-maven@v4
+      with:
+        maven-version: 3.8.1
+    # Build with JDK 11 and run tests with JDK 8
+    - uses: actions/setup-java@v3
+      with:
+        java-version: 11
+        distribution: zulu
+    - run: echo "JAVA11_HOME=${JAVA_HOME}" >> $GITHUB_ENV
+      shell: bash
+    # GraalVM dependencies require JDK 11 to compile the classes touching GraalVM classes.
+    - name: Install project
+      run: mvn clean install
+    - uses: actions/setup-java@v3
+      with:
+        java-version: 8
+        distribution: zulu
+    - run: echo "JAVA8_HOME=${JAVA_HOME}" >> $GITHUB_ENV
+      shell: bash
+    - run: java -version
+    - name: Run unit tests
+      run: mvn test -B -V -Dclirr.skip=true -Denforcer.skip=true -Djava.net.preferIPv4Stack=true
+      working-directory: google-cloud-spanner
+    - name: Upload JaCoCo coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        directory: ./google-cloud-spanner/target/site/jacoco
+        name: jacoco-report
+        verbose: true
