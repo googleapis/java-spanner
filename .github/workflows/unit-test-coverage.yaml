@@ -38,3 +38,15 @@ jobs:
         path: ./google-cloud-spanner/target/site/jacoco
         name: jacoco-report
         verbose: true
+    - name: Comment on PR with coverage percentages
+      if: ${{ github.event_name == 'pull_request' }}
+      run: |
+        REPORT=$(<badges/coverage-summary.json)
+        COVERAGE=$(jq -r '.coverage' <<< "$REPORT")%
+        BRANCHES=$(jq -r '.branches' <<< "$REPORT")%
+        NEWLINE=$'\n'
+        BODY="## JaCoCo Test Coverage Summary Statistics${NEWLINE}* __Coverage:__ ${COVERAGE}${NEWLINE}* __Branches:__ ${BRANCHES}"
+        gh pr comment ${{github.event.pull_request.number}} -b "${BODY}"
+      continue-on-error: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
