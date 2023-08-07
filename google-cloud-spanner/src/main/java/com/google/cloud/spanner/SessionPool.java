@@ -63,7 +63,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ForwardingListenableFuture;
 import com.google.common.util.concurrent.ForwardingListenableFuture.SimpleForwardingListenableFuture;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -120,17 +119,6 @@ class SessionPool {
   private static final Logger logger = Logger.getLogger(SessionPool.class.getName());
   private static final Tracer tracer = Tracing.getTracer();
   static final String WAIT_FOR_SESSION = "SessionPool.WaitForSession";
-  static final ImmutableSet<ErrorCode> SHOULD_STOP_PREPARE_SESSIONS_ERROR_CODES =
-      ImmutableSet.of(
-          ErrorCode.UNKNOWN,
-          ErrorCode.INVALID_ARGUMENT,
-          ErrorCode.PERMISSION_DENIED,
-          ErrorCode.UNAUTHENTICATED,
-          ErrorCode.RESOURCE_EXHAUSTED,
-          ErrorCode.FAILED_PRECONDITION,
-          ErrorCode.OUT_OF_RANGE,
-          ErrorCode.UNIMPLEMENTED,
-          ErrorCode.INTERNAL);
 
   /**
    * If the {@link SessionPoolOptions#getWaitForMinSessions()} duration is greater than zero, waits
@@ -1675,7 +1663,10 @@ class SessionPool {
       while (true) {
         Span span = tracer.spanBuilder(WAIT_FOR_SESSION).startSpan();
         try (Scope waitScope = tracer.withSpan(span)) {
-          PooledSession s = pollUninterruptiblyWithTimeout(currentTimeout);
+          PooledSession s =
+              pollUninterruptiblyWithTimeout(currentTimeout, options.getAcquireSessionTimeout());
+          // TODO clean up this code since acquireSessionTimeout will never be null and hence
+          // we won't have a use-case when s == null
           if (s == null) {
             // Set the status to DEADLINE_EXCEEDED and retry.
             numWaiterTimeouts.incrementAndGet();
@@ -1685,6 +1676,11 @@ class SessionPool {
             return s;
           }
         } catch (Exception e) {
+          if (e instanceof SpannerException
+              && ErrorCode.RESOURCE_EXHAUSTED.equals(((SpannerException) e).getErrorCode())) {
+            numWaiterTimeouts.incrementAndGet();
+            tracer.getCurrentSpan().setStatus(Status.RESOURCE_EXHAUSTED);
+          }
           TraceUtil.setWithFailure(span, e);
           throw e;
         } finally {
@@ -1693,15 +1689,27 @@ class SessionPool {
       }
     }
 
-    private PooledSession pollUninterruptiblyWithTimeout(long timeoutMillis) {
+    private PooledSession pollUninterruptiblyWithTimeout(
+        long timeoutMillis, Duration acquireSessionTimeout) {
       boolean interrupted = false;
       try {
         while (true) {
           try {
-            return waiter.get(timeoutMillis, TimeUnit.MILLISECONDS);
+            // TODO refactor this code since eventually acquireSessionTimeout will always have a
+            // default value and won't be null
+            return acquireSessionTimeout == null
+                ? waiter.get(timeoutMillis, TimeUnit.MILLISECONDS)
+                : waiter.get(acquireSessionTimeout.toMillis(), TimeUnit.MILLISECONDS);
           } catch (InterruptedException e) {
             interrupted = true;
           } catch (TimeoutException e) {
+            if (acquireSessionTimeout != null) {
+              throw SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.RESOURCE_EXHAUSTED,
+                  "Timed out after waiting "
+                      + acquireSessionTimeout.toMillis()
+                      + "ms for acquiring session.");
+            }
             return null;
           } catch (ExecutionException e) {
             throw SpannerExceptionFactory.newSpannerException(e.getCause());

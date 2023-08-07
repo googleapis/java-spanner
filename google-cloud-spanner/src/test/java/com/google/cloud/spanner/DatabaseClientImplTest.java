@@ -66,6 +66,10 @@ import com.google.cloud.spanner.connection.RandomResultSetGenerator;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.BaseEncoding;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
@@ -2204,6 +2208,107 @@ public class DatabaseClientImplTest {
       // Actually trying to get any results will cause an exception.
       SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
       assertEquals(ErrorCode.PERMISSION_DENIED, e.getErrorCode());
+    }
+  }
+
+  @Test
+  public void testBatchCreateSessionsTimesOut_whenDeadlineExceeded() throws Exception {
+    // Simulate a minimum execution time of 1000 milliseconds for the BatchCreateSessions RPC.
+    mockSpanner.setBatchCreateSessionsExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
+    SpannerOptions.Builder builder =
+        SpannerOptions.newBuilder()
+            .setProjectId("my-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance());
+    // Set the timeout and retry settings for BatchCreateSessions to a simple
+    // single-attempt-and-timeout after 100ms.
+    builder
+        .getSpannerStubSettingsBuilder()
+        .batchCreateSessionsSettings()
+        .setSimpleTimeoutNoRetries(Duration.ofMillis(100));
+
+    try (Spanner spanner = builder.build().getService()) {
+      DatabaseId databaseId = DatabaseId.of("my-project", "my-instance", "my-database");
+      DatabaseClient client = spanner.getDatabaseClient(databaseId);
+
+      ListeningExecutorService service =
+          MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(1000));
+      List<ListenableFuture<Void>> futures = new ArrayList<>(5000);
+      AtomicInteger counter = new AtomicInteger();
+      for (int i = 0; i < 5000; i++) {
+        final int index = i;
+        futures.add(
+            service.submit(
+                () -> {
+                  // The following call is non-blocking and will not generate an exception.
+                  ResultSet rs = client.singleUse().executeQuery(SELECT1);
+                  // Actually trying to get any results will cause an exception.
+                  // The DEADLINE_EXCEEDED error of the BatchCreateSessions RPC is in this case
+                  // propagated to
+                  // the application.
+                  SpannerException e = assertThrows(SpannerException.class, rs::next);
+                  assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
+                  System.out.printf("finished test %d\n", counter.incrementAndGet());
+
+                  return null;
+                }));
+      }
+      service.shutdown();
+      assertEquals(5000, Futures.allAsList(futures).get().size());
+    }
+  }
+
+  @Test
+  public void testBatchCreateSessionsTimesOut_whenResourceExhausted() throws Exception {
+    // Simulate a minimum execution time of 1000 milliseconds for the BatchCreateSessions RPC.
+    mockSpanner.setBatchCreateSessionsExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(2000, 0));
+    // Add a timeout for the max amount of time (60ms) that a request waits when a session is
+    // unavailable.
+    SessionPoolOptions sessionPoolOptions =
+        SessionPoolOptions.newBuilder().setAcquireSessionTimeout(Duration.ofMillis(60)).build();
+    SpannerOptions.Builder builder =
+        SpannerOptions.newBuilder()
+            .setProjectId("my-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(sessionPoolOptions);
+    // Set the timeout and retry settings for BatchCreateSessions to a simple
+    // single-attempt-and-timeout after 1000ms. This will ensure that session acquisition timeout of
+    // 60ms will kick for all requests before the overall request RPC timeout is breached.
+    builder
+        .getSpannerStubSettingsBuilder()
+        .batchCreateSessionsSettings()
+        .setSimpleTimeoutNoRetries(Duration.ofMillis(1000));
+
+    try (Spanner spanner = builder.build().getService()) {
+      DatabaseId databaseId = DatabaseId.of("my-project", "my-instance", "my-database");
+      DatabaseClient client = spanner.getDatabaseClient(databaseId);
+
+      ListeningExecutorService service =
+          MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(1000));
+      List<ListenableFuture<Void>> futures = new ArrayList<>(5000);
+      AtomicInteger counter = new AtomicInteger();
+      for (int i = 0; i < 5000; i++) {
+        final int index = i;
+        futures.add(
+            service.submit(
+                () -> {
+                  // The following call is non-blocking and will not generate an exception.
+                  ResultSet rs = client.singleUse().executeQuery(SELECT1);
+                  // Actually trying to get any results will cause an exception.
+                  // When number of requests > MAX_SESSIONS, post setAcquireSessionTimeout
+                  // a few requests will timeout with RESOURCE_EXHAUSTED error.
+                  SpannerException e = assertThrows(SpannerException.class, rs::next);
+                  assertEquals(ErrorCode.RESOURCE_EXHAUSTED, e.getErrorCode());
+                  System.out.printf("finished test %d\n", counter.incrementAndGet());
+
+                  return null;
+                }));
+      }
+      service.shutdown();
+      assertEquals(5000, Futures.allAsList(futures).get().size());
     }
   }
 

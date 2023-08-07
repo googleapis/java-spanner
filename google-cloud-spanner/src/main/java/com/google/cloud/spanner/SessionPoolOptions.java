@@ -55,6 +55,7 @@ public class SessionPoolOptions {
   private final long initialWaitForSessionTimeoutMillis;
   private final boolean autoDetectDialect;
   private final Duration waitForMinSessions;
+  private final Duration acquireSessionTimeout;
 
   /** Property for allowing mocking of session maintenance clock. */
   private final Clock poolMaintainerClock;
@@ -78,6 +79,7 @@ public class SessionPoolOptions {
     this.removeInactiveSessionAfter = builder.removeInactiveSessionAfter;
     this.autoDetectDialect = builder.autoDetectDialect;
     this.waitForMinSessions = builder.waitForMinSessions;
+    this.acquireSessionTimeout = builder.acquireSessionTimeout;
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
     this.poolMaintainerClock = builder.poolMaintainerClock;
   }
@@ -105,6 +107,7 @@ public class SessionPoolOptions {
         && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter)
         && Objects.equals(this.autoDetectDialect, other.autoDetectDialect)
         && Objects.equals(this.waitForMinSessions, other.waitForMinSessions)
+        && Objects.equals(this.acquireSessionTimeout, other.acquireSessionTimeout)
         && Objects.equals(
             this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions)
         && Objects.equals(this.poolMaintainerClock, other.poolMaintainerClock);
@@ -128,6 +131,7 @@ public class SessionPoolOptions {
         this.removeInactiveSessionAfter,
         this.autoDetectDialect,
         this.waitForMinSessions,
+        this.acquireSessionTimeout,
         this.inactiveTransactionRemovalOptions,
         this.poolMaintainerClock);
   }
@@ -237,6 +241,11 @@ public class SessionPoolOptions {
 
   Duration getWaitForMinSessions() {
     return waitForMinSessions;
+  }
+
+  @VisibleForTesting
+  Duration getAcquireSessionTimeout() {
+    return acquireSessionTimeout;
   }
 
   public static Builder newBuilder() {
@@ -424,6 +433,7 @@ public class SessionPoolOptions {
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
     private boolean autoDetectDialect = false;
     private Duration waitForMinSessions = Duration.ZERO;
+    private Duration acquireSessionTimeout = Duration.ofSeconds(60);
 
     private Clock poolMaintainerClock;
 
@@ -446,6 +456,7 @@ public class SessionPoolOptions {
       this.removeInactiveSessionAfter = options.removeInactiveSessionAfter;
       this.autoDetectDialect = options.autoDetectDialect;
       this.waitForMinSessions = options.waitForMinSessions;
+      this.acquireSessionTimeout = options.acquireSessionTimeout;
       this.inactiveTransactionRemovalOptions = options.inactiveTransactionRemovalOptions;
       this.poolMaintainerClock = options.poolMaintainerClock;
     }
@@ -692,6 +703,15 @@ public class SessionPoolOptions {
      */
     public Builder setWaitForMinSessions(Duration waitForMinSessions) {
       this.waitForMinSessions = waitForMinSessions;
+      return this;
+    }
+
+    /**
+     * If greater than zero, we wait for said duration when no sessions are available in the {@link
+     * SessionPool}. When no configuration is passed, we default to 60s to acquire a session.
+     */
+    public Builder setAcquireSessionTimeout(Duration acquireSessionTimeout) {
+      this.acquireSessionTimeout = acquireSessionTimeout;
       return this;
     }
 

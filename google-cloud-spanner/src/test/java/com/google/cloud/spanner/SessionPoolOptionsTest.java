@@ -186,4 +186,19 @@ public class SessionPoolOptionsTest {
     SessionPoolOptions.newBuilder()
         .setInactiveTransactionRemovalOptions(inactiveTransactionRemovalOptions);
   }
+
+  @Test
+  public void setAcquireSessionTimeout() {
+    SessionPoolOptions sessionPoolOptions =
+        SessionPoolOptions.newBuilder().setAcquireSessionTimeout(Duration.ofSeconds(20)).build();
+
+    assertEquals(Duration.ofSeconds(20), sessionPoolOptions.getAcquireSessionTimeout());
+  }
+
+  @Test
+  public void verifyDefaultAcquireSessionTimeout() {
+    SessionPoolOptions sessionPoolOptions = SessionPoolOptions.newBuilder().build();
+
+    assertEquals(Duration.ofSeconds(60), sessionPoolOptions.getAcquireSessionTimeout());
+  }
 }
