@@ -265,6 +265,84 @@ public class SessionPoolOptions {
     CLOSE
   }
 
+  @VisibleForTesting
+  enum ActionForNumberOfAnonymousSessions {
+    SINGLE_SESSION,
+    MULTI_SESSION
+  }
+
+  @VisibleForTesting
+  enum ActionForAnonymousSessionsChannelHints {
+    SINGLE_CHANNEL,
+    MULTI_CHANNEL
+  }
+
+  /** Configuration options for task to clean up anonymous sessions. */
+  static class AnonymousSessionOptions {
+
+    private ActionForNumberOfAnonymousSessions actionForNumberOfAnonymousSessions;
+
+    private ActionForAnonymousSessionsChannelHints actionForAnonymousSessionsChannelHints;
+
+    AnonymousSessionOptions(final Builder builder) {
+      this.actionForNumberOfAnonymousSessions = builder.actionForNumberOfAnonymousSessions;
+      this.actionForAnonymousSessionsChannelHints = builder.actionForAnonymousSessionsChannelHints;
+
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof AnonymousSessionOptions)) {
+        return false;
+      }
+      AnonymousSessionOptions other = (AnonymousSessionOptions) o;
+      return Objects.equals(this.actionForNumberOfAnonymousSessions, other.actionForNumberOfAnonymousSessions)
+          && Objects.equals(this.actionForAnonymousSessionsChannelHints, other.actionForAnonymousSessionsChannelHints);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(
+          this.actionForNumberOfAnonymousSessions,
+          this.actionForAnonymousSessionsChannelHints);
+    }
+
+    static AnonymousSessionOptions.Builder newBuilder() {
+      return new Builder();
+    }
+
+    static class Builder {
+      private ActionForNumberOfAnonymousSessions actionForNumberOfAnonymousSessions
+          = ActionForNumberOfAnonymousSessions.MULTI_SESSION;
+
+      private ActionForAnonymousSessionsChannelHints actionForAnonymousSessionsChannelHints
+          = ActionForAnonymousSessionsChannelHints.SINGLE_CHANNEL;
+      public Builder() {}
+
+      AnonymousSessionOptions build() {
+        validate();
+        return new AnonymousSessionOptions(this);
+      }
+
+      private void validate() {
+      }
+
+      @VisibleForTesting
+      AnonymousSessionOptions.Builder setActionForNumberOfAnonymousSessions(
+          final ActionForNumberOfAnonymousSessions actionForNumberOfAnonymousSessions) {
+        this.actionForNumberOfAnonymousSessions = actionForNumberOfAnonymousSessions;
+        return this;
+      }
+
+      @VisibleForTesting
+      AnonymousSessionOptions.Builder setActionForAnonymousSessionsChannelHints(
+          final ActionForAnonymousSessionsChannelHints actionForAnonymousSessionsChannelHints) {
+        this.actionForAnonymousSessionsChannelHints = actionForAnonymousSessionsChannelHints;
+        return this;
+      }
+    }
+  }
+
   /** Configuration options for task to clean up inactive transactions. */
   static class InactiveTransactionRemovalOptions {
 
