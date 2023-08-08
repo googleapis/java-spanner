@@ -289,7 +289,10 @@ class SessionClient implements AutoCloseable {
    */
   private List<SessionImpl> internalBatchCreateSessions(
       final int sessionCount, final long channelHint) throws SpannerException {
+    // This code can be disabled for test purposes. This will ensure no channel hint is passed
+    // to GRPC and hence we will use a new channel for each session.
     final Map<SpannerRpc.Option, ?> options = optionMap(SessionOption.channelHint(channelHint));
+
     Span parent = SpannerImpl.tracer.getCurrentSpan();
     Span span =
         SpannerImpl.tracer

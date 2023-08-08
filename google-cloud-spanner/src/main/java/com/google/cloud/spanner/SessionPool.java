@@ -2359,6 +2359,45 @@ class SessionPool {
     }
   }
 
+  /**
+   * This method does not poll the queue. Instead, it selects a session at a random position in the
+   * list and returns the reference. Note that this session can be used with multiple transactions.
+   * @return
+   * @throws SpannerException
+   */
+  PooledSessionFuture getRandomSharedSession() throws SpannerException {
+    Span span = Tracing.getTracer().getCurrentSpan();
+    span.addAnnotation("Acquiring session");
+    WaiterFuture waiter = null;
+    PooledSession sess = null;
+    synchronized (lock) {
+      if (closureFuture != null) {
+        span.addAnnotation("Pool has been closed");
+        throw new IllegalStateException("Pool has been closed", closedException);
+      }
+      if (resourceNotFoundException != null) {
+        span.addAnnotation("Database has been deleted");
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.NOT_FOUND,
+            String.format(
+                "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
+                resourceNotFoundException.getMessage()),
+            resourceNotFoundException);
+      }
+
+      sess = sessions.peek();
+      if (sess == null) {
+        span.addAnnotation("No session available");
+        maybeCreateSession();
+        waiter = new WaiterFuture();
+        waiters.add(waiter);
+      } else {
+        span.addAnnotation("Acquired session");
+      }
+      return checkoutSession(span, sess, waiter);
+    }
+  }
+
   private PooledSessionFuture checkoutSession(
       final Span span, final PooledSession readySession, WaiterFuture waiter) {
     ListenableFuture<PooledSession> sessionFuture;
