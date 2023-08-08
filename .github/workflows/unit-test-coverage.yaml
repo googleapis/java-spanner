@@ -38,6 +38,19 @@ jobs:
         path: ./google-cloud-spanner/target/site/jacoco
         name: jacoco-report
         verbose: true
+    - name: Calculate and log coverage percentages
+      id: coverage
+      run: |
+        # Calculate coverage percentages and branches here
+        # You can use tools like grep, sed, awk, etc. to parse JaCoCo report files
+        coverage=$(grep "Line Coverage" ./google-cloud-spanner/target/site/jacoco/index.html | awk '{print $3}')
+        branches=$(grep "Branch Coverage" ./google-cloud-spanner/target/site/jacoco/index.html | awk '{print $3}')
+        echo "::set-output name=coverage::$coverage"
+        echo "::set-output name=branches::$branches"
+    - name: Log coverage percentages to workflow output
+      run: |
+        echo "coverage = ${{ steps.coverage.outputs.coverage }}"
+        echo "branches = ${{ steps.coverage.outputs.branches }}"
     - name: Log coverage percentages to workflow output
       run: |
         echo "coverage = ${{ steps.jacoco.outputs.coverage }}"
