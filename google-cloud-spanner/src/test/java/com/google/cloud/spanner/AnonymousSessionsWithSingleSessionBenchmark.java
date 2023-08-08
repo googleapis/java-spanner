@@ -47,15 +47,15 @@ import org.threeten.bp.Duration;
  * reasonable estimates and are primarily intended to keep the benchmarks comparable with each other
  * before and after changes have been made to the pool. The benchmarks are bound to the Maven
  * profile `benchmark` and can be executed like this: <code>
- * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsBenchmark
+ * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsWithSingleSessionBenchmark
  * </code>
  */
 @BenchmarkMode(Mode.AverageTime)
-@Fork(value = 1, warmups = 0)
+@Fork(value = 1, warmups = 1)
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
-@Warmup(batchSize = 0, iterations = 0)
+@Warmup(batchSize = 0, iterations = 1)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class AnonymousSessionsBenchmark {
+public class AnonymousSessionsWithSingleSessionBenchmark {
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
   private static final int WAIT_TIME_BETWEEN_REQUESTS = 2;
@@ -76,14 +76,18 @@ public class AnonymousSessionsBenchmark {
     @Param({"400"})
     int maxSessions;
 
+    @Param({"1", "2", "50", "100", "400"})
+    int numSessions;
     @Setup(Level.Invocation)
     public void setup() throws Exception {
       SpannerOptions options =
           SpannerOptions.newBuilder()
               .setSessionPoolOption(
                   SessionPoolOptions.newBuilder()
-                      .setMinSessions(minSessions)
-                      .setMaxSessions(maxSessions)
+                      .setMinSessions(numSessions)
+                      .setMaxSessions(numSessions)
+                      .setAnonymousSessionsWithSingleSession()
+                      .setAnonymousSessionsWithSingleChannel()
                       .setWaitForMinSessions(Duration.ofSeconds(20)).build())
               .build();
       spanner = options.getService();
@@ -116,9 +120,10 @@ public class AnonymousSessionsBenchmark {
   public void burstRead(final BenchmarkState server) throws Exception {
     int totalQueries = server.maxSessions * 8;
     int parallelThreads = server.maxSessions * 2;
-    final DatabaseClient client = server.client;
-    SessionPool pool = ((DatabaseClientImpl) client).pool;
-    assertThat(pool.totalSessions()).isEqualTo(server.minSessions);
+    final DatabaseClientImpl client = server.client;
+    SessionPool pool = client.pool;
+    assertThat(pool.totalSessions()).isEqualTo(
+        server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
@@ -129,47 +134,10 @@ public class AnonymousSessionsBenchmark {
               () -> {
                 Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
                 try (ResultSet rs =
-                    client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
+                    client.singleUseWithSharedSession().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
                   while (rs.next()) {}
                   return null;
                 }
-              }));
-    }
-
-    Futures.allAsList(futures).get();
-    service.shutdown();
-  }
-
-  /**
-   * Measures the time needed to execute a burst of write requests (PDML).
-   *
-   * <p>Some write requests will be long-running. The test asserts that no sessions are removed by
-   * the session maintenance background task with SessionPool Option ActionOnInactiveTransaction set
-   * as WARN_AND_CLOSE. This is because PDML writes are expected to be long-running.
-   *
-   * @param server
-   * @throws Exception
-   */
-  @Benchmark
-  public void burstWrite(final BenchmarkState server) throws Exception {
-    int totalWrites = server.maxSessions * 8;
-    int parallelThreads = server.maxSessions * 2;
-    final DatabaseClient client = server.client;
-    SessionPool pool = ((DatabaseClientImpl) client).pool;
-    assertThat(pool.totalSessions()).isEqualTo(server.minSessions);
-
-    ListeningScheduledExecutorService service =
-        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
-    List<ListenableFuture<?>> futures = new ArrayList<>(totalWrites);
-    for (int i = 0; i < totalWrites; i++) {
-      futures.add(
-          service.submit(
-              () -> {
-                Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
-                TransactionRunner runner = server.client.readWriteTransaction();
-                return runner.run(
-                    transaction ->
-                        transaction.executeUpdate(StandardBenchmarkMockServer.UPDATE_STATEMENT));
               }));
     }
 
@@ -191,14 +159,17 @@ public class AnonymousSessionsBenchmark {
    * @param server
    * @throws Exception
    */
+
+  /**
   @Benchmark
   public void burstReadAndWrite(final BenchmarkState server) throws Exception {
     int totalWrites = server.maxSessions * 4;
     int totalReads = server.maxSessions * 4;
     int parallelThreads = server.maxSessions * 2;
-    final DatabaseClient client = server.client;
-    SessionPool pool = ((DatabaseClientImpl) client).pool;
-    assertThat(pool.totalSessions()).isEqualTo(server.minSessions);
+    final DatabaseClientImpl client = server.client;
+    SessionPool pool = client.pool;
+    assertThat(pool.totalSessions()).isEqualTo(
+        server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
@@ -220,7 +191,7 @@ public class AnonymousSessionsBenchmark {
               () -> {
                 Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
                 try (ResultSet rs =
-                    client.singleUse().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
+                    client.singleUseWithSharedSession().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
                   while (rs.next()) {}
                   return null;
                 }
@@ -229,4 +200,5 @@ public class AnonymousSessionsBenchmark {
     Futures.allAsList(futures).get();
     service.shutdown();
   }
+  */
 }
