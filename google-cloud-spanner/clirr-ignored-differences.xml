@@ -422,4 +422,25 @@
     <className>com/google/cloud/spanner/spi/v1/SpannerRpc$StreamingCall</className>
     <method>com.google.api.gax.rpc.ApiCallContext getCallContext()</method>
   </difference>
+  <!-- (Internal change, propagate streaming retry settings) -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.retrying.RetrySettings getReadRetrySettings()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.retrying.RetrySettings getExecuteQueryRetrySettings()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>java.util.Set getReadRetryableCodes()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>java.util.Set getExecuteQueryRetryableCodes()</method>
+  </difference>
 </differences>

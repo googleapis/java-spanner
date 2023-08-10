@@ -58,6 +58,7 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.ResultStreamConsumer;
+import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
@@ -1131,6 +1132,16 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(ApiFutures.<CommitResponse>immediateFailedFuture(sessionNotFound));
       when(rpc.rollbackAsync(any(RollbackRequest.class), any(Map.class)))
           .thenReturn(ApiFutures.<Empty>immediateFailedFuture(sessionNotFound));
+      when(rpc.getReadRetrySettings())
+          .thenReturn(SpannerStubSettings.newBuilder().streamingReadSettings().getRetrySettings());
+      when(rpc.getReadRetryableCodes())
+          .thenReturn(SpannerStubSettings.newBuilder().streamingReadSettings().getRetryableCodes());
+      when(rpc.getExecuteQueryRetrySettings())
+          .thenReturn(
+              SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings());
+      when(rpc.getExecuteQueryRetryableCodes())
+          .thenReturn(
+              SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes());
       final SessionImpl closedSession = mock(SessionImpl.class);
       when(closedSession.getName())
           .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-closed");

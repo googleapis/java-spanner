@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verify;
 
 import com.google.api.client.util.BackOff;
 import com.google.cloud.spanner.AbstractResultSet.ResumableStreamIterator;
+import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
@@ -136,7 +137,12 @@ public class ResumableStreamIteratorTest {
 
   private void initWithLimit(int maxBufferSize) {
     resumableStreamIterator =
-        new AbstractResultSet.ResumableStreamIterator(maxBufferSize, "", null) {
+        new AbstractResultSet.ResumableStreamIterator(
+            maxBufferSize,
+            "",
+            null,
+            SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings(),
+            SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes()) {
           @Override
           AbstractResultSet.CloseableIterator<PartialResultSet> startStream(
               @Nullable ByteString resumeToken) {

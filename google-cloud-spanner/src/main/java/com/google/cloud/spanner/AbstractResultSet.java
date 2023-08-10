@@ -24,8 +24,10 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.client.util.BackOff;
 import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.gax.grpc.GrpcStatusCode;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ApiCallContext;
+import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -65,6 +67,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -1082,10 +1085,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @VisibleForTesting
   abstract static class ResumableStreamIterator extends AbstractIterator<PartialResultSet>
       implements CloseableIterator<PartialResultSet> {
-    private static final RetrySettings STREAMING_RETRY_SETTINGS =
+    private static final RetrySettings DEFAULT_STREAMING_RETRY_SETTINGS =
         SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings();
+    private final RetrySettings streamingRetrySettings;
+    private final Set<Code> retryableCodes;
     private static final Logger logger = Logger.getLogger(ResumableStreamIterator.class.getName());
-    private final BackOff backOff = newBackOff();
+    private final BackOff backOff;
     private final LinkedList<PartialResultSet> buffer = new LinkedList<>();
     private final int maxBufferSize;
     private final Span span;
@@ -1099,24 +1104,58 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
      */
     private boolean safeToRetry = true;
 
-    protected ResumableStreamIterator(int maxBufferSize, String streamName, Span parent) {
+    protected ResumableStreamIterator(
+        int maxBufferSize,
+        String streamName,
+        Span parent,
+        RetrySettings streamingRetrySettings,
+        Set<Code> retryableCodes) {
       checkArgument(maxBufferSize >= 0);
       this.maxBufferSize = maxBufferSize;
       this.span = tracer.spanBuilderWithExplicitParent(streamName, parent).startSpan();
+      this.streamingRetrySettings = Preconditions.checkNotNull(streamingRetrySettings);
+      this.retryableCodes = Preconditions.checkNotNull(retryableCodes);
+      this.backOff = newBackOff();
     }
 
-    private static ExponentialBackOff newBackOff() {
+    private ExponentialBackOff newBackOff() {
+      if (Objects.equals(streamingRetrySettings, DEFAULT_STREAMING_RETRY_SETTINGS)) {
+        return new ExponentialBackOff.Builder()
+            .setMultiplier(streamingRetrySettings.getRetryDelayMultiplier())
+            .setInitialIntervalMillis(
+                Math.max(10, (int) streamingRetrySettings.getInitialRetryDelay().toMillis()))
+            .setMaxIntervalMillis(
+                Math.max(1000, (int) streamingRetrySettings.getMaxRetryDelay().toMillis()))
+            .setMaxElapsedTimeMillis(
+                Integer.MAX_VALUE) // Prevent Backoff.STOP from getting returned.
+            .build();
+      }
       return new ExponentialBackOff.Builder()
-          .setMultiplier(STREAMING_RETRY_SETTINGS.getRetryDelayMultiplier())
+          .setMultiplier(streamingRetrySettings.getRetryDelayMultiplier())
+          // All of these values must be > 0.
           .setInitialIntervalMillis(
-              Math.max(10, (int) STREAMING_RETRY_SETTINGS.getInitialRetryDelay().toMillis()))
+              Math.max(
+                  1,
+                  (int)
+                      Math.min(
+                          streamingRetrySettings.getInitialRetryDelay().toMillis(),
+                          Integer.MAX_VALUE)))
           .setMaxIntervalMillis(
-              Math.max(1000, (int) STREAMING_RETRY_SETTINGS.getMaxRetryDelay().toMillis()))
-          .setMaxElapsedTimeMillis(Integer.MAX_VALUE) // Prevent Backoff.STOP from getting returned.
+              Math.max(
+                  1,
+                  (int)
+                      Math.min(
+                          streamingRetrySettings.getMaxRetryDelay().toMillis(), Integer.MAX_VALUE)))
+          .setMaxElapsedTimeMillis(
+              Math.max(
+                  1,
+                  (int)
+                      Math.min(
+                          streamingRetrySettings.getTotalTimeout().toMillis(), Integer.MAX_VALUE)))
           .build();
     }
 
-    private static void backoffSleep(Context context, BackOff backoff) throws SpannerException {
+    private void backoffSleep(Context context, BackOff backoff) throws SpannerException {
       backoffSleep(context, nextBackOffMillis(backoff));
     }
 
@@ -1128,7 +1167,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       }
     }
 
-    private static void backoffSleep(Context context, long backoffMillis) throws SpannerException {
+    private void backoffSleep(Context context, long backoffMillis) throws SpannerException {
       tracer
           .getCurrentSpan()
           .addAnnotation(
@@ -1145,7 +1184,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       try {
         if (backoffMillis == BackOff.STOP) {
           // Highly unlikely but we handle it just in case.
-          backoffMillis = STREAMING_RETRY_SETTINGS.getMaxRetryDelay().toMillis();
+          backoffMillis = streamingRetrySettings.getMaxRetryDelay().toMillis();
         }
         if (latch.await(backoffMillis, TimeUnit.MILLISECONDS)) {
           // Woken by context cancellation.
@@ -1233,11 +1272,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               return null;
             }
           }
-        } catch (SpannerException e) {
-          if (safeToRetry && e.isRetryable()) {
+        } catch (SpannerException spannerException) {
+          if (safeToRetry && isRetryable(spannerException)) {
             span.addAnnotation(
-                "Stream broken. Safe to retry", TraceUtil.getExceptionAnnotations(e));
-            logger.log(Level.FINE, "Retryable exception, will sleep and retry", e);
+                "Stream broken. Safe to retry",
+                TraceUtil.getExceptionAnnotations(spannerException));
+            logger.log(Level.FINE, "Retryable exception, will sleep and retry", spannerException);
             // Truncate any items in the buffer before the last retry token.
             while (!buffer.isEmpty() && buffer.getLast().getResumeToken().isEmpty()) {
               buffer.removeLast();
@@ -1245,7 +1285,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             assert buffer.isEmpty() || buffer.getLast().getResumeToken().equals(resumeToken);
             stream = null;
             try (Scope s = tracer.withSpan(span)) {
-              long delay = e.getRetryDelayInMillis();
+              long delay = spannerException.getRetryDelayInMillis();
               if (delay != -1) {
                 backoffSleep(context, delay);
               } else {
@@ -1256,14 +1296,20 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             continue;
           }
           span.addAnnotation("Stream broken. Not safe to retry");
-          TraceUtil.setWithFailure(span, e);
-          throw e;
+          TraceUtil.setWithFailure(span, spannerException);
+          throw spannerException;
         } catch (RuntimeException e) {
           span.addAnnotation("Stream broken. Not safe to retry");
           TraceUtil.setWithFailure(span, e);
           throw e;
         }
       }
+    }
+
+    boolean isRetryable(SpannerException spannerException) {
+      return spannerException.isRetryable()
+          || retryableCodes.contains(
+              GrpcStatusCode.of(spannerException.getErrorCode().getGrpcStatusCode()).getCode());
     }
   }
 
