@@ -83,6 +83,8 @@ import io.opencensus.trace.Span;
 import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.Meter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -2034,7 +2036,10 @@ class SessionPool {
    * be created.
    */
   static SessionPool createPool(
-      SpannerOptions spannerOptions, SessionClient sessionClient, List<LabelValue> labelValues) {
+      SpannerOptions spannerOptions,
+      SessionClient sessionClient,
+      List<LabelValue> labelValues,
+      OpenTelemetry openTelemetry) {
     final SessionPoolOptions sessionPoolOptions = spannerOptions.getSessionPoolOptions();
 
     // A clock instance is passed in {@code SessionPoolOptions} in order to allow mocking via tests.
@@ -2046,7 +2051,8 @@ class SessionPool {
         sessionClient,
         poolMaintainerClock == null ? new Clock() : poolMaintainerClock,
         Metrics.getMetricRegistry(),
-        labelValues);
+        labelValues,
+        openTelemetry);
   }
 
   static SessionPool createPool(
@@ -2068,7 +2074,8 @@ class SessionPool {
         sessionClient,
         clock,
         Metrics.getMetricRegistry(),
-        SPANNER_DEFAULT_LABEL_VALUES);
+        SPANNER_DEFAULT_LABEL_VALUES,
+        null);
   }
 
   static SessionPool createPool(
@@ -2078,7 +2085,8 @@ class SessionPool {
       SessionClient sessionClient,
       Clock clock,
       MetricRegistry metricRegistry,
-      List<LabelValue> labelValues) {
+      List<LabelValue> labelValues,
+      OpenTelemetry openTelemetry) {
     SessionPool pool =
         new SessionPool(
             poolOptions,
@@ -2088,7 +2096,8 @@ class SessionPool {
             sessionClient,
             clock,
             metricRegistry,
-            labelValues);
+            labelValues,
+            openTelemetry);
     pool.initPool();
     return pool;
   }
@@ -2101,7 +2110,8 @@ class SessionPool {
       SessionClient sessionClient,
       Clock clock,
       MetricRegistry metricRegistry,
-      List<LabelValue> labelValues) {
+      List<LabelValue> labelValues,
+      OpenTelemetry openTelemetry) {
     this.options = options;
     this.databaseRole = databaseRole;
     this.executorFactory = executorFactory;
@@ -2110,6 +2120,8 @@ class SessionPool {
     this.clock = clock;
     this.poolMaintainer = new PoolMaintainer();
     this.initMetricsCollection(metricRegistry, labelValues);
+    if (openTelemetry!= null)
+    this.initOTelMetricsCollection(openTelemetry);
     this.waitOnMinSessionsLatch =
         options.getMinSessions() > 0 ? new CountDownLatch(1) : new CountDownLatch(0);
   }
@@ -2760,5 +2772,16 @@ class SessionPool {
         this,
         // TODO: Remove metric.
         ignored -> 0L);
+  }
+
+  private void initOTelMetricsCollection(OpenTelemetry openTelemetry) {
+    Meter meter = openTelemetry.getMeter("cloud.google.com");
+    meter.gaugeBuilder("max_allowed_sessions_ot")
+        .setDescription(MAX_ALLOWED_SESSIONS_DESCRIPTION)
+        .setUnit(COUNT)
+        .buildWithCallback(measurement -> {
+          measurement.record(options.getMaxSessions());
+        });
+
   }
 }

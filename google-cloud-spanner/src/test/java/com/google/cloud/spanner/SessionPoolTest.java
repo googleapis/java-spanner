@@ -137,7 +137,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         client.getSessionClient(db),
         clock,
         metricRegistry,
-        labelValues);
+        labelValues,
+        null);
   }
 
   @Before

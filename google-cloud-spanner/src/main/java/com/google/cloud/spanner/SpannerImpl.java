@@ -26,6 +26,7 @@ import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.SpannerOptions.CloseableExecutorProvider;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
+import com.google.cloud.spanner.spi.v1.OpenTelemetryOptions;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
 import com.google.common.annotations.VisibleForTesting;
@@ -39,6 +40,13 @@ import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,6 +76,33 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   static final String READ = "CloudSpannerOperation.ExecuteStreamingRead";
 
   private static final Object CLIENT_ID_LOCK = new Object();
+
+  public static final OpenTelemetry openTelemetry = getOpenTelemetryObject();
+
+  private static OpenTelemetry getOpenTelemetryObject() {
+    AttributesBuilder attributesBuilder = Attributes.builder();
+    attributesBuilder.put("client_id", clientId);
+    attributesBuilder.put("database", db.getDatabase());
+    attributesBuilder.put("instance_id", db.getInstanceId().getName());
+    attributesBuilder.put(
+        "library_version", GaxProperties.getLibraryVersion(getOptions().getClass()));
+
+    SdkMeterProviderBuilder sdkMeterProviderBuilder =
+        OpenTelemetryOptions.getSdkMeterProviderBuilder();
+    sdkMeterProviderBuilder.setResource(Resource.create(attributesBuilder.build()));
+
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setMeterProvider(OpenTelemetryOptions.getSdkMeterProviderBuilder().build())
+            .setTracerProvider(OpenTelemetryOptions.getSdkTracerProviderBuilder().build())
+            .build();
+
+    openTelemetry.meterBuilder("cloud.google.com")
+        .setInstrumentationVersion("1.0.0")
+        .build();
+
+    return openTelemetry;
+  }
 
   @GuardedBy("CLIENT_ID_LOCK")
   private static final Map<DatabaseId, Long> CLIENT_IDS = new HashMap<>();
@@ -218,9 +253,32 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
                 LabelValue.create(db.getDatabase()),
                 LabelValue.create(db.getInstanceId().getName()),
                 LabelValue.create(GaxProperties.getLibraryVersion(getOptions().getClass())));
+
+        AttributesBuilder attributesBuilder = Attributes.builder();
+        attributesBuilder.put("client_id", clientId);
+        attributesBuilder.put("database", db.getDatabase());
+        attributesBuilder.put("instance_id", db.getInstanceId().getName());
+        attributesBuilder.put(
+            "library_version", GaxProperties.getLibraryVersion(getOptions().getClass()));
+
+        SdkMeterProviderBuilder sdkMeterProviderBuilder =
+            OpenTelemetryOptions.getSdkMeterProviderBuilder();
+        sdkMeterProviderBuilder.setResource(Resource.create(attributesBuilder.build()));
+
+        OpenTelemetry openTelemetry =
+            OpenTelemetrySdk.builder()
+                .setMeterProvider(OpenTelemetryOptions.getSdkMeterProviderBuilder().build())
+                .setTracerProvider(OpenTelemetryOptions.getSdkTracerProviderBuilder().build())
+                .build();
+
+        openTelemetry.meterBuilder("cloud.google.com")
+            .setInstrumentationVersion("1.0.0")
+            .build();
+
+        // openTelemetry.meterBuilder()
         SessionPool pool =
             SessionPool.createPool(
-                getOptions(), SpannerImpl.this.getSessionClient(db), labelValues);
+                getOptions(), SpannerImpl.this.getSessionClient(db), labelValues, openTelemetry);
         pool.maybeWaitOnMinSessions();
         DatabaseClientImpl dbClient = createDatabaseClient(clientId, pool);
         dbClients.put(db, dbClient);
