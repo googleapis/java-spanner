@@ -19,8 +19,6 @@ branchProtectionRules:
       - compile (8)
       - compile (11)
       - OwlBot Post Processor
-      - 'Kokoro - Test: Java GraalVM Native Image'
-      - 'Kokoro - Test: Java 17 GraalVM Native Image'
   - pattern: 3.3.x
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
