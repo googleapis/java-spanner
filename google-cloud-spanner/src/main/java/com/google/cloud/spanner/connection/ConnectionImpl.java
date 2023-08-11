@@ -1452,8 +1452,7 @@ class ConnectionImpl implements Connection {
                 && (analyzeMode != AnalyzeMode.NONE || statement.hasReturningClause())),
         "Statement must either be a query or a DML mode with analyzeMode!=NONE or returning clause");
     boolean isInternalMetadataQuery = isInternalMetadataQuery(options);
-    UnitOfWork transaction =
-        getCurrentUnitOfWorkOrStartNewUnitOfWork(isInternalMetadataQuery);
+    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork(isInternalMetadataQuery);
     if (autoPartitionMode
         && statement.getType() == StatementType.QUERY
         && !isInternalMetadataQuery) {
