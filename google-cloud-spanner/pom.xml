@@ -122,6 +122,9 @@
         <configuration>
           <buildArgs combine.children="append">
             <buildArg>-Dspanner.testenv.config.class=${spanner.testenv.config.class}</buildArg>
+            <buildArg>-Dspanner.testenv.instance=${spanner.testenv.instance}</buildArg>
+            <buildArg>-Dspanner.gce.config.project_id=${spanner.gce.config.project_id}</buildArg>
+            <buildArg>-Dspanner.testenv.kms_key.name=${spanner.testenv.kms_key.name}</buildArg>
           </buildArgs>
         </configuration>
       </plugin>
