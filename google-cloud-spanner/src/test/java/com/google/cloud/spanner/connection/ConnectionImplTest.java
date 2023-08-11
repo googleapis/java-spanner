@@ -1389,7 +1389,7 @@ public class ConnectionImplTest {
         new ConnectionImpl(
             connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
-          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
+          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(boolean isInternalMetadataQuery) {
             return unitOfWork;
           }
         }) {
@@ -1498,7 +1498,7 @@ public class ConnectionImplTest {
         new ConnectionImpl(
             connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
-          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
+          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(boolean isInternalMetadataQuery) {
             return unitOfWork;
           }
         }) {
@@ -1609,7 +1609,7 @@ public class ConnectionImplTest {
         new ConnectionImpl(
             connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
-          UnitOfWork createNewUnitOfWork() {
+          UnitOfWork createNewUnitOfWork(boolean isInternalMetadataQuery) {
             return unitOfWork;
           }
         }) {
