@@ -155,7 +155,7 @@ public final class Options implements Serializable {
   }
 
   /**
-   * If this is for a partitioned read & query and this field is set to `true`, the request will be
+   * If this is for PartitionedRead or PartitionedQuery and this field is set to `true`, the request will be
    * executed via Spanner independent compute resources.
    */
   public static DataBoostQueryOption dataBoostEnabled(Boolean dataBoostEnabled) {
