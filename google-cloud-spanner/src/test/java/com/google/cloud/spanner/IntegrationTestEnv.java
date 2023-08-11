@@ -28,6 +28,7 @@ import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import io.grpc.Status;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -193,7 +194,9 @@ public class IntegrationTestEnv extends ExternalResource {
             logger.log(Level.WARNING, "Failed to delete the test instance", t);
           }
         }
-        SpannerException spannerException = SpannerExceptionFactory.asSpannerException(e);
+        SpannerException spannerException = (e instanceof ExecutionException && e.getCause() != null)
+            ? SpannerExceptionFactory.asSpannerException(e.getCause())
+            : SpannerExceptionFactory.asSpannerException(e);
         if (attempts < maxAttempts && isRetryableResourceExhaustedException(spannerException)) {
           attempts++;
           if (spannerException.getRetryDelayInMillis() > 0L) {
@@ -225,7 +228,7 @@ public class IntegrationTestEnv extends ExternalResource {
             .getMessage()
             .contains(
                 "Quota exceeded for quota metric 'Instance create requests' and limit 'Instance create requests per minute'")
-        || exception.getMessage().matches("cannot add \\d+ nodes in region");
+        || exception.getMessage().matches(".*cannot add \\d+ nodes in region.*");
   }
 
   private void cleanUpOldDatabases(InstanceId instanceId) {
