@@ -133,17 +133,6 @@ class ConnectionImpl implements Connection {
     DML
   }
 
-  /**
-   * This query option is used internally to indicate that a query is executed by the library itself
-   * to fetch metadata. These queries are specifically allowed to be executed even when a DDL batch
-   * is active.
-   */
-  static final class InternalMetadataQuery implements QueryOption {
-    static final InternalMetadataQuery INSTANCE = new InternalMetadataQuery();
-
-    private InternalMetadataQuery() {}
-  }
-
   /** The combination of all transaction modes and batch modes. */
   enum UnitOfWorkType {
     READ_ONLY_TRANSACTION {
@@ -1219,6 +1208,18 @@ class ConnectionImpl implements Connection {
             + parsedStatement.getSqlWithoutComments());
   }
 
+  private boolean isInternalMetadataQuery(QueryOption... options) {
+    if (options == null) {
+      return false;
+    }
+    for (QueryOption option : options) {
+      if (option instanceof InternalMetadataQuery) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public long executeUpdate(Statement update) {
     Preconditions.checkNotNull(update);
@@ -1450,8 +1451,12 @@ class ConnectionImpl implements Connection {
             || (statement.getType() == StatementType.UPDATE
                 && (analyzeMode != AnalyzeMode.NONE || statement.hasReturningClause())),
         "Statement must either be a query or a DML mode with analyzeMode!=NONE or returning clause");
-    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
-    if (autoPartitionMode && statement.getType() == StatementType.QUERY) {
+    boolean isInternalMetadataQuery = isInternalMetadataQuery(options);
+    UnitOfWork transaction =
+        getCurrentUnitOfWorkOrStartNewUnitOfWork(isInternalMetadataQuery);
+    if (autoPartitionMode
+        && statement.getType() == StatementType.QUERY
+        && !isInternalMetadataQuery) {
       return runPartitionedQuery(
           statement.getStatement(), PartitionOptions.getDefaultInstance(), options);
     }
@@ -1475,7 +1480,8 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         !(autoPartitionMode && statement.getType() == StatementType.QUERY),
         "Partitioned queries cannot be executed asynchronously");
-    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
+    UnitOfWork transaction =
+        getCurrentUnitOfWorkOrStartNewUnitOfWork(isInternalMetadataQuery(options));
     return ResultSets.toAsyncResultSet(
         transaction.executeQueryAsync(
             callType,
@@ -1514,22 +1520,31 @@ class ConnectionImpl implements Connection {
         callType, updates, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
   }
 
+  private UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
+    return getCurrentUnitOfWorkOrStartNewUnitOfWork(false);
+  }
+
   /**
    * Returns the current {@link UnitOfWork} of this connection, or creates a new one based on the
    * current transaction settings of the connection and returns that.
    */
   @VisibleForTesting
-  UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
+  UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(boolean isInternalMetadataQuery) {
+    if (isInternalMetadataQuery) {
+      // Just return a temporary single-use transaction.
+      return createNewUnitOfWork(true);
+    }
     if (this.currentUnitOfWork == null || !this.currentUnitOfWork.isActive()) {
-      this.currentUnitOfWork = createNewUnitOfWork();
+      this.currentUnitOfWork = createNewUnitOfWork(false);
     }
     return this.currentUnitOfWork;
   }
 
   @VisibleForTesting
-  UnitOfWork createNewUnitOfWork() {
-    if (isAutocommit() && !isInTransaction() && !isInBatch()) {
+  UnitOfWork createNewUnitOfWork(boolean isInternalMetadataQuery) {
+    if (isInternalMetadataQuery || isAutocommit() && !isInTransaction() && !isInBatch()) {
       return SingleUseTransaction.newBuilder()
+          .setInternalMetadataQuery(isInternalMetadataQuery)
           .setDdlClient(ddlClient)
           .setDatabaseClient(dbClient)
           .setBatchClient(batchClient)
@@ -1660,7 +1675,7 @@ class ConnectionImpl implements Connection {
         !transactionBeginMarked, "Cannot start a DDL batch when a transaction has begun");
     this.batchMode = BatchMode.DDL;
     this.unitOfWorkType = UnitOfWorkType.DDL_BATCH;
-    this.currentUnitOfWork = createNewUnitOfWork();
+    this.currentUnitOfWork = createNewUnitOfWork(false);
   }
 
   @Override
@@ -1678,7 +1693,7 @@ class ConnectionImpl implements Connection {
     // Then create the DML batch.
     this.batchMode = BatchMode.DML;
     this.unitOfWorkType = UnitOfWorkType.DML_BATCH;
-    this.currentUnitOfWork = createNewUnitOfWork();
+    this.currentUnitOfWork = createNewUnitOfWork(false);
   }
 
   @Override

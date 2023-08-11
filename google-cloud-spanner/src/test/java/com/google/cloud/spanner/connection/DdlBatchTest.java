@@ -158,25 +158,6 @@ public class DdlBatchTest {
   }
 
   @Test
-  public void testExecuteMetadataQuery() {
-    Statement statement = Statement.of("SELECT * FROM INFORMATION_SCHEMA.TABLES");
-    ParsedStatement parsedStatement = mock(ParsedStatement.class);
-    when(parsedStatement.isQuery()).thenReturn(true);
-    when(parsedStatement.getStatement()).thenReturn(statement);
-    DatabaseClient dbClient = mock(DatabaseClient.class);
-    ReadContext singleUse = mock(ReadContext.class);
-    ResultSet resultSet = mock(ResultSet.class);
-    when(singleUse.executeQuery(statement)).thenReturn(resultSet);
-    when(dbClient.singleUse()).thenReturn(singleUse);
-    DdlBatch batch = createSubject(createDefaultMockDdlClient(), dbClient);
-    assertThat(
-        get(batch.executeQueryAsync(
-                CallType.SYNC, parsedStatement, AnalyzeMode.NONE, InternalMetadataQuery.INSTANCE))
-            .hashCode(),
-        is(equalTo(resultSet.hashCode())));
-  }
-
-  @Test
   public void testExecuteUpdate() {
     DdlBatch batch = createSubject();
     try {

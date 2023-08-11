@@ -78,6 +78,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   private final TimestampBound readOnlyStaleness;
   private final AutocommitDmlMode autocommitDmlMode;
   private final boolean returnCommitStats;
+  private final boolean internalMetdataQuery;
   private volatile SettableApiFuture<Timestamp> readTimestamp = null;
   private volatile TransactionRunner writeTransaction;
   private boolean used = false;
@@ -91,6 +92,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     private TimestampBound readOnlyStaleness;
     private AutocommitDmlMode autocommitDmlMode;
     private boolean returnCommitStats;
+    private boolean internalMetadataQuery;
 
     private Builder() {}
 
@@ -133,6 +135,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       return this;
     }
 
+    Builder setInternalMetadataQuery(boolean internalMetadataQuery) {
+      this.internalMetadataQuery = internalMetadataQuery;
+      return this;
+    }
+
     @Override
     SingleUseTransaction build() {
       Preconditions.checkState(ddlClient != null, "No DDL client specified");
@@ -157,6 +164,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     this.readOnlyStaleness = builder.readOnlyStaleness;
     this.autocommitDmlMode = builder.autocommitDmlMode;
     this.returnCommitStats = builder.returnCommitStats;
+    this.internalMetdataQuery = builder.internalMetadataQuery;
   }
 
   @Override
@@ -207,8 +215,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       return executeDmlReturningAsync(callType, statement, options);
     }
 
+    // Do not use a read-only staleness for internal metadata queries.
     final ReadOnlyTransaction currentTransaction =
-        dbClient.singleUseReadOnlyTransaction(readOnlyStaleness);
+        internalMetdataQuery
+            ? dbClient.singleUseReadOnlyTransaction()
+            : dbClient.singleUseReadOnlyTransaction(readOnlyStaleness);
     Callable<ResultSet> callable =
         () -> {
           try {
