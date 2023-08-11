@@ -1541,7 +1541,7 @@ class ConnectionImpl implements Connection {
 
   @VisibleForTesting
   UnitOfWork createNewUnitOfWork(boolean isInternalMetadataQuery) {
-    if (isInternalMetadataQuery || isAutocommit() && !isInTransaction() && !isInBatch()) {
+    if (isInternalMetadataQuery || (isAutocommit() && !isInTransaction() && !isInBatch())) {
       return SingleUseTransaction.newBuilder()
           .setInternalMetadataQuery(isInternalMetadataQuery)
           .setDdlClient(ddlClient)
