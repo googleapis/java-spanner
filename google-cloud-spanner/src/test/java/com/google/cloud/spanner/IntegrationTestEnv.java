@@ -147,7 +147,7 @@ public class IntegrationTestEnv extends ExternalResource {
     OperationFuture<Instance, CreateInstanceMetadata> op =
         instanceAdminClient.createInstance(instance);
     Instance createdInstance;
-    int maxAttempts = 10;
+    int maxAttempts = 25;
     try {
       maxAttempts =
           Integer.parseInt(
@@ -158,8 +158,8 @@ public class IntegrationTestEnv extends ExternalResource {
     ExponentialBackOff backOff =
         new ExponentialBackOff.Builder()
             .setInitialIntervalMillis(5_000)
-            .setMaxIntervalMillis(60_000)
-            .setMultiplier(1.5)
+            .setMaxIntervalMillis(500_000)
+            .setMultiplier(2.0)
             .build();
     int attempts = 0;
     while (true) {
