@@ -16,8 +16,13 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.connection.ITAbstractSpannerTest.extractConnectionUrl;
+import static com.google.cloud.spanner.connection.ITAbstractSpannerTest.getKeyFile;
+import static com.google.cloud.spanner.connection.ITAbstractSpannerTest.hasValidKeyFile;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.ByteArray;
@@ -38,6 +43,9 @@ import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
+import com.google.cloud.spanner.connection.Connection;
+import com.google.cloud.spanner.connection.ConnectionOptions;
+import com.google.cloud.spanner.connection.PartitionedQueryResultSet;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -77,7 +85,9 @@ public class ITBatchReadTest {
 
   private static HashFunction hasher;
   private static BatchClient googleStandardSQLBatchClient;
+  private static Database googleStandardDatabase;
   private static BatchClient postgreSQLBatchClient;
+  private static Database postgreSQLDatabase;
   private static final Random RANDOM = new Random();
 
   private BatchReadOnlyTransaction batchTxn;
@@ -107,7 +117,7 @@ public class ITBatchReadTest {
 
   @BeforeClass
   public static void setUpDatabase() throws Exception {
-    Database googleStandardDatabase =
+    googleStandardDatabase =
         env.getTestHelper()
             .createTestDatabase(
                 "CREATE TABLE "
@@ -126,7 +136,7 @@ public class ITBatchReadTest {
     databaseClients.add(env.getTestHelper().getDatabaseClient(googleStandardDatabase));
 
     if (!isUsingEmulator()) {
-      Database postgreSQLDatabase =
+      postgreSQLDatabase =
           env.getTestHelper().createTestDatabase(Dialect.POSTGRESQL, Collections.emptyList());
       env.getTestHelper()
           .getClient()
@@ -189,6 +199,13 @@ public class ITBatchReadTest {
       return postgreSQLBatchClient;
     }
     return googleStandardSQLBatchClient;
+  }
+
+  private Database getDatabase() {
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      return postgreSQLDatabase;
+    }
+    return googleStandardDatabase;
   }
 
   @Test
@@ -307,6 +324,37 @@ public class ITBatchReadTest {
             Options.dataBoostEnabled(true));
     BatchTransactionId txnID = batchTxn.getBatchTransactionId();
     fetchAndValidateRows(partitions, txnID, seenRows);
+  }
+
+  @Test
+  public void testRunPartitionedQuery() {
+    StringBuilder url = extractConnectionUrl(env.getTestHelper().getOptions(), getDatabase());
+    ConnectionOptions.Builder builder = ConnectionOptions.newBuilder().setUri(url.toString());
+    if (hasValidKeyFile()) {
+      builder.setCredentialsUrl(getKeyFile());
+    }
+    ConnectionOptions options = builder.build();
+    try (Connection connection = options.getConnection()) {
+      // Use dynamic parallelism.
+      connection.setMaxPartitionedParallelism(0);
+
+      BitSet seenRows = new BitSet(numRows);
+      try (PartitionedQueryResultSet resultSet =
+          connection.runPartitionedQuery(
+              Statement.of("SELECT Key, Data, Fingerprint, Size FROM " + TABLE_NAME),
+              getRandomPartitionOptions())) {
+        validate(resultSet, seenRows);
+        // verify all rows were read from the database.
+        assertEquals(numRows, seenRows.nextClearBit(0));
+
+        assertTrue(
+            "Partitions: " + resultSet.getNumPartitions(), resultSet.getNumPartitions() >= 1);
+        assertEquals(
+            "Actual parallelism: " + resultSet.getParallelism(),
+            Math.min(resultSet.getNumPartitions(), Runtime.getRuntime().availableProcessors()),
+            resultSet.getParallelism());
+      }
+    }
   }
 
   private TimestampBound getRandomBound() {

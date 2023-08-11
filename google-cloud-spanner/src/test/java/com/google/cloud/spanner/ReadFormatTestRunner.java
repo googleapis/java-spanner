@@ -18,6 +18,8 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.api.gax.grpc.GrpcCallContext;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.io.Resources;
@@ -115,6 +117,11 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
       stream = new AbstractResultSet.GrpcStreamIterator(10);
       stream.setCall(
           new SpannerRpc.StreamingCall() {
+            @Override
+            public ApiCallContext getCallContext() {
+              return GrpcCallContext.createDefault();
+            }
+
             @Override
             public void cancel(@Nullable String message) {}
 

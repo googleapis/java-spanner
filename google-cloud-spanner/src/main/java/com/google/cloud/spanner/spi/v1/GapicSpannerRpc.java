@@ -1596,20 +1596,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             options, request.getSession(), request, SpannerGrpc.getReadMethod(), routeToLeader);
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
     spannerStub.streamingReadCallable().call(request, responseObserver, context);
-    final StreamController controller = responseObserver.getController();
-    return new StreamingCall() {
-      @Override
-      public void request(int numMessage) {
-        controller.request(numMessage);
-      }
-
-      // TODO(hzyi): streamController currently does not support cancel with message. Add
-      // this in gax and update this method later
-      @Override
-      public void cancel(String message) {
-        controller.cancel();
-      }
-    };
+    return new GrpcStreamingCall(context, responseObserver.getController());
   }
 
   @Override
@@ -1673,22 +1660,10 @@ public class GapicSpannerRpc implements SpannerRpc {
             request,
             SpannerGrpc.getExecuteStreamingSqlMethod(),
             routeToLeader);
+
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
     spannerStub.executeStreamingSqlCallable().call(request, responseObserver, context);
-    final StreamController controller = responseObserver.getController();
-    return new StreamingCall() {
-      @Override
-      public void request(int numMessage) {
-        controller.request(numMessage);
-      }
-
-      // TODO(hzyi): streamController currently does not support cancel with message. Add
-      // this in gax and update this method later
-      @Override
-      public void cancel(String message) {
-        controller.cancel();
-      }
-    };
+    return new GrpcStreamingCall(context, responseObserver.getController());
   }
 
   @Override
@@ -1955,6 +1930,31 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public boolean isClosed() {
     return rpcIsClosed;
+  }
+
+  private static final class GrpcStreamingCall implements StreamingCall {
+    private final ApiCallContext callContext;
+    private final StreamController controller;
+
+    GrpcStreamingCall(ApiCallContext callContext, StreamController controller) {
+      this.callContext = callContext;
+      this.controller = controller;
+    }
+
+    @Override
+    public ApiCallContext getCallContext() {
+      return callContext;
+    }
+
+    @Override
+    public void request(int numMessages) {
+      controller.request(numMessages);
+    }
+
+    @Override
+    public void cancel(@Nullable String message) {
+      controller.cancel();
+    }
   }
 
   /**

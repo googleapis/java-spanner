@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
+import io.grpc.Status.Code;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
@@ -40,8 +41,8 @@ public interface AsyncRunner {
      * <p>In most cases, the implementation will not need to catch {@code SpannerException}s from
      * Spanner operations, instead letting these propagate to the framework. The transaction runner
      * will take appropriate action based on the type of exception. In particular, implementations
-     * should never catch an exception of type {@link SpannerErrors#isAborted}: these indicate that
-     * some reads may have returned inconsistent data and the transaction attempt must be aborted.
+     * should never catch an exception of type {@link Code#ABORTED}: these indicate that some reads
+     * may have returned inconsistent data and the transaction attempt must be aborted.
      *
      * @param txn the transaction
      * @return future over the result of the work

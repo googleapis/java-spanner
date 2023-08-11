@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import java.util.List;
 
@@ -63,5 +64,5 @@ interface ClientSideStatement {
    *     needed for the execution of the {@link ClientSideStatement}.
    * @return the result of the execution of the statement.
    */
-  StatementResult execute(ConnectionStatementExecutor executor, String statement);
+  StatementResult execute(ConnectionStatementExecutor executor, ParsedStatement statement);
 }

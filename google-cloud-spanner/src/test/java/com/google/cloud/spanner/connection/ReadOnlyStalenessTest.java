@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ReadOnlyTransaction;
@@ -61,7 +62,7 @@ public class ReadOnlyStalenessTest {
     when(readOnlyTx.executeQuery(Statement.of(SELECT))).thenReturn(mock(ResultSet.class));
     when(dbClient.readOnlyTransaction(any(TimestampBound.class))).thenReturn(readOnlyTx);
 
-    return new ConnectionImpl(options, spannerPool, ddlClient, dbClient);
+    return new ConnectionImpl(options, spannerPool, ddlClient, dbClient, mock(BatchClient.class));
   }
 
   @Test
