@@ -24,6 +24,7 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -130,7 +131,13 @@ public class IntegrationTestEnv extends ExternalResource {
   }
 
   private void initializeInstance(InstanceId instanceId) throws Exception {
-    InstanceConfig instanceConfig = instanceAdminClient.getInstanceConfig("regional-us-central1");
+    InstanceConfig instanceConfig;
+    try {
+      instanceConfig = instanceAdminClient.getInstanceConfig("regional-us-central1");
+    } catch (Throwable ignore) {
+      instanceConfig =
+          Iterators.get(instanceAdminClient.listInstanceConfigs().iterateAll().iterator(), 0, null);
+    }
     checkState(instanceConfig != null, "No instance configs found");
 
     InstanceConfigId configId = instanceConfig.getId();
@@ -163,38 +170,6 @@ public class IntegrationTestEnv extends ExternalResource {
       try {
         createdInstance = op.get();
       } catch (Exception e) {
-        boolean cancelled = false;
-        //        try {
-        //          // Try to cancel the createInstance operation.
-        //          instanceAdminClient.cancelOperation(op.getName());
-        //          com.google.longrunning.Operation createOperation =
-        //              instanceAdminClient.getOperation(op.getName());
-        //          cancelled =
-        //              createOperation.hasError()
-        //                  && createOperation.getError().getCode() ==
-        // Status.CANCELLED.getCode().value();
-        //          if (cancelled) {
-        //            logger.info("Cancelled the createInstance operation because the operation
-        // failed");
-        //          } else {
-        //            logger.info(
-        //                "Tried to cancel the createInstance operation because the operation
-        // failed, but the operation could not be cancelled. Current status: "
-        //                    + createOperation.getError().getCode());
-        //          }
-        //        } catch (Throwable t) {
-        //          logger.log(Level.WARNING, "Failed to cancel the createInstance operation", t);
-        //        }
-        //        if (!cancelled) {
-        //          try {
-        //            instanceAdminClient.deleteInstance(instanceId.getInstance());
-        //            logger.info(
-        //                "Deleted the test instance because the createInstance operation failed and
-        // cancelling the operation did not succeed");
-        //          } catch (Throwable t) {
-        //            logger.log(Level.WARNING, "Failed to delete the test instance", t);
-        //          }
-        //        }
         SpannerException spannerException =
             (e instanceof ExecutionException && e.getCause() != null)
                 ? SpannerExceptionFactory.asSpannerException(e.getCause())
