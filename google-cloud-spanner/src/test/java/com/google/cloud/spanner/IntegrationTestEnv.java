@@ -194,9 +194,10 @@ public class IntegrationTestEnv extends ExternalResource {
             logger.log(Level.WARNING, "Failed to delete the test instance", t);
           }
         }
-        SpannerException spannerException = (e instanceof ExecutionException && e.getCause() != null)
-            ? SpannerExceptionFactory.asSpannerException(e.getCause())
-            : SpannerExceptionFactory.asSpannerException(e);
+        SpannerException spannerException =
+            (e instanceof ExecutionException && e.getCause() != null)
+                ? SpannerExceptionFactory.asSpannerException(e.getCause())
+                : SpannerExceptionFactory.asSpannerException(e);
         if (attempts < maxAttempts && isRetryableResourceExhaustedException(spannerException)) {
           attempts++;
           if (spannerException.getRetryDelayInMillis() > 0L) {
