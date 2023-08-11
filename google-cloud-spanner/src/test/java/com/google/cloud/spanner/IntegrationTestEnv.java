@@ -204,8 +204,9 @@ public class IntegrationTestEnv extends ExternalResource {
             //noinspection BusyWait
             Thread.sleep(spannerException.getRetryDelayInMillis());
           } else {
+            // The Math.max(...) prevents Backoff#STOP (=-1) to be used as the sleep value.
             //noinspection BusyWait
-            Thread.sleep(backOff.nextBackOffMillis());
+            Thread.sleep(Math.max(backOff.getMaxIntervalMillis(), backOff.nextBackOffMillis()));
           }
           continue;
         }
