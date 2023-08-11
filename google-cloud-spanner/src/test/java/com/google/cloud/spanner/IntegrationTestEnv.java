@@ -24,7 +24,6 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
-import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -131,8 +130,7 @@ public class IntegrationTestEnv extends ExternalResource {
   }
 
   private void initializeInstance(InstanceId instanceId) throws Exception {
-    InstanceConfig instanceConfig =
-        Iterators.get(instanceAdminClient.listInstanceConfigs().iterateAll().iterator(), 0, null);
+    InstanceConfig instanceConfig = instanceAdminClient.getInstanceConfig("regional-us-central1");
     checkState(instanceConfig != null, "No instance configs found");
 
     InstanceConfigId configId = instanceConfig.getId();
