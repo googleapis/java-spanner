@@ -395,6 +395,26 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
   }
 
   @Override
+  public int getColumnCount() {
+    return getType().getStructFields().size();
+  }
+
+  @Override
+  public int getColumnIndex(String columnName) {
+    return getType().getFieldIndex(columnName);
+  }
+
+  @Override
+  public Type getColumnType(int columnIndex) {
+    return getType().getStructFields().get(columnIndex).getType();
+  }
+
+  @Override
+  public Type getColumnType(String columnName) {
+    return getType().getStructFields().get(getColumnIndex(columnName)).getType();
+  }
+
+  @Override
   public int getNumPartitions() {
     return rowProducer.getNumPartitions();
   }
