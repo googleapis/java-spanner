@@ -77,33 +77,6 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   private static final Object CLIENT_ID_LOCK = new Object();
 
-  public static final OpenTelemetry openTelemetry = getOpenTelemetryObject();
-
-  private static OpenTelemetry getOpenTelemetryObject() {
-    AttributesBuilder attributesBuilder = Attributes.builder();
-    attributesBuilder.put("client_id", clientId);
-    attributesBuilder.put("database", db.getDatabase());
-    attributesBuilder.put("instance_id", db.getInstanceId().getName());
-    attributesBuilder.put(
-        "library_version", GaxProperties.getLibraryVersion(getOptions().getClass()));
-
-    SdkMeterProviderBuilder sdkMeterProviderBuilder =
-        OpenTelemetryOptions.getSdkMeterProviderBuilder();
-    sdkMeterProviderBuilder.setResource(Resource.create(attributesBuilder.build()));
-
-    OpenTelemetry openTelemetry =
-        OpenTelemetrySdk.builder()
-            .setMeterProvider(OpenTelemetryOptions.getSdkMeterProviderBuilder().build())
-            .setTracerProvider(OpenTelemetryOptions.getSdkTracerProviderBuilder().build())
-            .build();
-
-    openTelemetry.meterBuilder("cloud.google.com")
-        .setInstrumentationVersion("1.0.0")
-        .build();
-
-    return openTelemetry;
-  }
-
   @GuardedBy("CLIENT_ID_LOCK")
   private static final Map<DatabaseId, Long> CLIENT_IDS = new HashMap<>();
 
@@ -161,6 +134,9 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     this.dbAdminClient = new DatabaseAdminClientImpl(options.getProjectId(), gapicRpc);
     this.instanceClient =
         new InstanceAdminClientImpl(options.getProjectId(), gapicRpc, dbAdminClient);
+    MetricsInitializer metricsInitializer = MetricsInitializer.getInstance();
+    MetricsInitializer.createOpenTelemetryObject();
+    metricsInitializer.gfeLatencyInitializer();
   }
 
   SpannerImpl(SpannerOptions options) {
@@ -260,25 +236,26 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
         attributesBuilder.put("instance_id", db.getInstanceId().getName());
         attributesBuilder.put(
             "library_version", GaxProperties.getLibraryVersion(getOptions().getClass()));
-
-        SdkMeterProviderBuilder sdkMeterProviderBuilder =
-            OpenTelemetryOptions.getSdkMeterProviderBuilder();
-        sdkMeterProviderBuilder.setResource(Resource.create(attributesBuilder.build()));
-
-        OpenTelemetry openTelemetry =
-            OpenTelemetrySdk.builder()
-                .setMeterProvider(OpenTelemetryOptions.getSdkMeterProviderBuilder().build())
-                .setTracerProvider(OpenTelemetryOptions.getSdkTracerProviderBuilder().build())
-                .build();
-
-        openTelemetry.meterBuilder("cloud.google.com")
-            .setInstrumentationVersion("1.0.0")
-            .build();
+        //
+        // SdkMeterProviderBuilder sdkMeterProviderBuilder =
+        //     OpenTelemetryOptions.getSdkMeterProviderBuilder();
+        // sdkMeterProviderBuilder.setResource(Resource.create(attributesBuilder.build()));
+        //
+        // OpenTelemetry openTelemetry =
+        //     OpenTelemetrySdk.builder()
+        //         .setMeterProvider(OpenTelemetryOptions.getSdkMeterProviderBuilder().build())
+        //         .setTracerProvider(OpenTelemetryOptions.getSdkTracerProviderBuilder().build())
+        //         .build();
+        //
+        // openTelemetry.meterBuilder("cloud.google.com")
+        //     .setInstrumentationVersion("1.0.0")
+        //     .build();
 
         // openTelemetry.meterBuilder()
         SessionPool pool =
             SessionPool.createPool(
-                getOptions(), SpannerImpl.this.getSessionClient(db), labelValues, openTelemetry);
+                getOptions(), SpannerImpl.this.getSessionClient(db), labelValues, MetricsInitializer.getInstance()
+                    .getOpenTelemetryObject(), attributesBuilder.build());
         pool.maybeWaitOnMinSessions();
         DatabaseClientImpl dbClient = createDatabaseClient(clientId, pool);
         dbClients.put(db, dbClient);

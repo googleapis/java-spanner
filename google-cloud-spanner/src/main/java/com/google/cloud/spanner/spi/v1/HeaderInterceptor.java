@@ -22,6 +22,8 @@ import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.PROJECT_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_LATENCY;
 
+import com.google.api.gax.core.GaxProperties;
+import com.google.cloud.spanner.MetricsInitializer;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -37,6 +39,8 @@ import io.opencensus.tags.TagContext;
 import io.opencensus.tags.TagValue;
 import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -48,6 +52,7 @@ import java.util.regex.Pattern;
  */
 class HeaderInterceptor implements ClientInterceptor {
 
+  private MetricsInitializer metricsInitializer;
   private static final Metadata.Key<String> SERVER_TIMING_HEADER_KEY =
       Metadata.Key.of("server-timing", Metadata.ASCII_STRING_MARSHALLER);
   private static final Pattern SERVER_TIMING_HEADER_PATTERN = Pattern.compile(".*dur=(?<dur>\\d+)");
@@ -64,7 +69,9 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Logger LOGGER = Logger.getLogger(HeaderInterceptor.class.getName());
   private static final Level LEVEL = Level.INFO;
 
-  HeaderInterceptor() {}
+  HeaderInterceptor() {
+    metricsInitializer = MetricsInitializer.getInstance();
+  }
 
   @Override
   public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
@@ -73,12 +80,13 @@ class HeaderInterceptor implements ClientInterceptor {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
         TagContext tagContext = getTagContext(headers, method.getFullMethodName());
+        Attributes attributes = getMetricAttributes(headers, method.getFullMethodName());
         super.start(
             new SimpleForwardingClientCallListener<RespT>(responseListener) {
               @Override
               public void onHeaders(Metadata metadata) {
 
-                processHeader(metadata, tagContext);
+                processHeader(metadata, tagContext, attributes);
                 super.onHeaders(metadata);
               }
             },
@@ -87,14 +95,16 @@ class HeaderInterceptor implements ClientInterceptor {
     };
   }
 
-  private void processHeader(Metadata metadata, TagContext tagContext) {
+  private void processHeader(Metadata metadata, TagContext tagContext, Attributes attributes) {
     MeasureMap measureMap = STATS_RECORDER.newMeasureMap();
     if (metadata.get(SERVER_TIMING_HEADER_KEY) != null) {
       String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
       Matcher matcher = SERVER_TIMING_HEADER_PATTERN.matcher(serverTiming);
       if (matcher.find()) {
         try {
+
           long latency = Long.parseLong(matcher.group("dur"));
+          metricsInitializer.gfeLatencyRecorder(latency, attributes);
           measureMap.put(SPANNER_GFE_LATENCY, latency);
           measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 0L);
           measureMap.record(tagContext);
@@ -116,6 +126,34 @@ class HeaderInterceptor implements ClientInterceptor {
         .putLocal(DATABASE_ID, TagValue.create(databaseId))
         .putLocal(METHOD, TagValue.create(method))
         .build();
+  }
+
+  private Attributes getMetricAttributes(Metadata headers, String method) {
+    String projectId = "undefined-project";
+    String instanceId = "undefined-database";
+    String databaseId = "undefined-database";
+    if (headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY) != null) {
+      String googleResourcePrefix = headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY);
+      Matcher matcher = GOOGLE_CLOUD_RESOURCE_PREFIX_PATTERN.matcher(googleResourcePrefix);
+      if (matcher.find()) {
+        projectId = matcher.group("project");
+        if (matcher.group("instance") != null) {
+          instanceId = matcher.group("instance");
+        }
+        if (matcher.group("database") != null) {
+          databaseId = matcher.group("database");
+        }
+      } else {
+        LOGGER.log(LEVEL, "Error parsing google cloud resource header: " + googleResourcePrefix);
+      }
+    }
+    AttributesBuilder attributesBuilder = Attributes.builder();
+    attributesBuilder.put("database", databaseId);
+    attributesBuilder.put("instance_id", instanceId);
+    attributesBuilder.put("project_id", projectId);
+    attributesBuilder.put("method", method);
+
+    return attributesBuilder.build();
   }
 
   private TagContext getTagContext(Metadata headers, String method) {

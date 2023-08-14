@@ -84,4 +84,6 @@ class MetricRegistryConstants {
   static final String NUM_RELEASED_SESSIONS_DESCRIPTION =
       "The number of sessions released by the user and pool maintainer.";
   static final String NUM_SESSIONS_IN_POOL_DESCRIPTION = "The number of sessions in the pool.";
+
+  static final String Scope = "cloud.google.com";
 }

@@ -22,8 +22,9 @@ import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.View;
 
-public class OpenTelemetryMetricsAttributes {
-  static final String SCOPE = "cloud.google.com";
+public class RPCViewAttributes {
+
+  public static final String SPANNER_GFE_LATENCY_NAME = "gfe_latency";
   private static final Aggregation AGGREGATION_WITH_MILLIS_HISTOGRAM =
       Aggregation.explicitBucketHistogram(
           ImmutableList.of(
@@ -33,15 +34,15 @@ public class OpenTelemetryMetricsAttributes {
               100000.0));
   static final InstrumentSelector SPANNER_GFE_LATENCY_SELECTOR =
       InstrumentSelector.builder()
-          .setName("gfe_latency_ot")
-          .setMeterName(SCOPE)
+          .setName(SPANNER_GFE_LATENCY_NAME)
+          .setMeterName(MetricRegistryConstants.Scope)
           .setType(InstrumentType.HISTOGRAM)
           .setUnit("ms")
           .build();
 
   static final View SPANNER_GFE_LATENCY_VIEW =
       View.builder()
-          .setName("custom.googleapis.com/java/spanner/gfe_latency_ot")
+          .setName("gfe_latency_ot_view")
           .setAggregation(AGGREGATION_WITH_MILLIS_HISTOGRAM)
           .build();
 }

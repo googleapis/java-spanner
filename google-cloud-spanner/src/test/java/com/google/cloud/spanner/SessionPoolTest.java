@@ -138,6 +138,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         clock,
         metricRegistry,
         labelValues,
+        null,
         null);
   }
 

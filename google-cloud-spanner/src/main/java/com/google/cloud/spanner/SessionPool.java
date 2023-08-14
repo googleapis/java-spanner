@@ -84,6 +84,8 @@ import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.Meter;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -2039,7 +2041,8 @@ class SessionPool {
       SpannerOptions spannerOptions,
       SessionClient sessionClient,
       List<LabelValue> labelValues,
-      OpenTelemetry openTelemetry) {
+      OpenTelemetry openTelemetry,
+      Attributes attributes) {
     final SessionPoolOptions sessionPoolOptions = spannerOptions.getSessionPoolOptions();
 
     // A clock instance is passed in {@code SessionPoolOptions} in order to allow mocking via tests.
@@ -2052,7 +2055,8 @@ class SessionPool {
         poolMaintainerClock == null ? new Clock() : poolMaintainerClock,
         Metrics.getMetricRegistry(),
         labelValues,
-        openTelemetry);
+        openTelemetry,
+        attributes);
   }
 
   static SessionPool createPool(
@@ -2075,7 +2079,7 @@ class SessionPool {
         clock,
         Metrics.getMetricRegistry(),
         SPANNER_DEFAULT_LABEL_VALUES,
-        null);
+        null, null);
   }
 
   static SessionPool createPool(
@@ -2086,7 +2090,8 @@ class SessionPool {
       Clock clock,
       MetricRegistry metricRegistry,
       List<LabelValue> labelValues,
-      OpenTelemetry openTelemetry) {
+      OpenTelemetry openTelemetry,
+      Attributes attributes) {
     SessionPool pool =
         new SessionPool(
             poolOptions,
@@ -2097,7 +2102,8 @@ class SessionPool {
             clock,
             metricRegistry,
             labelValues,
-            openTelemetry);
+            openTelemetry,
+            attributes);
     pool.initPool();
     return pool;
   }
@@ -2111,7 +2117,8 @@ class SessionPool {
       Clock clock,
       MetricRegistry metricRegistry,
       List<LabelValue> labelValues,
-      OpenTelemetry openTelemetry) {
+      OpenTelemetry openTelemetry,
+      Attributes attributes) {
     this.options = options;
     this.databaseRole = databaseRole;
     this.executorFactory = executorFactory;
@@ -2121,7 +2128,7 @@ class SessionPool {
     this.poolMaintainer = new PoolMaintainer();
     this.initMetricsCollection(metricRegistry, labelValues);
     if (openTelemetry!= null)
-    this.initOTelMetricsCollection(openTelemetry);
+    this.initOTelMetricsCollection(openTelemetry, attributes);
     this.waitOnMinSessionsLatch =
         options.getMinSessions() > 0 ? new CountDownLatch(1) : new CountDownLatch(0);
   }
@@ -2774,13 +2781,56 @@ class SessionPool {
         ignored -> 0L);
   }
 
-  private void initOTelMetricsCollection(OpenTelemetry openTelemetry) {
+  private void initOTelMetricsCollection(OpenTelemetry openTelemetry, Attributes attributes) {
     Meter meter = openTelemetry.getMeter("cloud.google.com");
-    meter.gaugeBuilder("max_allowed_sessions_ot")
+
+    meter.gaugeBuilder("max_allowed_sessions")
         .setDescription(MAX_ALLOWED_SESSIONS_DESCRIPTION)
         .setUnit(COUNT)
         .buildWithCallback(measurement -> {
-          measurement.record(options.getMaxSessions());
+          measurement.record(options.getMaxSessions(), attributes);
+        });
+
+    meter.gaugeBuilder("max_in_use_sessions")
+        .setDescription(MAX_IN_USE_SESSIONS_DESCRIPTION)
+        .setUnit(COUNT)
+        .buildWithCallback(measurement -> {
+          measurement.record(this.maxSessionsInUse, attributes);
+        });
+
+    // meter.gaugeBuilder(NUM_SESSIONS_IN_POOL)
+    //     .setDescription(NUM_SESSIONS_IN_POOL_DESCRIPTION)
+    //     .setUnit(COUNT)
+    //     .buildWithCallback(measurement -> {
+    //       measurement.record(this.numSessionsInUse, attributes);
+    //     });
+    //
+    // meter.gaugeBuilder(NUM_SESSIONS_IN_POOL)
+    //     .setDescription(NUM_SESSIONS_IN_POOL_DESCRIPTION)
+    //     .setUnit(COUNT)
+    //     .buildWithCallback(measurement -> {
+    //       measurement.record(this.sessions.size(), attributes);
+    //     });
+
+    meter.counterBuilder("get_session_timeouts")
+        .setDescription(SESSIONS_TIMEOUTS_DESCRIPTION)
+        .setUnit(COUNT)
+        .buildWithCallback(measurement -> {
+          measurement.record(this.getNumWaiterTimeouts(), attributes);
+        });
+
+    meter.counterBuilder("num_acquired_sessions")
+        .setDescription(NUM_ACQUIRED_SESSIONS_DESCRIPTION)
+        .setUnit(COUNT)
+        .buildWithCallback(measurement -> {
+          measurement.record(this.numSessionsAcquired, attributes);
+        });
+
+    meter.counterBuilder("num_released_sessions")
+        .setDescription(NUM_RELEASED_SESSIONS_DESCRIPTION)
+        .setUnit(COUNT)
+        .buildWithCallback(measurement -> {
+          measurement.record(this.numSessionsReleased, attributes);
         });
 
   }

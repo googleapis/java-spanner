@@ -24,8 +24,8 @@ import java.util.Optional;
 /** */
 public enum RPCViewImpl {
   SPANNER_GFE_LATENCY_VIEW(
-      OpenTelemetryMetricsAttributes.SPANNER_GFE_LATENCY_SELECTOR,
-      OpenTelemetryMetricsAttributes.SPANNER_GFE_LATENCY_VIEW);
+      RPCViewAttributes.SPANNER_GFE_LATENCY_SELECTOR,
+      RPCViewAttributes.SPANNER_GFE_LATENCY_VIEW);
   private InstrumentSelector instrumentSelector;
   private View view;
 
