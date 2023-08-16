@@ -16,54 +16,40 @@
 
 package com.google.cloud.spanner.spi.v1;
 
-import com.google.cloud.spanner.RPCView;
-import com.google.cloud.spanner.RPCViewImpl;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public final class OpenTelemetryOptions {
 
-  private static SdkMeterProviderBuilder sdkMeterProviderBuilder = SdkMeterProvider.builder();
+  private static final List<RPCView> registeredViews = new ArrayList<>();
 
-  private static SdkTracerProviderBuilder sdkTracerProviderBuilder = SdkTracerProvider.builder();
+  private static MetricExporter metricExporter = null;
 
   public static void registerViews(List<RPCView> views) {
-    views.forEach(
-        view -> {
-          Optional<RPCViewImpl> viewImpl = RPCViewImpl.getRPCViewByName(view.name());
-          viewImpl.ifPresent(
-              rpcView ->
-                  sdkMeterProviderBuilder.registerView(
-                      rpcView.getInstrumentSelector(), rpcView.getView()));
-        });
+    registeredViews.addAll(views);
   }
 
-  public static final SdkMeterProviderBuilder getSdkMeterProviderBuilder() {
-    return sdkMeterProviderBuilder;
+  public static List<RPCView> getRegisteredViews() {
+    return registeredViews;
   }
 
-  public static final SdkTracerProviderBuilder getSdkTracerProviderBuilder() {
-    return sdkTracerProviderBuilder;
+  public static void registerMetrics() {
   }
 
-  public static void registerMetrics() {}
-
-  public static void registerTraces() {}
-
-  public static void registerTracesExporter(SpanExporter exporter) {
-    sdkTracerProviderBuilder.addSpanProcessor(BatchSpanProcessor.builder(exporter).build());
+  public static void registerTraces() {
   }
+
+  //
+  // public static void registerTracesExporter(SpanExporter exporter) {
+  //   sdkTracerProviderBuilder.addSpanProcessor(BatchSpanProcessor.builder(exporter).build());
+  // }
 
   public static void registerMetricsExporter(MetricExporter metricExporter) {
-    sdkMeterProviderBuilder.registerMetricReader(
-        PeriodicMetricReader.builder(metricExporter).setInterval(java.time.Duration.ofSeconds(5)).build());
+    OpenTelemetryOptions.metricExporter = metricExporter;
+  }
+
+  public static MetricExporter getMetricsExporter() {
+    return metricExporter;
   }
 }

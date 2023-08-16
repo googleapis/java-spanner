@@ -70,7 +70,6 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Level LEVEL = Level.INFO;
 
   HeaderInterceptor() {
-    metricsInitializer = MetricsInitializer.getInstance();
   }
 
   @Override
@@ -104,7 +103,8 @@ class HeaderInterceptor implements ClientInterceptor {
         try {
 
           long latency = Long.parseLong(matcher.group("dur"));
-          metricsInitializer.gfeLatencyRecorder(latency, attributes);
+          MetricsInitializer.gfeLatencyRecorder(latency, attributes);
+          MetricsInitializer.gfeHeaderMissingCountRecorder(0L, attributes);
           measureMap.put(SPANNER_GFE_LATENCY, latency);
           measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 0L);
           measureMap.record(tagContext);
@@ -113,6 +113,7 @@ class HeaderInterceptor implements ClientInterceptor {
         }
       }
     } else {
+      MetricsInitializer.gfeHeaderMissingCountRecorder(1L, attributes);
       measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 1L).record(tagContext);
     }
   }

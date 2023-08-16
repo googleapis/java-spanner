@@ -134,9 +134,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     this.dbAdminClient = new DatabaseAdminClientImpl(options.getProjectId(), gapicRpc);
     this.instanceClient =
         new InstanceAdminClientImpl(options.getProjectId(), gapicRpc, dbAdminClient);
-    MetricsInitializer metricsInitializer = MetricsInitializer.getInstance();
-    MetricsInitializer.createOpenTelemetryObject();
-    metricsInitializer.gfeLatencyInitializer();
+    MetricsInitializer.initializeOpenTelemetry();
   }
 
   SpannerImpl(SpannerOptions options) {
@@ -254,7 +252,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
         // openTelemetry.meterBuilder()
         SessionPool pool =
             SessionPool.createPool(
-                getOptions(), SpannerImpl.this.getSessionClient(db), labelValues, MetricsInitializer.getInstance()
+                getOptions(), SpannerImpl.this.getSessionClient(db), labelValues, MetricsInitializer
                     .getOpenTelemetryObject(), attributesBuilder.build());
         pool.maybeWaitOnMinSessions();
         DatabaseClientImpl dbClient = createDatabaseClient(clientId, pool);

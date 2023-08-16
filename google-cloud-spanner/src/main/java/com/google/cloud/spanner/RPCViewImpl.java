@@ -25,7 +25,11 @@ import java.util.Optional;
 public enum RPCViewImpl {
   SPANNER_GFE_LATENCY_VIEW(
       RPCViewAttributes.SPANNER_GFE_LATENCY_SELECTOR,
-      RPCViewAttributes.SPANNER_GFE_LATENCY_VIEW);
+      RPCViewAttributes.SPANNER_GFE_LATENCY_VIEW),
+
+  SPANNER_GFE_HEADER_MISSING_COUNT_VIEW(
+      RPCViewAttributes.SPANNER_GFE_HEADER_MISSING_COUNT_SELECTOR,
+      RPCViewAttributes.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW);
   private InstrumentSelector instrumentSelector;
   private View view;
 

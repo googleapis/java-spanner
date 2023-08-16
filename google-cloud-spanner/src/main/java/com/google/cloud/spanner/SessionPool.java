@@ -2782,7 +2782,7 @@ class SessionPool {
   }
 
   private void initOTelMetricsCollection(OpenTelemetry openTelemetry, Attributes attributes) {
-    Meter meter = openTelemetry.getMeter("cloud.google.com");
+    Meter meter = openTelemetry.getMeter(MetricRegistryConstants.Scope);
 
     meter.gaugeBuilder("max_allowed_sessions")
         .setDescription(MAX_ALLOWED_SESSIONS_DESCRIPTION)
