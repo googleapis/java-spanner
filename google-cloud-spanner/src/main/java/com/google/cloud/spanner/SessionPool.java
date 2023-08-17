@@ -85,7 +85,6 @@ import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.Meter;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -2079,7 +2078,8 @@ class SessionPool {
         clock,
         Metrics.getMetricRegistry(),
         SPANNER_DEFAULT_LABEL_VALUES,
-        null, null);
+        null,
+        null);
   }
 
   static SessionPool createPool(
@@ -2127,8 +2127,7 @@ class SessionPool {
     this.clock = clock;
     this.poolMaintainer = new PoolMaintainer();
     this.initMetricsCollection(metricRegistry, labelValues);
-    if (openTelemetry!= null)
-    this.initOTelMetricsCollection(openTelemetry, attributes);
+    if (openTelemetry != null) this.initOTelMetricsCollection(openTelemetry, attributes);
     this.waitOnMinSessionsLatch =
         options.getMinSessions() > 0 ? new CountDownLatch(1) : new CountDownLatch(0);
   }
@@ -2784,19 +2783,23 @@ class SessionPool {
   private void initOTelMetricsCollection(OpenTelemetry openTelemetry, Attributes attributes) {
     Meter meter = openTelemetry.getMeter(MetricRegistryConstants.Scope);
 
-    meter.gaugeBuilder("max_allowed_sessions")
+    meter
+        .gaugeBuilder("max_allowed_sessions")
         .setDescription(MAX_ALLOWED_SESSIONS_DESCRIPTION)
         .setUnit(COUNT)
-        .buildWithCallback(measurement -> {
-          measurement.record(options.getMaxSessions(), attributes);
-        });
+        .buildWithCallback(
+            measurement -> {
+              measurement.record(options.getMaxSessions(), attributes);
+            });
 
-    meter.gaugeBuilder("max_in_use_sessions")
+    meter
+        .gaugeBuilder("max_in_use_sessions")
         .setDescription(MAX_IN_USE_SESSIONS_DESCRIPTION)
         .setUnit(COUNT)
-        .buildWithCallback(measurement -> {
-          measurement.record(this.maxSessionsInUse, attributes);
-        });
+        .buildWithCallback(
+            measurement -> {
+              measurement.record(this.maxSessionsInUse, attributes);
+            });
 
     // meter.gaugeBuilder(NUM_SESSIONS_IN_POOL)
     //     .setDescription(NUM_SESSIONS_IN_POOL_DESCRIPTION)
@@ -2812,26 +2815,31 @@ class SessionPool {
     //       measurement.record(this.sessions.size(), attributes);
     //     });
 
-    meter.counterBuilder("get_session_timeouts")
+    meter
+        .counterBuilder("get_session_timeouts")
         .setDescription(SESSIONS_TIMEOUTS_DESCRIPTION)
         .setUnit(COUNT)
-        .buildWithCallback(measurement -> {
-          measurement.record(this.getNumWaiterTimeouts(), attributes);
-        });
+        .buildWithCallback(
+            measurement -> {
+              measurement.record(this.getNumWaiterTimeouts(), attributes);
+            });
 
-    meter.counterBuilder("num_acquired_sessions")
+    meter
+        .counterBuilder("num_acquired_sessions")
         .setDescription(NUM_ACQUIRED_SESSIONS_DESCRIPTION)
         .setUnit(COUNT)
-        .buildWithCallback(measurement -> {
-          measurement.record(this.numSessionsAcquired, attributes);
-        });
+        .buildWithCallback(
+            measurement -> {
+              measurement.record(this.numSessionsAcquired, attributes);
+            });
 
-    meter.counterBuilder("num_released_sessions")
+    meter
+        .counterBuilder("num_released_sessions")
         .setDescription(NUM_RELEASED_SESSIONS_DESCRIPTION)
         .setUnit(COUNT)
-        .buildWithCallback(measurement -> {
-          measurement.record(this.numSessionsReleased, attributes);
-        });
-
+        .buildWithCallback(
+            measurement -> {
+              measurement.record(this.numSessionsReleased, attributes);
+            });
   }
 }

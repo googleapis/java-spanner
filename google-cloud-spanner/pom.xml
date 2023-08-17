@@ -16,6 +16,7 @@
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
     <opencensus.version>0.31.1</opencensus.version>
+    <opentelemetry.version>1.28.0</opentelemetry.version>
     <graalvm.version>22.3.3</graalvm.version>
     <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
     <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing-east1</spanner.testenv.instance>
@@ -139,7 +140,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
           <configuration>
-            <ignoredDependencies>io.grpc:grpc-protobuf-lite,org.hamcrest:hamcrest,org.hamcrest:hamcrest-core,com.google.errorprone:error_prone_annotations,org.openjdk.jmh:jmh-generator-annprocess,com.google.api.grpc:grpc-google-cloud-spanner-v1,com.google.api.grpc:grpc-google-cloud-spanner-admin-instance-v1,com.google.api.grpc:grpc-google-cloud-spanner-admin-database-v1,javax.annotation:javax.annotation-api,io.opencensus:opencensus-impl,org.graalvm.sdk:graal-sdk,io.grpc:grpc-grpclb,io.grpc:grpc-googleapis,io.grpc:grpc-rls</ignoredDependencies>
+            <ignoredDependencies>io.grpc:grpc-protobuf-lite,org.hamcrest:hamcrest,org.hamcrest:hamcrest-core,com.google.errorprone:error_prone_annotations,org.openjdk.jmh:jmh-generator-annprocess,com.google.api.grpc:grpc-google-cloud-spanner-v1,com.google.api.grpc:grpc-google-cloud-spanner-admin-instance-v1,com.google.api.grpc:grpc-google-cloud-spanner-admin-database-v1,javax.annotation:javax.annotation-api,io.opencensus:opencensus-impl,org.graalvm.sdk:graal-sdk,io.grpc:grpc-grpclb,io.grpc:grpc-googleapis,io.grpc:grpc-rls,io.opentelemetry:opentelemetry-api,io.opentelemetry:opentelemetry-sdk,io.opentelemetry:opentelemetry-sdk-metrics,io.opentelemetry:opentelemetry-sdk-common</ignoredDependencies>
           </configuration>
         </plugin>
       </plugins>
@@ -234,6 +235,32 @@
       <groupId>io.opencensus</groupId>
       <artifactId>opencensus-impl</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+      <version>${opentelemetry.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk</artifactId>
+      <version>${opentelemetry.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-metrics</artifactId>
+      <version>${opentelemetry.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-common</artifactId>
+      <version>${opentelemetry.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.re2j</groupId>
+      <artifactId>re2j</artifactId>
+      <version>1.7</version>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.google.auth</groupId>
@@ -381,7 +408,7 @@
       <version>2.2</version>
       <scope>test</scope>
     </dependency>
-    
+
     <!-- Benchmarking dependencies -->
     <dependency>
       <groupId>org.openjdk.jmh</groupId>

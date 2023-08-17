@@ -34,11 +34,9 @@ public final class OpenTelemetryOptions {
     return registeredViews;
   }
 
-  public static void registerMetrics() {
-  }
+  public static void registerMetrics() {}
 
-  public static void registerTraces() {
-  }
+  public static void registerTraces() {}
 
   //
   // public static void registerTracesExporter(SpanExporter exporter) {

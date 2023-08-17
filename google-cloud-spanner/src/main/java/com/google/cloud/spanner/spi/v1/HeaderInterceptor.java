@@ -22,7 +22,6 @@ import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.PROJECT_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_LATENCY;
 
-import com.google.api.gax.core.GaxProperties;
 import com.google.cloud.spanner.MetricsInitializer;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -69,8 +68,7 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Logger LOGGER = Logger.getLogger(HeaderInterceptor.class.getName());
   private static final Level LEVEL = Level.INFO;
 
-  HeaderInterceptor() {
-  }
+  HeaderInterceptor() {}
 
   @Override
   public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(

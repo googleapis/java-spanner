@@ -26,11 +26,13 @@ public class RPCViewAttributes {
 
   public static final String SPANNER_GFE_LATENCY_NAME = "gfe_latency";
 
-  public static final String SPANNER_GFE_LATENCY_DESCRIPTION = "Latency between Google's network receiving an RPC and reading back the first byte of the response";
+  public static final String SPANNER_GFE_LATENCY_DESCRIPTION =
+      "Latency between Google's network receiving an RPC and reading back the first byte of the response";
 
   public static final String SPANNER_GFE_HEADER_MISSING_COUNT_NAME = "gfe_header_missing_count";
 
-  public static final String SPANNER_GFE_HEADER_MISSING_COUNT_DESCRIPTION = "Number of RPC responses received without the server-timing header, most likely means that the RPC never reached Google's network";
+  public static final String SPANNER_GFE_HEADER_MISSING_COUNT_DESCRIPTION =
+      "Number of RPC responses received without the server-timing header, most likely means that the RPC never reached Google's network";
 
   public static final String MILLISECOND = "ms";
   public static final String COUNT = "1";
@@ -59,7 +61,7 @@ public class RPCViewAttributes {
       InstrumentSelector.builder()
           .setName(SPANNER_GFE_HEADER_MISSING_COUNT_NAME)
           .setMeterName(MetricRegistryConstants.Scope)
-          .setType(InstrumentType.COUNTER)
+          .setType(InstrumentType.OBSERVABLE_COUNTER)
           .setUnit(COUNT)
           .build();
 
