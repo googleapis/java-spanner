@@ -488,7 +488,7 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
 
   /** Returns the default service endpoint. */
   public static String getDefaultEndpoint() {
-    return "spanner.apis-s3nscloud.io:443";
+    return "spanner.test-endpoint:443";
   }
 
   /** Returns the default mTLS service endpoint. */
