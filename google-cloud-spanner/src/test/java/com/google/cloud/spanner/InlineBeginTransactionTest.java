@@ -69,6 +69,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -1357,6 +1358,55 @@ public class InlineBeginTransactionTest {
       assertThat(countRequests(BeginTransactionRequest.class)).isEqualTo(1);
       assertThat(countRequests(CommitRequest.class)).isEqualTo(1);
       assertThat(countTransactionsStarted()).isEqualTo(1);
+    }
+
+    @Test
+    public void testInlinedBeginTxWithMutationsBeforeFailedSqlStatement() {
+      Statement insert = Statement.of("insert into foo (id) values (1)");
+      Statement update = Statement.of("update foo set value='Two' where id=2");
+      mockSpanner.putStatementResult(StatementResult.update(insert, 1L));
+      mockSpanner.putStatementResult(StatementResult.update(update, 1L));
+      // This error will be returned the first time the ExecuteSql method is called. The error is
+      // cleared after the first call, meaning that the second attempt will succeed.
+      mockSpanner.setExecuteSqlExecutionTime(
+          SimulatedExecutionTime.ofException(Status.ALREADY_EXISTS.asRuntimeException()));
+
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      AtomicInteger attempts = new AtomicInteger();
+      client
+          .readWriteTransaction()
+          .run(
+              transaction -> {
+                attempts.incrementAndGet();
+                // Buffer a blind write before executing a SQL statement.
+                transaction.buffer(
+                    Collections.singletonList(
+                        Mutation.newInsertBuilder("FOO").set("ID").to(1L).build()));
+                try {
+                  transaction.executeUpdate(insert);
+                } catch (SpannerException exception) {
+                  assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
+                  // The error should only occur during the initial attempt.
+                  assertEquals(1, attempts.get());
+                }
+                // We need to execute one more statement in the transaction in order to force a
+                // retry.
+                assertEquals(1L, transaction.executeUpdate(update));
+                return null;
+              });
+      // The transaction should be retried once.
+      assertEquals(2, attempts.get());
+      assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+      // We get 3 ExecuteSql requests:
+      // 1. The initial attempt that carries a BeginTransaction option.
+      // 2. The retry attempt that does not use a BeginTransaction option.
+      // 3. The second UPDATE statement in the transaction that is only executed during the retry.
+      assertEquals(3, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+      assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+      CommitRequest commit = mockSpanner.getRequestsOfType(CommitRequest.class).get(0);
+      // The mutations should only be applied once.
+      assertEquals(1, commit.getMutationsCount());
     }
 
     @SuppressWarnings("resource")
