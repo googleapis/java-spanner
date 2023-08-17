@@ -45,6 +45,7 @@ import com.google.api.gax.rpc.OperationCallable;
 import com.google.api.gax.rpc.ResponseObserver;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.StatusCode;
+import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.api.gax.rpc.StreamController;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.rpc.UnaryCallSettings;
@@ -230,6 +231,10 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   private boolean rpcIsClosed;
   private final SpannerStub spannerStub;
+  private final RetrySettings executeQueryRetrySettings;
+  private final Set<Code> executeQueryRetryableCodes;
+  private final RetrySettings readRetrySettings;
+  private final Set<Code> readRetryableCodes;
   private final SpannerStub partitionedDmlStub;
   private final RetrySettings partitionedDmlRetrySettings;
   private final InstanceAdminStub instanceAdminStub;
@@ -368,6 +373,14 @@ public class GapicSpannerRpc implements SpannerRpc {
                     .setCredentialsProvider(credentialsProvider)
                     .setStreamWatchdogProvider(watchdogProvider)
                     .build());
+        this.readRetrySettings =
+            options.getSpannerStubSettings().streamingReadSettings().getRetrySettings();
+        this.readRetryableCodes =
+            options.getSpannerStubSettings().streamingReadSettings().getRetryableCodes();
+        this.executeQueryRetrySettings =
+            options.getSpannerStubSettings().executeStreamingSqlSettings().getRetrySettings();
+        this.executeQueryRetryableCodes =
+            options.getSpannerStubSettings().executeStreamingSqlSettings().getRetryableCodes();
         partitionedDmlRetrySettings =
             options
                 .getSpannerStubSettings()
@@ -472,6 +485,10 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.databaseAdminStub = null;
       this.instanceAdminStub = null;
       this.spannerStub = null;
+      this.readRetrySettings = null;
+      this.readRetryableCodes = null;
+      this.executeQueryRetrySettings = null;
+      this.executeQueryRetryableCodes = null;
       this.partitionedDmlStub = null;
       this.databaseAdminStubSettings = null;
       this.spannerWatchdog = null;
@@ -1586,6 +1603,16 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public RetrySettings getReadRetrySettings() {
+    return readRetrySettings;
+  }
+
+  @Override
+  public Set<Code> getReadRetryableCodes() {
+    return readRetryableCodes;
+  }
+
+  @Override
   public StreamingCall read(
       ReadRequest request,
       ResultStreamConsumer consumer,
@@ -1597,6 +1624,16 @@ public class GapicSpannerRpc implements SpannerRpc {
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
     spannerStub.streamingReadCallable().call(request, responseObserver, context);
     return new GrpcStreamingCall(context, responseObserver.getController());
+  }
+
+  @Override
+  public RetrySettings getExecuteQueryRetrySettings() {
+    return executeQueryRetrySettings;
+  }
+
+  @Override
+  public Set<Code> getExecuteQueryRetryableCodes() {
+    return executeQueryRetryableCodes;
   }
 
   @Override
