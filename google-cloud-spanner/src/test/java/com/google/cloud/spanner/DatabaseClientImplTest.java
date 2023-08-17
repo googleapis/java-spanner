@@ -133,12 +133,19 @@ public class DatabaseClientImplTest {
   private static final long UPDATE_COUNT = 1L;
   private static final com.google.rpc.Status STATUS_OK =
       com.google.rpc.Status.newBuilder().setCode(com.google.rpc.Code.OK_VALUE).build();
-  private static final Iterable<Mutation> MUTATIONS =
+  private static final Iterable<MutationGroup> MUTATION_GROUPS =
       ImmutableList.of(
-          Mutation.newInsertBuilder("FOO1").set("ID").to(1L).set("NAME").to("Bar1").build(),
-          Mutation.newInsertBuilder("FOO2").set("ID").to(2L).set("NAME").to("Bar2").build(),
-          Mutation.newInsertBuilder("FOO3").set("ID").to(3L).set("NAME").to("Bar3").build(),
-          Mutation.newInsertBuilder("FOO4").set("ID").to(4L).set("NAME").to("Bar4").build());
+          MutationGroup.of(
+              Mutation.newInsertBuilder("FOO1").set("ID").to(1L).set("NAME").to("Bar1").build(),
+              Mutation.newInsertBuilder("FOO2").set("ID").to(2L).set("NAME").to("Bar2").build()),
+          MutationGroup.of(
+              Mutation.newInsertBuilder("FOO3").set("ID").to(3L).set("NAME").to("Bar3").build(),
+              Mutation.newInsertBuilder("FOO4").set("ID").to(4L).set("NAME").to("Bar4").build()),
+          MutationGroup.of(
+              Mutation.newInsertBuilder("FOO4").set("ID").to(4L).set("NAME").to("Bar4").build(),
+              Mutation.newInsertBuilder("FOO5").set("ID").to(5L).set("NAME").to("Bar5").build()),
+          MutationGroup.of(
+              Mutation.newInsertBuilder("FOO6").set("ID").to(6L).set("NAME").to("Bar6").build()));
   private static final Iterable<BatchWriteResponse> BATCH_WRITE_RESPONSES =
       ImmutableList.of(
           BatchWriteResponse.newBuilder()
@@ -339,7 +346,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
 
-    ServerStream<BatchWriteResponse> responseStream = client.batchWriteAtLeastOnce(MUTATIONS);
+    ServerStream<BatchWriteResponse> responseStream = client.batchWriteAtLeastOnce(MUTATION_GROUPS);
     int idx = 0;
     for (BatchWriteResponse response : responseStream) {
       assertEquals(
@@ -353,7 +360,7 @@ public class DatabaseClientImplTest {
     List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
     assertEquals(requests.size(), 1);
     BatchWriteRequest request = requests.get(0);
-    assertEquals(request.getMutationsCount(), 4);
+    assertEquals(request.getMutationGroupsCount(), 4);
     assertEquals(request.getRequestOptions().getPriority(), Priority.PRIORITY_UNSPECIFIED);
   }
 
@@ -362,14 +369,14 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     ServerStream<BatchWriteResponse> responseStream =
-        client.batchWriteAtLeastOnceWithOptions(MUTATIONS, Options.priority(RpcPriority.LOW));
+        client.batchWriteAtLeastOnceWithOptions(MUTATION_GROUPS, Options.priority(RpcPriority.LOW));
     for (BatchWriteResponse response : responseStream) {}
 
     assertNotNull(responseStream);
     List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
     assertEquals(requests.size(), 1);
     BatchWriteRequest request = requests.get(0);
-    assertEquals(request.getMutationsCount(), 4);
+    assertEquals(request.getMutationGroupsCount(), 4);
     assertEquals(request.getRequestOptions().getPriority(), Priority.PRIORITY_LOW);
   }
 
@@ -378,14 +385,15 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     ServerStream<BatchWriteResponse> responseStream =
-        client.batchWriteAtLeastOnceWithOptions(MUTATIONS, Options.tag("app=spanner,env=test"));
+        client.batchWriteAtLeastOnceWithOptions(
+            MUTATION_GROUPS, Options.tag("app=spanner,env=test"));
     for (BatchWriteResponse response : responseStream) {}
 
     assertNotNull(responseStream);
     List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
     assertEquals(requests.size(), 1);
     BatchWriteRequest request = requests.get(0);
-    assertEquals(request.getMutationsCount(), 4);
+    assertEquals(request.getMutationGroupsCount(), 4);
     assertEquals(request.getRequestOptions().getTransactionTag(), "app=spanner,env=test");
     assertThat(request.getRequestOptions().getRequestTag()).isEmpty();
   }

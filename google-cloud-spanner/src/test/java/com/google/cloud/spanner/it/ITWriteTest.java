@@ -43,6 +43,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.MutationGroup;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
@@ -107,51 +108,65 @@ public class ITWriteTest {
   private static DatabaseClient googleStandardSQLClient;
   private static DatabaseClient postgreSQLClient;
 
-  private static final String GOOGLE_STANDARD_SQL_SCHEMA =
-      "CREATE TABLE T ("
-          + "  K                   STRING(MAX) NOT NULL,"
-          + "  BoolValue           BOOL,"
-          + "  Int64Value          INT64,"
-          + "  Float64Value        FLOAT64,"
-          + "  StringValue         STRING(MAX),"
-          + "  JsonValue           JSON,"
-          + "  BytesValue          BYTES(MAX),"
-          + "  TimestampValue      TIMESTAMP OPTIONS (allow_commit_timestamp = true),"
-          + "  DateValue           DATE,"
-          + "  NumericValue        NUMERIC,"
-          + "  BoolArrayValue      ARRAY<BOOL>,"
-          + "  Int64ArrayValue     ARRAY<INT64>,"
-          + "  Float64ArrayValue   ARRAY<FLOAT64>,"
-          + "  StringArrayValue    ARRAY<STRING(MAX)>,"
-          + "  JsonArrayValue      ARRAY<JSON>,"
-          + "  BytesArrayValue     ARRAY<BYTES(MAX)>,"
-          + "  TimestampArrayValue ARRAY<TIMESTAMP>,"
-          + "  DateArrayValue      ARRAY<DATE>,"
-          + "  NumericArrayValue   ARRAY<NUMERIC>,"
-          + ") PRIMARY KEY (K)";
+  private static final String[] GOOGLE_STANDARD_SQL_SCHEMA =
+      new String[] {
+        "CREATE TABLE T ("
+            + "  K                   STRING(MAX) NOT NULL,"
+            + "  BoolValue           BOOL,"
+            + "  Int64Value          INT64,"
+            + "  Float64Value        FLOAT64,"
+            + "  StringValue         STRING(MAX),"
+            + "  JsonValue           JSON,"
+            + "  BytesValue          BYTES(MAX),"
+            + "  TimestampValue      TIMESTAMP OPTIONS (allow_commit_timestamp = true),"
+            + "  DateValue           DATE,"
+            + "  NumericValue        NUMERIC,"
+            + "  BoolArrayValue      ARRAY<BOOL>,"
+            + "  Int64ArrayValue     ARRAY<INT64>,"
+            + "  Float64ArrayValue   ARRAY<FLOAT64>,"
+            + "  StringArrayValue    ARRAY<STRING(MAX)>,"
+            + "  JsonArrayValue      ARRAY<JSON>,"
+            + "  BytesArrayValue     ARRAY<BYTES(MAX)>,"
+            + "  TimestampArrayValue ARRAY<TIMESTAMP>,"
+            + "  DateArrayValue      ARRAY<DATE>,"
+            + "  NumericArrayValue   ARRAY<NUMERIC>,"
+            + ") PRIMARY KEY (K)",
+        "CREATE TABLE T1 ("
+            + "  K1                  STRING(MAX) NOT NULL,"
+            + "  K                   STRING(MAX) NOT NULL,"
+            + "  CONSTRAINT FK FOREIGN KEY (K) REFERENCES T(K)"
+            + ") PRIMARY KEY (K1)"
+      };
 
-  private static final String POSTGRESQL_SCHEMA =
-      "CREATE TABLE T ("
-          + "  K                   VARCHAR PRIMARY KEY,"
-          + "  BoolValue           BOOL,"
-          + "  Int64Value          BIGINT,"
-          + "  Float64Value        DOUBLE PRECISION,"
-          + "  StringValue         VARCHAR,"
-          + "  JsonValue           JSONB,"
-          + "  BytesValue          BYTEA,"
-          + "  TimestampValue      TIMESTAMPTZ,"
-          + "  DateValue           DATE,"
-          + "  NumericValue        NUMERIC,"
-          + "  BoolArrayValue      BOOL[],"
-          + "  Int64ArrayValue     BIGINT[],"
-          + "  Float64ArrayValue   DOUBLE PRECISION[],"
-          + "  StringArrayValue    VARCHAR[],"
-          + "  JsonArrayValue      JSONB[],"
-          + "  BytesArrayValue     BYTEA[],"
-          + "  TimestampArrayValue TIMESTAMPTZ[],"
-          + "  DateArrayValue      DATE[],"
-          + "  NumericArrayValue   NUMERIC[]"
-          + ")";
+  private static final String[] POSTGRESQL_SCHEMA =
+      new String[] {
+        "CREATE TABLE T ("
+            + "  K                   VARCHAR PRIMARY KEY,"
+            + "  BoolValue           BOOL,"
+            + "  Int64Value          BIGINT,"
+            + "  Float64Value        DOUBLE PRECISION,"
+            + "  StringValue         VARCHAR,"
+            + "  JsonValue           JSONB,"
+            + "  BytesValue          BYTEA,"
+            + "  TimestampValue      TIMESTAMPTZ,"
+            + "  DateValue           DATE,"
+            + "  NumericValue        NUMERIC,"
+            + "  BoolArrayValue      BOOL[],"
+            + "  Int64ArrayValue     BIGINT[],"
+            + "  Float64ArrayValue   DOUBLE PRECISION[],"
+            + "  StringArrayValue    VARCHAR[],"
+            + "  JsonArrayValue      JSONB[],"
+            + "  BytesArrayValue     BYTEA[],"
+            + "  TimestampArrayValue TIMESTAMPTZ[],"
+            + "  DateArrayValue      DATE[],"
+            + "  NumericArrayValue   NUMERIC[]"
+            + ")",
+        "CREATE TABLE T1 ("
+            + "  K1                  VARCHAR PRIMARY KEY,"
+            + "  K                   VARCHAR,"
+            + "  CONSTRAINT FK FOREIGN KEY (K) REFERENCES T(K)"
+            + ")"
+      };
 
   /** Sequence used to generate unique keys. */
   private static int seq;
@@ -168,7 +183,7 @@ public class ITWriteTest {
     if (!EmulatorSpannerHelper.isUsingEmulator()) {
       Database postgreSQLDatabase =
           env.getTestHelper()
-              .createTestDatabase(Dialect.POSTGRESQL, Collections.singletonList(POSTGRESQL_SCHEMA));
+              .createTestDatabase(Dialect.POSTGRESQL, Arrays.asList(POSTGRESQL_SCHEMA));
       postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
     }
   }
@@ -199,13 +214,13 @@ public class ITWriteTest {
   }
 
   private Struct readLastRow(String... columns) {
-    return readRow(lastKey, columns);
+    return readRow("T", lastKey, columns);
   }
 
-  private Struct readRow(String key, String... columns) {
+  private Struct readRow(String table, String key, String... columns) {
     return client
         .singleUse(TimestampBound.strong())
-        .readRow("T", Key.of(key), Arrays.asList(columns));
+        .readRow(table, Key.of(key), Arrays.asList(columns));
   }
 
   @Test
@@ -225,26 +240,37 @@ public class ITWriteTest {
 
   @Test
   public void batchWriteAtLeastOnce() {
-    assumeFalse("Emulator does not support BatchWriteAtleastOnce", isUsingEmulator());
-    final String k1 = uniqueString(), k2 = uniqueString();
-    lastKey = k2;
-    final List<Mutation> mutations =
+    assumeFalse("Emulator does not support BatchWriteAtLeastOnce", isUsingEmulator());
+    final String k1 = uniqueString(), k2 = uniqueString(), k3 = uniqueString(), k4 = uniqueString();
+    lastKey = k3;
+    final List<MutationGroup> mutationGroups =
         ImmutableList.of(
-            Mutation.newInsertOrUpdateBuilder("T")
-                .set("K")
-                .to(k1)
-                .set("StringValue")
-                .to("v1")
-                .set("BoolValue")
-                .to(true)
-                .build(),
-            Mutation.newInsertOrUpdateBuilder("T")
-                .set("K")
-                .to(k2)
-                .set("StringValue")
-                .to("v2")
-                .build());
-    ServerStream<BatchWriteResponse> responses = client.batchWriteAtLeastOnce(mutations);
+            MutationGroup.of(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(k1)
+                    .set("StringValue")
+                    .to("v1")
+                    .set("BoolValue")
+                    .to(true)
+                    .build(),
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(k2)
+                    .set("StringValue")
+                    .to("v2")
+                    .build()),
+            MutationGroup.of(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(k3)
+                    .set("StringValue")
+                    .to("v1")
+                    .set("BoolValue")
+                    .to(false)
+                    .build(),
+                Mutation.newInsertOrUpdateBuilder("T1").set("K1").to(k4).set("K").to(k3).build()));
+    ServerStream<BatchWriteResponse> responses = client.batchWriteAtLeastOnce(mutationGroups);
     Set<Integer> responseIndexes = new HashSet<>();
     Set<Integer> appliedMutationIndexes = new HashSet<>();
     for (BatchWriteResponse response : responses) {
@@ -259,16 +285,21 @@ public class ITWriteTest {
     Struct row;
     // assert row with key k1
     if (appliedMutationIndexes.contains(0)) {
-      row = readRow(k1, "StringValue", "BoolValue");
+      row = readRow("T", k1, "StringValue", "BoolValue");
       assertEquals(row.getString(0), "v1");
       assertTrue(row.getBoolean(1));
-    }
-
-    // assert row with key k2
-    if (appliedMutationIndexes.contains(1)) {
-      row = readRow(k2, "StringValue", "BoolValue");
+      row = readRow("T", k2, "StringValue", "BoolValue");
       assertEquals(row.getString(0), "v2");
       assertTrue(row.isNull(1));
+    }
+
+    // assert row with key k4, and corresponding referencing table.
+    if (appliedMutationIndexes.contains(1)) {
+      row = readRow("T", k3, "StringValue", "BoolValue");
+      assertEquals(row.getString(0), "v1");
+      assertFalse(row.getBoolean(1));
+      row = readRow("T1", k4, "K");
+      assertEquals(row.getString(0), k3);
     }
   }
 

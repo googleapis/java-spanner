@@ -199,21 +199,21 @@ class SessionImpl implements Session {
   }
 
   @Override
-  public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(Iterable<Mutation> mutations)
-      throws SpannerException {
-    return batchWriteAtLeastOnceWithOptions(mutations);
+  public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+      Iterable<MutationGroup> mutationGroups) throws SpannerException {
+    return batchWriteAtLeastOnceWithOptions(mutationGroups);
   }
 
   @Override
   public ServerStream<BatchWriteResponse> batchWriteAtLeastOnceWithOptions(
-      Iterable<Mutation> mutations, TransactionOption... transactionOptions)
+      Iterable<MutationGroup> mutationGroups, TransactionOption... transactionOptions)
       throws SpannerException {
     setActive(null);
     Options batchWriteRequestOptions = Options.fromTransactionOptions(transactionOptions);
-    List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-    Mutation.toProto(mutations, mutationsProto);
+    List<BatchWriteRequest.MutationGroup> mutationGroupsProto =
+        MutationGroup.toListProto(mutationGroups);
     final BatchWriteRequest.Builder requestBuilder =
-        BatchWriteRequest.newBuilder().setSession(name).addAllMutations(mutationsProto);
+        BatchWriteRequest.newBuilder().setSession(name).addAllMutationGroups(mutationGroupsProto);
     if (batchWriteRequestOptions.hasPriority() || batchWriteRequestOptions.hasTag()) {
       RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
       if (batchWriteRequestOptions.hasPriority()) {

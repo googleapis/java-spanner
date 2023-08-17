@@ -1173,16 +1173,17 @@ class SessionPool {
     }
 
     @Override
-    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(Iterable<Mutation> mutations)
-        throws SpannerException {
-      return batchWriteAtLeastOnceWithOptions(mutations);
+    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+        Iterable<MutationGroup> mutationGroups) throws SpannerException {
+      return batchWriteAtLeastOnceWithOptions(mutationGroups);
     }
 
     @Override
     public ServerStream<BatchWriteResponse> batchWriteAtLeastOnceWithOptions(
-        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+        Iterable<MutationGroup> mutationGroups, TransactionOption... options)
+        throws SpannerException {
       try {
-        return get().batchWriteAtLeastOnceWithOptions(mutations, options);
+        return get().batchWriteAtLeastOnceWithOptions(mutationGroups, options);
       } finally {
         close();
       }
@@ -1436,17 +1437,18 @@ class SessionPool {
     }
 
     @Override
-    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(Iterable<Mutation> mutations)
-        throws SpannerException {
-      return batchWriteAtLeastOnceWithOptions(mutations);
+    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+        Iterable<MutationGroup> mutationGroups) throws SpannerException {
+      return batchWriteAtLeastOnceWithOptions(mutationGroups);
     }
 
     @Override
     public ServerStream<BatchWriteResponse> batchWriteAtLeastOnceWithOptions(
-        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+        Iterable<MutationGroup> mutationGroups, TransactionOption... options)
+        throws SpannerException {
       try {
         markUsed();
-        return delegate.batchWriteAtLeastOnceWithOptions(mutations, options);
+        return delegate.batchWriteAtLeastOnceWithOptions(mutationGroups, options);
       } catch (SpannerException e) {
         throw lastException = e;
       }

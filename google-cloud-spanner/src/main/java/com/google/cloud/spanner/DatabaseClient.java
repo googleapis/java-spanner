@@ -194,34 +194,26 @@ public interface DatabaseClient {
       Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException;
 
   /**
-   * Batches the supplied mutations in a collection of efficient transactions. The mutations are
-   * applied non-atomically in an unspecified order and thus, they must be independent of each
-   * other. Partial failure is possible, i.e., some mutations may have been applied successfully,
-   * while some may have failed. The results of individual batches are streamed into the response as
-   * and when the batches are applied.
+   * Applies batch of mutation groups in a collection of efficient transactions. The mutation groups
+   * are applied non-atomically in an unspecified order and thus, they must be independent of each
+   * other. Partial failure is possible, i.e., some mutation groups may have been applied
+   * successfully, while some may have failed. The results of individual batches are streamed into
+   * the response as and when the batches are applied.
    *
    * <p>Since this method does not feature replay protection, it may attempt to apply {@code
-   * mutations} more than once; if the mutations are not idempotent, this may lead to a failure
-   * being reported when the mutation was applied once. For example, an insert may fail with {@link
-   * ErrorCode#ALREADY_EXISTS} even though the row did not exist before this method was called. For
-   * this reason, most users of the library will prefer to use {@link #write(Iterable)} instead.
-   * However, {@code batchWriteAtLeastOnce()} method may be appropriate for non-atomically
-   * committing multiple mutations in a single RPC with low latency.
+   * mutation groups} more than once; if the mutation groups are not idempotent, this may lead to a
+   * failure being reported when the mutation group was applied once. For example, an insert may
+   * fail with {@link ErrorCode#ALREADY_EXISTS} even though the row did not exist before this method
+   * was called. For this reason, most users of the library will prefer to use {@link
+   * #write(Iterable)} instead. However, {@code batchWriteAtLeastOnce()} method may be appropriate
+   * for non-atomically committing multiple mutation groups in a single RPC with low latency.
    *
-   * <p>Example of BatchWriteAtleastOnce
+   * <p>Example of BatchWriteAtLeastOnce
    *
    * <pre>{@code
-   * long singerId = my_singer_id;
-   * Mutation mutation = Mutation.newInsertBuilder("Singers")
-   *         .set("SingerId")
-   *         .to(singerId)
-   *         .set("FirstName")
-   *         .to("Billy")
-   *         .set("LastName")
-   *         .to("Joel")
-   *         .build();
    * ServerStream<BatchWriteResponse> responses =
-   *     dbClient.batchWriteAtLeastOnce(Collections.singletonList(mutation));
+   *     dbClient.batchWriteAtLeastOnceWithOptions(
+   *         ImmutableList.of(MUTATION_GROUP1, MUTATION_GROUP2));
    * for (BatchWriteResponse response : responses) {
    *   // Do something when a response is received.
    * }
@@ -229,40 +221,31 @@ public interface DatabaseClient {
    *
    * @return ServerStream\<BatchWriteResponse>
    */
-  ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(Iterable<Mutation> mutations)
+  ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(Iterable<MutationGroup> mutationGroups)
       throws SpannerException;
 
   /**
-   * Batches the supplied mutations in a collection of efficient transactions. The mutations are
-   * applied non-atomically in an unspecified order and thus, they must be independent of each
-   * other. Partial failure is possible, i.e., some mutations may have been applied successfully,
-   * while some may have failed. The results of individual batches are streamed into the response as
-   * and when the batches are applied.
+   * Applies batch of mutation groups in a collection of efficient transactions. The mutation groups
+   * are applied non-atomically in an unspecified order and thus, they must be independent of each
+   * other. Partial failure is possible, i.e., some mutation groups may have been applied
+   * successfully, while some may have failed. The results of individual batches are streamed into
+   * the response as and when the batches are applied.
    *
    * <p>Since this method does not feature replay protection, it may attempt to apply {@code
-   * mutations} more than once; if the mutations are not idempotent, this may lead to a failure
-   * being reported when the mutation was applied once. For example, an insert may fail with {@link
-   * ErrorCode#ALREADY_EXISTS} even though the row did not exist before this method was called. For
-   * this reason, most users of the library will prefer to use {@link #write(Iterable)} instead.
-   * However, {@code batchWriteAtLeastOnce()} method may be appropriate for non-atomically
-   * committing multiple mutations in a single RPC with low latency.
+   * mutation groups} more than once; if the mutation groups are not idempotent, this may lead to a
+   * failure being reported when the mutation group was applied once. For example, an insert may
+   * fail with {@link ErrorCode#ALREADY_EXISTS} even though the row did not exist before this method
+   * was called. For this reason, most users of the library will prefer to use {@link
+   * #write(Iterable)} instead. However, {@code batchWriteAtLeastOnce()} method may be appropriate
+   * for non-atomically committing multiple mutation groups in a single RPC with low latency.
    *
-   * <p>Example of BatchWriteAtleastOnceWithOptions
+   * <p>Example of BatchWriteAtLeastOnceWithOptions
    *
    * <pre>{@code
-   * long singerId = my_singer_id;
-   * Mutation mutation = Mutation.newInsertBuilder("Singers")
-   *         .set("SingerId")
-   *         .to(singerId)
-   *         .set("FirstName")
-   *         .to("Billy")
-   *         .set("LastName")
-   *         .to("Joel")
-   *         .build();
    * ServerStream<BatchWriteResponse> responses =
-   *     dbClient.batchWriteAtLeastOnce(
-   *             Collections.singletonList(mutation),
-   *             Options.priority(RpcPriority.LOW));
+   *     dbClient.batchWriteAtLeastOnceWithOptions(
+   *         ImmutableList.of(MUTATION_GROUP1, MUTATION_GROUP2),
+   *         Options.tag("batch-write-tag"));
    * for (BatchWriteResponse response : responses) {
    *   // Do something when a response is received.
    * }
@@ -279,7 +262,7 @@ public interface DatabaseClient {
    * @return ServerStream\<BatchWriteResponse>
    */
   ServerStream<BatchWriteResponse> batchWriteAtLeastOnceWithOptions(
-      Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException;
+      Iterable<MutationGroup> mutationGroups, TransactionOption... options) throws SpannerException;
 
   /**
    * Returns a context in which a single read can be performed using {@link TimestampBound#strong()}

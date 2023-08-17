@@ -109,19 +109,19 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
-  public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(final Iterable<Mutation> mutations)
-      throws SpannerException {
-    return batchWriteAtLeastOnceWithOptions(mutations);
+  public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+      final Iterable<MutationGroup> mutationGroups) throws SpannerException {
+    return batchWriteAtLeastOnceWithOptions(mutationGroups);
   }
 
   @Override
   public ServerStream<BatchWriteResponse> batchWriteAtLeastOnceWithOptions(
-      final Iterable<Mutation> mutations, final TransactionOption... options)
+      final Iterable<MutationGroup> mutationGroups, final TransactionOption... options)
       throws SpannerException {
     Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
     try (Scope s = tracer.withSpan(span)) {
       return runWithSessionRetry(
-          session -> session.batchWriteAtLeastOnceWithOptions(mutations, options));
+          session -> session.batchWriteAtLeastOnceWithOptions(mutationGroups, options));
     } catch (RuntimeException e) {
       TraceUtil.setWithFailure(span, e);
       throw e;
