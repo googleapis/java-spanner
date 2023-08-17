@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ import com.google.api.gax.grpc.GrpcCallSettings;
 import com.google.api.gax.grpc.GrpcStubCallableFactory;
 import com.google.api.gax.rpc.ClientContext;
 import com.google.api.gax.rpc.OperationCallable;
+import com.google.api.gax.rpc.RequestParamsBuilder;
 import com.google.api.gax.rpc.UnaryCallable;
-import com.google.common.collect.ImmutableMap;
 import com.google.iam.v1.GetIamPolicyRequest;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.SetIamPolicyRequest;
@@ -371,9 +371,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(listDatabasesMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("parent", String.valueOf(request.getParent()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("parent", String.valueOf(request.getParent()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<CreateDatabaseRequest, Operation> createDatabaseTransportSettings =
@@ -381,9 +381,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(createDatabaseMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("parent", String.valueOf(request.getParent()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("parent", String.valueOf(request.getParent()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<GetDatabaseRequest, Database> getDatabaseTransportSettings =
@@ -391,9 +391,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(getDatabaseMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("name", String.valueOf(request.getName()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("name", String.valueOf(request.getName()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<UpdateDatabaseRequest, Operation> updateDatabaseTransportSettings =
@@ -401,9 +401,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(updateDatabaseMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("database.name", String.valueOf(request.getDatabase().getName()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("database.name", String.valueOf(request.getDatabase().getName()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<UpdateDatabaseDdlRequest, Operation> updateDatabaseDdlTransportSettings =
@@ -411,9 +411,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(updateDatabaseDdlMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("database", String.valueOf(request.getDatabase()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("database", String.valueOf(request.getDatabase()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<DropDatabaseRequest, Empty> dropDatabaseTransportSettings =
@@ -421,9 +421,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(dropDatabaseMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("database", String.valueOf(request.getDatabase()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("database", String.valueOf(request.getDatabase()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<GetDatabaseDdlRequest, GetDatabaseDdlResponse>
@@ -432,9 +432,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                 .setMethodDescriptor(getDatabaseDdlMethodDescriptor)
                 .setParamsExtractor(
                     request -> {
-                      ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                      params.put("database", String.valueOf(request.getDatabase()));
-                      return params.build();
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("database", String.valueOf(request.getDatabase()));
+                      return builder.build();
                     })
                 .build();
     GrpcCallSettings<SetIamPolicyRequest, Policy> setIamPolicyTransportSettings =
@@ -442,9 +442,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(setIamPolicyMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("resource", String.valueOf(request.getResource()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("resource", String.valueOf(request.getResource()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<GetIamPolicyRequest, Policy> getIamPolicyTransportSettings =
@@ -452,9 +452,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(getIamPolicyMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("resource", String.valueOf(request.getResource()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("resource", String.valueOf(request.getResource()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<TestIamPermissionsRequest, TestIamPermissionsResponse>
@@ -463,9 +463,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                 .setMethodDescriptor(testIamPermissionsMethodDescriptor)
                 .setParamsExtractor(
                     request -> {
-                      ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                      params.put("resource", String.valueOf(request.getResource()));
-                      return params.build();
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("resource", String.valueOf(request.getResource()));
+                      return builder.build();
                     })
                 .build();
     GrpcCallSettings<CreateBackupRequest, Operation> createBackupTransportSettings =
@@ -473,9 +473,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(createBackupMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("parent", String.valueOf(request.getParent()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("parent", String.valueOf(request.getParent()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<CopyBackupRequest, Operation> copyBackupTransportSettings =
@@ -483,9 +483,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(copyBackupMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("parent", String.valueOf(request.getParent()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("parent", String.valueOf(request.getParent()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<GetBackupRequest, Backup> getBackupTransportSettings =
@@ -493,9 +493,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(getBackupMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("name", String.valueOf(request.getName()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("name", String.valueOf(request.getName()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<UpdateBackupRequest, Backup> updateBackupTransportSettings =
@@ -503,9 +503,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(updateBackupMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("backup.name", String.valueOf(request.getBackup().getName()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("backup.name", String.valueOf(request.getBackup().getName()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<DeleteBackupRequest, Empty> deleteBackupTransportSettings =
@@ -513,9 +513,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(deleteBackupMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("name", String.valueOf(request.getName()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("name", String.valueOf(request.getName()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<ListBackupsRequest, ListBackupsResponse> listBackupsTransportSettings =
@@ -523,9 +523,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(listBackupsMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("parent", String.valueOf(request.getParent()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("parent", String.valueOf(request.getParent()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<RestoreDatabaseRequest, Operation> restoreDatabaseTransportSettings =
@@ -533,9 +533,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
             .setMethodDescriptor(restoreDatabaseMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("parent", String.valueOf(request.getParent()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("parent", String.valueOf(request.getParent()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<ListDatabaseOperationsRequest, ListDatabaseOperationsResponse>
@@ -545,9 +545,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                 .setMethodDescriptor(listDatabaseOperationsMethodDescriptor)
                 .setParamsExtractor(
                     request -> {
-                      ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                      params.put("parent", String.valueOf(request.getParent()));
-                      return params.build();
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
                     })
                 .build();
     GrpcCallSettings<ListBackupOperationsRequest, ListBackupOperationsResponse>
@@ -556,9 +556,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                 .setMethodDescriptor(listBackupOperationsMethodDescriptor)
                 .setParamsExtractor(
                     request -> {
-                      ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                      params.put("parent", String.valueOf(request.getParent()));
-                      return params.build();
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
                     })
                 .build();
     GrpcCallSettings<ListDatabaseRolesRequest, ListDatabaseRolesResponse>
@@ -567,9 +567,9 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                 .setMethodDescriptor(listDatabaseRolesMethodDescriptor)
                 .setParamsExtractor(
                     request -> {
-                      ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                      params.put("parent", String.valueOf(request.getParent()));
-                      return params.build();
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
                     })
                 .build();
 

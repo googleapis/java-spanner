@@ -17,13 +17,14 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.TransactionOption;
 import javax.annotation.Nullable;
 
 /**
  * An interface for executing a body of work in the context of a read-write transaction, with
  * retries for transaction aborts. See {@link TransactionContext} for a description of transaction
  * semantics. {@code TransactionRunner} instances are obtained by calling {@link
- * Session#readWriteTransaction()}.
+ * DatabaseClient#readWriteTransaction(TransactionOption...)}.
  *
  * <p>A {@code TransactionRunner} instance can only be used for a single invocation of {@link
  * #run(TransactionCallable)}.

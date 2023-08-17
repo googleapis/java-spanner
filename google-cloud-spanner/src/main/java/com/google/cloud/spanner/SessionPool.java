@@ -52,6 +52,7 @@ import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
+import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.common.annotations.VisibleForTesting;
@@ -1298,7 +1299,7 @@ class SessionPool {
     @Override
     public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
       try {
-        return get().executePartitionedUpdate(stmt, options);
+        return get(true).executePartitionedUpdate(stmt, options);
       } finally {
         close();
       }
@@ -1351,6 +1352,10 @@ class SessionPool {
 
     @Override
     public PooledSession get() {
+      return get(false);
+    }
+
+    PooledSession get(final boolean eligibleForLongRunning) {
       if (inUse.compareAndSet(false, true)) {
         PooledSession res = null;
         try {
@@ -1365,6 +1370,7 @@ class SessionPool {
             incrementNumSessionsInUse();
             checkedOutSessions.add(this);
           }
+          res.eligibleForLongRunning = eligibleForLongRunning;
         }
         initialized.countDown();
       }
@@ -1385,6 +1391,28 @@ class SessionPool {
     private volatile SpannerException lastException;
     private volatile boolean allowReplacing = true;
 
+    /**
+     * Property to mark if the session is eligible to be long-running. This can only be true if the
+     * session is executing certain types of transactions (for ex - Partitioned DML) which can be
+     * long-running. By default, most transaction types are not expected to be long-running and
+     * hence this value is false.
+     */
+    private volatile boolean eligibleForLongRunning = false;
+
+    /**
+     * Property to mark if the session is no longer part of the session pool. For ex - A session
+     * which is long-running gets cleaned up and removed from the pool.
+     */
+    private volatile boolean isRemovedFromPool = false;
+
+    /**
+     * Property to mark if a leaked session exception is already logged. Given a session maintainer
+     * thread runs repeatedly at a defined interval, this property allows us to ensure that an
+     * exception is logged only once per leaked session. This is to avoid noisy repeated logs around
+     * session leaks for long-running sessions.
+     */
+    private volatile boolean isLeakedExceptionLogged = false;
+
     @GuardedBy("lock")
     private SessionState state;
 
@@ -1402,6 +1430,11 @@ class SessionPool {
     @VisibleForTesting
     void setAllowReplacing(boolean allowReplacing) {
       this.allowReplacing = allowReplacing;
+    }
+
+    @VisibleForTesting
+    void setEligibleForLongRunning(boolean eligibleForLongRunning) {
+      this.eligibleForLongRunning = eligibleForLongRunning;
     }
 
     @Override
@@ -1522,7 +1555,7 @@ class SessionPool {
         numSessionsInUse--;
         numSessionsReleased++;
       }
-      if (lastException != null && isSessionNotFound(lastException)) {
+      if ((lastException != null && isSessionNotFound(lastException)) || isRemovedFromPool) {
         invalidateSession(this);
       } else {
         if (lastException != null && isDatabaseOrInstanceNotFound(lastException)) {
@@ -1536,6 +1569,7 @@ class SessionPool {
           }
         }
         lastException = null;
+        isRemovedFromPool = false;
         if (state != SessionState.CLOSING) {
           state = SessionState.AVAILABLE;
         }
@@ -1688,6 +1722,10 @@ class SessionPool {
    *   <li>Keeps alive sessions that have not been used for a user configured time in order to keep
    *       MinSessions sessions alive in the pool at any time. The keep-alive traffic is smeared out
    *       over a window of 10 minutes to avoid bursty traffic.
+   *   <li>Removes unexpected long running transactions from the pool. Only certain transaction
+   *       types (for ex - Partitioned DML / Batch Reads) can be long running. This tasks checks the
+   *       sessions which have been inactive for a longer than usual duration (for ex - 60 minutes)
+   *       and removes such sessions from the pool.
    * </ul>
    */
   final class PoolMaintainer {
@@ -1696,16 +1734,24 @@ class SessionPool {
     private final Duration windowLength = Duration.ofMillis(TimeUnit.MINUTES.toMillis(10));
     // Frequency of the timer loop.
     @VisibleForTesting final long loopFrequency = options.getLoopFrequency();
-    // Number of loop iterations in which we need to to close all the sessions waiting for closure.
+    // Number of loop iterations in which we need to close all the sessions waiting for closure.
     @VisibleForTesting final long numClosureCycles = windowLength.toMillis() / loopFrequency;
     private final Duration keepAliveMillis =
         Duration.ofMillis(TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()));
     // Number of loop iterations in which we need to keep alive all the sessions
     @VisibleForTesting final long numKeepAliveCycles = keepAliveMillis.toMillis() / loopFrequency;
 
-    Instant lastResetTime = Instant.ofEpochMilli(0);
-    int numSessionsToClose = 0;
-    int sessionsToClosePerLoop = 0;
+    /**
+     * Variable maintaining the last execution time of the long-running transaction cleanup task.
+     *
+     * <p>The long-running transaction cleanup needs to be performed every X minutes. The X minutes
+     * recurs multiple times within the invocation of the pool maintainer thread. For ex - If the
+     * main thread runs every 10s and the long-running transaction clean-up needs to be performed
+     * every 2 minutes, then we need to keep a track of when was the last time that this task
+     * executed and makes sure we only execute it every 2 minutes and not every 10 seconds.
+     */
+    @VisibleForTesting Instant lastExecutionTime;
+
     boolean closed = false;
 
     @GuardedBy("lock")
@@ -1715,6 +1761,7 @@ class SessionPool {
     boolean running;
 
     void init() {
+      lastExecutionTime = clock.instant();
       // Scheduled pool maintenance worker.
       synchronized (lock) {
         scheduledFuture =
@@ -1760,6 +1807,7 @@ class SessionPool {
           decrementPendingClosures(1);
         }
       }
+      removeLongRunningSessions(currTime);
     }
 
     private void removeIdleSessions(Instant currTime) {
@@ -1773,7 +1821,13 @@ class SessionPool {
           PooledSession session = iterator.next();
           if (session.lastUseTime.isBefore(minLastUseTime)) {
             if (session.state != SessionState.CLOSING) {
-              removeFromPool(session);
+              boolean isRemoved = removeFromPool(session);
+              if (isRemoved) {
+                numIdleSessionsRemoved++;
+                if (idleSessionRemovedListener != null) {
+                  idleSessionRemovedListener.apply(session);
+                }
+              }
               iterator.remove();
             }
           }
@@ -1826,6 +1880,87 @@ class SessionPool {
         int sessionCount = options.getMinSessions() - (totalSessions() + numSessionsBeingCreated);
         if (sessionCount > 0) {
           createSessions(getAllowedCreateSessions(sessionCount), false);
+        }
+      }
+    }
+
+    // cleans up sessions which are unexpectedly long-running.
+    void removeLongRunningSessions(Instant currentTime) {
+      try {
+        if (SessionPool.this.isClosed()) {
+          return;
+        }
+        final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
+            options.getInactiveTransactionRemovalOptions();
+        final Instant minExecutionTime =
+            lastExecutionTime.plus(inactiveTransactionRemovalOptions.getExecutionFrequency());
+        if (currentTime.isBefore(minExecutionTime)) {
+          return;
+        }
+        lastExecutionTime = currentTime; // update this only after we have decided to execute task
+        if (options.closeInactiveTransactions()
+            || options.warnInactiveTransactions()
+            || options.warnAndCloseInactiveTransactions()) {
+          removeLongRunningSessions(currentTime, inactiveTransactionRemovalOptions);
+        }
+      } catch (final Throwable t) {
+        logger.log(Level.WARNING, "Failed removing long running transactions", t);
+      }
+    }
+
+    private void removeLongRunningSessions(
+        final Instant currentTime,
+        final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions) {
+      synchronized (lock) {
+        final double usedSessionsRatio = getRatioOfSessionsInUse();
+        if (usedSessionsRatio > inactiveTransactionRemovalOptions.getUsedSessionsRatioThreshold()) {
+          Iterator<PooledSessionFuture> iterator = checkedOutSessions.iterator();
+          while (iterator.hasNext()) {
+            final PooledSessionFuture sessionFuture = iterator.next();
+            // the below get() call on future object is non-blocking since checkedOutSessions
+            // collection is populated only when the get() method in {@code PooledSessionFuture} is
+            // called.
+            final PooledSession session = sessionFuture.get();
+            final Duration durationFromLastUse = Duration.between(session.lastUseTime, currentTime);
+            if (!session.eligibleForLongRunning
+                && durationFromLastUse.compareTo(
+                        inactiveTransactionRemovalOptions.getIdleTimeThreshold())
+                    > 0) {
+              if ((options.warnInactiveTransactions() || options.warnAndCloseInactiveTransactions())
+                  && !session.isLeakedExceptionLogged) {
+                if (options.warnAndCloseInactiveTransactions()) {
+                  logger.log(
+                      Level.WARNING,
+                      String.format("Removing long-running session => %s", session.getName()),
+                      sessionFuture.leakedException);
+                  session.isLeakedExceptionLogged = true;
+                } else if (options.warnInactiveTransactions()) {
+                  logger.log(
+                      Level.WARNING,
+                      String.format(
+                          "Detected long-running session => %s. To automatically remove "
+                              + "long-running sessions, set SessionOption ActionOnInactiveTransaction "
+                              + "to WARN_AND_CLOSE by invoking setWarnAndCloseIfInactiveTransactions() method.",
+                          session.getName()),
+                      sessionFuture.leakedException);
+                  session.isLeakedExceptionLogged = true;
+                }
+              }
+              if ((options.closeInactiveTransactions()
+                      || options.warnAndCloseInactiveTransactions())
+                  && session.state != SessionState.CLOSING) {
+                final boolean isRemoved = removeFromPool(session);
+                if (isRemoved) {
+                  session.isRemovedFromPool = true;
+                  numLeakedSessionsRemoved++;
+                  if (longRunningSessionRemovedListener != null) {
+                    longRunningSessionRemovedListener.apply(session);
+                  }
+                }
+                iterator.remove();
+              }
+            }
+          }
         }
       }
     }
@@ -1909,6 +2044,9 @@ class SessionPool {
   @GuardedBy("lock")
   private long numIdleSessionsRemoved = 0;
 
+  @GuardedBy("lock")
+  private long numLeakedSessionsRemoved = 0;
+
   private AtomicLong numWaiterTimeouts = new AtomicLong();
 
   @GuardedBy("lock")
@@ -1922,6 +2060,8 @@ class SessionPool {
 
   @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
 
+  @VisibleForTesting Function<PooledSession, Void> longRunningSessionRemovedListener;
+
   private final CountDownLatch waitOnMinSessionsLatch;
 
   /**
@@ -1932,12 +2072,16 @@ class SessionPool {
    */
   static SessionPool createPool(
       SpannerOptions spannerOptions, SessionClient sessionClient, List<LabelValue> labelValues) {
+    final SessionPoolOptions sessionPoolOptions = spannerOptions.getSessionPoolOptions();
+
+    // A clock instance is passed in {@code SessionPoolOptions} in order to allow mocking via tests.
+    final Clock poolMaintainerClock = sessionPoolOptions.getPoolMaintainerClock();
     return createPool(
-        spannerOptions.getSessionPoolOptions(),
+        sessionPoolOptions,
         spannerOptions.getDatabaseRole(),
         ((GrpcTransportOptions) spannerOptions.getTransportOptions()).getExecutorFactory(),
         sessionClient,
-        new Clock(),
+        poolMaintainerClock == null ? new Clock() : poolMaintainerClock,
         Metrics.getMetricRegistry(),
         labelValues);
   }
@@ -2052,24 +2196,39 @@ class SessionPool {
     }
   }
 
-  void removeFromPool(PooledSession session) {
+  @VisibleForTesting
+  double getRatioOfSessionsInUse() {
+    synchronized (lock) {
+      final int maxSessions = options.getMaxSessions();
+      if (maxSessions == 0) {
+        return 0;
+      }
+      return (double) numSessionsInUse / maxSessions;
+    }
+  }
+
+  boolean removeFromPool(PooledSession session) {
     synchronized (lock) {
       if (isClosed()) {
         decrementPendingClosures(1);
-        return;
+        return false;
       }
       session.markClosing();
       allSessions.remove(session);
-      numIdleSessionsRemoved++;
-    }
-    if (idleSessionRemovedListener != null) {
-      idleSessionRemovedListener.apply(session);
+      return true;
     }
   }
 
   long numIdleSessionsRemoved() {
     synchronized (lock) {
       return numIdleSessionsRemoved;
+    }
+  }
+
+  @VisibleForTesting
+  long numLeakedSessionsRemoved() {
+    synchronized (lock) {
+      return numLeakedSessionsRemoved;
     }
   }
 

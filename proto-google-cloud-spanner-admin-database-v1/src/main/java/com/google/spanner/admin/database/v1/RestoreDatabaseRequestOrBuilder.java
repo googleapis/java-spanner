@@ -188,5 +188,5 @@ public interface RestoreDatabaseRequestOrBuilder
   com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfigOrBuilder
       getEncryptionConfigOrBuilder();
 
-  public com.google.spanner.admin.database.v1.RestoreDatabaseRequest.SourceCase getSourceCase();
+  com.google.spanner.admin.database.v1.RestoreDatabaseRequest.SourceCase getSourceCase();
 }

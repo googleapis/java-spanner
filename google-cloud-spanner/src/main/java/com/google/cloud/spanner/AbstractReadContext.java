@@ -664,7 +664,12 @@ abstract class AbstractReadContext
         getExecuteSqlRequestBuilder(
             statement, queryMode, options, /* withTransactionSelector = */ false);
     ResumableStreamIterator stream =
-        new ResumableStreamIterator(MAX_BUFFERED_CHUNKS, SpannerImpl.QUERY, span) {
+        new ResumableStreamIterator(
+            MAX_BUFFERED_CHUNKS,
+            SpannerImpl.QUERY,
+            span,
+            rpc.getExecuteQueryRetrySettings(),
+            rpc.getExecuteQueryRetryableCodes()) {
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
             GrpcStreamIterator stream = new GrpcStreamIterator(statement, prefetchChunks);
@@ -798,7 +803,12 @@ abstract class AbstractReadContext
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;
     ResumableStreamIterator stream =
-        new ResumableStreamIterator(MAX_BUFFERED_CHUNKS, SpannerImpl.READ, span) {
+        new ResumableStreamIterator(
+            MAX_BUFFERED_CHUNKS,
+            SpannerImpl.READ,
+            span,
+            rpc.getReadRetrySettings(),
+            rpc.getReadRetryableCodes()) {
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
             GrpcStreamIterator stream = new GrpcStreamIterator(prefetchChunks);

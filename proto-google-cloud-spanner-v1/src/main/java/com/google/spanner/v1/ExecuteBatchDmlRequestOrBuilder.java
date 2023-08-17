@@ -57,6 +57,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    *
    * <pre>
    * Required. The transaction to use. Must be a read-write transaction.
+   *
    * To protect against replays, single-use transactions are not supported. The
    * caller must either supply an existing transaction ID or begin a new
    * transaction.
@@ -74,6 +75,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    *
    * <pre>
    * Required. The transaction to use. Must be a read-write transaction.
+   *
    * To protect against replays, single-use transactions are not supported. The
    * caller must either supply an existing transaction ID or begin a new
    * transaction.
@@ -91,6 +93,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    *
    * <pre>
    * Required. The transaction to use. Must be a read-write transaction.
+   *
    * To protect against replays, single-use transactions are not supported. The
    * caller must either supply an existing transaction ID or begin a new
    * transaction.
@@ -110,6 +113,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * serially, such that the effects of statement `i` are visible to statement
    * `i+1`. Each statement must be a DML statement. Execution stops at the
    * first failed statement; the remaining statements are not executed.
+   *
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -126,6 +130,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * serially, such that the effects of statement `i` are visible to statement
    * `i+1`. Each statement must be a DML statement. Execution stops at the
    * first failed statement; the remaining statements are not executed.
+   *
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -142,6 +147,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * serially, such that the effects of statement `i` are visible to statement
    * `i+1`. Each statement must be a DML statement. Execution stops at the
    * first failed statement; the remaining statements are not executed.
+   *
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -158,6 +164,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * serially, such that the effects of statement `i` are visible to statement
    * `i+1`. Each statement must be a DML statement. Execution stops at the
    * first failed statement; the remaining statements are not executed.
+   *
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -175,6 +182,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * serially, such that the effects of statement `i` are visible to statement
    * `i+1`. Each statement must be a DML statement. Execution stops at the
    * first failed statement; the remaining statements are not executed.
+   *
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -191,6 +199,7 @@ public interface ExecuteBatchDmlRequestOrBuilder
    * Required. A per-transaction sequence number used to identify this request. This field
    * makes each request idempotent such that if the request is received multiple
    * times, at most one will succeed.
+   *
    * The sequence number must be monotonically increasing within the
    * transaction. If a request arrives for the first time with an out-of-order
    * sequence number, the transaction may be aborted. Replays of previously

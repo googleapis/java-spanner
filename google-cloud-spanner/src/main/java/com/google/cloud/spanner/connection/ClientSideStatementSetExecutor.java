@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.common.base.Preconditions;
 import java.lang.reflect.Constructor;
@@ -72,9 +73,10 @@ class ClientSideStatementSetExecutor<T> implements ClientSideStatementExecutor {
   }
 
   @Override
-  public StatementResult execute(ConnectionStatementExecutor connection, String sql)
+  public StatementResult execute(ConnectionStatementExecutor connection, ParsedStatement statement)
       throws Exception {
-    return (StatementResult) method.invoke(connection, getParameterValue(sql));
+    return (StatementResult)
+        method.invoke(connection, getParameterValue(statement.getSqlWithoutComments()));
   }
 
   T getParameterValue(String sql) {

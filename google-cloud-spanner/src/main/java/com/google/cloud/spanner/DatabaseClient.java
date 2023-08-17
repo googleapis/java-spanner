@@ -441,8 +441,8 @@ public interface DatabaseClient {
 
   /**
    * Returns a transaction manager which allows manual management of transaction lifecycle. This API
-   * is meant for advanced users. Most users should instead use the {@link #readWriteTransaction()}
-   * API instead.
+   * is meant for advanced users. Most users should instead use the {@link
+   * #readWriteTransaction(TransactionOption...)} API instead.
    *
    * <p>Example of using {@link TransactionManager}.
    *
@@ -485,7 +485,7 @@ public interface DatabaseClient {
    *
    * <p>Example of a read write transaction.
    *
-   * <pre> <code>
+   * <pre>{@code
    * Executor executor = Executors.newSingleThreadExecutor();
    * final long singerId = my_singer_id;
    * AsyncRunner runner = client.runAsync();
@@ -505,7 +505,7 @@ public interface DatabaseClient {
    *                   .build());
    *         },
    *         executor);
-   * </code></pre>
+   * }</pre>
    *
    * Options for a transaction can include:
    *
@@ -522,7 +522,7 @@ public interface DatabaseClient {
   /**
    * Returns an asynchronous transaction manager which allows manual management of transaction
    * lifecycle. This API is meant for advanced users. Most users should instead use the {@link
-   * #runAsync()} API instead.
+   * #runAsync(TransactionOption...)} API instead.
    *
    * <p>Example of using {@link AsyncTransactionManager}.
    *
@@ -587,12 +587,13 @@ public interface DatabaseClient {
    *
    * <p>Partitioned DML updates are used to execute a single DML statement with a different
    * execution strategy that provides different, and often better, scalability properties for large,
-   * table-wide operations than DML in a {@link #readWriteTransaction()} transaction. Smaller scoped
-   * statements, such as an OLTP workload, should prefer using {@link
-   * TransactionContext#executeUpdate(Statement)} with {@link #readWriteTransaction()}.
+   * table-wide operations than DML in a {@link #readWriteTransaction(TransactionOption...)}
+   * transaction. Smaller scoped statements, such as an OLTP workload, should prefer using {@link
+   * TransactionContext#executeUpdate(Statement,UpdateOption...)} with {@link
+   * #readWriteTransaction(TransactionOption...)}.
    *
    * <p>That said, Partitioned DML is not a drop-in replacement for standard DML used in {@link
-   * #readWriteTransaction()}.
+   * #readWriteTransaction(TransactionOption...)}.
    *
    * <ul>
    *   <li>The DML statement must be fully-partitionable. Specifically, the statement must be
