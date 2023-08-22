@@ -49,7 +49,7 @@ public class MutationGroupTest {
   }
 
   @Test
-  public void ofTest() {
+  public void ofVarargTest() {
     Mutation[] mutations =
         new Mutation[] {
           getRandomMutation(), getRandomMutation(), getRandomMutation(), getRandomMutation()
@@ -62,11 +62,11 @@ public class MutationGroupTest {
   }
 
   @Test
-  public void createWithMutationsTest() {
+  public void ofIterableTest() {
     ImmutableList<Mutation> mutations =
         ImmutableList.of(
             getRandomMutation(), getRandomMutation(), getRandomMutation(), getRandomMutation());
-    MutationGroup mutationGroup = MutationGroup.createWithMutations(mutations);
+    MutationGroup mutationGroup = MutationGroup.of(mutations);
     assertEquals(mutations, mutationGroup.getMutations());
     assertEquals(MutationGroup.toProto(mutationGroup), getMutationGroupProto(mutations));
   }

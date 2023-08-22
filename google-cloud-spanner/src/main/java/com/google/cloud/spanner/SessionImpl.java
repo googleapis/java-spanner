@@ -163,7 +163,6 @@ class SessionImpl implements Session {
       Iterable<Mutation> mutations, TransactionOption... transactionOptions)
       throws SpannerException {
     setActive(null);
-    Options commitRequestOptions = Options.fromTransactionOptions(transactionOptions);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
     Mutation.toProto(mutations, mutationsProto);
     final CommitRequest.Builder requestBuilder =
@@ -175,15 +174,9 @@ class SessionImpl implements Session {
             .setSingleUseTransaction(
                 TransactionOptions.newBuilder()
                     .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
-    if (commitRequestOptions.hasPriority() || commitRequestOptions.hasTag()) {
-      RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
-      if (commitRequestOptions.hasPriority()) {
-        requestOptionsBuilder.setPriority(commitRequestOptions.priority());
-      }
-      if (commitRequestOptions.hasTag()) {
-        requestOptionsBuilder.setTransactionTag(commitRequestOptions.tag());
-      }
-      requestBuilder.setRequestOptions(requestOptionsBuilder.build());
+    RequestOptions commitRequestOptions = getRequestOptions(transactionOptions);
+    if (commitRequestOptions != null) {
+      requestBuilder.setRequestOptions(commitRequestOptions);
     }
     Span span = tracer.spanBuilder(SpannerImpl.COMMIT).startSpan();
     try (Scope s = tracer.withSpan(span)) {
@@ -198,25 +191,33 @@ class SessionImpl implements Session {
     }
   }
 
+  private RequestOptions getRequestOptions(TransactionOption... transactionOptions) {
+    Options requestOptions = Options.fromTransactionOptions(transactionOptions);
+    if (requestOptions.hasPriority() || requestOptions.hasTag()) {
+      RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
+      if (requestOptions.hasPriority()) {
+        requestOptionsBuilder.setPriority(requestOptions.priority());
+      }
+      if (requestOptions.hasTag()) {
+        requestOptionsBuilder.setTransactionTag(requestOptions.tag());
+      }
+      return requestOptionsBuilder.build();
+    }
+    return null;
+  }
+
   @Override
   public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
       Iterable<MutationGroup> mutationGroups, TransactionOption... transactionOptions)
       throws SpannerException {
     setActive(null);
-    Options batchWriteRequestOptions = Options.fromTransactionOptions(transactionOptions);
     List<BatchWriteRequest.MutationGroup> mutationGroupsProto =
         MutationGroup.toListProto(mutationGroups);
     final BatchWriteRequest.Builder requestBuilder =
         BatchWriteRequest.newBuilder().setSession(name).addAllMutationGroups(mutationGroupsProto);
-    if (batchWriteRequestOptions.hasPriority() || batchWriteRequestOptions.hasTag()) {
-      RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
-      if (batchWriteRequestOptions.hasPriority()) {
-        requestOptionsBuilder.setPriority(batchWriteRequestOptions.priority());
-      }
-      if (batchWriteRequestOptions.hasTag()) {
-        requestOptionsBuilder.setTransactionTag(batchWriteRequestOptions.tag());
-      }
-      requestBuilder.setRequestOptions(requestOptionsBuilder.build());
+    RequestOptions batchWriteRequestOptions = getRequestOptions(transactionOptions);
+    if (batchWriteRequestOptions != null) {
+      requestBuilder.setRequestOptions(batchWriteRequestOptions);
     }
     Span span = tracer.spanBuilder(SpannerImpl.BATCH_WRITE).startSpan();
     try (Scope s = tracer.withSpan(span)) {
