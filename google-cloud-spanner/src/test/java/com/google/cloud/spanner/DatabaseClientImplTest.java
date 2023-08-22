@@ -39,8 +39,8 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
-import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.ApiCallContext;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.ByteArray;
 import com.google.cloud.NoCredentials;
@@ -71,9 +71,9 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
+import com.google.rpc.RetryInfo;
 import com.google.spanner.v1.BatchWriteRequest;
 import com.google.spanner.v1.BatchWriteResponse;
-import com.google.rpc.RetryInfo;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
@@ -655,7 +655,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testBatchWriteAtLeastOnce() {
+  public void testBatchWriteAtLeastOnceWithoutOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
 
@@ -682,7 +682,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     ServerStream<BatchWriteResponse> responseStream =
-        client.batchWriteAtLeastOnceWithOptions(MUTATION_GROUPS, Options.priority(RpcPriority.LOW));
+        client.batchWriteAtLeastOnce(MUTATION_GROUPS, Options.priority(RpcPriority.LOW));
     for (BatchWriteResponse response : responseStream) {}
 
     assertNotNull(responseStream);
@@ -698,8 +698,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     ServerStream<BatchWriteResponse> responseStream =
-        client.batchWriteAtLeastOnceWithOptions(
-            MUTATION_GROUPS, Options.tag("app=spanner,env=test"));
+        client.batchWriteAtLeastOnce(MUTATION_GROUPS, Options.tag("app=spanner,env=test"));
     for (BatchWriteResponse response : responseStream) {}
 
     assertNotNull(responseStream);

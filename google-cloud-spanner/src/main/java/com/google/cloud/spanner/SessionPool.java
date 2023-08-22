@@ -1175,16 +1175,10 @@ class SessionPool {
 
     @Override
     public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
-        Iterable<MutationGroup> mutationGroups) throws SpannerException {
-      return batchWriteAtLeastOnceWithOptions(mutationGroups);
-    }
-
-    @Override
-    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnceWithOptions(
         Iterable<MutationGroup> mutationGroups, TransactionOption... options)
         throws SpannerException {
       try {
-        return get().batchWriteAtLeastOnceWithOptions(mutationGroups, options);
+        return get().batchWriteAtLeastOnce(mutationGroups, options);
       } finally {
         close();
       }
@@ -1471,17 +1465,11 @@ class SessionPool {
 
     @Override
     public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
-        Iterable<MutationGroup> mutationGroups) throws SpannerException {
-      return batchWriteAtLeastOnceWithOptions(mutationGroups);
-    }
-
-    @Override
-    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnceWithOptions(
         Iterable<MutationGroup> mutationGroups, TransactionOption... options)
         throws SpannerException {
       try {
         markUsed();
-        return delegate.batchWriteAtLeastOnceWithOptions(mutationGroups, options);
+        return delegate.batchWriteAtLeastOnce(mutationGroups, options);
       } catch (SpannerException e) {
         throw lastException = e;
       }

@@ -17,27 +17,32 @@
 package com.google.cloud.spanner;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.BatchWriteRequest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-/**
- * Represents a group of Cloud Spanner mutations to be committed together.
- */
+/** Represents a group of Cloud Spanner mutations to be committed together. */
 public class MutationGroup {
-  private final List<Mutation> mutations;
+  private final ImmutableList<Mutation> mutations;
 
-  private MutationGroup(List<Mutation> mutations) {
+  private MutationGroup(ImmutableList<Mutation> mutations) {
     this.mutations = mutations;
   }
 
+  /** Creates a {@code MutationGroup} given a vararg of mutations. */
   public static MutationGroup of(Mutation... mutations) {
     Preconditions.checkArgument(mutations.length > 0, "Should pass in at least one mutation.");
-    return new MutationGroup(Arrays.asList(mutations));
+    return new MutationGroup(ImmutableList.copyOf(mutations));
   }
 
-  public List<Mutation> getMutations() {
+  /** Creates a {@code MutationGroup} given an iterable of mutations. */
+  public static MutationGroup of(Iterable<Mutation> mutations) {
+    return new MutationGroup(ImmutableList.copyOf(mutations));
+  }
+
+  /** Returns corresponding mutations for this MutationGroup. */
+  public ImmutableList<Mutation> getMutations() {
     return mutations;
   }
 

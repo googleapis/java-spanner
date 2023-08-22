@@ -22,7 +22,6 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.BatchWriteRequest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import org.junit.Test;
@@ -43,20 +42,32 @@ public class MutationGroupTest {
         .build();
   }
 
-  private BatchWriteRequest.MutationGroup getMutationGroupProto(Mutation[] mutations) {
+  private BatchWriteRequest.MutationGroup getMutationGroupProto(ImmutableList<Mutation> mutations) {
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
-    Mutation.toProto(Arrays.asList(mutations), mutationsProto);
+    Mutation.toProto(mutations, mutationsProto);
     return BatchWriteRequest.MutationGroup.newBuilder().addAllMutations(mutationsProto).build();
   }
 
   @Test
-  public void getMutationsTest() {
+  public void ofTest() {
     Mutation[] mutations =
         new Mutation[] {
           getRandomMutation(), getRandomMutation(), getRandomMutation(), getRandomMutation()
         };
     MutationGroup mutationGroup = MutationGroup.of(mutations);
     assertArrayEquals(mutations, mutationGroup.getMutations().toArray());
+    assertEquals(
+        MutationGroup.toProto(mutationGroup),
+        getMutationGroupProto(ImmutableList.copyOf(mutations)));
+  }
+
+  @Test
+  public void createWithMutationsTest() {
+    ImmutableList<Mutation> mutations =
+        ImmutableList.of(
+            getRandomMutation(), getRandomMutation(), getRandomMutation(), getRandomMutation());
+    MutationGroup mutationGroup = MutationGroup.createWithMutations(mutations);
+    assertEquals(mutations, mutationGroup.getMutations());
     assertEquals(MutationGroup.toProto(mutationGroup), getMutationGroupProto(mutations));
   }
 
@@ -67,7 +78,9 @@ public class MutationGroupTest {
           getRandomMutation(), getRandomMutation(), getRandomMutation(), getRandomMutation()
         };
     MutationGroup mutationGroup = MutationGroup.of(mutations);
-    assertEquals(MutationGroup.toProto(mutationGroup), getMutationGroupProto(mutations));
+    assertEquals(
+        MutationGroup.toProto(mutationGroup),
+        getMutationGroupProto(ImmutableList.copyOf(mutations)));
   }
 
   @Test
@@ -91,8 +104,11 @@ public class MutationGroupTest {
             MutationGroup.of(mutations3));
     List<BatchWriteRequest.MutationGroup> mutationGroupsProto =
         MutationGroup.toListProto(mutationGroups);
-    assertEquals(mutationGroupsProto.get(0), getMutationGroupProto(mutations1));
-    assertEquals(mutationGroupsProto.get(1), getMutationGroupProto(mutations2));
-    assertEquals(mutationGroupsProto.get(2), getMutationGroupProto(mutations3));
+    assertEquals(
+        mutationGroupsProto.get(0), getMutationGroupProto(ImmutableList.copyOf(mutations1)));
+    assertEquals(
+        mutationGroupsProto.get(1), getMutationGroupProto(ImmutableList.copyOf(mutations2)));
+    assertEquals(
+        mutationGroupsProto.get(2), getMutationGroupProto(ImmutableList.copyOf(mutations3)));
   }
 }
