@@ -59,6 +59,8 @@ public class AnonymousSessionsWithSingleSessionBenchmark {
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
   private static final int WAIT_TIME_BETWEEN_REQUESTS = 2;
+  static final Statement SELECT_QUERY = Statement.of("SELECT id,BAZ,BAR FROM FOO WHERE ID = 1");
+  static final Statement UPDATE_QUERY = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
 
   @State(Scope.Thread)
   @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
@@ -76,7 +78,7 @@ public class AnonymousSessionsWithSingleSessionBenchmark {
     @Param({"400"})
     int maxSessions;
 
-    @Param({"1", "2", "50", "100", "400"})
+    @Param({"1", "2", "4", "50", "100", "400"})
     int numSessions;
     @Setup(Level.Invocation)
     public void setup() throws Exception {
@@ -134,7 +136,8 @@ public class AnonymousSessionsWithSingleSessionBenchmark {
               () -> {
                 Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
                 try (ResultSet rs =
-                    client.singleUseWithSharedSession().executeQuery(StandardBenchmarkMockServer.SELECT1)) {
+                    client.singleUseWithSharedSession()
+                        .executeQuery(SELECT_QUERY)) {
                   while (rs.next()) {}
                   return null;
                 }
