@@ -52,8 +52,8 @@ class TransactionTimeoutExample {
       String databaseId,
       long timeoutValue,
       TimeUnit timeoutUnit) {
-    SpannerOptions.Builder builder = SpannerOptions.newBuilder().setProjectId(projectId);
-    try (Spanner spanner = builder.build().getService()) {
+    try (Spanner spanner = SpannerOptions.newBuilder().setProjectId(projectId).build()
+        .getService()) {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
       // Create a gRPC context with a deadline and with cancellation.
