@@ -40,20 +40,16 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
 
   private UpdateDatabaseDdlMetadata() {
     database_ = "";
-    statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
     commitTimestamps_ = java.util.Collections.emptyList();
     progress_ = java.util.Collections.emptyList();
+    actions_ = java.util.Collections.emptyList();
   }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new UpdateDatabaseDdlMetadata();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -125,7 +121,8 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
   public static final int STATEMENTS_FIELD_NUMBER = 2;
 
   @SuppressWarnings("serial")
-  private com.google.protobuf.LazyStringList statements_;
+  private com.google.protobuf.LazyStringArrayList statements_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    *
    *
@@ -276,7 +273,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
    *
    *
    * <pre>
-   * Output only. When true, indicates that the operation is throttled e.g
+   * Output only. When true, indicates that the operation is throttled e.g.
    * due to resource constraints. When resources become available the operation
    * will resume and this field will be false again.
    * </pre>
@@ -299,13 +296,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
    *
    * <pre>
    * The progress of the
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-   * Currently, only index creation statements will have a continuously
-   * updating progress.
-   * For non-index creation statements, `progress[i]` will have start time
-   * and end time populated with commit timestamp of operation,
-   * as well as a progress of 100% once the operation has completed.
-   * `progress[i]` is the operation progress for `statements[i]`.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+   * operations. All DDL statements will have continuously updating progress,
+   * and `progress[i]` is the operation progress for `statements[i]`. Also,
+   * `progress[i]` will have start time and end time populated with commit
+   * timestamp of operation, as well as a progress of 100% once the operation
+   * has completed.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -319,13 +315,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
    *
    * <pre>
    * The progress of the
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-   * Currently, only index creation statements will have a continuously
-   * updating progress.
-   * For non-index creation statements, `progress[i]` will have start time
-   * and end time populated with commit timestamp of operation,
-   * as well as a progress of 100% once the operation has completed.
-   * `progress[i]` is the operation progress for `statements[i]`.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+   * operations. All DDL statements will have continuously updating progress,
+   * and `progress[i]` is the operation progress for `statements[i]`. Also,
+   * `progress[i]` will have start time and end time populated with commit
+   * timestamp of operation, as well as a progress of 100% once the operation
+   * has completed.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -340,13 +335,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
    *
    * <pre>
    * The progress of the
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-   * Currently, only index creation statements will have a continuously
-   * updating progress.
-   * For non-index creation statements, `progress[i]` will have start time
-   * and end time populated with commit timestamp of operation,
-   * as well as a progress of 100% once the operation has completed.
-   * `progress[i]` is the operation progress for `statements[i]`.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+   * operations. All DDL statements will have continuously updating progress,
+   * and `progress[i]` is the operation progress for `statements[i]`. Also,
+   * `progress[i]` will have start time and end time populated with commit
+   * timestamp of operation, as well as a progress of 100% once the operation
+   * has completed.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -360,13 +354,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
    *
    * <pre>
    * The progress of the
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-   * Currently, only index creation statements will have a continuously
-   * updating progress.
-   * For non-index creation statements, `progress[i]` will have start time
-   * and end time populated with commit timestamp of operation,
-   * as well as a progress of 100% once the operation has completed.
-   * `progress[i]` is the operation progress for `statements[i]`.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+   * operations. All DDL statements will have continuously updating progress,
+   * and `progress[i]` is the operation progress for `statements[i]`. Also,
+   * `progress[i]` will have start time and end time populated with commit
+   * timestamp of operation, as well as a progress of 100% once the operation
+   * has completed.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -380,13 +373,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
    *
    * <pre>
    * The progress of the
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-   * Currently, only index creation statements will have a continuously
-   * updating progress.
-   * For non-index creation statements, `progress[i]` will have start time
-   * and end time populated with commit timestamp of operation,
-   * as well as a progress of 100% once the operation has completed.
-   * `progress[i]` is the operation progress for `statements[i]`.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+   * operations. All DDL statements will have continuously updating progress,
+   * and `progress[i]` is the operation progress for `statements[i]`. Also,
+   * `progress[i]` will have start time and end time populated with commit
+   * timestamp of operation, as well as a progress of 100% once the operation
+   * has completed.
    * </pre>
    *
    * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -395,6 +387,85 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
   public com.google.spanner.admin.database.v1.OperationProgressOrBuilder getProgressOrBuilder(
       int index) {
     return progress_.get(index);
+  }
+
+  public static final int ACTIONS_FIELD_NUMBER = 6;
+
+  @SuppressWarnings("serial")
+  private java.util.List<com.google.spanner.admin.database.v1.DdlStatementActionInfo> actions_;
+  /**
+   *
+   *
+   * <pre>
+   * The brief action info for the DDL statements.
+   * `actions[i]` is the brief info for `statements[i]`.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+   */
+  @java.lang.Override
+  public java.util.List<com.google.spanner.admin.database.v1.DdlStatementActionInfo>
+      getActionsList() {
+    return actions_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The brief action info for the DDL statements.
+   * `actions[i]` is the brief info for `statements[i]`.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+   */
+  @java.lang.Override
+  public java.util.List<
+          ? extends com.google.spanner.admin.database.v1.DdlStatementActionInfoOrBuilder>
+      getActionsOrBuilderList() {
+    return actions_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The brief action info for the DDL statements.
+   * `actions[i]` is the brief info for `statements[i]`.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+   */
+  @java.lang.Override
+  public int getActionsCount() {
+    return actions_.size();
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The brief action info for the DDL statements.
+   * `actions[i]` is the brief info for `statements[i]`.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.DdlStatementActionInfo getActions(int index) {
+    return actions_.get(index);
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The brief action info for the DDL statements.
+   * `actions[i]` is the brief info for `statements[i]`.
+   * </pre>
+   *
+   * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.DdlStatementActionInfoOrBuilder getActionsOrBuilder(
+      int index) {
+    return actions_.get(index);
   }
 
   private byte memoizedIsInitialized = -1;
@@ -426,6 +497,9 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     for (int i = 0; i < progress_.size(); i++) {
       output.writeMessage(5, progress_.get(i));
     }
+    for (int i = 0; i < actions_.size(); i++) {
+      output.writeMessage(6, actions_.get(i));
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -455,6 +529,9 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     for (int i = 0; i < progress_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(5, progress_.get(i));
     }
+    for (int i = 0; i < actions_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(6, actions_.get(i));
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -476,6 +553,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     if (!getCommitTimestampsList().equals(other.getCommitTimestampsList())) return false;
     if (getThrottled() != other.getThrottled()) return false;
     if (!getProgressList().equals(other.getProgressList())) return false;
+    if (!getActionsList().equals(other.getActionsList())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -502,6 +580,10 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     if (getProgressCount() > 0) {
       hash = (37 * hash) + PROGRESS_FIELD_NUMBER;
       hash = (53 * hash) + getProgressList().hashCode();
+    }
+    if (getActionsCount() > 0) {
+      hash = (37 * hash) + ACTIONS_FIELD_NUMBER;
+      hash = (53 * hash) + getActionsList().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -645,8 +727,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       super.clear();
       bitField0_ = 0;
       database_ = "";
-      statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000002);
+      statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
       if (commitTimestampsBuilder_ == null) {
         commitTimestamps_ = java.util.Collections.emptyList();
       } else {
@@ -662,6 +743,13 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         progressBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000010);
+      if (actionsBuilder_ == null) {
+        actions_ = java.util.Collections.emptyList();
+      } else {
+        actions_ = null;
+        actionsBuilder_.clear();
+      }
+      bitField0_ = (bitField0_ & ~0x00000020);
       return this;
     }
 
@@ -700,11 +788,6 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
 
     private void buildPartialRepeatedFields(
         com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata result) {
-      if (((bitField0_ & 0x00000002) != 0)) {
-        statements_ = statements_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000002);
-      }
-      result.statements_ = statements_;
       if (commitTimestampsBuilder_ == null) {
         if (((bitField0_ & 0x00000004) != 0)) {
           commitTimestamps_ = java.util.Collections.unmodifiableList(commitTimestamps_);
@@ -723,6 +806,15 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       } else {
         result.progress_ = progressBuilder_.build();
       }
+      if (actionsBuilder_ == null) {
+        if (((bitField0_ & 0x00000020) != 0)) {
+          actions_ = java.util.Collections.unmodifiableList(actions_);
+          bitField0_ = (bitField0_ & ~0x00000020);
+        }
+        result.actions_ = actions_;
+      } else {
+        result.actions_ = actionsBuilder_.build();
+      }
     }
 
     private void buildPartial0(
@@ -730,6 +822,10 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000001) != 0)) {
         result.database_ = database_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        statements_.makeImmutable();
+        result.statements_ = statements_;
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
         result.throttled_ = throttled_;
@@ -791,7 +887,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       if (!other.statements_.isEmpty()) {
         if (statements_.isEmpty()) {
           statements_ = other.statements_;
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ |= 0x00000002;
         } else {
           ensureStatementsIsMutable();
           statements_.addAll(other.statements_);
@@ -852,6 +948,33 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
                     : null;
           } else {
             progressBuilder_.addAllMessages(other.progress_);
+          }
+        }
+      }
+      if (actionsBuilder_ == null) {
+        if (!other.actions_.isEmpty()) {
+          if (actions_.isEmpty()) {
+            actions_ = other.actions_;
+            bitField0_ = (bitField0_ & ~0x00000020);
+          } else {
+            ensureActionsIsMutable();
+            actions_.addAll(other.actions_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.actions_.isEmpty()) {
+          if (actionsBuilder_.isEmpty()) {
+            actionsBuilder_.dispose();
+            actionsBuilder_ = null;
+            actions_ = other.actions_;
+            bitField0_ = (bitField0_ & ~0x00000020);
+            actionsBuilder_ =
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
+                    ? getActionsFieldBuilder()
+                    : null;
+          } else {
+            actionsBuilder_.addAllMessages(other.actions_);
           }
         }
       }
@@ -926,6 +1049,20 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
                 }
                 break;
               } // case 42
+            case 50:
+              {
+                com.google.spanner.admin.database.v1.DdlStatementActionInfo m =
+                    input.readMessage(
+                        com.google.spanner.admin.database.v1.DdlStatementActionInfo.parser(),
+                        extensionRegistry);
+                if (actionsBuilder_ == null) {
+                  ensureActionsIsMutable();
+                  actions_.add(m);
+                } else {
+                  actionsBuilder_.addMessage(m);
+                }
+                break;
+              } // case 50
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -1051,14 +1188,14 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       return this;
     }
 
-    private com.google.protobuf.LazyStringList statements_ =
-        com.google.protobuf.LazyStringArrayList.EMPTY;
+    private com.google.protobuf.LazyStringArrayList statements_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
 
     private void ensureStatementsIsMutable() {
-      if (!((bitField0_ & 0x00000002) != 0)) {
+      if (!statements_.isModifiable()) {
         statements_ = new com.google.protobuf.LazyStringArrayList(statements_);
-        bitField0_ |= 0x00000002;
       }
+      bitField0_ |= 0x00000002;
     }
     /**
      *
@@ -1073,7 +1210,8 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      * @return A list containing the statements.
      */
     public com.google.protobuf.ProtocolStringList getStatementsList() {
-      return statements_.getUnmodifiableView();
+      statements_.makeImmutable();
+      return statements_;
     }
     /**
      *
@@ -1142,6 +1280,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       ensureStatementsIsMutable();
       statements_.set(index, value);
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1164,6 +1303,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       }
       ensureStatementsIsMutable();
       statements_.add(value);
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1183,6 +1323,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
     public Builder addAllStatements(java.lang.Iterable<java.lang.String> values) {
       ensureStatementsIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, statements_);
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1199,8 +1340,9 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      * @return This builder for chaining.
      */
     public Builder clearStatements() {
-      statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
       bitField0_ = (bitField0_ & ~0x00000002);
+      ;
       onChanged();
       return this;
     }
@@ -1224,6 +1366,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
       checkByteStringIsUtf8(value);
       ensureStatementsIsMutable();
       statements_.add(value);
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1621,7 +1764,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      *
      * <pre>
-     * Output only. When true, indicates that the operation is throttled e.g
+     * Output only. When true, indicates that the operation is throttled e.g.
      * due to resource constraints. When resources become available the operation
      * will resume and this field will be false again.
      * </pre>
@@ -1638,7 +1781,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      *
      * <pre>
-     * Output only. When true, indicates that the operation is throttled e.g
+     * Output only. When true, indicates that the operation is throttled e.g.
      * due to resource constraints. When resources become available the operation
      * will resume and this field will be false again.
      * </pre>
@@ -1659,7 +1802,7 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      *
      * <pre>
-     * Output only. When true, indicates that the operation is throttled e.g
+     * Output only. When true, indicates that the operation is throttled e.g.
      * due to resource constraints. When resources become available the operation
      * will resume and this field will be false again.
      * </pre>
@@ -1698,13 +1841,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -1722,13 +1864,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -1745,13 +1886,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -1768,13 +1908,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -1798,13 +1937,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -1825,13 +1963,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -1854,13 +1991,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -1884,13 +2020,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -1911,13 +2046,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -1938,13 +2072,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -1966,13 +2099,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -1992,13 +2124,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -2018,13 +2149,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -2038,13 +2168,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -2062,13 +2191,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -2086,13 +2214,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -2106,13 +2233,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -2128,13 +2254,12 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
      *
      * <pre>
      * The progress of the
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] operations.
-     * Currently, only index creation statements will have a continuously
-     * updating progress.
-     * For non-index creation statements, `progress[i]` will have start time
-     * and end time populated with commit timestamp of operation,
-     * as well as a progress of 100% once the operation has completed.
-     * `progress[i]` is the operation progress for `statements[i]`.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
+     * operations. All DDL statements will have continuously updating progress,
+     * and `progress[i]` is the operation progress for `statements[i]`. Also,
+     * `progress[i]` will have start time and end time populated with commit
+     * timestamp of operation, as well as a progress of 100% once the operation
+     * has completed.
      * </pre>
      *
      * <code>repeated .google.spanner.admin.database.v1.OperationProgress progress = 5;</code>
@@ -2159,6 +2284,389 @@ public final class UpdateDatabaseDdlMetadata extends com.google.protobuf.Generat
         progress_ = null;
       }
       return progressBuilder_;
+    }
+
+    private java.util.List<com.google.spanner.admin.database.v1.DdlStatementActionInfo> actions_ =
+        java.util.Collections.emptyList();
+
+    private void ensureActionsIsMutable() {
+      if (!((bitField0_ & 0x00000020) != 0)) {
+        actions_ =
+            new java.util.ArrayList<com.google.spanner.admin.database.v1.DdlStatementActionInfo>(
+                actions_);
+        bitField0_ |= 0x00000020;
+      }
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.admin.database.v1.DdlStatementActionInfo,
+            com.google.spanner.admin.database.v1.DdlStatementActionInfo.Builder,
+            com.google.spanner.admin.database.v1.DdlStatementActionInfoOrBuilder>
+        actionsBuilder_;
+
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public java.util.List<com.google.spanner.admin.database.v1.DdlStatementActionInfo>
+        getActionsList() {
+      if (actionsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(actions_);
+      } else {
+        return actionsBuilder_.getMessageList();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public int getActionsCount() {
+      if (actionsBuilder_ == null) {
+        return actions_.size();
+      } else {
+        return actionsBuilder_.getCount();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public com.google.spanner.admin.database.v1.DdlStatementActionInfo getActions(int index) {
+      if (actionsBuilder_ == null) {
+        return actions_.get(index);
+      } else {
+        return actionsBuilder_.getMessage(index);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public Builder setActions(
+        int index, com.google.spanner.admin.database.v1.DdlStatementActionInfo value) {
+      if (actionsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureActionsIsMutable();
+        actions_.set(index, value);
+        onChanged();
+      } else {
+        actionsBuilder_.setMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public Builder setActions(
+        int index,
+        com.google.spanner.admin.database.v1.DdlStatementActionInfo.Builder builderForValue) {
+      if (actionsBuilder_ == null) {
+        ensureActionsIsMutable();
+        actions_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        actionsBuilder_.setMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public Builder addActions(com.google.spanner.admin.database.v1.DdlStatementActionInfo value) {
+      if (actionsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureActionsIsMutable();
+        actions_.add(value);
+        onChanged();
+      } else {
+        actionsBuilder_.addMessage(value);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public Builder addActions(
+        int index, com.google.spanner.admin.database.v1.DdlStatementActionInfo value) {
+      if (actionsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureActionsIsMutable();
+        actions_.add(index, value);
+        onChanged();
+      } else {
+        actionsBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public Builder addActions(
+        com.google.spanner.admin.database.v1.DdlStatementActionInfo.Builder builderForValue) {
+      if (actionsBuilder_ == null) {
+        ensureActionsIsMutable();
+        actions_.add(builderForValue.build());
+        onChanged();
+      } else {
+        actionsBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public Builder addActions(
+        int index,
+        com.google.spanner.admin.database.v1.DdlStatementActionInfo.Builder builderForValue) {
+      if (actionsBuilder_ == null) {
+        ensureActionsIsMutable();
+        actions_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        actionsBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public Builder addAllActions(
+        java.lang.Iterable<? extends com.google.spanner.admin.database.v1.DdlStatementActionInfo>
+            values) {
+      if (actionsBuilder_ == null) {
+        ensureActionsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(values, actions_);
+        onChanged();
+      } else {
+        actionsBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public Builder clearActions() {
+      if (actionsBuilder_ == null) {
+        actions_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000020);
+        onChanged();
+      } else {
+        actionsBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public Builder removeActions(int index) {
+      if (actionsBuilder_ == null) {
+        ensureActionsIsMutable();
+        actions_.remove(index);
+        onChanged();
+      } else {
+        actionsBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public com.google.spanner.admin.database.v1.DdlStatementActionInfo.Builder getActionsBuilder(
+        int index) {
+      return getActionsFieldBuilder().getBuilder(index);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public com.google.spanner.admin.database.v1.DdlStatementActionInfoOrBuilder getActionsOrBuilder(
+        int index) {
+      if (actionsBuilder_ == null) {
+        return actions_.get(index);
+      } else {
+        return actionsBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public java.util.List<
+            ? extends com.google.spanner.admin.database.v1.DdlStatementActionInfoOrBuilder>
+        getActionsOrBuilderList() {
+      if (actionsBuilder_ != null) {
+        return actionsBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(actions_);
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public com.google.spanner.admin.database.v1.DdlStatementActionInfo.Builder addActionsBuilder() {
+      return getActionsFieldBuilder()
+          .addBuilder(
+              com.google.spanner.admin.database.v1.DdlStatementActionInfo.getDefaultInstance());
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public com.google.spanner.admin.database.v1.DdlStatementActionInfo.Builder addActionsBuilder(
+        int index) {
+      return getActionsFieldBuilder()
+          .addBuilder(
+              index,
+              com.google.spanner.admin.database.v1.DdlStatementActionInfo.getDefaultInstance());
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The brief action info for the DDL statements.
+     * `actions[i]` is the brief info for `statements[i]`.
+     * </pre>
+     *
+     * <code>repeated .google.spanner.admin.database.v1.DdlStatementActionInfo actions = 6;</code>
+     */
+    public java.util.List<com.google.spanner.admin.database.v1.DdlStatementActionInfo.Builder>
+        getActionsBuilderList() {
+      return getActionsFieldBuilder().getBuilderList();
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+            com.google.spanner.admin.database.v1.DdlStatementActionInfo,
+            com.google.spanner.admin.database.v1.DdlStatementActionInfo.Builder,
+            com.google.spanner.admin.database.v1.DdlStatementActionInfoOrBuilder>
+        getActionsFieldBuilder() {
+      if (actionsBuilder_ == null) {
+        actionsBuilder_ =
+            new com.google.protobuf.RepeatedFieldBuilderV3<
+                com.google.spanner.admin.database.v1.DdlStatementActionInfo,
+                com.google.spanner.admin.database.v1.DdlStatementActionInfo.Builder,
+                com.google.spanner.admin.database.v1.DdlStatementActionInfoOrBuilder>(
+                actions_, ((bitField0_ & 0x00000020) != 0), getParentForChildren(), isClean());
+        actions_ = null;
+      }
+      return actionsBuilder_;
     }
 
     @java.lang.Override

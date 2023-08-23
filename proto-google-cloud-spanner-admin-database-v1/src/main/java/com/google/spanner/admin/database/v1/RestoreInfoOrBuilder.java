@@ -86,5 +86,5 @@ public interface RestoreInfoOrBuilder
    */
   com.google.spanner.admin.database.v1.BackupInfoOrBuilder getBackupInfoOrBuilder();
 
-  public com.google.spanner.admin.database.v1.RestoreInfo.SourceInfoCase getSourceInfoCase();
+  com.google.spanner.admin.database.v1.RestoreInfo.SourceInfoCase getSourceInfoCase();
 }

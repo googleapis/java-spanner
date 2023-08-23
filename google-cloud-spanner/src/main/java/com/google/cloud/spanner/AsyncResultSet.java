@@ -60,7 +60,8 @@ public interface AsyncResultSet extends ResultSet {
     CONTINUE,
 
     /**
-     * Tell the cursor to suspend all callbacks until application calls {@link RowCursor#resume()}.
+     * Tell the cursor to suspend all callbacks until application calls {@link
+     * ForwardingAsyncResultSet#resume()}.
      */
     PAUSE,
 
@@ -68,8 +69,8 @@ public interface AsyncResultSet extends ResultSet {
      * Tell the cursor you are done receiving results, even if there are more results sitting in the
      * buffer. Once you return DONE, you will receive no further callbacks.
      *
-     * <p>Approximately equivalent to calling {@link RowCursor#cancel()}, and then returning {@code
-     * PAUSE}, but more clear, immediate, and idiomatic.
+     * <p>Approximately equivalent to calling {@link ForwardingAsyncResultSet#cancel()}, and then
+     * returning {@code PAUSE}, but more clear, immediate, and idiomatic.
      *
      * <p>It is legal to commit a transaction that owns this read before actually returning {@code
      * DONE}.
@@ -105,17 +106,18 @@ public interface AsyncResultSet extends ResultSet {
    *   <li>Callback will stop being called once any of the following occurs:
    *       <ol>
    *         <li>Callback returns {@link CallbackResponse#DONE}.
-   *         <li>{@link ResultSet#tryNext()} returns {@link CursorState#DONE}.
-   *         <li>{@link ResultSet#tryNext()} throws an exception.
+   *         <li>{@link ForwardingAsyncResultSet#tryNext()} returns {@link CursorState#DONE}.
+   *         <li>{@link ForwardingAsyncResultSet#tryNext()} throws an exception.
    *       </ol>
-   *   <li>Callback may possibly be invoked after a call to {@link ResultSet#cancel()} call, but the
-   *       subsequent call to {@link #tryNext()} will yield a SpannerException.
+   *   <li>Callback may possibly be invoked after a call to {@link
+   *       ForwardingAsyncResultSet#cancel()} call, but the subsequent call to {@link #tryNext()}
+   *       will yield a SpannerException.
    *   <li>Spurious callbacks are possible where cursors are not actually ready. Typically callback
    *       should return {@link CallbackResponse#CONTINUE} any time it sees {@link
    *       CursorState#NOT_READY}.
    * </ul>
    *
-   * <h3>Flow Control</h3>
+   * <h4>Flow Control</h4>
    *
    * If no flow control is needed (say because result sizes are known in advance to be finite in
    * size) then async processing is simple. The following is a code example that transfers work from

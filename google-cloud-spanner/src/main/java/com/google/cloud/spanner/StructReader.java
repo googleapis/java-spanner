@@ -52,323 +52,423 @@ import java.util.List;
  */
 public interface StructReader {
   /**
-   * Returns the type of the underlying data. This will always be a {@code STRUCT} type, with fields
-   * corresponding to the data's columns. For the result of a read or query, this will always match
-   * the columns passed to the {@code read()} call or named in the query text, in order.
+   * @return the type of the underlying data. This will always be a {@code STRUCT} type, with fields
+   *     corresponding to the data's columns. For the result of a read or query, this will always
+   *     match the columns passed to the {@code read()} call or named in the query text, in order.
    */
   Type getType();
 
   /**
-   * Returns the number of columns in the underlying data. This includes any columns with {@code
-   * NULL} values.
+   * @return the number of columns in the underlying data. This includes any columns with {@code
+   *     NULL} values.
    */
   int getColumnCount();
 
   /**
-   * Returns the index of the column named {@code columnName}.
-   *
+   * @param columnName name of the column
+   * @return the index of the column named {@code columnName}.
    * @throws IllegalArgumentException if there is not exactly one element of {@code
    *     type().structFields()} with {@link Type.StructField#getName()} equal to {@code columnName}
    */
   int getColumnIndex(String columnName);
 
-  /** Returns the type of a column. */
+  /**
+   * @param columnIndex index of the column
+   * @return the type of a column.
+   */
   Type getColumnType(int columnIndex);
 
-  /** Returns the type of a column. */
+  /**
+   * @param columnName name of the column
+   * @return the type of a column.
+   */
   Type getColumnType(String columnName);
 
-  /** Returns {@code true} if a column contains a {@code NULL} value. */
+  /**
+   * @param columnIndex index of the column
+   * @return {@code true} if a column contains a {@code NULL} value.
+   */
   boolean isNull(int columnIndex);
 
-  /** Returns {@code true} if a column contains a {@code NULL} value. */
+  /**
+   * @param columnName name of the column
+   * @return {@code true} if a column contains a {@code NULL} value.
+   */
   boolean isNull(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#bool()}. */
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#bool()}.
+   */
   boolean getBoolean(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#bool()}. */
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#bool()}.
+   */
   boolean getBoolean(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#int64()}. */
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#int64()}.
+   */
   long getLong(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#int64()}. */
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#int64()}.
+   */
   long getLong(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#float64()}. */
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#float64()}.
+   */
   double getDouble(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#float64()}. */
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#float64()}.
+   */
   double getDouble(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#numeric()}. */
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#numeric()}.
+   */
   BigDecimal getBigDecimal(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#numeric()}. */
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#numeric()}.
+   */
   BigDecimal getBigDecimal(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#string()}. */
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#string()}.
+   */
   String getString(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#string()}. */
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#string()}.
+   */
   String getString(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#json()}. */
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#json()}.
+   */
   default String getJson(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#json()}. */
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#json()}.
+   */
   default String getJson(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#pgJsonb()}. */
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#pgJsonb()}.
+   */
   default String getPgJsonb(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#pgJsonb()}. */
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#pgJsonb()}.
+   */
   default String getPgJsonb(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#bytes()}. */
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#bytes()}.
+   */
   ByteArray getBytes(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#bytes()}. */
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#bytes()}.
+   */
   ByteArray getBytes(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#timestamp()}. */
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#timestamp()}.
+   */
   Timestamp getTimestamp(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#timestamp()}. */
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#timestamp()}.
+   */
   Timestamp getTimestamp(String columnName);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#date()}. */
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#date()}.
+   */
   Date getDate(int columnIndex);
 
-  /** Returns the value of a non-{@code NULL} column with type {@link Type#date()}. */
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#date()}.
+   */
   Date getDate(String columnName);
 
-  /** Returns the value of a nullable column as a {@link Value}. */
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a nullable column as a {@link Value}.
+   */
   default Value getValue(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
-  /** Returns the value of a nullable column as a {@link Value}. */
+  /**
+   * @param columnName name of the column
+   * @return the value of a nullable column as a {@link Value}.
+   */
   default Value getValue(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}.
-   *
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}.
    * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
    *     may contain {@code NULL} values, use {@link #getBooleanList(int)} instead.
    */
   boolean[] getBooleanArray(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}.
-   *
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}.
    * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
    *     may contain {@code NULL} values, use {@link #getBooleanList(String)} instead.
    */
   boolean[] getBooleanArray(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}. The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}. The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   List<Boolean> getBooleanList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}. The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.bool())}. The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   List<Boolean> getBooleanList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}.
-   *
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}.
    * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
    *     may contain {@code NULL} values, use {@link #getLongList(int)} instead.
    */
   long[] getLongArray(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}.
-   *
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}.
    * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
    *     may contain {@code NULL} values, use {@link #getLongList(String)} instead.
    */
   long[] getLongArray(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}. The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}. The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   List<Long> getLongList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}. The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.int64())}. The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   List<Long> getLongList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())}.
-   *
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())}.
    * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
    *     may contain {@code NULL} values, use {@link #getDoubleList(int)} instead.
    */
   double[] getDoubleArray(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())}.
-   *
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())}.
    * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
    *     may contain {@code NULL} values, use {@link #getDoubleList(String)} instead.
    */
   double[] getDoubleArray(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())} The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())} The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   List<Double> getDoubleList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())} The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.float64())} The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   List<Double> getDoubleList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.numeric())} The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.numeric())} The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   List<BigDecimal> getBigDecimalList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.numeric())} The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.numeric())} The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   List<BigDecimal> getBigDecimalList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   List<String> getStringList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.string())}. The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   List<String> getStringList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.json())}. The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.json())}. The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   default List<String> getJsonList(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
   };
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.json())}. The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.json())}. The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   default List<String> getJsonList(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
   };
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.pgJsonb())} The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.pgJsonb())} The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   default List<String> getPgJsonbList(int columnIndex) {
     throw new UnsupportedOperationException("method should be overwritten");
   };
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.pgJsonb())} The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.pgJsonb())} The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   default List<String> getPgJsonbList(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
   };
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bytes())}. The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.bytes())}. The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   List<ByteArray> getBytesList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.bytes())}. The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.bytes())}. The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   List<ByteArray> getBytesList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.timestamp())}
-   * The list returned by this method is lazily constructed. Create a copy of it if you intend to
-   * access each element in the list multiple times.
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.timestamp())}
+   *     The list returned by this method is lazily constructed. Create a copy of it if you intend
+   *     to access each element in the list multiple times.
    */
   List<Timestamp> getTimestampList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.timestamp())}
-   * The list returned by this method is lazily constructed. Create a copy of it if you intend to
-   * access each element in the list multiple times.
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.timestamp())}
+   *     The list returned by this method is lazily constructed. Create a copy of it if you intend
+   *     to access each element in the list multiple times.
    */
   List<Timestamp> getTimestampList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.date())}. The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.date())}. The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   List<Date> getDateList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.date())}. The
-   * list returned by this method is lazily constructed. Create a copy of it if you intend to access
-   * each element in the list multiple times.
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.date())}. The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
    */
   List<Date> getDateList(String columnName);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.struct(...))}
-   * The list returned by this method is lazily constructed. Create a copy of it if you intend to
-   * access each element in the list multiple times.
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.struct(...))}
+   *     The list returned by this method is lazily constructed. Create a copy of it if you intend
+   *     to access each element in the list multiple times.
    */
   List<Struct> getStructList(int columnIndex);
 
   /**
-   * Returns the value of a non-{@code NULL} column with type {@code Type.array(Type.struct(...))}
-   * The list returned by this method is lazily constructed. Create a copy of it if you intend to
-   * access each element in the list multiple times.
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.struct(...))}
+   *     The list returned by this method is lazily constructed. Create a copy of it if you intend
+   *     to access each element in the list multiple times.
    */
   List<Struct> getStructList(String columnName);
 }

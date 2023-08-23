@@ -33,6 +33,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
+import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.truth.Truth;
@@ -954,7 +955,17 @@ public class StatementParserTest {
     assertParsing(withTrailingLinefeeds(statement), statementClass);
 
     assertThat(parse(withInvalidPrefix(statement))).isNull();
-    assertThat(parse(withInvalidSuffix(statement))).isNull();
+
+    ClientSideStatementImpl parseClientSideStatement = parser.parseClientSideStatement(statement);
+    boolean anySuffixAllowed =
+        parseClientSideStatement.getStatementType() == ClientSideStatementType.PARTITION
+            || parseClientSideStatement.getStatementType()
+                == ClientSideStatementType.RUN_PARTITIONED_QUERY;
+    if (anySuffixAllowed) {
+      assertThat(parse(withInvalidSuffix(statement))).isNotNull();
+    } else {
+      assertThat(parse(withInvalidSuffix(statement))).isNull();
+    }
 
     assertThat(parse(withPrefix("%", statement))).isNull();
     assertThat(parse(withPrefix("_", statement))).isNull();
@@ -966,17 +977,19 @@ public class StatementParserTest {
     assertThat(parse(withPrefix("(", statement))).isNull();
     assertThat(parse(withPrefix(")", statement))).isNull();
 
-    Truth.assertWithMessage(withSuffix("%", statement) + " is not a valid statement")
-        .that(parse(withSuffix("%", statement)))
-        .isNull();
-    assertThat(parse(withSuffix("_", statement))).isNull();
-    assertThat(parse(withSuffix("&", statement))).isNull();
-    assertThat(parse(withSuffix("$", statement))).isNull();
-    assertThat(parse(withSuffix("@", statement))).isNull();
-    assertThat(parse(withSuffix("!", statement))).isNull();
-    assertThat(parse(withSuffix("*", statement))).isNull();
-    assertThat(parse(withSuffix("(", statement))).isNull();
-    assertThat(parse(withSuffix(")", statement))).isNull();
+    if (!anySuffixAllowed) {
+      Truth.assertWithMessage(withSuffix("%", statement) + " is not a valid statement")
+          .that(parse(withSuffix("%", statement)))
+          .isNull();
+      assertThat(parse(withSuffix("_", statement))).isNull();
+      assertThat(parse(withSuffix("&", statement))).isNull();
+      assertThat(parse(withSuffix("$", statement))).isNull();
+      assertThat(parse(withSuffix("@", statement))).isNull();
+      assertThat(parse(withSuffix("!", statement))).isNull();
+      assertThat(parse(withSuffix("*", statement))).isNull();
+      assertThat(parse(withSuffix("(", statement))).isNull();
+      assertThat(parse(withSuffix(")", statement))).isNull();
+    }
   }
 
   private <T extends ClientSideStatementImpl> void testParseStatementWithOneParameterAtTheEnd(

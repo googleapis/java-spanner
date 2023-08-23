@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import com.google.api.gax.httpjson.ProtoMessageRequestFormatter;
 import com.google.api.gax.httpjson.ProtoMessageResponseParser;
 import com.google.api.gax.httpjson.ProtoRestSerializer;
 import com.google.api.gax.rpc.ClientContext;
+import com.google.api.gax.rpc.RequestParamsBuilder;
 import com.google.api.gax.rpc.ServerStreamingCallable;
 import com.google.api.gax.rpc.UnaryCallable;
 import com.google.protobuf.Empty;
@@ -681,6 +682,12 @@ public class HttpJsonSpannerStub extends SpannerStub {
         HttpJsonCallSettings.<CreateSessionRequest, Session>newBuilder()
             .setMethodDescriptor(createSessionMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("database", String.valueOf(request.getDatabase()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<BatchCreateSessionsRequest, BatchCreateSessionsResponse>
         batchCreateSessionsTransportSettings =
@@ -688,72 +695,156 @@ public class HttpJsonSpannerStub extends SpannerStub {
                 .<BatchCreateSessionsRequest, BatchCreateSessionsResponse>newBuilder()
                 .setMethodDescriptor(batchCreateSessionsMethodDescriptor)
                 .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("database", String.valueOf(request.getDatabase()));
+                      return builder.build();
+                    })
                 .build();
     HttpJsonCallSettings<GetSessionRequest, Session> getSessionTransportSettings =
         HttpJsonCallSettings.<GetSessionRequest, Session>newBuilder()
             .setMethodDescriptor(getSessionMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("name", String.valueOf(request.getName()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<ListSessionsRequest, ListSessionsResponse> listSessionsTransportSettings =
         HttpJsonCallSettings.<ListSessionsRequest, ListSessionsResponse>newBuilder()
             .setMethodDescriptor(listSessionsMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("database", String.valueOf(request.getDatabase()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<DeleteSessionRequest, Empty> deleteSessionTransportSettings =
         HttpJsonCallSettings.<DeleteSessionRequest, Empty>newBuilder()
             .setMethodDescriptor(deleteSessionMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("name", String.valueOf(request.getName()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<ExecuteSqlRequest, ResultSet> executeSqlTransportSettings =
         HttpJsonCallSettings.<ExecuteSqlRequest, ResultSet>newBuilder()
             .setMethodDescriptor(executeSqlMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<ExecuteSqlRequest, PartialResultSet> executeStreamingSqlTransportSettings =
         HttpJsonCallSettings.<ExecuteSqlRequest, PartialResultSet>newBuilder()
             .setMethodDescriptor(executeStreamingSqlMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<ExecuteBatchDmlRequest, ExecuteBatchDmlResponse>
         executeBatchDmlTransportSettings =
             HttpJsonCallSettings.<ExecuteBatchDmlRequest, ExecuteBatchDmlResponse>newBuilder()
                 .setMethodDescriptor(executeBatchDmlMethodDescriptor)
                 .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("session", String.valueOf(request.getSession()));
+                      return builder.build();
+                    })
                 .build();
     HttpJsonCallSettings<ReadRequest, ResultSet> readTransportSettings =
         HttpJsonCallSettings.<ReadRequest, ResultSet>newBuilder()
             .setMethodDescriptor(readMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<ReadRequest, PartialResultSet> streamingReadTransportSettings =
         HttpJsonCallSettings.<ReadRequest, PartialResultSet>newBuilder()
             .setMethodDescriptor(streamingReadMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<BeginTransactionRequest, Transaction> beginTransactionTransportSettings =
         HttpJsonCallSettings.<BeginTransactionRequest, Transaction>newBuilder()
             .setMethodDescriptor(beginTransactionMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<CommitRequest, CommitResponse> commitTransportSettings =
         HttpJsonCallSettings.<CommitRequest, CommitResponse>newBuilder()
             .setMethodDescriptor(commitMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<RollbackRequest, Empty> rollbackTransportSettings =
         HttpJsonCallSettings.<RollbackRequest, Empty>newBuilder()
             .setMethodDescriptor(rollbackMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<PartitionQueryRequest, PartitionResponse> partitionQueryTransportSettings =
         HttpJsonCallSettings.<PartitionQueryRequest, PartitionResponse>newBuilder()
             .setMethodDescriptor(partitionQueryMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<PartitionReadRequest, PartitionResponse> partitionReadTransportSettings =
         HttpJsonCallSettings.<PartitionReadRequest, PartitionResponse>newBuilder()
             .setMethodDescriptor(partitionReadMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
+                })
             .build();
 
     this.createSessionCallable =

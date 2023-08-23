@@ -25,6 +25,8 @@ import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.Tuple;
+import com.google.cloud.spanner.BatchClient;
+import com.google.cloud.spanner.BatchReadOnlyTransaction;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
@@ -32,6 +34,7 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerApiFutures;
@@ -40,6 +43,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionRunner;
+import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.common.base.Preconditions;
@@ -70,9 +74,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   private final boolean readOnly;
   private final DdlClient ddlClient;
   private final DatabaseClient dbClient;
+  private final BatchClient batchClient;
   private final TimestampBound readOnlyStaleness;
   private final AutocommitDmlMode autocommitDmlMode;
   private final boolean returnCommitStats;
+  private final boolean internalMetdataQuery;
   private volatile SettableApiFuture<Timestamp> readTimestamp = null;
   private volatile TransactionRunner writeTransaction;
   private boolean used = false;
@@ -81,10 +87,12 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   static class Builder extends AbstractBaseUnitOfWork.Builder<Builder, SingleUseTransaction> {
     private DdlClient ddlClient;
     private DatabaseClient dbClient;
+    private BatchClient batchClient;
     private boolean readOnly;
     private TimestampBound readOnlyStaleness;
     private AutocommitDmlMode autocommitDmlMode;
     private boolean returnCommitStats;
+    private boolean internalMetadataQuery;
 
     private Builder() {}
 
@@ -97,6 +105,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     Builder setDatabaseClient(DatabaseClient client) {
       Preconditions.checkNotNull(client);
       this.dbClient = client;
+      return this;
+    }
+
+    Builder setBatchClient(BatchClient batchClient) {
+      this.batchClient = Preconditions.checkNotNull(batchClient);
       return this;
     }
 
@@ -122,10 +135,16 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       return this;
     }
 
+    Builder setInternalMetadataQuery(boolean internalMetadataQuery) {
+      this.internalMetadataQuery = internalMetadataQuery;
+      return this;
+    }
+
     @Override
     SingleUseTransaction build() {
       Preconditions.checkState(ddlClient != null, "No DDL client specified");
       Preconditions.checkState(dbClient != null, "No DatabaseClient client specified");
+      Preconditions.checkState(batchClient != null, "No BatchClient client specified");
       Preconditions.checkState(readOnlyStaleness != null, "No read-only staleness specified");
       Preconditions.checkState(autocommitDmlMode != null, "No autocommit dml mode specified");
       return new SingleUseTransaction(this);
@@ -140,10 +159,12 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     super(builder);
     this.ddlClient = builder.ddlClient;
     this.dbClient = builder.dbClient;
+    this.batchClient = builder.batchClient;
     this.readOnly = builder.readOnly;
     this.readOnlyStaleness = builder.readOnlyStaleness;
     this.autocommitDmlMode = builder.autocommitDmlMode;
     this.returnCommitStats = builder.returnCommitStats;
+    this.internalMetdataQuery = builder.internalMetadataQuery;
   }
 
   @Override
@@ -194,8 +215,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       return executeDmlReturningAsync(callType, statement, options);
     }
 
+    // Do not use a read-only staleness for internal metadata queries.
     final ReadOnlyTransaction currentTransaction =
-        dbClient.singleUseReadOnlyTransaction(readOnlyStaleness);
+        internalMetdataQuery
+            ? dbClient.singleUseReadOnlyTransaction()
+            : dbClient.singleUseReadOnlyTransaction(readOnlyStaleness);
     Callable<ResultSet> callable =
         () -> {
           try {
@@ -246,6 +270,34 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     return executeStatementAsync(
         callType,
         update,
+        callable,
+        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
+  }
+
+  @Override
+  public ApiFuture<ResultSet> partitionQueryAsync(
+      CallType callType,
+      ParsedStatement query,
+      PartitionOptions partitionOptions,
+      QueryOption... options) {
+    Callable<ResultSet> callable =
+        () -> {
+          try (BatchReadOnlyTransaction transaction =
+              batchClient.batchReadOnlyTransaction(readOnlyStaleness)) {
+            ResultSet resultSet = partitionQuery(transaction, partitionOptions, query, options);
+            readTimestamp.set(transaction.getReadTimestamp());
+            state = UnitOfWorkState.COMMITTED;
+            return resultSet;
+          } catch (Throwable throwable) {
+            state = UnitOfWorkState.COMMIT_FAILED;
+            readTimestamp.set(null);
+            throw throwable;
+          }
+        };
+    readTimestamp = SettableApiFuture.create();
+    return executeStatementAsync(
+        callType,
+        query,
         callable,
         ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
   }

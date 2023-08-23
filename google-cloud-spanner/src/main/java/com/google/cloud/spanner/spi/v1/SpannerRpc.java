@@ -20,13 +20,16 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ServerStream;
+import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.cloud.ServiceRpc;
 import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
+import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.collect.ImmutableList;
 import com.google.iam.v1.GetPolicyOptions;
 import com.google.iam.v1.Policy;
@@ -52,6 +55,7 @@ import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import com.google.spanner.v1.*;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 import org.threeten.bp.Duration;
 
@@ -149,6 +153,9 @@ public interface SpannerRpc extends ServiceRpc {
 
   /** Handle for cancellation of a streaming read or query call. */
   interface StreamingCall {
+
+    /** Returns the {@link ApiCallContext} that is used for this streaming call. */
+    ApiCallContext getCallContext();
 
     /**
      * Requests more messages from the stream. We disable the auto flow control mechanism in grpc,
@@ -333,6 +340,16 @@ public interface SpannerRpc extends ServiceRpc {
   ApiFuture<Empty> asyncDeleteSession(String sessionName, @Nullable Map<Option, ?> options)
       throws SpannerException;
 
+  /** Returns the retry settings for streaming read operations. */
+  default RetrySettings getReadRetrySettings() {
+    return SpannerStubSettings.newBuilder().streamingReadSettings().getRetrySettings();
+  }
+
+  /** Returns the retryable codes for streaming read operations. */
+  default Set<Code> getReadRetryableCodes() {
+    return SpannerStubSettings.newBuilder().streamingReadSettings().getRetryableCodes();
+  }
+
   /**
    * Performs a streaming read.
    *
@@ -346,6 +363,16 @@ public interface SpannerRpc extends ServiceRpc {
       ResultStreamConsumer consumer,
       @Nullable Map<Option, ?> options,
       boolean routeToLeader);
+
+  /** Returns the retry settings for streaming query operations. */
+  default RetrySettings getExecuteQueryRetrySettings() {
+    return SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings();
+  }
+
+  /** Returns the retryable codes for streaming query operations. */
+  default Set<Code> getExecuteQueryRetryableCodes() {
+    return SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes();
+  }
 
   /**
    * Executes a query.

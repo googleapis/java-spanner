@@ -33,7 +33,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>libraries-bom</artifactId>
-        <version>26.16.0</version>
+        <version>26.22.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -110,7 +110,7 @@
     <dependency>
       <groupId>com.google.truth</groupId>
       <artifactId>truth</artifactId>
-      <version>1.1.4</version>
+      <version>1.1.5</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -174,7 +174,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.2</version>
         <configuration>
           <systemPropertyVariables>
             <spanner.test.instance>spanner-testing-east1</spanner.test.instance>

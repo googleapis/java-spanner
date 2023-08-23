@@ -43,6 +43,12 @@ final class SpannerFeature implements Feature {
       "com.google.cloud.spanner.connection.ClientSideStatementPgBeginExecutor";
   private static final String CLIENT_SIDE_STATEMENT_EXPLAIN_EXECUTOR =
       "com.google.cloud.spanner.connection.ClientSideStatementExplainExecutor";
+  private static final String CLIENT_SIDE_STATEMENT_PARTITION_EXECUTOR =
+      "com.google.cloud.spanner.connection.ClientSideStatementPartitionExecutor";
+  private static final String CLIENT_SIDE_STATEMENT_RUN_PARTITION_EXECUTOR =
+      "com.google.cloud.spanner.connection.ClientSideStatementRunPartitionExecutor";
+  private static final String CLIENT_SIDE_STATEMENT_RUN_PARTITIONED_QUERY_EXECUTOR =
+      "com.google.cloud.spanner.connection.ClientSideStatementRunPartitionedQueryExecutor";
   private static final String ABSTRACT_STATEMENT_PARSER =
       "com.google.cloud.spanner.connection.AbstractStatementParser";
   private static final String STATEMENT_PARSER =
@@ -69,6 +75,17 @@ final class SpannerFeature implements Feature {
     }
     if (access.findClassByName(CLIENT_SIDE_STATEMENT_SET_EXECUTOR) != null) {
       NativeImageUtils.registerClassForReflection(access, CLIENT_SIDE_STATEMENT_SET_EXECUTOR);
+    }
+    if (access.findClassByName(CLIENT_SIDE_STATEMENT_PARTITION_EXECUTOR) != null) {
+      NativeImageUtils.registerClassForReflection(access, CLIENT_SIDE_STATEMENT_PARTITION_EXECUTOR);
+    }
+    if (access.findClassByName(CLIENT_SIDE_STATEMENT_RUN_PARTITION_EXECUTOR) != null) {
+      NativeImageUtils.registerClassForReflection(
+          access, CLIENT_SIDE_STATEMENT_RUN_PARTITION_EXECUTOR);
+    }
+    if (access.findClassByName(CLIENT_SIDE_STATEMENT_RUN_PARTITIONED_QUERY_EXECUTOR) != null) {
+      NativeImageUtils.registerClassForReflection(
+          access, CLIENT_SIDE_STATEMENT_RUN_PARTITIONED_QUERY_EXECUTOR);
     }
     if (access.findClassByName(CLIENT_SIDE_VALUE_CONVERTER) != null) {
       NativeImageUtils.registerClassHierarchyForReflection(access, CLIENT_SIDE_VALUE_CONVERTER);
