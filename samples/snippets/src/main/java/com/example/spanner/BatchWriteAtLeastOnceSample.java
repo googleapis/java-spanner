@@ -16,24 +16,41 @@
 
 package com.example.spanner;
 
-// [START spanner_batch_write_atleast_once]
+// [START spanner_batch_write_at_least_once]
 
 import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.MutationGroup;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.collect.ImmutableList;
 import com.google.rpc.Code;
 import com.google.spanner.v1.BatchWriteResponse;
-import java.util.List;
 
 public class BatchWriteAtLeastOnceSample {
 
-  private static final List<Mutation> MUTATIONS =
-      ImmutableList.of(
+  /***
+   * Assume DDL for the underlying database:
+   * <p>
+   * CREATE TABLE Singers (
+   * SingerId   INT64 NOT NULL,
+   * FirstName  STRING(1024),
+   * LastName   STRING(1024),
+   * ) PRIMARY KEY (SingerId)
+   * <p>
+   * CREATE TABLE Albums (
+   * SingerId     INT64 NOT NULL,
+   * AlbumId      INT64 NOT NULL,
+   * AlbumTitle   STRING(1024),
+   * ) PRIMARY KEY (SingerId, AlbumId),
+   * INTERLEAVE IN PARENT Singers ON DELETE CASCADE
+   */
+
+  private static final MutationGroup MUTATION_GROUP1 =
+      MutationGroup.of(
           Mutation.newInsertOrUpdateBuilder("Singers")
               .set("SingerId")
               .to(16)
@@ -41,12 +58,38 @@ public class BatchWriteAtLeastOnceSample {
               .to("Scarlet")
               .set("LastName")
               .to("Terry")
-              .build(),
+              .build());
+  private static final MutationGroup MUTATION_GROUP2 =
+      MutationGroup.of(
           Mutation.newInsertOrUpdateBuilder("Singers")
               .set("SingerId")
               .to(17)
               .set("FirstName")
-              .to("Luciano")
+              .to("Marc")
+              .build(),
+          Mutation.newInsertOrUpdateBuilder("Singers")
+              .set("SingerId")
+              .to(18)
+              .set("FirstName")
+              .to("Catalina")
+              .set("LastName")
+              .to("Smith")
+              .build(),
+          Mutation.newInsertOrUpdateBuilder("Albums")
+              .set("SingerId")
+              .to(17)
+              .set("AlbumId")
+              .to(1)
+              .set("AlbumTitle")
+              .to("Total Junk")
+              .build(),
+          Mutation.newInsertOrUpdateBuilder("Albums")
+              .set("SingerId")
+              .to(18)
+              .set("AlbumId")
+              .to(2)
+              .set("AlbumTitle")
+              .to("Go, Go, Go")
               .build());
 
   static void batchWriteAtLeastOnce() {
@@ -59,25 +102,27 @@ public class BatchWriteAtLeastOnceSample {
 
   static void batchWriteAtLeastOnce(String projectId, String instanceId, String databaseId) {
     try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
+        SpannerOptions.newBuilder().setProjectId(projectId).setHost("https://staging-wrenchworks.sandbox.googleapis.com").build().getService()) {
       DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
       final DatabaseClient dbClient = spanner.getDatabaseClient(dbId);
 
-      // Creates and issues a BatchWrite RPC request that will apply the mutations non-atomically
-      // and respond back with a stream of BatchWriteResponse.
+      // Creates and issues a BatchWrite RPC request that will apply the mutation groups
+      // non-atomically and respond back with a stream of BatchWriteResponse.
       ServerStream<BatchWriteResponse> responses =
-          dbClient.batchWriteAtleastOnceWithOptions(MUTATIONS, Options.tag("batch-write-tag"));
+          dbClient.batchWriteAtLeastOnce(
+              ImmutableList.of(MUTATION_GROUP1, MUTATION_GROUP2),
+              Options.tag("batch-write-tag"));
 
-      // Iterates through the results in the stream response and prints the mutation indexes,
+      // Iterates through the results in the stream response and prints the MutationGroup indexes,
       // commit timestamp and status.
       for (BatchWriteResponse response : responses) {
         if (response.getStatus().getCode() == Code.OK_VALUE) {
           System.out.printf(
-              "Mutation indexes %s have been applied with commit timestamp %s",
+              "Mutation group indexes %s have been applied with commit timestamp %s",
               response.getIndexesList(), response.getCommitTimestamp());
         } else {
           System.out.printf(
-              "Mutation indexes %s could not be applied with error code %s",
+              "Mutation group indexes %s could not be applied with error code %s",
               response.getIndexesList(), Code.forNumber(response.getStatus().getCode()));
         }
       }
@@ -85,4 +130,4 @@ public class BatchWriteAtLeastOnceSample {
   }
 }
 
-// [END spanner_batch_write_atleast_once]
+// [END spanner_batch_write_at_least_once]

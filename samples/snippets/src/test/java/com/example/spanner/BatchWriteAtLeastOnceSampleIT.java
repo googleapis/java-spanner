@@ -19,8 +19,7 @@ package com.example.spanner;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Dialect;
-import java.util.Collections;
+import com.google.common.collect.ImmutableList;
 import java.util.concurrent.ExecutionException;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,18 +34,27 @@ public class BatchWriteAtLeastOnceSampleIT extends SampleTestBase {
             databaseAdminClient
                 .newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
                 .build(),
-            Collections.singleton(
+            ImmutableList.of(
                 "CREATE TABLE Singers ("
                     + "  SingerId   INT64 NOT NULL,"
                     + "  FirstName  STRING(1024),"
                     + "  LastName   STRING(1024)"
-                    + ") PRIMARY KEY (SingerId)"))
+                    + ") PRIMARY KEY (SingerId)",
+                "CREATE TABLE Albums ("
+                    + "  SingerId     INT64 NOT NULL,"
+                    + "  AlbumId      INT64 NOT NULL,"
+                    + "  AlbumTitle   STRING(1024)"
+                    + ") PRIMARY KEY (SingerId, AlbumId),"
+                    + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE"))
         .get();
   }
+
   @Test
-  public void testBatchWriteAtleastOnce() throws Exception {
+  public void testBatchWriteAtLeastOnce() throws Exception {
     final String out =
         SampleRunner.runSample(() -> BatchWriteAtLeastOnceSample.batchWriteAtLeastOnce(projectId, instanceId, databaseId));
-    assertTrue(out.contains("have been applied with commit timestamp") || out.contains("could not be applied with error code"));
+    assertTrue(
+        out.contains("have been applied with commit timestamp")
+            || out.contains("could not be applied with error code"));
   }
 }
