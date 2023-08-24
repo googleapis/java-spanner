@@ -288,7 +288,9 @@ public final class ITDmlReturningTest {
         };
     TransactionRunner runner = getClient().readWriteTransaction();
     runner.run(callable);
-    rows.sort(Comparator.comparing(a -> a.getString("K")));
+    // Sort based on integer part in the second half of the Key K (after "boo") for easier
+    // comparison.
+    rows.sort(Comparator.comparing(a -> Integer.valueOf(a.getString("K").split("boo")[1])));
     return rows;
   }
 
@@ -365,7 +367,9 @@ public final class ITDmlReturningTest {
         };
     TransactionRunner runner = getClient().readWriteTransaction();
     runner.run(callable);
-    rows.sort(Comparator.comparing(a -> a.getString("K")));
+    // Sort based on integer part in the second half of the Key K (after "boo") for easier
+    // comparison.
+    rows.sort(Comparator.comparing(a -> Integer.valueOf(a.getString("K").split("boo")[1])));
     return rows;
   }
 
