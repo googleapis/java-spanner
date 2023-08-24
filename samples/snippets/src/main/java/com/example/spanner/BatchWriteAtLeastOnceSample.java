@@ -102,7 +102,7 @@ public class BatchWriteAtLeastOnceSample {
 
   static void batchWriteAtLeastOnce(String projectId, String instanceId, String databaseId) {
     try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).setHost("https://staging-wrenchworks.sandbox.googleapis.com").build().getService()) {
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
       final DatabaseClient dbClient = spanner.getDatabaseClient(dbId);
 
