@@ -1125,7 +1125,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               eq(true),
               any(Boolean.class)))
           .thenReturn(closedStreamingCall);
-      when(rpc.executeQuery(any(ExecuteSqlRequest.class), any(Map.class), eq(true), any(Boolean.class)))
+      when(rpc.executeQuery(
+              any(ExecuteSqlRequest.class), any(Map.class), eq(true), any(Boolean.class)))
           .thenThrow(sessionNotFound);
       when(rpc.executeBatchDml(any(ExecuteBatchDmlRequest.class), any(Map.class)))
           .thenThrow(sessionNotFound);

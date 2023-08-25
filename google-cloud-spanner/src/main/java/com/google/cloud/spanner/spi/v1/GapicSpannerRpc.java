@@ -1621,7 +1621,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       ReadRequest request,
       ResultStreamConsumer consumer,
       @Nullable Map<Option, ?> options,
-      boolean routeToLeader
+      boolean routeToLeader,
       boolean readOnly) {
     DirectedReadOptions preferredDirectedReadOptions =
         SpannerUtil.validateAndGetPreferredDirectedReadOptions(

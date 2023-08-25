@@ -436,7 +436,12 @@ public class SessionImplTest {
     final ArgumentCaptor<SpannerRpc.ResultStreamConsumer> consumer =
         ArgumentCaptor.forClass(SpannerRpc.ResultStreamConsumer.class);
     Mockito.when(
-            rpc.read(Mockito.any(), consumer.capture(), Mockito.eq(options), eq(false), Mockito.anyBoolean()))
+            rpc.read(
+                Mockito.any(),
+                consumer.capture(),
+                Mockito.eq(options),
+                eq(false),
+                Mockito.anyBoolean()))
         .then(
             invocation -> {
               consumer.getValue().onPartialResultSet(myResultSet);

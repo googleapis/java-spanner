@@ -341,7 +341,10 @@ public class TransactionManagerImplTest {
       // We should have 2 ExecuteSql requests.
       verify(rpc, times(2))
           .executeQuery(
-              Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap(), eq(true), Mockito.anyBoolean());
+              Mockito.any(ExecuteSqlRequest.class),
+              Mockito.anyMap(),
+              eq(true),
+              Mockito.anyBoolean());
       // But only 1 with a BeginTransaction.
       assertThat(transactionsStarted.get()).isEqualTo(1);
     }

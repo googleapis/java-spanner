@@ -1347,6 +1347,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   public DirectedReadOptions getDirectedReadOptions() {
     return directedReadOptions;
   }
+
   public boolean isLeaderAwareRoutingEnabled() {
     return leaderAwareRoutingEnabled;
   }

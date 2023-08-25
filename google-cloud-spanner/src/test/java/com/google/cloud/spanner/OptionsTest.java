@@ -109,9 +109,7 @@ public class OptionsTest {
 
   @Test
   public void directedReadsNullNotAllowed() {
-    assertThrows(
-        NullPointerException.class,
-        () -> Options.directedRead(null));
+    assertThrows(NullPointerException.class, () -> Options.directedRead(null));
   }
 
   @Test

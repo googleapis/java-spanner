@@ -365,9 +365,6 @@ public interface SpannerRpc extends ServiceRpc {
       boolean routeToLeader,
       boolean readOnly);
 
-  ResultSet executeQuery(
-      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader, boolean readOnly);
-
   /** Returns the retry settings for streaming query operations. */
   default RetrySettings getExecuteQueryRetrySettings() {
     return SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings();
@@ -387,7 +384,7 @@ public interface SpannerRpc extends ServiceRpc {
    *     PartitionRead/PartitionQuery) are preferred to be routed to any region for optimal latency.
    */
   ResultSet executeQuery(
-      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader);
+      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader, boolean readOnly);
 
   /**
    * Executes a query asynchronously.
@@ -419,7 +416,7 @@ public interface SpannerRpc extends ServiceRpc {
       ExecuteSqlRequest request,
       ResultStreamConsumer consumer,
       @Nullable Map<Option, ?> options,
-      boolean routeToLeader
+      boolean routeToLeader,
       boolean readOnly);
 
   ExecuteBatchDmlResponse executeBatchDml(ExecuteBatchDmlRequest build, Map<Option, ?> options);

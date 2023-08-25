@@ -694,7 +694,11 @@ abstract class AbstractReadContext
             }
             SpannerRpc.StreamingCall call =
                 rpc.executeQuery(
-                    request.build(), stream.consumer(), session.getOptions(), isRouteToLeader(), readOnly);
+                    request.build(),
+                    stream.consumer(),
+                    session.getOptions(),
+                    isRouteToLeader(),
+                    readOnly);
             call.request(prefetchChunks);
             stream.setCall(call, request.getTransaction().hasBegin());
             return stream;
@@ -834,7 +838,11 @@ abstract class AbstractReadContext
             builder.setRequestOptions(buildRequestOptions(readOptions));
             SpannerRpc.StreamingCall call =
                 rpc.read(
-                    builder.build(), stream.consumer(), session.getOptions(), isRouteToLeader(), readOnly);
+                    builder.build(),
+                    stream.consumer(),
+                    session.getOptions(),
+                    isRouteToLeader(),
+                    readOnly);
             call.request(prefetchChunks);
             stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
             return stream;

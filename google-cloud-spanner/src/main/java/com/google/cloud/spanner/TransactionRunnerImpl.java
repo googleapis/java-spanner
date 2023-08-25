@@ -753,7 +753,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         // Register the update as an async operation that must finish before the transaction may
         // commit.
         increaseAsyncOperations();
-        resultSet = rpc.executeQueryAsync(builder.build(), session.getOptions(), isRouteToLeader(), readOnly);
+        resultSet =
+            rpc.executeQueryAsync(
+                builder.build(), session.getOptions(), isRouteToLeader(), readOnly);
       } catch (Throwable t) {
         decreaseAsyncOperations();
         throw t;
